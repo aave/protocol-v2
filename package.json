@@ -1,5 +1,5 @@
 {
-  "name": "aave-protocol-v2",
+  "name": "protocol-v2",
   "version": "1.0.0",
   "description": "Aave Protocol V2 smart contracts",
   "scripts": {
