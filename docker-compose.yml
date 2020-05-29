@@ -1,0 +1,10 @@
+version: "3.5"
+
+services:
+  contracts-env:
+    build:
+      context: ./
+    working_dir: /src
+    command: npm run run-env
+    volumes:
+      - ./:/src

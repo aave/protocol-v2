@@ -1,0 +1,62 @@
+{
+  "name": "aave-protocol-v2",
+  "version": "1.0.0",
+  "description": "Aave Protocol V2 smart contracts",
+  "scripts": {
+    "run-env": "npm i && tail -f /dev/null",
+    "buidler": "buidler",
+    "buidler-kovan": "buidler --network kovan",
+    "buidler-ropsten": "buidler --network ropsten",
+    "buidler-main": "buidler --network main",
+    "buidler help": "buidler help",
+    "compile": "buidler compile",
+    "types-gen": "buidler typechain",
+    "test": "buidler test",
+    "dev:coverage": "buidler coverage",
+    "dev:deployment": "buidler dev-deployment",
+    "dev:deployExample": "buidler deploy-Example"
+  },
+  "devDependencies": {
+    "@nomiclabs/buidler": "1.3.5",
+    "@nomiclabs/buidler-ethers": "1.3.3",
+    "@nomiclabs/buidler-etherscan": "1.3.3",
+    "@nomiclabs/buidler-waffle": "1.3.4",
+    "@openzeppelin/contracts": "3.0.1",
+    "@typechain/ethers-v4": "1.0.0",
+    "@typechain/truffle-v4": "2.0.2",
+    "@typechain/truffle-v5": "2.0.2",
+    "@typechain/web3-v1": "1.0.0",
+    "@types/chai": "4.2.11",
+    "@types/lowdb": "1.0.9",
+    "@types/mocha": "7.0.2",
+    "@types/node": "14.0.5",
+    "bignumber.js": "9.0.0",
+    "chai": "4.2.0",
+    "typechain": "2.0.0",
+    "buidler-typechain": "0.1.1",
+    "ethereum-waffle": "2.5.1",
+    "solidity-coverage": "0.7.5",
+    "ethers": "4.0.47",
+    "lowdb": "1.0.0",
+    "ts-generator": "0.0.8",
+    "ganache-cli": "6.9.1",
+    "ts-node": "8.10.2",
+    "typescript": "3.9.3"
+  },
+  "author": "Aave",
+  "contributors": [
+    {
+      "name": "Ernesto Boado",
+      "email": "ernesto@aave.com"
+    },
+    {
+      "name": "Emilio Frangella",
+      "email": "emilio@aave.com"
+    },
+    {
+      "name": "Andrey Kozlov",
+      "email": "andrey@aave.com"
+    }
+  ],
+  "license": "AGPLv3"
+}
