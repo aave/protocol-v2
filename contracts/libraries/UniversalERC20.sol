@@ -26,7 +26,7 @@ library UniversalERC20 {
 
         if (isETH(token)) {
             (bool result, ) = payable(to).call{value: amount, gas: 50000}("");
-            require(result, "Transfer of ETH failed");
+            require(result, "ETH_TRANSFER_FAILED");
         } else {
             token.safeTransfer(to, amount);
         }
@@ -53,14 +53,14 @@ library UniversalERC20 {
                 (bool result, ) = payable(to).call{value: amount, gas: 50000}(
                     ""
                 );
-                require(result, "Transfer of ETH failed");
+                require(result, "ETH_TRANSFER_FAILED");
             }
             if (returnExcess && msg.value > amount) {
                 (bool result, ) = msg.sender.call{
                     value: msg.value.sub(amount),
                     gas: 50000
                 }("");
-                require(result, "Transfer of ETH failed");
+                require(result, "ETH_TRANSFER_FAILED");
             }
         } else {
             token.safeTransferFrom(from, to, amount);
@@ -81,7 +81,7 @@ library UniversalERC20 {
                     value: msg.value.sub(amount),
                     gas: 50000
                 }("");
-                require(result, "Transfer of ETH failed");
+                require(result, "ETH_TRANSFER_FAILED");
             }
         } else {
             token.safeTransferFrom(msg.sender, address(this), amount);

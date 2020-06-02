@@ -39,7 +39,7 @@ contract OneSplitAdapter is IExchangeAdapter {
     function approveExchange(IERC20[] calldata _tokens) external override {
         for (uint256 i = 0; i < _tokens.length; i++) {
             if (!_tokens[i].isETH()) {
-                _tokens[i].safeApprove(0x1814222fa8c8c1C1bf380e3BBFBd9De8657Da476, UintConstants.maxUintMinus1());
+                _tokens[i].universalApprove(0x1814222fa8c8c1C1bf380e3BBFBd9De8657Da476, UintConstants.maxUintMinus1());
             }
         }
     }

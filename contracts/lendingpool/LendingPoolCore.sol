@@ -444,9 +444,6 @@ contract LendingPoolCore is VersionedInitializable {
             );
         } else {
             require(msg.value >= _amount, "The amount and the value sent to deposit do not match");
-            //solium-disable-next-line
-            (bool result, ) = _feeAddress.call{ value: _amount, gas: 50000}("");
-            require(result, "Transfer of ETH failed");
         }
         IERC20(_token).universalTransferFrom(
             _user,

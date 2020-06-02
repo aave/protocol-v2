@@ -3,7 +3,6 @@ pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
@@ -25,7 +24,6 @@ import "../libraries/UniversalERC20.sol";
 ///    and burn it (sending to address(0) the tokenToBurn)
 contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
     using SafeMath for uint256;
-    using SafeERC20 for IERC20;
     using UniversalERC20 for IERC20;
 
     struct Distribution {

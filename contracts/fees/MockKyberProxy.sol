@@ -2,7 +2,6 @@
 pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../libraries/UniversalERC20.sol";
 import "../mocks/tokens/MintableERC20.sol";
@@ -14,9 +13,8 @@ import "../mocks/tokens/MintableERC20.sol";
 /// - Mints the tokenToBurn
 /// - Sends back the tokenToBurn
 contract MockKyberProxy {
-    using SafeERC20 for IERC20;
-    using SafeERC20 for MintableERC20;
     using UniversalERC20 for IERC20;
+    using UniversalERC20 for MintableERC20;
 
     /// @notice The token which the msg.sender of tradeWithHint will burn
     MintableERC20 public tokenToBurn;
@@ -38,9 +36,9 @@ contract MockKyberProxy {
     ) external payable returns (uint256) {
         require(tokenToBurn.mint(1 ether), "TRADE_WITH_HINT. Reverted mint()");
         if (!_fromToken.isETH()) {
-            _fromToken.safeTransferFrom(msg.sender, address(this), _amount);
+            _fromToken.universalTransferFrom(msg.sender, address(this), _amount, false);
         }
-        tokenToBurn.safeTransfer(msg.sender, 1 ether);
+        tokenToBurn.universalTransfer(msg.sender, 1 ether);
         return 1 ether;
     }
 }

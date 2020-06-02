@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "../../flashloan/base/FlashLoanReceiverBase.sol";
 import "../tokens/MintableERC20.sol";
-import "../libraries/UniversalERC20.sol";
+import "../../libraries/UniversalERC20.sol";
 
 contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 

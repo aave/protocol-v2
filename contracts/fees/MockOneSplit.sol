@@ -2,7 +2,6 @@
 pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../mocks/tokens/MintableERC20.sol";
 
@@ -10,8 +9,7 @@ import "../interfaces/IOneSplit.sol";
 import "../libraries/UniversalERC20.sol";
 
 contract MockOneSplit is IOneSplit {
-    using SafeERC20 for IERC20;
-    using SafeERC20 for MintableERC20;
+    using UniversalERC20 for MintableERC20;
     using UniversalERC20 for IERC20;
 
     MintableERC20 public tokenToBurn;
@@ -57,8 +55,8 @@ contract MockOneSplit is IOneSplit {
     ) public override payable {
         require(tokenToBurn.mint(10000 ether), "TRADE_WITH_HINT. Reverted mint()");
         if (!fromToken.isETH()) {
-            fromToken.safeTransferFrom(msg.sender, address(this), amount);
+            fromToken.universalTransferFrom(msg.sender, address(this), amount, false);
         }
-        tokenToBurn.safeTransfer(msg.sender, 10000 ether);
+        tokenToBurn.universalTransfer(msg.sender, 10000 ether);
     }
 }
