@@ -6,6 +6,7 @@ node_modules
 dist/
 build/
 .vscode
+.idea
 
 coverage
 .coverage_artifacts
