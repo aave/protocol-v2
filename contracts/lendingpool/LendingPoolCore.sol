@@ -427,7 +427,7 @@ contract LendingPoolCore is VersionedInitializable {
     * @param _token the address of the token being transferred
     * @param _user the address of the user from where the transfer is happening
     * @param _amount the amount being transferred
-    * @param _destination the fee receiver address
+    * @param _feeAddress the fee receiver address
     **/
 
     function transferToFeeCollectionAddress(
@@ -446,7 +446,7 @@ contract LendingPoolCore is VersionedInitializable {
         } else {
             require(msg.value >= _amount, "The amount and the value sent to deposit do not match");
             //solium-disable-next-line
-            (bool result, ) = feeAddress.call{ value: _amount, gas: 50000}("");
+            (bool result, ) = _feeAddress.call{ value: _amount, gas: 50000}("");
             require(result, "Transfer of ETH failed");
         }
         IERC20(_token).universalTransferFrom(
@@ -461,7 +461,7 @@ contract LendingPoolCore is VersionedInitializable {
     * @dev transfers the fees to the fees collection address in the case of liquidation
     * @param _token the address of the token being transferred
     * @param _amount the amount being transferred
-    * @param _destination the fee receiver address
+    * @param _feeAddress the fee receiver address
     **/
     function liquidateFee(
         address _token,
@@ -1749,15 +1749,10 @@ contract LendingPoolCore is VersionedInitializable {
     **/
 
     function transferFlashLoanProtocolFeeInternal(address _token, uint256 _amount) internal {
-        address payable receiver = payable(addressesProvider.getTokenDistributor());
-
-        if (_token != EthAddressLib.ethAddress()) {
-            IERC20(_token).safeTransfer(receiver, _amount);
-        } else {
-            //solium-disable-next-line
-            (bool result, ) = receiver.call{ value: _amount }("");
-            require(result, "Transfer to token distributor failed");
-        }
+        IERC20(_token).universalTransfer(
+            addressesProvider.getTokenDistributor(),
+            _amount
+        );
     }
 
     /**
