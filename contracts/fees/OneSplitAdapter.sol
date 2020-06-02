@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../interfaces/IOneSplit.sol";
 import "../interfaces/IPriceOracleGetter.sol";
 import "../interfaces/IExchangeAdapter.sol";
-
+import "../libraries/UniversalERC20.sol";
 /// @title OneSplitAdapter
 /// @author Aave
 /// @notice Implements the logic to exchange assets through 1Split
@@ -26,6 +26,7 @@ import "../interfaces/IExchangeAdapter.sol";
 
 contract OneSplitAdapter is IExchangeAdapter {
     using SafeMath for uint256;
+    using UniversalERC20 for IERC20;
 
     event OneSplitAdapterSetup(address oneSplit, address priceOracle, uint256 splitParts);
 
@@ -37,20 +38,20 @@ contract OneSplitAdapter is IExchangeAdapter {
     /// @param _tokens the list of token addresses to approve
     function approveExchange(IERC20[] calldata _tokens) external override {
         for (uint256 i = 0; i < _tokens.length; i++) {
-            if (address(_tokens[i]) != EthAddressLib.ethAddress()) {
+            if (!_tokens[i].isETH()) {
                 _tokens[i].safeApprove(0x1814222fa8c8c1C1bf380e3BBFBd9De8657Da476, UintConstants.maxUintMinus1());
             }
         }
     }
 
     /// @notice Exchanges _amount of _from token (or ETH) to _to token (or ETH)
-    /// - Uses EthAddressLib.ethAddress() as the reference on 1Split of ETH
+    /// - Uses UniversalERC20.isETH() as the reference on 1Split of ETH
     /// @param _from The asset to exchange from
     /// @param _to The asset to exchange to
     /// @param _amount The amount to exchange
     /// @param _maxSlippage Max slippage acceptable, taken into account after the goodSwap()
     function exchange(address _from, address _to, uint256 _amount, uint256 _maxSlippage) external override returns(uint256) {
-        uint256 _value = (_from == EthAddressLib.ethAddress()) ? _amount : 0;
+        uint256 _value = IERC20(_from).isETH() ? _amount : 0;
 
         uint256 _fromAssetPriceInWei = IPriceOracleGetter(0x76B47460d7F7c5222cFb6b6A75615ab10895DDe4).getAssetPrice(_from);
         uint256 _toAssetPriceInWei = IPriceOracleGetter(0x76B47460d7F7c5222cFb6b6A75615ab10895DDe4).getAssetPrice(_to);

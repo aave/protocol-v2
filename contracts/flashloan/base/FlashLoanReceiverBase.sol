@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../interfaces/IFlashLoanReceiver.sol";
 import "../../interfaces/ILendingPoolAddressesProvider.sol";
-import "../../libraries/EthAddressLib.sol";
 import "../../libraries/UniversalERC20.sol";
 
 abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {

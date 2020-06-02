@@ -17,7 +17,6 @@ import "../flashloan/interfaces/IFlashLoanReceiver.sol";
 import "./LendingPoolCore.sol";
 import "./LendingPoolDataProvider.sol";
 import "./LendingPoolLiquidationManager.sol";
-import "../libraries/EthAddressLib.sol";
 import "../libraries/UniversalERC20.sol";
 
 /**
@@ -550,7 +549,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         ) = core.getUserBorrowBalances(_reserve, _onBehalfOf);
 
         vars.originationFee = core.getUserOriginationFee(_reserve, _onBehalfOf);
-        vars.isETH = EthAddressLib.ethAddress() == _reserve;
+        vars.isETH = IERC20(_reserve).isETH();
 
         require(vars.compoundedBorrowBalance > 0, "The user does not have any borrow pending");
 

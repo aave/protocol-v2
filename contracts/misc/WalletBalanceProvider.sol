@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../lendingpool/LendingPoolCore.sol";
-import "../libraries/EthAddressLib.sol";
+import "../libraries/UniversalERC20.sol";
 
 
 /**
@@ -19,6 +19,7 @@ import "../libraries/EthAddressLib.sol";
 contract WalletBalanceProvider {
 
     using Address for address;
+    using UniversalERC20 for IERC20;
 
     LendingPoolAddressesProvider provider;
 
@@ -59,7 +60,7 @@ contract WalletBalanceProvider {
         for (uint256 i = 0; i < _users.length; i++) {
             for (uint256 j = 0; j < _tokens.length; j++) {
                 uint256 _offset = i * _tokens.length;
-                if (_tokens[j] == EthAddressLib.ethAddress()) {
+                if (IERC20(_tokens[j]).isETH()) {
                     balances[_offset + j] = _users[i].balance; // ETH balance
                 } else {
                     if (!_tokens[j].isContract()) {
@@ -91,7 +92,7 @@ contract WalletBalanceProvider {
                 balances[j] = 0;
                 continue;
             }
-            if (reserves[j] != EthAddressLib.ethAddress()) {
+            if (!IERC20(reserves[j]).isETH()) {
                 balances[j] = balanceOf(_user, reserves[j]);
             } else {
                 balances[j] = _user.balance; // ETH balance

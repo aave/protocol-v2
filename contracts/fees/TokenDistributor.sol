@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
 import "../interfaces/IKyberNetworkProxyInterface.sol";
 import "../interfaces/IExchangeAdapter.sol";
-import "../libraries/EthAddressLib.sol";
 import "../libraries/UniversalERC20.sol";
 
 

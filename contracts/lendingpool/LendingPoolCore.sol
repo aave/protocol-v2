@@ -12,7 +12,6 @@ import "../interfaces/ILendingRateOracle.sol";
 import "../interfaces/IReserveInterestRateStrategy.sol";
 import "../libraries/WadRayMath.sol";
 import "../tokenization/AToken.sol";
-import "../libraries/EthAddressLib.sol";
 import "../libraries/UniversalERC20.sol";
 
 /**
