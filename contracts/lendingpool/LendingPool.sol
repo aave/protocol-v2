@@ -18,6 +18,7 @@ import "./LendingPoolCore.sol";
 import "./LendingPoolDataProvider.sol";
 import "./LendingPoolLiquidationManager.sol";
 import "../libraries/EthAddressLib.sol";
+import "../libraries/UniversalERC20.sol";
 
 /**
 * @title LendingPool contract
@@ -29,6 +30,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     using SafeMath for uint256;
     using WadRayMath for uint256;
     using Address for address;
+    using UniversalERC20 for IERC20;
 
     LendingPoolAddressesProvider public addressesProvider;
     LendingPoolCore public core;
@@ -849,9 +851,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     {
         //check that the reserve has enough available liquidity
         //we avoid using the getAvailableLiquidity() function in LendingPoolCore to save gas
-        uint256 availableLiquidityBefore = _reserve == EthAddressLib.ethAddress()
-            ? address(core).balance
-            : IERC20(_reserve).balanceOf(address(core));
+        uint256 availableLiquidityBefore = IERC20(_reserve).universalBalanceOf(address(core));
 
         require(
             availableLiquidityBefore >= _amount,
@@ -882,9 +882,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         receiver.executeOperation(_reserve, _amount, amountFee, _params);
 
         //check that the actual balance of the core contract includes the returned amount
-        uint256 availableLiquidityAfter = _reserve == EthAddressLib.ethAddress()
-            ? address(core).balance
-            : IERC20(_reserve).balanceOf(address(core));
+        uint256 availableLiquidityAfter = IERC20(_reserve).universalBalanceOf(address(core));
 
         require(
             availableLiquidityAfter == availableLiquidityBefore.add(amountFee),

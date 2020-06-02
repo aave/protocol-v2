@@ -2,7 +2,6 @@
 pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
@@ -14,6 +13,7 @@ import "../interfaces/IReserveInterestRateStrategy.sol";
 import "../libraries/WadRayMath.sol";
 import "../tokenization/AToken.sol";
 import "../libraries/EthAddressLib.sol";
+import "../libraries/UniversalERC20.sol";
 
 /**
 * @title LendingPoolCore contract
@@ -29,9 +29,8 @@ contract LendingPoolCore is VersionedInitializable {
     using WadRayMath for uint256;
     using CoreLibrary for CoreLibrary.ReserveData;
     using CoreLibrary for CoreLibrary.UserReserveData;
-    using SafeERC20 for IERC20;
+    using UniversalERC20 for IERC20;
     using Address for address payable;
-
 
     /**
     * @dev DEPRECATED: This event was used in previous LendingPoolCore implementations, and it has been replaced by ReserveDataUpdated()
@@ -50,7 +49,6 @@ contract LendingPoolCore is VersionedInitializable {
         uint256 liquidityIndex,
         uint256 variableBorrowIndex
     );
-
 
     /**
     * @dev Emitted when the state of a reserve is updated
@@ -362,7 +360,6 @@ contract LendingPoolCore is VersionedInitializable {
                 _collateralToLiquidate.add(_liquidatedCollateralForFee)
             );
         }
-
     }
 
     /**
@@ -422,13 +419,7 @@ contract LendingPoolCore is VersionedInitializable {
         external
         onlyLendingPool
     {
-        if (_reserve != EthAddressLib.ethAddress()) {
-            IERC20(_reserve).safeTransfer(_user, _amount);
-        } else {
-            //solium-disable-next-line
-            (bool result, ) = _user.call{value: _amount, gas: 50000}("");
-            require(result, "Transfer of ETH failed");
-        }
+        IERC20(_reserve).universalTransfer(_user, _amount);
     }
 
     /**
@@ -443,22 +434,27 @@ contract LendingPoolCore is VersionedInitializable {
         address _token,
         address _user,
         uint256 _amount,
-        address _destination
+        address _feeAddress
     ) external payable onlyLendingPool {
-        address payable feeAddress = address(uint160(_destination)); //cast the address to payable
+        IERC20 token = IERC20(_token);
 
-        if (_token != EthAddressLib.ethAddress()) {
+        if (!token.isETH()) {
             require(
                 msg.value == 0,
                 "User is sending ETH along with the ERC20 transfer. Check the value attribute of the transaction"
             );
-            IERC20(_token).safeTransferFrom(_user, feeAddress, _amount);
         } else {
             require(msg.value >= _amount, "The amount and the value sent to deposit do not match");
             //solium-disable-next-line
             (bool result, ) = feeAddress.call{ value: _amount, gas: 50000}("");
             require(result, "Transfer of ETH failed");
         }
+        IERC20(_token).universalTransferFrom(
+            _user,
+            _feeAddress,
+            _amount,
+            false
+        );
     }
 
     /**
@@ -470,21 +466,14 @@ contract LendingPoolCore is VersionedInitializable {
     function liquidateFee(
         address _token,
         uint256 _amount,
-        address _destination
+        address _feeAddress
     ) external payable onlyLendingPool {
-        address payable feeAddress = address(uint160(_destination)); //cast the address to payable
         require(
             msg.value == 0,
             "Fee liquidation does not require any transfer of value"
         );
 
-        if (_token != EthAddressLib.ethAddress()) {
-            IERC20(_token).safeTransfer(feeAddress, _amount);
-        } else {
-            //solium-disable-next-line
-            (bool result, ) = feeAddress.call{ value: _amount, gas: 50000}("");
-            require(result, "Transfer of ETH failed");
-        }
+        IERC20(_token).universalTransfer(_feeAddress, _amount);
     }
 
     /**
@@ -498,21 +487,20 @@ contract LendingPoolCore is VersionedInitializable {
         payable
         onlyLendingPool
     {
-        if (_reserve != EthAddressLib.ethAddress()) {
-            require(msg.value == 0, "User is sending ETH along with the ERC20 transfer.");
-            IERC20(_reserve).safeTransferFrom(_user, address(this), _amount);
+        IERC20 reserve = IERC20(_reserve);
 
+        if (!reserve.isETH()) {
+            require(
+                msg.value == 0,
+                "User is sending ETH along with the ERC20 transfer."
+            );
         } else {
-            require(msg.value >= _amount, "The amount and the value sent to deposit do not match");
-
-            if (msg.value > _amount) {
-                //send back excess ETH
-                uint256 excessAmount = msg.value.sub(_amount);
-                //solium-disable-next-line
-                (bool result, ) = _user.call{ value: _amount, gas: 50000}("");
-                require(result, "Transfer of ETH failed");
-            }
+            require(
+                msg.value >= _amount,
+                "The amount and the value sent to deposit do not match"
+            );
         }
+        reserve.universalTransferFrom(_user, address(this), _amount, true);
     }
 
     /**
@@ -616,14 +604,7 @@ contract LendingPoolCore is VersionedInitializable {
     * @return the available liquidity
     **/
     function getReserveAvailableLiquidity(address _reserve) public view returns (uint256) {
-        uint256 balance = 0;
-
-        if (_reserve == EthAddressLib.ethAddress()) {
-            balance = address(this).balance;
-        } else {
-            balance = IERC20(_reserve).balanceOf(address(this));
-        }
-        return balance;
+        return IERC20(_reserve).universalBalanceOf(address(this));
     }
 
     /**
@@ -1443,7 +1424,6 @@ contract LendingPoolCore is VersionedInitializable {
 
         //solium-disable-next-line
         user.lastUpdateTimestamp = uint40(block.timestamp);
-
     }
 
     /**

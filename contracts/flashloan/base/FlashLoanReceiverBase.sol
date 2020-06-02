@@ -7,10 +7,12 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../interfaces/IFlashLoanReceiver.sol";
 import "../../interfaces/ILendingPoolAddressesProvider.sol";
 import "../../libraries/EthAddressLib.sol";
+import "../../libraries/UniversalERC20.sol";
 
 abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
 
     using SafeERC20 for IERC20;
+    using UniversalERC20 for IERC20;
     using SafeMath for uint256;
 
     ILendingPoolAddressesProvider public addressesProvider;
@@ -25,28 +27,14 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
 
         address payable core = addressesProvider.getLendingPoolCore();
 
-        transferInternal(core,_reserve, _amount);
+        transferInternal(core, _reserve, _amount);
     }
 
     function transferInternal(address payable _destination, address _reserve, uint256  _amount) internal {
-        if(_reserve == EthAddressLib.ethAddress()) {
-            //solium-disable-next-line
-            _destination.call{value: _amount}("");
-            return;
-        }
-
-        IERC20(_reserve).safeTransfer(_destination, _amount);
-
-
+        IERC20(_reserve).universalTransfer(_destination, _amount);
     }
 
     function getBalanceInternal(address _target, address _reserve) internal view returns(uint256) {
-        if(_reserve == EthAddressLib.ethAddress()) {
-
-            return _target.balance;
-        }
-
-        return IERC20(_reserve).balanceOf(_target);
-
+        return IERC20(_reserve).universalBalanceOf(_target);
     }
 }

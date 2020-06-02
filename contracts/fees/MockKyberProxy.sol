@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../libraries/EthAddressLib.sol";
+import "../libraries/UniversalERC20.sol";
 import "../mocks/tokens/MintableERC20.sol";
 
 /// @title MockKyberProxy
@@ -16,6 +17,7 @@ import "../mocks/tokens/MintableERC20.sol";
 contract MockKyberProxy {
     using SafeERC20 for IERC20;
     using SafeERC20 for MintableERC20;
+    using UniversalERC20 for IERC20;
 
     /// @notice The token which the msg.sender of tradeWithHint will burn
     MintableERC20 public tokenToBurn;
@@ -31,12 +33,12 @@ contract MockKyberProxy {
         IERC20 _toToken,
         address _receiver,
         uint256 _maxAmount,
-        uint minConversionRate,
+        uint256 minConversionRate,
         address _referral,
         bytes calldata _filtering
-    ) external payable returns(uint256) {
+    ) external payable returns (uint256) {
         require(tokenToBurn.mint(1 ether), "TRADE_WITH_HINT. Reverted mint()");
-        if (address(_fromToken) != EthAddressLib.ethAddress()) {
+        if (!_fromToken.isETH()) {
             _fromToken.safeTransferFrom(msg.sender, address(this), _amount);
         }
         tokenToBurn.safeTransfer(msg.sender, 1 ether);

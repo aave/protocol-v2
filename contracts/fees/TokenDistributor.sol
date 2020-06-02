@@ -11,6 +11,7 @@ import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
 import "../interfaces/IKyberNetworkProxyInterface.sol";
 import "../interfaces/IExchangeAdapter.sol";
 import "../libraries/EthAddressLib.sol";
+import "../libraries/UniversalERC20.sol";
 
 
 /// @title TokenDistributor
@@ -26,6 +27,7 @@ import "../libraries/EthAddressLib.sol";
 contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+    using UniversalERC20 for IERC20;
 
     struct Distribution {
         address[] receivers;
@@ -104,9 +106,8 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
     /// @param _tokens list of ERC20 tokens to distribute
     function distribute(IERC20[] memory _tokens) public {
         for (uint256 i = 0; i < _tokens.length; i++) {
-            uint256 _balanceToDistribute = (address(_tokens[i]) != EthAddressLib.ethAddress())
-                ? _tokens[i].balanceOf(address(this))
-                : address(this).balance;
+            uint256 _balanceToDistribute = _tokens[i].universalBalanceOf(address(this));
+
             if (_balanceToDistribute <= 0) {
                 continue;
             }
@@ -129,9 +130,8 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
     /// @param _percentages list of percentages to distribute per token
     function distributeWithPercentages(IERC20[] memory _tokens, uint256[] memory _percentages) public {
         for (uint256 i = 0; i < _tokens.length; i++) {
-            uint256 _amountToDistribute = (address(_tokens[i]) != EthAddressLib.ethAddress())
-                ? _tokens[i].balanceOf(address(this)).mul(_percentages[i]).div(100)
-                : address(this).balance.mul(_percentages[i]).div(100);
+            uint256 _amountToDistribute = _tokens[i].universalBalanceOf(address(this)).mul(_percentages[i]).div(100);
+
             if (_amountToDistribute <= 0) {
                 continue;
             }
@@ -166,13 +166,7 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
             }
 
             if (_distribution.receivers[j] != address(0)) {
-                if (_tokenAddress != EthAddressLib.ethAddress()) {
-                    _token.safeTransfer(_distribution.receivers[j], _amount);
-                } else {
-                    //solium-disable-next-line
-                    (bool _success,) = _distribution.receivers[j].call{value: _amount}("");
-                    require(_success, "Reverted ETH transfer");
-                }
+                _token.universalTransfer(_distribution.receivers[j], _amount);
                 emit Distributed(_distribution.receivers[j], _distribution.percentages[j], _amount);
             } else {
                 uint256 _amountToBurn = _amount;

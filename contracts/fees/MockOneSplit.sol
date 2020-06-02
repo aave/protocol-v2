@@ -8,10 +8,12 @@ import "../libraries/EthAddressLib.sol";
 import "../mocks/tokens/MintableERC20.sol";
 
 import "../interfaces/IOneSplit.sol";
+import "../libraries/UniversalERC20.sol";
 
 contract MockOneSplit is IOneSplit {
     using SafeERC20 for IERC20;
     using SafeERC20 for MintableERC20;
+    using UniversalERC20 for IERC20;
 
     MintableERC20 public tokenToBurn;
 
@@ -55,7 +57,7 @@ contract MockOneSplit is IOneSplit {
         uint256 disableFlags
     ) public override payable {
         require(tokenToBurn.mint(10000 ether), "TRADE_WITH_HINT. Reverted mint()");
-        if (address(fromToken) != EthAddressLib.ethAddress()) {
+        if (!fromToken.isETH()) {
             fromToken.safeTransferFrom(msg.sender, address(this), amount);
         }
         tokenToBurn.safeTransfer(msg.sender, 10000 ether);
