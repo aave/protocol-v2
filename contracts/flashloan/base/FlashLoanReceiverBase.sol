@@ -21,17 +21,9 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
     receive() external payable {}
 
     function transferFundsBackToPoolInternal(address _reserve, uint256 _amount) internal {
-
-        address payable core = addressesProvider.getLendingPoolCore();
-
-        transferInternal(core, _reserve, _amount);
-    }
-
-    function transferInternal(address payable _destination, address _reserve, uint256  _amount) internal {
-        IERC20(_reserve).universalTransfer(_destination, _amount);
-    }
-
-    function getBalanceInternal(address _target, address _reserve) internal view returns(uint256) {
-        return IERC20(_reserve).universalBalanceOf(_target);
+        IERC20(_reserve).universalTransfer(
+            addressesProvider.getLendingPoolCore(), // lending-pool core address
+            _amount
+        );
     }
 }

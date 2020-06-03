@@ -4,6 +4,12 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
+/**
+* @title UniversalERC20 library
+* @author Aave inspired by @k06a (Anton Bukov)
+* @note original version: https://github.com/CryptoManiacsZone/1inchProtocol/blob/master/contracts/UniversalERC20.sol
+* @dev Provides unified interface for ERC20 and native ETH operations
+**/
 library UniversalERC20 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -11,17 +17,24 @@ library UniversalERC20 {
     IERC20 private constant ZERO_ADDRESS = IERC20(
         0x0000000000000000000000000000000000000000
     );
+    // @notice mock address of ETH
     IERC20 private constant ETH_ADDRESS = IERC20(
         0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
     );
 
+    /**
+    * @dev Moves amount of asset from caller to recipient
+    * @param token underlying asset address
+    * @param to asset recipient
+    * @param amount to move
+    **/
     function universalTransfer(
         IERC20 token,
         address to,
         uint256 amount
-    ) internal returns (bool) {
+    ) internal {
         if (amount == 0) {
-            return true;
+            return;
         }
 
         if (isETH(token)) {
@@ -30,9 +43,16 @@ library UniversalERC20 {
         } else {
             token.safeTransfer(to, amount);
         }
-        return true;
     }
 
+    /**
+    * @dev Moves amount of asset from sender to recipient
+    * @param token underlying asset address
+    * @param from asset sender
+    * @param to asset recipient
+    * @param amount to move
+    * @param returnExcess if true returns exceeded amount to sender
+    **/
     function universalTransferFrom(
         IERC20 token,
         address from,
@@ -67,6 +87,11 @@ library UniversalERC20 {
         }
     }
 
+    /**
+    * @dev Moves amount of asset from caller to this contract
+    * @param token underlying asset address
+    * @param amount to move
+    **/
     function universalTransferFromSenderToThis(IERC20 token, uint256 amount)
         internal
     {
@@ -88,6 +113,12 @@ library UniversalERC20 {
         }
     }
 
+    /**
+    * @dev Sets the allowance over the caller's tokens to recipient address.
+    * @param token underlying asset address
+    * @param to allowance recipient
+    * @param amount of the allowance
+    **/
     function universalApprove(
         IERC20 token,
         address to,
@@ -100,7 +131,12 @@ library UniversalERC20 {
             token.safeApprove(to, amount);
         }
     }
-
+    /**
+    * @dev Returns the amount of underlying asset owned by address
+    * @param token underlying asset address
+    * @param who address to check
+    * @returns balance of the who address
+    **/
     function universalBalanceOf(IERC20 token, address who)
         internal
         view
@@ -113,6 +149,11 @@ library UniversalERC20 {
         }
     }
 
+    /**
+    * @dev Returns decimals of underlying asset
+    * @param token underlying asset address
+    * @returns decimals
+    **/
     function universalDecimals(IERC20 token) internal view returns (uint256) {
         if (isETH(token)) {
             return 18;
@@ -130,6 +171,11 @@ library UniversalERC20 {
         return (success && data.length > 0) ? abi.decode(data, (uint256)) : 18;
     }
 
+    /**
+    * @dev Checks is underlying asset ETH or not
+    * @param token underlying asset address
+    * @returns boolean
+    **/
     function isETH(IERC20 token) internal pure returns (bool) {
         return (address(token) == address(ZERO_ADDRESS) ||
             address(token) == address(ETH_ADDRESS));

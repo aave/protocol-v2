@@ -36,7 +36,10 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
 
         //check the contract has the specified balance
-        require(_amount <= getBalanceInternal(address(this), _reserve), "Invalid balance for the contract");
+        require(
+            _amount <= IERC20(_reserve).universalBalanceOf(address(this)),
+            "Invalid balance for the contract"
+        );
 
         if(failExecution) {
             emit ExecutedWithFail(_reserve, _amount, _fee);
