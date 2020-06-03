@@ -22,6 +22,8 @@ library UniversalERC20 {
         0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
     );
 
+    uint256 private constant DEFAULT_TRANSFER_GAS = 50000;
+
     /**
     * @dev Moves amount of asset from caller to recipient
     * @param token underlying asset address
@@ -38,7 +40,10 @@ library UniversalERC20 {
         }
 
         if (isETH(token)) {
-            (bool result, ) = payable(to).call{value: amount, gas: 50000}("");
+            (bool result, ) = payable(to).call{
+                value: amount,
+                gas: DEFAULT_TRANSFER_GAS
+            }("");
             require(result, "ETH_TRANSFER_FAILED");
         } else {
             token.safeTransfer(to, amount);
@@ -47,6 +52,7 @@ library UniversalERC20 {
 
     /**
     * @dev Moves amount of asset from sender to recipient
+    * in terms of ETH it redirects amount in transaction to recipient
     * @param token underlying asset address
     * @param from asset sender
     * @param to asset recipient
@@ -70,15 +76,16 @@ library UniversalERC20 {
                 "Wrong usage of ETH.universalTransferFrom()"
             ); // TODO: think one more time from == msg.sender
             if (to != address(this)) {
-                (bool result, ) = payable(to).call{value: amount, gas: 50000}(
-                    ""
-                );
+                (bool result, ) = payable(to).call{
+                    value: amount,
+                    gas: DEFAULT_TRANSFER_GAS
+                }("");
                 require(result, "ETH_TRANSFER_FAILED");
             }
             if (returnExcess && msg.value > amount) {
-                (bool result, ) = msg.sender.call{
+                (bool result, ) = payable(from).call{
                     value: msg.value.sub(amount),
-                    gas: 50000
+                    gas: DEFAULT_TRANSFER_GAS
                 }("");
                 require(result, "ETH_TRANSFER_FAILED");
             }
