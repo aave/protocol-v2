@@ -1,7 +1,9 @@
-import { Contract, Signer, utils } from "ethers";
+import {Contract, Signer, utils} from "ethers";
 
-import { getDb, BRE } from "./misc-utils";
-import { tEthereumAddress, eContractid } from "./types";
+import {getDb, BRE} from "./misc-utils";
+import {tEthereumAddress, eContractid} from "./types";
+import {Example} from "../types/Example";
+import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
 
 export const registerContractInJsonDb = async (
   contractId: string,
@@ -34,7 +36,9 @@ export const registerContractInJsonDb = async (
 export const getEthersSigners = async (): Promise<Signer[]> =>
   await Promise.all(await BRE.ethers.signers());
 
-export const getEthersSignersAddresses = async (): Promise<tEthereumAddress[]> =>
+export const getEthersSignersAddresses = async (): Promise<
+  tEthereumAddress[]
+> =>
   await Promise.all(
     (await BRE.ethers.signers()).map((signer) => signer.getAddress())
   );
@@ -63,16 +67,19 @@ const getContract = async <ContractType extends Contract>(
   )) as ContractType;
 
 export const deployExampleContract = async () =>
-  await deployContract<any>(eContractid.Example, []);
+  await deployContract<Example>(eContractid.Example, []);
+
+export const deployLendingPoolAddressesProvider = async () =>
+  await deployContract<LendingPoolAddressesProvider>(
+    eContractid.LendingPoolAddressesProvider,
+    []
+  );
 
 export const getExampleContract = async (address?: tEthereumAddress) => {
-  return await getContract<any>(
+  return await getContract<Example>(
     eContractid.Example,
     address ||
-      (
-        await getDb()
-          .get(`${eContractid.Example}.${BRE.network.name}`)
-          .value()
-      ).address
+      (await getDb().get(`${eContractid.Example}.${BRE.network.name}`).value())
+        .address
   );
 };

@@ -8,7 +8,8 @@ export enum eEthereumNetwork {
 }
 
 export enum eContractid {
-  Example = "Example"
+  Example = "Example",
+  LendingPoolAddressesProvider = "LendingPoolAddressesProvider" 
 }
 
 export type tEthereumAddress = string;
