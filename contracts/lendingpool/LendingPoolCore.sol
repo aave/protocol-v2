@@ -473,33 +473,6 @@ contract LendingPoolCore is VersionedInitializable {
     }
 
     /**
-    * @dev transfers an amount from a user to the destination reserve
-    * @param _reserve the address of the reserve where the amount is being transferred
-    * @param _user the address of the user from where the transfer is happening
-    * @param _amount the amount being transferred
-    **/
-    function transferToReserve(address _reserve, address payable _user, uint256 _amount)
-        external
-        payable
-        onlyLendingPool
-    {
-        IERC20 reserve = IERC20(_reserve);
-
-        if (!reserve.isETH()) {
-            require(
-                msg.value == 0,
-                "User is sending ETH along with the ERC20 transfer."
-            );
-        } else {
-            require(
-                msg.value >= _amount,
-                "The amount and the value sent to deposit do not match"
-            );
-        }
-        reserve.universalTransferFrom(_user, address(this), _amount, true);
-    }
-
-    /**
     * @notice data access functions
     **/
 

@@ -246,11 +246,16 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             //otherwise receives the underlying asset
             //burn the equivalent amount of atoken
             collateralAtoken.burnOnLiquidation(_user, maxCollateralToLiquidate);
-            core.transferToUser(_collateral, msg.sender, maxCollateralToLiquidate);
+            core.transferToUser(_collateral, msg.sender, maxCollateralToLiquidate); //TODO: update to universal transfer
         }
 
         //transfers the principal currency to the pool
-        core.transferToReserve{value: msg.value}(_reserve, msg.sender, vars.actualAmountToLiquidate);
+        IERC20(_reserve).universalTransferFrom(
+            msg.sender,
+            addressesProvider.getLendingPool(),
+            vars.actualAmountToLiquidate,
+            true
+        );
 
         if (vars.feeLiquidated > 0) {
             //if there is enough collateral to liquidate the fee, first transfer burn an equivalent amount of

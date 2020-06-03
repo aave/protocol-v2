@@ -315,8 +315,13 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         //minting AToken to user 1:1 with the specific exchange rate
         aToken.mintOnDeposit(msg.sender, _amount);
 
-        //transfer to the core contract
-        core.transferToReserve{value: msg.value}(_reserve, msg.sender, _amount);
+        //transfer to the pool
+        if (!IERC20(_reserve).isETH()) { //TODO: review needed, most probably we can remove it
+            require(
+                msg.value == 0,
+                "User is sending ETH along with the ERC20 transfer."
+            );
+        IERC20(_reserve).universalTransferFromSenderToThis(_amount);
 
         //solium-disable-next-line
         emit Deposit(_reserve, msg.sender, _amount, _referralCode, block.timestamp);
@@ -623,13 +628,17 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         }
 
         //sending the total msg.value if the transfer is ETH.
-        //the transferToReserve() function will take care of sending the
+        //the universalTransferFromSenderToThis() function will take care of sending the
         //excess ETH back to the caller
-        core.transferToReserve{ value: vars.isETH ? msg.value.sub(vars.originationFee) : 0 }(
-            _reserve,
-            msg.sender,
-            vars.paybackAmountMinusFees
-        );
+        if (!IERC20(_reserve).isETH()) { //TODO: review needed, most probably we can remove it
+            require(
+                msg.value == 0,
+                "User is sending ETH along with the ERC20 transfer."
+            );
+        }
+        IERC20(_reserve).universalTransferFromSenderToThis{
+            value: vars.isETH ? msg.value.sub(vars.originationFee) : 0
+        }(vars.paybackAmountMinusFees);
 
         emit Repay(
             _reserve,
