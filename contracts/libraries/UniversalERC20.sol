@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 /**
 * @title UniversalERC20 library
 * @author Aave inspired by @k06a (Anton Bukov)
-* @note original version: https://github.com/CryptoManiacsZone/1inchProtocol/blob/master/contracts/UniversalERC20.sol
+* original version: https://github.com/CryptoManiacsZone/1inchProtocol/blob/master/contracts/UniversalERC20.sol
 * @dev Provides unified interface for ERC20 and native ETH operations
 **/
 library UniversalERC20 {
@@ -131,11 +131,12 @@ library UniversalERC20 {
             token.safeApprove(to, amount);
         }
     }
+
     /**
     * @dev Returns the amount of underlying asset owned by address
     * @param token underlying asset address
     * @param who address to check
-    * @returns balance of the who address
+    * @return balance of the who address
     **/
     function universalBalanceOf(IERC20 token, address who)
         internal
@@ -152,7 +153,7 @@ library UniversalERC20 {
     /**
     * @dev Returns decimals of underlying asset
     * @param token underlying asset address
-    * @returns decimals
+    * @return decimals
     **/
     function universalDecimals(IERC20 token) internal view returns (uint256) {
         if (isETH(token)) {
@@ -174,7 +175,7 @@ library UniversalERC20 {
     /**
     * @dev Checks is underlying asset ETH or not
     * @param token underlying asset address
-    * @returns boolean
+    * @return boolean
     **/
     function isETH(IERC20 token) internal pure returns (bool) {
         return (address(token) == address(ZERO_ADDRESS) ||
