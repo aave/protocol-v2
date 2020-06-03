@@ -2,6 +2,7 @@
 pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -15,6 +16,7 @@ import "../libraries/WadRayMath.sol";
 import "./LendingPoolCore.sol";
 import "./LendingPoolDataProvider.sol";
 import "../interfaces/IPriceOracleGetter.sol";
+import "../libraries/UniversalERC20.sol";
 
 /**
 * @title LendingPoolLiquidationManager contract
@@ -25,6 +27,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     using SafeMath for uint256;
     using WadRayMath for uint256;
     using Address for address;
+    using UniversalERC20 for IERC20;
 
     LendingPoolAddressesProvider public addressesProvider;
     LendingPoolCore core;
@@ -216,7 +219,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
         //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
         if (!_receiveAToken) {
-            uint256 currentAvailableCollateral = core.getReserveAvailableLiquidity(_collateral);
+            uint256 currentAvailableCollateral = IERC20(_collateral).universalBalanceOf(address(this));
             if (currentAvailableCollateral < maxCollateralToLiquidate) {
                 return (
                     uint256(LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
@@ -246,15 +249,14 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             //otherwise receives the underlying asset
             //burn the equivalent amount of atoken
             collateralAtoken.burnOnLiquidation(_user, maxCollateralToLiquidate);
-            core.transferToUser(_collateral, msg.sender, maxCollateralToLiquidate); //TODO: update to universal transfer
+            // because liquidate function executed as delegated call this will be LendingPool contract address
+            // and funds will be transferred from there
+            IERC20(_collateral).universalTransfer(msg.sender, maxCollateralToLiquidate);
         }
 
         //transfers the principal currency to the pool
-        IERC20(_reserve).universalTransferFrom(
-            msg.sender,
-            addressesProvider.getLendingPool(),
-            vars.actualAmountToLiquidate,
-            true
+        IERC20(_reserve).universalTransferFromSenderToThis(
+            vars.actualAmountToLiquidate
         );
 
         if (vars.feeLiquidated > 0) {
@@ -263,10 +265,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             collateralAtoken.burnOnLiquidation(_user, vars.liquidatedCollateralForFee);
 
             //then liquidate the fee by transferring it to the fee collection address
-            core.liquidateFee(
-                _collateral,
-                vars.liquidatedCollateralForFee,
-                addressesProvider.getTokenDistributor()
+            IERC20(_collateral).universalTransfer(
+                addressesProvider.getTokenDistributor(),
+                vars.liquidatedCollateralForFee
             );
 
             emit OriginationFeeLiquidated(

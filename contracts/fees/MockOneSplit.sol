@@ -55,7 +55,7 @@ contract MockOneSplit is IOneSplit {
     ) public override payable {
         require(tokenToBurn.mint(10000 ether), "TRADE_WITH_HINT. Reverted mint()");
         if (!fromToken.isETH()) {
-            fromToken.universalTransferFrom(msg.sender, address(this), amount, false);
+            fromToken.universalTransferFromSenderToThis(amount);
         }
         tokenToBurn.universalTransfer(msg.sender, 10000 ether);
     }

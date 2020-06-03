@@ -174,8 +174,6 @@ contract LendingPoolCore is VersionedInitializable {
         uint256 _income,
         uint256 _protocolFee
     ) external onlyLendingPool {
-        transferFlashLoanProtocolFeeInternal(_reserve, _protocolFee);
-
         //compounding the cumulated interest
         reserves[_reserve].updateCumulativeIndexes();
 
@@ -409,70 +407,6 @@ contract LendingPoolCore is VersionedInitializable {
     }
 
     /**
-    * @dev transfers to the user a specific amount from the reserve.
-    * @param _reserve the address of the reserve where the transfer is happening
-    * @param _user the address of the user receiving the transfer
-    * @param _amount the amount being transferred
-    **/
-    function transferToUser(address _reserve, address payable _user, uint256 _amount)
-        external
-        onlyLendingPool
-    {
-        IERC20(_reserve).universalTransfer(_user, _amount);
-    }
-
-    /**
-    * @dev transfers the protocol fees to the fees collection address
-    * @param _token the address of the token being transferred
-    * @param _user the address of the user from where the transfer is happening
-    * @param _amount the amount being transferred
-    * @param _feeAddress the fee receiver address
-    **/
-
-    function transferToFeeCollectionAddress(
-        address _token,
-        address _user,
-        uint256 _amount,
-        address _feeAddress
-    ) external payable onlyLendingPool {
-        IERC20 token = IERC20(_token);
-
-        if (!token.isETH()) {
-            require(
-                msg.value == 0,
-                "User is sending ETH along with the ERC20 transfer. Check the value attribute of the transaction"
-            );
-        } else {
-            require(msg.value >= _amount, "The amount and the value sent to deposit do not match");
-        }
-        IERC20(_token).universalTransferFrom(
-            _user,
-            _feeAddress,
-            _amount,
-            false
-        );
-    }
-
-    /**
-    * @dev transfers the fees to the fees collection address in the case of liquidation
-    * @param _token the address of the token being transferred
-    * @param _amount the amount being transferred
-    * @param _feeAddress the fee receiver address
-    **/
-    function liquidateFee(
-        address _token,
-        uint256 _amount,
-        address _feeAddress
-    ) external payable onlyLendingPool {
-        require(
-            msg.value == 0,
-            "Fee liquidation does not require any transfer of value"
-        );
-
-        IERC20(_token).universalTransfer(_feeAddress, _amount);
-    }
-
-    /**
     * @notice data access functions
     **/
 
@@ -568,22 +502,16 @@ contract LendingPoolCore is VersionedInitializable {
     }
 
     /**
-    * @dev gets the available liquidity in the reserve. The available liquidity is the balance of the core contract
-    * @param _reserve the reserve address
-    * @return the available liquidity
-    **/
-    function getReserveAvailableLiquidity(address _reserve) public view returns (uint256) {
-        return IERC20(_reserve).universalBalanceOf(address(this));
-    }
-
-    /**
     * @dev gets the total liquidity in the reserve. The total liquidity is the balance of the core contract + total borrows
     * @param _reserve the reserve address
     * @return the total liquidity
     **/
     function getReserveTotalLiquidity(address _reserve) public view returns (uint256) {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-        return getReserveAvailableLiquidity(_reserve).add(reserve.getTotalBorrows());
+
+        return IERC20(_reserve)
+            .universalBalanceOf(addressesProvider.getLendingPool())
+            .add(reserve.getTotalBorrows());
     }
 
     /**
@@ -850,8 +778,9 @@ contract LendingPoolCore is VersionedInitializable {
             return 0;
         }
 
-        uint256 availableLiquidity = getReserveAvailableLiquidity(_reserve);
-
+        uint256 availableLiquidity = IERC20(_reserve).universalBalanceOf(
+            addressesProvider.getLendingPool()
+        );
         return totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
     }
 
@@ -1680,14 +1609,15 @@ contract LendingPoolCore is VersionedInitializable {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
 
         uint256 currentAvgStableRate = reserve.currentAverageStableBorrowRate;
+        uint256 avialableLiquidity = IERC20(_reserve).universalBalanceOf(addressesProvider.getLendingPool())
+            .add(_liquidityAdded)
+            .sub(_liquidityTaken);
 
         (uint256 newLiquidityRate, uint256 newStableRate, uint256 newVariableRate) = IReserveInterestRateStrategy(
-            reserve
-                .interestRateStrategyAddress
-        )
-            .calculateInterestRates(
+            reserve.interestRateStrategyAddress
+        ).calculateInterestRates(
             _reserve,
-            getReserveAvailableLiquidity(_reserve).add(_liquidityAdded).sub(_liquidityTaken),
+            avialableLiquidity,
             reserve.totalBorrowsStable,
             reserve.totalBorrowsVariable,
             currentAvgStableRate
@@ -1708,19 +1638,6 @@ contract LendingPoolCore is VersionedInitializable {
             newVariableRate,
             reserve.lastLiquidityCumulativeIndex,
             reserve.lastVariableBorrowCumulativeIndex
-        );
-    }
-
-    /**
-    * @dev transfers to the protocol fees of a flashloan to the fees collection address
-    * @param _token the address of the token being transferred
-    * @param _amount the amount being transferred
-    **/
-
-    function transferFlashLoanProtocolFeeInternal(address _token, uint256 _amount) internal {
-        IERC20(_token).universalTransfer(
-            addressesProvider.getTokenDistributor(),
-            _amount
         );
     }
 

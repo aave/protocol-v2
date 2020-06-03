@@ -321,6 +321,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
                 msg.value == 0,
                 "User is sending ETH along with the ERC20 transfer."
             );
+        }
         IERC20(_reserve).universalTransferFromSenderToThis(_amount);
 
         //solium-disable-next-line
@@ -347,7 +348,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         onlyActiveReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
     {
-        uint256 currentAvailableLiquidity = core.getReserveAvailableLiquidity(_reserve);
+        uint256 currentAvailableLiquidity = IERC20(_reserve).universalBalanceOf(address(this));
         require(
             currentAvailableLiquidity >= _amount,
             "There is not enough liquidity available to redeem"
@@ -355,7 +356,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
         core.updateStateOnRedeem(_reserve, _user, _amount, _aTokenBalanceAfterRedeem == 0);
 
-        core.transferToUser(_reserve, _user, _amount);
+        IERC20(_reserve).universalTransfer(_user, _amount);
 
         //solium-disable-next-line
         emit RedeemUnderlying(_reserve, _user, _amount, block.timestamp);
@@ -420,7 +421,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         vars.rateMode = CoreLibrary.InterestRateMode(_interestRateMode);
 
         //check that the amount is available in the reserve
-        vars.availableLiquidity = core.getReserveAvailableLiquidity(_reserve);
+        vars.availableLiquidity = IERC20(_reserve).universalBalanceOf(address(this)); // TODO: review needed, most probably useless
 
         require(
             vars.availableLiquidity >= _amount,
@@ -501,7 +502,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         );
 
         //if we reached this point, we can transfer
-        core.transferToUser(_reserve, msg.sender, _amount);
+        IERC20(_reserve).universalTransfer(msg.sender, _amount);
 
         emit Borrow(
             _reserve,
@@ -586,11 +587,17 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
                 false
             );
 
-            core.transferToFeeCollectionAddress{ value: vars.isETH ? vars.paybackAmount : 0 }(
-                _reserve,
+            if (!vars.isETH) { // TODO: review needed, maybe we should not care
+                require(
+                    msg.value == 0,
+                    "User is sending ETH along with the ERC20 transfer. Check the value attribute of the transaction"
+                );
+            }
+            IERC20(_reserve).universalTransferFrom(
                 _onBehalfOf,
+                addressesProvider.getTokenDistributor(),
                 vars.paybackAmount,
-                addressesProvider.getTokenDistributor()
+                false
             );
 
             emit Repay(
@@ -618,27 +625,38 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         );
 
         //if the user didn't repay the origination fee, transfer the fee to the fee collection address
-        if(vars.originationFee > 0) {
-            core.transferToFeeCollectionAddress{ value: vars.isETH ? vars.originationFee : 0 }(
-                _reserve,
+        if (vars.originationFee > 0) {
+            if (!vars.isETH) { // TODO: review needed, maybe we should not care
+                require(
+                    msg.value == 0,
+                    "User is sending ETH along with the ERC20 transfer. Check the value attribute of the transaction"
+                );
+            }
+            IERC20(_reserve).universalTransferFrom(
                 _onBehalfOf,
+                addressesProvider.getTokenDistributor(),
                 vars.originationFee,
-                addressesProvider.getTokenDistributor()
+                false
             );
         }
 
-        //sending the total msg.value if the transfer is ETH.
-        //the universalTransferFromSenderToThis() function will take care of sending the
-        //excess ETH back to the caller
-        if (!IERC20(_reserve).isETH()) { //TODO: review needed, most probably we can remove it
+        if (vars.isETH) { //TODO: review needed, most probably we can remove it
             require(
                 msg.value == 0,
                 "User is sending ETH along with the ERC20 transfer."
             );
         }
-        IERC20(_reserve).universalTransferFromSenderToThis{
-            value: vars.isETH ? msg.value.sub(vars.originationFee) : 0
-        }(vars.paybackAmountMinusFees);
+        IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmountMinusFees);
+
+        if (vars.isETH) {
+            uint256 exceedAmount = msg.value
+                .sub(vars.originationFee)
+                .sub(vars.paybackAmountMinusFees);
+            //send excess ETH back to the caller in needed
+            if (exceedAmount > 0) {
+                IERC20(_reserve).universalTransfer(msg.sender, exceedAmount);
+            }
+        }
 
         emit Repay(
             _reserve,
@@ -881,10 +899,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         //get the FlashLoanReceiver instance
         IFlashLoanReceiver receiver = IFlashLoanReceiver(_receiver);
 
-        address payable userPayable = payable(_receiver);
-
         //transfer funds to the receiver
-        core.transferToUser(_reserve, userPayable, _amount);
+        IERC20(_reserve).universalTransfer(_receiver, _amount);
 
         //execute action of the receiver
         receiver.executeOperation(_reserve, _amount, amountFee, _params);
@@ -897,6 +913,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             "The actual balance of the protocol is inconsistent"
         );
 
+        // transfer protocol fee to the Distributor contract
+        IERC20(_reserve).universalTransfer(
+            addressesProvider.getTokenDistributor(),
+            protocolFee
+        );
         core.updateStateOnFlashLoan(
             _reserve,
             availableLiquidityBefore,
