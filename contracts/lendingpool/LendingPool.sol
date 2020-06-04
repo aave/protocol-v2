@@ -322,7 +322,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
                 "User is sending ETH along with the ERC20 transfer."
             );
         }
-        IERC20(_reserve).universalTransferFromSenderToThis(_amount);
+        IERC20(_reserve).universalTransferFromSenderToThis(_amount, true);
 
         //solium-disable-next-line
         emit Deposit(_reserve, msg.sender, _amount, _referralCode, block.timestamp);
@@ -646,13 +646,13 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
                 "User is sending ETH along with the ERC20 transfer."
             );
         }
-        IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmountMinusFees);
+        IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmountMinusFees, false);
 
         if (vars.isETH) {
             uint256 exceedAmount = msg.value
                 .sub(vars.originationFee)
                 .sub(vars.paybackAmountMinusFees);
-            //send excess ETH back to the caller in needed
+            //send excess ETH back to the caller if needed
             if (exceedAmount > 0) {
                 IERC20(_reserve).universalTransfer(msg.sender, exceedAmount);
             }

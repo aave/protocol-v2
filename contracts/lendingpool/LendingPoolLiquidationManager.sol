@@ -256,7 +256,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
         //transfers the principal currency to the pool
         IERC20(_reserve).universalTransferFromSenderToThis(
-            vars.actualAmountToLiquidate
+            vars.actualAmountToLiquidate, true
         );
 
         if (vars.feeLiquidated > 0) {
