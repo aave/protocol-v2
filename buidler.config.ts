@@ -50,7 +50,7 @@ const getCommonNetworkConfig = (
 const config: BuidlerConfig = {
   solc: {
     version: "0.6.8",
-    optimizer: { enabled: false, runs: 200 },
+    optimizer: { enabled: true, runs: 200 },
     evmVersion: "istanbul",
   },
   typechain: {
