@@ -572,7 +572,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         }
 
         require(
-            !vars.isETH || msg.value >= vars.paybackAmount,
+            (!vars.isETH && msg.value == 0) || msg.value >= vars.paybackAmount,
             "Invalid msg.value sent for the repayment"
         );
 
@@ -587,12 +587,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
                 false
             );
 
-            if (!vars.isETH) { // TODO: review needed, maybe we should not care
-                require(
-                    msg.value == 0,
-                    "User is sending ETH along with the ERC20 transfer. Check the value attribute of the transaction"
-                );
-            }
             IERC20(_reserve).universalTransferFrom(
                 _onBehalfOf,
                 addressesProvider.getTokenDistributor(),
@@ -626,12 +620,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
         //if the user didn't repay the origination fee, transfer the fee to the fee collection address
         if (vars.originationFee > 0) {
-            if (!vars.isETH) { // TODO: review needed, maybe we should not care
-                require(
-                    msg.value == 0,
-                    "User is sending ETH along with the ERC20 transfer. Check the value attribute of the transaction"
-                );
-            }
             IERC20(_reserve).universalTransferFrom(
                 _onBehalfOf,
                 addressesProvider.getTokenDistributor(),
@@ -640,12 +628,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             );
         }
 
-        if (!vars.isETH) { //TODO: review needed, most probably we can remove it
-            require(
-                msg.value == 0,
-                "User is sending ETH along with the ERC20 transfer."
-            );
-        }
         IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmountMinusFees, false);
 
         if (vars.isETH) {
