@@ -640,7 +640,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             );
         }
 
-        if (vars.isETH) { //TODO: review needed, most probably we can remove it
+        if (!vars.isETH) { //TODO: review needed, most probably we can remove it
             require(
                 msg.value == 0,
                 "User is sending ETH along with the ERC20 transfer."
