@@ -1,23 +1,20 @@
-import rawBRE from "@nomiclabs/buidler";
 import {expect} from "chai";
 import {MockProvider} from "ethereum-waffle";
 import {BuidlerRuntimeEnvironment} from "@nomiclabs/buidler/types";
-import {deployLendingPoolAddressesProvider} from "../helpers/contracts-helpers";
-import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
-import {createRandomAddress} from "../helpers/misc-utils";
+import {getLendingPoolAddressesProvider} from "../helpers/contracts-helpers";
+import {createRandomAddress, evmRevert} from "../helpers/misc-utils";
 
 describe("LendingPoolAddressesProvider", () => {
   const wallets = new MockProvider().getWallets();
-  let BRE: BuidlerRuntimeEnvironment;
 
   before(async () => {
-    BRE = await rawBRE.run("set-bre");
+    await evmRevert("0x1");
   });
 
   it("Test the accessibility of the LendingPoolAddressesProvider", async () => {
     const mockAddress = createRandomAddress();
     const INVALID_OWNER_REVERT_MSG = "Ownable: caller is not the owner";
-    const addressesProvider = (await deployLendingPoolAddressesProvider()) as LendingPoolAddressesProvider;
+    const addressesProvider = await getLendingPoolAddressesProvider();
     await addressesProvider.transferOwnership(wallets[1].address);
 
     for (const contractFunction of [

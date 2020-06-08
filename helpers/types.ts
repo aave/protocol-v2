@@ -37,6 +37,8 @@ export enum eContractid {
   InitializableAdminUpgradeabilityProxy = "InitializableAdminUpgradeabilityProxy",
   MockFlashLoanReceiver = "MockFlashLoanReceiver",
   WalletBalanceProvider = "WalletBalanceProvider",
+  AToken = "AToken",
+  AaveProtocolTestHelpers = "AaveProtocolTestHelpers",
 }
 
 export type tEthereumAddress = string;

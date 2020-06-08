@@ -33,6 +33,8 @@ import {TokenDistributor} from "../types/TokenDistributor";
 import {InitializableAdminUpgradeabilityProxy} from "../types/InitializableAdminUpgradeabilityProxy";
 import {MockFlashLoanReceiver} from "../types/MockFlashLoanReceiver";
 import {WalletBalanceProvider} from "../types/WalletBalanceProvider";
+import {AToken} from "../types/AToken";
+import {AaveProtocolTestHelpers} from "../types/AaveProtocolTestHelpers";
 
 export const registerContractInJsonDb = async (
   contractId: string,
@@ -227,6 +229,14 @@ export const deployMockOneSplit = async (tokenToBurn: tEthereumAddress) =>
 export const deployOneSplitAdapter = async () =>
   await deployContract<OneSplitAdapter>(eContractid.OneSplitAdapter, []);
 
+export const deployAaveProtocolTestHelpers = async (
+  addressesProvider: tEthereumAddress
+) =>
+  await deployContract<AaveProtocolTestHelpers>(
+    eContractid.AaveProtocolTestHelpers,
+    [addressesProvider]
+  );
+
 export const deployMintableErc20 = async ([name, symbol, decimals]: [
   string,
   string,
@@ -390,6 +400,29 @@ export const getPriceOracle = async (address?: tEthereumAddress) => {
       (
         await getDb()
           .get(`${eContractid.PriceOracle}.${BRE.network.name}`)
+          .value()
+      ).address
+  );
+};
+
+export const getAToken = async (address?: tEthereumAddress) => {
+  return await getContract<AToken>(
+    eContractid.AToken,
+    address ||
+      (await getDb().get(`${eContractid.AToken}.${BRE.network.name}`).value())
+        .address
+  );
+};
+
+export const getAaveProtocolTestHelpers = async (
+  address?: tEthereumAddress
+) => {
+  return await getContract<AaveProtocolTestHelpers>(
+    eContractid.AaveProtocolTestHelpers,
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.AaveProtocolTestHelpers}.${BRE.network.name}`)
           .value()
       ).address
   );

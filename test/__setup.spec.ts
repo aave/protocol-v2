@@ -1,5 +1,5 @@
 import rawBRE from "@nomiclabs/buidler";
-import {deployMockContract, MockContract} from "ethereum-waffle";
+import {MockContract} from "ethereum-waffle";
 import {
   deployLendingPoolAddressesProvider,
   deployMintableErc20,
@@ -23,18 +23,17 @@ import {
   deployTokenDistributor,
   deployInitializableAdminUpgradeabilityProxy,
   deployMockFlashLoanReceiver,
-  registerContractInJsonDb,
   deployWalletBalancerProvider,
   getFeeProvider,
   getLendingPoolParametersProvider,
   getLendingPoolDataProvider,
   getLendingPoolProxy,
   insertContractAddressInDb,
+  deployAaveProtocolTestHelpers,
 } from "../helpers/contracts-helpers";
 import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
 import {evmSnapshot} from "../helpers/misc-utils";
 import {Wallet, ContractTransaction, ethers} from "ethers";
-import IERC20MintableBurnableArtifact from "../artifacts/IERC20MintableBurnable.json";
 import {
   TokenContractId,
   eContractid,
@@ -66,17 +65,16 @@ import {LendingRateOracle} from "../types/LendingRateOracle";
 import {LendingPoolCore} from "../types/LendingPoolCore";
 import {LendingPoolConfigurator} from "../types/LendingPoolConfigurator";
 
-const deployAllMockTokens = async (
-  deployer: Wallet,
-  useDoppelganger: boolean
-) => {
+const deployAllMockTokens = async (deployer: Wallet) => {
   const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
     if (tokenSymbol !== "ETH") {
-      tokens[tokenSymbol] = useDoppelganger
-        ? await deployMockContract(deployer, IERC20MintableBurnableArtifact.abi)
-        : await deployMintableErc20([tokenSymbol, tokenSymbol, 18]);
+      tokens[tokenSymbol] = await deployMintableErc20([
+        tokenSymbol,
+        tokenSymbol,
+        18,
+      ]);
     }
   }
 
@@ -353,7 +351,7 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
   console.time("setup");
   const lendingPoolManager = deployer.address;
 
-  const mockTokens = await deployAllMockTokens(deployer, false);
+  const mockTokens = await deployAllMockTokens(deployer);
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
   await waitForTx(
@@ -612,6 +610,25 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
   await deployMockFlashLoanReceiver(addressesProvider.address);
 
   await deployWalletBalancerProvider(addressesProvider.address);
+
+  const testHelpers = await deployAaveProtocolTestHelpers(
+    addressesProvider.address
+  );
+  console.log(testHelpers.address);
+  console.log(
+    "Addresses provider on test helpers: ",
+    await testHelpers.ADDRESSES_PROVIDER()
+  );
+  try {
+    console.log(await testHelpers.getAllATokens());
+  } catch (error) {
+    console.log(error);
+  }
+
+  await insertContractAddressInDb(
+    eContractid.AaveProtocolTestHelpers,
+    testHelpers.address
+  );
 
   await evmSnapshot();
 
