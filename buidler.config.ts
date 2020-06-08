@@ -1,9 +1,9 @@
-import { usePlugin, BuidlerConfig } from "@nomiclabs/buidler/config";
+import {usePlugin, BuidlerConfig} from "@nomiclabs/buidler/config";
 import path from "path";
 import fs from "fs";
 // @ts-ignore
-import { accounts } from "./test-wallets.js";
-import { eEthereumNetwork } from "./helpers/types";
+import {accounts} from "./test-wallets.js";
+import {eEthereumNetwork} from "./helpers/types";
 
 usePlugin("@nomiclabs/buidler-ethers");
 usePlugin("buidler-typechain");
@@ -22,7 +22,7 @@ const HARDFORK = "istanbul";
 const INFURA_KEY = "";
 const ETHERSCAN_KEY = "";
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
-const MNEMONICS: { [network: string]: string } = {
+const MNEMONICS: {[network: string]: string} = {
   [eEthereumNetwork.kovan]: "",
   [eEthereumNetwork.ropsten]: "",
   [eEthereumNetwork.main]: "",
@@ -50,7 +50,7 @@ const getCommonNetworkConfig = (
 const config: BuidlerConfig = {
   solc: {
     version: "0.6.8",
-    optimizer: { enabled: true, runs: 200 },
+    optimizer: {enabled: true, runs: 200},
     evmVersion: "istanbul",
   },
   typechain: {
@@ -63,7 +63,7 @@ const config: BuidlerConfig = {
   },
   defaultNetwork: "buidlerevm",
   mocha: {
-    enableTimeouts: false,
+    timeout: 0,
   },
   networks: {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
@@ -78,7 +78,7 @@ const config: BuidlerConfig = {
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       accounts: accounts.map(
-        ({ secretKey, balance }: { secretKey: string; balance: string }) => ({
+        ({secretKey, balance}: {secretKey: string; balance: string}) => ({
           privateKey: secretKey,
           balance,
         })

@@ -15,6 +15,6 @@ export class ProxyFactory {
 const _abi = [
   {
     stateMutability: "payable",
-    type: "receive"
+    type: "fallback"
   }
 ];
