@@ -1,5 +1,6 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
+
 import {ILendingPoolAddressesProvider} from "../interfaces/ILendingPoolAddressesProvider.sol";
 import {LendingPoolCore} from "../lendingpool/LendingPool.sol";
 import {AToken} from "../tokenization/AToken.sol";
@@ -19,7 +20,7 @@ contract AaveProtocolTestHelpers {
     function getAllATokens() external view returns(ATokenData[] memory) {
         LendingPoolCore core = LendingPoolCore(ADDRESSES_PROVIDER.getLendingPoolCore());
         address[] memory reserves = core.getReserves();
-        ATokenData[] memory aTokens;
+        ATokenData[] memory aTokens = new ATokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
             address aTokenAddress = core.getReserveATokenAddress(reserves[i]);
             aTokens[i] = ATokenData({

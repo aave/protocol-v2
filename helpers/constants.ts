@@ -12,6 +12,8 @@ import {
 import BigNumber from "bignumber.js";
 import {getParamPerPool} from "./contracts-helpers";
 
+export const TEST_SNAPSHOT_ID = "0x1";
+
 // ----------------
 // MATH
 // ----------------

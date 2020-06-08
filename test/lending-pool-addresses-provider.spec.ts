@@ -1,14 +1,14 @@
 import {expect} from "chai";
 import {MockProvider} from "ethereum-waffle";
-import {BuidlerRuntimeEnvironment} from "@nomiclabs/buidler/types";
 import {getLendingPoolAddressesProvider} from "../helpers/contracts-helpers";
 import {createRandomAddress, evmRevert} from "../helpers/misc-utils";
+import {TEST_SNAPSHOT_ID} from "../helpers/constants";
 
 describe("LendingPoolAddressesProvider", () => {
   const wallets = new MockProvider().getWallets();
 
   before(async () => {
-    await evmRevert("0x1");
+    await evmRevert(TEST_SNAPSHOT_ID);
   });
 
   it("Test the accessibility of the LendingPoolAddressesProvider", async () => {

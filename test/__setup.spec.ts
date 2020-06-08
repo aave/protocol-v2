@@ -614,16 +614,6 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
   const testHelpers = await deployAaveProtocolTestHelpers(
     addressesProvider.address
   );
-  console.log(testHelpers.address);
-  console.log(
-    "Addresses provider on test helpers: ",
-    await testHelpers.ADDRESSES_PROVIDER()
-  );
-  try {
-    console.log(await testHelpers.getAllATokens());
-  } catch (error) {
-    console.log(error);
-  }
 
   await insertContractAddressInDb(
     eContractid.AaveProtocolTestHelpers,
