@@ -2,7 +2,6 @@
 pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
@@ -13,7 +12,7 @@ import "../interfaces/ILendingRateOracle.sol";
 import "../interfaces/IReserveInterestRateStrategy.sol";
 import "../libraries/WadRayMath.sol";
 import "../tokenization/AToken.sol";
-import "../libraries/EthAddressLib.sol";
+import "../libraries/UniversalERC20.sol";
 
 /**
 * @title LendingPoolCore contract
@@ -29,9 +28,8 @@ contract LendingPoolCore is VersionedInitializable {
     using WadRayMath for uint256;
     using CoreLibrary for CoreLibrary.ReserveData;
     using CoreLibrary for CoreLibrary.UserReserveData;
-    using SafeERC20 for IERC20;
+    using UniversalERC20 for IERC20;
     using Address for address payable;
-
 
     /**
     * @dev DEPRECATED: This event was used in previous LendingPoolCore implementations, and it has been replaced by ReserveDataUpdated()
@@ -50,7 +48,6 @@ contract LendingPoolCore is VersionedInitializable {
         uint256 liquidityIndex,
         uint256 variableBorrowIndex
     );
-
 
     /**
     * @dev Emitted when the state of a reserve is updated
@@ -177,8 +174,6 @@ contract LendingPoolCore is VersionedInitializable {
         uint256 _income,
         uint256 _protocolFee
     ) external onlyLendingPool {
-        transferFlashLoanProtocolFeeInternal(_reserve, _protocolFee);
-
         //compounding the cumulated interest
         reserves[_reserve].updateCumulativeIndexes();
 
@@ -362,7 +357,6 @@ contract LendingPoolCore is VersionedInitializable {
                 _collateralToLiquidate.add(_liquidatedCollateralForFee)
             );
         }
-
     }
 
     /**
@@ -410,109 +404,6 @@ contract LendingPoolCore is VersionedInitializable {
         //only contracts can send ETH to the core
         require(msg.sender.isContract(), "Only contracts can send ether to the Lending pool core");
 
-    }
-
-    /**
-    * @dev transfers to the user a specific amount from the reserve.
-    * @param _reserve the address of the reserve where the transfer is happening
-    * @param _user the address of the user receiving the transfer
-    * @param _amount the amount being transferred
-    **/
-    function transferToUser(address _reserve, address payable _user, uint256 _amount)
-        external
-        onlyLendingPool
-    {
-        if (_reserve != EthAddressLib.ethAddress()) {
-            IERC20(_reserve).safeTransfer(_user, _amount);
-        } else {
-            //solium-disable-next-line
-            (bool result, ) = _user.call{value: _amount, gas: 50000}("");
-            require(result, "Transfer of ETH failed");
-        }
-    }
-
-    /**
-    * @dev transfers the protocol fees to the fees collection address
-    * @param _token the address of the token being transferred
-    * @param _user the address of the user from where the transfer is happening
-    * @param _amount the amount being transferred
-    * @param _destination the fee receiver address
-    **/
-
-    function transferToFeeCollectionAddress(
-        address _token,
-        address _user,
-        uint256 _amount,
-        address _destination
-    ) external payable onlyLendingPool {
-        address payable feeAddress = address(uint160(_destination)); //cast the address to payable
-
-        if (_token != EthAddressLib.ethAddress()) {
-            require(
-                msg.value == 0,
-                "User is sending ETH along with the ERC20 transfer. Check the value attribute of the transaction"
-            );
-            IERC20(_token).safeTransferFrom(_user, feeAddress, _amount);
-        } else {
-            require(msg.value >= _amount, "The amount and the value sent to deposit do not match");
-            //solium-disable-next-line
-            (bool result, ) = feeAddress.call{ value: _amount, gas: 50000}("");
-            require(result, "Transfer of ETH failed");
-        }
-    }
-
-    /**
-    * @dev transfers the fees to the fees collection address in the case of liquidation
-    * @param _token the address of the token being transferred
-    * @param _amount the amount being transferred
-    * @param _destination the fee receiver address
-    **/
-    function liquidateFee(
-        address _token,
-        uint256 _amount,
-        address _destination
-    ) external payable onlyLendingPool {
-        address payable feeAddress = address(uint160(_destination)); //cast the address to payable
-        require(
-            msg.value == 0,
-            "Fee liquidation does not require any transfer of value"
-        );
-
-        if (_token != EthAddressLib.ethAddress()) {
-            IERC20(_token).safeTransfer(feeAddress, _amount);
-        } else {
-            //solium-disable-next-line
-            (bool result, ) = feeAddress.call{ value: _amount, gas: 50000}("");
-            require(result, "Transfer of ETH failed");
-        }
-    }
-
-    /**
-    * @dev transfers an amount from a user to the destination reserve
-    * @param _reserve the address of the reserve where the amount is being transferred
-    * @param _user the address of the user from where the transfer is happening
-    * @param _amount the amount being transferred
-    **/
-    function transferToReserve(address _reserve, address payable _user, uint256 _amount)
-        external
-        payable
-        onlyLendingPool
-    {
-        if (_reserve != EthAddressLib.ethAddress()) {
-            require(msg.value == 0, "User is sending ETH along with the ERC20 transfer.");
-            IERC20(_reserve).safeTransferFrom(_user, address(this), _amount);
-
-        } else {
-            require(msg.value >= _amount, "The amount and the value sent to deposit do not match");
-
-            if (msg.value > _amount) {
-                //send back excess ETH
-                uint256 excessAmount = msg.value.sub(_amount);
-                //solium-disable-next-line
-                (bool result, ) = _user.call{ value: _amount, gas: 50000}("");
-                require(result, "Transfer of ETH failed");
-            }
-        }
     }
 
     /**
@@ -611,29 +502,16 @@ contract LendingPoolCore is VersionedInitializable {
     }
 
     /**
-    * @dev gets the available liquidity in the reserve. The available liquidity is the balance of the core contract
-    * @param _reserve the reserve address
-    * @return the available liquidity
-    **/
-    function getReserveAvailableLiquidity(address _reserve) public view returns (uint256) {
-        uint256 balance = 0;
-
-        if (_reserve == EthAddressLib.ethAddress()) {
-            balance = address(this).balance;
-        } else {
-            balance = IERC20(_reserve).balanceOf(address(this));
-        }
-        return balance;
-    }
-
-    /**
     * @dev gets the total liquidity in the reserve. The total liquidity is the balance of the core contract + total borrows
     * @param _reserve the reserve address
     * @return the total liquidity
     **/
     function getReserveTotalLiquidity(address _reserve) public view returns (uint256) {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-        return getReserveAvailableLiquidity(_reserve).add(reserve.getTotalBorrows());
+
+        return IERC20(_reserve)
+            .universalBalanceOf(addressesProvider.getLendingPool())
+            .add(reserve.getTotalBorrows());
     }
 
     /**
@@ -900,8 +778,9 @@ contract LendingPoolCore is VersionedInitializable {
             return 0;
         }
 
-        uint256 availableLiquidity = getReserveAvailableLiquidity(_reserve);
-
+        uint256 availableLiquidity = IERC20(_reserve).universalBalanceOf(
+            addressesProvider.getLendingPool()
+        );
         return totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
     }
 
@@ -1443,7 +1322,6 @@ contract LendingPoolCore is VersionedInitializable {
 
         //solium-disable-next-line
         user.lastUpdateTimestamp = uint40(block.timestamp);
-
     }
 
     /**
@@ -1731,14 +1609,15 @@ contract LendingPoolCore is VersionedInitializable {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
 
         uint256 currentAvgStableRate = reserve.currentAverageStableBorrowRate;
+        uint256 avialableLiquidity = IERC20(_reserve).universalBalanceOf(addressesProvider.getLendingPool())
+            .add(_liquidityAdded)
+            .sub(_liquidityTaken);
 
         (uint256 newLiquidityRate, uint256 newStableRate, uint256 newVariableRate) = IReserveInterestRateStrategy(
-            reserve
-                .interestRateStrategyAddress
-        )
-            .calculateInterestRates(
+            reserve.interestRateStrategyAddress
+        ).calculateInterestRates(
             _reserve,
-            getReserveAvailableLiquidity(_reserve).add(_liquidityAdded).sub(_liquidityTaken),
+            avialableLiquidity,
             reserve.totalBorrowsStable,
             reserve.totalBorrowsVariable,
             currentAvgStableRate
@@ -1760,24 +1639,6 @@ contract LendingPoolCore is VersionedInitializable {
             reserve.lastLiquidityCumulativeIndex,
             reserve.lastVariableBorrowCumulativeIndex
         );
-    }
-
-    /**
-    * @dev transfers to the protocol fees of a flashloan to the fees collection address
-    * @param _token the address of the token being transferred
-    * @param _amount the amount being transferred
-    **/
-
-    function transferFlashLoanProtocolFeeInternal(address _token, uint256 _amount) internal {
-        address payable receiver = payable(addressesProvider.getTokenDistributor());
-
-        if (_token != EthAddressLib.ethAddress()) {
-            IERC20(_token).safeTransfer(receiver, _amount);
-        } else {
-            //solium-disable-next-line
-            (bool result, ) = receiver.call{ value: _amount }("");
-            require(result, "Transfer to token distributor failed");
-        }
     }
 
     /**

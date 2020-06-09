@@ -2,10 +2,12 @@
 pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 
 import "../interfaces/IPriceOracleGetter.sol";
 import "../interfaces/IChainlinkAggregator.sol";
-import "../libraries/EthAddressLib.sol";
+import "../libraries/UniversalERC20.sol";
 
 /// @title ChainlinkProxyPriceProvider
 /// @author Aave
@@ -15,6 +17,7 @@ import "../libraries/EthAddressLib.sol";
 /// - Owned by the Aave governance system, allowed to add sources for assets, replace them
 ///   and change the fallbackOracle
 contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
+    using UniversalERC20 for IERC20;
 
     event AssetSourceUpdated(address indexed asset, address indexed source);
     event FallbackOracleUpdated(address indexed fallbackOracle);
@@ -68,7 +71,7 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
     /// @param _asset The asset address
     function getAssetPrice(address _asset) public override view returns(uint256) {
         IChainlinkAggregator source = assetsSources[_asset];
-        if (_asset == EthAddressLib.ethAddress()) {
+        if (IERC20(_asset).isETH()) {
             return 1 ether;
         } else {
             // If there is no registered source for the asset, call the fallbackOracle
