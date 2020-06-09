@@ -14,8 +14,8 @@ import {
   getAToken,
   convertToCurrencyDecimals,
   getEthersSigners,
-  getLendingPoolCoreProxy,
-  getLendingPoolProxy,
+  getLendingPoolCore,
+  getLendingPool,
 } from "../helpers/contracts-helpers";
 import {expect} from "chai";
 import {ethers, Wallet, Signer} from "ethers";
@@ -40,8 +40,8 @@ describe("AToken: Transfer", () => {
     deployer = _deployer;
     users = _users;
 
-    _lendingPool = await getLendingPoolProxy();
-    _lendingPoolCore = await getLendingPoolCoreProxy();
+    _lendingPool = await getLendingPool();
+    _lendingPoolCore = await getLendingPoolCore();
 
     const testHelpers = await getAaveProtocolTestHelpers();
 
@@ -72,9 +72,11 @@ describe("AToken: Transfer", () => {
 
     console.log(_lendingPoolCore.address);
 
+    console.time("approve");
     await _dai
       .connect(users[0])
       .approve(_lendingPoolCore.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+    console.timeEnd("approve");
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(
@@ -82,49 +84,49 @@ describe("AToken: Transfer", () => {
       "1000"
     );
 
+    console.time("getaddress");
     await _lendingPool
       .connect(users[0])
       .deposit(_dai.address, amountDAItoDeposit, "0");
+    console.timeEnd("getaddress");
 
-    //   console.log(users[0])
-    //   console.log(await users[0].getAddress())
-    // await _aDai
-    //   .connect(users[0])
-    //   .transfer(await users[1].getAddress(), amountDAItoDeposit);
+    await _aDai
+      .connect(users[0])
+      .transfer(await users[1].getAddress(), amountDAItoDeposit);
 
-    // const fromBalance = await _aDai.balanceOf(await users[0].getAddress());
-    // const toBalance = await _aDai.balanceOf(await users[1].getAddress());
+    const fromBalance = await _aDai.balanceOf(await users[0].getAddress());
+    const toBalance = await _aDai.balanceOf(await users[1].getAddress());
 
-    // expect(fromBalance.toString()).to.be.equal(
-    //   "0",
-    //   "Invalid from balance after transfer"
-    // );
-    // expect(toBalance.toString()).to.be.equal(
-    //   amountDAItoDeposit.toString(),
-    //   "Invalid to balance after transfer"
-    // );
+    expect(fromBalance.toString()).to.be.equal(
+      "0",
+      "Invalid from balance after transfer"
+    );
+    expect(toBalance.toString()).to.be.equal(
+      amountDAItoDeposit.toString(),
+      "Invalid to balance after transfer"
+    );
   });
 
-  //   it('User 1 redirects interest to user 2, transfers 500 DAI back to user 0', async () => {
+  // it('User 1 redirects interest to user 2, transfers 500 DAI back to user 0', async () => {
 
-  //     await _aDAI.redirectInterestStream(users[2], {from: users[1]});
+  //   await _aDai.redirectInterestStream(await users[2].getAddress());
 
-  //     const aDAIRedirected = await convertToCurrencyDecimals(_DAI.address, '1000');
+  //   const aDAIRedirected = await convertToCurrencyDecimals(_DAI.address, '1000');
 
-  //     const aDAItoTransfer = await convertToCurrencyDecimals(_DAI.address, '500');
+  //   const aDAItoTransfer = await convertToCurrencyDecimals(_DAI.address, '500');
 
-  //     const user2RedirectedBalanceBefore = await _aDAI.getRedirectedBalance(users[2])
-  //     expect(user2RedirectedBalanceBefore.toString()).to.be.equal(aDAIRedirected, "Invalid redirected balance for user 2 before transfer")
+  //   const user2RedirectedBalanceBefore = await _aDAI.getRedirectedBalance(users[2])
+  //   expect(user2RedirectedBalanceBefore.toString()).to.be.equal(aDAIRedirected, "Invalid redirected balance for user 2 before transfer")
 
-  //     await _aDAI.transfer(users[0], aDAItoTransfer, {from: users[1]})
+  //   await _aDAI.transfer(users[0], aDAItoTransfer, {from: users[1]})
 
-  //     const user2RedirectedBalanceAfter = await _aDAI.getRedirectedBalance(users[2])
-  //     const user1RedirectionAddress = await _aDAI.getInterestRedirectionAddress(users[1])
+  //   const user2RedirectedBalanceAfter = await _aDAI.getRedirectedBalance(users[2])
+  //   const user1RedirectionAddress = await _aDAI.getInterestRedirectionAddress(users[1])
 
-  //     expect(user2RedirectedBalanceAfter.toString()).to.be.equal(aDAItoTransfer, "Invalid redirected balance for user 2 after transfer")
-  //     expect(user1RedirectionAddress.toString()).to.be.equal(users[2], "Invalid redirection address for user 1")
+  //   expect(user2RedirectedBalanceAfter.toString()).to.be.equal(aDAItoTransfer, "Invalid redirected balance for user 2 after transfer")
+  //   expect(user1RedirectionAddress.toString()).to.be.equal(users[2], "Invalid redirection address for user 1")
 
-  //   });
+  // });
 
   //   it('User 0 transfers back to user 1', async () => {
 

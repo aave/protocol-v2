@@ -311,7 +311,7 @@ export const getLendingPoolConfiguratorProxy = async (
   );
 };
 
-export const getLendingPoolProxy = async (address?: tEthereumAddress) => {
+export const getLendingPool = async (address?: tEthereumAddress) => {
   return await getContract<LendingPool>(
     eContractid.LendingPool,
     address ||
@@ -323,7 +323,7 @@ export const getLendingPoolProxy = async (address?: tEthereumAddress) => {
   );
 };
 
-export const getLendingPoolCoreProxy = async (address?: tEthereumAddress) => {
+export const getLendingPoolCore = async (address?: tEthereumAddress) => {
   const CoreLibraryFactory = await BRE.ethers.getContractFactory(
     eContractid.CoreLibrary
   );

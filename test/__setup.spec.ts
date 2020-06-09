@@ -12,7 +12,7 @@ import {
   deployLendingPool,
   deployPriceOracle,
   getLendingPoolConfiguratorProxy,
-  getLendingPoolCoreProxy,
+  getLendingPoolCore,
   deployMockAggregator,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
@@ -27,7 +27,7 @@ import {
   getFeeProvider,
   getLendingPoolParametersProvider,
   getLendingPoolDataProvider,
-  getLendingPoolProxy,
+  getLendingPool,
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
 } from "../helpers/contracts-helpers";
@@ -396,7 +396,7 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
   await waitForTx(
     await addressesProvider.setLendingPoolCoreImpl(lendingPoolCoreImpl.address)
   );
-  const lendingPoolCoreProxy = await getLendingPoolCoreProxy(
+  const lendingPoolCoreProxy = await getLendingPoolCore(
     await addressesProvider.getLendingPoolCore()
   );
   await insertContractAddressInDb(
@@ -436,7 +436,7 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
   await waitForTx(
     await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address)
   );
-  const lendingPoolProxy = await getLendingPoolProxy(
+  const lendingPoolProxy = await getLendingPool(
     await addressesProvider.getLendingPool()
   );
   await insertContractAddressInDb(

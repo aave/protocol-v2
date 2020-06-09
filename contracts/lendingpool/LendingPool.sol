@@ -300,7 +300,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     function deposit(address _reserve, uint256 _amount, uint16 _referralCode)
         external
         payable
-        nonReentrant
         onlyActiveReserve(_reserve)
         onlyUnfreezedReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
@@ -336,7 +335,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         uint256 _aTokenBalanceAfterRedeem
     )
         external
-        nonReentrant
         onlyOverlyingAToken(_reserve)
         onlyActiveReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
@@ -393,7 +391,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         uint16 _referralCode
     )
         external
-        nonReentrant
         onlyActiveReserve(_reserve)
         onlyUnfreezedReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
@@ -534,7 +531,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     function repay(address _reserve, uint256 _amount, address payable _onBehalfOf)
         external
         payable
-        nonReentrant
         onlyActiveReserve(_reserve)
         onlyAmountGreaterThanZero(_amount)
     {
@@ -648,7 +644,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     **/
     function swapBorrowRateMode(address _reserve)
         external
-        nonReentrant
         onlyActiveReserve(_reserve)
         onlyUnfreezedReserve(_reserve)
     {
@@ -709,7 +704,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     **/
     function rebalanceStableBorrowRate(address _reserve, address _user)
         external
-        nonReentrant
         onlyActiveReserve(_reserve)
     {
         (, uint256 compoundedBalance, uint256 borrowBalanceIncrease) = core.getUserBorrowBalances(
@@ -772,7 +766,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     **/
     function setUserUseReserveAsCollateral(address _reserve, bool _useAsCollateral)
         external
-        nonReentrant
         onlyActiveReserve(_reserve)
         onlyUnfreezedReserve(_reserve)
     {
@@ -809,7 +802,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         address _user,
         uint256 _purchaseAmount,
         bool _receiveAToken
-    ) external payable nonReentrant onlyActiveReserve(_reserve) onlyActiveReserve(_collateral) {
+    ) external payable onlyActiveReserve(_reserve) onlyActiveReserve(_collateral) {
         address liquidationManager = addressesProvider.getLendingPoolLiquidationManager();
 
         //solium-disable-next-line
@@ -843,7 +836,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     **/
     function flashLoan(address _receiver, address _reserve, uint256 _amount, bytes memory _params)
         public
-        nonReentrant
         onlyActiveReserve(_reserve)
         onlyAmountGreaterThanZero(_amount) // TODO: remove
     {
