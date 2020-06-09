@@ -26,10 +26,10 @@ describe("AToken: Transfer", () => {
   let wallets: Signer[];
   let deployer: Signer;
   let users: Signer[];
-  let _aDai = {} as AToken;
-  let _dai = {} as MintableErc20;
-  let _lendingPool = {} as LendingPool;
-  let _lendingPoolCore = {} as LendingPoolCore;
+  let _aDai: AToken;
+  let _dai: MintableErc20;
+  let _lendingPool: LendingPool;
+  let _lendingPoolCore: LendingPoolCore;
   const NOT_LENDING_POOL_MSG =
     "The caller of this function must be a lending pool";
 
