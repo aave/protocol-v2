@@ -15,6 +15,8 @@ interface AaveProtocolTestHelpersInterface extends Interface {
     ADDRESSES_PROVIDER: TypedFunctionDescription<{ encode([]: []): string }>;
 
     getAllATokens: TypedFunctionDescription<{ encode([]: []): string }>;
+
+    getAllReservesTokens: TypedFunctionDescription<{ encode([]: []): string }>;
   };
 
   events: {};
@@ -45,14 +47,22 @@ export class AaveProtocolTestHelpers extends Contract {
     ADDRESSES_PROVIDER(): Promise<string>;
 
     getAllATokens(): Promise<
-      { symbol: string; aTokenAddress: string; 0: string; 1: string }[]
+      { symbol: string; tokenAddress: string; 0: string; 1: string }[]
+    >;
+
+    getAllReservesTokens(): Promise<
+      { symbol: string; tokenAddress: string; 0: string; 1: string }[]
     >;
   };
 
   ADDRESSES_PROVIDER(): Promise<string>;
 
   getAllATokens(): Promise<
-    { symbol: string; aTokenAddress: string; 0: string; 1: string }[]
+    { symbol: string; tokenAddress: string; 0: string; 1: string }[]
+  >;
+
+  getAllReservesTokens(): Promise<
+    { symbol: string; tokenAddress: string; 0: string; 1: string }[]
   >;
 
   filters: {};
@@ -61,5 +71,7 @@ export class AaveProtocolTestHelpers extends Contract {
     ADDRESSES_PROVIDER(): Promise<BigNumber>;
 
     getAllATokens(): Promise<BigNumber>;
+
+    getAllReservesTokens(): Promise<BigNumber>;
   };
 }

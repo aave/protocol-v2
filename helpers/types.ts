@@ -39,6 +39,7 @@ export enum eContractid {
   WalletBalanceProvider = "WalletBalanceProvider",
   AToken = "AToken",
   AaveProtocolTestHelpers = "AaveProtocolTestHelpers",
+  IERC20Detailed = "IERC20Detailed"
 }
 
 export type tEthereumAddress = string;

@@ -35,6 +35,9 @@ import {MockFlashLoanReceiver} from "../types/MockFlashLoanReceiver";
 import {WalletBalanceProvider} from "../types/WalletBalanceProvider";
 import {AToken} from "../types/AToken";
 import {AaveProtocolTestHelpers} from "../types/AaveProtocolTestHelpers";
+import {MOCK_ETH_ADDRESS} from "./constants";
+import BigNumber from "bignumber.js";
+import {Ierc20Detailed} from "../types/Ierc20Detailed";
 
 export const registerContractInJsonDb = async (
   contractId: string,
@@ -414,6 +417,30 @@ export const getAToken = async (address?: tEthereumAddress) => {
   );
 };
 
+export const getMintableErc20 = async (address?: tEthereumAddress) => {
+  return await getContract<MintableErc20>(
+    eContractid.MintableERC20,
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.MintableERC20}.${BRE.network.name}`)
+          .value()
+      ).address
+  );
+};
+
+export const getIErc20Detailed = async (address?: tEthereumAddress) => {
+  return await getContract<Ierc20Detailed>(
+    eContractid.IERC20Detailed,
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.IERC20Detailed}.${BRE.network.name}`)
+          .value()
+      ).address
+  );
+};
+
 export const getAaveProtocolTestHelpers = async (
   address?: tEthereumAddress
 ) => {
@@ -481,4 +508,39 @@ export const getParamPerPool = <T>(
     default:
       return proto;
   }
+};
+
+export const convertToCurrencyDecimals = async (
+  tokenAddress: tEthereumAddress,
+  amount: string
+) => {
+  const isEth = tokenAddress === MOCK_ETH_ADDRESS;
+  let decimals = new BigNumber(18);
+
+  if (!isEth) {
+    const token = await getIErc20Detailed(tokenAddress);
+    decimals = new BigNumber(await token.decimals());
+  }
+
+  const currencyUnit = new BigNumber(10).pow(decimals);
+  const amountInCurrencyDecimals = new BigNumber(amount).multipliedBy(
+    currencyUnit
+  );
+  return amountInCurrencyDecimals.toFixed();
+};
+
+export const convertToCurrencyUnits = async (
+  tokenAddress: string,
+  amount: string
+) => {
+  const isEth = tokenAddress === MOCK_ETH_ADDRESS;
+
+  let decimals = new BigNumber(18);
+  if (!isEth) {
+    const token = await getIErc20Detailed(tokenAddress);
+    decimals = new BigNumber(await token.decimals());
+  }
+  const currencyUnit = new BigNumber(10).pow(decimals);
+  const amountInCurrencyUnits = new BigNumber(amount).div(currencyUnit);
+  return amountInCurrencyUnits.toFixed();
 };

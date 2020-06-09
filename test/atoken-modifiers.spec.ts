@@ -20,7 +20,7 @@ describe("AToken: Modifiers", () => {
 
     const aDAIAddress = (await testHelpers.getAllATokens()).find(
       (aToken) => aToken.symbol === "aDAI"
-    )?.aTokenAddress;
+    )?.tokenAddress;
     if (!aDAIAddress) {
       console.log(`atoken-modifiers.spec: aDAI not correctly initialized`);
       process.exit(1);
