@@ -2,6 +2,7 @@
 pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
 
 import "../libraries/CoreLibrary.sol";
@@ -10,6 +11,7 @@ import "../libraries/WadRayMath.sol";
 import "../interfaces/IPriceOracleGetter.sol";
 import "../interfaces/IFeeProvider.sol";
 import "../tokenization/AToken.sol";
+import "../libraries/UniversalERC20.sol";
 
 import "./LendingPoolCore.sol";
 
@@ -22,6 +24,7 @@ import "./LendingPoolCore.sol";
 contract LendingPoolDataProvider is VersionedInitializable {
     using SafeMath for uint256;
     using WadRayMath for uint256;
+    using UniversalERC20 for IERC20;
 
     LendingPoolCore public core;
     LendingPoolAddressesProvider public addressesProvider;
@@ -395,7 +398,7 @@ contract LendingPoolDataProvider is VersionedInitializable {
         )
     {
         totalLiquidity = core.getReserveTotalLiquidity(_reserve);
-        availableLiquidity = core.getReserveAvailableLiquidity(_reserve);
+        availableLiquidity = IERC20(_reserve).universalBalanceOf(addressesProvider.getLendingPool());
         totalBorrowsStable = core.getReserveTotalBorrowsStable(_reserve);
         totalBorrowsVariable = core.getReserveTotalBorrowsVariable(_reserve);
         liquidityRate = core.getReserveCurrentLiquidityRate(_reserve);

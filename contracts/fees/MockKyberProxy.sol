@@ -36,7 +36,7 @@ contract MockKyberProxy {
     ) external payable returns (uint256) {
         require(tokenToBurn.mint(1 ether), "TRADE_WITH_HINT. Reverted mint()");
         if (!_fromToken.isETH()) {
-            _fromToken.universalTransferFrom(msg.sender, address(this), _amount, false);
+            _fromToken.universalTransferFromSenderToThis(_amount, true);
         }
         tokenToBurn.universalTransfer(msg.sender, 1 ether);
         return 1 ether;

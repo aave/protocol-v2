@@ -99,7 +99,7 @@ library UniversalERC20 {
     * @param token underlying asset address
     * @param amount to move
     **/
-    function universalTransferFromSenderToThis(IERC20 token, uint256 amount)
+    function universalTransferFromSenderToThis(IERC20 token, uint256 amount, bool returnExcess)
         internal
     {
         if (amount == 0) {
@@ -107,7 +107,7 @@ library UniversalERC20 {
         }
 
         if (isETH(token)) {
-            if (msg.value > amount) {
+            if (msg.value > amount && returnExcess) {
                 // Return remainder if exist
                 (bool result, ) = msg.sender.call{
                     value: msg.value.sub(amount),
