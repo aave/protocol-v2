@@ -453,6 +453,20 @@ export const getAaveProtocolTestHelpers = async (
   );
 };
 
+export const getInterestRateStrategy = async (address?: tEthereumAddress) => {
+  return await getContract<DefaultReserveInterestRateStrategy>(
+    eContractid.DefaultReserveInterestRateStrategy,
+    address ||
+      (
+        await getDb()
+          .get(
+            `${eContractid.DefaultReserveInterestRateStrategy}.${BRE.network.name}`
+          )
+          .value()
+      ).address
+  );
+};
+
 const linkBytecode = (artifact: Artifact, libraries: any) => {
   let bytecode = artifact.bytecode;
 

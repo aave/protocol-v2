@@ -62,7 +62,7 @@ const config: BuidlerConfig = {
     url: "https://api-kovan.etherscan.io/api",
     apiKey: ETHERSCAN_KEY,
   },
-  defaultNetwork: "buidlerevm",
+  defaultNetwork: "ganache",
   mocha: {
     timeout: 0,
   },

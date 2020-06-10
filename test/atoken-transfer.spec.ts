@@ -19,8 +19,7 @@ import {
   getLendingPool,
 } from "../helpers/contracts-helpers";
 import {expect} from "chai";
-import {Signer} from "ethers";
-import {BigNumber as EthersBigNumber} from "ethers/utils";
+import {Signer, ethers} from "ethers";
 
 describe("AToken: Transfer", () => {
   let deployer: Signer;
@@ -167,13 +166,13 @@ describe("AToken: Transfer", () => {
   });
 
   it("User 0 deposits 1 ETH and user tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)", async () => {
-    // console.time("deposit()");
-    // await _lendingPool
-    //   .connect(users[0])
-    //   .deposit(MOCK_ETH_ADDRESS, oneEther.toFixed(), "0", {
-    //     value: new EthersBigNumber(oneEther.toFixed()),
-    //   });
-    // console.timeEnd("deposit()");
+    console.time("deposit()");
+    await _lendingPool
+      .connect(users[0])
+      .deposit(MOCK_ETH_ADDRESS, ethers.utils.parseEther("1.0"), "0", {
+        value: ethers.utils.parseEther("1.0"),
+      });
+    console.timeEnd("deposit()");
     // await expectRevert(
     //   _lendingPoolInstance.borrow(
     //     ETHEREUM_ADDRESS,
