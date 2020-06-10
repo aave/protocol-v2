@@ -62,7 +62,7 @@ const config: BuidlerConfig = {
     url: "https://api-kovan.etherscan.io/api",
     apiKey: ETHERSCAN_KEY,
   },
-  defaultNetwork: "ganache",
+  defaultNetwork: "dev",
   mocha: {
     timeout: 0,
   },
@@ -85,9 +85,19 @@ const config: BuidlerConfig = {
         })
       ),
     },
-    ganache: {
-      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+    dev: {
       url: "http://localhost:8545",
+      hardfork: "istanbul",
+      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+      gasMultiplier: DEFAULT_GAS_PRICE,
+      chainId: 9999,
+      accounts: {
+        mnemonic:
+          "fox sight canyon orphan hotel grow hedgehog build bless august weather swarm",
+        path: "m/44'/60'/0'/0",
+        initialIndex: 0,
+        count: 20
+      }
     },
   },
 };
