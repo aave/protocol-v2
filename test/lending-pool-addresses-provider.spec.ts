@@ -1,18 +1,14 @@
 import {expect} from "chai";
-import {MockProvider} from "ethereum-waffle";
-import {getLendingPoolAddressesProvider} from "../helpers/contracts-helpers";
-import {createRandomAddress, evmRevert} from "../helpers/misc-utils";
-import {TEST_SNAPSHOT_ID} from "../helpers/constants";
-import { makeSuite } from './helpers/make-suite';
+import {createRandomAddress} from "../helpers/misc-utils";
+import {makeSuite, TestEnv} from "./helpers/make-suite";
 
-makeSuite("LendingPoolAddressesProvider", () => {
-  const wallets = new MockProvider().getWallets();
-
+makeSuite("LendingPoolAddressesProvider", (testEnv: TestEnv) => {
   it("Test the accessibility of the LendingPoolAddressesProvider", async () => {
+    const {addressesProvider, users} = testEnv;
     const mockAddress = createRandomAddress();
     const INVALID_OWNER_REVERT_MSG = "Ownable: caller is not the owner";
-    const addressesProvider = await getLendingPoolAddressesProvider();
-    await addressesProvider.transferOwnership(wallets[1].address);
+
+    await addressesProvider.transferOwnership(users[1].address);
 
     for (const contractFunction of [
       addressesProvider.setFeeProviderImpl,
