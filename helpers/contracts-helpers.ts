@@ -155,9 +155,7 @@ export const deployLendingPoolCore = async () => {
     linkedBytecode
   );
 
-  const lendingPoolCore = await LendingPoolCoreFactory.deploy({
-    gasLimit: 9500000,
-  });
+  const lendingPoolCore = await LendingPoolCoreFactory.deploy();
   return (await lendingPoolCore.deployed()) as LendingPoolCore;
 };
 

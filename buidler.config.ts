@@ -10,13 +10,14 @@ usePlugin("buidler-typechain");
 usePlugin("solidity-coverage");
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("@nomiclabs/buidler-etherscan");
+usePlugin("@nomiclabs/buidler-ganache");
 
 ["misc", "deployments", "migrations"].forEach((folder) => {
   const tasksPath = path.join(__dirname, "tasks", folder);
   fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
 });
 
-const DEFAULT_BLOCK_GAS_LIMIT = 9500000;
+const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = 10;
 const HARDFORK = "istanbul";
 const INFURA_KEY = "";
@@ -83,6 +84,10 @@ const config: BuidlerConfig = {
           balance,
         })
       ),
+    },
+    ganache: {
+      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+      url: "http://localhost:8545",
     },
   },
 };

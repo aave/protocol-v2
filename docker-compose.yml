@@ -8,3 +8,14 @@ services:
     command: npm run run-env
     volumes:
       - ./:/src
+
+  ganache:
+    image: trufflesuite/ganache-cli:next
+    ports:
+      - "8545:8545"
+    command: [
+      "ganache-cli",
+      "--gasLimit", "10000000",
+      "--mnemonic", "frame post antenna before valid claw crunch clap travel buyer inch act",
+      "--hardfork", "istanbul"
+    ]

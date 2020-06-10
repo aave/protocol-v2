@@ -30,10 +30,11 @@ import {
   getLendingPool,
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
+  getEthersSigners,
 } from "../helpers/contracts-helpers";
 import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
 import {evmSnapshot} from "../helpers/misc-utils";
-import {Wallet, ContractTransaction, ethers} from "ethers";
+import {Wallet, ContractTransaction, ethers, Signer} from "ethers";
 import {
   TokenContractId,
   eContractid,
@@ -65,7 +66,7 @@ import {LendingRateOracle} from "../types/LendingRateOracle";
 import {LendingPoolCore} from "../types/LendingPoolCore";
 import {LendingPoolConfigurator} from "../types/LendingPoolConfigurator";
 
-const deployAllMockTokens = async (deployer: Wallet) => {
+const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
@@ -347,9 +348,9 @@ const enableReservesAsCollateral = async (
 
 const waitForTx = async (tx: ContractTransaction) => await tx.wait();
 
-const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
+const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time("setup");
-  const lendingPoolManager = deployer.address;
+  const lendingPoolManager = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
 
@@ -579,7 +580,7 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
   );
 
   const {receivers, percentages} = getFeeDistributionParamsCommon(
-    deployer.address
+    lendingPoolManager
   );
 
   await deployMockOneSplit(tokensAddressesWithoutUsd.LEND);
@@ -599,7 +600,7 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
   await waitForTx(
     await tokenDistributorProxy.initialize(
       tokenDistributorImpl.address,
-      secondaryWallet.address,
+      await secondaryWallet.getAddress(),
       implementationParams
     )
   );
@@ -627,8 +628,7 @@ const buildTestEnv = async (deployer: Wallet, secondaryWallet: Wallet) => {
 
 before(async () => {
   await rawBRE.run("set-bre");
-  const deployer = new ethers.Wallet(accounts[0].secretKey);
-  const secondaryWallet = new ethers.Wallet(accounts[1].secretKey);
+  const [deployer, secondaryWallet] = await getEthersSigners();
   await buildTestEnv(deployer, secondaryWallet);
   console.log("\n***************");
   console.log("Setup and snapshot finished");
