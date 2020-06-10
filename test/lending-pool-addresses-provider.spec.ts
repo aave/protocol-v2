@@ -3,13 +3,10 @@ import {MockProvider} from "ethereum-waffle";
 import {getLendingPoolAddressesProvider} from "../helpers/contracts-helpers";
 import {createRandomAddress, evmRevert} from "../helpers/misc-utils";
 import {TEST_SNAPSHOT_ID} from "../helpers/constants";
+import { makeSuite } from './helpers/make-suite';
 
-describe("LendingPoolAddressesProvider", () => {
+makeSuite("LendingPoolAddressesProvider", () => {
   const wallets = new MockProvider().getWallets();
-
-  before(async () => {
-    await evmRevert(TEST_SNAPSHOT_ID);
-  });
 
   it("Test the accessibility of the LendingPoolAddressesProvider", async () => {
     const mockAddress = createRandomAddress();

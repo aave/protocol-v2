@@ -1,6 +1,4 @@
-import {evmRevert} from "../helpers/misc-utils";
 import {
-  TEST_SNAPSHOT_ID,
   APPROVAL_AMOUNT_LENDING_POOL_CORE,
   MOCK_ETH_ADDRESS,
   AAVE_REFERRAL,
@@ -23,8 +21,11 @@ import {
 import {expect} from "chai";
 import {Signer, ethers} from "ethers";
 import {RateMode} from "../helpers/types";
+import { makeSuite } from './helpers/make-suite';
 
-describe("AToken: Transfer", () => {
+
+
+makeSuite("AToken: Transfer", () => {
   let deployer: Signer;
   let users: Signer[];
   let _aDai: AToken;
@@ -33,8 +34,6 @@ describe("AToken: Transfer", () => {
   let _lendingPoolCore: LendingPoolCore;
 
   before(async () => {
-    await evmRevert(TEST_SNAPSHOT_ID);
-
     const [_deployer, ..._users] = await getEthersSigners();
     deployer = _deployer;
     users = _users;

@@ -33,7 +33,6 @@ import {
   getEthersSigners,
 } from "../helpers/contracts-helpers";
 import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
-import {evmSnapshot} from "../helpers/misc-utils";
 import {Wallet, ContractTransaction, ethers, Signer} from "ethers";
 import {
   TokenContractId,
@@ -620,8 +619,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     eContractid.AaveProtocolTestHelpers,
     testHelpers.address
   );
-
-  await evmSnapshot();
 
   console.timeEnd("setup");
 };

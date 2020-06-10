@@ -7,15 +7,15 @@ import {
 import {evmRevert} from "../helpers/misc-utils";
 import {AToken} from "../types/AToken";
 import {TEST_SNAPSHOT_ID} from "../helpers/constants";
+import { makeSuite } from './helpers/make-suite';
 
-describe("AToken: Modifiers", () => {
+makeSuite("AToken: Modifiers", () => {
   const [deployer, ...restWallets] = new MockProvider().getWallets();
   let _aDAI = {} as AToken;
   const NOT_LENDING_POOL_MSG =
     "The caller of this function must be a lending pool";
 
   before(async () => {
-    await evmRevert(TEST_SNAPSHOT_ID);
     const testHelpers = await getAaveProtocolTestHelpers();
 
     const aDAIAddress = (await testHelpers.getAllATokens()).find(
