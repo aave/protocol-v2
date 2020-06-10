@@ -13,11 +13,9 @@ services:
 
   ganache:
     image: trufflesuite/ganache-cli:latest
-    ports:
-      - "8545:8545"
     command: [
       "ganache-cli",
       "--gasLimit", "10000000",
-      "--mnemonic", "frame post antenna before valid claw crunch clap travel buyer inch act",
+      "--mnemonic", "fox sight canyon orphan hotel grow hedgehog build bless august weather swarm",
       "--hardfork", "istanbul"
     ]

@@ -3,7 +3,9 @@ import {
   TEST_SNAPSHOT_ID,
   APPROVAL_AMOUNT_LENDING_POOL_CORE,
   MOCK_ETH_ADDRESS,
-  oneEther,
+  AAVE_REFERRAL,
+  MAX_UINT_AMOUNT,
+  ZERO_ADDRESS,
 } from "../helpers/constants";
 import {AToken} from "../types/AToken";
 import {MintableErc20} from "../types/MintableErc20";
@@ -20,6 +22,7 @@ import {
 } from "../helpers/contracts-helpers";
 import {expect} from "chai";
 import {Signer, ethers} from "ethers";
+import {RateMode} from "../helpers/types";
 
 describe("AToken: Transfer", () => {
   let deployer: Signer;
@@ -66,11 +69,9 @@ describe("AToken: Transfer", () => {
       .connect(users[0])
       .mint(await convertToCurrencyDecimals(_dai.address, "1000"));
 
-    console.time("approve()");
     await _dai
       .connect(users[0])
       .approve(_lendingPoolCore.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
-    console.timeEnd("approve()");
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(
@@ -78,11 +79,9 @@ describe("AToken: Transfer", () => {
       "1000"
     );
 
-    console.time("deposit()");
     await _lendingPool
       .connect(users[0])
       .deposit(_dai.address, amountDAItoDeposit, "0");
-    console.timeEnd("deposit()");
 
     await _aDai
       .connect(users[0])
@@ -102,11 +101,9 @@ describe("AToken: Transfer", () => {
   });
 
   it("User 1 redirects interest to user 2, transfers 500 DAI back to user 0", async () => {
-    console.time("redirectInterest");
     await _aDai
       .connect(users[1])
       .redirectInterestStream(await users[2].getAddress());
-    console.timeEnd("redirectInterest");
 
     const aDAIRedirected = await convertToCurrencyDecimals(
       _dai.address,
@@ -166,114 +163,137 @@ describe("AToken: Transfer", () => {
   });
 
   it("User 0 deposits 1 ETH and user tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)", async () => {
-    console.time("deposit()");
     await _lendingPool
       .connect(users[0])
       .deposit(MOCK_ETH_ADDRESS, ethers.utils.parseEther("1.0"), "0", {
         value: ethers.utils.parseEther("1.0"),
       });
-    console.timeEnd("deposit()");
-    // await expectRevert(
-    //   _lendingPoolInstance.borrow(
-    //     ETHEREUM_ADDRESS,
-    //     await convertToCurrencyDecimals(ETHEREUM_ADDRESS, "0.1"),
-    //     RateMode.Stable,
-    //     "0",
-    //     {from: users[1]}
-    //   ),
-    //   "The collateral balance is 0"
-    // );
+    await expect(
+      _lendingPool
+        .connect(users[1])
+        .borrow(
+          MOCK_ETH_ADDRESS,
+          ethers.utils.parseEther("0.1"),
+          RateMode.Stable,
+          AAVE_REFERRAL
+        ),
+      "The collateral balance is 0"
+    ).to.be.revertedWith("The collateral balance is 0");
   });
 
-  //   it('User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)', async () => {
+  it("User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)", async () => {
+    await _lendingPool
+      .connect(users[1])
+      .setUserUseReserveAsCollateral(_dai.address, true);
 
-  //     await _lendingPoolInstance.setUserUseReserveAsCollateral(_DAI.address, true, {from: users[1]})
+    const aDAItoTransfer = await convertToCurrencyDecimals(
+      _dai.address,
+      "1000"
+    );
 
-  //     const aDAItoTransfer = await convertToCurrencyDecimals(_DAI.address, '1000');
+    await _lendingPool
+      .connect(users[1])
+      .borrow(
+        MOCK_ETH_ADDRESS,
+        ethers.utils.parseEther("0.1"),
+        RateMode.Stable,
+        AAVE_REFERRAL
+      );
 
-  //     await _lendingPoolInstance.borrow(ETHEREUM_ADDRESS, await convertToCurrencyDecimals(ETHEREUM_ADDRESS,"0.1"), RateMode.Stable, "0", {from: users[1]})
+    await expect(
+      _aDai
+        .connect(users[1])
+        .transfer(await users[0].getAddress(), aDAItoTransfer),
+      "Transfer cannot be allowed."
+    ).to.be.revertedWith("Transfer cannot be allowed.");
+  });
 
-  //     await expectRevert(_aDAI.transfer(users[0], aDAItoTransfer, {from: users[1]}), "Transfer cannot be allowed.")
-  //   });
+  it("User 0 tries to transfer 0 balance (revert expected)", async () => {
+    await expect(
+      _aDai.connect(users[0]).transfer(await users[1].getAddress(), "0"),
+      "Transferred amount needs to be greater than zero"
+    ).to.be.revertedWith("Transferred amount needs to be greater than zero");
+  });
 
-  //   it('User 0 tries to transfer 0 balance (revert expected)', async () => {
-  //     await expectRevert(_aDAI.transfer(users[1], "0", {from: users[0]}), "Transferred amount needs to be greater than zero")
-  //   });
+  it("User 1 repays the borrow, transfers aDAI back to user 0", async () => {
+    await _lendingPool
+      .connect(users[1])
+      .repay(MOCK_ETH_ADDRESS, MAX_UINT_AMOUNT, await users[1].getAddress(), {
+        value: ethers.utils.parseEther("1"),
+      });
 
-  //   it('User 1 repays the borrow, transfers aDAI back to user 0', async () => {
+    const aDAItoTransfer = await convertToCurrencyDecimals(
+      _aDai.address,
+      "1000"
+    );
 
-  //     await _lendingPoolInstance.repay(ETHEREUM_ADDRESS, MAX_UINT_AMOUNT, users[1], {from: users[1], value: oneEther.toFixed(0)})
+    await _aDai
+      .connect(users[1])
+      .transfer(await users[0].getAddress(), aDAItoTransfer);
 
-  //     const aDAItoTransfer = await convertToCurrencyDecimals(_DAI.address, '1000');
+    const user2RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+      await users[2].getAddress()
+    );
 
-  //     await _aDAI.transfer(users[0], aDAItoTransfer, {from: users[1]})
+    const user1RedirectionAddress = await _aDai.getInterestRedirectionAddress(
+      await users[1].getAddress()
+    );
 
-  //     const user2RedirectedBalanceAfter = await _aDAI.getRedirectedBalance(users[2])
+    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
+      "0",
+      "Invalid redirected balance for user 2 after transfer"
+    );
 
-  //     const user1RedirectionAddress = await _aDAI.getInterestRedirectionAddress(users[1])
+    expect(user1RedirectionAddress.toString()).to.be.equal(
+      ZERO_ADDRESS,
+      "Invalid redirected address for user 1"
+    );
+  });
 
-  //     expect(user2RedirectedBalanceAfter.toString()).to.be.equal("0", "Invalid redirected balance for user 2 after transfer")
+  it("User 0 redirects interest to user 2, transfers 500 aDAI to user 1. User 1 redirects to user 3. User 0 transfers another 100 aDAI", async () => {
+    let aDAItoTransfer = await convertToCurrencyDecimals(_aDai.address, "500");
 
-  //     expect(user1RedirectionAddress.toString()).to.be.equal(NIL_ADDRESS, "Invalid redirected address for user 1")
+    await _aDai
+      .connect(users[0])
+      .redirectInterestStream(await users[2].getAddress());
 
-  //   });
+    await _aDai
+      .connect(users[0])
+      .transfer(await users[1].getAddress(), aDAItoTransfer);
 
-  //   it('User 0 redirects interest to user 2, transfers 500 aDAI to user 1. User 1 redirects to user 3. User 0 transfers another 100 aDAI', async () => {
+    await _aDai
+      .connect(users[1])
+      .redirectInterestStream(await users[3].getAddress());
 
-  //     let aDAItoTransfer = await convertToCurrencyDecimals(_DAI.address, '500');
+    aDAItoTransfer = await convertToCurrencyDecimals(_aDai.address, "100");
 
-  //     await _aDAI.redirectInterestStream(users[2], {from: users[0]})
+    await _aDai
+      .connect(users[0])
+      .transfer(await users[1].getAddress(), aDAItoTransfer);
 
-  //     await _aDAI.transfer(users[1], aDAItoTransfer, {from: users[0]})
+    const user2RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+      await users[2].getAddress()
+    );
+    const user3RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+      await users[3].getAddress()
+    );
 
-  //     await _aDAI.redirectInterestStream(users[3], {from: users[1]})
+    const expectedUser2Redirected = await convertToCurrencyDecimals(
+      _aDai.address,
+      "400"
+    );
+    const expectedUser3Redirected = await convertToCurrencyDecimals(
+      _aDai.address,
+      "600"
+    );
 
-  //     aDAItoTransfer = await convertToCurrencyDecimals(_DAI.address, '100');
-
-  //     await _aDAI.transfer(users[1], aDAItoTransfer, {from: users[0]})
-
-  //     const user2RedirectedBalanceAfter = await _aDAI.getRedirectedBalance(users[2])
-  //     const user3RedirectedBalanceAfter = await _aDAI.getRedirectedBalance(users[3])
-
-  //     const expectedUser2Redirected = await convertToCurrencyDecimals(_DAI.address, "400")
-  //     const expectedUser3Redirected = await convertToCurrencyDecimals(_DAI.address, "600")
-
-  //     expect(user2RedirectedBalanceAfter.toString()).to.be.equal(expectedUser2Redirected, "Invalid redirected balance for user 2 after transfer")
-  //     expect(user3RedirectedBalanceAfter.toString()).to.be.equal(expectedUser3Redirected, "Invalid redirected balance for user 3 after transfer")
-
-  //   });
+    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
+      expectedUser2Redirected,
+      "Invalid redirected balance for user 2 after transfer"
+    );
+    expect(user3RedirectedBalanceAfter.toString()).to.be.equal(
+      expectedUser3Redirected,
+      "Invalid redirected balance for user 3 after transfer"
+    );
+  });
 });
-
-// // contract('AToken: Transfer', async ([deployer, ...users]) => {
-// //   let _testEnvProvider: ITestEnvWithoutInstances;
-// //   let _aDAI: ATokenInstance;
-// //   let _DAI: MintableERC20Instance;
-// //   let _lendingPoolInstance: LendingPoolInstance;
-// //   let _lendingPoolCoreInstance: LendingPoolCoreInstance;
-
-// //   before('Initializing test variables', async () => {
-// //     console.time('setup-test');
-// //     _testEnvProvider = await testEnvProviderWithoutInstances(
-// //       artifacts,
-// //       [deployer, ...users]
-// //     );
-
-// //     const {
-// //       getLendingPoolInstance,
-// //       getLendingPoolCoreInstance,
-// //       getAllAssetsInstances,
-// //       getATokenInstances
-// //     } = _testEnvProvider;
-// //     const instances = await Promise.all([
-// //       getATokenInstances(), getAllAssetsInstances(), getLendingPoolInstance(), getLendingPoolCoreInstance()
-// //     ])
-
-// //     _aDAI = instances[0].aDAI
-// //     _DAI = instances[1].DAI
-// //     _lendingPoolInstance = instances[2];
-// //     _lendingPoolCoreInstance = instances[3]
-
-// //     console.timeEnd('setup-test');
-// //   });
-
-// // });

@@ -10,7 +10,6 @@ usePlugin("buidler-typechain");
 usePlugin("solidity-coverage");
 usePlugin("@nomiclabs/buidler-waffle");
 usePlugin("@nomiclabs/buidler-etherscan");
-usePlugin("@nomiclabs/buidler-ganache");
 
 ["misc", "deployments", "migrations"].forEach((folder) => {
   const tasksPath = path.join(__dirname, "tasks", folder);
@@ -62,7 +61,7 @@ const config: BuidlerConfig = {
     url: "https://api-kovan.etherscan.io/api",
     apiKey: ETHERSCAN_KEY,
   },
-  defaultNetwork: "dev",
+  defaultNetwork: "ganache",
   mocha: {
     timeout: 0,
   },
@@ -85,19 +84,15 @@ const config: BuidlerConfig = {
         })
       ),
     },
-    dev: {
-      url: "http://localhost:8545",
-      hardfork: "istanbul",
-      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-      gasMultiplier: DEFAULT_GAS_PRICE,
-      chainId: 9999,
+    ganache: {
+      url: "http://ganache:8545",
       accounts: {
         mnemonic:
           "fox sight canyon orphan hotel grow hedgehog build bless august weather swarm",
         path: "m/44'/60'/0'/0",
         initialIndex: 0,
-        count: 20
-      }
+        count: 20,
+      },
     },
   },
 };

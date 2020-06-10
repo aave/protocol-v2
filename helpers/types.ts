@@ -39,7 +39,7 @@ export enum eContractid {
   WalletBalanceProvider = "WalletBalanceProvider",
   AToken = "AToken",
   AaveProtocolTestHelpers = "AaveProtocolTestHelpers",
-  IERC20Detailed = "IERC20Detailed"
+  IERC20Detailed = "IERC20Detailed",
 }
 
 export type tEthereumAddress = string;
@@ -199,4 +199,10 @@ export interface iParamsPerPool<T> {
 export interface iBasicDistributionParams {
   receivers: string[];
   percentages: string[];
+}
+
+export enum RateMode {
+  None = "0",
+  Stable = "1",
+  Variable = "2",
 }
