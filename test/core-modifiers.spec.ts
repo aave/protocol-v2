@@ -1,284 +1,258 @@
-// import {ITestEnvWithoutInstances, iAssetsWithoutETH, RateMode} from '../utils/types';
-// import {
-//   LendingPoolCoreInstance,
-//   MintableERC20Instance,
-// } from '../utils/typechain-types/truffle-contracts';
-// import {testEnvProviderWithoutInstances} from '../utils/truffle/dlp-tests-env';
-// import { ETHEREUM_ADDRESS} from '../utils/constants';
+import {expect} from "chai";
+import {TestEnv, makeSuite} from "./helpers/make-suite";
+import {RateMode, ProtocolErrors} from "../helpers/types";
+import {MOCK_ETH_ADDRESS} from "../helpers/constants";
 
-// const expectRevert = require('@openzeppelin/test-helpers').expectRevert;
+makeSuite("LendingPoolCore: Modifiers", (testEnv: TestEnv) => {
+  const {
+    INVALID_CONFIGURATOR_CALLER_MSG,
+    INVALID_POOL_CALLER_MSG,
+  } = ProtocolErrors;
 
-// contract('LendingPoolCore: Modifiers', async ([deployer, ...users]) => {
-//   let _testEnvProvider: ITestEnvWithoutInstances;
-//   let _lendingPoolCoreInstance: LendingPoolCoreInstance;
-//   let _tokenInstances: iAssetsWithoutETH<MintableERC20Instance>;
+  it("Tries invoke updateStateOnDeposit ", async () => {
+    const {dai, deployer, core} = testEnv;
+    await expect(
+      core.updateStateOnDeposit(dai.address, deployer.address, "0", false),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//   before('Initializing tests', async () => {
-//     _testEnvProvider = await testEnvProviderWithoutInstances(artifacts, [deployer, ...users]);
+  it("Tries invoke updateStateOnRedeem", async () => {
+    const {dai, deployer, core} = testEnv;
+    await expect(
+      core.updateStateOnRedeem(dai.address, deployer.address, "0", false),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//     const {getAllAssetsInstances, getLendingPoolCoreInstance} = _testEnvProvider;
-//     const instances = await Promise.all([getLendingPoolCoreInstance(), getAllAssetsInstances()]);
-//     _lendingPoolCoreInstance = instances[0];
-//     _tokenInstances = instances[1];
-//   });
+  it("Tries invoke updateStateOnBorrow", async () => {
+    const {dai, deployer, core} = testEnv;
+    await expect(
+      core.updateStateOnBorrow(
+        dai.address,
+        deployer.address,
+        "0",
+        "0",
+        RateMode.Stable
+      ),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//   it('Tries invoke updateStateOnDeposit ', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke updateStateOnRepay", async () => {
+    const {dai, deployer, core} = testEnv;
+    await expect(
+      core.updateStateOnRepay(
+        dai.address,
+        deployer.address,
+        "0",
+        "0",
+        "0",
+        false
+      ),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.updateStateOnDeposit(daiInstance.address, deployer, '0', false),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke updateStateOnSwapRate", async () => {
+    const {dai, deployer, core} = testEnv;
+    await expect(
+      core.updateStateOnSwapRate(
+        dai.address,
+        deployer.address,
+        "0",
+        "0",
+        "0",
+        RateMode.Stable
+      ),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//   it('Tries invoke updateStateOnRedeem', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke updateStateOnRebalance", async () => {
+    const {dai, deployer, core} = testEnv;
+    await expect(
+      core.updateStateOnRebalance(dai.address, deployer.address, "0"),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.updateStateOnRedeem(daiInstance.address, deployer, '0', false),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke updateStateOnLiquidation", async () => {
+    const {dai, deployer, core} = testEnv;
+    await expect(
+      core.updateStateOnLiquidation(
+        MOCK_ETH_ADDRESS,
+        dai.address,
+        deployer.address,
+        "0",
+        "0",
+        "0",
+        "0",
+        "0",
+        false
+      ),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//   it('Tries invoke updateStateOnBorrow', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke setUserUseReserveAsCollateral", async () => {
+    const {deployer, core} = testEnv;
+    await expect(
+      core.setUserUseReserveAsCollateral(
+        MOCK_ETH_ADDRESS,
+        deployer.address,
+        false
+      ),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.updateStateOnBorrow(
-//         daiInstance.address,
-//         deployer,
-//         '0',
-//         '0',
-//         RateMode.Stable
-//       ),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke transferToUser", async () => {
+    const {deployer, core} = testEnv;
+    await expect(
+      core.transferToUser(MOCK_ETH_ADDRESS, deployer.address, "0"),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//   it('Tries invoke updateStateOnRepay', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke transferToReserve", async () => {
+    const {deployer, core} = testEnv;
+    await expect(
+      core.transferToReserve(MOCK_ETH_ADDRESS, deployer.address, "0"),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.updateStateOnRepay(
-//         daiInstance.address,
-//         deployer,
-//         '0',
-//         '0',
-//         '0',
-//         false
-//       ),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke transferToFeeCollectionAddress", async () => {
+    const {deployer, core} = testEnv;
+    await expect(
+      core.transferToFeeCollectionAddress(
+        MOCK_ETH_ADDRESS,
+        deployer.address,
+        "0",
+        deployer.address
+      ),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//   it('Tries invoke updateStateOnSwapRate', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke liquidateFee", async () => {
+    const {deployer, core} = testEnv;
+    await expect(
+      core.liquidateFee(MOCK_ETH_ADDRESS, "0", deployer.address),
+      INVALID_POOL_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.updateStateOnSwapRate(
-//         daiInstance.address,
-//         deployer,
-//         '0',
-//         '0',
-//         '0',
-//         RateMode.Stable
-//       ),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke initReserve", async () => {
+    const {deployer, core, dai} = testEnv;
+    await expect(
+      core.initReserve(dai.address, dai.address, "18", deployer.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke updateStateOnRebalance', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke refreshConfiguration", async () => {
+    const {core} = testEnv;
+    await expect(
+      core.refreshConfiguration(),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.updateStateOnRebalance(daiInstance.address, deployer, '0'),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke enableBorrowingOnReserve, disableBorrowingOnReserve", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.enableBorrowingOnReserve(dai.address, false),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+    await expect(
+      core.refreshConfiguration(),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke updateStateOnLiquidation', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke freezeReserve, unfreezeReserve", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.freezeReserve(dai.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+    await expect(
+      core.unfreezeReserve(dai.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.updateStateOnLiquidation(
-//         ETHEREUM_ADDRESS,
-//         daiInstance.address,
-//         deployer,
-//         '0',
-//         '0',
-//         '0',
-//         '0',
-//         '0',
-//         false
-//       ),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke enableReserveAsCollateral, disableReserveAsCollateral", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.enableReserveAsCollateral(dai.address, 0, 0, 0),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+    await expect(
+      core.disableReserveAsCollateral(dai.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke setUserUseReserveAsCollateral', async () => {
-//     await expectRevert(
-//       _lendingPoolCoreInstance.setUserUseReserveAsCollateral(ETHEREUM_ADDRESS, deployer, false),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke enableReserveStableBorrowRate, disableReserveStableBorrowRate", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.enableReserveStableBorrowRate(dai.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+    await expect(
+      core.disableReserveStableBorrowRate(dai.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke transferToUser', async () => {
-//     await expectRevert(
-//       _lendingPoolCoreInstance.transferToUser(ETHEREUM_ADDRESS, deployer, '0'),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke setReserveDecimals", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.setReserveDecimals(dai.address, "0"),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke transferToReserve', async () => {
-//     await expectRevert(
-//       _lendingPoolCoreInstance.transferToReserve(ETHEREUM_ADDRESS, deployer, '0'),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke removeLastAddedReserve", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.removeLastAddedReserve(dai.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke transferToFeeCollectionAddress', async () => {
-//     await expectRevert(
-//       _lendingPoolCoreInstance.transferToFeeCollectionAddress(
-//         ETHEREUM_ADDRESS,
-//         deployer,
-//         '0',
-//         deployer
-//       ),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke setReserveBaseLTVasCollateral", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.setReserveBaseLTVasCollateral(dai.address, "0"),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke liquidateFee', async () => {
-//     await expectRevert(
-//       _lendingPoolCoreInstance.liquidateFee(ETHEREUM_ADDRESS, '0', deployer),
-//       'The caller must be a lending pool contract'
-//     );
-//   });
+  it("Tries invoke setReserveLiquidationBonus", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.setReserveLiquidationBonus(dai.address, "0"),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//   it('Tries invoke initReserve', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Tries invoke setReserveLiquidationThreshold", async () => {
+    const {core, dai} = testEnv;
+    await expect(
+      core.setReserveLiquidationThreshold(dai.address, "0"),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
 
-//     await expectRevert(
-//       _lendingPoolCoreInstance.initReserve(
-//         daiInstance.address,
-//         daiInstance.address,
-//         '18',
-//         deployer
-//       ),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke refreshConfiguration', async () => {
-//     await expectRevert(
-//       _lendingPoolCoreInstance.refreshConfiguration(),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke enableBorrowingOnReserve, disableBorrowingOnReserve', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.enableBorrowingOnReserve(daiInstance.address, false),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//     await expectRevert(
-//       _lendingPoolCoreInstance.refreshConfiguration(),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke freezeReserve, unfreezeReserve', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.freezeReserve(daiInstance.address),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//     await expectRevert(
-//       _lendingPoolCoreInstance.unfreezeReserve(daiInstance.address),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke enableReserveAsCollateral, disableReserveAsCollateral', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.enableReserveAsCollateral(daiInstance.address, 0, 0, 0),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//     await expectRevert(
-//       _lendingPoolCoreInstance.disableReserveAsCollateral(daiInstance.address),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke enableReserveStableBorrowRate, disableReserveStableBorrowRate', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.enableReserveStableBorrowRate(daiInstance.address),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//     await expectRevert(
-//       _lendingPoolCoreInstance.disableReserveStableBorrowRate(daiInstance.address),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke setReserveDecimals', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.setReserveDecimals(daiInstance.address, '0'),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke removeLastAddedReserve', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.removeLastAddedReserve(daiInstance.address),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke setReserveBaseLTVasCollateral', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.setReserveBaseLTVasCollateral(daiInstance.address, '0'),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke setReserveLiquidationBonus', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.setReserveLiquidationBonus(daiInstance.address, '0'),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke setReserveLiquidationThreshold', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.setReserveLiquidationThreshold(daiInstance.address, '0'),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-
-//   it('Tries invoke setReserveInterestRateStrategyAddress', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
-
-//     await expectRevert(
-//       _lendingPoolCoreInstance.setReserveInterestRateStrategyAddress(daiInstance.address, deployer),
-//       'The caller must be a lending pool configurator contract'
-//     );
-//   });
-// });
+  it("Tries invoke setReserveInterestRateStrategyAddress", async () => {
+    const {core, deployer, dai} = testEnv;
+    await expect(
+      core.setReserveInterestRateStrategyAddress(dai.address, deployer.address),
+      INVALID_CONFIGURATOR_CALLER_MSG
+    ).to.be.revertedWith(INVALID_CONFIGURATOR_CALLER_MSG);
+  });
+});

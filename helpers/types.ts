@@ -42,6 +42,21 @@ export enum eContractid {
   IERC20Detailed = "IERC20Detailed",
 }
 
+export enum ProtocolErrors {
+  INVALID_CONFIGURATOR_CALLER_MSG = "The caller must be a lending pool configurator contract",
+  INVALID_POOL_CALLER_MSG = "The caller must be a lending pool contract",
+  INVALID_POOL_CALLER_MSG_1 = "The caller of this function must be a lending pool",
+  INVALID_POOL_MANAGER_CALLER_MSG = "The caller must be a lending pool manager",
+  INVALID_FROM_BALANCE_AFTER_TRANSFER = "Invalid from balance after transfer",
+  INVALID_TO_BALANCE_AFTER_TRANSFER = "Invalid from balance after transfer",
+  INVALID_OWNER_REVERT_MSG = "Ownable: caller is not the owner",
+  INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER = "Invalid redirected balance before transfer",
+  INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER = "Invalid redirected balance after transfer",
+  INVALID_REDIRECTION_ADDRESS = "Invalid redirection address",
+  TRANSFERRED_AMOUNT_GT_ZERO = "Transferred amount needs to be greater than zero",
+  ZERO_COLLATERAL = "The collateral balance is 0",
+}
+
 export type tEthereumAddress = string;
 export type tStringTokenBigUnits = string; // 1 ETH, or 10e6 USDC or 10e18 DAI
 export type tBigNumberTokenBigUnits = BigNumber;

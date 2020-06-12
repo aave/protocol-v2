@@ -8,10 +8,20 @@ import {
 import {convertToCurrencyDecimals} from "../helpers/contracts-helpers";
 import {expect} from "chai";
 import {ethers} from "ethers";
-import {RateMode} from "../helpers/types";
+import {RateMode, ProtocolErrors} from "../helpers/types";
 import {makeSuite, TestEnv} from "./helpers/make-suite";
 
 makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
+  const {
+    INVALID_FROM_BALANCE_AFTER_TRANSFER,
+    INVALID_TO_BALANCE_AFTER_TRANSFER,
+    INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER,
+    INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER,
+    INVALID_REDIRECTION_ADDRESS,
+    ZERO_COLLATERAL,
+    TRANSFERRED_AMOUNT_GT_ZERO,
+  } = ProtocolErrors;
+
   it("User 0 deposits 1000 DAI, transfers to user 1", async () => {
     const {users, pool, core, dai, aDai} = testEnv;
 
@@ -42,11 +52,11 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
 
     expect(fromBalance.toString()).to.be.equal(
       "0",
-      "Invalid from balance after transfer"
+      INVALID_FROM_BALANCE_AFTER_TRANSFER
     );
     expect(toBalance.toString()).to.be.equal(
       amountDAItoDeposit.toString(),
-      "Invalid to balance after transfer"
+      INVALID_TO_BALANCE_AFTER_TRANSFER
     );
   });
 
@@ -65,7 +75,7 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
     );
     expect(user2RedirectedBalanceBefore.toString()).to.be.equal(
       aDAIRedirected,
-      "Invalid redirected balance for user 2 before transfer"
+      INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER
     );
 
     await aDai
@@ -81,11 +91,11 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
 
     expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
       aDAItoTransfer,
-      "Invalid redirected balance for user 2 after transfer"
+      INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER
     );
     expect(user1RedirectionAddress.toString()).to.be.equal(
       users[2].address,
-      "Invalid redirection address for user 1"
+      INVALID_REDIRECTION_ADDRESS
     );
   });
 
@@ -105,7 +115,7 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
 
     expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
       user1BalanceAfter.toString(),
-      "Invalid redirected balance for user 2 after transfer"
+      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
     );
   });
 
@@ -126,8 +136,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
           RateMode.Stable,
           AAVE_REFERRAL
         ),
-      "The collateral balance is 0"
-    ).to.be.revertedWith("The collateral balance is 0");
+      ZERO_COLLATERAL
+    ).to.be.revertedWith(ZERO_COLLATERAL);
   });
 
   it("User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)", async () => {
@@ -157,8 +167,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
     const {users, pool, aDai, dai} = testEnv;
     await expect(
       aDai.connect(users[0].signer).transfer(users[1].address, "0"),
-      "Transferred amount needs to be greater than zero"
-    ).to.be.revertedWith("Transferred amount needs to be greater than zero");
+      TRANSFERRED_AMOUNT_GT_ZERO
+    ).to.be.revertedWith(TRANSFERRED_AMOUNT_GT_ZERO);
   });
 
   it("User 1 repays the borrow, transfers aDAI back to user 0", async () => {
@@ -188,12 +198,12 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
 
     expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
       "0",
-      "Invalid redirected balance for user 2 after transfer"
+      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
     );
 
     expect(user1RedirectionAddress.toString()).to.be.equal(
       ZERO_ADDRESS,
-      "Invalid redirected address for user 1"
+      INVALID_REDIRECTION_ADDRESS
     );
   });
 
@@ -238,11 +248,11 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
 
     expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
       expectedUser2Redirected,
-      "Invalid redirected balance for user 2 after transfer"
+      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
     );
     expect(user3RedirectedBalanceAfter.toString()).to.be.equal(
       expectedUser3Redirected,
-      "Invalid redirected balance for user 3 after transfer"
+      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
     );
   });
 });

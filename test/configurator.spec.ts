@@ -5,10 +5,13 @@ import {
   APPROVAL_AMOUNT_LENDING_POOL_CORE,
 } from "../helpers/constants";
 import {convertToCurrencyDecimals} from "../helpers/contracts-helpers";
+import {ProtocolErrors} from "../helpers/types";
 
 const {expect} = require("chai");
 
-makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
+makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
+  const {INVALID_POOL_MANAGER_CALLER_MSG} = ProtocolErrors;
+
   it("Deactivates the ETH reserve", async () => {
     const {configurator, core} = testEnv;
     await configurator.deactivateReserve(MOCK_ETH_ADDRESS);
@@ -28,16 +31,16 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
     const {configurator, users} = testEnv;
     await expect(
       configurator.connect(users[2].signer).deactivateReserve(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Check the onlyLendingPoolManager on activateReserve ", async () => {
     const {configurator, users} = testEnv;
     await expect(
       configurator.connect(users[2].signer).activateReserve(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Freezes the ETH reserve", async () => {
@@ -59,16 +62,16 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
     const {configurator, users} = testEnv;
     await expect(
       configurator.connect(users[2].signer).freezeReserve(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Check the onlyLendingPoolManager on unfreezeReserve ", async () => {
     const {configurator, users} = testEnv;
     await expect(
       configurator.connect(users[2].signer).unfreezeReserve(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Deactivates the ETH reserve for borrowing", async () => {
@@ -95,8 +98,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .disableBorrowingOnReserve(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Check the onlyLendingPoolManager on enableBorrowingOnReserve ", async () => {
@@ -105,8 +108,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .enableBorrowingOnReserve(MOCK_ETH_ADDRESS, true),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Deactivates the ETH reserve as collateral", async () => {
@@ -139,8 +142,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .disableReserveAsCollateral(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Check the onlyLendingPoolManager on enableReserveAsCollateral ", async () => {
@@ -149,8 +152,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .enableReserveAsCollateral(MOCK_ETH_ADDRESS, "75", "80", "105"),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Disable stable borrow rate on the ETH reserve", async () => {
@@ -177,8 +180,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .disableReserveStableBorrowRate(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Check the onlyLendingPoolManager on enableReserveStableBorrowRate", async () => {
@@ -187,8 +190,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .enableReserveStableBorrowRate(MOCK_ETH_ADDRESS),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Changes LTV of the reserve", async () => {
@@ -204,8 +207,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .setReserveBaseLTVasCollateral(MOCK_ETH_ADDRESS, "75"),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Changes liquidation threshold of the reserve", async () => {
@@ -226,8 +229,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .setReserveLiquidationThreshold(MOCK_ETH_ADDRESS, "80"),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Changes liquidation bonus of the reserve", async () => {
@@ -248,8 +251,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .setReserveLiquidationBonus(MOCK_ETH_ADDRESS, "80"),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Check the onlyLendingPoolManager on setReserveDecimals", async () => {
@@ -258,8 +261,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .setReserveDecimals(MOCK_ETH_ADDRESS, "80"),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Removes the last added reserve", async () => {
@@ -284,8 +287,8 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .setReserveLiquidationBonus(MOCK_ETH_ADDRESS, "80"),
-      "The caller must be a lending pool manager"
-    ).to.be.revertedWith("The caller must be a lending pool manager");
+      INVALID_POOL_MANAGER_CALLER_MSG
+    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it("Reverts when trying to disable the DAI reserve with liquidity on it", async () => {
