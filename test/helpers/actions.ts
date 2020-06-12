@@ -1,248 +1,254 @@
-// import {convertToCurrencyDecimals} from '../../utils/misc-utils';
-// import {
-//   LendingPoolInstance,
-//   LendingPoolCoreInstance,
-//   ATokenContract,
-//   ATokenInstance,
-//   ERC20Instance,
-//   ERC20DetailedInstance,
-//   MintableERC20Instance,
-// } from '../../utils/typechain-types/truffle-contracts';
-// import BigNumber from 'bignumber.js';
-// import {getTruffleContractInstance} from '../../utils/truffle/truffle-core-utils';
-// import {ContractId} from '../../utils/types';
-// import {
-//   calcExpectedReserveDataAfterDeposit,
-//   calcExpectedReserveDataAfterRedeem,
-//   calcExpectedUserDataAfterDeposit,
-//   calcExpectedUserDataAfterRedeem,
-//   calcExpectedReserveDataAfterBorrow,
-//   calcExpectedUserDataAfterBorrow,
-//   calcExpectedReserveDataAfterRepay,
-//   calcExpectedUserDataAfterRepay,
-//   calcExpectedUserDataAfterSetUseAsCollateral,
-//   calcExpectedUserDataAfterSwapRateMode,
-//   calcExpectedReserveDataAfterSwapRateMode,
-//   calcExpectedReserveDataAfterStableRateRebalance,
-//   calcExpectedUserDataAfterStableRateRebalance,
-//   calcExpectedUsersDataAfterRedirectInterest,
-// } from '../utils/calculations';
-// import {getReserveAddressFromSymbol, getReserveData, getUserData} from '../utils/helpers';
-// import {UserReserveData, ReserveData} from '../utils/interfaces';
-// import {ONE_YEAR, MAX_UINT_AMOUNT, NIL_ADDRESS} from '../../utils/constants';
-// import {TransactionObject} from 'web3/eth/types';
+import BigNumber from "bignumber.js";
 
-// const {time, expectRevert} = require('@openzeppelin/test-helpers');
+import {
+  calcExpectedReserveDataAfterDeposit,
+  calcExpectedReserveDataAfterRedeem,
+  calcExpectedUserDataAfterDeposit,
+  calcExpectedUserDataAfterRedeem,
+  calcExpectedReserveDataAfterBorrow,
+  calcExpectedUserDataAfterBorrow,
+  calcExpectedReserveDataAfterRepay,
+  calcExpectedUserDataAfterRepay,
+  calcExpectedUserDataAfterSetUseAsCollateral,
+  calcExpectedUserDataAfterSwapRateMode,
+  calcExpectedReserveDataAfterSwapRateMode,
+  calcExpectedReserveDataAfterStableRateRebalance,
+  calcExpectedUserDataAfterStableRateRebalance,
+  calcExpectedUsersDataAfterRedirectInterest,
+} from "./utils/calculations";
+import {
+  getReserveAddressFromSymbol,
+  getReserveData,
+  getUserData,
+} from "./utils/helpers";
 
-// const truffleAssert = require('truffle-assertions');
+import {
+  getMintableErc20,
+  convertToCurrencyDecimals,
+} from "../../helpers/contracts-helpers";
+import {MOCK_ETH_ADDRESS} from "../../helpers/constants";
+import {TestEnv, SignerWithAddress} from "./make-suite";
+import {BRE} from "../../helpers/misc-utils";
 
-// const chai = require('chai');
+import chai from "chai";
+import {ReserveData, UserReserveData} from "./utils/interfaces";
+import {waitForTx} from "../__setup.spec";
+import {ContractReceipt} from "ethers/contract";
+import {ethers} from "ethers";
 
-// const {expect} = chai;
+const {expect} = chai;
 
-// const almostEqualOrEqual = function(
-//   this: any,
-//   expected: ReserveData | UserReserveData,
-//   actual: ReserveData | UserReserveData
-// ) {
-//   const keys = Object.keys(actual);
+const timeLatest = async () => {
+  const block = await BRE.ethers.provider.getBlock("latest");
+  return new BigNumber(block.timestamp);
+};
 
-//   keys.forEach(key => {
-//     if (
-//       key === 'lastUpdateTimestamp' ||
-//       key === 'marketStableRate' ||
-//       key === 'symbol' ||
-//       key === 'aTokenAddress' ||
-//       key === 'initialATokenExchangeRate' ||
-//       key === 'decimals'
-//     ) {
-//       //skipping consistency check on accessory data
-//       return;
-//     }
+const almostEqualOrEqual = function (
+  this: any,
+  expected: ReserveData | UserReserveData,
+  actual: ReserveData | UserReserveData
+) {
+  const keys = Object.keys(actual);
 
-//     this.assert(actual[key] != undefined, `Property ${key} is undefined in the actual data`);
-//     expect(expected[key] != undefined, `Property ${key} is undefined in the expected data`);
+  keys.forEach((key) => {
+    if (
+      key === "lastUpdateTimestamp" ||
+      key === "marketStableRate" ||
+      key === "symbol" ||
+      key === "aTokenAddress" ||
+      key === "initialATokenExchangeRate" ||
+      key === "decimals"
+    ) {
+      // skipping consistency check on accessory data
+      return;
+    }
 
-//     if (actual[key] instanceof BigNumber) {
-//       const actualValue = (<BigNumber>actual[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
-//       const expectedValue = (<BigNumber>expected[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
+    this.assert(
+      actual[key] != undefined,
+      `Property ${key} is undefined in the actual data`
+    );
+    expect(
+      expected[key] != undefined,
+      `Property ${key} is undefined in the expected data`
+    );
 
-//       this.assert(
-//         actualValue.eq(expectedValue) ||
-//           actualValue.plus(1).eq(expectedValue) ||
-//           actualValue.eq(expectedValue.plus(1)) ||
-//           actualValue.plus(2).eq(expectedValue) ||
-//           actualValue.eq(expectedValue.plus(2)) ||
-//           actualValue.plus(3).eq(expectedValue) ||
-//           actualValue.eq(expectedValue.plus(3)),
-//         `expected #{act} to be almost equal or equal #{exp} for property ${key}`,
-//         `expected #{act} to be almost equal or equal #{exp} for property ${key}`,
-//         expectedValue.toFixed(0),
-//         actualValue.toFixed(0)
-//       );
-//     } else {
-//       this.assert(
-//         actual[key] !== null &&
-//           expected[key] !== null &&
-//           actual[key].toString() === expected[key].toString(),
-//         `expected #{act} to be equal #{exp} for property ${key}`,
-//         `expected #{act} to be equal #{exp} for property ${key}`,
-//         expected[key],
-//         actual[key]
-//       );
-//     }
-//   });
-// };
+    if (actual[key] instanceof BigNumber) {
+      const actualValue = (<BigNumber>actual[key]).decimalPlaces(
+        0,
+        BigNumber.ROUND_DOWN
+      );
+      const expectedValue = (<BigNumber>expected[key]).decimalPlaces(
+        0,
+        BigNumber.ROUND_DOWN
+      );
 
-// chai.use(function(chai: any, utils: any) {
-//   chai.Assertion.overwriteMethod('almostEqualOrEqual', function(original: any) {
-//     return function(this: any, expected: ReserveData | UserReserveData) {
-//       const actual = (expected as ReserveData)
-//         ? <ReserveData>this._obj
-//         : <UserReserveData>this._obj;
+      this.assert(
+        actualValue.eq(expectedValue) ||
+          actualValue.plus(1).eq(expectedValue) ||
+          actualValue.eq(expectedValue.plus(1)) ||
+          actualValue.plus(2).eq(expectedValue) ||
+          actualValue.eq(expectedValue.plus(2)) ||
+          actualValue.plus(3).eq(expectedValue) ||
+          actualValue.eq(expectedValue.plus(3)),
+        `expected #{act} to be almost equal or equal #{exp} for property ${key}`,
+        `expected #{act} to be almost equal or equal #{exp} for property ${key}`,
+        expectedValue.toFixed(0),
+        actualValue.toFixed(0)
+      );
+    } else {
+      this.assert(
+        actual[key] !== null &&
+          expected[key] !== null &&
+          actual[key].toString() === expected[key].toString(),
+        `expected #{act} to be equal #{exp} for property ${key}`,
+        `expected #{act} to be equal #{exp} for property ${key}`,
+        expected[key],
+        actual[key]
+      );
+    }
+  });
+};
 
-//       almostEqualOrEqual.apply(this, [expected, actual]);
-//     };
-//   });
-// });
+chai.use(function (chai: any, utils: any) {
+  chai.Assertion.overwriteMethod("almostEqualOrEqual", function (
+    original: any
+  ) {
+    return function (this: any, expected: ReserveData | UserReserveData) {
+      const actual = (expected as ReserveData)
+        ? <ReserveData>this._obj
+        : <UserReserveData>this._obj;
 
-// interface ActionsConfig {
-//   lendingPoolInstance: LendingPoolInstance;
-//   lendingPoolCoreInstance: LendingPoolCoreInstance;
-//   ethereumAddress: string;
-//   artifacts: Truffle.Artifacts;
-//   web3: Web3;
-//   skipIntegrityCheck: boolean;
-// }
+      almostEqualOrEqual.apply(this, [expected, actual]);
+    };
+  });
+});
 
-// export const configuration: ActionsConfig = <ActionsConfig>{};
+interface ActionsConfig {
+  skipIntegrityCheck: boolean;
+}
 
-// export const mint = async (reserveSymbol: string, amount: string, user: string) => {
-//   const {ethereumAddress, artifacts} = configuration;
+export const configuration: ActionsConfig = <ActionsConfig>{};
 
-//   const reserve = await getReserveAddressFromSymbol(reserveSymbol, artifacts);
+export const mint = async (
+  reserveSymbol: string,
+  amount: string,
+  user: SignerWithAddress
+) => {
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
-//   if (ethereumAddress === reserve.toLowerCase()) {
-//     throw 'Cannot mint ethereum. Mint action is most likely not needed in this story';
-//   }
+  if (MOCK_ETH_ADDRESS.toLowerCase() === reserve.toLowerCase()) {
+    throw "Cannot mint ethereum. Mint action is most likely not needed in this story";
+  }
 
-//   const tokenInstance: MintableERC20Instance = await getTruffleContractInstance(
-//     artifacts,
-//     ContractId.MintableERC20,
-//     reserve
-//   );
+  const token = await getMintableErc20(reserve);
 
-//   const tokensToMint = await convertToCurrencyDecimals(reserve, amount);
+  await waitForTx(
+    await token
+      .connect(user.signer)
+      .mint(await convertToCurrencyDecimals(reserve, amount))
+  );
+};
 
-//   const txOptions: any = {
-//     from: user,
-//   };
-//   await tokenInstance.mint(tokensToMint, txOptions);
-// };
+export const approve = async (
+  reserveSymbol: string,
+  user: SignerWithAddress,
+  testEnv: TestEnv
+) => {
+  const {core} = testEnv;
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
-// export const approve = async (reserveSymbol: string, user: string) => {
-//   const {ethereumAddress, artifacts} = configuration;
+  if (MOCK_ETH_ADDRESS.toLowerCase() === reserve.toLowerCase()) {
+    throw "Cannot mint ethereum. Mint action is most likely not needed in this story";
+  }
 
-//   const reserve = await getReserveAddressFromSymbol(reserveSymbol, artifacts);
+  const token = await getMintableErc20(reserve);
 
-//   if (ethereumAddress === reserve) {
-//     throw 'Cannot mint ethereum. Mint action is most likely not needed in this story';
-//   }
+  await token
+    .connect(user.signer)
+    .approve(core.address, "100000000000000000000000000000");
+};
 
-//   const tokenInstance: ERC20Instance = await getTruffleContractInstance(
-//     artifacts,
-//     ContractId.ERC20,
-//     reserve
-//   );
+export const deposit = async (
+  reserveSymbol: string,
+  amount: string,
+  user: SignerWithAddress,
+  sendValue: string,
+  expectedResult: string,
+  testEnv: TestEnv,
+  revertMessage?: string
+) => {
+  const {pool} = testEnv;
 
-//   const txOptions: any = {
-//     from: user,
-//   };
-//   await tokenInstance.approve(
-//     configuration.lendingPoolCoreInstance.address,
-//     '100000000000000000000000000000',
-//     txOptions
-//   );
-// };
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
-// export const deposit = async (
-//   reserveSymbol: string,
-//   amount: string,
-//   user: string,
-//   sendValue: string,
-//   expectedResult: string,
-//   revertMessage?: string
-// ) => {
-//   const {ethereumAddress, lendingPoolInstance, artifacts} = configuration;
+  const amountToDeposit = await convertToCurrencyDecimals(reserve, amount);
 
-//   const reserve = await getReserveAddressFromSymbol(reserveSymbol, artifacts);
+  const txOptions: any = {};
 
+  const {
+    reserveData: reserveDataBefore,
+    userData: userDataBefore,
+  } = await getContractsData(reserve, user.address, testEnv);
 
-//   const amountToDeposit = await convertToCurrencyDecimals(reserve, amount);
+  if (MOCK_ETH_ADDRESS === reserve) {
+    if (sendValue) {
+      const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
+      txOptions.value = valueToSend;
+    } else {
+      txOptions.value = amountToDeposit;
+    }
+  }
+  if (expectedResult === "success") {
+    const txResult = await waitForTx(
+      await await pool
+        .connect(user.signer)
+        .deposit(reserve, amountToDeposit, "0", txOptions)
+    );
 
-//   const txOptions: any = {
-//     from: user,
-//   };
+    const {
+      reserveData: reserveDataAfter,
+      userData: userDataAfter,
+      timestamp,
+    } = await getContractsData(reserve, user.address, testEnv);
 
-//   const {reserveData: reserveDataBefore, userData: userDataBefore} = await getContractsData(
-//     reserve,
-//     user
-//   );
+    const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
- 
-//   if (ethereumAddress === reserve) {
-//     if (sendValue) {
-//       const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
-//       txOptions.value = valueToSend;
-//     } else {
-//       txOptions.value = amountToDeposit;
-//     }
-//   }
-//   if (expectedResult === 'success') {
-//     const txResult = await lendingPoolInstance.deposit(reserve, amountToDeposit, '0', txOptions);
+    const expectedReserveData = calcExpectedReserveDataAfterDeposit(
+      amountToDeposit.toString(),
+      reserveDataBefore,
+      txTimestamp
+    );
 
-//     const {
-//       reserveData: reserveDataAfter,
-//       userData: userDataAfter,
-//       timestamp,
-//     } = await getContractsData(reserve, user);
+    const expectedUserReserveData = calcExpectedUserDataAfterDeposit(
+      amountToDeposit.toString(),
+      reserveDataBefore,
+      expectedReserveData,
+      userDataBefore,
+      txTimestamp,
+      timestamp,
+      txCost
+    );
 
-//     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
+    expectEqual(reserveDataAfter, expectedReserveData);
+    expectEqual(userDataAfter, expectedUserReserveData);
 
-//     const expectedReserveData = calcExpectedReserveDataAfterDeposit(
-//       amountToDeposit,
-//       reserveDataBefore,
-//       txTimestamp
-//     );
-
-//     const expectedUserReserveData = calcExpectedUserDataAfterDeposit(
-//       amountToDeposit,
-//       reserveDataBefore,
-//       expectedReserveData,
-//       userDataBefore,
-//       txTimestamp,
-//       timestamp,
-//       txCost
-//     );
-
-//     expectEqual(reserveDataAfter, expectedReserveData);
-//     expectEqual(userDataAfter, expectedUserReserveData);
-
-//     truffleAssert.eventEmitted(txResult, 'Deposit', (ev: any) => {
-//       const {_reserve, _user, _amount} = ev;
-//       return (
-//         _reserve === reserve &&
-//         _user === user &&
-//         new BigNumber(_amount).isEqualTo(new BigNumber(amountToDeposit))
-//       );
-//     });
-//   } else if (expectedResult === 'revert') {
-//     await expectRevert(
-//       lendingPoolInstance.deposit(reserve, amountToDeposit, '0', txOptions),
-//       revertMessage
-//     );
-//   }
-// };
+    // truffleAssert.eventEmitted(txResult, "Deposit", (ev: any) => {
+    //   const {_reserve, _user, _amount} = ev;
+    //   return (
+    //     _reserve === reserve &&
+    //     _user === user &&
+    //     new BigNumber(_amount).isEqualTo(new BigNumber(amountToDeposit))
+    //   );
+    // });
+  } else if (expectedResult === "revert") {
+    await expect(
+      pool
+        .connect(user.signer)
+        .deposit(reserve, amountToDeposit, "0", txOptions),
+      revertMessage
+    ).to.be.reverted;
+  }
+};
 
 // export const redeem = async (
 //   reserveSymbol: string,
@@ -266,7 +272,7 @@
 //     amountToRedeem = await convertToCurrencyDecimals(reserve, amount);
 //   } else {
 //     amountToRedeem = MAX_UINT_AMOUNT;
-//   }  
+//   }
 
 //   if (expectedResult === 'success') {
 //     const txResult = await aTokenInstance.redeem(amountToRedeem, txOptions);
@@ -724,13 +730,13 @@
 //       txCost,
 //       txTimestamp
 //     );
- 
+
 //     expectEqual(fromDataAfter, expectedFromData);
 //     expectEqual(toDataAfter, expectedToData);
 
 //     truffleAssert.eventEmitted(txResult, 'InterestStreamRedirected', (ev: any) => {
 //       const {_from, _to} = ev;
-//       return _from === user 
+//       return _from === user
 //       && _to === (to === user ? NIL_ADDRESS : to);
 //     });
 //   } else if (expectedResult === 'revert') {
@@ -809,14 +815,15 @@
 //   }
 // };
 
-// const expectEqual = (
-//   actual: UserReserveData | ReserveData,
-//   expected: UserReserveData | ReserveData
-// ) => {
-//   if (!configuration.skipIntegrityCheck) {
-//     expect(actual).to.be.almostEqualOrEqual(expected);
-//   }
-// };
+const expectEqual = (
+  actual: UserReserveData | ReserveData,
+  expected: UserReserveData | ReserveData
+) => {
+  if (!configuration.skipIntegrityCheck) {
+    // @ts-ignore
+    expect(actual).to.be.almostEqualOrEqual(expected);
+  }
+};
 
 // interface ActionData {
 //   reserve: string;
@@ -854,31 +861,35 @@
 //   };
 // };
 
-// const getTxCostAndTimestamp = async (tx: any) => {
-//   const txTimestamp = new BigNumber((await web3.eth.getBlock(tx.receipt.blockNumber)).timestamp);
+const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
+  if (!tx.blockNumber || !tx.transactionHash || !tx.cumulativeGasUsed) {
+    throw new Error("No tx blocknumber");
+  }
+  const txTimestamp = new BigNumber(
+    (await BRE.ethers.provider.getBlock(tx.blockNumber)).timestamp
+  );
 
-//   const txInfo = await configuration.web3.eth.getTransaction(tx.receipt.transactionHash);
-//   const txCost = new BigNumber(tx.receipt.gasUsed).multipliedBy(txInfo.gasPrice);
+  const txInfo = await BRE.ethers.provider.getTransaction(tx.transactionHash);
+  const txCost = new BigNumber(tx.cumulativeGasUsed.toString()).multipliedBy(
+    txInfo.gasPrice.toString()
+  );
 
-//   return {txCost, txTimestamp};
-// };
+  return {txCost, txTimestamp};
+};
 
-// const getContractsData = async (reserve: string, user: string) => {
-//   const [reserveData, userData, timestamp] = await Promise.all([
-//     getReserveData(configuration.lendingPoolInstance, reserve, artifacts),
-//     getUserData(
-//       configuration.lendingPoolInstance,
-//       configuration.lendingPoolCoreInstance,
-//       reserve,
-//       user,
-//       artifacts
-//     ),
-//     time.latest(),
-//   ]);
+const getContractsData = async (
+  reserve: string,
+  user: string,
+  testEnv: TestEnv
+) => {
+  const {pool, core} = testEnv;
+  const reserveData = await getReserveData(pool, reserve);
+  const userData = await getUserData(pool, core, reserve, user);
+  const timestamp = await timeLatest();
 
-//   return {
-//     reserveData,
-//     userData,
-//     timestamp: new BigNumber(timestamp),
-//   };
-// };
+  return {
+    reserveData,
+    userData,
+    timestamp: new BigNumber(timestamp),
+  };
+};

@@ -1,4 +1,4 @@
-import {Contract, Signer, utils} from "ethers";
+import {Contract, Signer, utils, ethers} from "ethers";
 
 import {getDb, BRE} from "./misc-utils";
 import {
@@ -415,7 +415,7 @@ export const getAToken = async (address?: tEthereumAddress) => {
   );
 };
 
-export const getMintableErc20 = async (address?: tEthereumAddress) => {
+export const getMintableErc20 = async (address: tEthereumAddress) => {
   return await getContract<MintableErc20>(
     eContractid.MintableERC20,
     address ||
@@ -427,7 +427,7 @@ export const getMintableErc20 = async (address?: tEthereumAddress) => {
   );
 };
 
-export const getIErc20Detailed = async (address?: tEthereumAddress) => {
+export const getIErc20Detailed = async (address: tEthereumAddress) => {
   return await getContract<Ierc20Detailed>(
     eContractid.IERC20Detailed,
     address ||
@@ -486,6 +486,18 @@ export const getTokenDistributor = async (address?: tEthereumAddress) => {
       (
         await getDb()
           .get(`${eContractid.TokenDistributor}.${BRE.network.name}`)
+          .value()
+      ).address
+  );
+};
+
+export const getLendingRateOracle = async (address?: tEthereumAddress) => {
+  return await getContract<LendingRateOracle>(
+    eContractid.LendingRateOracle,
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.LendingRateOracle}.${BRE.network.name}`)
           .value()
       ).address
   );
@@ -551,18 +563,14 @@ export const convertToCurrencyDecimals = async (
   amount: string
 ) => {
   const isEth = tokenAddress === MOCK_ETH_ADDRESS;
-  let decimals = new BigNumber(18);
+  let decimals = "18";
 
   if (!isEth) {
     const token = await getIErc20Detailed(tokenAddress);
-    decimals = new BigNumber(await token.decimals());
+    decimals = (await token.decimals()).toString();
   }
 
-  const currencyUnit = new BigNumber(10).pow(decimals);
-  const amountInCurrencyDecimals = new BigNumber(amount).multipliedBy(
-    currencyUnit
-  );
-  return amountInCurrencyDecimals.toFixed();
+  return ethers.utils.parseUnits(amount, decimals);
 };
 
 export const convertToCurrencyUnits = async (

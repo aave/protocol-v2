@@ -1,233 +1,266 @@
-// import {
-//   deposit,
-//   mint,
-//   approve,
-//   redeem,
-//   borrow,
-//   repay,
-//   setUseAsCollateral,
-//   swapBorrowRateMode,
-//   rebalanceStableBorrowRate,
-//   allowInterestRedirectionTo,
-//   redirectInterestStream,
-//   redirectInterestStreamOf,
-// } from '../actions';
-// import {on} from 'cluster';
-// import { RateMode } from '../../utils/types';
+import {TestEnv, SignerWithAddress} from "./make-suite";
+import {mint, approve, deposit} from "./actions";
 
-// export interface Action {
-//   name: string;
-//   args?: any;
-//   expected: string;
-//   revertMessage?: string;
-// }
+export interface Action {
+  name: string;
+  args?: any;
+  expected: string;
+  revertMessage?: string;
+}
 
-// export interface Story {
-//   description: string;
-//   actions: Action[];
-// }
+export interface Story {
+  description: string;
+  actions: Action[];
+}
 
-// export interface Scenario {
-//   title: string;
-//   description: string;
-//   stories: Story[];
-// }
+export interface Scenario {
+  title: string;
+  description: string;
+  stories: Story[];
+}
 
-// export const executeStory = async (story: Story, users: string[]) => {
-//   for (const action of story.actions) {
-//     await executeAction(action, users);
-//   }
-// };
+export const executeStory = async (story: Story, testEnv: TestEnv) => {
+  for (const action of story.actions) {
+    const {users} = testEnv;
+    await executeAction(action, users, testEnv);
+  }
+};
 
-// const executeAction = async (action: Action, users: string[]) => {
-//   const {reserve, user} = action.args;
-//   const {name, expected, revertMessage} = action;
+const executeAction = async (
+  action: Action,
+  users: SignerWithAddress[],
+  testEnv: TestEnv
+) => {
+  const {reserve, user} = action.args;
+  const {name, expected, revertMessage} = action;
 
-//   if (!name || name === '') {
-//     throw 'Action name is missing';
-//   }
-//   if (!reserve || reserve === '') {
-//     throw 'Invalid reserve selected for deposit';
-//   }
-//   if (!user || user === '') {
-//     throw `Invalid user selected to deposit into the ${reserve} reserve`;
-//   }
+  if (!name || name === "") {
+    throw "Action name is missing";
+  }
+  if (!reserve || reserve === "") {
+    throw "Invalid reserve selected for deposit";
+  }
+  if (!user || user === "") {
+    throw `Invalid user selected to deposit into the ${reserve} reserve`;
+  }
 
-//   if (!expected || expected === '') {
-//     throw `An expected resut for action ${name} is required`;
-//   }
+  if (!expected || expected === "") {
+    throw `An expected resut for action ${name} is required`;
+  }
 
-//   const userAddress = users[parseInt(user)];
+  const userAddress = users[parseInt(user)];
 
-//   switch (name) {
-//     case 'mint':
-//       const {amount} = action.args;
+  switch (name) {
+    case "mint":
+      const {amount} = action.args;
 
-//       if (!amount || amount === '') {
-//         throw `Invalid amount of ${reserve} to mint`;
-//       }
+      if (!amount || amount === "") {
+        throw `Invalid amount of ${reserve} to mint`;
+      }
 
-//       await mint(reserve, amount, userAddress);
-//       break;
+      await mint(reserve, amount, userAddress);
+      break;
 
-//     case 'approve':
-//       await approve(reserve, userAddress);
-//       break;
+    case "approve":
+      await approve(reserve, userAddress, testEnv);
+      break;
 
-//     case 'deposit':
-//       {
-//         const {amount, sendValue} = action.args;
+    case "deposit":
+      {
+        const {amount, sendValue} = action.args;
 
-//         if (!amount || amount === '') {
-//           throw `Invalid amount to deposit into the ${reserve} reserve`;
-//         }
+        if (!amount || amount === "") {
+          throw `Invalid amount to deposit into the ${reserve} reserve`;
+        }
 
-//         await deposit(reserve, amount, userAddress, sendValue, expected, revertMessage);
-//       }
-//       break;
+        await deposit(
+          reserve,
+          amount,
+          userAddress,
+          sendValue,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
 
-//     case 'redeem':
-//       {
-//         const {amount} = action.args;
+    // case "redeem":
+    //   {
+    //     const {amount} = action.args;
 
-//         if (!amount || amount === '') {
-//           throw `Invalid amount to redeem from the ${reserve} reserve`;
-//         }
+    //     if (!amount || amount === "") {
+    //       throw `Invalid amount to redeem from the ${reserve} reserve`;
+    //     }
 
-//         await redeem(reserve, amount, userAddress, expected, revertMessage);
-//       }
-//       break;
-//     case 'borrow':
-//       {
-//         const {amount, borrowRateMode, timeTravel} = action.args;
+    //     await redeem(reserve, amount, userAddress, expected, revertMessage);
+    //   }
+    //   break;
+    // case "borrow":
+    //   {
+    //     const {amount, borrowRateMode, timeTravel} = action.args;
 
-//         if (!amount || amount === '') {
-//           throw `Invalid amount to borrow from the ${reserve} reserve`;
-//         }
+    //     if (!amount || amount === "") {
+    //       throw `Invalid amount to borrow from the ${reserve} reserve`;
+    //     }
 
-//         let rateMode: string = RateMode.None;
+    //     let rateMode: string = RateMode.None;
 
-//         if (borrowRateMode === 'none') {
-//           RateMode.None;
-//         } else if (borrowRateMode === 'stable') {
-//           rateMode = RateMode.Stable;
-//         } else if (borrowRateMode === 'variable') {
-//           rateMode = RateMode.Variable;
-//         } else {
-//           //random value, to test improper selection of the parameter
-//           rateMode = '4';
-//         }
+    //     if (borrowRateMode === "none") {
+    //       RateMode.None;
+    //     } else if (borrowRateMode === "stable") {
+    //       rateMode = RateMode.Stable;
+    //     } else if (borrowRateMode === "variable") {
+    //       rateMode = RateMode.Variable;
+    //     } else {
+    //       //random value, to test improper selection of the parameter
+    //       rateMode = "4";
+    //     }
 
-//         await borrow(reserve, amount, rateMode, userAddress, timeTravel, expected, revertMessage);
-//       }
-//       break;
+    //     await borrow(
+    //       reserve,
+    //       amount,
+    //       rateMode,
+    //       userAddress,
+    //       timeTravel,
+    //       expected,
+    //       revertMessage
+    //     );
+    //   }
+    //   break;
 
-//     case 'repay':
-//       {
-//         const {amount, sendValue} = action.args;
-//         let {onBehalfOf} = action.args;
+    // case "repay":
+    //   {
+    //     const {amount, sendValue} = action.args;
+    //     let {onBehalfOf} = action.args;
 
-//         if (!amount || amount === '') {
-//           throw `Invalid amount to repay into the ${reserve} reserve`;
-//         }
+    //     if (!amount || amount === "") {
+    //       throw `Invalid amount to repay into the ${reserve} reserve`;
+    //     }
 
-//         if (!onBehalfOf || onBehalfOf === '') {
-//           console.log(
-//             'WARNING: No onBehalfOf specified for a repay action. Defaulting to the repayer address'
-//           );
-//           onBehalfOf = userAddress;
-//         } else {
-//           onBehalfOf = users[parseInt(onBehalfOf)];
-//         }
+    //     if (!onBehalfOf || onBehalfOf === "") {
+    //       console.log(
+    //         "WARNING: No onBehalfOf specified for a repay action. Defaulting to the repayer address"
+    //       );
+    //       onBehalfOf = userAddress;
+    //     } else {
+    //       onBehalfOf = users[parseInt(onBehalfOf)];
+    //     }
 
-//         await repay(reserve, amount, userAddress, onBehalfOf, sendValue, expected, revertMessage);
-//       }
-//       break;
+    //     await repay(
+    //       reserve,
+    //       amount,
+    //       userAddress,
+    //       onBehalfOf,
+    //       sendValue,
+    //       expected,
+    //       revertMessage
+    //     );
+    //   }
+    //   break;
 
-//     case 'setUseAsCollateral':
-//       {
-//         const {useAsCollateral} = action.args;
+    // case "setUseAsCollateral":
+    //   {
+    //     const {useAsCollateral} = action.args;
 
-//         if (!useAsCollateral || useAsCollateral === '') {
-//           throw `A valid value for useAsCollateral needs to be set when calling setUseReserveAsCollateral on reserve ${reserve}`;
-//         }
-//         await setUseAsCollateral(reserve, userAddress, useAsCollateral, expected, revertMessage);
-//       }
-//       break;
+    //     if (!useAsCollateral || useAsCollateral === "") {
+    //       throw `A valid value for useAsCollateral needs to be set when calling setUseReserveAsCollateral on reserve ${reserve}`;
+    //     }
+    //     await setUseAsCollateral(
+    //       reserve,
+    //       userAddress,
+    //       useAsCollateral,
+    //       expected,
+    //       revertMessage
+    //     );
+    //   }
+    //   break;
 
-//     case 'swapBorrowRateMode':
-//       await swapBorrowRateMode(reserve, userAddress, expected, revertMessage);
-//       break;
+    // case "swapBorrowRateMode":
+    //   await swapBorrowRateMode(reserve, userAddress, expected, revertMessage);
+    //   break;
 
-//     case 'rebalanceStableBorrowRate':
-//       {
-//         const {target} = action.args;
+    // case "rebalanceStableBorrowRate":
+    //   {
+    //     const {target} = action.args;
 
-//         if (!target || target === '') {
-//           throw `A target must be selected when trying to rebalance a stable rate`;
-//         }
-//         const targetAddress = users[parseInt(target)];
+    //     if (!target || target === "") {
+    //       throw `A target must be selected when trying to rebalance a stable rate`;
+    //     }
+    //     const targetAddress = users[parseInt(target)];
 
-//         await rebalanceStableBorrowRate(
-//           reserve,
-//           userAddress,
-//           targetAddress,
-//           expected,
-//           revertMessage
-//         );
-//       }
-//       break;
+    //     await rebalanceStableBorrowRate(
+    //       reserve,
+    //       userAddress,
+    //       targetAddress,
+    //       expected,
+    //       revertMessage
+    //     );
+    //   }
+    //   break;
 
-//     case 'redirectInterestStream':
-//       {
-//         const {to} = action.args;
+    // case "redirectInterestStream":
+    //   {
+    //     const {to} = action.args;
 
-//         if (!to || to === '') {
-//           throw `A target must be selected when trying to redirect the interest`;
-//         }
-//         const toAddress = users[parseInt(to)];
+    //     if (!to || to === "") {
+    //       throw `A target must be selected when trying to redirect the interest`;
+    //     }
+    //     const toAddress = users[parseInt(to)];
 
-//         await redirectInterestStream(reserve, userAddress, toAddress, expected, revertMessage);
-//       }
-//       break;
+    //     await redirectInterestStream(
+    //       reserve,
+    //       userAddress,
+    //       toAddress,
+    //       expected,
+    //       revertMessage
+    //     );
+    //   }
+    //   break;
 
-//     case 'redirectInterestStreamOf':
-//       {
-//         const {from, to} = action.args;
+    // case "redirectInterestStreamOf":
+    //   {
+    //     const {from, to} = action.args;
 
-//         if (!from || from === '') {
-//           throw `A from address must be specified when trying to redirect the interest`;
-//         }
-//         if (!to || to === '') {
-//           throw `A target must be selected when trying to redirect the interest`;
-//         }
-//         const toAddress = users[parseInt(to)];
-//         const fromAddress = users[parseInt(from)];
+    //     if (!from || from === "") {
+    //       throw `A from address must be specified when trying to redirect the interest`;
+    //     }
+    //     if (!to || to === "") {
+    //       throw `A target must be selected when trying to redirect the interest`;
+    //     }
+    //     const toAddress = users[parseInt(to)];
+    //     const fromAddress = users[parseInt(from)];
 
-//         await redirectInterestStreamOf(
-//           reserve,
-//           userAddress,
-//           fromAddress,
-//           toAddress,
-//           expected,
-//           revertMessage
-//         );
-//       }
-//       break;
+    //     await redirectInterestStreamOf(
+    //       reserve,
+    //       userAddress,
+    //       fromAddress,
+    //       toAddress,
+    //       expected,
+    //       revertMessage
+    //     );
+    //   }
+    //   break;
 
-//     case 'allowInterestRedirectionTo':
-//       {
-//         const {to} = action.args;
+    // case "allowInterestRedirectionTo":
+    //   {
+    //     const {to} = action.args;
 
-//         if (!to || to === '') {
-//           throw `A target must be selected when trying to redirect the interest`;
-//         }
-//         const toAddress = users[parseInt(to)];
+    //     if (!to || to === "") {
+    //       throw `A target must be selected when trying to redirect the interest`;
+    //     }
+    //     const toAddress = users[parseInt(to)];
 
-//         await allowInterestRedirectionTo(reserve, userAddress, toAddress, expected, revertMessage);
-//       }
-//       break;
-//     default:
-//       throw `Invalid action requested: ${name}`;
-//   }
-// };
+    //     await allowInterestRedirectionTo(
+    //       reserve,
+    //       userAddress,
+    //       toAddress,
+    //       expected,
+    //       revertMessage
+    //     );
+    //   }
+    //   break;
+    default:
+      throw `Invalid action requested: ${name}`;
+  }
+};

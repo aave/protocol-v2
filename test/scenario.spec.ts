@@ -1,56 +1,36 @@
-// import {ITestEnvWithoutInstances} from '../utils/types';
+import {configuration as actionsConfiguration} from "./helpers/actions";
+import {configuration as calculationsConfiguration} from "./helpers/utils/calculations";
 
-// import {testEnvProviderWithoutInstances} from '../utils/truffle/dlp-tests-env';
-// import {configuration as actionsConfiguration, deposit} from './actions';
-// import {configuration as calculationsConfiguration} from './utils/calculations';
-// import {executeStory} from './engine/scenario-engine';
-// import fs from 'fs';
-// import BigNumber from 'bignumber.js';
-// import {ETHEREUM_ADDRESS} from '../utils/constants';
+import fs from "fs";
+import BigNumber from "bignumber.js";
+import {makeSuite} from "./helpers/make-suite";
+import {MOCK_ETH_ADDRESS, getReservesConfigByPool} from "../helpers/constants";
+import {AavePools, iAavePoolAssets, IReserveParams} from "../helpers/types";
+import {executeStory} from "./helpers/scenario-engine";
 
-// BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
+BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
 
-// const scenarioFolder = './test/scenarios/';
+const scenarioFolder = "./test/helpers/scenarios/";
 
-// fs.readdirSync(scenarioFolder).forEach(file => {
-//   //  if (file !== "interest-redirection-negatives.json"  &&
-//   //      file !== "interest-redirection.json" ) return
+fs.readdirSync(scenarioFolder).forEach((file) => {
+  if (file !== "deposit.json") return;
 
-//   const scenario = require(`./scenarios/${file}`);
+  const scenario = require(`./helpers/scenarios/${file}`);
 
-//   contract(scenario.title, async ([deployer, ...users]) => {
-//     let _testEnvProvider: ITestEnvWithoutInstances;
+  makeSuite(scenario.title, async (testEnv) => {
+    before("Initializing configuration", async () => {
+      actionsConfiguration.skipIntegrityCheck = false; //set this to true to execute solidity-coverage
 
-//     before('Initializing configuration', async () => {
-//       console.time('setup-test');
-//       _testEnvProvider = await testEnvProviderWithoutInstances(artifacts, [deployer, ...users]);
+      calculationsConfiguration.reservesParams = <
+        iAavePoolAssets<IReserveParams>
+      >getReservesConfigByPool(AavePools.proto);
+      calculationsConfiguration.ethereumAddress = MOCK_ETH_ADDRESS;
+    });
 
-//       const {
-//         getWeb3,
-//         getAavePoolReservesParams,
-//         getLendingPoolInstance,
-//         getLendingPoolCoreInstance,
-//       } = _testEnvProvider;
-
-//       const instances = await Promise.all([getLendingPoolInstance(), getLendingPoolCoreInstance()]);
-
-//       actionsConfiguration.lendingPoolInstance = instances[0];
-//       actionsConfiguration.lendingPoolCoreInstance = instances[1];
-//       actionsConfiguration.ethereumAddress = ETHEREUM_ADDRESS;
-//       actionsConfiguration.artifacts = artifacts;
-//       actionsConfiguration.web3 = await getWeb3();
-//       actionsConfiguration.skipIntegrityCheck = false; //set this to true to execute solidity-coverage
-
-//       calculationsConfiguration.reservesParams = await getAavePoolReservesParams();
-//       calculationsConfiguration.web3 = actionsConfiguration.web3;
-//       calculationsConfiguration.ethereumAddress = actionsConfiguration.ethereumAddress;
-//       console.time('setup-test');
-//     });
-
-//     for (const story of scenario.stories) {
-//       it(story.description, async () => {
-//         await executeStory(story, users);
-//       });
-//     }
-//   });
-// });
+    for (const story of scenario.stories) {
+      it(story.description, async () => {
+        await executeStory(story, testEnv);
+      });
+    }
+  });
+});

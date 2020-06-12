@@ -31,6 +31,7 @@ import {
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
   getEthersSigners,
+  registerContractInJsonDb,
 } from "../helpers/contracts-helpers";
 import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
 import {Wallet, ContractTransaction, ethers, Signer} from "ethers";
@@ -58,8 +59,6 @@ import {
   ZERO_ADDRESS,
 } from "../helpers/constants";
 import {PriceOracle} from "../types/PriceOracle";
-// @ts-ignore
-import {accounts} from "../test-wallets.js";
 import {MockAggregator} from "../types/MockAggregator";
 import {LendingRateOracle} from "../types/LendingRateOracle";
 import {LendingPoolCore} from "../types/LendingPoolCore";
@@ -75,6 +74,10 @@ const deployAllMockTokens = async (deployer: Signer) => {
         tokenSymbol,
         18,
       ]);
+      await registerContractInJsonDb(
+        tokenSymbol.toUpperCase(),
+        tokens[tokenSymbol]
+      );
     }
   }
 
@@ -345,7 +348,7 @@ const enableReservesAsCollateral = async (
   }
 };
 
-const waitForTx = async (tx: ContractTransaction) => await tx.wait();
+export const waitForTx = async (tx: ContractTransaction) => await tx.wait();
 
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time("setup");
