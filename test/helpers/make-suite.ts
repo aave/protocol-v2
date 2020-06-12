@@ -9,6 +9,7 @@ import {
   getAaveProtocolTestHelpers,
   getAToken,
   getMintableErc20,
+  getLendingPoolConfiguratorProxy,
 } from "../../helpers/contracts-helpers";
 import {tEthereumAddress} from "../../helpers/types";
 import {LendingPool} from "../../types/LendingPool";
@@ -17,21 +18,28 @@ import {LendingPoolAddressesProvider} from "../../types/LendingPoolAddressesProv
 import {AaveProtocolTestHelpers} from "../../types/AaveProtocolTestHelpers";
 import {MintableErc20} from "../../types/MintableErc20";
 import {AToken} from "../../types/AToken";
+import {LendingPoolConfigurator} from "../../types/LendingPoolConfigurator";
+
+import chai from "chai";
+// @ts-ignore
+import bignumberChai from "chai-bignumber";
+chai.use(bignumberChai());
 
 export interface SignerWithAddress {
   signer: Signer;
   address: tEthereumAddress;
 }
-export type TestEnv = {
+export interface TestEnv {
   deployer: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
   core: LendingPoolCore;
+  configurator: LendingPoolConfigurator;
   addressesProvider: LendingPoolAddressesProvider;
   helpersContract: AaveProtocolTestHelpers;
-  _dai: MintableErc20;
-  _aDai: AToken;
-};
+  dai: MintableErc20;
+  aDai: AToken;
+}
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
   describe(name, () => {
@@ -40,6 +48,11 @@ export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
       users: [] as SignerWithAddress[],
       pool: {} as LendingPool,
       core: {} as LendingPoolCore,
+      configurator: {} as LendingPoolConfigurator,
+      addressesProvider: {} as LendingPoolAddressesProvider,
+      helpersContract: {} as AaveProtocolTestHelpers,
+      dai: {} as MintableErc20,
+      aDai: {} as AToken,
     } as TestEnv;
     before(async () => {
       console.time("makeSuite");
@@ -59,6 +72,7 @@ export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
       testEnv.deployer = deployer;
       testEnv.pool = await getLendingPool();
       testEnv.core = await getLendingPoolCore();
+      testEnv.configurator = await getLendingPoolConfiguratorProxy();
       testEnv.addressesProvider = await getLendingPoolAddressesProvider();
       testEnv.helpersContract = await getAaveProtocolTestHelpers();
       const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
@@ -77,8 +91,8 @@ export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
         process.exit(1);
       }
 
-      testEnv._aDai = await getAToken(aDaiAddress);
-      testEnv._dai = await getMintableErc20(daiAddress);
+      testEnv.aDai = await getAToken(aDaiAddress);
+      testEnv.dai = await getMintableErc20(daiAddress);
       console.timeEnd("makeSuite");
     });
     tests(testEnv);

@@ -13,32 +13,32 @@ import {makeSuite, TestEnv} from "./helpers/make-suite";
 
 makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
   it("User 0 deposits 1000 DAI, transfers to user 1", async () => {
-    const {users, pool, core, _dai, _aDai} = testEnv;
+    const {users, pool, core, dai, aDai} = testEnv;
 
-    await _dai
+    await dai
       .connect(users[0].signer)
-      .mint(await convertToCurrencyDecimals(_dai.address, "1000"));
+      .mint(await convertToCurrencyDecimals(dai.address, "1000"));
 
-    await _dai
+    await dai
       .connect(users[0].signer)
       .approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(
-      _dai.address,
+      dai.address,
       "1000"
     );
 
     await pool
       .connect(users[0].signer)
-      .deposit(_dai.address, amountDAItoDeposit, "0");
+      .deposit(dai.address, amountDAItoDeposit, "0");
 
-    await _aDai
+    await aDai
       .connect(users[0].signer)
       .transfer(users[1].address, amountDAItoDeposit);
 
-    const fromBalance = await _aDai.balanceOf(users[0].address);
-    const toBalance = await _aDai.balanceOf(users[1].address);
+    const fromBalance = await aDai.balanceOf(users[0].address);
+    const toBalance = await aDai.balanceOf(users[1].address);
 
     expect(fromBalance.toString()).to.be.equal(
       "0",
@@ -51,19 +51,16 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
   });
 
   it("User 1 redirects interest to user 2, transfers 500 DAI back to user 0", async () => {
-    const {users, _aDai, _dai} = testEnv;
-    await _aDai
+    const {users, aDai, dai} = testEnv;
+    await aDai
       .connect(users[1].signer)
       .redirectInterestStream(users[2].address);
 
-    const aDAIRedirected = await convertToCurrencyDecimals(
-      _dai.address,
-      "1000"
-    );
+    const aDAIRedirected = await convertToCurrencyDecimals(dai.address, "1000");
 
-    const aDAItoTransfer = await convertToCurrencyDecimals(_dai.address, "500");
+    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, "500");
 
-    const user2RedirectedBalanceBefore = await _aDai.getRedirectedBalance(
+    const user2RedirectedBalanceBefore = await aDai.getRedirectedBalance(
       users[2].address
     );
     expect(user2RedirectedBalanceBefore.toString()).to.be.equal(
@@ -71,14 +68,14 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       "Invalid redirected balance for user 2 before transfer"
     );
 
-    await _aDai
+    await aDai
       .connect(users[1].signer)
       .transfer(users[0].address, aDAItoTransfer);
 
-    const user2RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(
       users[2].address
     );
-    const user1RedirectionAddress = await _aDai.getInterestRedirectionAddress(
+    const user1RedirectionAddress = await aDai.getInterestRedirectionAddress(
       users[1].address
     );
 
@@ -93,18 +90,18 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
   });
 
   it("User 0 transfers back to user 1", async () => {
-    const {users, _aDai, _dai} = testEnv;
-    const aDAItoTransfer = await convertToCurrencyDecimals(_dai.address, "500");
+    const {users, aDai, dai} = testEnv;
+    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, "500");
 
-    await _aDai
+    await aDai
       .connect(users[0].signer)
       .transfer(users[1].address, aDAItoTransfer);
 
-    const user2RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(
       users[2].address
     );
 
-    const user1BalanceAfter = await _aDai.balanceOf(users[1].address);
+    const user1BalanceAfter = await aDai.balanceOf(users[1].address);
 
     expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
       user1BalanceAfter.toString(),
@@ -134,15 +131,12 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
   });
 
   it("User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)", async () => {
-    const {users, pool, _aDai, _dai} = testEnv;
+    const {users, pool, aDai, dai} = testEnv;
     await pool
       .connect(users[1].signer)
-      .setUserUseReserveAsCollateral(_dai.address, true);
+      .setUserUseReserveAsCollateral(dai.address, true);
 
-    const aDAItoTransfer = await convertToCurrencyDecimals(
-      _dai.address,
-      "1000"
-    );
+    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, "1000");
 
     await pool
       .connect(users[1].signer)
@@ -154,21 +148,21 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       );
 
     await expect(
-      _aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
+      aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
       "Transfer cannot be allowed."
     ).to.be.revertedWith("Transfer cannot be allowed.");
   });
 
   it("User 0 tries to transfer 0 balance (revert expected)", async () => {
-    const {users, pool, _aDai, _dai} = testEnv;
+    const {users, pool, aDai, dai} = testEnv;
     await expect(
-      _aDai.connect(users[0].signer).transfer(users[1].address, "0"),
+      aDai.connect(users[0].signer).transfer(users[1].address, "0"),
       "Transferred amount needs to be greater than zero"
     ).to.be.revertedWith("Transferred amount needs to be greater than zero");
   });
 
   it("User 1 repays the borrow, transfers aDAI back to user 0", async () => {
-    const {users, pool, _aDai, _dai} = testEnv;
+    const {users, pool, aDai, dai} = testEnv;
     await pool
       .connect(users[1].signer)
       .repay(MOCK_ETH_ADDRESS, MAX_UINT_AMOUNT, users[1].address, {
@@ -176,19 +170,19 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
       });
 
     const aDAItoTransfer = await convertToCurrencyDecimals(
-      _aDai.address,
+      aDai.address,
       "1000"
     );
 
-    await _aDai
+    await aDai
       .connect(users[1].signer)
       .transfer(users[0].address, aDAItoTransfer);
 
-    const user2RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(
       users[2].address
     );
 
-    const user1RedirectionAddress = await _aDai.getInterestRedirectionAddress(
+    const user1RedirectionAddress = await aDai.getInterestRedirectionAddress(
       users[1].address
     );
 
@@ -204,41 +198,41 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
   });
 
   it("User 0 redirects interest to user 2, transfers 500 aDAI to user 1. User 1 redirects to user 3. User 0 transfers another 100 aDAI", async () => {
-    const {users, pool, _aDai, _dai} = testEnv;
+    const {users, pool, aDai, dai} = testEnv;
 
-    let aDAItoTransfer = await convertToCurrencyDecimals(_aDai.address, "500");
+    let aDAItoTransfer = await convertToCurrencyDecimals(aDai.address, "500");
 
-    await _aDai
+    await aDai
       .connect(users[0].signer)
       .redirectInterestStream(users[2].address);
 
-    await _aDai
+    await aDai
       .connect(users[0].signer)
       .transfer(users[1].address, aDAItoTransfer);
 
-    await _aDai
+    await aDai
       .connect(users[1].signer)
       .redirectInterestStream(users[3].address);
 
-    aDAItoTransfer = await convertToCurrencyDecimals(_aDai.address, "100");
+    aDAItoTransfer = await convertToCurrencyDecimals(aDai.address, "100");
 
-    await _aDai
+    await aDai
       .connect(users[0].signer)
       .transfer(users[1].address, aDAItoTransfer);
 
-    const user2RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(
       users[2].address
     );
-    const user3RedirectedBalanceAfter = await _aDai.getRedirectedBalance(
+    const user3RedirectedBalanceAfter = await aDai.getRedirectedBalance(
       users[3].address
     );
 
     const expectedUser2Redirected = await convertToCurrencyDecimals(
-      _aDai.address,
+      aDai.address,
       "400"
     );
     const expectedUser3Redirected = await convertToCurrencyDecimals(
-      _aDai.address,
+      aDai.address,
       "600"
     );
 

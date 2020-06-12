@@ -1,314 +1,311 @@
-// import {ITestEnvWithoutInstances} from '../utils/types';
-// import {
-//   LendingPoolCoreInstance,
-//   LendingPoolConfiguratorInstance,
-//   LendingPoolInstance,
-// } from '../utils/typechain-types/truffle-contracts';
-// import {testEnvProviderWithoutInstances} from '../utils/truffle/dlp-tests-env';
-// import {RAY, ETHEREUM_ADDRESS, APPROVAL_AMOUNT_LENDING_POOL_CORE} from '../utils/constants';
-// import {convertToCurrencyDecimals} from '../utils/misc-utils';
+import {TestEnv, makeSuite} from "./helpers/make-suite";
+import {
+  MOCK_ETH_ADDRESS,
+  RAY,
+  APPROVAL_AMOUNT_LENDING_POOL_CORE,
+} from "../helpers/constants";
+import {convertToCurrencyDecimals} from "../helpers/contracts-helpers";
 
-// const expectRevert = require('@openzeppelin/test-helpers').expectRevert;
-// const {expect} = require('chai');
+const {expect} = require("chai");
 
-// contract('LendingPoolConfigurator', async ([deployer, ...users]) => {
-//   let _testEnvProvider: ITestEnvWithoutInstances;
-//   let _lendingPoolConfiguratorInstance: LendingPoolConfiguratorInstance;
-//   let _lendingPoolCoreInstance: LendingPoolCoreInstance;
-//   let _lendingPoolInstance: LendingPoolInstance;
+makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
+  it("Deactivates the ETH reserve", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.deactivateReserve(MOCK_ETH_ADDRESS);
+    const isActive = await core.getReserveIsActive(MOCK_ETH_ADDRESS);
+    expect(isActive).to.be.equal(false);
+  });
 
-//   before('Initializing LendingPoolConfigurator test variables', async () => {
-//     console.time('setup-test');
-//     _testEnvProvider = await testEnvProviderWithoutInstances(artifacts, [deployer, ...users]);
+  it("Rectivates the ETH reserve", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.activateReserve(MOCK_ETH_ADDRESS);
 
-//     const {
-//       getLendingPoolInstance,
-//       getLendingPoolCoreInstance,
-//       getLendingPoolConfiguratorInstance,
-//     } = _testEnvProvider;
-//     const instances = await Promise.all([
-//       getLendingPoolConfiguratorInstance(),
-//       getLendingPoolCoreInstance(),
-//       getLendingPoolInstance(),
-//     ]);
-//     _lendingPoolConfiguratorInstance = instances[0];
-//     _lendingPoolCoreInstance = instances[1];
-//     _lendingPoolInstance = instances[2];
+    const isActive = await core.getReserveIsActive(MOCK_ETH_ADDRESS);
+    expect(isActive).to.be.equal(true);
+  });
 
-//     console.timeEnd('setup-test');
-//   });
+  it("Check the onlyLendingPoolManager on deactivateReserve ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).deactivateReserve(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Deactivates the ETH reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.deactivateReserve(ETHEREUM_ADDRESS);
-//     const isActive = await _lendingPoolCoreInstance.getReserveIsActive(ETHEREUM_ADDRESS);
-//     expect(isActive).to.be.equal(false);
-//   });
+  it("Check the onlyLendingPoolManager on activateReserve ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).activateReserve(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Rectivates the ETH reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.activateReserve(ETHEREUM_ADDRESS);
+  it("Freezes the ETH reserve", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.freezeReserve(MOCK_ETH_ADDRESS);
+    const isFreezed = await core.getReserveIsFreezed(MOCK_ETH_ADDRESS);
+    expect(isFreezed).to.be.equal(true);
+  });
 
-//     const isActive = await _lendingPoolCoreInstance.getReserveIsActive(ETHEREUM_ADDRESS);
-//     expect(isActive).to.be.equal(true);
-//   });
+  it("Unfreezes the ETH reserve", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.unfreezeReserve(MOCK_ETH_ADDRESS);
 
-//   it('Check the onlyLendingPoolManager on deactivateReserve ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.deactivateReserve(ETHEREUM_ADDRESS, {from: users[2]}),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+    const isFreezed = await core.getReserveIsFreezed(MOCK_ETH_ADDRESS);
+    expect(isFreezed).to.be.equal(false);
+  });
 
-//   it('Check the onlyLendingPoolManager on activateReserve ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.activateReserve(ETHEREUM_ADDRESS, {from: users[2]}),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on freezeReserve ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).freezeReserve(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Freezes the ETH reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.freezeReserve(ETHEREUM_ADDRESS);
-//     const isFreezed = await _lendingPoolCoreInstance.getReserveIsFreezed(ETHEREUM_ADDRESS);
-//     expect(isFreezed).to.be.equal(true);
-//   });
+  it("Check the onlyLendingPoolManager on unfreezeReserve ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).unfreezeReserve(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Unfreezes the ETH reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.unfreezeReserve(ETHEREUM_ADDRESS);
+  it("Deactivates the ETH reserve for borrowing", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.disableBorrowingOnReserve(MOCK_ETH_ADDRESS);
+    const isEnabled = await core.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
+    expect(isEnabled).to.be.equal(false);
+  });
 
-//     const isFreezed = await _lendingPoolCoreInstance.getReserveIsFreezed(ETHEREUM_ADDRESS);
-//     expect(isFreezed).to.be.equal(false);
-//   });
+  it("Activates the ETH reserve for borrowing", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.enableBorrowingOnReserve(MOCK_ETH_ADDRESS, true);
+    const isEnabled = await core.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
+    const interestIndex = await core.getReserveLiquidityCumulativeIndex(
+      MOCK_ETH_ADDRESS
+    );
+    expect(isEnabled).to.be.equal(true);
+    expect(interestIndex.toString()).to.be.equal(RAY);
+  });
 
-//   it('Check the onlyLendingPoolManager on freezeReserve ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.freezeReserve(ETHEREUM_ADDRESS, {from: users[2]}),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on disableBorrowingOnReserve ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .disableBorrowingOnReserve(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Check the onlyLendingPoolManager on unfreezeReserve ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.unfreezeReserve(ETHEREUM_ADDRESS, {from: users[2]}),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on enableBorrowingOnReserve ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .enableBorrowingOnReserve(MOCK_ETH_ADDRESS, true),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Deactivates the ETH reserve for borrowing', async () => {
-//     await _lendingPoolConfiguratorInstance.disableBorrowingOnReserve(ETHEREUM_ADDRESS);
-//     const isEnabled = await _lendingPoolCoreInstance.isReserveBorrowingEnabled(ETHEREUM_ADDRESS);
-//     expect(isEnabled).to.be.equal(false);
-//   });
+  it("Deactivates the ETH reserve as collateral", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.disableReserveAsCollateral(MOCK_ETH_ADDRESS);
+    const isEnabled = await core.isReserveUsageAsCollateralEnabled(
+      MOCK_ETH_ADDRESS
+    );
+    expect(isEnabled).to.be.equal(false);
+  });
 
-//   it('Activates the ETH reserve for borrowing', async () => {
-//     await _lendingPoolConfiguratorInstance.enableBorrowingOnReserve(ETHEREUM_ADDRESS, true);
-//     const isEnabled = await _lendingPoolCoreInstance.isReserveBorrowingEnabled(ETHEREUM_ADDRESS);
-//     const interestIndex = await _lendingPoolCoreInstance.getReserveLiquidityCumulativeIndex(
-//       ETHEREUM_ADDRESS
-//     );
-//     expect(isEnabled).to.be.equal(true);
-//     expect(interestIndex.toString()).to.be.equal(RAY);
-//   });
+  it("Activates the ETH reserve as collateral", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.enableReserveAsCollateral(
+      MOCK_ETH_ADDRESS,
+      "75",
+      "80",
+      "105"
+    );
 
-//   it('Check the onlyLendingPoolManager on disableBorrowingOnReserve ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.disableBorrowingOnReserve(ETHEREUM_ADDRESS, {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+    const isEnabled = await core.isReserveUsageAsCollateralEnabled(
+      MOCK_ETH_ADDRESS
+    );
+    expect(isEnabled).to.be.equal(true);
+  });
 
-//   it('Check the onlyLendingPoolManager on enableBorrowingOnReserve ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.enableBorrowingOnReserve(ETHEREUM_ADDRESS, true, {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on disableReserveAsCollateral ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .disableReserveAsCollateral(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Deactivates the ETH reserve as collateral', async () => {
-//     await _lendingPoolConfiguratorInstance.disableReserveAsCollateral(ETHEREUM_ADDRESS);
-//     const isEnabled = await _lendingPoolCoreInstance.isReserveUsageAsCollateralEnabled(
-//       ETHEREUM_ADDRESS
-//     );
-//     expect(isEnabled).to.be.equal(false);
-//   });
+  it("Check the onlyLendingPoolManager on enableReserveAsCollateral ", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .enableReserveAsCollateral(MOCK_ETH_ADDRESS, "75", "80", "105"),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Activates the ETH reserve as collateral', async () => {
-//     await _lendingPoolConfiguratorInstance.enableReserveAsCollateral(
-//       ETHEREUM_ADDRESS,
-//       '75',
-//       '80',
-//       '105'
-//     );
+  it("Disable stable borrow rate on the ETH reserve", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.disableReserveStableBorrowRate(MOCK_ETH_ADDRESS);
+    const isEnabled = await core.getReserveIsStableBorrowRateEnabled(
+      MOCK_ETH_ADDRESS
+    );
+    expect(isEnabled).to.be.equal(false);
+  });
 
-//     const isEnabled = await _lendingPoolCoreInstance.isReserveUsageAsCollateralEnabled(
-//       ETHEREUM_ADDRESS
-//     );
-//     expect(isEnabled).to.be.equal(true);
-//   });
+  it("Enables stable borrow rate on the ETH reserve", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.enableReserveStableBorrowRate(MOCK_ETH_ADDRESS);
+    const isEnabled = await core.getReserveIsStableBorrowRateEnabled(
+      MOCK_ETH_ADDRESS
+    );
+    expect(isEnabled).to.be.equal(true);
+  });
 
-//   it('Check the onlyLendingPoolManager on disableReserveAsCollateral ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.disableReserveAsCollateral(ETHEREUM_ADDRESS, {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on disableReserveStableBorrowRate", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .disableReserveStableBorrowRate(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Check the onlyLendingPoolManager on enableReserveAsCollateral ', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.enableReserveAsCollateral(
-//         ETHEREUM_ADDRESS,
-//         '75',
-//         '80',
-//         '105',
-//         {from: users[2]}
-//       ),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on enableReserveStableBorrowRate", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .enableReserveStableBorrowRate(MOCK_ETH_ADDRESS),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Disable stable borrow rate on the ETH reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.disableReserveStableBorrowRate(ETHEREUM_ADDRESS);
-//     const isEnabled = await _lendingPoolCoreInstance.getReserveIsStableBorrowRateEnabled(
-//       ETHEREUM_ADDRESS
-//     );
-//     expect(isEnabled).to.be.equal(false);
-//   });
+  it("Changes LTV of the reserve", async () => {
+    const {configurator, pool} = testEnv;
+    await configurator.setReserveBaseLTVasCollateral(MOCK_ETH_ADDRESS, "60");
+    const {ltv}: any = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    expect(ltv).to.be.bignumber.equal("60", "Invalid LTV");
+  });
 
-//   it('Enables stable borrow rate on the ETH reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.enableReserveStableBorrowRate(ETHEREUM_ADDRESS);
-//     const isEnabled = await _lendingPoolCoreInstance.getReserveIsStableBorrowRateEnabled(
-//       ETHEREUM_ADDRESS
-//     );
-//     expect(isEnabled).to.be.equal(true);
-//   });
+  it("Check the onlyLendingPoolManager on setReserveBaseLTVasCollateral", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .setReserveBaseLTVasCollateral(MOCK_ETH_ADDRESS, "75"),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Check the onlyLendingPoolManager on disableReserveStableBorrowRate', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.disableReserveStableBorrowRate(ETHEREUM_ADDRESS, {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Changes liquidation threshold of the reserve", async () => {
+    const {configurator, pool} = testEnv;
+    await configurator.setReserveLiquidationThreshold(MOCK_ETH_ADDRESS, "75");
+    const {liquidationThreshold}: any = await pool.getReserveConfigurationData(
+      MOCK_ETH_ADDRESS
+    );
+    expect(liquidationThreshold).to.be.bignumber.equal(
+      "75",
+      "Invalid Liquidation threshold"
+    );
+  });
 
-//   it('Check the onlyLendingPoolManager on enableReserveStableBorrowRate', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.enableReserveStableBorrowRate(ETHEREUM_ADDRESS, {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on setReserveLiquidationThreshold", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .setReserveLiquidationThreshold(MOCK_ETH_ADDRESS, "80"),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Changes LTV of the reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.setReserveBaseLTVasCollateral(ETHEREUM_ADDRESS, '60');
-//     const {ltv}: any = await _lendingPoolInstance.getReserveConfigurationData(ETHEREUM_ADDRESS);
-//     expect(ltv).to.be.bignumber.equal('60', 'Invalid LTV');
-//   });
+  it("Changes liquidation bonus of the reserve", async () => {
+    const {configurator, core} = testEnv;
+    await configurator.setReserveLiquidationBonus(MOCK_ETH_ADDRESS, "110");
+    const liquidationBonus = await core.getReserveLiquidationBonus(
+      MOCK_ETH_ADDRESS
+    );
+    expect(liquidationBonus).to.be.bignumber.equal(
+      "110",
+      "Invalid Liquidation discount"
+    );
+  });
 
-//   it('Check the onlyLendingPoolManager on setReserveBaseLTVasCollateral', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.setReserveBaseLTVasCollateral(ETHEREUM_ADDRESS, '75', {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Check the onlyLendingPoolManager on setReserveLiquidationBonus", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .setReserveLiquidationBonus(MOCK_ETH_ADDRESS, "80"),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Changes liquidation threshold of the reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.setReserveLiquidationThreshold(ETHEREUM_ADDRESS, '75');
-//     const {liquidationThreshold}: any = await _lendingPoolInstance.getReserveConfigurationData(
-//       ETHEREUM_ADDRESS
-//     );
-//     expect(liquidationThreshold).to.be.bignumber.equal('75', 'Invalid Liquidation threshold');
-//   });
+  it("Check the onlyLendingPoolManager on setReserveDecimals", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .setReserveDecimals(MOCK_ETH_ADDRESS, "80"),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//   it('Check the onlyLendingPoolManager on setReserveLiquidationThreshold', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.setReserveLiquidationThreshold(ETHEREUM_ADDRESS, '80', {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+  it("Removes the last added reserve", async () => {
+    const {configurator, pool} = testEnv;
+    const reservesBefore = await pool.getReserves();
 
-//   it('Changes liquidation bonus of the reserve', async () => {
-//     await _lendingPoolConfiguratorInstance.setReserveLiquidationBonus(ETHEREUM_ADDRESS, '110');
-//     const liquidationBonus = await _lendingPoolCoreInstance.getReserveLiquidationBonus(
-//       ETHEREUM_ADDRESS
-//     );
-//     expect(liquidationBonus).to.be.bignumber.equal('110', 'Invalid Liquidation discount');
-//   });
+    const lastReserve = reservesBefore[reservesBefore.length - 1];
 
-//   it('Check the onlyLendingPoolManager on setReserveLiquidationBonus', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.setReserveLiquidationBonus(ETHEREUM_ADDRESS, '80', {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+    await configurator.removeLastAddedReserve(lastReserve);
 
-//   it('Check the onlyLendingPoolManager on setReserveDecimals', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.setReserveDecimals(ETHEREUM_ADDRESS, '80', {from: users[2]}),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+    const reservesAfter = await pool.getReserves();
 
-//   it('Removes the last added reserve', async () => {
-//     const reservesBefore = await _lendingPoolInstance.getReserves();
+    expect(reservesAfter.length).to.be.equal(
+      reservesBefore.length - 1,
+      "Invalid number of reserves after removal"
+    );
+  });
 
-//     const lastReserve = reservesBefore[reservesBefore.length - 1];
+  it("Check the onlyLendingPoolManager on setReserveLiquidationBonus", async () => {
+    const {configurator, users} = testEnv;
+    await expect(
+      configurator
+        .connect(users[2].signer)
+        .setReserveLiquidationBonus(MOCK_ETH_ADDRESS, "80"),
+      "The caller must be a lending pool manager"
+    ).to.be.revertedWith("The caller must be a lending pool manager");
+  });
 
-//     await _lendingPoolConfiguratorInstance.removeLastAddedReserve(lastReserve);
+  it("Reverts when trying to disable the DAI reserve with liquidity on it", async () => {
+    const {dai, core, pool, configurator} = testEnv;
 
-//     const reservesAfter = await _lendingPoolInstance.getReserves();
+    await dai.mint(await convertToCurrencyDecimals(dai.address, "1000"));
 
-//     expect(reservesAfter.length).to.be.equal(
-//       reservesBefore.length - 1,
-//       'Invalid number of reserves after removal'
-//     );
-//   });
+    //approve protocol to access depositor wallet
+    await dai.approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+    const amountDAItoDeposit = await convertToCurrencyDecimals(
+      dai.address,
+      "1000"
+    );
 
-//   it('Check the onlyLendingPoolManager on setReserveLiquidationBonus', async () => {
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.setReserveLiquidationBonus(ETHEREUM_ADDRESS, '80', {
-//         from: users[2],
-//       }),
-//       'The caller must be a lending pool manager'
-//     );
-//   });
+    //user 1 deposits 1000 DAI
+    await pool.deposit(dai.address, amountDAItoDeposit, "0");
 
-//   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
-//     const {getAllAssetsInstances, getFirstDepositorAddressOnTests} = _testEnvProvider;
-
-//     const daiInstance = (await getAllAssetsInstances()).DAI;
-
-//     const _depositorAddress = await getFirstDepositorAddressOnTests();
-
-//     await daiInstance.mint(await convertToCurrencyDecimals(daiInstance.address, '1000'), {
-//       from: _depositorAddress,
-//     });
-
-//     //approve protocol to access depositor wallet
-//     await daiInstance.approve(_lendingPoolCoreInstance.address, APPROVAL_AMOUNT_LENDING_POOL_CORE, {
-//       from: _depositorAddress,
-//     });
-//     const amountDAItoDeposit = await convertToCurrencyDecimals(daiInstance.address, '1000');
-
-//     //user 1 deposits 1000 DAI
-//     await _lendingPoolInstance.deposit(daiInstance.address, amountDAItoDeposit, '0', {
-//       from: _depositorAddress,
-//     });
-
-//     await expectRevert(
-//       _lendingPoolConfiguratorInstance.deactivateReserve(daiInstance.address),
-//       'The liquidity of the reserve needs to be 0'
-//     );
-//   });
-// });
+    await expect(
+      configurator.deactivateReserve(dai.address),
+      "The liquidity of the reserve needs to be 0"
+    ).to.be.revertedWith("The liquidity of the reserve needs to be 0");
+  });
+});

@@ -626,6 +626,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 before(async () => {
   await rawBRE.run("set-bre");
   const [deployer, secondaryWallet] = await getEthersSigners();
+  console.log("-> Deploying test environment...")
   await buildTestEnv(deployer, secondaryWallet);
   console.log("\n***************");
   console.log("Setup and snapshot finished");
