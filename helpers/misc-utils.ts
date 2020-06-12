@@ -27,7 +27,8 @@ export const sleep = (milliseconds: number) => {
 
 export const createRandomAddress = () => Wallet.createRandom().address;
 
-export const evmSnapshot = () => BRE.ethereum.send("evm_snapshot", []);
+export const evmSnapshot = async () =>
+  await BRE.ethereum.send("evm_snapshot", []);
 
 export const evmRevert = async (id: string) =>
   BRE.ethereum.send("evm_revert", [id]);

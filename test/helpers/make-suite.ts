@@ -1,4 +1,4 @@
-import {evmRevert, evmSnapshot} from "../../helpers/misc-utils";
+import {evmRevert, evmSnapshot, BRE} from "../../helpers/misc-utils";
 import {TEST_SNAPSHOT_ID} from "../../helpers/constants";
 import {Signer} from "ethers";
 import {
@@ -41,6 +41,13 @@ export interface TestEnv {
   aDai: AToken;
 }
 
+let buidlerevmSnapshotId: string = "0x1";
+const setBuidlerevmSnapshotId = (id: string) => {
+  if (BRE.network.name === "buidlerevm") {
+    buidlerevmSnapshotId = id;
+  }
+};
+
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
   describe(name, () => {
     const testEnv: TestEnv = {
@@ -56,7 +63,7 @@ export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
     } as TestEnv;
     before(async () => {
       console.time("makeSuite");
-      await evmSnapshot();
+      setBuidlerevmSnapshotId(await evmSnapshot());
       const [_deployer, ...restSigners] = await getEthersSigners();
       const deployer: SignerWithAddress = {
         address: await _deployer.getAddress(),
@@ -97,7 +104,7 @@ export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
     });
     tests(testEnv);
     after(async () => {
-      await evmRevert(TEST_SNAPSHOT_ID);
+      await evmRevert(buidlerevmSnapshotId);
     });
   });
 }

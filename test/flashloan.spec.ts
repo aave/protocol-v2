@@ -1,278 +1,256 @@
-// import {
-//   LendingPoolInstance,
-//   LendingPoolCoreInstance,
-//   IPriceOracleInstance,
-//   MockFlashLoanReceiverInstance,
-//   TokenDistributorInstance,
-//   MintableERC20Instance,
-//   ATokenInstance,
-// } from '../utils/typechain-types/truffle-contracts';
-// import {iATokenBase, iAssetsWithoutETH, ITestEnvWithoutInstances} from '../utils/types';
-// import BigNumber from 'bignumber.js';
-// import {
-//   APPROVAL_AMOUNT_LENDING_POOL_CORE,
-//   oneEther,
-//   oneRay,
-//   ETHEREUM_ADDRESS,
-// } from '../utils/constants';
-// import {testEnvProviderWithoutInstances} from '../utils/truffle/dlp-tests-env';
-// import {convertToCurrencyDecimals} from '../utils/misc-utils';
+import {TestEnv, makeSuite} from "./helpers/make-suite";
+import {
+  MOCK_ETH_ADDRESS,
+  APPROVAL_AMOUNT_LENDING_POOL_CORE,
+  oneRay,
+} from "../helpers/constants";
+import {
+  convertToCurrencyDecimals,
+  getMockFlashLoanReceiver,
+  getTokenDistributor,
+} from "../helpers/contracts-helpers";
+import {ethers} from "ethers";
+import {MockFlashLoanReceiver} from "../types/MockFlashLoanReceiver";
+import {TokenDistributor} from "../types/TokenDistributor";
+import {BRE} from "../helpers/misc-utils";
+import {ProtocolErrors} from "../helpers/types";
+import BigNumber from "bignumber.js";
 
-// const expectRevert = require('@openzeppelin/test-helpers').expectRevert;
+const {expect} = require("chai");
 
-// const {expect} = require('chai');
+makeSuite("LendingPool FlashLoan function", (testEnv: TestEnv) => {
+  let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
+  let _tokenDistributor = {} as TokenDistributor;
+  const {
+    INCONSISTENT_PROTOCOL_BALANCE,
+    TOO_SMALL_FLASH_LOAN,
+    NOT_ENOUGH_LIQUIDITY_TO_BORROW,
+  } = ProtocolErrors;
 
-// contract('LendingPool FlashLoan function', async ([deployer, ...users]) => {
-//   let _testEnvProvider: ITestEnvWithoutInstances;
-//   let _lendingPoolInstance: LendingPoolInstance;
-//   let _lendingPoolCoreInstance: LendingPoolCoreInstance;
-//   let _mockFlashLoanReceiverInstance: MockFlashLoanReceiverInstance;
-//   let _priceOracleInstance: IPriceOracleInstance;
-//   let _aTokenInstances: iATokenBase<ATokenInstance>;
-//   let _tokenInstances: iAssetsWithoutETH<MintableERC20Instance>;
-//   let _tokenDistributor: TokenDistributorInstance;
-//   let _daiAddress: string;
-//   let _depositorAddress: string;
-//   let _web3: Web3;
-//   let _initialDepositorETHBalance: string;
+  before(async () => {
+    _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
+    _tokenDistributor = await getTokenDistributor();
+  });
 
-//   before('Initializing LendingPool test variables', async () => {
-//     console.time('setup-test');
-//     _testEnvProvider = await testEnvProviderWithoutInstances(artifacts, [deployer, ...users]);
+  it("Deposits ETH into the reserve", async () => {
+    const {pool} = testEnv;
+    const amountToDeposit = ethers.utils.parseEther("1");
 
-//     const {
-//       getWeb3,
-//       getAllAssetsInstances,
-//       getFirstDepositorAddressOnTests,
-//       getLendingPoolInstance,
-//       getLendingPoolCoreInstance,
-//       getPriceOracleInstance,
-//       getATokenInstances,
-//       getMockFlashLoanReceiverInstance,
-//       getTokenDistributorInstance,
-//     } = _testEnvProvider;
+    await pool.deposit(MOCK_ETH_ADDRESS, amountToDeposit, "0", {
+      value: amountToDeposit,
+    });
+  });
 
-//     const instances = await Promise.all([
-//       getLendingPoolInstance(),
-//       getLendingPoolCoreInstance(),
-//       getPriceOracleInstance(),
-//       getATokenInstances(),
-//       getMockFlashLoanReceiverInstance(),
-//       getAllAssetsInstances(),
-//       getTokenDistributorInstance(),
-//     ]);
+  it("Takes ETH flashloan, returns the funds correctly", async () => {
+    const {pool, deployer} = testEnv;
 
-//     _lendingPoolInstance = instances[0];
-//     _lendingPoolCoreInstance = instances[1];
-//     _priceOracleInstance = instances[2];
-//     _aTokenInstances = instances[3];
-//     _mockFlashLoanReceiverInstance = instances[4];
-//     _tokenInstances = instances[5];
-//     _daiAddress = _tokenInstances.DAI.address;
-//     _depositorAddress = await getFirstDepositorAddressOnTests();
-//     _tokenDistributor = instances[6];
+    // move funds to the MockFlashLoanReceiver contract to pay the fee
+    await deployer.signer.sendTransaction({
+      value: ethers.utils.parseEther("0.5"),
+      to: _mockFlashLoanReceiver.address,
+    });
 
-//     _web3 = await getWeb3();
-//     _initialDepositorETHBalance = await _web3.eth.getBalance(_depositorAddress);
+    await pool.flashLoan(
+      _mockFlashLoanReceiver.address,
+      MOCK_ETH_ADDRESS,
+      ethers.utils.parseEther("0.8"),
+      "0x10"
+    );
 
-//     console.timeEnd('setup-test');
-//   });
+    ethers.utils.parseUnits("10000");
 
-//   it('Deposits ETH into the reserve', async () => {
-//     const amountToDeposit = await convertToCurrencyDecimals(ETHEREUM_ADDRESS, '1');
+    const reserveData: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
+    const tokenDistributorBalance = await BRE.ethers.provider.getBalance(
+      _tokenDistributor.address
+    );
 
-//     await _lendingPoolInstance.deposit(ETHEREUM_ADDRESS, amountToDeposit, '0', {
-//       from: _depositorAddress,
-//       value: amountToDeposit,
-//     });
-//   });
+    const currentLiquidityRate = reserveData.liquidityRate;
+    const currentLiquidityIndex = reserveData.liquidityIndex;
 
-//   it('Takes ETH flashloan, returns the funds correctly', async () => {
-//     //move funds to the MockFlashLoanReceiver contract
+    expect(reserveData.totalLiquidity).to.be.bignumber.equal(
+      "1000504000000000000"
+    );
+    expect(currentLiquidityRate).to.be.bignumber.equal("0");
+    expect(currentLiquidityIndex).to.be.bignumber.equal(
+      "1000504000000000000000000000"
+    );
+    expect(tokenDistributorBalance).to.be.bignumber.equal("216000000000000");
+  });
 
-//     let send = web3.eth.sendTransaction({
-//       from: deployer,
-//       to: _mockFlashLoanReceiverInstance.address,
-//       value: web3.utils.toWei('0.5', 'ether'),
-//     });
+  it("Takes an ETH flashloan as big as the available liquidity", async () => {
+    const {pool, deployer} = testEnv;
 
-//     const txResult = await _lendingPoolInstance.flashLoan(
-//       _mockFlashLoanReceiverInstance.address,
-//       ETHEREUM_ADDRESS,
-//       new BigNumber(0.8).multipliedBy(oneEther),
-//       '0x10'
-//     );
+    // move funds to the MockFlashLoanReceiver contract to pay the fee
+    await deployer.signer.sendTransaction({
+      value: ethers.utils.parseEther("0.5"),
+      to: _mockFlashLoanReceiver.address,
+    });
 
-//     const reserveData: any = await _lendingPoolInstance.getReserveData(ETHEREUM_ADDRESS);
-//     const tokenDistributorBalance = await _web3.eth.getBalance(_tokenDistributor.address);
+    const txResult = await pool.flashLoan(
+      _mockFlashLoanReceiver.address,
+      MOCK_ETH_ADDRESS,
+      "1000504000000000000",
+      "0x10"
+    );
 
-//     const currentLiquidityRate = reserveData.liquidityRate;
-//     const currentLiquidityIndex = reserveData.liquidityIndex;
+    const reserveData: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
+    const tokenDistributorBalance = await BRE.ethers.provider.getBalance(
+      _tokenDistributor.address
+    );
 
-//     expect(reserveData.totalLiquidity.toString()).to.be.equal('1000504000000000000');
-//     expect(currentLiquidityRate.toString()).to.be.equal('0');
-//     expect(currentLiquidityIndex.toString()).to.be.equal('1000504000000000000000000000');
-//     expect(tokenDistributorBalance.toString()).to.be.equal('216000000000000');
-//   });
+    const currentLiqudityRate = reserveData.liquidityRate;
+    const currentLiquidityIndex = reserveData.liquidityIndex;
 
-//   it('Takes an ETH flashloan as big as the available liquidity', async () => {
-//     //move funds to the MockFlashLoanReceiver contract
+    expect(reserveData.totalLiquidity).to.be.bignumber.equal(
+      "1001134317520000000"
+    );
+    expect(currentLiqudityRate).to.be.bignumber.equal("0");
+    expect(currentLiquidityIndex).to.be.bignumber.equal(
+      "1001134317520000000000000000"
+    );
+    expect(tokenDistributorBalance).to.be.bignumber.equal("486136080000000");
+  });
 
-//     let send = web3.eth.sendTransaction({
-//       from: deployer,
-//       to: _mockFlashLoanReceiverInstance.address,
-//       value: web3.utils.toWei('0.5', 'ether'),
-//     });
+  it("Takes ETH flashloan, does not return the funds (revert expected)", async () => {
+    const {pool, deployer} = testEnv;
 
-//     const txResult = await _lendingPoolInstance.flashLoan(
-//       _mockFlashLoanReceiverInstance.address,
-//       ETHEREUM_ADDRESS,
-//       '1000504000000000000',
-//       '0x10'
-//     );
+    // move funds to the MockFlashLoanReceiver contract to pay the fee
+    await deployer.signer.sendTransaction({
+      value: ethers.utils.parseEther("0.5"),
+      to: _mockFlashLoanReceiver.address,
+    });
 
-//     const reserveData: any = await _lendingPoolInstance.getReserveData(ETHEREUM_ADDRESS);
-//     const tokenDistributorBalance = await _web3.eth.getBalance(_tokenDistributor.address);
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
-//     const currentLiqudityRate = reserveData.liquidityRate;
-//     const currentLiquidityIndex = reserveData.liquidityIndex;
+    await expect(
+      pool.flashLoan(
+        _mockFlashLoanReceiver.address,
+        MOCK_ETH_ADDRESS,
+        ethers.utils.parseEther("0.8"),
+        "0x10"
+      ),
+      INCONSISTENT_PROTOCOL_BALANCE
+    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_BALANCE);
+  });
 
-//     expect(reserveData.totalLiquidity.toString()).to.be.equal('1001134317520000000');
-//     expect(currentLiqudityRate.toString()).to.be.equal('0');
-//     expect(currentLiquidityIndex.toString()).to.be.equal('1001134317520000000000000000');
-//     expect(tokenDistributorBalance.toString()).to.be.equal('486136080000000');
-//   });
+  it("tries to take a very small flashloan, which would result in 0 fees (revert expected)", async () => {
+    const {pool} = testEnv;
 
-//   it('Takes ETH flashloan, does not return the funds (revert expected)', async () => {
-//     //move funds to the MockFlashLoanReceiver contract
+    await expect(
+      pool.flashLoan(
+        _mockFlashLoanReceiver.address,
+        MOCK_ETH_ADDRESS,
+        "1", //1 wei loan
+        "0x10"
+      ),
+      TOO_SMALL_FLASH_LOAN
+    ).to.be.revertedWith(TOO_SMALL_FLASH_LOAN);
+  });
 
-//     let send = web3.eth.sendTransaction({
-//       from: deployer,
-//       to: _mockFlashLoanReceiverInstance.address,
-//       value: web3.utils.toWei('0.5', 'ether'),
-//     });
+  it("tries to take a flashloan that is bigger than the available liquidity (revert expected)", async () => {
+    const {pool} = testEnv;
 
-//     await _mockFlashLoanReceiverInstance.setFailExecutionTransfer(true);
+    await expect(
+      pool.flashLoan(
+        _mockFlashLoanReceiver.address,
+        MOCK_ETH_ADDRESS,
+        "1004415000000000000", //slightly higher than the available liquidity
+        "0x10"
+      ),
+      NOT_ENOUGH_LIQUIDITY_TO_BORROW
+    ).to.be.revertedWith(NOT_ENOUGH_LIQUIDITY_TO_BORROW);
+  });
 
-//     await expectRevert(
-//       _lendingPoolInstance.flashLoan(
-//         _mockFlashLoanReceiverInstance.address,
-//         ETHEREUM_ADDRESS,
-//         new BigNumber(0.8).multipliedBy(oneEther),
-//         '0x10'
-//       ),
-//       'The actual balance of the protocol is inconsistent'
-//     );
-//   });
+  it("tries to take a flashloan using a non contract address as receiver (revert expected)", async () => {
+    const {pool, deployer} = testEnv;
 
-//   it('tries to take a very small flashloan, which would result in 0 fees (revert expected)', async () => {
-//     //move funds to the MockFlashLoanReceiver contract
+    await expect(
+      pool.flashLoan(
+        deployer.address,
+        MOCK_ETH_ADDRESS,
+        "1000000000000000000",
+        "0x10"
+      )
+    ).to.be.reverted;
+  });
 
-//     await expectRevert(
-//       _lendingPoolInstance.flashLoan(
-//         _mockFlashLoanReceiverInstance.address,
-//         ETHEREUM_ADDRESS,
-//         '1', //1 wei loan
-//         '0x10'
-//       ),
-//       'The requested amount is too small for a flashLoan.'
-//     );
-//   });
+  it("Deposits DAI into the reserve", async () => {
+    const {dai, core, pool} = testEnv;
 
-//   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {
-//     //move funds to the MockFlashLoanReceiver contract
+    await dai.mint(await convertToCurrencyDecimals(dai.address, "1000"));
 
-//     await expectRevert(
-//       _lendingPoolInstance.flashLoan(
-//         _mockFlashLoanReceiverInstance.address,
-//         ETHEREUM_ADDRESS,
-//         '1004415000000000000', //slightly higher than the available liquidity
-//         '0x10'
-//       ),
-//       'There is not enough liquidity available to borrow'
-//     );
-//   });
+    await dai.approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
 
-//   it('tries to take a flashloan using a non contract address as receiver (revert expected)', async () => {
-//     //move funds to the MockFlashLoanReceiver contract
+    const amountToDeposit = await convertToCurrencyDecimals(
+      dai.address,
+      "1000"
+    );
 
-//     await expectRevert(
-//       _lendingPoolInstance.flashLoan(deployer, ETHEREUM_ADDRESS, '1000000000000000000', '0x10'),
-//       'revert'
-//     );
-//   });
+    await pool.deposit(dai.address, amountToDeposit, "0");
+  });
 
-//   it('Deposits DAI into the reserve', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+  it("Takes out a 500 DAI flashloan, returns the funds correctly", async () => {
+    const {dai, pool, deployer: depositor} = testEnv;
 
-//     //mints DAI to depositor
-//     await daiInstance.mint(await convertToCurrencyDecimals(daiInstance.address, '1000'), {
-//       from: _depositorAddress,
-//     });
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(false);
 
-//     //approve protocol to access depositor wallet
-//     await daiInstance.approve(_lendingPoolCoreInstance.address, APPROVAL_AMOUNT_LENDING_POOL_CORE, {
-//       from: _depositorAddress,
-//     });
+    await pool.flashLoan(
+      _mockFlashLoanReceiver.address,
+      dai.address,
+      ethers.utils.parseEther("500"),
+      "0x10"
+    );
 
-//     const amountToDeposit = await convertToCurrencyDecimals(_daiAddress, '1000');
+    const reserveData = await pool.getReserveData(dai.address);
+    const userData = await pool.getUserReserveData(
+      dai.address,
+      depositor.address
+    );
 
-//     await _lendingPoolInstance.deposit(daiInstance.address, amountToDeposit, '0', {
-//       from: _depositorAddress,
-//     });
-//   });
+    const totalLiquidity = reserveData.totalLiquidity.toString();
+    const currentLiqudityRate = reserveData.liquidityRate.toString();
+    const currentLiquidityIndex = reserveData.liquidityIndex.toString();
+    const currentUserBalance = userData.currentATokenBalance.toString();
 
-//   it('Takes out a 500 DAI flashloan, returns the funds correctly', async () => {
-//     const {DAI: daiInstance} = _tokenInstances;
+    const expectedLiquidity = ethers.utils.parseEther("1000.315");
 
-//     await _mockFlashLoanReceiverInstance.setFailExecutionTransfer(false);
+    const tokenDistributorBalance = await dai.balanceOf(
+      _tokenDistributor.address
+    );
 
-//     await _lendingPoolInstance.flashLoan(
-//       _mockFlashLoanReceiverInstance.address,
-//       _daiAddress,
-//       new BigNumber(500).multipliedBy(oneEther),
-//       '0x10'
-//     );
+    expect(totalLiquidity).to.be.equal(
+      expectedLiquidity,
+      "Invalid total liquidity"
+    );
+    expect(currentLiqudityRate).to.be.equal("0", "Invalid liquidity rate");
+    expect(currentLiquidityIndex).to.be.equal(
+      new BigNumber("1.000315").multipliedBy(oneRay).toFixed(),
+      "Invalid liquidity index"
+    );
+    expect(currentUserBalance.toString()).to.be.equal(
+      expectedLiquidity,
+      "Invalid user balance"
+    );
 
-//     const reserveData: any = await _lendingPoolInstance.getReserveData(_daiAddress);
-//     const userData: any = await _lendingPoolInstance.getUserReserveData(_daiAddress, deployer);
+    expect(tokenDistributorBalance.toString()).to.be.equal(
+      ethers.utils.parseEther("0.135"),
+      "Invalid token distributor balance"
+    );
+  });
 
-//     const totalLiquidity = reserveData.totalLiquidity.toString();
-//     const currentLiqudityRate = reserveData.liquidityRate.toString();
-//     const currentLiquidityIndex = reserveData.liquidityIndex.toString();
-//     const currentUserBalance = userData.currentATokenBalance.toString();
+  it("Takes out a 500 DAI flashloan, does not return the funds (revert expected)", async () => {
+    const {dai, pool} = testEnv;
 
-//     const expectedLiquidity = new BigNumber('1000.315').multipliedBy(oneEther).toFixed();
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
-//     const tokenDistributorBalance = await daiInstance.balanceOf(_tokenDistributor.address);
-
-//     expect(totalLiquidity).to.be.equal(expectedLiquidity, 'Invalid total liquidity');
-//     expect(currentLiqudityRate).to.be.equal('0', 'Invalid liquidity rate');
-//     expect(currentLiquidityIndex).to.be.equal(
-//       new BigNumber('1.000315').multipliedBy(oneRay).toFixed(),
-//       'Invalid liquidity index'
-//     );
-//     expect(currentUserBalance.toString()).to.be.equal(expectedLiquidity, 'Invalid user balance');
-
-//     expect(tokenDistributorBalance.toString()).to.be.equal(
-//       new BigNumber('0.135').multipliedBy(oneEther).toFixed(),
-//       'Invalid token distributor balance'
-//     );
-//   });
-
-//   it('Takes out a 500 DAI flashloan, does not return the funds (revert expected)', async () => {
-//     //move funds to the MockFlashLoanReceiver contract
-
-//     await _mockFlashLoanReceiverInstance.setFailExecutionTransfer(true);
-
-//     await expectRevert(
-//       _lendingPoolInstance.flashLoan(
-//         _mockFlashLoanReceiverInstance.address,
-//         _daiAddress,
-//         new BigNumber(500).multipliedBy(oneEther),
-//         '0x10'
-//       ),
-//       'The actual balance of the protocol is inconsistent'
-//     );
-//   });
-// });
+    await expect(
+      pool.flashLoan(
+        _mockFlashLoanReceiver.address,
+        dai.address,
+        ethers.utils.parseEther("500"),
+        "0x10"
+      ),
+      INCONSISTENT_PROTOCOL_BALANCE
+    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_BALANCE);
+  });
+});

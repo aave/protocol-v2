@@ -55,6 +55,9 @@ export enum ProtocolErrors {
   INVALID_REDIRECTION_ADDRESS = "Invalid redirection address",
   TRANSFERRED_AMOUNT_GT_ZERO = "Transferred amount needs to be greater than zero",
   ZERO_COLLATERAL = "The collateral balance is 0",
+  INCONSISTENT_PROTOCOL_BALANCE = "The actual balance of the protocol is inconsistent",
+  TOO_SMALL_FLASH_LOAN = "The requested amount is too small for a flashLoan.",
+  NOT_ENOUGH_LIQUIDITY_TO_BORROW = "There is not enough liquidity available to borrow",
 }
 
 export type tEthereumAddress = string;

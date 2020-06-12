@@ -467,6 +467,30 @@ export const getInterestRateStrategy = async (address?: tEthereumAddress) => {
   );
 };
 
+export const getMockFlashLoanReceiver = async (address?: tEthereumAddress) => {
+  return await getContract<MockFlashLoanReceiver>(
+    eContractid.MockFlashLoanReceiver,
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.MockFlashLoanReceiver}.${BRE.network.name}`)
+          .value()
+      ).address
+  );
+};
+
+export const getTokenDistributor = async (address?: tEthereumAddress) => {
+  return await getContract<TokenDistributor>(
+    eContractid.TokenDistributor,
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.TokenDistributor}.${BRE.network.name}`)
+          .value()
+      ).address
+  );
+};
+
 const linkBytecode = (artifact: Artifact, libraries: any) => {
   let bytecode = artifact.bytecode;
 

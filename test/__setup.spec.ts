@@ -607,7 +607,18 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     await addressesProvider.setTokenDistributor(tokenDistributorProxy.address)
   );
 
-  await deployMockFlashLoanReceiver(addressesProvider.address);
+  await insertContractAddressInDb(
+    eContractid.TokenDistributor,
+    tokenDistributorProxy.address
+  );
+
+  const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(
+    addressesProvider.address
+  );
+  await insertContractAddressInDb(
+    eContractid.MockFlashLoanReceiver,
+    mockFlashLoanReceiver.address
+  );
 
   await deployWalletBalancerProvider(addressesProvider.address);
 
@@ -626,7 +637,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 before(async () => {
   await rawBRE.run("set-bre");
   const [deployer, secondaryWallet] = await getEthersSigners();
-  console.log("-> Deploying test environment...")
+  console.log("-> Deploying test environment...");
   await buildTestEnv(deployer, secondaryWallet);
   console.log("\n***************");
   console.log("Setup and snapshot finished");
