@@ -1,5 +1,19 @@
 import {TestEnv, SignerWithAddress} from "./make-suite";
-import {mint, approve, deposit} from "./actions";
+import {
+  mint,
+  approve,
+  deposit,
+  borrow,
+  redeem,
+  repay,
+  setUseAsCollateral,
+  swapBorrowRateMode,
+  rebalanceStableBorrowRate,
+  redirectInterestStream,
+  redirectInterestStreamOf,
+  allowInterestRedirectionTo,
+} from "./actions";
+import {RateMode} from "../../helpers/types";
 
 export interface Action {
   name: string;
@@ -31,7 +45,7 @@ const executeAction = async (
   users: SignerWithAddress[],
   testEnv: TestEnv
 ) => {
-  const {reserve, user} = action.args;
+  const {reserve, user: userIndex} = action.args;
   const {name, expected, revertMessage} = action;
 
   if (!name || name === "") {
@@ -40,7 +54,7 @@ const executeAction = async (
   if (!reserve || reserve === "") {
     throw "Invalid reserve selected for deposit";
   }
-  if (!user || user === "") {
+  if (!userIndex || userIndex === "") {
     throw `Invalid user selected to deposit into the ${reserve} reserve`;
   }
 
@@ -48,7 +62,7 @@ const executeAction = async (
     throw `An expected resut for action ${name} is required`;
   }
 
-  const userAddress = users[parseInt(user)];
+  const user = users[parseInt(userIndex)];
 
   switch (name) {
     case "mint":
@@ -58,11 +72,11 @@ const executeAction = async (
         throw `Invalid amount of ${reserve} to mint`;
       }
 
-      await mint(reserve, amount, userAddress);
+      await mint(reserve, amount, user);
       break;
 
     case "approve":
-      await approve(reserve, userAddress, testEnv);
+      await approve(reserve, user, testEnv);
       break;
 
     case "deposit":
@@ -76,7 +90,7 @@ const executeAction = async (
         await deposit(
           reserve,
           amount,
-          userAddress,
+          user,
           sendValue,
           expected,
           testEnv,
@@ -85,181 +99,189 @@ const executeAction = async (
       }
       break;
 
-    // case "redeem":
-    //   {
-    //     const {amount} = action.args;
+    case "redeem":
+      {
+        const {amount} = action.args;
 
-    //     if (!amount || amount === "") {
-    //       throw `Invalid amount to redeem from the ${reserve} reserve`;
-    //     }
+        if (!amount || amount === "") {
+          throw `Invalid amount to redeem from the ${reserve} reserve`;
+        }
 
-    //     await redeem(reserve, amount, userAddress, expected, revertMessage);
-    //   }
-    //   break;
-    // case "borrow":
-    //   {
-    //     const {amount, borrowRateMode, timeTravel} = action.args;
+        await redeem(reserve, amount, user, expected, testEnv, revertMessage);
+      }
+      break;
+    case "borrow":
+      {
+        const {amount, borrowRateMode, timeTravel} = action.args;
 
-    //     if (!amount || amount === "") {
-    //       throw `Invalid amount to borrow from the ${reserve} reserve`;
-    //     }
+        if (!amount || amount === "") {
+          throw `Invalid amount to borrow from the ${reserve} reserve`;
+        }
 
-    //     let rateMode: string = RateMode.None;
+        let rateMode: string = RateMode.None;
 
-    //     if (borrowRateMode === "none") {
-    //       RateMode.None;
-    //     } else if (borrowRateMode === "stable") {
-    //       rateMode = RateMode.Stable;
-    //     } else if (borrowRateMode === "variable") {
-    //       rateMode = RateMode.Variable;
-    //     } else {
-    //       //random value, to test improper selection of the parameter
-    //       rateMode = "4";
-    //     }
+        if (borrowRateMode === "none") {
+          RateMode.None;
+        } else if (borrowRateMode === "stable") {
+          rateMode = RateMode.Stable;
+        } else if (borrowRateMode === "variable") {
+          rateMode = RateMode.Variable;
+        } else {
+          //random value, to test improper selection of the parameter
+          rateMode = "4";
+        }
 
-    //     await borrow(
-    //       reserve,
-    //       amount,
-    //       rateMode,
-    //       userAddress,
-    //       timeTravel,
-    //       expected,
-    //       revertMessage
-    //     );
-    //   }
-    //   break;
+        await borrow(
+          reserve,
+          amount,
+          rateMode,
+          user,
+          timeTravel,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
 
-    // case "repay":
-    //   {
-    //     const {amount, sendValue} = action.args;
-    //     let {onBehalfOf} = action.args;
+    case "repay":
+      {
+        const {amount, sendValue} = action.args;
+        let {onBehalfOf: onBehalfOfIndex} = action.args;
 
-    //     if (!amount || amount === "") {
-    //       throw `Invalid amount to repay into the ${reserve} reserve`;
-    //     }
+        if (!amount || amount === "") {
+          throw `Invalid amount to repay into the ${reserve} reserve`;
+        }
 
-    //     if (!onBehalfOf || onBehalfOf === "") {
-    //       console.log(
-    //         "WARNING: No onBehalfOf specified for a repay action. Defaulting to the repayer address"
-    //       );
-    //       onBehalfOf = userAddress;
-    //     } else {
-    //       onBehalfOf = users[parseInt(onBehalfOf)];
-    //     }
+        let userToRepayOnBehalf: SignerWithAddress;
+        if (!onBehalfOfIndex || onBehalfOfIndex === "") {
+          console.log(
+            "WARNING: No onBehalfOf specified for a repay action. Defaulting to the repayer address"
+          );
+          userToRepayOnBehalf = user;
+        } else {
+          userToRepayOnBehalf = users[parseInt(onBehalfOfIndex)];
+        }
 
-    //     await repay(
-    //       reserve,
-    //       amount,
-    //       userAddress,
-    //       onBehalfOf,
-    //       sendValue,
-    //       expected,
-    //       revertMessage
-    //     );
-    //   }
-    //   break;
+        await repay(
+          reserve,
+          amount,
+          user,
+          userToRepayOnBehalf,
+          sendValue,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
 
-    // case "setUseAsCollateral":
-    //   {
-    //     const {useAsCollateral} = action.args;
+    case "setUseAsCollateral":
+      {
+        const {useAsCollateral} = action.args;
 
-    //     if (!useAsCollateral || useAsCollateral === "") {
-    //       throw `A valid value for useAsCollateral needs to be set when calling setUseReserveAsCollateral on reserve ${reserve}`;
-    //     }
-    //     await setUseAsCollateral(
-    //       reserve,
-    //       userAddress,
-    //       useAsCollateral,
-    //       expected,
-    //       revertMessage
-    //     );
-    //   }
-    //   break;
+        if (!useAsCollateral || useAsCollateral === "") {
+          throw `A valid value for useAsCollateral needs to be set when calling setUseReserveAsCollateral on reserve ${reserve}`;
+        }
+        await setUseAsCollateral(
+          reserve,
+          user,
+          useAsCollateral,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
 
-    // case "swapBorrowRateMode":
-    //   await swapBorrowRateMode(reserve, userAddress, expected, revertMessage);
-    //   break;
+    case "swapBorrowRateMode":
+      await swapBorrowRateMode(reserve, user, expected, testEnv, revertMessage);
+      break;
 
-    // case "rebalanceStableBorrowRate":
-    //   {
-    //     const {target} = action.args;
+    case "rebalanceStableBorrowRate":
+      {
+        const {target: targetIndex} = action.args;
 
-    //     if (!target || target === "") {
-    //       throw `A target must be selected when trying to rebalance a stable rate`;
-    //     }
-    //     const targetAddress = users[parseInt(target)];
+        if (!targetIndex || targetIndex === "") {
+          throw `A target must be selected when trying to rebalance a stable rate`;
+        }
+        const target = users[parseInt(targetIndex)];
 
-    //     await rebalanceStableBorrowRate(
-    //       reserve,
-    //       userAddress,
-    //       targetAddress,
-    //       expected,
-    //       revertMessage
-    //     );
-    //   }
-    //   break;
+        await rebalanceStableBorrowRate(
+          reserve,
+          user,
+          target,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
 
-    // case "redirectInterestStream":
-    //   {
-    //     const {to} = action.args;
+    case "redirectInterestStream":
+      {
+        const {to: toIndex} = action.args;
 
-    //     if (!to || to === "") {
-    //       throw `A target must be selected when trying to redirect the interest`;
-    //     }
-    //     const toAddress = users[parseInt(to)];
+        if (!toIndex || toIndex === "") {
+          throw `A target must be selected when trying to redirect the interest`;
+        }
+        const toUser = users[parseInt(toIndex)];
 
-    //     await redirectInterestStream(
-    //       reserve,
-    //       userAddress,
-    //       toAddress,
-    //       expected,
-    //       revertMessage
-    //     );
-    //   }
-    //   break;
+        await redirectInterestStream(
+          reserve,
+          user,
+          toUser.address,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
 
-    // case "redirectInterestStreamOf":
-    //   {
-    //     const {from, to} = action.args;
+    case "redirectInterestStreamOf":
+      {
+        const {from: fromIndex, to: toIndex} = action.args;
 
-    //     if (!from || from === "") {
-    //       throw `A from address must be specified when trying to redirect the interest`;
-    //     }
-    //     if (!to || to === "") {
-    //       throw `A target must be selected when trying to redirect the interest`;
-    //     }
-    //     const toAddress = users[parseInt(to)];
-    //     const fromAddress = users[parseInt(from)];
+        if (!fromIndex || fromIndex === "") {
+          throw `A from address must be specified when trying to redirect the interest`;
+        }
+        if (!toIndex || toIndex === "") {
+          throw `A target must be selected when trying to redirect the interest`;
+        }
+        const toUser = users[parseInt(toIndex)];
+        const fromUser = users[parseInt(fromIndex)];
 
-    //     await redirectInterestStreamOf(
-    //       reserve,
-    //       userAddress,
-    //       fromAddress,
-    //       toAddress,
-    //       expected,
-    //       revertMessage
-    //     );
-    //   }
-    //   break;
+        await redirectInterestStreamOf(
+          reserve,
+          user,
+          fromUser.address,
+          toUser.address,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
 
-    // case "allowInterestRedirectionTo":
-    //   {
-    //     const {to} = action.args;
+    case "allowInterestRedirectionTo":
+      {
+        const {to: toIndex} = action.args;
 
-    //     if (!to || to === "") {
-    //       throw `A target must be selected when trying to redirect the interest`;
-    //     }
-    //     const toAddress = users[parseInt(to)];
+        if (!toIndex || toIndex === "") {
+          throw `A target must be selected when trying to redirect the interest`;
+        }
+        const toUser = users[parseInt(toIndex)];
 
-    //     await allowInterestRedirectionTo(
-    //       reserve,
-    //       userAddress,
-    //       toAddress,
-    //       expected,
-    //       revertMessage
-    //     );
-    //   }
-    //   break;
+        await allowInterestRedirectionTo(
+          reserve,
+          user,
+          toUser.address,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
     default:
       throw `Invalid action requested: ${name}`;
   }

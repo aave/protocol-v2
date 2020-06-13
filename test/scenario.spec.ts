@@ -13,7 +13,21 @@ BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
 const scenarioFolder = "./test/helpers/scenarios/";
 
 fs.readdirSync(scenarioFolder).forEach((file) => {
-  if (file !== "deposit.json") return;
+  if (
+    ![
+      "borrow-negatives.json",
+      "borrow-repay-stable.json",
+      "deposit.json",
+      "redeem-negatives.json",
+      "redeem.json",
+      "set-use-as-collateral.json",
+      "swap-rate-mode.json",
+      "rebalance-stable-rate.json",
+      "interest-redirection.json",
+      "interest-redirection-negatives.json",
+    ].includes(file)
+  )
+    return;
 
   const scenario = require(`./helpers/scenarios/${file}`);
 

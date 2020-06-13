@@ -32,3 +32,16 @@ export const evmSnapshot = async () =>
 
 export const evmRevert = async (id: string) =>
   BRE.ethereum.send("evm_revert", [id]);
+
+export const timeLatest = async () => {
+  const block = await BRE.ethers.provider.getBlock("latest");
+  return new BigNumber(block.timestamp);
+};
+
+export const advanceBlock = async (timestamp: number) =>
+  await BRE.ethers.provider.send("evm_mine", [timestamp]);
+
+export const increaseTime = async (secondsToIncrease: number) =>
+  await BRE.ethers.provider.send("evm_increaseTime", [secondsToIncrease]);
+
+
