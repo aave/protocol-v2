@@ -12,6 +12,7 @@
     "compile": "buidler compile",
     "types-gen": "buidler typechain",
     "test": "buidler test",
+    "test-scenarios": "buidler test test/__setup.spec.ts test/scenario.spec.ts",
     "dev:coverage": "buidler coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example"

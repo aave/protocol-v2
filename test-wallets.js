@@ -32,5 +32,15 @@ module.exports = {
         "0x275cc4a2bfd4f612625204a20a2280ab53a6da2d14860c47a9f5affe58ad86d4",
       balance: toWad("1000000"),
     },
+    {
+      secretKey:
+        "0xaee25d55ce586148a853ca83fdfacaf7bc42d5762c6e7187e6f8e822d8e6a650",
+      balance: toWad("1000000"),
+    },
+    {
+      secretKey:
+        "0xa2e0097c961c67ec197b6865d7ecea6caffc68ebeb00e6050368c8f67fc9c588",
+      balance: toWad("1000000"),
+    },
   ],
 };
