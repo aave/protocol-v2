@@ -58,6 +58,10 @@ export enum ProtocolErrors {
   INCONSISTENT_PROTOCOL_BALANCE = "The actual balance of the protocol is inconsistent",
   TOO_SMALL_FLASH_LOAN = "The requested amount is too small for a flashLoan.",
   NOT_ENOUGH_LIQUIDITY_TO_BORROW = "There is not enough liquidity available to borrow",
+  HF_IS_NOT_BELLOW_THRESHOLD = "Health factor is not below the threshold",
+  INVALID_HF = "Invalid health factor",
+  USER_DID_NOT_BORROW_SPECIFIED = "User did not borrow the specified currency",
+  INVALID_COLLATERAL_TO_LIQUIDATE = "Invalid collateral to liquidate",
 }
 
 export type tEthereumAddress = string;

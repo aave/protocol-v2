@@ -63,6 +63,7 @@ import {MockAggregator} from "../types/MockAggregator";
 import {LendingRateOracle} from "../types/LendingRateOracle";
 import {LendingPoolCore} from "../types/LendingPoolCore";
 import {LendingPoolConfigurator} from "../types/LendingPoolConfigurator";
+import { initializeMakeSuite } from './helpers/make-suite';
 
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
@@ -642,6 +643,7 @@ before(async () => {
   const [deployer, secondaryWallet] = await getEthersSigners();
   console.log("-> Deploying test environment...");
   await buildTestEnv(deployer, secondaryWallet);
+  await initializeMakeSuite();
   console.log("\n***************");
   console.log("Setup and snapshot finished");
   console.log("***************\n");
