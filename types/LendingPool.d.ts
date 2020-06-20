@@ -18,6 +18,14 @@ interface LendingPoolInterface extends Interface {
 
     addressesProvider: TypedFunctionDescription<{ encode([]: []): string }>;
 
+    balanceDecreaseAllowed: TypedFunctionDescription<{
+      encode([_reserve, _user, _amount]: [
+        string,
+        string,
+        BigNumberish
+      ]): string;
+    }>;
+
     borrow: TypedFunctionDescription<{
       encode([_reserve, _amount, _interestRateMode, _referralCode]: [
         string,
@@ -27,16 +35,25 @@ interface LendingPoolInterface extends Interface {
       ]): string;
     }>;
 
-    core: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    dataProvider: TypedFunctionDescription<{ encode([]: []): string }>;
-
     deposit: TypedFunctionDescription<{
       encode([_reserve, _amount, _referralCode]: [
         string,
         BigNumberish,
         BigNumberish
       ]): string;
+    }>;
+
+    disableReserveAsCollateral: TypedFunctionDescription<{
+      encode([_reserve]: [string]): string;
+    }>;
+
+    enableReserveAsCollateral: TypedFunctionDescription<{
+      encode([
+        _reserve,
+        _baseLTVasCollateral,
+        _liquidationThreshold,
+        _liquidationBonus
+      ]: [string, BigNumberish, BigNumberish, BigNumberish]): string;
     }>;
 
     flashLoan: TypedFunctionDescription<{
@@ -56,6 +73,10 @@ interface LendingPoolInterface extends Interface {
       encode([_reserve]: [string]): string;
     }>;
 
+    getReserveNormalizedIncome: TypedFunctionDescription<{
+      encode([_reserve]: [string]): string;
+    }>;
+
     getReserves: TypedFunctionDescription<{ encode([]: []): string }>;
 
     getUserAccountData: TypedFunctionDescription<{
@@ -64,6 +85,15 @@ interface LendingPoolInterface extends Interface {
 
     getUserReserveData: TypedFunctionDescription<{
       encode([_reserve, _user]: [string, string]): string;
+    }>;
+
+    initReserve: TypedFunctionDescription<{
+      encode([
+        _reserve,
+        _aTokenAddress,
+        _decimals,
+        _interestRateStrategyAddress
+      ]: [string, string, BigNumberish, string]): string;
     }>;
 
     initialize: TypedFunctionDescription<{
@@ -79,8 +109,6 @@ interface LendingPoolInterface extends Interface {
         boolean
       ]): string;
     }>;
-
-    parametersProvider: TypedFunctionDescription<{ encode([]: []): string }>;
 
     rebalanceStableBorrowRate: TypedFunctionDescription<{
       encode([_reserve, _user]: [string, string]): string;
@@ -101,6 +129,50 @@ interface LendingPoolInterface extends Interface {
         BigNumberish,
         string
       ]): string;
+    }>;
+
+    reservesList: TypedFunctionDescription<{
+      encode([]: [BigNumberish]): string;
+    }>;
+
+    setReserveActive: TypedFunctionDescription<{
+      encode([_reserve, _active]: [string, boolean]): string;
+    }>;
+
+    setReserveBaseLTVasCollateral: TypedFunctionDescription<{
+      encode([_reserve, _ltv]: [string, BigNumberish]): string;
+    }>;
+
+    setReserveBorrowingEnabled: TypedFunctionDescription<{
+      encode([_reserve, _borrowingEnabled, _stableBorrowRateEnabled]: [
+        string,
+        boolean,
+        boolean
+      ]): string;
+    }>;
+
+    setReserveDecimals: TypedFunctionDescription<{
+      encode([_reserve, _decimals]: [string, BigNumberish]): string;
+    }>;
+
+    setReserveFreeze: TypedFunctionDescription<{
+      encode([_reserve, _isFreezed]: [string, boolean]): string;
+    }>;
+
+    setReserveInterestRateStrategyAddress: TypedFunctionDescription<{
+      encode([_reserve, _rateStrategyAddress]: [string, string]): string;
+    }>;
+
+    setReserveLiquidationBonus: TypedFunctionDescription<{
+      encode([_reserve, _bonus]: [string, BigNumberish]): string;
+    }>;
+
+    setReserveLiquidationThreshold: TypedFunctionDescription<{
+      encode([_reserve, _threshold]: [string, BigNumberish]): string;
+    }>;
+
+    setReserveStableBorrowRateEnabled: TypedFunctionDescription<{
+      encode([_reserve, _enabled]: [string, boolean]): string;
     }>;
 
     setUserUseReserveAsCollateral: TypedFunctionDescription<{
@@ -280,6 +352,12 @@ export class LendingPool extends Contract {
 
     addressesProvider(): Promise<string>;
 
+    balanceDecreaseAllowed(
+      _reserve: string,
+      _user: string,
+      _amount: BigNumberish
+    ): Promise<boolean>;
+
     borrow(
       _reserve: string,
       _amount: BigNumberish,
@@ -288,14 +366,23 @@ export class LendingPool extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    core(): Promise<string>;
-
-    dataProvider(): Promise<string>;
-
     deposit(
       _reserve: string,
       _amount: BigNumberish,
       _referralCode: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    disableReserveAsCollateral(
+      _reserve: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    enableReserveAsCollateral(
+      _reserve: string,
+      _baseLTVasCollateral: BigNumberish,
+      _liquidationThreshold: BigNumberish,
+      _liquidationBonus: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -314,6 +401,7 @@ export class LendingPool extends Contract {
       liquidationThreshold: BigNumber;
       liquidationBonus: BigNumber;
       interestRateStrategyAddress: string;
+      aTokenAddress: string;
       usageAsCollateralEnabled: boolean;
       borrowingEnabled: boolean;
       stableBorrowRateEnabled: boolean;
@@ -322,16 +410,16 @@ export class LendingPool extends Contract {
       1: BigNumber;
       2: BigNumber;
       3: string;
-      4: boolean;
+      4: string;
       5: boolean;
       6: boolean;
       7: boolean;
+      8: boolean;
     }>;
 
     getReserveData(
       _reserve: string
     ): Promise<{
-      totalLiquidity: BigNumber;
       availableLiquidity: BigNumber;
       totalBorrowsStable: BigNumber;
       totalBorrowsVariable: BigNumber;
@@ -339,10 +427,8 @@ export class LendingPool extends Contract {
       variableBorrowRate: BigNumber;
       stableBorrowRate: BigNumber;
       averageStableBorrowRate: BigNumber;
-      utilizationRate: BigNumber;
       liquidityIndex: BigNumber;
       variableBorrowIndex: BigNumber;
-      aTokenAddress: string;
       lastUpdateTimestamp: number;
       0: BigNumber;
       1: BigNumber;
@@ -353,18 +439,16 @@ export class LendingPool extends Contract {
       6: BigNumber;
       7: BigNumber;
       8: BigNumber;
-      9: BigNumber;
-      10: BigNumber;
-      11: string;
-      12: number;
+      9: number;
     }>;
+
+    getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
     getReserves(): Promise<string[]>;
 
     getUserAccountData(
       _user: string
     ): Promise<{
-      totalLiquidityETH: BigNumber;
       totalCollateralETH: BigNumber;
       totalBorrowsETH: BigNumber;
       totalFeesETH: BigNumber;
@@ -379,7 +463,6 @@ export class LendingPool extends Contract {
       4: BigNumber;
       5: BigNumber;
       6: BigNumber;
-      7: BigNumber;
     }>;
 
     getUserReserveData(
@@ -408,6 +491,14 @@ export class LendingPool extends Contract {
       9: boolean;
     }>;
 
+    initReserve(
+      _reserve: string,
+      _aTokenAddress: string,
+      _decimals: BigNumberish,
+      _interestRateStrategyAddress: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     initialize(
       _addressesProvider: string,
       overrides?: TransactionOverrides
@@ -421,8 +512,6 @@ export class LendingPool extends Contract {
       _receiveAToken: boolean,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
-
-    parametersProvider(): Promise<string>;
 
     rebalanceStableBorrowRate(
       _reserve: string,
@@ -445,6 +534,63 @@ export class LendingPool extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    reservesList(arg0: BigNumberish): Promise<string>;
+
+    setReserveActive(
+      _reserve: string,
+      _active: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveBaseLTVasCollateral(
+      _reserve: string,
+      _ltv: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveBorrowingEnabled(
+      _reserve: string,
+      _borrowingEnabled: boolean,
+      _stableBorrowRateEnabled: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveDecimals(
+      _reserve: string,
+      _decimals: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveFreeze(
+      _reserve: string,
+      _isFreezed: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveInterestRateStrategyAddress(
+      _reserve: string,
+      _rateStrategyAddress: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveLiquidationBonus(
+      _reserve: string,
+      _bonus: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveLiquidationThreshold(
+      _reserve: string,
+      _threshold: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    setReserveStableBorrowRateEnabled(
+      _reserve: string,
+      _enabled: boolean,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     setUserUseReserveAsCollateral(
       _reserve: string,
       _useAsCollateral: boolean,
@@ -463,6 +609,12 @@ export class LendingPool extends Contract {
 
   addressesProvider(): Promise<string>;
 
+  balanceDecreaseAllowed(
+    _reserve: string,
+    _user: string,
+    _amount: BigNumberish
+  ): Promise<boolean>;
+
   borrow(
     _reserve: string,
     _amount: BigNumberish,
@@ -471,14 +623,23 @@ export class LendingPool extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  core(): Promise<string>;
-
-  dataProvider(): Promise<string>;
-
   deposit(
     _reserve: string,
     _amount: BigNumberish,
     _referralCode: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  disableReserveAsCollateral(
+    _reserve: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  enableReserveAsCollateral(
+    _reserve: string,
+    _baseLTVasCollateral: BigNumberish,
+    _liquidationThreshold: BigNumberish,
+    _liquidationBonus: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -497,6 +658,7 @@ export class LendingPool extends Contract {
     liquidationThreshold: BigNumber;
     liquidationBonus: BigNumber;
     interestRateStrategyAddress: string;
+    aTokenAddress: string;
     usageAsCollateralEnabled: boolean;
     borrowingEnabled: boolean;
     stableBorrowRateEnabled: boolean;
@@ -505,16 +667,16 @@ export class LendingPool extends Contract {
     1: BigNumber;
     2: BigNumber;
     3: string;
-    4: boolean;
+    4: string;
     5: boolean;
     6: boolean;
     7: boolean;
+    8: boolean;
   }>;
 
   getReserveData(
     _reserve: string
   ): Promise<{
-    totalLiquidity: BigNumber;
     availableLiquidity: BigNumber;
     totalBorrowsStable: BigNumber;
     totalBorrowsVariable: BigNumber;
@@ -522,10 +684,8 @@ export class LendingPool extends Contract {
     variableBorrowRate: BigNumber;
     stableBorrowRate: BigNumber;
     averageStableBorrowRate: BigNumber;
-    utilizationRate: BigNumber;
     liquidityIndex: BigNumber;
     variableBorrowIndex: BigNumber;
-    aTokenAddress: string;
     lastUpdateTimestamp: number;
     0: BigNumber;
     1: BigNumber;
@@ -536,18 +696,16 @@ export class LendingPool extends Contract {
     6: BigNumber;
     7: BigNumber;
     8: BigNumber;
-    9: BigNumber;
-    10: BigNumber;
-    11: string;
-    12: number;
+    9: number;
   }>;
+
+  getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
   getReserves(): Promise<string[]>;
 
   getUserAccountData(
     _user: string
   ): Promise<{
-    totalLiquidityETH: BigNumber;
     totalCollateralETH: BigNumber;
     totalBorrowsETH: BigNumber;
     totalFeesETH: BigNumber;
@@ -562,7 +720,6 @@ export class LendingPool extends Contract {
     4: BigNumber;
     5: BigNumber;
     6: BigNumber;
-    7: BigNumber;
   }>;
 
   getUserReserveData(
@@ -591,6 +748,14 @@ export class LendingPool extends Contract {
     9: boolean;
   }>;
 
+  initReserve(
+    _reserve: string,
+    _aTokenAddress: string,
+    _decimals: BigNumberish,
+    _interestRateStrategyAddress: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   initialize(
     _addressesProvider: string,
     overrides?: TransactionOverrides
@@ -604,8 +769,6 @@ export class LendingPool extends Contract {
     _receiveAToken: boolean,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
-
-  parametersProvider(): Promise<string>;
 
   rebalanceStableBorrowRate(
     _reserve: string,
@@ -625,6 +788,63 @@ export class LendingPool extends Contract {
     _reserve: string,
     _amount: BigNumberish,
     _onBehalfOf: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  reservesList(arg0: BigNumberish): Promise<string>;
+
+  setReserveActive(
+    _reserve: string,
+    _active: boolean,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveBaseLTVasCollateral(
+    _reserve: string,
+    _ltv: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveBorrowingEnabled(
+    _reserve: string,
+    _borrowingEnabled: boolean,
+    _stableBorrowRateEnabled: boolean,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveDecimals(
+    _reserve: string,
+    _decimals: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveFreeze(
+    _reserve: string,
+    _isFreezed: boolean,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveInterestRateStrategyAddress(
+    _reserve: string,
+    _rateStrategyAddress: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveLiquidationBonus(
+    _reserve: string,
+    _bonus: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveLiquidationThreshold(
+    _reserve: string,
+    _threshold: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  setReserveStableBorrowRateEnabled(
+    _reserve: string,
+    _enabled: boolean,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -742,6 +962,12 @@ export class LendingPool extends Contract {
 
     addressesProvider(): Promise<BigNumber>;
 
+    balanceDecreaseAllowed(
+      _reserve: string,
+      _user: string,
+      _amount: BigNumberish
+    ): Promise<BigNumber>;
+
     borrow(
       _reserve: string,
       _amount: BigNumberish,
@@ -749,14 +975,19 @@ export class LendingPool extends Contract {
       _referralCode: BigNumberish
     ): Promise<BigNumber>;
 
-    core(): Promise<BigNumber>;
-
-    dataProvider(): Promise<BigNumber>;
-
     deposit(
       _reserve: string,
       _amount: BigNumberish,
       _referralCode: BigNumberish
+    ): Promise<BigNumber>;
+
+    disableReserveAsCollateral(_reserve: string): Promise<BigNumber>;
+
+    enableReserveAsCollateral(
+      _reserve: string,
+      _baseLTVasCollateral: BigNumberish,
+      _liquidationThreshold: BigNumberish,
+      _liquidationBonus: BigNumberish
     ): Promise<BigNumber>;
 
     flashLoan(
@@ -770,11 +1001,20 @@ export class LendingPool extends Contract {
 
     getReserveData(_reserve: string): Promise<BigNumber>;
 
+    getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
+
     getReserves(): Promise<BigNumber>;
 
     getUserAccountData(_user: string): Promise<BigNumber>;
 
     getUserReserveData(_reserve: string, _user: string): Promise<BigNumber>;
+
+    initReserve(
+      _reserve: string,
+      _aTokenAddress: string,
+      _decimals: BigNumberish,
+      _interestRateStrategyAddress: string
+    ): Promise<BigNumber>;
 
     initialize(_addressesProvider: string): Promise<BigNumber>;
 
@@ -785,8 +1025,6 @@ export class LendingPool extends Contract {
       _purchaseAmount: BigNumberish,
       _receiveAToken: boolean
     ): Promise<BigNumber>;
-
-    parametersProvider(): Promise<BigNumber>;
 
     rebalanceStableBorrowRate(
       _reserve: string,
@@ -804,6 +1042,48 @@ export class LendingPool extends Contract {
       _reserve: string,
       _amount: BigNumberish,
       _onBehalfOf: string
+    ): Promise<BigNumber>;
+
+    reservesList(arg0: BigNumberish): Promise<BigNumber>;
+
+    setReserveActive(_reserve: string, _active: boolean): Promise<BigNumber>;
+
+    setReserveBaseLTVasCollateral(
+      _reserve: string,
+      _ltv: BigNumberish
+    ): Promise<BigNumber>;
+
+    setReserveBorrowingEnabled(
+      _reserve: string,
+      _borrowingEnabled: boolean,
+      _stableBorrowRateEnabled: boolean
+    ): Promise<BigNumber>;
+
+    setReserveDecimals(
+      _reserve: string,
+      _decimals: BigNumberish
+    ): Promise<BigNumber>;
+
+    setReserveFreeze(_reserve: string, _isFreezed: boolean): Promise<BigNumber>;
+
+    setReserveInterestRateStrategyAddress(
+      _reserve: string,
+      _rateStrategyAddress: string
+    ): Promise<BigNumber>;
+
+    setReserveLiquidationBonus(
+      _reserve: string,
+      _bonus: BigNumberish
+    ): Promise<BigNumber>;
+
+    setReserveLiquidationThreshold(
+      _reserve: string,
+      _threshold: BigNumberish
+    ): Promise<BigNumber>;
+
+    setReserveStableBorrowRateEnabled(
+      _reserve: string,
+      _enabled: boolean
     ): Promise<BigNumber>;
 
     setUserUseReserveAsCollateral(

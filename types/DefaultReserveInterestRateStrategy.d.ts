@@ -22,10 +22,6 @@ interface DefaultReserveInterestRateStrategyInterface extends Interface {
 
     addressesProvider: TypedFunctionDescription<{ encode([]: []): string }>;
 
-    baseVariableBorrowRate: TypedFunctionDescription<{
-      encode([]: []): string;
-    }>;
-
     calculateInterestRates: TypedFunctionDescription<{
       encode([
         _reserve,
@@ -53,16 +49,6 @@ interface DefaultReserveInterestRateStrategyInterface extends Interface {
     getVariableRateSlope1: TypedFunctionDescription<{ encode([]: []): string }>;
 
     getVariableRateSlope2: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    reserve: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    stableRateSlope1: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    stableRateSlope2: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    variableRateSlope1: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    variableRateSlope2: TypedFunctionDescription<{ encode([]: []): string }>;
   };
 
   events: {};
@@ -104,8 +90,6 @@ export class DefaultReserveInterestRateStrategy extends Contract {
 
     addressesProvider(): Promise<string>;
 
-    baseVariableBorrowRate(): Promise<BigNumber>;
-
     calculateInterestRates(
       _reserve: string,
       _availableLiquidity: BigNumberish,
@@ -130,16 +114,6 @@ export class DefaultReserveInterestRateStrategy extends Contract {
     getVariableRateSlope1(): Promise<BigNumber>;
 
     getVariableRateSlope2(): Promise<BigNumber>;
-
-    reserve(): Promise<string>;
-
-    stableRateSlope1(): Promise<BigNumber>;
-
-    stableRateSlope2(): Promise<BigNumber>;
-
-    variableRateSlope1(): Promise<BigNumber>;
-
-    variableRateSlope2(): Promise<BigNumber>;
   };
 
   EXCESS_UTILIZATION_RATE(): Promise<BigNumber>;
@@ -147,8 +121,6 @@ export class DefaultReserveInterestRateStrategy extends Contract {
   OPTIMAL_UTILIZATION_RATE(): Promise<BigNumber>;
 
   addressesProvider(): Promise<string>;
-
-  baseVariableBorrowRate(): Promise<BigNumber>;
 
   calculateInterestRates(
     _reserve: string,
@@ -175,16 +147,6 @@ export class DefaultReserveInterestRateStrategy extends Contract {
 
   getVariableRateSlope2(): Promise<BigNumber>;
 
-  reserve(): Promise<string>;
-
-  stableRateSlope1(): Promise<BigNumber>;
-
-  stableRateSlope2(): Promise<BigNumber>;
-
-  variableRateSlope1(): Promise<BigNumber>;
-
-  variableRateSlope2(): Promise<BigNumber>;
-
   filters: {};
 
   estimate: {
@@ -193,8 +155,6 @@ export class DefaultReserveInterestRateStrategy extends Contract {
     OPTIMAL_UTILIZATION_RATE(): Promise<BigNumber>;
 
     addressesProvider(): Promise<BigNumber>;
-
-    baseVariableBorrowRate(): Promise<BigNumber>;
 
     calculateInterestRates(
       _reserve: string,
@@ -213,15 +173,5 @@ export class DefaultReserveInterestRateStrategy extends Contract {
     getVariableRateSlope1(): Promise<BigNumber>;
 
     getVariableRateSlope2(): Promise<BigNumber>;
-
-    reserve(): Promise<BigNumber>;
-
-    stableRateSlope1(): Promise<BigNumber>;
-
-    stableRateSlope2(): Promise<BigNumber>;
-
-    variableRateSlope1(): Promise<BigNumber>;
-
-    variableRateSlope2(): Promise<BigNumber>;
   };
 }

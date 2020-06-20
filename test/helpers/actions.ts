@@ -156,7 +156,7 @@ export const approve = async (
   user: SignerWithAddress,
   testEnv: TestEnv
 ) => {
-  const {core} = testEnv;
+  const {pool} = testEnv;
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
   if (MOCK_ETH_ADDRESS.toLowerCase() === reserve.toLowerCase()) {
@@ -167,7 +167,7 @@ export const approve = async (
 
   await token
     .connect(user.signer)
-    .approve(core.address, "100000000000000000000000000000");
+    .approve(pool.address, "100000000000000000000000000000");
 };
 
 export const deposit = async (
@@ -969,9 +969,9 @@ const getContractsData = async (
   user: string,
   testEnv: TestEnv
 ) => {
-  const {pool, core} = testEnv;
+  const {pool} = testEnv;
   const reserveData = await getReserveData(pool, reserve);
-  const userData = await getUserData(pool, core, reserve, user);
+  const userData = await getUserData(pool, reserve, user);
   const timestamp = await timeLatest();
 
   return {

@@ -61,32 +61,6 @@ const _abi = [
   },
   {
     inputs: [],
-    name: "getLendingPoolCore",
-    outputs: [
-      {
-        internalType: "address payable",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "getLendingPoolDataProvider",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
     name: "getLendingPoolLiquidationManager",
     outputs: [
       {
@@ -101,19 +75,6 @@ const _abi = [
   {
     inputs: [],
     name: "getLendingPoolManager",
-    outputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address"
-      }
-    ],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "getLendingPoolParametersProvider",
     outputs: [
       {
         internalType: "address",
@@ -193,32 +154,6 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_lendingPoolCore",
-        type: "address"
-      }
-    ],
-    name: "setLendingPoolCoreImpl",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_provider",
-        type: "address"
-      }
-    ],
-    name: "setLendingPoolDataProviderImpl",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
         name: "_pool",
         type: "address"
       }
@@ -250,19 +185,6 @@ const _abi = [
       }
     ],
     name: "setLendingPoolManager",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_parametersProvider",
-        type: "address"
-      }
-    ],
-    name: "setLendingPoolParametersProviderImpl",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

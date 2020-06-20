@@ -47,7 +47,7 @@ interface LendingPoolConfiguratorInterface extends Interface {
       ]: [string, BigNumberish, BigNumberish, BigNumberish]): string;
     }>;
 
-    enableReserveStableBorrowRate: TypedFunctionDescription<{
+    enableReserveStableRate: TypedFunctionDescription<{
       encode([_reserve]: [string]): string;
     }>;
 
@@ -78,14 +78,6 @@ interface LendingPoolConfiguratorInterface extends Interface {
     }>;
 
     poolAddressesProvider: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    refreshLendingPoolCoreConfiguration: TypedFunctionDescription<{
-      encode([]: []): string;
-    }>;
-
-    removeLastAddedReserve: TypedFunctionDescription<{
-      encode([_reserveToRemove]: [string]): string;
-    }>;
 
     setReserveBaseLTVasCollateral: TypedFunctionDescription<{
       encode([_reserve, _ltv]: [string, BigNumberish]): string;
@@ -255,7 +247,7 @@ export class LendingPoolConfigurator extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    enableReserveStableBorrowRate(
+    enableReserveStableRate(
       _reserve: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -287,15 +279,6 @@ export class LendingPoolConfigurator extends Contract {
     ): Promise<ContractTransaction>;
 
     poolAddressesProvider(): Promise<string>;
-
-    refreshLendingPoolCoreConfiguration(
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    removeLastAddedReserve(
-      _reserveToRemove: string,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
 
     setReserveBaseLTVasCollateral(
       _reserve: string,
@@ -374,7 +357,7 @@ export class LendingPoolConfigurator extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  enableReserveStableBorrowRate(
+  enableReserveStableRate(
     _reserve: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -406,15 +389,6 @@ export class LendingPoolConfigurator extends Contract {
   ): Promise<ContractTransaction>;
 
   poolAddressesProvider(): Promise<string>;
-
-  refreshLendingPoolCoreConfiguration(
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  removeLastAddedReserve(
-    _reserveToRemove: string,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
 
   setReserveBaseLTVasCollateral(
     _reserve: string,
@@ -530,7 +504,7 @@ export class LendingPoolConfigurator extends Contract {
       _liquidationBonus: BigNumberish
     ): Promise<BigNumber>;
 
-    enableReserveStableBorrowRate(_reserve: string): Promise<BigNumber>;
+    enableReserveStableRate(_reserve: string): Promise<BigNumber>;
 
     freezeReserve(_reserve: string): Promise<BigNumber>;
 
@@ -551,10 +525,6 @@ export class LendingPoolConfigurator extends Contract {
     initialize(_poolAddressesProvider: string): Promise<BigNumber>;
 
     poolAddressesProvider(): Promise<BigNumber>;
-
-    refreshLendingPoolCoreConfiguration(): Promise<BigNumber>;
-
-    removeLastAddedReserve(_reserveToRemove: string): Promise<BigNumber>;
 
     setReserveBaseLTVasCollateral(
       _reserve: string,

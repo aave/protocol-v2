@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from "../interfaces/ILendingPoolAddressesProvider.sol";
 import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
-import {LendingPoolCore} from "../lendingpool/LendingPool.sol";
+import {LendingPool} from "../lendingpool/LendingPool.sol";
 import {AToken} from "../tokenization/AToken.sol";
 
 contract AaveProtocolTestHelpers {
@@ -19,8 +19,8 @@ contract AaveProtocolTestHelpers {
     }
 
     function getAllReservesTokens() external view returns(TokenData[] memory) {
-        LendingPoolCore core = LendingPoolCore(ADDRESSES_PROVIDER.getLendingPoolCore());
-        address[] memory reserves = core.getReserves();
+        LendingPool pool = LendingPool(payable(ADDRESSES_PROVIDER.getLendingPool()));
+        address[] memory reserves = pool.getReserves();
         TokenData[] memory reservesTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
             reservesTokens[i] = TokenData({
@@ -32,11 +32,11 @@ contract AaveProtocolTestHelpers {
     }
 
     function getAllATokens() external view returns(TokenData[] memory) {
-        LendingPoolCore core = LendingPoolCore(ADDRESSES_PROVIDER.getLendingPoolCore());
-        address[] memory reserves = core.getReserves();
+        LendingPool pool = LendingPool(payable(ADDRESSES_PROVIDER.getLendingPool()));
+        address[] memory reserves = pool.getReserves();
         TokenData[] memory aTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
-            address aTokenAddress = core.getReserveATokenAddress(reserves[i]);
+            (,,,address aTokenAddress,,,,,) = pool.getReserveConfigurationData(reserves[i]);
             aTokens[i] = TokenData({
                 symbol: AToken(aTokenAddress).symbol(),
                 tokenAddress: aTokenAddress

@@ -5,14 +5,10 @@ import {
   deployMintableErc20,
   deployLendingPoolAddressesProviderRegistry,
   deployFeeProvider,
-  deployLendingPoolParametersProvider,
-  deployLendingPoolCore,
   deployLendingPoolConfigurator,
-  deployLendingPoolDataProvider,
   deployLendingPool,
   deployPriceOracle,
   getLendingPoolConfiguratorProxy,
-  getLendingPoolCore,
   deployMockAggregator,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
@@ -25,8 +21,6 @@ import {
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   getFeeProvider,
-  getLendingPoolParametersProvider,
-  getLendingPoolDataProvider,
   getLendingPool,
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
@@ -61,7 +55,7 @@ import {
 import {PriceOracle} from "../types/PriceOracle";
 import {MockAggregator} from "../types/MockAggregator";
 import {LendingRateOracle} from "../types/LendingRateOracle";
-import {LendingPoolCore} from "../types/LendingPoolCore";
+import {LendingPool} from "../types/LendingPool";
 import {LendingPoolConfigurator} from "../types/LendingPoolConfigurator";
 import { initializeMakeSuite } from './helpers/make-suite';
 
@@ -181,7 +175,7 @@ const initReserves = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
   lendingPoolAddressesProvider: LendingPoolAddressesProvider,
-  lendingPoolCore: LendingPoolCore,
+  lendingPool: LendingPool,
   lendingPoolConfigurator: LendingPoolConfigurator,
   aavePool: AavePools
 ) => {
@@ -200,7 +194,7 @@ const initReserves = async (
       string,
       string
     ][])[assetAddressIndex];
-    const reserveInitialized = await lendingPoolCore.getReserveIsActive(
+    const reserveInitialized = await lendingPool.getReserveIsActive(
       tokenAddress
     );
 
@@ -265,7 +259,7 @@ const initReserves = async (
 const enableReservesToBorrow = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPoolCore: LendingPoolCore,
+  lendingPool: LendingPool,
   lendingPoolConfigurator: LendingPoolConfigurator
 ) => {
   for (const [
@@ -281,7 +275,7 @@ const enableReservesToBorrow = async (
         string,
         string
       ][])[assetAddressIndex];
-      const borrowingAlreadyEnabled = await lendingPoolCore.isReserveBorrowingEnabled(
+      const borrowingAlreadyEnabled = await lendingPool.isReserveBorrowingEnabled(
         tokenAddress
       );
 
@@ -307,7 +301,7 @@ const enableReservesToBorrow = async (
 const enableReservesAsCollateral = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPoolCore: LendingPoolCore,
+  lendingPool: LendingPool,
   lendingPoolConfigurator: LendingPoolConfigurator
 ) => {
   for (const [
@@ -323,7 +317,7 @@ const enableReservesAsCollateral = async (
       string,
       string
     ][])[assetAddressIndex];
-    const alreadyEnabled = await lendingPoolCore.isReserveUsageAsCollateralEnabled(
+    const alreadyEnabled = await lendingPool.isReserveUsageAsCollateralEnabled(
       tokenAddress
     );
 
@@ -382,32 +376,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     feeProviderProxy.address
   );
 
-  const parametersProviderImpl = await deployLendingPoolParametersProvider();
-  await waitForTx(
-    await addressesProvider.setLendingPoolParametersProviderImpl(
-      parametersProviderImpl.address
-    )
-  );
-  const parametersProviderProxy = await getLendingPoolParametersProvider(
-    await addressesProvider.getLendingPoolParametersProvider()
-  );
-  await insertContractAddressInDb(
-    eContractid.LendingPoolParametersProvider,
-    parametersProviderProxy.address
-  );
-
-  const lendingPoolCoreImpl = await deployLendingPoolCore();
-  await waitForTx(
-    await addressesProvider.setLendingPoolCoreImpl(lendingPoolCoreImpl.address)
-  );
-  const lendingPoolCoreProxy = await getLendingPoolCore(
-    await addressesProvider.getLendingPoolCore()
-  );
-  await insertContractAddressInDb(
-    eContractid.LendingPoolCore,
-    lendingPoolCoreProxy.address
-  );
-
   const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator();
   await waitForTx(
     await addressesProvider.setLendingPoolConfiguratorImpl(
@@ -422,34 +390,27 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolConfiguratorProxy.address
   );
 
-  const dataProviderImpl = await deployLendingPoolDataProvider();
-  await waitForTx(
-    await addressesProvider.setLendingPoolDataProviderImpl(
-      dataProviderImpl.address
-    )
-  );
-  const dataProviderProxy = await getLendingPoolDataProvider(
-    await addressesProvider.getLendingPoolDataProvider()
-  );
-  await insertContractAddressInDb(
-    eContractid.LendingPoolDataProvider,
-    dataProviderProxy.address
-  );
-
+  
   const lendingPoolImpl = await deployLendingPool();
+
+  console.log("Deployed lending pool, address:", lendingPoolImpl.address)
   await waitForTx(
     await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address)
   );
+
+  console.log("Added pool to addresses provider")
+
+  const address = await addressesProvider.getLendingPool()
+  console.log("Address is ", address)
   const lendingPoolProxy = await getLendingPool(
-    await addressesProvider.getLendingPool()
+    address    
   );
+
+  console.log("implementation set, address:", lendingPoolProxy)
+
   await insertContractAddressInDb(
     eContractid.LendingPool,
     lendingPoolProxy.address
-  );
-
-  await waitForTx(
-    await lendingPoolConfiguratorProxy.refreshLendingPoolCoreConfiguration()
   );
 
   const fallbackOracle = await deployPriceOracle();
@@ -554,24 +515,25 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const reservesParams = getReservesConfigByPool(AavePools.proto);
 
+  console.log("Initialize configuration")
   await initReserves(
     reservesParams,
     protoPoolReservesAddresses,
     addressesProvider,
-    lendingPoolCoreProxy,
+    lendingPoolProxy,
     lendingPoolConfiguratorProxy,
     AavePools.proto
   );
   await enableReservesToBorrow(
     reservesParams,
     protoPoolReservesAddresses,
-    lendingPoolCoreProxy,
+    lendingPoolProxy,
     lendingPoolConfiguratorProxy
   );
   await enableReservesAsCollateral(
     reservesParams,
     protoPoolReservesAddresses,
-    lendingPoolCoreProxy,
+    lendingPoolProxy,
     lendingPoolConfiguratorProxy
   );
 

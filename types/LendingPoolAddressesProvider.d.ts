@@ -24,21 +24,11 @@ interface LendingPoolAddressesProviderInterface extends Interface {
       encode([]: []): string;
     }>;
 
-    getLendingPoolCore: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    getLendingPoolDataProvider: TypedFunctionDescription<{
-      encode([]: []): string;
-    }>;
-
     getLendingPoolLiquidationManager: TypedFunctionDescription<{
       encode([]: []): string;
     }>;
 
     getLendingPoolManager: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    getLendingPoolParametersProvider: TypedFunctionDescription<{
-      encode([]: []): string;
-    }>;
 
     getLendingRateOracle: TypedFunctionDescription<{ encode([]: []): string }>;
 
@@ -58,14 +48,6 @@ interface LendingPoolAddressesProviderInterface extends Interface {
       encode([_configurator]: [string]): string;
     }>;
 
-    setLendingPoolCoreImpl: TypedFunctionDescription<{
-      encode([_lendingPoolCore]: [string]): string;
-    }>;
-
-    setLendingPoolDataProviderImpl: TypedFunctionDescription<{
-      encode([_provider]: [string]): string;
-    }>;
-
     setLendingPoolImpl: TypedFunctionDescription<{
       encode([_pool]: [string]): string;
     }>;
@@ -76,10 +58,6 @@ interface LendingPoolAddressesProviderInterface extends Interface {
 
     setLendingPoolManager: TypedFunctionDescription<{
       encode([_lendingPoolManager]: [string]): string;
-    }>;
-
-    setLendingPoolParametersProviderImpl: TypedFunctionDescription<{
-      encode([_parametersProvider]: [string]): string;
     }>;
 
     setLendingRateOracle: TypedFunctionDescription<{
@@ -116,19 +94,11 @@ interface LendingPoolAddressesProviderInterface extends Interface {
       encodeTopics([newAddress]: [string | null]): string[];
     }>;
 
-    LendingPoolDataProviderUpdated: TypedEventDescription<{
-      encodeTopics([newAddress]: [string | null]): string[];
-    }>;
-
     LendingPoolLiquidationManagerUpdated: TypedEventDescription<{
       encodeTopics([newAddress]: [string | null]): string[];
     }>;
 
     LendingPoolManagerUpdated: TypedEventDescription<{
-      encodeTopics([newAddress]: [string | null]): string[];
-    }>;
-
-    LendingPoolParametersProviderUpdated: TypedEventDescription<{
       encodeTopics([newAddress]: [string | null]): string[];
     }>;
 
@@ -199,15 +169,9 @@ export class LendingPoolAddressesProvider extends Contract {
 
     getLendingPoolConfigurator(): Promise<string>;
 
-    getLendingPoolCore(): Promise<string>;
-
-    getLendingPoolDataProvider(): Promise<string>;
-
     getLendingPoolLiquidationManager(): Promise<string>;
 
     getLendingPoolManager(): Promise<string>;
-
-    getLendingPoolParametersProvider(): Promise<string>;
 
     getLendingRateOracle(): Promise<string>;
 
@@ -231,16 +195,6 @@ export class LendingPoolAddressesProvider extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    setLendingPoolCoreImpl(
-      _lendingPoolCore: string,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    setLendingPoolDataProviderImpl(
-      _provider: string,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
     setLendingPoolImpl(
       _pool: string,
       overrides?: TransactionOverrides
@@ -253,11 +207,6 @@ export class LendingPoolAddressesProvider extends Contract {
 
     setLendingPoolManager(
       _lendingPoolManager: string,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    setLendingPoolParametersProviderImpl(
-      _parametersProvider: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -290,15 +239,9 @@ export class LendingPoolAddressesProvider extends Contract {
 
   getLendingPoolConfigurator(): Promise<string>;
 
-  getLendingPoolCore(): Promise<string>;
-
-  getLendingPoolDataProvider(): Promise<string>;
-
   getLendingPoolLiquidationManager(): Promise<string>;
 
   getLendingPoolManager(): Promise<string>;
-
-  getLendingPoolParametersProvider(): Promise<string>;
 
   getLendingRateOracle(): Promise<string>;
 
@@ -322,16 +265,6 @@ export class LendingPoolAddressesProvider extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  setLendingPoolCoreImpl(
-    _lendingPoolCore: string,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  setLendingPoolDataProviderImpl(
-    _provider: string,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
   setLendingPoolImpl(
     _pool: string,
     overrides?: TransactionOverrides
@@ -344,11 +277,6 @@ export class LendingPoolAddressesProvider extends Contract {
 
   setLendingPoolManager(
     _lendingPoolManager: string,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  setLendingPoolParametersProviderImpl(
-    _parametersProvider: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -381,17 +309,11 @@ export class LendingPoolAddressesProvider extends Contract {
 
     LendingPoolCoreUpdated(newAddress: string | null): EventFilter;
 
-    LendingPoolDataProviderUpdated(newAddress: string | null): EventFilter;
-
     LendingPoolLiquidationManagerUpdated(
       newAddress: string | null
     ): EventFilter;
 
     LendingPoolManagerUpdated(newAddress: string | null): EventFilter;
-
-    LendingPoolParametersProviderUpdated(
-      newAddress: string | null
-    ): EventFilter;
 
     LendingPoolUpdated(newAddress: string | null): EventFilter;
 
@@ -418,15 +340,9 @@ export class LendingPoolAddressesProvider extends Contract {
 
     getLendingPoolConfigurator(): Promise<BigNumber>;
 
-    getLendingPoolCore(): Promise<BigNumber>;
-
-    getLendingPoolDataProvider(): Promise<BigNumber>;
-
     getLendingPoolLiquidationManager(): Promise<BigNumber>;
 
     getLendingPoolManager(): Promise<BigNumber>;
-
-    getLendingPoolParametersProvider(): Promise<BigNumber>;
 
     getLendingRateOracle(): Promise<BigNumber>;
 
@@ -442,19 +358,11 @@ export class LendingPoolAddressesProvider extends Contract {
 
     setLendingPoolConfiguratorImpl(_configurator: string): Promise<BigNumber>;
 
-    setLendingPoolCoreImpl(_lendingPoolCore: string): Promise<BigNumber>;
-
-    setLendingPoolDataProviderImpl(_provider: string): Promise<BigNumber>;
-
     setLendingPoolImpl(_pool: string): Promise<BigNumber>;
 
     setLendingPoolLiquidationManager(_manager: string): Promise<BigNumber>;
 
     setLendingPoolManager(_lendingPoolManager: string): Promise<BigNumber>;
-
-    setLendingPoolParametersProviderImpl(
-      _parametersProvider: string
-    ): Promise<BigNumber>;
 
     setLendingRateOracle(_lendingRateOracle: string): Promise<BigNumber>;
 

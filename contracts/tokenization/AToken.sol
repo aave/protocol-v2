@@ -2,11 +2,8 @@
 pragma solidity ^0.6.8;
 
 import "./ERC20.sol";
-
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../lendingpool/LendingPool.sol";
-import "../lendingpool/LendingPoolDataProvider.sol";
-import "../lendingpool/LendingPoolCore.sol";
 import "../libraries/WadRayMath.sol";
 
 /**
@@ -128,9 +125,7 @@ contract AToken is ERC20 {
     mapping (address => address) private interestRedirectionAllowances;
 
     LendingPoolAddressesProvider private addressesProvider;
-    LendingPoolCore private core;
     LendingPool private pool;
-    LendingPoolDataProvider private dataProvider;
 
     modifier onlyLendingPool {
         require(
@@ -154,9 +149,7 @@ contract AToken is ERC20 {
     ) public ERC20(_name, _symbol) {
         _setupDecimals(_underlyingAssetDecimals);
         addressesProvider = _addressesProvider;
-        core = LendingPoolCore(addressesProvider.getLendingPoolCore());
-        pool = LendingPool(addressesProvider.getLendingPool());
-        dataProvider = LendingPoolDataProvider(addressesProvider.getLendingPoolDataProvider());
+        pool = LendingPool(payable(addressesProvider.getLendingPool()));
         underlyingAssetAddress = _underlyingAsset;
     }
 
@@ -399,7 +392,7 @@ contract AToken is ERC20 {
 
         return currentSupplyPrincipal
             .wadToRay()
-            .rayMul(core.getReserveNormalizedIncome(underlyingAssetAddress))
+            .rayMul(pool.getReserveNormalizedIncome(underlyingAssetAddress))
             .rayToWad();
     }
 
@@ -411,7 +404,7 @@ contract AToken is ERC20 {
      * @return true if the _user can transfer _amount, false otherwise
      **/
     function isTransferAllowed(address _user, uint256 _amount) public view returns (bool) {
-        return dataProvider.balanceDecreaseAllowed(underlyingAssetAddress, _user, _amount);
+        return pool.balanceDecreaseAllowed(underlyingAssetAddress, _user, _amount);
     }
 
     /**
@@ -460,7 +453,7 @@ contract AToken is ERC20 {
         //mints an amount of tokens equivalent to the amount accumulated
         _mint(_user, balanceIncrease);
         //updates the user index
-        uint256 index = userIndexes[_user] = core.getReserveNormalizedIncome(underlyingAssetAddress);
+        uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
         return (
             previousPrincipalBalance,
             previousPrincipalBalance.add(balanceIncrease),
@@ -525,7 +518,7 @@ contract AToken is ERC20 {
     ) internal view returns (uint256) {
         return _balance
             .wadToRay()
-            .rayMul(core.getReserveNormalizedIncome(underlyingAssetAddress))
+            .rayMul(pool.getReserveNormalizedIncome(underlyingAssetAddress))
             .rayDiv(userIndexes[_user])
             .rayToWad();
     }

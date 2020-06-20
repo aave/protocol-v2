@@ -2,7 +2,7 @@ import {TestEnv, makeSuite} from "./helpers/make-suite";
 import {
   MOCK_ETH_ADDRESS,
   RAY,
-  APPROVAL_AMOUNT_LENDING_POOL_CORE,
+  APPROVAL_AMOUNT_LENDING_POOL,
 } from "../helpers/constants";
 import {convertToCurrencyDecimals} from "../helpers/contracts-helpers";
 import {ProtocolErrors} from "../helpers/types";
@@ -13,17 +13,17 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   const {INVALID_POOL_MANAGER_CALLER_MSG} = ProtocolErrors;
 
   it("Deactivates the ETH reserve", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.deactivateReserve(MOCK_ETH_ADDRESS);
-    const isActive = await core.getReserveIsActive(MOCK_ETH_ADDRESS);
+    const isActive = await pool.getReserveIsActive(MOCK_ETH_ADDRESS);
     expect(isActive).to.be.equal(false);
   });
 
   it("Rectivates the ETH reserve", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.activateReserve(MOCK_ETH_ADDRESS);
 
-    const isActive = await core.getReserveIsActive(MOCK_ETH_ADDRESS);
+    const isActive = await pool.getReserveIsActive(MOCK_ETH_ADDRESS);
     expect(isActive).to.be.equal(true);
   });
 
@@ -44,17 +44,17 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   });
 
   it("Freezes the ETH reserve", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.freezeReserve(MOCK_ETH_ADDRESS);
-    const isFreezed = await core.getReserveIsFreezed(MOCK_ETH_ADDRESS);
+    const isFreezed = await pool.getReserveIsFreezed(MOCK_ETH_ADDRESS);
     expect(isFreezed).to.be.equal(true);
   });
 
   it("Unfreezes the ETH reserve", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.unfreezeReserve(MOCK_ETH_ADDRESS);
 
-    const isFreezed = await core.getReserveIsFreezed(MOCK_ETH_ADDRESS);
+    const isFreezed = await pool.getReserveIsFreezed(MOCK_ETH_ADDRESS);
     expect(isFreezed).to.be.equal(false);
   });
 
@@ -75,17 +75,17 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   });
 
   it("Deactivates the ETH reserve for borrowing", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.disableBorrowingOnReserve(MOCK_ETH_ADDRESS);
-    const isEnabled = await core.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
+    const isEnabled = await pool.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
     expect(isEnabled).to.be.equal(false);
   });
 
   it("Activates the ETH reserve for borrowing", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.enableBorrowingOnReserve(MOCK_ETH_ADDRESS, true);
-    const isEnabled = await core.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
-    const interestIndex = await core.getReserveLiquidityCumulativeIndex(
+    const isEnabled = await pool.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
+    const interestIndex = await pool.getReserveLiquidityCumulativeIndex(
       MOCK_ETH_ADDRESS
     );
     expect(isEnabled).to.be.equal(true);
@@ -113,16 +113,16 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   });
 
   it("Deactivates the ETH reserve as collateral", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.disableReserveAsCollateral(MOCK_ETH_ADDRESS);
-    const isEnabled = await core.isReserveUsageAsCollateralEnabled(
+    const isEnabled = await pool.isReserveUsageAsCollateralEnabled(
       MOCK_ETH_ADDRESS
     );
     expect(isEnabled).to.be.equal(false);
   });
 
   it("Activates the ETH reserve as collateral", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.enableReserveAsCollateral(
       MOCK_ETH_ADDRESS,
       "75",
@@ -130,7 +130,7 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
       "105"
     );
 
-    const isEnabled = await core.isReserveUsageAsCollateralEnabled(
+    const isEnabled = await pool.isReserveUsageAsCollateralEnabled(
       MOCK_ETH_ADDRESS
     );
     expect(isEnabled).to.be.equal(true);
@@ -157,18 +157,18 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   });
 
   it("Disable stable borrow rate on the ETH reserve", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.disableReserveStableBorrowRate(MOCK_ETH_ADDRESS);
-    const isEnabled = await core.getReserveIsStableBorrowRateEnabled(
+    const isEnabled = await pool.getReserveIsStableBorrowRateEnabled(
       MOCK_ETH_ADDRESS
     );
     expect(isEnabled).to.be.equal(false);
   });
 
   it("Enables stable borrow rate on the ETH reserve", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.enableReserveStableBorrowRate(MOCK_ETH_ADDRESS);
-    const isEnabled = await core.getReserveIsStableBorrowRateEnabled(
+    const isEnabled = await pool.getReserveIsStableBorrowRateEnabled(
       MOCK_ETH_ADDRESS
     );
     expect(isEnabled).to.be.equal(true);
@@ -234,9 +234,9 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   });
 
   it("Changes liquidation bonus of the reserve", async () => {
-    const {configurator, core} = testEnv;
+    const {configurator, pool} = testEnv;
     await configurator.setReserveLiquidationBonus(MOCK_ETH_ADDRESS, "110");
-    const liquidationBonus = await core.getReserveLiquidationBonus(
+    const liquidationBonus = await pool.getReserveLiquidationBonus(
       MOCK_ETH_ADDRESS
     );
     expect(liquidationBonus).to.be.bignumber.equal(
@@ -292,12 +292,12 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   });
 
   it("Reverts when trying to disable the DAI reserve with liquidity on it", async () => {
-    const {dai, core, pool, configurator} = testEnv;
+    const {dai,  pool, configurator} = testEnv;
 
     await dai.mint(await convertToCurrencyDecimals(dai.address, "1000"));
 
     //approve protocol to access depositor wallet
-    await dai.approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+    await dai.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
     const amountDAItoDeposit = await convertToCurrencyDecimals(
       dai.address,
       "1000"

@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import {BRE} from '../helpers/misc-utils';
-import {APPROVAL_AMOUNT_LENDING_POOL_CORE, MOCK_ETH_ADDRESS, oneEther} from '../helpers/constants';
+import {APPROVAL_AMOUNT_LENDING_POOL, MOCK_ETH_ADDRESS, oneEther} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
 import {ProtocolErrors, RateMode} from '../helpers/types';
@@ -17,7 +17,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   } = ProtocolErrors;
 
   it('LIQUIDATION - Deposits ETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
-    const {dai, users, core, pool, oracle} = testEnv;
+    const {dai, users,  pool, oracle} = testEnv;
     const depositor = users[0];
     const borrower = users[1];
 
@@ -25,7 +25,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     await dai.connect(depositor.signer).mint(await convertToCurrencyDecimals(dai.address, '1000'));
 
     //approve protocol to access depositor wallet
-    await dai.connect(depositor.signer).approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+    await dai.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
@@ -120,7 +120,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   );
 
   it('LIQUIDATION - Liquidates the borrow', async () => {
-    const {pool, dai, core, users, addressesProvider, oracle} = testEnv;
+    const {pool, dai,  users, addressesProvider, oracle} = testEnv;
     const borrower = users[1];
 
     //mints dai to the caller
@@ -128,7 +128,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     await dai.mint(await convertToCurrencyDecimals(dai.address, '1000'));
 
     //approve protocol to access depositor wallet
-    await dai.approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+    await dai.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const userReserveDataBefore = await pool.getUserReserveData(dai.address, borrower.address);
 
@@ -161,8 +161,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const collateralPrice = (await oracle.getAssetPrice(MOCK_ETH_ADDRESS)).toString();
     const principalPrice = (await oracle.getAssetPrice(dai.address)).toString();
 
-    const collateralDecimals = (await core.getReserveDecimals(MOCK_ETH_ADDRESS)).toString();
-    const principalDecimals = (await core.getReserveDecimals(dai.address)).toString();
+    const collateralDecimals = (await pool.getReserveDecimals(MOCK_ETH_ADDRESS)).toString();
+    const principalDecimals = (await pool.getReserveDecimals(dai.address)).toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice)
       .times(new BigNumber(amountToLiquidate).times(105))
@@ -215,7 +215,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     'User 3 deposits 1000 USDC, user 4 1 ETH,' +
       ' user 4 borrows - drops HF, liquidates the borrow',
     async () => {
-      const {users, core, pool, usdc, oracle, addressesProvider} = testEnv;
+      const {users,  pool, usdc, oracle, addressesProvider} = testEnv;
       const depositor = users[3];
       const borrower = users[4];
       //mints USDC to depositor
@@ -224,7 +224,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
         .mint(await convertToCurrencyDecimals(usdc.address, '1000'));
 
       //approve protocol to access depositor wallet
-      await usdc.connect(depositor.signer).approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+      await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
       //user 3 deposits 1000 USDC
       const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
@@ -267,7 +267,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       await usdc.mint(await convertToCurrencyDecimals(usdc.address, '1000'));
 
       //approve protocol to access depositor wallet
-      await usdc.approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+      await usdc.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
       const userReserveDataBefore = await pool.getUserReserveData(usdc.address, borrower.address);
 
@@ -300,8 +300,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       const collateralPrice = (await oracle.getAssetPrice(MOCK_ETH_ADDRESS)).toString();
       const principalPrice = (await oracle.getAssetPrice(usdc.address)).toString();
 
-      const collateralDecimals = (await core.getReserveDecimals(MOCK_ETH_ADDRESS)).toString();
-      const principalDecimals = (await core.getReserveDecimals(usdc.address)).toString();
+      const collateralDecimals = (await pool.getReserveDecimals(MOCK_ETH_ADDRESS)).toString();
+      const principalDecimals = (await pool.getReserveDecimals(usdc.address)).toString();
 
       const expectedCollateralLiquidated = new BigNumber(principalPrice)
         .times(new BigNumber(amountToLiquidate).times(105))

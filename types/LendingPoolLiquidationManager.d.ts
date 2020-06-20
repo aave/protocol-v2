@@ -23,6 +23,10 @@ interface LendingPoolLiquidationManagerInterface extends Interface {
         boolean
       ]): string;
     }>;
+
+    reservesList: TypedFunctionDescription<{
+      encode([]: [BigNumberish]): string;
+    }>;
   };
 
   events: {
@@ -110,6 +114,8 @@ export class LendingPoolLiquidationManager extends Contract {
       _receiveAToken: boolean,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    reservesList(arg0: BigNumberish): Promise<string>;
   };
 
   addressesProvider(): Promise<string>;
@@ -122,6 +128,8 @@ export class LendingPoolLiquidationManager extends Contract {
     _receiveAToken: boolean,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
+
+  reservesList(arg0: BigNumberish): Promise<string>;
 
   filters: {
     LiquidationCall(
@@ -156,5 +164,7 @@ export class LendingPoolLiquidationManager extends Contract {
       _purchaseAmount: BigNumberish,
       _receiveAToken: boolean
     ): Promise<BigNumber>;
+
+    reservesList(arg0: BigNumberish): Promise<BigNumber>;
   };
 }

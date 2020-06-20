@@ -10,7 +10,6 @@ import {MOCK_ETH_ADDRESS, ZERO_ADDRESS} from "../../../helpers/constants";
 import {tEthereumAddress} from "../../../helpers/types";
 import BigNumber from "bignumber.js";
 import {getDb, BRE} from "../../../helpers/misc-utils";
-import {LendingPoolCore} from "../../../types/LendingPoolCore";
 
 export const getReserveData = async (
   pool: LendingPool,
@@ -53,13 +52,12 @@ export const getReserveData = async (
 
 export const getUserData = async (
   pool: LendingPool,
-  core: LendingPoolCore,
   reserve: string,
   user: string
 ): Promise<UserReserveData> => {
   const [data, aTokenData] = await Promise.all([
     pool.getUserReserveData(reserve, user),
-    getATokenUserData(reserve, user, core),
+    getATokenUserData(reserve, user, pool),
   ]);
 
   const [
@@ -123,9 +121,9 @@ export const getReserveAddressFromSymbol = async (symbol: string) => {
 const getATokenUserData = async (
   reserve: string,
   user: string,
-  core: LendingPoolCore
+  pool: LendingPool
 ) => {
-  const aTokenAddress: string = await core.getReserveATokenAddress(reserve);
+  const aTokenAddress: string = (await pool.getReserveConfigurationData(reserve)).aTokenAddress;
 
   const aToken = await getAToken(aTokenAddress);
   const [

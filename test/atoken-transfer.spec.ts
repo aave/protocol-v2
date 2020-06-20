@@ -1,5 +1,5 @@
 import {
-  APPROVAL_AMOUNT_LENDING_POOL_CORE,
+  APPROVAL_AMOUNT_LENDING_POOL,
   MOCK_ETH_ADDRESS,
   AAVE_REFERRAL,
   MAX_UINT_AMOUNT,
@@ -23,7 +23,7 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
   } = ProtocolErrors;
 
   it("User 0 deposits 1000 DAI, transfers to user 1", async () => {
-    const {users, pool, core, dai, aDai} = testEnv;
+    const {users, pool,  dai, aDai} = testEnv;
 
     await dai
       .connect(users[0].signer)
@@ -31,7 +31,7 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
 
     await dai
       .connect(users[0].signer)
-      .approve(core.address, APPROVAL_AMOUNT_LENDING_POOL_CORE);
+      .approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(

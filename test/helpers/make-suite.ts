@@ -3,7 +3,6 @@ import {Signer} from "ethers";
 import {
   getEthersSigners,
   getLendingPool,
-  getLendingPoolCore,
   getLendingPoolAddressesProvider,
   getAaveProtocolTestHelpers,
   getAToken,
@@ -12,8 +11,6 @@ import {
 } from '../../helpers/contracts-helpers';
 import {tEthereumAddress} from "../../helpers/types";
 import {LendingPool} from "../../types/LendingPool";
-import {LendingPoolCore} from "../../types/LendingPoolCore";
-import {LendingPoolAddressesProvider} from "../../types/LendingPoolAddressesProvider";
 import {AaveProtocolTestHelpers} from "../../types/AaveProtocolTestHelpers";
 import {MintableErc20} from "../../types/MintableErc20";
 import {AToken} from "../../types/AToken";
@@ -23,6 +20,7 @@ import chai from "chai";
 // @ts-ignore
 import bignumberChai from "chai-bignumber";
 import { PriceOracle } from '../../types/PriceOracle';
+import { LendingPoolAddressesProvider } from "../../types/LendingPoolAddressesProvider";
 chai.use(bignumberChai());
 
 export interface SignerWithAddress {
@@ -33,14 +31,13 @@ export interface TestEnv {
   deployer: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
-  core: LendingPoolCore;
   configurator: LendingPoolConfigurator;
-  addressesProvider: LendingPoolAddressesProvider;
   oracle: PriceOracle;
   helpersContract: AaveProtocolTestHelpers;
   dai: MintableErc20;
   aDai: AToken;
   usdc: MintableErc20;
+  addressesProvider: LendingPoolAddressesProvider
 }
 
 let buidlerevmSnapshotId: string = "0x1";
@@ -54,14 +51,13 @@ const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
-  core: {} as LendingPoolCore,
   configurator: {} as LendingPoolConfigurator,
-  addressesProvider: {} as LendingPoolAddressesProvider,
   helpersContract: {} as AaveProtocolTestHelpers,
   oracle: {} as PriceOracle,
   dai: {} as MintableErc20,
   aDai: {} as AToken,
   usdc: {} as MintableErc20,
+  addressesProvider: {} as LendingPoolAddressesProvider
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -79,7 +75,6 @@ export async function initializeMakeSuite() {
   }
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
-  testEnv.core = await getLendingPoolCore();
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
   testEnv.oracle = await getPriceOracle();
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
