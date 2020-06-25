@@ -176,7 +176,7 @@ export const deployLendingPool = async () => {
     eContractid.ValidationLogic
   );
 
-  const linkedValidationLogicByteCode = linkBytecode(genericLogicArtifact, {
+  const linkedValidationLogicByteCode = linkBytecode(validationLogicArtifact, {
     [eContractid.UserLogic]: userLogic.address,
     [eContractid.ReserveLogic]: reserveLogic.address,
     [eContractid.GenericLogic]: genericLogic.address,
