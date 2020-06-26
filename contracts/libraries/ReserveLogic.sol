@@ -321,15 +321,20 @@ library ReserveLogic {
     ) internal {
         uint256 currentAvgStableRate = _reserve.currentAverageStableBorrowRate;
 
+        uint256 balance = IERC20(_reserveAddress).universalBalanceOf(address(this));
+
+        //if the reserve is ETH, the msg.value has already been cumulated to the balance of the reserve
+        if(IERC20(_reserveAddress).isETH()){
+            balance = balance.sub(msg.value);
+        }
+
         (uint256 newLiquidityRate, uint256 newStableRate, uint256 newVariableRate) = IReserveInterestRateStrategy(
             _reserve
                 .interestRateStrategyAddress
         )
             .calculateInterestRates(
             _reserveAddress,
-            IERC20(_reserveAddress).universalBalanceOf(address(this)).add(_liquidityAdded).sub(
-                _liquidityTaken
-            ),
+            balance.add(_liquidityAdded).sub(_liquidityTaken),
             _reserve.totalBorrowsStable,
             _reserve.totalBorrowsVariable,
             currentAvgStableRate

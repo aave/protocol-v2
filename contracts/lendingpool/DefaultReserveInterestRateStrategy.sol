@@ -39,19 +39,19 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   LendingPoolAddressesProvider public addressesProvider;
 
   //base variable borrow rate when Utilization rate = 0. Expressed in ray
-  uint256 internal baseVariableBorrowRate;
+  uint256 internal immutable baseVariableBorrowRate;
 
   //slope of the variable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
-  uint256 internal variableRateSlope1;
+  uint256 internal immutable variableRateSlope1;
 
   //slope of the variable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
-  uint256 internal variableRateSlope2;
+  uint256 internal immutable variableRateSlope2;
 
   //slope of the stable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
-  uint256 internal stableRateSlope1;
+  uint256 internal immutable stableRateSlope1;
 
   //slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
-  uint256 internal stableRateSlope2;
+  uint256 internal immutable stableRateSlope2;
 
   constructor(
     LendingPoolAddressesProvider _provider,

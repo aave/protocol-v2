@@ -21,6 +21,7 @@ import "../interfaces/IFeeProvider.sol";
 import "../flashloan/interfaces/IFlashLoanReceiver.sol";
 import "./LendingPoolLiquidationManager.sol";
 import "../interfaces/IPriceOracleGetter.sol";
+import "@nomiclabs/buidler/console.sol";
 
 /**
 * @title LendingPool contract
@@ -381,7 +382,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         );
 
         //all conditions passed - borrow is accepted
-
         reserve.updateStateOnBorrow(
             user,
             principalBorrowBalance,
@@ -539,9 +539,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
         if (IERC20(_reserve).isETH()) {
             //send excess ETH back to the caller if needed
-            uint256 exceedAmount = msg.value.sub(vars.originationFee).sub(
-                vars.paybackAmountMinusFees
-            );
+            uint256 exceedAmount = msg.value.sub(vars.paybackAmount);
+
             if (exceedAmount > 0) {
                 IERC20(_reserve).universalTransfer(msg.sender, exceedAmount);
             }

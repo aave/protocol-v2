@@ -62,12 +62,31 @@ import { initializeMakeSuite } from './helpers/make-suite';
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
 
+  
+  const protoConfigData = getReservesConfigByPool(AavePools.proto);
+  const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
+
+
   for (const tokenSymbol of Object.keys(TokenContractId)) {
+
     if (tokenSymbol !== "ETH") {
+      
+      let decimals = 18;
+      
+      let configData = (<any>protoConfigData)[tokenSymbol];
+      
+      if(!configData){
+        configData = (<any>secondaryConfigData)[tokenSymbol]
+      }
+
+      if(!configData){
+        decimals = 18;
+      }
+    
       tokens[tokenSymbol] = await deployMintableErc20([
         tokenSymbol,
         tokenSymbol,
-        18,
+        configData ? configData.reserveDecimals : 18,
       ]);
       await registerContractInJsonDb(
         tokenSymbol.toUpperCase(),
@@ -195,13 +214,9 @@ const initReserves = async (
       string
     ][])[assetAddressIndex];
     
-    console.log("Getting active flag for reserve ", tokenAddress);
     const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
       tokenAddress
     );
-    console.log("Result ",reserveInitialized);
-
-
 
     if (reserveInitialized) {
       console.log(
@@ -236,9 +251,7 @@ const initReserves = async (
           stableRateSlope2,
         ]
       );
-
-      console.log("Interest rate strategy deployed");
-
+    
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search("UNI") === -1) {
           assetSymbol = `Uni${assetSymbol}`;

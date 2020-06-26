@@ -14,6 +14,7 @@ import {UniversalERC20} from "./UniversalERC20.sol";
 
 import {IPriceOracleGetter} from "../interfaces/IPriceOracleGetter.sol";
 import {IFeeProvider} from "../interfaces/IFeeProvider.sol";
+import "@nomiclabs/buidler/console.sol";
 
 library ValidationLogic {
     using ReserveLogic for CoreLibrary.ReserveData;
