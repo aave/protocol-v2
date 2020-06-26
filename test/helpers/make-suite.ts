@@ -75,15 +75,30 @@ export async function initializeMakeSuite() {
   }
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
+  console.log("Pool loaded");
+
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
+  console.log("Configurator loaded");
+  
   testEnv.oracle = await getPriceOracle();
+  console.log("oracle loaded");
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
+  console.log("addresses provider loaded");
+ 
   testEnv.helpersContract = await getAaveProtocolTestHelpers();
+ 
+  console.log("helpers loaded");
+ 
   const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
     (aToken) => aToken.symbol === "aDAI"
   )?.tokenAddress;
 
+  console.log("getting reserves");
+  
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
+
+  console.log("reserve tokens loaded");
+ 
   const daiAddress = reservesTokens.find(token => token.symbol === "DAI")?.tokenAddress;
   const usdcAddress = reservesTokens.find(token => token.symbol === "USDC")?.tokenAddress;
   if (!aDaiAddress) {

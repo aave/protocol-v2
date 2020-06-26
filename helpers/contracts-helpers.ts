@@ -145,13 +145,12 @@ const deployLibrary = async(libraryId: eContractid) => {
   return library
 }
 
-export const deployLendingPool = async () => {
+export const linkLibrariesToArtifact = async(artifact: Artifact) => {
 
   const coreLibrary = await deployLibrary(eContractid.CoreLibrary);
   const userLogic = await deployLibrary(eContractid.UserLogic);
   const reserveLogic = await deployLibrary(eContractid.ReserveLogic);
 
-  console.log("Deployed user logic and reserve logic, addresses:", userLogic.address, reserveLogic.address)
   const genericLogicArtifact = await readArtifact(
     BRE.config.paths.artifacts,
     eContractid.GenericLogic
@@ -168,8 +167,6 @@ export const deployLendingPool = async () => {
   );
   
   const genericLogic = await (await genericLogicFactory.deploy()).deployed();
-  console.log("Deployed generic logic, addresses:", genericLogic.address)
-  
   
   const validationLogicArtifact = await readArtifact(
     BRE.config.paths.artifacts,
@@ -189,25 +186,33 @@ export const deployLendingPool = async () => {
   
   const validationLogic = await (await validationLogicFactory.deploy()).deployed();
 
-  console.log("Deployed validation logic, address:", validationLogic.address)
-  
-  const lendingPoolArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.LendingPool
-  );
-  const linkedBytecode = linkBytecode(lendingPoolArtifact, {
+ 
+
+  const linkedBytecode = linkBytecode(artifact, {
     [eContractid.CoreLibrary]: coreLibrary.address,
     [eContractid.UserLogic]: userLogic.address,
     [eContractid.ReserveLogic] : reserveLogic.address,
     [eContractid.GenericLogic] : genericLogic.address,
     [eContractid.ValidationLogic] : validationLogic.address
   });
-  const LendingPoolFactory = await BRE.ethers.getContractFactory(
-    lendingPoolArtifact.abi,
+  const factory = await BRE.ethers.getContractFactory(
+    artifact.abi,
     linkedBytecode
   );
-  
-  const lendingPool = await LendingPoolFactory.deploy();
+
+  return factory;
+}
+
+export const deployLendingPool = async () => {
+
+  const lendingPoolArtifact = await readArtifact(
+    BRE.config.paths.artifacts,
+    eContractid.LendingPool
+  );
+ 
+  const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
+
+  const lendingPool = await factory.deploy();
   return (await lendingPool.deployed()) as LendingPool;
   
 }
@@ -232,11 +237,19 @@ export const deployChainlinkProxyPriceProvider = async ([
 export const deployLendingRateOracle = async () =>
   await deployContract<LendingRateOracle>(eContractid.LendingRateOracle, []);
 
-export const deployLendingPoolLiquidationManager = async () =>
-  await deployContract<LendingPoolLiquidationManager>(
-    eContractid.LendingPoolLiquidationManager,
-    []
+export const deployLendingPoolLiquidationManager = async () => {
+  const liquidationManagerArtifact = await readArtifact(
+    BRE.config.paths.artifacts,
+    eContractid.LendingPoolLiquidationManager
   );
+ 
+  const factory = await linkLibrariesToArtifact(liquidationManagerArtifact);
+
+  const liquidationManager = await factory.deploy();
+  return (await liquidationManager.deployed()) as LendingPoolLiquidationManager;
+
+
+}
 
 export const deployTokenDistributor = async () =>
   await deployContract<TokenDistributor>(eContractid.TokenDistributor, []);
@@ -289,7 +302,6 @@ export const deployMintableErc20 = async ([name, symbol, decimals]: [
   ]);
 
 export const deployDefaultReserveInterestRateStrategy = async ([
-  reserve,
   addressesProvider,
   baseVariableBorrowRate,
   variableSlope1,
@@ -297,7 +309,6 @@ export const deployDefaultReserveInterestRateStrategy = async ([
   stableSlope1,
   stableSlope2,
 ]: [
-  tEthereumAddress,
   tEthereumAddress,
   string,
   string,
@@ -308,7 +319,6 @@ export const deployDefaultReserveInterestRateStrategy = async ([
   await deployContract<DefaultReserveInterestRateStrategy>(
     eContractid.DefaultReserveInterestRateStrategy,
     [
-      reserve,
       addressesProvider,
       baseVariableBorrowRate,
       variableSlope1,
@@ -349,15 +359,23 @@ export const getLendingPoolConfiguratorProxy = async (
 };
 
 export const getLendingPool = async (address?: tEthereumAddress) => {
-  return await getContract<LendingPool>(
-    eContractid.LendingPool,
+
+  const lendingPoolArtifact = await readArtifact(
+    BRE.config.paths.artifacts,
+    eContractid.LendingPool
+  );
+ 
+
+  const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
+
+  return <LendingPool>(await factory.attach(
     address ||
       (
         await getDb()
           .get(`${eContractid.LendingPool}.${BRE.network.name}`)
           .value()
       ).address
-  );
+  ));
 };
 
 export const getFeeProvider = async (address?: tEthereumAddress) => {

@@ -5,6 +5,7 @@ import {ILendingPoolAddressesProvider} from "../interfaces/ILendingPoolAddresses
 import {IERC20Detailed} from "../interfaces/IERC20Detailed.sol";
 import {LendingPool} from "../lendingpool/LendingPool.sol";
 import {AToken} from "../tokenization/AToken.sol";
+import "@nomiclabs/buidler/console.sol";
 
 contract AaveProtocolTestHelpers {
     struct TokenData {
@@ -20,7 +21,11 @@ contract AaveProtocolTestHelpers {
 
     function getAllReservesTokens() external view returns(TokenData[] memory) {
         LendingPool pool = LendingPool(payable(ADDRESSES_PROVIDER.getLendingPool()));
+        console.log("Getting reserves...");
+
         address[] memory reserves = pool.getReserves();
+        console.log("Reserves retrivied");
+
         TokenData[] memory reservesTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
             reservesTokens[i] = TokenData({
@@ -33,10 +38,15 @@ contract AaveProtocolTestHelpers {
 
     function getAllATokens() external view returns(TokenData[] memory) {
         LendingPool pool = LendingPool(payable(ADDRESSES_PROVIDER.getLendingPool()));
+    
+        console.log("Getting all the tokens...");
         address[] memory reserves = pool.getReserves();
+    
+        console.log("Reserves retrivied");
         TokenData[] memory aTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
-            (,,,address aTokenAddress,,,,,) = pool.getReserveConfigurationData(reserves[i]);
+            console.log("Getting configuration for reserve %s", i);
+            (,,,,address aTokenAddress,,,,) = pool.getReserveConfigurationData(reserves[i]);
             aTokens[i] = TokenData({
                 symbol: AToken(aTokenAddress).symbol(),
                 tokenAddress: aTokenAddress

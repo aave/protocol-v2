@@ -194,9 +194,14 @@ const initReserves = async (
       string,
       string
     ][])[assetAddressIndex];
-    const reserveInitialized = await lendingPool.getReserveIsActive(
+    
+    console.log("Getting active flag for reserve ", tokenAddress);
+    const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
       tokenAddress
     );
+    console.log("Result ",reserveInitialized);
+
+
 
     if (reserveInitialized) {
       console.log(
@@ -223,7 +228,6 @@ const initReserves = async (
       ];
       const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
         [
-          tokenAddress,
           lendingPoolAddressesProvider.address,
           baseVariableBorrowRate,
           variableRateSlope1,
@@ -232,6 +236,8 @@ const initReserves = async (
           stableRateSlope2,
         ]
       );
+
+      console.log("Interest rate strategy deployed");
 
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search("UNI") === -1) {
@@ -275,7 +281,7 @@ const enableReservesToBorrow = async (
         string,
         string
       ][])[assetAddressIndex];
-      const borrowingAlreadyEnabled = await lendingPool.isReserveBorrowingEnabled(
+      const {borrowingEnabled: borrowingAlreadyEnabled} = await lendingPool.getReserveConfigurationData(
         tokenAddress
       );
 
@@ -317,7 +323,7 @@ const enableReservesAsCollateral = async (
       string,
       string
     ][])[assetAddressIndex];
-    const alreadyEnabled = await lendingPool.isReserveUsageAsCollateralEnabled(
+    const {usageAsCollateralEnabled: alreadyEnabled} = await lendingPool.getReserveConfigurationData(
       tokenAddress
     );
 
@@ -406,7 +412,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     address    
   );
 
-  console.log("implementation set, address:", lendingPoolProxy)
+  console.log("implementation set, address:", lendingPoolProxy.address)
 
   await insertContractAddressInDb(
     eContractid.LendingPool,
