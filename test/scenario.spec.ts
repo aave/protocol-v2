@@ -16,6 +16,7 @@ fs.readdirSync(scenarioFolder).forEach((file) => {
   if (
     ![
       "borrow-negatives.json",
+      "borrow-repay-variable.json",
       "borrow-repay-stable.json",
       "deposit.json",
       "redeem-negatives.json",

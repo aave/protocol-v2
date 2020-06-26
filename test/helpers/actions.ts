@@ -260,13 +260,14 @@ export const redeem = async (
   testEnv: TestEnv,
   revertMessage?: string
 ) => {
+
   const {
     aTokenInstance,
     reserve,
     userData: userDataBefore,
     reserveData: reserveDataBefore,
   } = await getDataBeforeAction(reserveSymbol, user.address, testEnv);
-
+  
   let amountToRedeem = "0";
 
   if (amount !== "-1") {
@@ -930,6 +931,7 @@ const getDataBeforeAction = async (
   user: tEthereumAddress,
   testEnv: TestEnv
 ): Promise<ActionData> => {
+
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
   const {reserveData, userData} = await getContractsData(
@@ -937,9 +939,7 @@ const getDataBeforeAction = async (
     user,
     testEnv
   );
-
   const aTokenInstance = await getAToken(reserveData.aTokenAddress);
-
   return {
     reserve,
     reserveData,

@@ -16,6 +16,7 @@ export const getReserveData = async (
   reserve: tEthereumAddress
 ): Promise<ReserveData> => {
   const data: any = await pool.getReserveData(reserve);
+  const configuration: any = await pool.getReserveConfigurationData(reserve);
   const rateOracle = await getLendingRateOracle();
 
   const rate = (await rateOracle.getMarketBorrowRate(reserve)).toString();
@@ -29,8 +30,15 @@ export const getReserveData = async (
     decimals = new BigNumber(await token.decimals());
   }
 
+
+  
+  const totalLiquidity = new BigNumber(data.availableLiquidity).plus(data.totalBorrowsStable).plus(data.totalBorrowsVariable);
+
+  const utilizationRate = new BigNumber(totalLiquidity.eq(0) ? 0 : new BigNumber(data.totalBorrowsStable).plus(data.totalBorrowsVariable).rayDiv(totalLiquidity))
+
   return {
-    totalLiquidity: new BigNumber(data.totalLiquidity),
+    totalLiquidity,
+    utilizationRate,
     availableLiquidity: new BigNumber(data.availableLiquidity),
     totalBorrowsStable: new BigNumber(data.totalBorrowsStable),
     totalBorrowsVariable: new BigNumber(data.totalBorrowsVariable),
@@ -38,12 +46,11 @@ export const getReserveData = async (
     variableBorrowRate: new BigNumber(data.variableBorrowRate),
     stableBorrowRate: new BigNumber(data.stableBorrowRate),
     averageStableBorrowRate: new BigNumber(data.averageStableBorrowRate),
-    utilizationRate: new BigNumber(data.utilizationRate),
     liquidityIndex: new BigNumber(data.liquidityIndex),
     variableBorrowIndex: new BigNumber(data.variableBorrowIndex),
     lastUpdateTimestamp: new BigNumber(data.lastUpdateTimestamp),
     address: reserve,
-    aTokenAddress: data.aTokenAddress,
+    aTokenAddress: configuration.aTokenAddress,
     symbol,
     decimals,
     marketStableRate: new BigNumber(rate),
