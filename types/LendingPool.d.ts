@@ -406,6 +406,7 @@ export class LendingPool extends Contract {
       borrowingEnabled: boolean;
       stableBorrowRateEnabled: boolean;
       isActive: boolean;
+      isFreezed: boolean;
       0: BigNumber;
       1: BigNumber;
       2: BigNumber;
@@ -415,6 +416,7 @@ export class LendingPool extends Contract {
       6: boolean;
       7: boolean;
       8: boolean;
+      9: boolean;
     }>;
 
     getReserveData(
@@ -663,6 +665,7 @@ export class LendingPool extends Contract {
     borrowingEnabled: boolean;
     stableBorrowRateEnabled: boolean;
     isActive: boolean;
+    isFreezed: boolean;
     0: BigNumber;
     1: BigNumber;
     2: BigNumber;
@@ -672,6 +675,7 @@ export class LendingPool extends Contract {
     6: boolean;
     7: boolean;
     8: boolean;
+    9: boolean;
   }>;
 
   getReserveData(

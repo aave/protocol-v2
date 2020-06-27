@@ -12,9 +12,11 @@ import {WadRayMath} from "./WadRayMath.sol";
 import "../interfaces/IPriceOracleGetter.sol";
 import {IFeeProvider} from "../interfaces/IFeeProvider.sol";
 
-
-import "./EthAddressLib.sol";
-
+/**
+* @title GenericLogic library
+* @author Aave
+* @title Implements protocol-level logic to check the status of the user across all the reserves
+*/
 library GenericLogic {
     using ReserveLogic for CoreLibrary.ReserveData;
     using UserLogic for CoreLibrary.UserReserveData;
@@ -38,13 +40,12 @@ library GenericLogic {
     }
 
     /**
-    * @dev check if a specific balance decrease is allowed (i.e. doesn't bring the user borrow position health factor under 1e18)
+    * @dev check if a specific balance decrease is allowed (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
     * @param _reserve the address of the reserve
     * @param _user the address of the user
     * @param _amount the amount to decrease
     * @return true if the decrease of the balance is allowed
     **/
-
     function balanceDecreaseAllowed(
         address _reserve,
         address _user,
@@ -70,7 +71,6 @@ library GenericLogic {
             vars.totalFeesETH,
             ,
             vars.currentLiquidationThreshold,
-
         ) = calculateUserAccountData(_user, _reservesData, _usersData, _reserves, _oracle);
 
         if (vars.borrowBalanceETH == 0) {
@@ -80,7 +80,7 @@ library GenericLogic {
         vars.amountToDecreaseETH = IPriceOracleGetter(_oracle)
             .getAssetPrice(_reserve)
             .mul(_amount)
-            .div(10 ** vars.decimals);
+            .div(10 ** _reservesData[_reserve].decimals);
 
         vars.collateralBalancefterDecrease = vars.collateralBalanceETH.sub(
             vars.amountToDecreaseETH
@@ -146,7 +146,7 @@ library GenericLogic {
         mapping(address => mapping(address => CoreLibrary.UserReserveData)) storage _usersReserveData,
         address[] memory _reserves,
         address _oracle
-    ) public view returns (uint256, uint256, uint256, uint256, uint256, bool) {
+    ) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
         CalculateUserAccountDataVars memory vars;
 
         for (vars.i = 0; vars.i < _reserves.length; vars.i++) {
@@ -212,14 +212,13 @@ library GenericLogic {
             vars.totalFeesETH,
             vars.currentLiquidationThreshold
         );
-        vars.healthFactorBelowThreshold = vars.healthFactor < HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
         return (
             vars.totalCollateralBalanceETH,
             vars.totalBorrowBalanceETH,
             vars.totalFeesETH,
             vars.currentLtv,
             vars.currentLiquidationThreshold,
-            vars.healthFactorBelowThreshold
+            vars.healthFactor
         );
     }
 
@@ -229,6 +228,7 @@ library GenericLogic {
     * @param borrowBalanceETH the total borrow balance in ETH
     * @param totalFeesETH the total fees in ETH
     * @param liquidationThreshold the avg liquidation threshold
+    * @return the health factor calculated from the balances provided
     **/
     function calculateHealthFactorFromBalances(
         uint256 collateralBalanceETH,

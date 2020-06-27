@@ -8,6 +8,11 @@ import {IFeeProvider} from "../interfaces/IFeeProvider.sol";
 import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+/**
+* @title UserLogic library
+* @author Aave
+* @notice Implements user specific logic.
+*/
 library UserLogic {
     using CoreLibrary for CoreLibrary.UserReserveData;
     using CoreLibrary for CoreLibrary.ReserveData;

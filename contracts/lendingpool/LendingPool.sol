@@ -772,8 +772,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         //protocol fee is the part of the amountFee reserved for the protocol - the rest goes to depositors
         vars.protocolFee = vars.amountFee.mul(FLASHLOAN_FEE_PROTOCOL).div(10000);
 
-        require(vars.availableLiquidityBefore >= _amount, "26");
-        require(vars.amountFee > 0 && vars.protocolFee > 0, "27");
+        require(vars.availableLiquidityBefore >= _amount, "There is not enough liquidity available to borrow");
+        require(vars.amountFee > 0 && vars.protocolFee > 0, "The requested amount is too small for a FlashLoan.");
 
         //get the FlashLoanReceiver instance
         IFlashLoanReceiver receiver = IFlashLoanReceiver(_receiver);
@@ -789,7 +789,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         //check that the actual balance of the core contract includes the returned amount
         uint256 availableLiquidityAfter = IERC20(_reserve).universalBalanceOf(address(this));
 
-        require(availableLiquidityAfter == vars.availableLiquidityBefore.add(vars.amountFee), "28");
+        require(availableLiquidityAfter == vars.availableLiquidityBefore.add(vars.amountFee), "The actual balance of the protocol is inconsistent");
 
         reserve.updateStateOnFlashLoan(
             _reserve,
@@ -830,7 +830,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             bool usageAsCollateralEnabled,
             bool borrowingEnabled,
             bool stableBorrowRateEnabled,
-            bool isActive
+            bool isActive,
+            bool isFreezed
         )
     {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
@@ -844,7 +845,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             reserve.usageAsCollateralEnabled,
             reserve.borrowingEnabled,
             reserve.isStableBorrowRateEnabled,
-            reserve.isActive
+            reserve.isActive, 
+            reserve.isFreezed
         );
     }
 
@@ -898,7 +900,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             totalFeesETH,
             ltv,
             currentLiquidationThreshold,
-
+            healthFactor            
         ) = GenericLogic.calculateUserAccountData(
             _user,
             reserves,
@@ -907,7 +909,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             addressesProvider.getPriceOracle()
         );
 
-        healthFactor = 0;
 
         availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
             totalCollateralETH,
@@ -1061,13 +1062,18 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     function setReserveActive(address _reserve, bool _active) external onlyLendingPoolConfigurator {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
 
-        require(
-            _active &&
+        if(!_active){
+            reserve.isActive = false;
+         }
+         else{
+            require(
                 reserve.lastLiquidityCumulativeIndex > 0 &&
                 reserve.lastVariableBorrowCumulativeIndex > 0,
-            "29"
-        );
-        reserve.isActive = _active;
+            "Reserve has not been initialized yet"
+            );
+            reserve.isActive = true;
+
+         }
     }
 
     /**

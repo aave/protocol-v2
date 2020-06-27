@@ -4,8 +4,8 @@ pragma solidity ^0.6.8;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-import "../libraries/EthAddressLib.sol";
 import "../mocks/tokens/MintableERC20.sol";
+import "../libraries/EthAddressLib.sol";
 
 /// @title MockKyberProxy
 /// @author Aave

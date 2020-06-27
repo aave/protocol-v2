@@ -299,7 +299,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev disable stable rate borrowing on a reserve
    * @param _reserve the address of the reserve
    **/
-  function disableReserveStableBorrowRate(address _reserve) external onlyLendingPoolManager {
+  function disableReserveStableRate(address _reserve) external onlyLendingPoolManager {
     LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
     pool.setReserveStableBorrowRateEnabled(_reserve, false);
 

@@ -36,7 +36,7 @@ contract AaveProtocolTestHelpers {
         address[] memory reserves = pool.getReserves();
         TokenData[] memory aTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
-            (,,,,address aTokenAddress,,,,) = pool.getReserveConfigurationData(reserves[i]);
+            (,,,,address aTokenAddress,,,,,) = pool.getReserveConfigurationData(reserves[i]);
             aTokens[i] = TokenData({
                 symbol: AToken(aTokenAddress).symbol(),
                 tokenAddress: aTokenAddress

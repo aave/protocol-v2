@@ -36,7 +36,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   using WadRayMath for uint256;
   using SafeMath for uint256;
 
-  LendingPoolAddressesProvider public addressesProvider;
+  LendingPoolAddressesProvider public immutable addressesProvider;
 
   //base variable borrow rate when Utilization rate = 0. Expressed in ray
   uint256 internal immutable baseVariableBorrowRate;

@@ -61,10 +61,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiquidityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
-    expect(reserveData.totalLiquidity).to.be.bignumber.equal('1000504000000000000');
-    expect(currentLiquidityRate).to.be.bignumber.equal('0');
-    expect(currentLiquidityIndex).to.be.bignumber.equal('1000504000000000000000000000');
-    expect(tokenDistributorBalance).to.be.bignumber.equal('216000000000000');
+    const totalLiquidity = new BigNumber(reserveData.availableLiquidity).plus(reserveData.totalBorrowsStable).plus(reserveData.totalBorrowsVariable);
+
+    expect(totalLiquidity.toString()).to.be.equal('1000504000000000000');
+    expect(currentLiquidityRate.toString()).to.be.equal('0');
+    expect(currentLiquidityIndex.toString()).to.be.equal('1000504000000000000000000000');
+    expect(tokenDistributorBalance.toString()).to.be.equal('216000000000000');
   });
 
   it('Takes an ETH flashloan as big as the available liquidity', async () => {
@@ -89,10 +91,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiqudityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
-    expect(reserveData.totalLiquidity).to.be.bignumber.equal('1001134317520000000');
-    expect(currentLiqudityRate).to.be.bignumber.equal('0');
-    expect(currentLiquidityIndex).to.be.bignumber.equal('1001134317520000000000000000');
-    expect(tokenDistributorBalance).to.be.bignumber.equal('486136080000000');
+    const totalLiquidity = new BigNumber(reserveData.availableLiquidity).plus(reserveData.totalBorrowsStable).plus(reserveData.totalBorrowsVariable);
+
+    expect(totalLiquidity.toString()).to.be.equal('1001134317520000000');
+    expect(currentLiqudityRate.toString()).to.be.equal('0');
+    expect(currentLiquidityIndex.toString()).to.be.equal('1001134317520000000000000000');
+    expect(tokenDistributorBalance.toString()).to.be.equal('486136080000000');
   });
 
   it('Takes ETH flashloan, does not return the funds (revert expected)', async () => {
@@ -112,8 +116,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         MOCK_ETH_ADDRESS,
         ethers.utils.parseEther('0.8'),
         '0x10'
-      ),
-      INCONSISTENT_PROTOCOL_BALANCE
+      )
     ).to.be.revertedWith(INCONSISTENT_PROTOCOL_BALANCE);
   });
 
@@ -126,8 +129,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         MOCK_ETH_ADDRESS,
         '1', //1 wei loan
         '0x10'
-      ),
-      TOO_SMALL_FLASH_LOAN
+      )
     ).to.be.revertedWith(TOO_SMALL_FLASH_LOAN);
   });
 
@@ -153,7 +155,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Deposits DAI into the reserve', async () => {
-    const {dai,  pool} = testEnv;
+    const {dai, pool} = testEnv;
 
     await dai.mint(await convertToCurrencyDecimals(dai.address, '1000'));
 

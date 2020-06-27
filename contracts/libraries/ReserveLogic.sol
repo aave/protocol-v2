@@ -15,6 +15,12 @@ import "../interfaces/IReserveInterestRateStrategy.sol";
 import "../tokenization/AToken.sol";
 import "./WadRayMath.sol";
 
+
+/**
+* @title ReserveLogic library
+* @author Aave
+* @notice Implements the logic to update the state of the reserves
+*/
 library ReserveLogic {
     using SafeMath for uint256;
     using WadRayMath for uint256;
@@ -68,7 +74,8 @@ library ReserveLogic {
         //refresh interest rates
         updateInterestRatesAndTimestamp(_reserve, _reserveAddress, _income, 0);
     }
-    
+
+
     /**
     * @dev updates the state of the core as a consequence of a repay action.
     * @param _reserve the address of the reserve on which the user is repaying
@@ -76,7 +83,6 @@ library ReserveLogic {
     * @param _paybackAmount the amount being paid back
     * @param _balanceIncrease the accrued interest on the borrowed amount
     **/
-
     function updateStateOnRepay(
         CoreLibrary.ReserveData storage _reserve,
         CoreLibrary.UserReserveData storage _user,
@@ -145,8 +151,6 @@ library ReserveLogic {
         } else {
             revert("Invalid rate mode received");
         }
-
-     
     }
 
     /**
@@ -205,7 +209,6 @@ library ReserveLogic {
     * @param _amountToLiquidate the amount being repaid by the liquidator
     * @param _balanceIncrease the accrued interest on the borrowed amount
     **/
-
     function updateStateOnLiquidationAsPrincipal(
         CoreLibrary.ReserveData storage _reserve,
         CoreLibrary.UserReserveData storage _user,
@@ -312,7 +315,6 @@ library ReserveLogic {
     * @param _liquidityAdded the amount of liquidity added to the protocol (deposit or repay) in the previous action
     * @param _liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
     **/
-
     function updateInterestRatesAndTimestamp(
         CoreLibrary.ReserveData storage _reserve,
         address _reserveAddress,
@@ -363,7 +365,6 @@ library ReserveLogic {
     * @param _reserve the reserve address
     * @return the reserve current variable borrow rate
     **/
-
     function getReserveCurrentVariableBorrowRate(CoreLibrary.ReserveData storage _reserve)
         external
         view
@@ -382,7 +383,6 @@ library ReserveLogic {
     * @param _reserve the reserve address
     * @return the reserve current stable borrow rate
     **/
-
     function getReserveCurrentStableBorrowRate(
         CoreLibrary.ReserveData storage _reserve,
         uint256 _baseRate
@@ -395,7 +395,6 @@ library ReserveLogic {
     * @param _reserve the reserve for which the information is needed
     * @return the utilization rate in ray
     **/
-
     function getUtilizationRate(CoreLibrary.ReserveData storage _reserve, address _reserveAddress)
         public
         view

@@ -90,10 +90,6 @@ interface LendingPoolAddressesProviderInterface extends Interface {
       encodeTopics([newAddress]: [string | null]): string[];
     }>;
 
-    LendingPoolCoreUpdated: TypedEventDescription<{
-      encodeTopics([newAddress]: [string | null]): string[];
-    }>;
-
     LendingPoolLiquidationManagerUpdated: TypedEventDescription<{
       encodeTopics([newAddress]: [string | null]): string[];
     }>;
@@ -306,8 +302,6 @@ export class LendingPoolAddressesProvider extends Contract {
     FeeProviderUpdated(newAddress: string | null): EventFilter;
 
     LendingPoolConfiguratorUpdated(newAddress: string | null): EventFilter;
-
-    LendingPoolCoreUpdated(newAddress: string | null): EventFilter;
 
     LendingPoolLiquidationManagerUpdated(
       newAddress: string | null

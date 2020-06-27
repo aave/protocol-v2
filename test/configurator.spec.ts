@@ -15,7 +15,7 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   it("Deactivates the ETH reserve", async () => {
     const {configurator, pool} = testEnv;
     await configurator.deactivateReserve(MOCK_ETH_ADDRESS);
-    const isActive = await pool.getReserveIsActive(MOCK_ETH_ADDRESS);
+    const {isActive} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
     expect(isActive).to.be.equal(false);
   });
 
@@ -23,7 +23,7 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
     const {configurator, pool} = testEnv;
     await configurator.activateReserve(MOCK_ETH_ADDRESS);
 
-    const isActive = await pool.getReserveIsActive(MOCK_ETH_ADDRESS);
+    const {isActive} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
     expect(isActive).to.be.equal(true);
   });
 
@@ -46,7 +46,7 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   it("Freezes the ETH reserve", async () => {
     const {configurator, pool} = testEnv;
     await configurator.freezeReserve(MOCK_ETH_ADDRESS);
-    const isFreezed = await pool.getReserveIsFreezed(MOCK_ETH_ADDRESS);
+    const {isFreezed} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
     expect(isFreezed).to.be.equal(true);
   });
 
@@ -54,7 +54,7 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
     const {configurator, pool} = testEnv;
     await configurator.unfreezeReserve(MOCK_ETH_ADDRESS);
 
-    const isFreezed = await pool.getReserveIsFreezed(MOCK_ETH_ADDRESS);
+    const {isFreezed} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
     expect(isFreezed).to.be.equal(false);
   });
 
@@ -77,19 +77,19 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   it("Deactivates the ETH reserve for borrowing", async () => {
     const {configurator, pool} = testEnv;
     await configurator.disableBorrowingOnReserve(MOCK_ETH_ADDRESS);
-    const isEnabled = await pool.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
-    expect(isEnabled).to.be.equal(false);
+    const {borrowingEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    expect(borrowingEnabled).to.be.equal(false);
   });
 
   it("Activates the ETH reserve for borrowing", async () => {
     const {configurator, pool} = testEnv;
     await configurator.enableBorrowingOnReserve(MOCK_ETH_ADDRESS, true);
-    const isEnabled = await pool.isReserveBorrowingEnabled(MOCK_ETH_ADDRESS);
-    const interestIndex = await pool.getReserveLiquidityCumulativeIndex(
+    const {borrowingEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {variableBorrowIndex} = await pool.getReserveData(
       MOCK_ETH_ADDRESS
-    );
-    expect(isEnabled).to.be.equal(true);
-    expect(interestIndex.toString()).to.be.equal(RAY);
+    )
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
 
   it("Check the onlyLendingPoolManager on disableBorrowingOnReserve ", async () => {
@@ -115,10 +115,10 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   it("Deactivates the ETH reserve as collateral", async () => {
     const {configurator, pool} = testEnv;
     await configurator.disableReserveAsCollateral(MOCK_ETH_ADDRESS);
-    const isEnabled = await pool.isReserveUsageAsCollateralEnabled(
+    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(
       MOCK_ETH_ADDRESS
     );
-    expect(isEnabled).to.be.equal(false);
+    expect(usageAsCollateralEnabled).to.be.equal(false);
   });
 
   it("Activates the ETH reserve as collateral", async () => {
@@ -130,10 +130,10 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
       "105"
     );
 
-    const isEnabled = await pool.isReserveUsageAsCollateralEnabled(
+    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(
       MOCK_ETH_ADDRESS
     );
-    expect(isEnabled).to.be.equal(true);
+    expect(usageAsCollateralEnabled).to.be.equal(true);
   });
 
   it("Check the onlyLendingPoolManager on disableReserveAsCollateral ", async () => {
@@ -158,38 +158,38 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
 
   it("Disable stable borrow rate on the ETH reserve", async () => {
     const {configurator, pool} = testEnv;
-    await configurator.disableReserveStableBorrowRate(MOCK_ETH_ADDRESS);
-    const isEnabled = await pool.getReserveIsStableBorrowRateEnabled(
+    await configurator.disableReserveStableRate(MOCK_ETH_ADDRESS);
+    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(
       MOCK_ETH_ADDRESS
     );
-    expect(isEnabled).to.be.equal(false);
+    expect(stableBorrowRateEnabled).to.be.equal(false);
   });
 
   it("Enables stable borrow rate on the ETH reserve", async () => {
     const {configurator, pool} = testEnv;
-    await configurator.enableReserveStableBorrowRate(MOCK_ETH_ADDRESS);
-    const isEnabled = await pool.getReserveIsStableBorrowRateEnabled(
+    await configurator.enableReserveStableRate(MOCK_ETH_ADDRESS);
+    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(
       MOCK_ETH_ADDRESS
     );
-    expect(isEnabled).to.be.equal(true);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
   });
 
-  it("Check the onlyLendingPoolManager on disableReserveStableBorrowRate", async () => {
+  it("Check the onlyLendingPoolManager on disableReserveStableRate", async () => {
     const {configurator, users} = testEnv;
     await expect(
       configurator
         .connect(users[2].signer)
-        .disableReserveStableBorrowRate(MOCK_ETH_ADDRESS),
+        .disableReserveStableRate(MOCK_ETH_ADDRESS),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
-  it("Check the onlyLendingPoolManager on enableReserveStableBorrowRate", async () => {
+  it("Check the onlyLendingPoolManager on enableReserveStableRate", async () => {
     const {configurator, users} = testEnv;
     await expect(
       configurator
         .connect(users[2].signer)
-        .enableReserveStableBorrowRate(MOCK_ETH_ADDRESS),
+        .enableReserveStableRate(MOCK_ETH_ADDRESS),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
@@ -236,7 +236,7 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
   it("Changes liquidation bonus of the reserve", async () => {
     const {configurator, pool} = testEnv;
     await configurator.setReserveLiquidationBonus(MOCK_ETH_ADDRESS, "110");
-    const liquidationBonus = await pool.getReserveLiquidationBonus(
+    const {liquidationBonus} = await pool.getReserveConfigurationData(
       MOCK_ETH_ADDRESS
     );
     expect(liquidationBonus).to.be.bignumber.equal(
@@ -263,22 +263,6 @@ makeSuite("LendingPoolConfigurator", (testEnv: TestEnv) => {
         .setReserveDecimals(MOCK_ETH_ADDRESS, "80"),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
-  });
-
-  it("Removes the last added reserve", async () => {
-    const {configurator, pool} = testEnv;
-    const reservesBefore = await pool.getReserves();
-
-    const lastReserve = reservesBefore[reservesBefore.length - 1];
-
-    await configurator.removeLastAddedReserve(lastReserve);
-
-    const reservesAfter = await pool.getReserves();
-
-    expect(reservesAfter.length).to.be.equal(
-      reservesBefore.length - 1,
-      "Invalid number of reserves after removal"
-    );
   });
 
   it("Check the onlyLendingPoolManager on setReserveLiquidationBonus", async () => {

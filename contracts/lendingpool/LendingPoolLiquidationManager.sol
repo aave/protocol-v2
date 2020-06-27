@@ -109,9 +109,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         uint256 userStableRate;
         uint256 maxCollateralToLiquidate;
         uint256 principalAmountNeeded;
+        uint256 healthFactor;
         AToken collateralAtoken;
         bool isCollateralEnabled;
-        bool healthFactorBelowThreshold;
     }
 
     /**
@@ -146,7 +146,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
         LiquidationCallLocalVars memory vars;
 
-        (, , , , , vars.healthFactorBelowThreshold) = GenericLogic.calculateUserAccountData(
+        (, , , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
             msg.sender,
             reserves,
             usersReserveData,
@@ -154,7 +154,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             addressesProvider.getPriceOracle()
         );
 
-        if (!vars.healthFactorBelowThreshold) {
+        if (vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
             return (
                 uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
                 "Health factor is not below the threshold"

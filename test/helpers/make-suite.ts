@@ -37,6 +37,7 @@ export interface TestEnv {
   dai: MintableErc20;
   aDai: AToken;
   usdc: MintableErc20;
+  lend: MintableErc20;
   addressesProvider: LendingPoolAddressesProvider
 }
 
@@ -57,6 +58,7 @@ const testEnv: TestEnv = {
   dai: {} as MintableErc20,
   aDai: {} as AToken,
   usdc: {} as MintableErc20,
+  lend: {} as MintableErc20,
   addressesProvider: {} as LendingPoolAddressesProvider
 } as TestEnv;
 
@@ -81,31 +83,27 @@ export async function initializeMakeSuite() {
   console.log("Configurator loaded");
   
   testEnv.oracle = await getPriceOracle();
-  console.log("oracle loaded");
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
-  console.log("addresses provider loaded");
  
   testEnv.helpersContract = await getAaveProtocolTestHelpers();
  
-  console.log("helpers loaded");
  
   const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
     (aToken) => aToken.symbol === "aDAI"
   )?.tokenAddress;
 
-  console.log("getting reserves");
-  
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
-  console.log("reserve tokens loaded");
  
   const daiAddress = reservesTokens.find(token => token.symbol === "DAI")?.tokenAddress;
   const usdcAddress = reservesTokens.find(token => token.symbol === "USDC")?.tokenAddress;
+  const lendAddress = reservesTokens.find(token => token.symbol === "LEND")?.tokenAddress;
+  
   if (!aDaiAddress) {
     console.log(`atoken-modifiers.spec: aDAI not correctly initialized`);
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress) {
+  if (!daiAddress || !usdcAddress || !lendAddress) {
     console.log(`atoken-modifiers.spec: USDC or DAI not correctly initialized`);
     process.exit(1);
   }
@@ -113,6 +111,7 @@ export async function initializeMakeSuite() {
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.dai = await getMintableErc20(daiAddress);
   testEnv.usdc = await getMintableErc20(usdcAddress);
+  testEnv.lend = await getMintableErc20(lendAddress);
 }
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
