@@ -287,7 +287,8 @@
             "amount": "0",
             "user": "1",
             "onBehalfOf": "1",
-            "sendValue": "0"
+            "borrowRateMode": "variable",
+             "sendValue": "0"
           },
           "expected": "revert",
           "revertMessage": "Amount must be greater than 0"
@@ -303,6 +304,7 @@
             "reserve": "ETH",
             "amount": "-1",
             "user": "1",
+            "borrowRateMode": "variable",
             "onBehalfOf": "1",
             "sendValue": "0"
           },
@@ -320,6 +322,7 @@
             "reserve": "ETH",
             "amount": "-1",
             "user": "2",
+            "borrowRateMode": "variable",
             "onBehalfOf": "1",
             "sendValue": "-1"
           },
@@ -337,6 +340,7 @@
             "reserve": "ETH",
             "amount": "0.2",
             "user": "3",
+            "borrowRateMode": "variable",
             "onBehalfOf": "1",
             "sendValue": "0.2"
           },
@@ -352,6 +356,7 @@
           "args": {
             "reserve": "ETH",
             "amount": "-1",
+            "borrowRateMode": "variable",
             "user": "1",
             "onBehalfOf": "1",
             "sendValue": "-1"

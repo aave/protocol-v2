@@ -13,12 +13,12 @@ BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
 const scenarioFolder = "./test/helpers/scenarios/";
 
 fs.readdirSync(scenarioFolder).forEach((file) => {
- /* if (![
+  if (![
       "borrow-repay-variable.json",
     ].includes(file)
   )
     return;
-*/
+
   const scenario = require(`./helpers/scenarios/${file}`);
 
   makeSuite(scenario.title, async (testEnv) => {

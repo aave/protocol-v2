@@ -41,7 +41,10 @@ export const timeLatest = async () => {
 export const advanceBlock = async (timestamp: number) =>
   await BRE.ethers.provider.send("evm_mine", [timestamp]);
 
-export const increaseTime = async (secondsToIncrease: number) =>
-  await BRE.ethers.provider.send("evm_increaseTime", [secondsToIncrease]);
+export const increaseTime = async (secondsToIncrease: number) =>{
 
+ 
+  await BRE.ethers.provider.send("evm_increaseTime", [secondsToIncrease]);
+  await BRE.ethers.provider.send("evm_mine",[]);
+}
 

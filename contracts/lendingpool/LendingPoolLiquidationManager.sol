@@ -184,8 +184,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         }
 
         //if the user hasn't borrowed the specific currency defined by _reserve, it cannot be liquidated
-        (, vars.userCompoundedBorrowBalance, vars.borrowBalanceIncrease) = userPrincipal
-            .getBorrowBalances(principalReserve);
+        (,vars.userCompoundedBorrowBalance) = UserLogic.getUserBorrowBalances(_user, principalReserve);
 
         if (vars.userCompoundedBorrowBalance == 0) {
             return (
@@ -216,23 +215,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             vars.userCollateralBalance
         );
 
-        vars.originationFee = userPrincipal.originationFee;
-
-        //if there is a fee to liquidate, calculate the maximum amount of fee that can be liquidated
-        if (vars.originationFee > 0) {
-            (
-                vars.liquidatedCollateralForFee,
-                vars.feeLiquidated
-            ) = calculateAvailableCollateralToLiquidate(
-                collateralReserve,
-                principalReserve,
-                _collateral,
-                _reserve,
-                vars.originationFee,
-                vars.userCollateralBalance.sub(vars.maxCollateralToLiquidate)
-            );
-        }
-
+          
         //if principalAmountNeeded < vars.ActualAmountToLiquidate, there isn't enough
         //of _collateral to cover the actual amount that is being liquidated, hence we liquidate
         //a smaller amount
@@ -252,16 +235,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             }
         }
 
-        principalReserve.updateStateOnLiquidationAsPrincipal(
-            userPrincipal,
-            _reserve,
-            vars.actualAmountToLiquidate,
-            vars.borrowBalanceIncrease
-        );
         collateralReserve.updateStateOnLiquidationAsCollateral(
             _collateral,
             vars.maxCollateralToLiquidate,
-            vars.liquidatedCollateralForFee,
             _receiveAToken
         );
 

@@ -42,6 +42,8 @@ export enum eContractid {
   AToken = "AToken",
   AaveProtocolTestHelpers = "AaveProtocolTestHelpers",
   IERC20Detailed = "IERC20Detailed",
+  StableDebtToken = "StableDebtToken",
+  VariableDebtToken = "VariableDebtToken"
 }
 
 export enum ProtocolErrors {

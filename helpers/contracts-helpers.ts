@@ -35,6 +35,8 @@ import {AaveProtocolTestHelpers} from "../types/AaveProtocolTestHelpers";
 import {MOCK_ETH_ADDRESS} from "./constants";
 import BigNumber from "bignumber.js";
 import {Ierc20Detailed} from "../types/Ierc20Detailed";
+import { StableDebtToken } from "../types/StableDebtToken";
+import { VariableDebtToken } from "../types/VariableDebtToken";
 
 export const registerContractInJsonDb = async (
   contractId: string,
@@ -315,7 +317,7 @@ export const deployDefaultReserveInterestRateStrategy = async ([
   string,
   string,
   string
-]) =>
+]) => 
   await deployContract<DefaultReserveInterestRateStrategy>(
     eContractid.DefaultReserveInterestRateStrategy,
     [
@@ -328,6 +330,68 @@ export const deployDefaultReserveInterestRateStrategy = async ([
     ]
   );
 
+  export const deployStableDebtToken = async ([
+    name,
+    symbol,
+    decimals,
+    underlyingAsset,
+    addressesProvider
+  ]: [
+    string,
+    string,
+    string,
+    tEthereumAddress,
+    tEthereumAddress
+  ]) =>{
+
+    const token = await deployContract<StableDebtToken>(
+      eContractid.StableDebtToken, []
+    );
+
+    await token.init(
+      name,
+      symbol,
+      decimals,
+      underlyingAsset,
+      addressesProvider
+    );
+
+    return token;
+  }
+
+    export const deployVariableDebtToken = async ([
+      name,
+      symbol,
+      decimals,
+      underlyingAsset,
+      addressesProvider
+    ]: [
+      string,
+      string,
+      string,
+      tEthereumAddress,
+      tEthereumAddress
+    ]) => {
+
+      const token = await deployContract<VariableDebtToken>(
+        eContractid.VariableDebtToken,
+        []
+      );
+
+
+      await token.init(
+        name,
+        symbol,
+        decimals,
+        underlyingAsset,
+        addressesProvider
+      );
+  
+      return token;
+  
+    }
+  
+  
 export const getLendingPoolAddressesProvider = async (
   address?: tEthereumAddress
 ) => {

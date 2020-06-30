@@ -156,8 +156,8 @@ library GenericLogic {
                 .currentReserveAddress];
 
             vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(_user);
-            (, vars.compoundedBorrowBalance, ) = _usersReserveData[_user][_reserves[vars.i]]
-                .getBorrowBalances(currentReserve);
+            vars.compoundedBorrowBalance = IERC20(currentReserve.stableDebtTokenAddress).balanceOf(_user);
+            vars.compoundedBorrowBalance = vars.compoundedBorrowBalance.add(IERC20(currentReserve.variableDebtTokenAddress).balanceOf(_user));
 
             if (vars.compoundedLiquidityBalance == 0 && vars.compoundedBorrowBalance == 0) {
                 continue;

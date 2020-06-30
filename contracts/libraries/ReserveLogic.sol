@@ -8,6 +8,7 @@ import {CoreLibrary} from "./CoreLibrary.sol";
 import {UserLogic} from "./UserLogic.sol";
 import {IPriceOracleGetter} from "../interfaces/IPriceOracleGetter.sol";
 import {UniversalERC20} from "./UniversalERC20.sol";
+import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../interfaces/ILendingRateOracle.sol";
@@ -75,96 +76,17 @@ library ReserveLogic {
         updateInterestRatesAndTimestamp(_reserve, _reserveAddress, _income, 0);
     }
 
-
-    /**
-    * @dev updates the state of the core as a consequence of a repay action.
-    * @param _reserve the address of the reserve on which the user is repaying
-    * @param _user the address of the borrower
-    * @param _paybackAmount the amount being paid back
-    * @param _balanceIncrease the accrued interest on the borrowed amount
-    **/
-    function updateStateOnRepay(
-        CoreLibrary.ReserveData storage _reserve,
-        CoreLibrary.UserReserveData storage _user,
-        address _reserveAddress,
-        uint256 _paybackAmount,
-        uint256 _balanceIncrease
-    ) external {
-        CoreLibrary.InterestRateMode borrowRateMode = _user.getCurrentBorrowRateMode();
-
-        //update the indexes
-        _reserve.updateCumulativeIndexes();
-
-        //compound the cumulated interest to the borrow balance and then subtracting the payback amount
-        if (borrowRateMode == CoreLibrary.InterestRateMode.STABLE) {
-            _reserve.increaseTotalBorrowsStableAndUpdateAverageRate(
-                _balanceIncrease,
-                _user.stableBorrowRate
-            );
-            _reserve.decreaseTotalBorrowsStableAndUpdateAverageRate(
-                _paybackAmount,
-                _user.stableBorrowRate
-            );
-        } else {
-            _reserve.increaseTotalBorrowsVariable(_balanceIncrease);
-            _reserve.decreaseTotalBorrowsVariable(_paybackAmount);
-        }
-    }
-
-    /**
-    * @dev updates the state of the core as a consequence of a swap rate action.
-    * @param _reserve the address of the reserve on which the user is repaying
-    * @param _user the address of the borrower
-    * @param _principalBorrowBalance the amount borrowed by the user
-    * @param _compoundedBorrowBalance the amount borrowed plus accrued interest
-    * @param _currentRateMode the current interest rate mode for the user
-    **/
-    function updateStateOnSwapRate(
-        CoreLibrary.ReserveData storage _reserve,
-        CoreLibrary.UserReserveData storage _user,
-        address _reserveAddress,
-        uint256 _principalBorrowBalance,
-        uint256 _compoundedBorrowBalance,
-        CoreLibrary.InterestRateMode _currentRateMode
-    ) external {
-        //compounding reserve indexes
-        _reserve.updateCumulativeIndexes();
-
-        if (_currentRateMode == CoreLibrary.InterestRateMode.STABLE) {
-            uint256 userCurrentStableRate = _user.stableBorrowRate;
-
-            //swap to variable
-            _reserve.decreaseTotalBorrowsStableAndUpdateAverageRate(
-                _principalBorrowBalance,
-                userCurrentStableRate
-            ); //decreasing stable from old principal balance
-            _reserve.increaseTotalBorrowsVariable(_compoundedBorrowBalance); //increase variable borrows
-        } else if (_currentRateMode == CoreLibrary.InterestRateMode.VARIABLE) {
-            //swap to stable
-            uint256 currentStableRate = _reserve.currentStableBorrowRate;
-            _reserve.decreaseTotalBorrowsVariable(_principalBorrowBalance);
-            _reserve.increaseTotalBorrowsStableAndUpdateAverageRate(
-                _compoundedBorrowBalance,
-                currentStableRate
-            );
-
-        } else {
-            revert("Invalid rate mode received");
-        }
-    }
-
+  
     /**
     * @dev updates the state of the core as a consequence of a liquidation action.
     * @param _collateralReserve the collateral reserve that is being liquidated
     * @param _collateralToLiquidate the amount of collateral being liquidated
-    * @param _liquidatedCollateralForFee the amount of collateral equivalent to the origination fee + bonus
     * @param _liquidatorReceivesAToken true if the liquidator will receive aTokens, false otherwise
     **/
     function updateStateOnLiquidationAsCollateral(
         CoreLibrary.ReserveData storage _collateralReserve,
         address _collateralReserveAddress,
         uint256 _collateralToLiquidate,
-        uint256 _liquidatedCollateralForFee,
         bool _liquidatorReceivesAToken
     ) external {
         _collateralReserve.updateCumulativeIndexes();
@@ -174,79 +96,9 @@ library ReserveLogic {
                 _collateralReserve,
                 _collateralReserveAddress,
                 0,
-                _collateralToLiquidate.add(_liquidatedCollateralForFee)
+                _collateralToLiquidate
             );
         }
-
-    }
-
-    /**
-    * @dev updates the state of the core as a consequence of a stable rate rebalance
-    * @param _reserve the address of the principal reserve where the user borrowed
-    * @param _user the address of the borrower
-    * @param _balanceIncrease the accrued interest on the borrowed amount
-    * @return the new stable rate for the user
-    **/
-    function updateStateOnRebalance(
-        CoreLibrary.ReserveData storage _reserve,
-        CoreLibrary.UserReserveData storage _user,
-        address _reserveAddress,
-        uint256 _balanceIncrease
-    ) internal returns (uint256) {
-        _reserve.updateCumulativeIndexes();
-
-        _reserve.increaseTotalBorrowsStableAndUpdateAverageRate(
-            _balanceIncrease,
-            _user.stableBorrowRate
-        );
-    }
-
-    /**
-    * @dev updates the state of the principal reserve as a consequence of a liquidation action.
-    * @param _reserve the reserve data
-    * @param _user the address of the borrower
-    * @param _reserveAddress the address of the reserve
-    * @param _amountToLiquidate the amount being repaid by the liquidator
-    * @param _balanceIncrease the accrued interest on the borrowed amount
-    **/
-    function updateStateOnLiquidationAsPrincipal(
-        CoreLibrary.ReserveData storage _reserve,
-        CoreLibrary.UserReserveData storage _user,
-        address _reserveAddress,
-        uint256 _amountToLiquidate,
-        uint256 _balanceIncrease
-    ) external {
-        //update principal reserve data
-        _reserve.updateCumulativeIndexes();
-
-        CoreLibrary.InterestRateMode borrowRateMode = _user.getCurrentBorrowRateMode();
-
-        if (borrowRateMode == CoreLibrary.InterestRateMode.STABLE) {
-            //increase the total borrows by the compounded interest
-            _reserve.increaseTotalBorrowsStableAndUpdateAverageRate(
-                _balanceIncrease,
-                _user.stableBorrowRate
-            );
-
-            //decrease by the actual amount to liquidate
-            _reserve.decreaseTotalBorrowsStableAndUpdateAverageRate(
-                _amountToLiquidate,
-                _user.stableBorrowRate
-            );
-
-        } else {
-            //increase the total borrows by the compounded interest
-            _reserve.increaseTotalBorrowsVariable(_balanceIncrease);
-
-            //decrease by the actual amount to liquidate
-            _reserve.decreaseTotalBorrowsVariable(_amountToLiquidate);
-        }
-        updateInterestRatesAndTimestamp(
-            _reserve,
-            _reserveAddress,
-            _amountToLiquidate.add(_balanceIncrease),
-            0
-        );
 
     }
 
@@ -267,48 +119,6 @@ library ReserveLogic {
     }
 
     /**
-    * @dev updates the state of the user as a consequence of a stable rate rebalance
-    * @param _reserve the address of the principal reserve where the user borrowed
-    * @param _user the address of the borrower
-    * @param _balanceIncrease the accrued interest on the borrowed amount
-    * @param _amountBorrowed the accrued interest on the borrowed amount
-    **/
-    function updateStateOnBorrow(
-        CoreLibrary.ReserveData storage _reserve,
-        CoreLibrary.UserReserveData storage _user,
-        uint256 _principalBalance,
-        uint256 _balanceIncrease,
-        uint256 _amountBorrowed,
-        CoreLibrary.InterestRateMode _newBorrowRateMode
-    ) public {
-
-        _reserve.updateCumulativeIndexes();
-
-        CoreLibrary.InterestRateMode previousRateMode = _user.getCurrentBorrowRateMode();
-
-        if (previousRateMode == CoreLibrary.InterestRateMode.STABLE) {
-            _reserve.decreaseTotalBorrowsStableAndUpdateAverageRate(
-                _principalBalance,
-                _user.stableBorrowRate
-            );
-        } else if (previousRateMode == CoreLibrary.InterestRateMode.VARIABLE) {
-            _reserve.decreaseTotalBorrowsVariable(_principalBalance);
-        }
-
-        uint256 newPrincipalAmount = _principalBalance.add(_balanceIncrease).add(_amountBorrowed);
-        if (_newBorrowRateMode == CoreLibrary.InterestRateMode.STABLE) {
-            _reserve.increaseTotalBorrowsStableAndUpdateAverageRate(
-                newPrincipalAmount,
-                _reserve.currentStableBorrowRate
-            );
-        } else if (_newBorrowRateMode == CoreLibrary.InterestRateMode.VARIABLE) {
-            _reserve.increaseTotalBorrowsVariable(newPrincipalAmount);
-        } else {
-            revert("Invalid new borrow rate mode");
-        }
-    }
-
-    /**
     * @dev Updates the reserve current stable borrow rate Rf, the current variable borrow rate Rv and the current liquidity rate Rl.
     * Also updates the lastUpdateTimestamp value. Please refer to the whitepaper for further information.
     * @param _reserve the address of the reserve to be updated
@@ -321,7 +131,7 @@ library ReserveLogic {
         uint256 _liquidityAdded,
         uint256 _liquidityTaken
     ) internal {
-        uint256 currentAvgStableRate = _reserve.currentAverageStableBorrowRate;
+        uint256 currentAvgStableRate = IStableDebtToken(_reserve.stableDebtTokenAddress).getAverageStableRate();
 
         uint256 balance = IERC20(_reserveAddress).universalBalanceOf(address(this));
 
@@ -337,8 +147,8 @@ library ReserveLogic {
             .calculateInterestRates(
             _reserveAddress,
             balance.add(_liquidityAdded).sub(_liquidityTaken),
-            _reserve.totalBorrowsStable,
-            _reserve.totalBorrowsVariable,
+            IERC20(_reserve.stableDebtTokenAddress).totalSupply(),
+            IERC20(_reserve.variableDebtTokenAddress).totalSupply(),
             currentAvgStableRate
         );
 

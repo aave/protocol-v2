@@ -77,6 +77,10 @@ interface LendingPoolInterface extends Interface {
       encode([_reserve]: [string]): string;
     }>;
 
+    getReserveNormalizedVariableDebt: TypedFunctionDescription<{
+      encode([_reserve]: [string]): string;
+    }>;
+
     getReserves: TypedFunctionDescription<{ encode([]: []): string }>;
 
     getUserAccountData: TypedFunctionDescription<{
@@ -91,9 +95,11 @@ interface LendingPoolInterface extends Interface {
       encode([
         _reserve,
         _aTokenAddress,
+        _stableDebtAddress,
+        _variableDebtAddress,
         _decimals,
         _interestRateStrategyAddress
-      ]: [string, string, BigNumberish, string]): string;
+      ]: [string, string, string, string, BigNumberish, string]): string;
     }>;
 
     initialize: TypedFunctionDescription<{
@@ -124,8 +130,9 @@ interface LendingPoolInterface extends Interface {
     }>;
 
     repay: TypedFunctionDescription<{
-      encode([_reserve, _amount, _onBehalfOf]: [
+      encode([_reserve, _amount, _rateMode, _onBehalfOf]: [
         string,
+        BigNumberish,
         BigNumberish,
         string
       ]): string;
@@ -192,15 +199,11 @@ interface LendingPoolInterface extends Interface {
         _amount,
         _borrowRateMode,
         _borrowRate,
-        _originationFee,
-        _borrowBalanceIncrease,
         _referral,
         _timestamp
       ]: [
         string | null,
         string | null,
-        null,
-        null,
         null,
         null,
         null,
@@ -292,20 +295,10 @@ interface LendingPoolInterface extends Interface {
     }>;
 
     Repay: TypedEventDescription<{
-      encodeTopics([
-        _reserve,
-        _user,
-        _repayer,
-        _amountMinusFees,
-        _fees,
-        _borrowBalanceIncrease,
-        _timestamp
-      ]: [
+      encodeTopics([_reserve, _user, _repayer, _amount, _timestamp]: [
         string | null,
         string | null,
         string | null,
-        null,
-        null,
         null,
         null
       ]): string[];
@@ -320,14 +313,13 @@ interface LendingPoolInterface extends Interface {
     }>;
 
     Swap: TypedEventDescription<{
-      encodeTopics([
-        _reserve,
-        _user,
-        _newRateMode,
-        _newRate,
-        _borrowBalanceIncrease,
-        _timestamp
-      ]: [string | null, string | null, null, null, null, null]): string[];
+      encodeTopics([_reserve, _user, _newRateMode, _newRate, _timestamp]: [
+        string | null,
+        string | null,
+        null,
+        null,
+        null
+      ]): string[];
     }>;
   };
 }
@@ -446,6 +438,8 @@ export class LendingPool extends Contract {
 
     getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
+    getReserveNormalizedVariableDebt(_reserve: string): Promise<BigNumber>;
+
     getReserves(): Promise<string[]>;
 
     getUserAccountData(
@@ -472,14 +466,13 @@ export class LendingPool extends Contract {
       _user: string
     ): Promise<{
       currentATokenBalance: BigNumber;
-      currentBorrowBalance: BigNumber;
-      principalBorrowBalance: BigNumber;
-      borrowRateMode: BigNumber;
-      borrowRate: BigNumber;
+      currentStableBorrowBalance: BigNumber;
+      currentVariableBorrowBalance: BigNumber;
+      principalStableBorrowBalance: BigNumber;
+      principalVariableBorrowBalance: BigNumber;
+      stableBorrowRate: BigNumber;
       liquidityRate: BigNumber;
-      originationFee: BigNumber;
       variableBorrowIndex: BigNumber;
-      lastUpdateTimestamp: BigNumber;
       usageAsCollateralEnabled: boolean;
       0: BigNumber;
       1: BigNumber;
@@ -489,13 +482,14 @@ export class LendingPool extends Contract {
       5: BigNumber;
       6: BigNumber;
       7: BigNumber;
-      8: BigNumber;
-      9: boolean;
+      8: boolean;
     }>;
 
     initReserve(
       _reserve: string,
       _aTokenAddress: string,
+      _stableDebtAddress: string,
+      _variableDebtAddress: string,
       _decimals: BigNumberish,
       _interestRateStrategyAddress: string,
       overrides?: TransactionOverrides
@@ -532,6 +526,7 @@ export class LendingPool extends Contract {
     repay(
       _reserve: string,
       _amount: BigNumberish,
+      _rateMode: BigNumberish,
       _onBehalfOf: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -705,6 +700,8 @@ export class LendingPool extends Contract {
 
   getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
+  getReserveNormalizedVariableDebt(_reserve: string): Promise<BigNumber>;
+
   getReserves(): Promise<string[]>;
 
   getUserAccountData(
@@ -731,14 +728,13 @@ export class LendingPool extends Contract {
     _user: string
   ): Promise<{
     currentATokenBalance: BigNumber;
-    currentBorrowBalance: BigNumber;
-    principalBorrowBalance: BigNumber;
-    borrowRateMode: BigNumber;
-    borrowRate: BigNumber;
+    currentStableBorrowBalance: BigNumber;
+    currentVariableBorrowBalance: BigNumber;
+    principalStableBorrowBalance: BigNumber;
+    principalVariableBorrowBalance: BigNumber;
+    stableBorrowRate: BigNumber;
     liquidityRate: BigNumber;
-    originationFee: BigNumber;
     variableBorrowIndex: BigNumber;
-    lastUpdateTimestamp: BigNumber;
     usageAsCollateralEnabled: boolean;
     0: BigNumber;
     1: BigNumber;
@@ -748,13 +744,14 @@ export class LendingPool extends Contract {
     5: BigNumber;
     6: BigNumber;
     7: BigNumber;
-    8: BigNumber;
-    9: boolean;
+    8: boolean;
   }>;
 
   initReserve(
     _reserve: string,
     _aTokenAddress: string,
+    _stableDebtAddress: string,
+    _variableDebtAddress: string,
     _decimals: BigNumberish,
     _interestRateStrategyAddress: string,
     overrides?: TransactionOverrides
@@ -791,6 +788,7 @@ export class LendingPool extends Contract {
   repay(
     _reserve: string,
     _amount: BigNumberish,
+    _rateMode: BigNumberish,
     _onBehalfOf: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -870,8 +868,6 @@ export class LendingPool extends Contract {
       _amount: null,
       _borrowRateMode: null,
       _borrowRate: null,
-      _originationFee: null,
-      _borrowBalanceIncrease: null,
       _referral: BigNumberish | null,
       _timestamp: null
     ): EventFilter;
@@ -933,9 +929,7 @@ export class LendingPool extends Contract {
       _reserve: string | null,
       _user: string | null,
       _repayer: string | null,
-      _amountMinusFees: null,
-      _fees: null,
-      _borrowBalanceIncrease: null,
+      _amount: null,
       _timestamp: null
     ): EventFilter;
 
@@ -954,7 +948,6 @@ export class LendingPool extends Contract {
       _user: string | null,
       _newRateMode: null,
       _newRate: null,
-      _borrowBalanceIncrease: null,
       _timestamp: null
     ): EventFilter;
   };
@@ -1007,6 +1000,8 @@ export class LendingPool extends Contract {
 
     getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
+    getReserveNormalizedVariableDebt(_reserve: string): Promise<BigNumber>;
+
     getReserves(): Promise<BigNumber>;
 
     getUserAccountData(_user: string): Promise<BigNumber>;
@@ -1016,6 +1011,8 @@ export class LendingPool extends Contract {
     initReserve(
       _reserve: string,
       _aTokenAddress: string,
+      _stableDebtAddress: string,
+      _variableDebtAddress: string,
       _decimals: BigNumberish,
       _interestRateStrategyAddress: string
     ): Promise<BigNumber>;
@@ -1045,6 +1042,7 @@ export class LendingPool extends Contract {
     repay(
       _reserve: string,
       _amount: BigNumberish,
+      _rateMode: BigNumberish,
       _onBehalfOf: string
     ): Promise<BigNumber>;
 

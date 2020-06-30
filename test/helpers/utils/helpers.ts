@@ -29,8 +29,6 @@ export const getReserveData = async (
     symbol = await token.symbol();
     decimals = new BigNumber(await token.decimals());
   }
-
-
   
   const totalLiquidity = new BigNumber(data.availableLiquidity).plus(data.totalBorrowsStable).plus(data.totalBorrowsVariable);
 
@@ -62,7 +60,7 @@ export const getUserData = async (
   reserve: string,
   user: string
 ): Promise<UserReserveData> => {
-  const [data, aTokenData] = await Promise.all([
+  const [userData, aTokenData] = await Promise.all([
     pool.getUserReserveData(reserve, user),
     getATokenUserData(reserve, user, pool),
   ]);
@@ -86,8 +84,6 @@ export const getUserData = async (
     walletBalance = new BigNumber((await token.balanceOf(user)).toString());
   }
 
-  const userData: any = data;
-
   return {
     principalATokenBalance: new BigNumber(principalATokenBalance),
     interestRedirectionAddress,
@@ -96,15 +92,14 @@ export const getUserData = async (
     ),
     redirectedBalance: new BigNumber(redirectedBalance),
     currentATokenUserIndex: new BigNumber(userIndex),
-    currentATokenBalance: new BigNumber(userData.currentATokenBalance),
-    currentBorrowBalance: new BigNumber(userData.currentBorrowBalance),
-    principalBorrowBalance: new BigNumber(userData.principalBorrowBalance),
-    borrowRateMode: userData.borrowRateMode.toString(),
-    borrowRate: new BigNumber(userData.borrowRate),
-    liquidityRate: new BigNumber(userData.liquidityRate),
-    originationFee: new BigNumber(userData.originationFee),
-    variableBorrowIndex: new BigNumber(userData.variableBorrowIndex),
-    lastUpdateTimestamp: new BigNumber(userData.lastUpdateTimestamp),
+    currentATokenBalance: new BigNumber(userData.currentATokenBalance.toString()),
+    currentStableBorrowBalance: new BigNumber(userData.currentStableBorrowBalance.toString()),
+    currentVariableBorrowBalance: new BigNumber(userData.currentVariableBorrowBalance.toString()),
+    principalStableBorrowBalance: new BigNumber(userData.principalStableBorrowBalance.toString()),
+    principalVariableBorrowBalance: new BigNumber(userData.principalVariableBorrowBalance.toString()),
+    variableBorrowIndex: new BigNumber(userData.variableBorrowIndex.toString()),
+    stableBorrowRate: new BigNumber(userData.stableBorrowRate.toString()),
+    liquidityRate: new BigNumber(userData.liquidityRate.toString()),
     usageAsCollateralEnabled: userData.usageAsCollateralEnabled,
     walletBalance,
   };

@@ -30,7 +30,7 @@ interface LendingPoolConfiguratorInterface extends Interface {
       encode([_reserve]: [string]): string;
     }>;
 
-    disableReserveStableBorrowRate: TypedFunctionDescription<{
+    disableReserveStableRate: TypedFunctionDescription<{
       encode([_reserve]: [string]): string;
     }>;
 
@@ -59,8 +59,10 @@ interface LendingPoolConfiguratorInterface extends Interface {
       encode([
         _reserve,
         _underlyingAssetDecimals,
-        _interestRateStrategyAddress
-      ]: [string, BigNumberish, string]): string;
+        _interestRateStrategyAddress,
+        _stableDebtTokenAddress,
+        _variableDebtTokenAddress
+      ]: [string, BigNumberish, string, string, string]): string;
     }>;
 
     initReserveWithData: TypedFunctionDescription<{
@@ -68,9 +70,19 @@ interface LendingPoolConfiguratorInterface extends Interface {
         _reserve,
         _aTokenName,
         _aTokenSymbol,
+        _stableDebtTokenAddress,
+        _variableDebtTokenAddress,
         _underlyingAssetDecimals,
         _interestRateStrategyAddress
-      ]: [string, string, string, BigNumberish, string]): string;
+      ]: [
+        string,
+        string,
+        string,
+        string,
+        string,
+        BigNumberish,
+        string
+      ]): string;
     }>;
 
     initialize: TypedFunctionDescription<{
@@ -166,10 +178,6 @@ interface LendingPoolConfiguratorInterface extends Interface {
       encodeTopics([_reserve, _threshold]: [null, null]): string[];
     }>;
 
-    ReserveRemoved: TypedEventDescription<{
-      encodeTopics([_reserve]: [string | null]): string[];
-    }>;
-
     ReserveUnfreezed: TypedEventDescription<{
       encodeTopics([_reserve]: [string | null]): string[];
     }>;
@@ -228,7 +236,7 @@ export class LendingPoolConfigurator extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    disableReserveStableBorrowRate(
+    disableReserveStableRate(
       _reserve: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -261,6 +269,8 @@ export class LendingPoolConfigurator extends Contract {
       _reserve: string,
       _underlyingAssetDecimals: BigNumberish,
       _interestRateStrategyAddress: string,
+      _stableDebtTokenAddress: string,
+      _variableDebtTokenAddress: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -268,6 +278,8 @@ export class LendingPoolConfigurator extends Contract {
       _reserve: string,
       _aTokenName: string,
       _aTokenSymbol: string,
+      _stableDebtTokenAddress: string,
+      _variableDebtTokenAddress: string,
       _underlyingAssetDecimals: BigNumberish,
       _interestRateStrategyAddress: string,
       overrides?: TransactionOverrides
@@ -338,7 +350,7 @@ export class LendingPoolConfigurator extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  disableReserveStableBorrowRate(
+  disableReserveStableRate(
     _reserve: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -371,6 +383,8 @@ export class LendingPoolConfigurator extends Contract {
     _reserve: string,
     _underlyingAssetDecimals: BigNumberish,
     _interestRateStrategyAddress: string,
+    _stableDebtTokenAddress: string,
+    _variableDebtTokenAddress: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -378,6 +392,8 @@ export class LendingPoolConfigurator extends Contract {
     _reserve: string,
     _aTokenName: string,
     _aTokenSymbol: string,
+    _stableDebtTokenAddress: string,
+    _variableDebtTokenAddress: string,
     _underlyingAssetDecimals: BigNumberish,
     _interestRateStrategyAddress: string,
     overrides?: TransactionOverrides
@@ -470,8 +486,6 @@ export class LendingPoolConfigurator extends Contract {
       _threshold: null
     ): EventFilter;
 
-    ReserveRemoved(_reserve: string | null): EventFilter;
-
     ReserveUnfreezed(_reserve: string | null): EventFilter;
 
     StableRateDisabledOnReserve(_reserve: string | null): EventFilter;
@@ -490,7 +504,7 @@ export class LendingPoolConfigurator extends Contract {
 
     disableReserveAsCollateral(_reserve: string): Promise<BigNumber>;
 
-    disableReserveStableBorrowRate(_reserve: string): Promise<BigNumber>;
+    disableReserveStableRate(_reserve: string): Promise<BigNumber>;
 
     enableBorrowingOnReserve(
       _reserve: string,
@@ -511,13 +525,17 @@ export class LendingPoolConfigurator extends Contract {
     initReserve(
       _reserve: string,
       _underlyingAssetDecimals: BigNumberish,
-      _interestRateStrategyAddress: string
+      _interestRateStrategyAddress: string,
+      _stableDebtTokenAddress: string,
+      _variableDebtTokenAddress: string
     ): Promise<BigNumber>;
 
     initReserveWithData(
       _reserve: string,
       _aTokenName: string,
       _aTokenSymbol: string,
+      _stableDebtTokenAddress: string,
+      _variableDebtTokenAddress: string,
       _underlyingAssetDecimals: BigNumberish,
       _interestRateStrategyAddress: string
     ): Promise<BigNumber>;

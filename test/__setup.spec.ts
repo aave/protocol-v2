@@ -26,6 +26,8 @@ import {
   deployAaveProtocolTestHelpers,
   getEthersSigners,
   registerContractInJsonDb,
+  deployStableDebtToken,
+  deployVariableDebtToken,
 } from "../helpers/contracts-helpers";
 import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
 import {Wallet, ContractTransaction, ethers, Signer} from "ethers";
@@ -251,6 +253,26 @@ const initReserves = async (
           stableRateSlope2,
         ]
       );
+
+      const stableDebtToken = await deployStableDebtToken([
+        `Aave stable debt bearing ${assetSymbol}`,
+        `stableDebt${assetSymbol}`,
+        reserveDecimals,
+        tokenAddress,
+        lendingPoolAddressesProvider.address
+      ]
+      )
+
+      const variableDebtToken = await deployVariableDebtToken([
+        `Aave stable debt bearing ${assetSymbol}`,
+        `stableDebt${assetSymbol}`,
+        reserveDecimals,
+        tokenAddress,
+        lendingPoolAddressesProvider.address
+      ]
+      )
+    
+      console.log(`Debt tokens for ${assetSymbol}: stable ${stableDebtToken.address} variable ${variableDebtToken.address}`)
     
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search("UNI") === -1) {
@@ -264,6 +286,8 @@ const initReserves = async (
         tokenAddress,
         `Aave Interest bearing ${assetSymbol}`,
         `a${assetSymbol}`,
+        stableDebtToken.address,
+        variableDebtToken.address,
         reserveDecimals,
         rateStrategyContract.address
       );

@@ -30,13 +30,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address _interestRateStrategyAddress
   );
 
-  /**
-   * @dev emitted when a reserve is removed.
-   * @param _reserve the address of the reserve
-   **/
-  event ReserveRemoved(address indexed _reserve);
-
-  /**
+   /**
    * @dev emitted when borrowing is enabled on a reserve
    * @param _reserve the address of the reserve
    * @param _stableRateEnabled true if stable rate borrowing is enabled, false otherwise
@@ -171,17 +165,22 @@ contract LendingPoolConfigurator is VersionedInitializable {
   function initReserve(
     address _reserve,
     uint8 _underlyingAssetDecimals,
-    address _interestRateStrategyAddress
+    address _interestRateStrategyAddress,
+    address _stableDebtTokenAddress,
+    address _variableDebtTokenAddress
   ) external onlyLendingPoolManager {
-    IERC20Detailed asset = IERC20Detailed(_reserve);
+    string memory aTokenName = string(
+      abi.encodePacked('Aave Interest bearing ', IERC20Detailed(_reserve).name())
+    );
+    string memory aTokenSymbol = string(abi.encodePacked('a', IERC20Detailed(_reserve).symbol()));
 
-    string memory aTokenName = string(abi.encodePacked('Aave Interest bearing ', asset.name()));
-    string memory aTokenSymbol = string(abi.encodePacked('a', asset.symbol()));
 
     initReserveWithData(
       _reserve,
       aTokenName,
       aTokenSymbol,
+      _stableDebtTokenAddress,
+      _variableDebtTokenAddress,
       _underlyingAssetDecimals,
       _interestRateStrategyAddress
     );
@@ -199,11 +198,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address _reserve,
     string memory _aTokenName,
     string memory _aTokenSymbol,
+    address _stableDebtTokenAddress,
+    address _variableDebtTokenAddress,
     uint8 _underlyingAssetDecimals,
     address _interestRateStrategyAddress
   ) public onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-
     AToken aTokenInstance = new AToken(
       poolAddressesProvider,
       _reserve,
@@ -211,9 +210,12 @@ contract LendingPoolConfigurator is VersionedInitializable {
       _aTokenName,
       _aTokenSymbol
     );
-    pool.initReserve(
+
+    LendingPool(payable(poolAddressesProvider.getLendingPool())).initReserve(
       _reserve,
       address(aTokenInstance),
+      _stableDebtTokenAddress,
+      _variableDebtTokenAddress,
       _underlyingAssetDecimals,
       _interestRateStrategyAddress
     );

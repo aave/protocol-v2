@@ -146,11 +146,23 @@ const executeAction = async (
 
     case "repay":
       {
-        const {amount, sendValue} = action.args;
+        const {amount, borrowRateMode, sendValue} = action.args;
         let {onBehalfOf: onBehalfOfIndex} = action.args;
 
         if (!amount || amount === "") {
           throw `Invalid amount to repay into the ${reserve} reserve`;
+        }
+        let rateMode: string = RateMode.None;
+
+        if (borrowRateMode === "none") {
+          rateMode = RateMode.None;
+        } else if (borrowRateMode === "stable") {
+          rateMode = RateMode.Stable;
+        } else if (borrowRateMode === "variable") {
+          rateMode = RateMode.Variable;
+        } else {
+          //random value, to test improper selection of the parameter
+          rateMode = "4";
         }
 
         let userToRepayOnBehalf: SignerWithAddress;
@@ -166,6 +178,7 @@ const executeAction = async (
         await repay(
           reserve,
           amount,
+          rateMode,
           user,
           userToRepayOnBehalf,
           sendValue,

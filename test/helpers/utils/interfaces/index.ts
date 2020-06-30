@@ -7,16 +7,15 @@ export interface UserReserveData {
     interestRedirectionAddress: string
     redirectionAddressRedirectedBalance: BigNumber
     redirectedBalance: BigNumber
-    principalBorrowBalance: BigNumber
-    borrowRateMode: string
-    borrowRate: BigNumber
-    liquidityRate: BigNumber
-    originationFee: BigNumber
+    currentStableBorrowBalance: BigNumber
+    currentVariableBorrowBalance: BigNumber
+    principalStableBorrowBalance: BigNumber
+    principalVariableBorrowBalance: BigNumber
     variableBorrowIndex: BigNumber
-    lastUpdateTimestamp: BigNumber
+    liquidityRate: BigNumber
+    stableBorrowRate: BigNumber
     usageAsCollateralEnabled: Boolean
     walletBalance: BigNumber
-    currentBorrowBalance: BigNumber
     [key: string]: BigNumber | string | Boolean
   }
   

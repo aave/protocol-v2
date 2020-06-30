@@ -16,6 +16,8 @@ import "../libraries/UserLogic.sol";
 import "../libraries/GenericLogic.sol";
 import "../libraries/ValidationLogic.sol";
 import "../libraries/UniversalERC20.sol";
+import "../tokenization/interfaces/IStableDebtToken.sol";
+import "../tokenization/interfaces/IVariableDebtToken.sol";
 
 import "../interfaces/IFeeProvider.sol";
 import "../flashloan/interfaces/IFlashLoanReceiver.sol";
@@ -89,8 +91,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     * @param _amount the amount to be deposited
     * @param _borrowRateMode the rate mode, can be either 1-stable or 2-variable
     * @param _borrowRate the rate at which the user has borrowed
-    * @param _originationFee the origination fee to be paid by the user
-    * @param _borrowBalanceIncrease the balance increase since the last borrow, 0 if it's the first time borrowing
     * @param _referral the referral number of the action
     * @param _timestamp the timestamp of the action
     **/
@@ -100,8 +100,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         uint256 _amount,
         uint256 _borrowRateMode,
         uint256 _borrowRate,
-        uint256 _originationFee,
-        uint256 _borrowBalanceIncrease,
         uint16 indexed _referral,
         uint256 _timestamp
     );
@@ -111,18 +109,14 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     * @param _reserve the address of the reserve
     * @param _user the address of the user for which the repay has been executed
     * @param _repayer the address of the user that has performed the repay action
-    * @param _amountMinusFees the amount repaid minus fees
-    * @param _fees the fees repaid
-    * @param _borrowBalanceIncrease the balance increase since the last action
+    * @param _amount the amount repaid
     * @param _timestamp the timestamp of the action
     **/
     event Repay(
         address indexed _reserve,
         address indexed _user,
         address indexed _repayer,
-        uint256 _amountMinusFees,
-        uint256 _fees,
-        uint256 _borrowBalanceIncrease,
+        uint256 _amount,
         uint256 _timestamp
     );
 
@@ -132,7 +126,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     * @param _user the address of the user executing the swap
     * @param _newRateMode the new interest rate mode
     * @param _newRate the new borrow rate
-    * @param _borrowBalanceIncrease the balance increase since the last action
     * @param _timestamp the timestamp of the action
     **/
     event Swap(
@@ -140,7 +133,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         address indexed _user,
         uint256 _newRateMode,
         uint256 _newRate,
-        uint256 _borrowBalanceIncrease,
         uint256 _timestamp
     );
 
@@ -377,26 +369,16 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             addressesProvider.getPriceOracle()
         );
 
-        (uint256 principalBorrowBalance, , uint256 borrowBalanceIncrease) = user.getBorrowBalances(
-            reserve
-        );
+        //borrow passed
+        reserve.updateCumulativeIndexes();
 
-        //all conditions passed - borrow is accepted
-        reserve.updateStateOnBorrow(
-            user,
-            principalBorrowBalance,
-            borrowBalanceIncrease,
-            _amount,
-            CoreLibrary.InterestRateMode(_interestRateMode)
-        );
-
-        user.updateStateOnBorrow(
-            reserve,
-            _amount,
-            borrowBalanceIncrease,
-            borrowFee,
-            CoreLibrary.InterestRateMode(_interestRateMode)
-        );
+        if(CoreLibrary.InterestRateMode(_interestRateMode) == CoreLibrary.InterestRateMode.STABLE) {
+            IStableDebtToken(reserve.stableDebtTokenAddress).mint(msg.sender, _amount, reserve.currentStableBorrowRate);
+        }
+        else {
+            IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, _amount);
+        }
+        uint256 userStableRate = reserve.currentStableBorrowRate;
 
         reserve.updateInterestRatesAndTimestamp(_reserve, 0, _amount);
 
@@ -409,10 +391,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             _amount,
             _interestRateMode,
             CoreLibrary.InterestRateMode(_interestRateMode) == CoreLibrary.InterestRateMode.STABLE
-                ? user.stableBorrowRate
+                ? userStableRate
                 : reserve.currentVariableBorrowRate,
-            borrowFee,
-            borrowBalanceIncrease,
             _referralCode,
             //solium-disable-next-line
             block.timestamp
@@ -429,8 +409,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     **/
 
     struct RepayLocalVars {
-        uint256 principalBorrowBalance;
-        uint256 compoundedBorrowBalance;
+        uint256 stableBorrowBalance;
+        uint256 variableBorrowBalance;
         uint256 borrowBalanceIncrease;
         uint256 paybackAmount;
         uint256 paybackAmountMinusFees;
@@ -438,7 +418,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         uint256 originationFee;
     }
 
-    function repay(address _reserve, uint256 _amount, address payable _onBehalfOf)
+    function repay(address _reserve, uint256 _amount, uint256 _rateMode, address payable _onBehalfOf)
         external
         payable
         nonReentrant
@@ -448,94 +428,45 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         CoreLibrary.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
         (
-            vars.principalBorrowBalance,
-            vars.compoundedBorrowBalance,
-            vars.borrowBalanceIncrease
-        ) = user.getBorrowBalances(reserve);
+            vars.stableBorrowBalance,
+            vars.variableBorrowBalance
+        ) = UserLogic.getUserBorrowBalances(_onBehalfOf, reserve);
 
-        vars.originationFee = user.originationFee;
+        CoreLibrary.InterestRateMode rateMode = CoreLibrary.InterestRateMode(_rateMode);
 
         //default to max amount
-        vars.paybackAmount = vars.compoundedBorrowBalance.add(vars.originationFee);
+        vars.paybackAmount = rateMode == CoreLibrary.InterestRateMode.STABLE ? vars.stableBorrowBalance : vars.variableBorrowBalance;
 
         if (_amount != UINT_MAX_VALUE && _amount < vars.paybackAmount) {
             vars.paybackAmount = _amount;
         }
 
+
         ValidationLogic.validateRepay(
             reserve,
             _reserve,
             _amount,
+            rateMode,
             _onBehalfOf,
-            vars.compoundedBorrowBalance,
+            vars.stableBorrowBalance,
+            vars.variableBorrowBalance,
             vars.paybackAmount,
             msg.value
         );
 
-        //if the amount is smaller than the origination fee, just transfer the amount to the fee destination address
-        if (vars.paybackAmount <= vars.originationFee) {
-            reserve.updateStateOnRepay(user, _reserve, 0, vars.borrowBalanceIncrease);
+        reserve.updateCumulativeIndexes();
 
-            user.updateStateOnRepay(
-                reserve,
-                0,
-                vars.paybackAmount,
-                vars.borrowBalanceIncrease,
-                false
-            );
-
-            reserve.updateInterestRatesAndTimestamp(_reserve, 0, 0);
-
-            IERC20(_reserve).universalTransferFrom(
-                msg.sender,
-                addressesProvider.getTokenDistributor(),
-                vars.paybackAmount,
-                true
-            );
-
-            emit Repay(
-                _reserve,
-                _onBehalfOf,
-                msg.sender,
-                0,
-                vars.paybackAmount,
-                vars.borrowBalanceIncrease,
-                //solium-disable-next-line
-                block.timestamp
-            );
-            return;
+        //burns an equivalent amount of debt tokens
+        if(rateMode == CoreLibrary.InterestRateMode.STABLE) {
+            IStableDebtToken(reserve.stableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
+        }
+        else {
+            IVariableDebtToken(reserve.variableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
         }
 
-        vars.paybackAmountMinusFees = vars.paybackAmount.sub(vars.originationFee);
+        reserve.updateInterestRatesAndTimestamp(_reserve, vars.paybackAmount, 0);
 
-        reserve.updateStateOnRepay(
-            user,
-            _reserve,
-            vars.paybackAmountMinusFees,
-            vars.borrowBalanceIncrease
-        );
-
-        user.updateStateOnRepay(
-            reserve,
-            vars.paybackAmountMinusFees,
-            vars.originationFee,
-            vars.borrowBalanceIncrease,
-            vars.compoundedBorrowBalance == vars.paybackAmountMinusFees
-        );
-
-        reserve.updateInterestRatesAndTimestamp(_reserve, vars.paybackAmountMinusFees, 0);
-
-        //if the user didn't repay the origination fee, transfer the fee to the fee collection address
-        if (vars.originationFee > 0) {
-            IERC20(_reserve).universalTransferFrom(
-                msg.sender,
-                addressesProvider.getTokenDistributor(),
-                vars.originationFee,
-                false
-            );
-        }
-
-        IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmountMinusFees, false);
+        IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmount, false);
 
         if (IERC20(_reserve).isETH()) {
             //send excess ETH back to the caller if needed
@@ -550,9 +481,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             _reserve,
             _onBehalfOf,
             msg.sender,
-            vars.paybackAmountMinusFees,
-            vars.originationFee,
-            vars.borrowBalanceIncrease,
+            vars.paybackAmount,
             //solium-disable-next-line
             block.timestamp
         );
@@ -566,11 +495,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
         CoreLibrary.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
-        (uint256 principalBorrowBalance, uint256 compoundedBorrowBalance, uint256 borrowBalanceIncrease) = user
-            .getBorrowBalances(reserve);
+        (uint256 principalBorrowBalance, uint256 compoundedBorrowBalance) = UserLogic.
+            getUserBorrowBalances(msg.sender,reserve);
 
-        CoreLibrary.InterestRateMode currentRateMode = user.getCurrentBorrowRateMode();
-
+      
+/*
+  CoreLibrary.InterestRateMode currentRateMode = user.getCurrentBorrowRateMode();
         ValidationLogic.validateSwapRateMode(
             reserve,
             user,
@@ -578,18 +508,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             currentRateMode
         );
 
-        reserve.updateStateOnSwapRate(
-            user,
-            _reserve,
-            principalBorrowBalance,
-            compoundedBorrowBalance,
-            currentRateMode
-        );
-
-        user.updateStateOnSwapRate(reserve, borrowBalanceIncrease, currentRateMode);
+        /**
+        TODO: Burn old tokens and mint new ones
+        **/
 
         reserve.updateInterestRatesAndTimestamp(_reserve, 0, 0);
-
+/*
         CoreLibrary.InterestRateMode newRateMode = user.getCurrentBorrowRateMode();
         emit Swap(
             _reserve,
@@ -598,10 +522,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             newRateMode == CoreLibrary.InterestRateMode.STABLE
                 ? user.stableBorrowRate
                 : reserve.currentVariableBorrowRate,
-            borrowBalanceIncrease,
             //solium-disable-next-line
             block.timestamp
         );
+    */
     }
 
     /**
@@ -615,6 +539,9 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
         CoreLibrary.UserReserveData storage user = usersReserveData[_user][_reserve];
 
+
+        //TODO: Burn tokens at old rate, mint new ones at new rate
+/*
         (, uint256 compoundedBalance, uint256 borrowBalanceIncrease) = user.getBorrowBalances(
             reserve
         );
@@ -667,7 +594,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             return;
 
         }
-
+*/
         revert("Interest rate rebalance conditions were not met");
     }
 
@@ -869,12 +796,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         CoreLibrary.ReserveData memory reserve = reserves[_reserve];
         return (
             IERC20(_reserve).universalBalanceOf(address(this)),
-            reserve.totalBorrowsStable,
-            reserve.totalBorrowsVariable,
+            IERC20(reserve.stableDebtTokenAddress).totalSupply(),
+            IERC20(reserve.variableDebtTokenAddress).totalSupply(),
             reserve.currentLiquidityRate,
             reserve.currentVariableBorrowRate,
             reserve.currentStableBorrowRate,
-            reserve.currentAverageStableBorrowRate,
+            IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate(),
             reserve.lastLiquidityCumulativeIndex,
             reserve.lastVariableBorrowCumulativeIndex,
             reserve.lastUpdateTimestamp
@@ -925,37 +852,25 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         view
         returns (
             uint256 currentATokenBalance,
-            uint256 currentBorrowBalance,
-            uint256 principalBorrowBalance,
-            uint256 borrowRateMode,
-            uint256 borrowRate,
+            uint256 currentStableBorrowBalance,
+            uint256 currentVariableBorrowBalance,
+            uint256 principalStableBorrowBalance,
+            uint256 principalVariableBorrowBalance,
+            uint256 stableBorrowRate,
             uint256 liquidityRate,
-            uint256 originationFee,
             uint256 variableBorrowIndex,
-            uint256 lastUpdateTimestamp,
             bool usageAsCollateralEnabled
         )
     {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-        CoreLibrary.UserReserveData storage user = usersReserveData[_user][_reserve];
 
         currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(_user);
-        CoreLibrary.InterestRateMode mode = user.getCurrentBorrowRateMode();
-        (principalBorrowBalance, currentBorrowBalance, ) = user.getBorrowBalances(reserve);
-
-        //default is 0, if mode == CoreLibrary.InterestRateMode.NONE
-        if (mode == CoreLibrary.InterestRateMode.STABLE) {
-            borrowRate = user.stableBorrowRate;
-        } else if (mode == CoreLibrary.InterestRateMode.VARIABLE) {
-            borrowRate = reserve.currentVariableBorrowRate;
-        }
-
-        borrowRateMode = uint256(mode);
+        (currentStableBorrowBalance, currentVariableBorrowBalance) = UserLogic.getUserBorrowBalances(_user,reserve);
+        (principalStableBorrowBalance, principalVariableBorrowBalance) = UserLogic.getUserPrincipalBorrowBalances(_user,reserve);
         liquidityRate = reserve.currentLiquidityRate;
-        originationFee = user.originationFee;
-        variableBorrowIndex = user.lastVariableBorrowCumulativeIndex;
-        lastUpdateTimestamp = user.lastUpdateTimestamp;
-        usageAsCollateralEnabled = user.useAsCollateral;
+        stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
+        usageAsCollateralEnabled = usersReserveData[_user][_reserve].useAsCollateral;
+        variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(_user);
     }
 
     function getReserves() external view returns (address[] memory) {
@@ -978,10 +893,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     function initReserve(
         address _reserve,
         address _aTokenAddress,
+        address _stableDebtAddress,
+        address _variableDebtAddress,
         uint256 _decimals,
         address _interestRateStrategyAddress
     ) external onlyLendingPoolConfigurator {
-        reserves[_reserve].init(_aTokenAddress, _decimals, _interestRateStrategyAddress);
+        reserves[_reserve].init(_aTokenAddress, _stableDebtAddress, _variableDebtAddress,  _decimals, _interestRateStrategyAddress);
         addReserveToListInternal(_reserve);
 
     }
@@ -1160,6 +1077,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     function getReserveNormalizedIncome(address _reserve) external view returns (uint256) {
         return reserves[_reserve].getNormalizedIncome();
     }
+
+    function getReserveNormalizedVariableDebt(address _reserve) external view returns (uint256) {
+        return reserves[_reserve].getNormalizedDebt();
+    }
+
 
     function balanceDecreaseAllowed(address _reserve, address _user, uint256 _amount)
         external
