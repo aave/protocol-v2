@@ -59,8 +59,6 @@ interface TokenDistributorInterface extends Interface {
       ]: [string, string, string, string[], BigNumberish[], string[]]): string;
     }>;
 
-    kyberProxy: TypedFunctionDescription<{ encode([]: []): string }>;
-
     recipientBurn: TypedFunctionDescription<{ encode([]: []): string }>;
 
     tokenToBurn: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -161,8 +159,6 @@ export class TokenDistributor extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    kyberProxy(): Promise<string>;
-
     recipientBurn(): Promise<string>;
 
     tokenToBurn(): Promise<string>;
@@ -221,8 +217,6 @@ export class TokenDistributor extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  kyberProxy(): Promise<string>;
-
   recipientBurn(): Promise<string>;
 
   tokenToBurn(): Promise<string>;
@@ -280,8 +274,6 @@ export class TokenDistributor extends Contract {
       _percentages: BigNumberish[],
       _tokens: string[]
     ): Promise<BigNumber>;
-
-    kyberProxy(): Promise<BigNumber>;
 
     recipientBurn(): Promise<BigNumber>;
 

@@ -33,8 +33,6 @@ export enum eContractid {
   ChainlinkProxyPriceProvider = "ChainlinkProxyPriceProvider",
   DefaultReserveInterestRateStrategy = "DefaultReserveInterestRateStrategy",
   LendingPoolLiquidationManager = "LendingPoolLiquidationManager",
-  MockOneSplit = "MockOneSplit",
-  OneSplitAdapter = "OneSplitAdapter",
   TokenDistributor = "TokenDistributor",
   InitializableAdminUpgradeabilityProxy = "InitializableAdminUpgradeabilityProxy",
   MockFlashLoanReceiver = "MockFlashLoanReceiver",
