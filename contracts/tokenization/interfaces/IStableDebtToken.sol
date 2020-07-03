@@ -14,4 +14,6 @@ interface IStableDebtToken {
   function getAverageStableRate() external virtual view returns(uint256);
 
   function getUserStableRate(address _user) external virtual view returns(uint256);
+
+  function getUserLastUpdated(address _user) external virtual view returns (uint40);
 }

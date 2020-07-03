@@ -34,6 +34,10 @@ interface VariableDebtTokenInterface extends Interface {
       encode([spender, subtractedValue]: [string, BigNumberish]): string;
     }>;
 
+    getUserIndex: TypedFunctionDescription<{
+      encode([_user]: [string]): string;
+    }>;
+
     increaseAllowance: TypedFunctionDescription<{
       encode([spender, addedValue]: [string, BigNumberish]): string;
     }>;
@@ -161,6 +165,8 @@ export class VariableDebtToken extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    getUserIndex(_user: string): Promise<BigNumber>;
+
     increaseAllowance(
       spender: string,
       addedValue: BigNumberish,
@@ -229,6 +235,8 @@ export class VariableDebtToken extends Contract {
     subtractedValue: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
+
+  getUserIndex(_user: string): Promise<BigNumber>;
 
   increaseAllowance(
     spender: string,
@@ -317,6 +325,8 @@ export class VariableDebtToken extends Contract {
       spender: string,
       subtractedValue: BigNumberish
     ): Promise<BigNumber>;
+
+    getUserIndex(_user: string): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,

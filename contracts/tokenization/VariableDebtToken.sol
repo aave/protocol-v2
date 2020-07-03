@@ -9,7 +9,6 @@ import {WadRayMath} from '../libraries/WadRayMath.sol';
 import '@nomiclabs/buidler/console.sol';
 import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
 
-
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -38,7 +37,6 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @dev See {IERC20-balanceOf}.
    */
   function balanceOf(address account) public virtual override view returns (uint256) {
-
     if (balances[account] == 0) {
       return 0;
     }
@@ -47,12 +45,14 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       balances[account]
         .wadToRay()
         .rayMul(pool.getReserveNormalizedVariableDebt(underlyingAssetAddress))
+        .rayDiv(userIndexes[account])
         .rayToWad();
   }
 
-  function getUserIndex(address _user) public virtual override view returns(uint256) {
+  function getUserIndex(address _user) public virtual override view returns (uint256) {
     return userIndexes[_user];
   }
+
   /** @dev Creates `amount` tokens and assigns them to `account`, increasing
    * the total supply.
    *
@@ -63,17 +63,17 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * - `to` cannot be the zero address.
    */
   function mint(address account, uint256 amount) public override onlyLendingPool {
-
     (
       uint256 previousBalance,
       uint256 currentBalance,
-      uint256 balanceIncrease,
-      uint256 index
+      uint256 balanceIncrease
     ) = internalCumulateBalance(account);
 
     internalMint(account, amount);
 
-    emit mintDebt(account, amount, previousBalance, currentBalance, balanceIncrease, index);
+    userIndexes[account] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
+
+    emit mintDebt(account, amount, previousBalance, currentBalance, balanceIncrease, userIndexes[account]);
   }
 
   /**
@@ -91,13 +91,19 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     (
       uint256 previousBalance,
       uint256 currentBalance,
-      uint256 balanceIncrease,
-      uint256 index
+      uint256 balanceIncrease
     ) = internalCumulateBalance(account);
 
     internalBurn(account, amount);
 
-    emit burnDebt(account, amount, previousBalance, currentBalance, balanceIncrease, index);
+    //if user repaid everything
+    if (currentBalance == amount) {
+      userIndexes[account] = 0;
+    } else {
+      userIndexes[account] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
+    }
+
+    emit burnDebt(account, amount, previousBalance, currentBalance, balanceIncrease, userIndexes[account]);
   }
 
   /**
@@ -111,25 +117,25 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     returns (
       uint256,
       uint256,
-      uint256,
       uint256
     )
   {
     uint256 previousPrincipalBalance = balances[_user];
 
+    if (previousPrincipalBalance == 0) {
+      return (0, 0, 0);
+    }
+
     //calculate the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
+
     //mints an amount of tokens equivalent to the amount accumulated
     internalMint(_user, balanceIncrease);
-    //updates the user index
-    uint256 index = userIndexes[_user] = pool.getReserveNormalizedVariableDebt(
-      underlyingAssetAddress
-    );
+
     return (
       previousPrincipalBalance,
       previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease,
-      index
+      balanceIncrease
     );
   }
 }

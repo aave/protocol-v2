@@ -97,7 +97,8 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "1",
-            "onBehalfOf": "1"
+            "onBehalfOf": "1",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         }
@@ -156,216 +157,6 @@
           },
           "expected": "revert",
           "revertMessage": "The collateral balance is 0"
-        }
-      ]
-    },
-    {
-      "description": "User 1 deposits 1000 DAI, user 2 deposits 0.92267103215 ETH, tries to borrow 187.5 DAI which is the maximum amount he can borrow, if fees were not considered. (revert expected)",
-      "actions": [
-        {
-          "name": "mint",
-          "args": {
-            "reserve": "DAI",
-            "amount": "1000",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "approve",
-          "args": {
-            "reserve": "DAI",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "DAI",
-            "amount": "1000",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "ETH",
-            "amount": "0.92267103215",
-            "user": "2",
-            "sendValue": "0.92267103215"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "borrow",
-          "args": {
-            "reserve": "DAI",
-            "amount": "187.5",
-            "borrowRateMode": "stable",
-            "user": "2"
-          },
-          "expected": "revert",
-          "revertMessage": "There is not enough collateral to cover a new borrow"
-        },
-        {
-          "name": "redeem",
-          "args": {
-            "reserve": "ETH",
-            "amount": "-1",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "redeem",
-          "args": {
-            "reserve": "DAI",
-            "amount": "-1",
-            "user": "1"
-          },
-          "expected": "success"
-        }
-      ]
-    },
-    {
-      "description": "User 1 deposits 1000 USDC, user 2 deposits 0.91928534104 ETH, tries to borrow 187.5 USDC which is the maximum amount he can borrow, if fees were not considered. (revert expected)",
-      "actions": [
-        {
-          "name": "mint",
-          "args": {
-            "reserve": "USDC",
-            "amount": "1000",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "approve",
-          "args": {
-            "reserve": "USDC",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "USDC",
-            "amount": "1000",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "ETH",
-            "amount": "0.91928534104",
-            "user": "2",
-            "sendValue": "0.91928534104"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "borrow",
-          "args": {
-            "reserve": "USDC",
-            "amount": "187.5",
-            "borrowRateMode": "stable",
-            "user": "2"
-          },
-          "expected": "revert",
-          "revertMessage": "There is not enough collateral to cover a new borrow"
-        },
-        {
-          "name": "redeem",
-          "args": {
-            "reserve": "ETH",
-            "amount": "-1",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "redeem",
-          "args": {
-            "reserve": "USDC",
-            "amount": "-1",
-            "user": "1"
-          },
-          "expected": "success"
-        }
-      ]
-    },
-    {
-      "description": "User 1 deposits 1.5 ETH, user 2 deposits 100 DAI, tries to borrow 0.276801309645 ETH which is the maximum amount he can borrow, if fees were not considered. (revert expected)",
-      "actions": [
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "ETH",
-            "amount": "1.5",
-            "user": "1",
-            "sendValue": "1.5"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "mint",
-          "args": {
-            "reserve": "DAI",
-            "amount": "100",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "approve",
-          "args": {
-            "reserve": "DAI",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "DAI",
-            "amount": "100",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "borrow",
-          "args": {
-            "reserve": "ETH",
-            "amount": "0.276801309645",
-            "borrowRateMode": "stable",
-            "user": "2"
-          },
-          "expected": "revert",
-          "revertMessage": "There is not enough collateral to cover a new borrow"
-        },
-        {
-          "name": "redeem",
-          "args": {
-            "reserve": "DAI",
-            "amount": "-1",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "redeem",
-          "args": {
-            "reserve": "ETH",
-            "amount": "-1",
-            "user": "1"
-          },
-          "expected": "success"
         }
       ]
     },
@@ -506,16 +297,17 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "1",
-            "onBehalfOf": "1"
+            "onBehalfOf": "1",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         },
         {
           "name": "mint",
-          "description": "Mint 15 DAI to cover the interest",
+          "description": "Mint 20 DAI to cover the interest",
           "args": {
             "reserve": "DAI",
-            "amount": "15",
+            "amount": "20",
             "user": "2"
           },
           "expected": "success"
@@ -534,7 +326,8 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "2",
-            "onBehalfOf": "2"
+            "onBehalfOf": "2",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         },
@@ -562,7 +355,9 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "3",
-            "onBehalfOf": "3"
+            "onBehalfOf": "3",
+            "borrowRateMode": "stable"
+
           },
           "expected": "success"
         },
@@ -590,7 +385,8 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "4",
-            "onBehalfOf": "4"
+            "onBehalfOf": "4",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         },
@@ -690,7 +486,8 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "1",
-            "onBehalfOf": "1"
+            "onBehalfOf": "1",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         },

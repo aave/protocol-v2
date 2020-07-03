@@ -43,6 +43,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return avgStableRate;
   }
 
+  function getUserLastUpdated(address _user) external virtual override view returns (uint40) {
+    return usersData[_user].lastUpdateTimestamp;
+  }
+
+
   function getUserStableRate(address _user) external virtual override view returns (uint256) {
     return usersData[_user].currentRate;
   }
@@ -91,8 +96,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     usersData[account].currentRate = usersData[account]
       .currentRate
       .rayMul(currentBalance.wadToRay())
-      .add(amountInRay.wadMul(rate))
+      .add(amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
+
     usersData[account].lastUpdateTimestamp = uint40(block.timestamp);
 
     avgStableRate = avgStableRate
@@ -143,6 +149,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
         .rayDiv(newSupply.wadToRay());
     }
 
+    if(_amount == currentBalance){
+      usersData[_account].currentRate = 0;
+      usersData[_account].lastUpdateTimestamp = 0;
+    }
+
     internalBurn(_account, _amount);
 
     emit burnDebt(_account, _amount, previousBalance, currentBalance, balanceIncrease);
@@ -162,6 +173,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     )
   {
     uint256 previousPrincipalBalance = balances[_user];
+
+    if(previousPrincipalBalance == 0){
+      return (0,0,0);
+    }
 
     //calculate the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);

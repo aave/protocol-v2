@@ -150,6 +150,7 @@ library GenericLogic {
         CalculateUserAccountDataVars memory vars;
 
         for (vars.i = 0; vars.i < _reserves.length; vars.i++) {
+            
             vars.currentReserveAddress = _reserves[vars.i];
 
             CoreLibrary.ReserveData storage currentReserve = _reservesData[vars

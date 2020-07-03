@@ -14,6 +14,7 @@ export interface UserReserveData {
     variableBorrowIndex: BigNumber
     liquidityRate: BigNumber
     stableBorrowRate: BigNumber
+    stableRateLastUpdated: BigNumber
     usageAsCollateralEnabled: Boolean
     walletBalance: BigNumber
     [key: string]: BigNumber | string | Boolean

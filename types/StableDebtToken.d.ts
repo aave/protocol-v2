@@ -36,6 +36,10 @@ interface StableDebtTokenInterface extends Interface {
 
     getAverageStableRate: TypedFunctionDescription<{ encode([]: []): string }>;
 
+    getUserLastUpdated: TypedFunctionDescription<{
+      encode([_user]: [string]): string;
+    }>;
+
     getUserStableRate: TypedFunctionDescription<{
       encode([_user]: [string]): string;
     }>;
@@ -172,6 +176,8 @@ export class StableDebtToken extends Contract {
 
     getAverageStableRate(): Promise<BigNumber>;
 
+    getUserLastUpdated(_user: string): Promise<number>;
+
     getUserStableRate(_user: string): Promise<BigNumber>;
 
     increaseAllowance(
@@ -245,6 +251,8 @@ export class StableDebtToken extends Contract {
   ): Promise<ContractTransaction>;
 
   getAverageStableRate(): Promise<BigNumber>;
+
+  getUserLastUpdated(_user: string): Promise<number>;
 
   getUserStableRate(_user: string): Promise<BigNumber>;
 
@@ -337,6 +345,8 @@ export class StableDebtToken extends Contract {
     ): Promise<BigNumber>;
 
     getAverageStableRate(): Promise<BigNumber>;
+
+    getUserLastUpdated(_user: string): Promise<BigNumber>;
 
     getUserStableRate(_user: string): Promise<BigNumber>;
 

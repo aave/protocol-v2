@@ -16,6 +16,10 @@ interface IVariableDebtTokenInterface extends Interface {
       encode([_account, _amount]: [string, BigNumberish]): string;
     }>;
 
+    getUserIndex: TypedFunctionDescription<{
+      encode([_account]: [string]): string;
+    }>;
+
     mint: TypedFunctionDescription<{
       encode([account, amount]: [string, BigNumberish]): string;
     }>;
@@ -47,6 +51,8 @@ export class IVariableDebtToken extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    getUserIndex(_account: string): Promise<BigNumber>;
+
     mint(
       account: string,
       amount: BigNumberish,
@@ -60,6 +66,8 @@ export class IVariableDebtToken extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  getUserIndex(_account: string): Promise<BigNumber>;
+
   mint(
     account: string,
     amount: BigNumberish,
@@ -70,6 +78,8 @@ export class IVariableDebtToken extends Contract {
 
   estimate: {
     burn(_account: string, _amount: BigNumberish): Promise<BigNumber>;
+
+    getUserIndex(_account: string): Promise<BigNumber>;
 
     mint(account: string, amount: BigNumberish): Promise<BigNumber>;
   };

@@ -84,7 +84,6 @@ library ValidationLogic {
    * @param _amount the amount to be borrowed
    * @param _amountInETH the amount to be borrowed, in ETH
    * @param _interestRateMode the interest rate mode at which the user is borrowing
-   * @param _borrowFee the fee
    * @param _maxStableLoanPercent the max amount of the liquidity that can be borrowed at stable rate, in percentage
    * @param _reservesData the state of all the reserves
    * @param _usersData the state of all the users for all the reserves
@@ -99,7 +98,6 @@ library ValidationLogic {
     uint256 _amount,
     uint256 _amountInETH,
     uint256 _interestRateMode,
-    uint256 _borrowFee,
     uint256 _maxStableLoanPercent,
     mapping(address => CoreLibrary.ReserveData) storage _reservesData,
     mapping(address => mapping(address => CoreLibrary.UserReserveData)) storage _usersData,
@@ -142,8 +140,6 @@ library ValidationLogic {
     require(vars.userCollateralBalanceETH > 0, 'The collateral balance is 0');
 
     require(vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD, '8');
-
-    require(_borrowFee > 0, 'The amount to borrow is too small');
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
     vars.amountOfCollateralNeededETH = vars

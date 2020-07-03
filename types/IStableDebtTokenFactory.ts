@@ -55,6 +55,25 @@ const _abi = [
         type: "address"
       }
     ],
+    name: "getUserLastUpdated",
+    outputs: [
+      {
+        internalType: "uint40",
+        name: "",
+        type: "uint40"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_user",
+        type: "address"
+      }
+    ],
     name: "getUserStableRate",
     outputs: [
       {

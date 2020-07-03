@@ -111,7 +111,7 @@ library CoreLibrary {
    * a formal specification.
    * @param _self the reserve object
    **/
-  function updateCumulativeIndexes(ReserveData storage _self) internal {
+  function updateCumulativeIndexesAndTimestamp(ReserveData storage _self) internal {
     uint256 totalBorrows = getTotalBorrows(_self);
 
     if (totalBorrows > 0) {
@@ -133,6 +133,9 @@ library CoreLibrary {
         _self.lastVariableBorrowCumulativeIndex
       );
     }
+
+    //solium-disable-next-line
+    _self.lastUpdateTimestamp = uint40(block.timestamp);
   }
 
   /**
@@ -244,7 +247,7 @@ library CoreLibrary {
     _self.usageAsCollateralEnabled = false;
   }
 
-  function getTotalBorrows(ReserveData storage _self) internal view returns(uint256) {
+  function getTotalBorrows(ReserveData storage _self) internal view returns (uint256) {
     return
       IERC20(_self.stableDebtTokenAddress).totalSupply().add(
         IERC20(_self.variableDebtTokenAddress).totalSupply()

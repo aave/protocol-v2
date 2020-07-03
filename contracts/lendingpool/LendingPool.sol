@@ -280,8 +280,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
         bool isFirstDeposit = aToken.balanceOf(msg.sender) == 0;
 
-        reserve.updateCumulativeIndexes();
-        reserve.updateInterestRatesAndTimestamp(_reserve, _amount, 0);
+        reserve.updateCumulativeIndexesAndTimestamp();
+        reserve.updateInterestRates(_reserve, _amount, 0);
 
         if (isFirstDeposit) {
             user.useAsCollateral = true;
@@ -320,8 +320,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             user.useAsCollateral = false;
         }
 
-        reserve.updateCumulativeIndexes();
-        reserve.updateInterestRatesAndTimestamp(_reserve, 0, _amount);
+        reserve.updateCumulativeIndexesAndTimestamp();
+        reserve.updateInterestRates(_reserve, 0, _amount);
 
         IERC20(_reserve).universalTransfer(_user, _amount);
 
@@ -346,12 +346,9 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
         CoreLibrary.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
-        //calculating fees
-        uint256 borrowFee = feeProvider.calculateLoanOriginationFee(msg.sender, _amount);
-
         uint256 amountInETH = IPriceOracleGetter(addressesProvider.getPriceOracle())
             .getAssetPrice(_reserve)
-            .mul(_amount.add(borrowFee))
+            .mul(_amount)
             .div(10 ** reserve.decimals); //price is in ether
 
         ValidationLogic.validateBorrow(
@@ -361,7 +358,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             _amount,
             amountInETH,
             _interestRateMode,
-            borrowFee,
             MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
             reserves,
             usersReserveData,
@@ -370,21 +366,35 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         );
 
         //borrow passed
-        reserve.updateCumulativeIndexes();
+        reserve.updateCumulativeIndexesAndTimestamp();
+
+        //solium-disable-next-line
+        reserve.lastUpdateTimestamp = uint40(block.timestamp);
+
+        uint256 userStableRate = reserve.currentStableBorrowRate;
 
         if(CoreLibrary.InterestRateMode(_interestRateMode) == CoreLibrary.InterestRateMode.STABLE) {
-            IStableDebtToken(reserve.stableDebtTokenAddress).mint(msg.sender, _amount, reserve.currentStableBorrowRate);
+            IStableDebtToken(reserve.stableDebtTokenAddress).mint(msg.sender, _amount, userStableRate);
+            uint40 stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(msg.sender);
+            console.log("Stable rate last updated in borrow is %s", stableRateLastUpdated);
+     
         }
         else {
             IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, _amount);
         }
-        uint256 userStableRate = reserve.currentStableBorrowRate;
 
-        reserve.updateInterestRatesAndTimestamp(_reserve, 0, _amount);
+        reserve.updateInterestRates(_reserve, 0, _amount);
+
 
         //if we reached this point, we can transfer
         IERC20(_reserve).universalTransfer(msg.sender, _amount);
 
+        (uint256 stableBalance, uint256 variableBalance) = UserLogic.getUserBorrowBalances(msg.sender, reserve);
+
+        console.log("Debt balances: %s %s", stableBalance, variableBalance);
+
+        console.log("User variable borrow index %s reserve index %s", IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(msg.sender), reserve.lastVariableBorrowCumulativeIndex);
+        console.log("User stable rate %s", IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(msg.sender));
         emit Borrow(
             _reserve,
             msg.sender,
@@ -427,20 +437,32 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
         CoreLibrary.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
+        console.log("Getting balances...");
+
         (
             vars.stableBorrowBalance,
             vars.variableBorrowBalance
         ) = UserLogic.getUserBorrowBalances(_onBehalfOf, reserve);
 
+
+        console.log("Balances calculated, %s %s", vars.stableBorrowBalance, vars.variableBorrowBalance);
+
+     console.log("Interest rate mode %s", _rateMode);
+
         CoreLibrary.InterestRateMode rateMode = CoreLibrary.InterestRateMode(_rateMode);
+
+        console.log("Interest rate mode %s", _rateMode);
 
         //default to max amount
         vars.paybackAmount = rateMode == CoreLibrary.InterestRateMode.STABLE ? vars.stableBorrowBalance : vars.variableBorrowBalance;
+
+        console.log("Payback amount %s stable rate %s", vars.paybackAmount, IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_onBehalfOf));
 
         if (_amount != UINT_MAX_VALUE && _amount < vars.paybackAmount) {
             vars.paybackAmount = _amount;
         }
 
+        console.log("Validating repay...");
 
         ValidationLogic.validateRepay(
             reserve,
@@ -454,8 +476,9 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             msg.value
         );
 
-        reserve.updateCumulativeIndexes();
+        reserve.updateCumulativeIndexesAndTimestamp();
 
+        console.log("Burning tokens...");
         //burns an equivalent amount of debt tokens
         if(rateMode == CoreLibrary.InterestRateMode.STABLE) {
             IStableDebtToken(reserve.stableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
@@ -464,7 +487,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             IVariableDebtToken(reserve.variableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
         }
 
-        reserve.updateInterestRatesAndTimestamp(_reserve, vars.paybackAmount, 0);
+        reserve.updateInterestRates(_reserve, vars.paybackAmount, 0);
 
         IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmount, false);
 
@@ -512,7 +535,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         TODO: Burn old tokens and mint new ones
         **/
 
-        reserve.updateInterestRatesAndTimestamp(_reserve, 0, 0);
+        reserve.updateInterestRates(_reserve, 0, 0);
 /*
         CoreLibrary.InterestRateMode newRateMode = user.getCurrentBorrowRateMode();
         emit Swap(
@@ -580,7 +603,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             //solium-disable-next-line
             user.lastUpdateTimestamp = uint40(block.timestamp);
 
-            reserve.updateInterestRatesAndTimestamp(_reserve, 0, 0);
+            reserve.updateInterestRates(_reserve, 0, 0);
 
             emit RebalanceStableBorrowRate(
                 _reserve,
@@ -859,6 +882,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
             uint256 stableBorrowRate,
             uint256 liquidityRate,
             uint256 variableBorrowIndex,
+            uint40 stableRateLastUpdated,
             bool usageAsCollateralEnabled
         )
     {
@@ -869,6 +893,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         (principalStableBorrowBalance, principalVariableBorrowBalance) = UserLogic.getUserPrincipalBorrowBalances(_user,reserve);
         liquidityRate = reserve.currentLiquidityRate;
         stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
+        stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(_user);
+        console.log("Stable rate last updated is %s", stableRateLastUpdated);
         usageAsCollateralEnabled = usersReserveData[_user][_reserve].useAsCollateral;
         variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(_user);
     }

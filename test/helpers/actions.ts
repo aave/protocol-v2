@@ -61,13 +61,12 @@ const almostEqualOrEqual = function (
     expect(expected[key] != undefined, `Property ${key} is undefined in the expected data`);
 
     if (actual[key] instanceof BigNumber) {
-      if(!expected[key]){
-      console.log("Key ", key, " value ", expected[key], actual[key]);
-
+      if (!expected[key]) {
+        console.log('Key ', key, ' value ', expected[key], actual[key]);
       }
       const actualValue = (<BigNumber>actual[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
       const expectedValue = (<BigNumber>expected[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
-   
+
       this.assert(
         actualValue.eq(expectedValue) ||
           actualValue.plus(1).eq(expectedValue) ||
@@ -82,7 +81,6 @@ const almostEqualOrEqual = function (
         actualValue.toFixed(0)
       );
     } else {
-      console.log("Key ", key, " value ", expected[key], actual[key]);
       this.assert(
         actual[key] !== null &&
           expected[key] !== null &&
@@ -325,17 +323,13 @@ export const borrow = async (
       const secondsToTravel = new BigNumber(timeTravel).multipliedBy(ONE_YEAR).div(365).toNumber();
 
       await increaseTime(secondsToTravel);
-    
     }
-
 
     const {
       reserveData: reserveDataAfter,
       userData: userDataAfter,
       timestamp,
     } = await getContractsData(reserve, user.address, testEnv);
-
-    console.log(txTimestamp, timestamp);
 
     const expectedReserveData = calcExpectedReserveDataAfterBorrow(
       amountToBorrow.toString(),
@@ -441,11 +435,14 @@ export const repay = async (
   }
 
   if (expectedResult === 'success') {
+
     const txResult = await waitForTx(
       await pool
         .connect(user.signer)
         .repay(reserve, amountToRepay, rateMode, onBehalfOf.address, txOptions)
     );
+
+    console.log('Done.');
 
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
@@ -457,7 +454,7 @@ export const repay = async (
 
     const expectedReserveData = calcExpectedReserveDataAfterRepay(
       amountToRepay,
-      <RateMode>(rateMode),
+      <RateMode>rateMode,
       reserveDataBefore,
       userDataBefore,
       txTimestamp,
@@ -466,7 +463,7 @@ export const repay = async (
 
     const expectedUserData = calcExpectedUserDataAfterRepay(
       amountToRepay,
-      <RateMode>(rateMode),
+      <RateMode>rateMode,
       reserveDataBefore,
       expectedReserveData,
       userDataBefore,
@@ -491,7 +488,9 @@ export const repay = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      pool.connect(user.signer).repay(reserve, amountToRepay, onBehalfOf.address, txOptions),
+      pool
+        .connect(user.signer)
+        .repay(reserve, amountToRepay, rateMode, onBehalfOf.address, txOptions),
       revertMessage
     ).to.be.reverted;
   }

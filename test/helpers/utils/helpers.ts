@@ -101,6 +101,7 @@ export const getUserData = async (
     stableBorrowRate: new BigNumber(userData.stableBorrowRate.toString()),
     liquidityRate: new BigNumber(userData.liquidityRate.toString()),
     usageAsCollateralEnabled: userData.usageAsCollateralEnabled,
+    stableRateLastUpdated: new BigNumber(userData.stableRateLastUpdated.toString()),
     walletBalance,
   };
 };

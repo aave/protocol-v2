@@ -473,6 +473,7 @@ export class LendingPool extends Contract {
       stableBorrowRate: BigNumber;
       liquidityRate: BigNumber;
       variableBorrowIndex: BigNumber;
+      stableRateLastUpdated: number;
       usageAsCollateralEnabled: boolean;
       0: BigNumber;
       1: BigNumber;
@@ -482,7 +483,8 @@ export class LendingPool extends Contract {
       5: BigNumber;
       6: BigNumber;
       7: BigNumber;
-      8: boolean;
+      8: number;
+      9: boolean;
     }>;
 
     initReserve(
@@ -735,6 +737,7 @@ export class LendingPool extends Contract {
     stableBorrowRate: BigNumber;
     liquidityRate: BigNumber;
     variableBorrowIndex: BigNumber;
+    stableRateLastUpdated: number;
     usageAsCollateralEnabled: boolean;
     0: BigNumber;
     1: BigNumber;
@@ -744,7 +747,8 @@ export class LendingPool extends Contract {
     5: BigNumber;
     6: BigNumber;
     7: BigNumber;
-    8: boolean;
+    8: number;
+    9: boolean;
   }>;
 
   initReserve(

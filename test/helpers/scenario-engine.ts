@@ -175,6 +175,8 @@ const executeAction = async (
           userToRepayOnBehalf = users[parseInt(onBehalfOfIndex)];
         }
 
+        console.log(user.address, userToRepayOnBehalf.address)
+
         await repay(
           reserve,
           amount,

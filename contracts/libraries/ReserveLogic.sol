@@ -65,7 +65,7 @@ library ReserveLogic {
         uint256 _protocolFee
     ) external {
         //compounding the cumulated interest
-        _reserve.updateCumulativeIndexes();
+        _reserve.updateCumulativeIndexesAndTimestamp();
 
         uint256 totalLiquidityBefore = _availableLiquidityBefore.add(_reserve.getTotalBorrows());
 
@@ -73,7 +73,7 @@ library ReserveLogic {
         _reserve.cumulateToLiquidityIndex(totalLiquidityBefore, _income);
 
         //refresh interest rates
-        updateInterestRatesAndTimestamp(_reserve, _reserveAddress, _income, 0);
+        updateInterestRates(_reserve, _reserveAddress, _income, 0);
     }
 
   
@@ -89,10 +89,10 @@ library ReserveLogic {
         uint256 _collateralToLiquidate,
         bool _liquidatorReceivesAToken
     ) external {
-        _collateralReserve.updateCumulativeIndexes();
+        _collateralReserve.updateCumulativeIndexesAndTimestamp();
 
         if (!_liquidatorReceivesAToken) {
-            updateInterestRatesAndTimestamp(
+            updateInterestRates(
                 _collateralReserve,
                 _collateralReserveAddress,
                 0,
@@ -125,7 +125,7 @@ library ReserveLogic {
     * @param _liquidityAdded the amount of liquidity added to the protocol (deposit or repay) in the previous action
     * @param _liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
     **/
-    function updateInterestRatesAndTimestamp(
+    function updateInterestRates(
         CoreLibrary.ReserveData storage _reserve,
         address _reserveAddress,
         uint256 _liquidityAdded,
@@ -155,9 +155,6 @@ library ReserveLogic {
         _reserve.currentLiquidityRate = newLiquidityRate;
         _reserve.currentStableBorrowRate = newStableRate;
         _reserve.currentVariableBorrowRate = newVariableRate;
-
-        //solium-disable-next-line
-        _reserve.lastUpdateTimestamp = uint40(block.timestamp);
 
         emit ReserveDataUpdated(
             _reserveAddress,
