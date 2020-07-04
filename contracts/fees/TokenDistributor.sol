@@ -8,7 +8,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
-import "../interfaces/IKyberNetworkProxyInterface.sol";
 import "../interfaces/IExchangeAdapter.sol";
 import "../libraries/EthAddressLib.sol";
 
@@ -56,9 +55,6 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
 
     /// @notice Instead of using 100 for percentages, higher base to have more precision in the distribution
     uint256 public constant DISTRIBUTION_BASE = 10000;
-
-   /// @notice DEPRECATED
-    IKyberNetworkProxyInterface public kyberProxy;
 
     /// @notice The address of the token to burn (LEND token)
     address public tokenToBurn;

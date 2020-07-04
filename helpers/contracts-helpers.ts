@@ -10,7 +10,6 @@ import {
   iParamsPerNetwork,
   iParamsPerPool,
 } from "./types";
-import {Example} from "../types/Example";
 import {LendingPoolAddressesProvider} from "../types/LendingPoolAddressesProvider";
 import {MintableErc20} from "../types/MintableErc20";
 import {LendingPoolAddressesProviderRegistry} from "../types/LendingPoolAddressesProviderRegistry";
@@ -24,8 +23,6 @@ import {MockAggregator} from "../types/MockAggregator";
 import {LendingRateOracle} from "../types/LendingRateOracle";
 import {DefaultReserveInterestRateStrategy} from "../types/DefaultReserveInterestRateStrategy";
 import {LendingPoolLiquidationManager} from "../types/LendingPoolLiquidationManager";
-import {MockOneSplit} from "../types/MockOneSplit";
-import {OneSplitAdapter} from "../types/OneSplitAdapter";
 import {TokenDistributor} from "../types/TokenDistributor";
 import {InitializableAdminUpgradeabilityProxy} from "../types/InitializableAdminUpgradeabilityProxy";
 import {MockFlashLoanReceiver} from "../types/MockFlashLoanReceiver";
@@ -111,9 +108,6 @@ const getContract = async <ContractType extends Contract>(
 ): Promise<ContractType> =>
   (await BRE.ethers.getContractAt(contractName, address)) as ContractType;
 
-export const deployExampleContract = async () =>
-  await deployContract<Example>(eContractid.Example, []);
-
 export const deployLendingPoolAddressesProvider = async () =>
   await deployContract<LendingPoolAddressesProvider>(
     eContractid.LendingPoolAddressesProvider,
@@ -162,14 +156,14 @@ export const linkLibrariesToArtifact = async(artifact: Artifact) => {
     [eContractid.UserLogic]: userLogic.address,
     [eContractid.ReserveLogic]: reserveLogic.address,
   });
-  
+
   const genericLogicFactory = await BRE.ethers.getContractFactory(
     genericLogicArtifact.abi,
     linkedGenericLogicByteCode
   );
-  
+
   const genericLogic = await (await genericLogicFactory.deploy()).deployed();
-  
+
   const validationLogicArtifact = await readArtifact(
     BRE.config.paths.artifacts,
     eContractid.ValidationLogic
@@ -180,15 +174,15 @@ export const linkLibrariesToArtifact = async(artifact: Artifact) => {
     [eContractid.ReserveLogic]: reserveLogic.address,
     [eContractid.GenericLogic]: genericLogic.address,
   });
-  
+
   const validationLogicFactory = await BRE.ethers.getContractFactory(
     validationLogicArtifact.abi,
     linkedValidationLogicByteCode
   );
-  
+
   const validationLogic = await (await validationLogicFactory.deploy()).deployed();
 
- 
+
 
   const linkedBytecode = linkBytecode(artifact, {
     [eContractid.CoreLibrary]: coreLibrary.address,
@@ -211,12 +205,12 @@ export const deployLendingPool = async () => {
     BRE.config.paths.artifacts,
     eContractid.LendingPool
   );
- 
+
   const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
 
   const lendingPool = await factory.deploy();
   return (await lendingPool.deployed()) as LendingPool;
-  
+
 }
 
 
@@ -244,7 +238,7 @@ export const deployLendingPoolLiquidationManager = async () => {
     BRE.config.paths.artifacts,
     eContractid.LendingPoolLiquidationManager
   );
- 
+
   const factory = await linkLibrariesToArtifact(liquidationManagerArtifact);
 
   const liquidationManager = await factory.deploy();
@@ -277,12 +271,6 @@ export const deployWalletBalancerProvider = async (
     eContractid.WalletBalanceProvider,
     [addressesProvider]
   );
-
-export const deployMockOneSplit = async (tokenToBurn: tEthereumAddress) =>
-  await deployContract<MockOneSplit>(eContractid.MockOneSplit, [tokenToBurn]);
-
-export const deployOneSplitAdapter = async () =>
-  await deployContract<OneSplitAdapter>(eContractid.OneSplitAdapter, []);
 
 export const deployAaveProtocolTestHelpers = async (
   addressesProvider: tEthereumAddress
@@ -317,7 +305,7 @@ export const deployDefaultReserveInterestRateStrategy = async ([
   string,
   string,
   string
-]) => 
+]) =>
   await deployContract<DefaultReserveInterestRateStrategy>(
     eContractid.DefaultReserveInterestRateStrategy,
     [
@@ -386,12 +374,12 @@ export const deployDefaultReserveInterestRateStrategy = async ([
         underlyingAsset,
         addressesProvider
       );
-  
+
       return token;
-  
+
     }
-  
-  
+
+
 export const getLendingPoolAddressesProvider = async (
   address?: tEthereumAddress
 ) => {
@@ -428,7 +416,7 @@ export const getLendingPool = async (address?: tEthereumAddress) => {
     BRE.config.paths.artifacts,
     eContractid.LendingPool
   );
- 
+
 
   const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
 

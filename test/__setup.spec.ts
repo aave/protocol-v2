@@ -14,8 +14,6 @@ import {
   deployLendingRateOracle,
   deployDefaultReserveInterestRateStrategy,
   deployLendingPoolLiquidationManager,
-  deployMockOneSplit,
-  deployOneSplitAdapter,
   deployTokenDistributor,
   deployInitializableAdminUpgradeabilityProxy,
   deployMockFlashLoanReceiver,
@@ -64,7 +62,7 @@ import { initializeMakeSuite } from './helpers/make-suite';
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
 
-  
+
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
@@ -72,11 +70,11 @@ const deployAllMockTokens = async (deployer: Signer) => {
   for (const tokenSymbol of Object.keys(TokenContractId)) {
 
     if (tokenSymbol !== "ETH") {
-      
+
       let decimals = 18;
-      
+
       let configData = (<any>protoConfigData)[tokenSymbol];
-      
+
       if(!configData){
         configData = (<any>secondaryConfigData)[tokenSymbol]
       }
@@ -84,7 +82,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
       if(!configData){
         decimals = 18;
       }
-    
+
       tokens[tokenSymbol] = await deployMintableErc20([
         tokenSymbol,
         tokenSymbol,
@@ -215,7 +213,7 @@ const initReserves = async (
       string,
       string
     ][])[assetAddressIndex];
-    
+
     const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
       tokenAddress
     );
@@ -271,9 +269,9 @@ const initReserves = async (
         lendingPoolAddressesProvider.address
       ]
       )
-    
+
       console.log(`Debt tokens for ${assetSymbol}: stable ${stableDebtToken.address} variable ${variableDebtToken.address}`)
-    
+
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search("UNI") === -1) {
           assetSymbol = `Uni${assetSymbol}`;
@@ -433,7 +431,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolConfiguratorProxy.address
   );
 
-  
+
   const lendingPoolImpl = await deployLendingPool();
 
   console.log("Deployed lending pool, address:", lendingPoolImpl.address)
@@ -446,7 +444,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const address = await addressesProvider.getLendingPool()
   console.log("Address is ", address)
   const lendingPoolProxy = await getLendingPool(
-    address    
+    address
   );
 
   console.log("implementation set, address:", lendingPoolProxy.address)
@@ -591,15 +589,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolManager
   );
 
-  await deployMockOneSplit(tokensAddressesWithoutUsd.LEND);
-  const oneSplitAdapter = await deployOneSplitAdapter();
   const tokenDistributorImpl = await deployTokenDistributor();
   const tokenDistributorProxy = await deployInitializableAdminUpgradeabilityProxy();
   const implementationParams = tokenDistributorImpl.interface.functions.initialize.encode(
     [
       ZERO_ADDRESS,
       tokensAddressesWithoutUsd.LEND,
-      oneSplitAdapter.address,
+      '0x0000000000000000000000000000000000000000', // TODO: finish removal
       receivers,
       percentages,
       Object.values(tokensAddressesWithoutUsd),

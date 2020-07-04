@@ -6,16 +6,5 @@ services:
       context: ./
     working_dir: /src
     command: npm run run-env
-    depends_on:
-      - ganache
     volumes:
       - ./:/src
-
-  ganache:
-    image: trufflesuite/ganache-cli:latest
-    command: [
-      "ganache-cli",
-      "--gasLimit", "10000000",
-      "--mnemonic", "fox sight canyon orphan hotel grow hedgehog build bless august weather swarm",
-      "--hardfork", "istanbul"
-    ]

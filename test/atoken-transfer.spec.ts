@@ -175,7 +175,7 @@ makeSuite("AToken: Transfer", (testEnv: TestEnv) => {
     const {users, pool, aDai, dai} = testEnv;
     await pool
       .connect(users[1].signer)
-      .repay(MOCK_ETH_ADDRESS, MAX_UINT_AMOUNT, users[1].address, {
+      .repay(MOCK_ETH_ADDRESS, MAX_UINT_AMOUNT, users[1].address, users[1].address, {
         value: ethers.utils.parseEther("1"),
       });
 
