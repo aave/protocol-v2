@@ -376,8 +376,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         if(CoreLibrary.InterestRateMode(_interestRateMode) == CoreLibrary.InterestRateMode.STABLE) {
             IStableDebtToken(reserve.stableDebtTokenAddress).mint(msg.sender, _amount, userStableRate);
             uint40 stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(msg.sender);
-            console.log("Stable rate last updated in borrow is %s", stableRateLastUpdated);
-     
         }
         else {
             IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, _amount);
@@ -391,10 +389,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
         (uint256 stableBalance, uint256 variableBalance) = UserLogic.getUserBorrowBalances(msg.sender, reserve);
 
-        console.log("Debt balances: %s %s", stableBalance, variableBalance);
-
-        console.log("User variable borrow index %s reserve index %s", IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(msg.sender), reserve.lastVariableBorrowCumulativeIndex);
-        console.log("User stable rate %s", IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(msg.sender));
         emit Borrow(
             _reserve,
             msg.sender,
@@ -437,32 +431,20 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         CoreLibrary.ReserveData storage reserve = reserves[_reserve];
         CoreLibrary.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
-        console.log("Getting balances...");
-
+      
         (
             vars.stableBorrowBalance,
             vars.variableBorrowBalance
         ) = UserLogic.getUserBorrowBalances(_onBehalfOf, reserve);
-
-
-        console.log("Balances calculated, %s %s", vars.stableBorrowBalance, vars.variableBorrowBalance);
-
-     console.log("Interest rate mode %s", _rateMode);
-
+      
         CoreLibrary.InterestRateMode rateMode = CoreLibrary.InterestRateMode(_rateMode);
-
-        console.log("Interest rate mode %s", _rateMode);
 
         //default to max amount
         vars.paybackAmount = rateMode == CoreLibrary.InterestRateMode.STABLE ? vars.stableBorrowBalance : vars.variableBorrowBalance;
 
-        console.log("Payback amount %s stable rate %s", vars.paybackAmount, IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_onBehalfOf));
-
         if (_amount != UINT_MAX_VALUE && _amount < vars.paybackAmount) {
             vars.paybackAmount = _amount;
         }
-
-        console.log("Validating repay...");
 
         ValidationLogic.validateRepay(
             reserve,
@@ -478,7 +460,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
         reserve.updateCumulativeIndexesAndTimestamp();
 
-        console.log("Burning tokens...");
         //burns an equivalent amount of debt tokens
         if(rateMode == CoreLibrary.InterestRateMode.STABLE) {
             IStableDebtToken(reserve.stableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
@@ -894,7 +875,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         liquidityRate = reserve.currentLiquidityRate;
         stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
         stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(_user);
-        console.log("Stable rate last updated is %s", stableRateLastUpdated);
         usageAsCollateralEnabled = usersReserveData[_user][_reserve].useAsCollateral;
         variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(_user);
     }

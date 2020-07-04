@@ -152,7 +152,7 @@ export const calcExpectedUserDataAfterRedeem = (
     txTimestamp
   );
 
-  expectedUserData.principalATokenBalance = userDataBeforeAction.principalStableBorrowBalance;
+  expectedUserData.principalStableBorrowBalance = userDataBeforeAction.principalStableBorrowBalance;
   expectedUserData.principalVariableBorrowBalance =
     userDataBeforeAction.principalVariableBorrowBalance;
   expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
