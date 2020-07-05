@@ -12,7 +12,7 @@ usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
 
 
-['misc', 'deployments', 'migrations'].forEach((folder) => {
+['misc'].forEach((folder) => {
   const tasksPath = path.join(__dirname, 'tasks', folder);
   fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
 });

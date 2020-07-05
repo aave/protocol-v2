@@ -232,18 +232,27 @@ library ValidationLogic {
    * @dev validates a swap of borrow rate mode.
    * @param _reserve the reserve state on which the user is swapping the rate
    * @param _user the user state for the reserve on which user is swapping the rate
-   * @param _borrowBalance the borrow balance of the user
+   * @param _stableBorrowBalance the stable borrow balance of the user
+   * @param _variableBorrowBalance the stable borrow balance of the user
    * @param _currentRateMode the rate mode of the borrow
    */
   function validateSwapRateMode(
     CoreLibrary.ReserveData storage _reserve,
     CoreLibrary.UserReserveData storage _user,
-    uint256 _borrowBalance,
+    uint256 _stableBorrowBalance,
+    uint256 _variableBorrowBalance,
     CoreLibrary.InterestRateMode _currentRateMode
   ) external view {
     require(_reserve.isActive, 'Action requires an active reserve');
     require(!_reserve.isFreezed, 'Action requires an unfreezed reserve');
-    require(_borrowBalance > 0, 'User does not have a borrow in progress on this reserve');
+    require(
+      _currentRateMode == CoreLibrary.InterestRateMode.STABLE && _stableBorrowBalance > 0,
+      'User does not have a stable rate loan in progress on this reserve'
+    );
+    require(
+      _currentRateMode == CoreLibrary.InterestRateMode.VARIABLE && _variableBorrowBalance > 0,
+      'User does not have a variable rate loan in progress on this reserve'
+    );
 
     if (_currentRateMode == CoreLibrary.InterestRateMode.VARIABLE) {
       /**
@@ -258,7 +267,8 @@ library ValidationLogic {
       require(
         !_user.useAsCollateral ||
           !_reserve.usageAsCollateralEnabled ||
-          _borrowBalance > IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
+          _stableBorrowBalance.add(_variableBorrowBalance) >
+          IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
       );
     }

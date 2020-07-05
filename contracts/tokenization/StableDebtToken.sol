@@ -78,33 +78,46 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    *
    * - `to` cannot be the zero address.
    */
+
+  struct MintLocalVars {
+    uint256 newSupply;
+    uint256 amountInRay;
+    uint256 newStableRate;
+  }
+
   function mint(
     address account,
     uint256 amount,
     uint256 rate
   ) public override onlyLendingPool {
+
+    MintLocalVars memory vars;
+    
     (
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
     ) = internalCumulateBalance(account);
 
-    uint256 newSupply = totalSupply.add(amount);
 
-    uint256 amountInRay = amount.wadToRay();
+    vars.newSupply = totalSupply.add(amount);
 
-    usersData[account].currentRate = usersData[account]
+    vars.amountInRay = amount.wadToRay();
+
+    vars.newStableRate = usersData[account]
       .currentRate
       .rayMul(currentBalance.wadToRay())
-      .add(amountInRay.rayMul(rate))
+      .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
+
+    usersData[account].currentRate = vars.newStableRate;
 
     usersData[account].lastUpdateTimestamp = uint40(block.timestamp);
 
     avgStableRate = avgStableRate
       .rayMul(totalSupply.wadToRay())
-      .add(rate.rayMul(amountInRay))
-      .rayDiv(newSupply.wadToRay());
+      .add(rate.rayMul(vars.amountInRay))
+      .rayDiv(vars.newSupply.wadToRay());
 
     internalMint(account, amount);
 
@@ -114,7 +127,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       previousBalance,
       currentBalance,
       balanceIncrease,
-      usersData[account].currentRate
+      vars.newStableRate
     );
   }
 

@@ -146,7 +146,7 @@
   },
   "TokenDistributor": {
     "buidlerevm": {
-      "address": "0xb840b4fe440b5E26e1840cd2D6320FAda1C0ca5d"
+      "address": "0x24E420B42971372F060a93129846761F354Bc50B"
     },
     "localhost": {
       "address": "0xb840b4fe440b5E26e1840cd2D6320FAda1C0ca5d"
@@ -154,7 +154,7 @@
   },
   "InitializableAdminUpgradeabilityProxy": {
     "buidlerevm": {
-      "address": "0xb840b4fe440b5E26e1840cd2D6320FAda1C0ca5d",
+      "address": "0x24E420B42971372F060a93129846761F354Bc50B",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -164,7 +164,7 @@
   },
   "MockFlashLoanReceiver": {
     "buidlerevm": {
-      "address": "0x5c98c9202b73d27A618662d34A6805c34AB041B8"
+      "address": "0x1a432D97211e8b2CD53DF262c8Da0EfeBa6b6b3D"
     },
     "localhost": {
       "address": "0x5c98c9202b73d27A618662d34A6805c34AB041B8"
@@ -172,7 +172,7 @@
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0x435250F99d9ec2D7956773c6768392caD183765e",
+      "address": "0xC91A0D5B404a66d0d66daF32DA23BB0c434F7F6b",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -412,7 +412,7 @@
   },
   "AaveProtocolTestHelpers": {
     "buidlerevm": {
-      "address": "0xBE7fFcC01164C890e59D298FD755FcBE6B7941a9"
+      "address": "0x5c98c9202b73d27A618662d34A6805c34AB041B8"
     },
     "localhost": {
       "address": "0xBE7fFcC01164C890e59D298FD755FcBE6B7941a9"
