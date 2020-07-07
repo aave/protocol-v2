@@ -223,7 +223,8 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "1",
-            "onBehalfOf": "1"
+            "onBehalfOf": "1",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         },
@@ -331,7 +332,8 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "1",
-            "onBehalfOf": "1"
+            "onBehalfOf": "1",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         },
