@@ -351,9 +351,6 @@ export const borrow = async (
       txCost
     );
 
-    console.log(userDataAfter.stableBorrowRate.toFixed(), expectedUserData.stableBorrowRate.toFixed());
-    console.log(userDataAfter.principalStableBorrowBalance.toFixed(), expectedUserData.principalStableBorrowBalance.toFixed());
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 

@@ -953,14 +953,25 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
 
   expectedReserveData.availableLiquidity = reserveDataBeforeAction.availableLiquidity;
 
-  expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
+  //removing the stable liquidity at the old rate
+
+  const avgRateBefore = calcExpectedAverageStableBorrowRate(
     reserveDataBeforeAction.averageStableBorrowRate,
-    reserveDataBeforeAction.totalBorrowsStable,
-    debtAccrued,
+    reserveDataBeforeAction.totalBorrowsStable.plus(debtAccrued),
+    stableBorrowBalance.negated(),
     userDataBeforeAction.stableBorrowRate
+  );
+  // adding it again at the new rate
+
+  expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
+    avgRateBefore,
+    reserveDataBeforeAction.totalBorrowsStable.minus(userDataBeforeAction.principalStableBorrowBalance),
+    stableBorrowBalance,
+    reserveDataBeforeAction.stableBorrowRate
   );
 
   expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
+  expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable.plus(debtAccrued);
 
   expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
     expectedReserveData.totalBorrowsStable,
@@ -1012,6 +1023,8 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
     userDataBeforeAction,
     txTimestamp
   );
+
+  expectedUserData.stableRateLastUpdated = txTimestamp;
 
   expectedUserData.principalVariableBorrowBalance =
     userDataBeforeAction.principalVariableBorrowBalance;
