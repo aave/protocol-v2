@@ -214,6 +214,13 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         }
 
         //TODO Burn debt tokens
+        if(vars.userVariableDebt >= vars.actualAmountToLiquidate){
+            IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(_user, vars.actualAmountToLiquidate);
+        }
+        else {
+            IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(_user, vars.userVariableDebt);
+            IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(_user, vars.actualAmountToLiquidate.sub(vars.userVariableDebt));
+        }
 
         vars.collateralAtoken = AToken(collateralReserve.aTokenAddress);
 
