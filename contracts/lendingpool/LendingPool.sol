@@ -376,11 +376,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     //if we reached this point, we can transfer
     IERC20(_reserve).universalTransfer(msg.sender, _amount);
 
-    (uint256 stableBalance, uint256 variableBalance) = UserLogic.getUserBorrowBalances(
-      msg.sender,
-      reserve
-    );
-
     emit Borrow(
       _reserve,
       msg.sender,
@@ -405,13 +400,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    **/
 
   struct RepayLocalVars {
-    uint256 stableBorrowBalance;
-    uint256 variableBorrowBalance;
-    uint256 borrowBalanceIncrease;
+    uint256 stableDebt;
+    uint256 variableDebt;
     uint256 paybackAmount;
-    uint256 paybackAmountMinusFees;
     uint256 currentStableRate;
-    uint256 originationFee;
   }
 
   function repay(
@@ -424,7 +416,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     CoreLibrary.ReserveData storage reserve = reserves[_reserve];
     CoreLibrary.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
-    (vars.stableBorrowBalance, vars.variableBorrowBalance) = UserLogic.getUserBorrowBalances(
+    (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(
       _onBehalfOf,
       reserve
     );
@@ -433,8 +425,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     //default to max amount
     vars.paybackAmount = rateMode == CoreLibrary.InterestRateMode.STABLE
-      ? vars.stableBorrowBalance
-      : vars.variableBorrowBalance;
+      ? vars.stableDebt
+      : vars.variableDebt;
 
     if (_amount != UINT_MAX_VALUE && _amount < vars.paybackAmount) {
       vars.paybackAmount = _amount;
@@ -446,8 +438,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       _amount,
       rateMode,
       _onBehalfOf,
-      vars.stableBorrowBalance,
-      vars.variableBorrowBalance,
+      vars.stableDebt,
+      vars.variableDebt,
       vars.paybackAmount,
       msg.value
     );
@@ -493,7 +485,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     CoreLibrary.ReserveData storage reserve = reserves[_reserve];
     CoreLibrary.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
-    (uint256 stableBorrowBalance, uint256 variableBorrowBalance) = UserLogic.getUserBorrowBalances(
+    (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(
       msg.sender,
       reserve
     );
@@ -503,8 +495,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ValidationLogic.validateSwapRateMode(
       reserve,
       user,
-      stableBorrowBalance,
-      variableBorrowBalance,
+      stableDebt,
+      variableDebt,
       rateMode
     );
 
@@ -512,14 +504,14 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     if (rateMode == CoreLibrary.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
-      IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender,stableBorrowBalance);
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableBorrowBalance);
+      IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender,stableDebt);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableDebt);
     } else {
       //do the opposite
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(msg.sender, variableBorrowBalance);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(msg.sender, variableDebt);
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(
         msg.sender,
-        variableBorrowBalance,
+        variableDebt,
         reserve.currentStableBorrowRate
       );
     }
@@ -840,10 +832,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     view
     returns (
       uint256 currentATokenBalance,
-      uint256 currentStableBorrowBalance,
-      uint256 currentVariableBorrowBalance,
-      uint256 principalStableBorrowBalance,
-      uint256 principalVariableBorrowBalance,
+      uint256 currentStableDebt,
+      uint256 currentVariableDebt,
+      uint256 principalStableDebt,
+      uint256 principalVariableDebt,
       uint256 stableBorrowRate,
       uint256 liquidityRate,
       uint256 variableBorrowIndex,
@@ -854,12 +846,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     CoreLibrary.ReserveData storage reserve = reserves[_reserve];
 
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(_user);
-    (currentStableBorrowBalance, currentVariableBorrowBalance) = UserLogic.getUserBorrowBalances(
+    (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(
       _user,
       reserve
     );
-    (principalStableBorrowBalance, principalVariableBorrowBalance) = UserLogic
-      .getUserPrincipalBorrowBalances(_user, reserve);
+    (principalStableDebt, principalVariableDebt) = UserLogic
+      .getUserPrincipalDebt(_user, reserve);
     liquidityRate = reserve.currentLiquidityRate;
     stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(

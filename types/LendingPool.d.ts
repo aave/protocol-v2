@@ -462,10 +462,10 @@ export class LendingPool extends Contract {
       _user: string
     ): Promise<{
       currentATokenBalance: BigNumber;
-      currentStableBorrowBalance: BigNumber;
-      currentVariableBorrowBalance: BigNumber;
-      principalStableBorrowBalance: BigNumber;
-      principalVariableBorrowBalance: BigNumber;
+      currentStableDebt: BigNumber;
+      currentVariableDebt: BigNumber;
+      principalStableDebt: BigNumber;
+      principalVariableDebt: BigNumber;
       stableBorrowRate: BigNumber;
       liquidityRate: BigNumber;
       variableBorrowIndex: BigNumber;
@@ -727,10 +727,10 @@ export class LendingPool extends Contract {
     _user: string
   ): Promise<{
     currentATokenBalance: BigNumber;
-    currentStableBorrowBalance: BigNumber;
-    currentVariableBorrowBalance: BigNumber;
-    principalStableBorrowBalance: BigNumber;
-    principalVariableBorrowBalance: BigNumber;
+    currentStableDebt: BigNumber;
+    currentVariableDebt: BigNumber;
+    principalStableDebt: BigNumber;
+    principalVariableDebt: BigNumber;
     stableBorrowRate: BigNumber;
     liquidityRate: BigNumber;
     variableBorrowIndex: BigNumber;

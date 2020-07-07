@@ -417,8 +417,8 @@ export const repay = async (
     if (sendValue) {
       const valueToSend =
         rateMode == RateMode.Stable
-          ? userDataBefore.currentStableBorrowBalance
-          : userDataBefore.currentVariableBorrowBalance;
+          ? userDataBefore.currentStableDebt
+          : userDataBefore.currentVariableDebt;
 
       if (sendValue !== '-1') {
         const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);

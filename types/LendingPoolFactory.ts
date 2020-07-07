@@ -900,22 +900,22 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "currentStableBorrowBalance",
+        name: "currentStableDebt",
         type: "uint256"
       },
       {
         internalType: "uint256",
-        name: "currentVariableBorrowBalance",
+        name: "currentVariableDebt",
         type: "uint256"
       },
       {
         internalType: "uint256",
-        name: "principalStableBorrowBalance",
+        name: "principalStableDebt",
         type: "uint256"
       },
       {
         internalType: "uint256",
-        name: "principalVariableBorrowBalance",
+        name: "principalVariableDebt",
         type: "uint256"
       },
       {

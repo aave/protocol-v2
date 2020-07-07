@@ -41,7 +41,7 @@ library UserLogic {
       _amount > IERC20(_reserve.aTokenAddress).balanceOf(_userAddress);
   }
 
-  function getUserBorrowBalances(address _user,CoreLibrary.ReserveData storage _reserve)
+  function getUserCurrentDebt(address _user,CoreLibrary.ReserveData storage _reserve)
     internal
     view
     returns (uint256, uint256)
@@ -52,7 +52,7 @@ library UserLogic {
     );
   }
 
-    function getUserPrincipalBorrowBalances(address _user,CoreLibrary.ReserveData storage _reserve)
+    function getUserPrincipalDebt(address _user,CoreLibrary.ReserveData storage _reserve)
     internal
     view
     returns (uint256, uint256)

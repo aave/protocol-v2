@@ -44,31 +44,12 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     uint256 constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 50;
 
     /**
-    * @dev emitted when a borrow fee is liquidated
-    * @param _collateral the address of the collateral being liquidated
-    * @param _reserve the address of the reserve
-    * @param _user the address of the user being liquidated
-    * @param _feeLiquidated the total fee liquidated
-    * @param _liquidatedCollateralForFee the amount of collateral received by the protocol in exchange for the fee
-    * @param _timestamp the timestamp of the action
-    **/
-    event OriginationFeeLiquidated(
-        address indexed _collateral,
-        address indexed _reserve,
-        address indexed _user,
-        uint256 _feeLiquidated,
-        uint256 _liquidatedCollateralForFee,
-        uint256 _timestamp
-    );
-
-    /**
     * @dev emitted when a borrower is liquidated
     * @param _collateral the address of the collateral being liquidated
     * @param _reserve the address of the reserve
     * @param _user the address of the user being liquidated
     * @param _purchaseAmount the total amount liquidated
     * @param _liquidatedCollateralAmount the amount of collateral being liquidated
-    * @param _accruedBorrowInterest the amount of interest accrued by the borrower since the last action
     * @param _liquidator the address of the liquidator
     * @param _receiveAToken true if the liquidator wants to receive aTokens, false otherwise
     * @param _timestamp the timestamp of the action
@@ -79,7 +60,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         address indexed _user,
         uint256 _purchaseAmount,
         uint256 _liquidatedCollateralAmount,
-        uint256 _accruedBorrowInterest,
         address _liquidator,
         bool _receiveAToken,
         uint256 _timestamp
@@ -96,8 +76,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     struct LiquidationCallLocalVars {
         uint256 userCollateralBalance;
-        uint256 userCompoundedBorrowBalance;
-        uint256 borrowBalanceIncrease;
+        uint256 userStableDebt;
+        uint256 userVariableDebt;
         uint256 maxPrincipalAmountToLiquidate;
         uint256 actualAmountToLiquidate;
         uint256 liquidationRatio;
@@ -140,7 +120,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     ) external payable returns (uint256, string memory) {
         CoreLibrary.ReserveData storage principalReserve = reserves[_reserve];
         CoreLibrary.ReserveData storage collateralReserve = reserves[_collateral];
-        CoreLibrary.UserReserveData storage userPrincipal = usersReserveData[msg.sender][_reserve];
         CoreLibrary.UserReserveData storage userCollateral = usersReserveData[msg
             .sender][_collateral];
 
@@ -184,9 +163,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         }
 
         //if the user hasn't borrowed the specific currency defined by _reserve, it cannot be liquidated
-        (,vars.userCompoundedBorrowBalance) = UserLogic.getUserBorrowBalances(_user, principalReserve);
+        (vars.userStableDebt,vars.userVariableDebt) = UserLogic.getUserCurrentDebt(_user, principalReserve);
 
-        if (vars.userCompoundedBorrowBalance == 0) {
+        if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
             return (
                 uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
                 "User did not borrow the specified currency"
@@ -194,8 +173,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         }
 
         //all clear - calculate the max principal amount that can be liquidated
-        vars.maxPrincipalAmountToLiquidate = vars
-            .userCompoundedBorrowBalance
+        vars.maxPrincipalAmountToLiquidate = vars.userStableDebt
+            .add(vars.userVariableDebt)
             .mul(LIQUIDATION_CLOSE_FACTOR_PERCENT)
             .div(100);
 
@@ -215,7 +194,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             vars.userCollateralBalance
         );
 
-          
         //if principalAmountNeeded < vars.ActualAmountToLiquidate, there isn't enough
         //of _collateral to cover the actual amount that is being liquidated, hence we liquidate
         //a smaller amount
@@ -235,11 +213,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             }
         }
 
-        collateralReserve.updateStateOnLiquidationAsCollateral(
-            _collateral,
-            vars.maxCollateralToLiquidate,
-            _receiveAToken
-        );
+        //TODO Burn debt tokens
 
         vars.collateralAtoken = AToken(collateralReserve.aTokenAddress);
 
@@ -260,35 +234,13 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         //transfers the principal currency to the pool
         IERC20(_reserve).universalTransferFromSenderToThis(vars.actualAmountToLiquidate, true);
 
-        if (vars.feeLiquidated > 0) {
-            //if there is enough collateral to liquidate the fee, first transfer burn an equivalent amount of
-            //aTokens of the user
-            vars.collateralAtoken.burnOnLiquidation(_user, vars.liquidatedCollateralForFee);
 
-            //then liquidate the fee by transferring it to the fee collection address
-            IERC20(_collateral).universalTransfer(
-                addressesProvider.getTokenDistributor(),
-                vars.liquidatedCollateralForFee
-            );
-
-            emit OriginationFeeLiquidated(
-                _collateral,
-                _reserve,
-                _user,
-                vars.feeLiquidated,
-                vars.liquidatedCollateralForFee,
-                //solium-disable-next-line
-                block.timestamp
-            );
-
-        }
         emit LiquidationCall(
             _collateral,
             _reserve,
             _user,
             vars.actualAmountToLiquidate,
             vars.maxCollateralToLiquidate,
-            vars.borrowBalanceIncrease,
             msg.sender,
             _receiveAToken,
             //solium-disable-next-line

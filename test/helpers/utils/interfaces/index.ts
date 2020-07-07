@@ -7,10 +7,10 @@ export interface UserReserveData {
     interestRedirectionAddress: string
     redirectionAddressRedirectedBalance: BigNumber
     redirectedBalance: BigNumber
-    currentStableBorrowBalance: BigNumber
-    currentVariableBorrowBalance: BigNumber
-    principalStableBorrowBalance: BigNumber
-    principalVariableBorrowBalance: BigNumber
+    currentStableDebt: BigNumber
+    currentVariableDebt: BigNumber
+    principalStableDebt: BigNumber
+    principalVariableDebt: BigNumber
     variableBorrowIndex: BigNumber
     liquidityRate: BigNumber
     stableBorrowRate: BigNumber
