@@ -187,7 +187,7 @@ interface LendingPoolInterface extends Interface {
     }>;
 
     swapBorrowRateMode: TypedFunctionDescription<{
-      encode([_reserve]: [string]): string;
+      encode([_reserve, _rateMode]: [string, BigNumberish]): string;
     }>;
   };
 
@@ -276,13 +276,11 @@ interface LendingPoolInterface extends Interface {
     }>;
 
     RebalanceStableBorrowRate: TypedEventDescription<{
-      encodeTopics([
-        _reserve,
-        _user,
-        _newStableRate,
-        _borrowBalanceIncrease,
-        _timestamp
-      ]: [string | null, string | null, null, null, null]): string[];
+      encodeTopics([_reserve, _user, _timestamp]: [
+        string | null,
+        string | null,
+        null
+      ]): string[];
     }>;
 
     RedeemUnderlying: TypedEventDescription<{
@@ -313,11 +311,9 @@ interface LendingPoolInterface extends Interface {
     }>;
 
     Swap: TypedEventDescription<{
-      encodeTopics([_reserve, _user, _newRateMode, _newRate, _timestamp]: [
+      encodeTopics([_reserve, _user, _timestamp]: [
         string | null,
         string | null,
-        null,
-        null,
         null
       ]): string[];
     }>;
@@ -598,6 +594,7 @@ export class LendingPool extends Contract {
 
     swapBorrowRateMode(
       _reserve: string,
+      _rateMode: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
   };
@@ -862,6 +859,7 @@ export class LendingPool extends Contract {
 
   swapBorrowRateMode(
     _reserve: string,
+    _rateMode: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -917,8 +915,6 @@ export class LendingPool extends Contract {
     RebalanceStableBorrowRate(
       _reserve: string | null,
       _user: string | null,
-      _newStableRate: null,
-      _borrowBalanceIncrease: null,
       _timestamp: null
     ): EventFilter;
 
@@ -950,8 +946,6 @@ export class LendingPool extends Contract {
     Swap(
       _reserve: string | null,
       _user: string | null,
-      _newRateMode: null,
-      _newRate: null,
       _timestamp: null
     ): EventFilter;
   };
@@ -1097,6 +1091,9 @@ export class LendingPool extends Contract {
       _useAsCollateral: boolean
     ): Promise<BigNumber>;
 
-    swapBorrowRateMode(_reserve: string): Promise<BigNumber>;
+    swapBorrowRateMode(
+      _reserve: string,
+      _rateMode: BigNumberish
+    ): Promise<BigNumber>;
   };
 }

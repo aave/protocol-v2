@@ -10,10 +10,11 @@
           "args": {
             "reserve": "DAI",
             "user": "0",
-            "target": "1"
+            "target": "1",
+            "borrowRateMode": "variable"
           },
           "expected": "revert",
-          "revertMessage": "User does not have any borrow for this reserve"
+          "revertMessage": "User does not have any stable rate loan for this reserve"
         }
       ]
     },
@@ -86,7 +87,8 @@
           "name": "swapBorrowRateMode",
           "args": {
             "reserve": "DAI",
-            "user": "1"
+            "user": "1",
+            "borrowRateMode": "variable"
           },
           "expected": "success"
         },

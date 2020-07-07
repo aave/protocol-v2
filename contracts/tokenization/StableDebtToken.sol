@@ -92,7 +92,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   ) public override onlyLendingPool {
 
     MintLocalVars memory vars;
-    
+
     (
       uint256 previousBalance,
       uint256 currentBalance,

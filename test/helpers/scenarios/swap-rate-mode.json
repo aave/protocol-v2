@@ -3,16 +3,33 @@
   "description": "Test cases for the swapBorrowRateMode() function.",
   "stories": [
     {
-      "description": "User 0 tries to swap rate mode without any borrow in progress (revert expected)",
+      "description": "User 0 tries to swap rate mode without any variable rate loan in progress (revert expected)",
       "actions": [
         {
           "name": "swapBorrowRateMode",
           "args": {
             "reserve": "DAI",
-            "user": "1"
+            "user": "1",
+            "borrowRateMode": "variable"
+     
           },
           "expected": "revert",
-          "revertMessage": "User does not have a borrow in progress on this reserve"
+          "revertMessage": "User does not have a variable rate loan in progress on this reserve"
+        }
+      ]
+    },
+    {
+      "description": "User 0 tries to swap rate mode without any stable rate loan in progress (revert expected)",
+      "actions": [
+        {
+          "name": "swapBorrowRateMode",
+          "args": {
+            "reserve": "DAI",
+            "user": "1",
+            "borrowRateMode": "stable"
+          },
+          "expected": "revert",
+          "revertMessage": "User does not have a stable rate loan in progress on this reserve"
         }
       ]
     },
@@ -70,7 +87,8 @@
           "name": "swapBorrowRateMode",
           "args": {
             "reserve": "DAI",
-            "user": "1"
+            "user": "1",
+            "borrowRateMode": "variable"
           },
           "expected": "success"
         }
@@ -94,7 +112,8 @@
           "name": "swapBorrowRateMode",
           "args": {
             "reserve": "DAI",
-            "user": "1"
+            "user": "1",
+            "borrowRateMode": "stable"
           },
           "expected": "success"
         },
@@ -122,7 +141,8 @@
             "reserve": "DAI",
             "amount": "-1",
             "user": "1",
-            "onBehalfOf": "1"
+            "onBehalfOf": "1",
+            "borrowRateMode": "variable"
           },
           "expected": "success"
         }

@@ -350,6 +350,10 @@ export const borrow = async (
       timestamp,
       txCost
     );
+
+    console.log(userDataAfter.stableBorrowRate.toFixed(), expectedUserData.stableBorrowRate.toFixed());
+    console.log(userDataAfter.principalStableBorrowBalance.toFixed(), expectedUserData.principalStableBorrowBalance.toFixed());
+
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
@@ -555,6 +559,7 @@ export const setUseAsCollateral = async (
 export const swapBorrowRateMode = async (
   reserveSymbol: string,
   user: SignerWithAddress,
+  rateMode: string,
   expectedResult: string,
   testEnv: TestEnv,
   revertMessage?: string
@@ -570,7 +575,7 @@ export const swapBorrowRateMode = async (
   );
 
   if (expectedResult === 'success') {
-    const txResult = await waitForTx(await pool.connect(user.signer).swapBorrowRateMode(reserve));
+    const txResult = await waitForTx(await pool.connect(user.signer).swapBorrowRateMode(reserve, rateMode));
 
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
@@ -583,6 +588,7 @@ export const swapBorrowRateMode = async (
     const expectedReserveData = calcExpectedReserveDataAfterSwapRateMode(
       reserveDataBefore,
       userDataBefore,
+      rateMode,
       txTimestamp
     );
 
@@ -590,6 +596,7 @@ export const swapBorrowRateMode = async (
       reserveDataBefore,
       expectedReserveData,
       userDataBefore,
+      rateMode,
       txCost,
       txTimestamp
     );
@@ -607,7 +614,7 @@ export const swapBorrowRateMode = async (
     //   );
     // });
   } else if (expectedResult === 'revert') {
-    await expect(pool.connect(user.signer).swapBorrowRateMode(reserve), revertMessage).to.be
+    await expect(pool.connect(user.signer).swapBorrowRateMode(reserve, rateMode), revertMessage).to.be
       .reverted;
   }
 };

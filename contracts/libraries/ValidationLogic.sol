@@ -245,16 +245,17 @@ library ValidationLogic {
   ) external view {
     require(_reserve.isActive, 'Action requires an active reserve');
     require(!_reserve.isFreezed, 'Action requires an unfreezed reserve');
-    require(
-      _currentRateMode == CoreLibrary.InterestRateMode.STABLE && _stableBorrowBalance > 0,
-      'User does not have a stable rate loan in progress on this reserve'
-    );
-    require(
-      _currentRateMode == CoreLibrary.InterestRateMode.VARIABLE && _variableBorrowBalance > 0,
-      'User does not have a variable rate loan in progress on this reserve'
-    );
 
-    if (_currentRateMode == CoreLibrary.InterestRateMode.VARIABLE) {
+    if (_currentRateMode == CoreLibrary.InterestRateMode.STABLE) {
+      require(
+        _stableBorrowBalance > 0,
+        'User does not have a stable rate loan in progress on this reserve'
+      );
+    } else if (_currentRateMode == CoreLibrary.InterestRateMode.VARIABLE) {
+      require(
+        _variableBorrowBalance > 0,
+        'User does not have a variable rate loan in progress on this reserve'
+      );
       /**
        * user wants to swap to stable, before swapping we need to ensure that
        * 1. stable borrow rate is enabled on the reserve
@@ -271,6 +272,9 @@ library ValidationLogic {
           IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
       );
+    }
+    else {
+      revert("Invalid interest rate mode selected");
     }
   }
 

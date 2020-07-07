@@ -45,7 +45,7 @@ const executeAction = async (
   users: SignerWithAddress[],
   testEnv: TestEnv
 ) => {
-  const {reserve, user: userIndex} = action.args;
+  const {reserve, user: userIndex, borrowRateMode} = action.args;
   const {name, expected, revertMessage} = action;
 
   if (!name || name === "") {
@@ -60,6 +60,21 @@ const executeAction = async (
 
   if (!expected || expected === "") {
     throw `An expected resut for action ${name} is required`;
+  }
+
+  let rateMode: string = RateMode.None;
+
+  if(borrowRateMode) {
+    if (borrowRateMode === "none") {
+      RateMode.None;
+    } else if (borrowRateMode === "stable") {
+      rateMode = RateMode.Stable;
+    } else if (borrowRateMode === "variable") {
+      rateMode = RateMode.Variable;
+    } else {
+      //random value, to test improper selection of the parameter
+      rateMode = "4";
+    }
   }
 
   const user = users[parseInt(userIndex)];
@@ -112,23 +127,10 @@ const executeAction = async (
       break;
     case "borrow":
       {
-        const {amount, borrowRateMode, timeTravel} = action.args;
+        const {amount, timeTravel} = action.args;
 
         if (!amount || amount === "") {
           throw `Invalid amount to borrow from the ${reserve} reserve`;
-        }
-
-        let rateMode: string = RateMode.None;
-
-        if (borrowRateMode === "none") {
-          RateMode.None;
-        } else if (borrowRateMode === "stable") {
-          rateMode = RateMode.Stable;
-        } else if (borrowRateMode === "variable") {
-          rateMode = RateMode.Variable;
-        } else {
-          //random value, to test improper selection of the parameter
-          rateMode = "4";
         }
 
         await borrow(
@@ -152,19 +154,7 @@ const executeAction = async (
         if (!amount || amount === "") {
           throw `Invalid amount to repay into the ${reserve} reserve`;
         }
-        let rateMode: string = RateMode.None;
-
-        if (borrowRateMode === "none") {
-          rateMode = RateMode.None;
-        } else if (borrowRateMode === "stable") {
-          rateMode = RateMode.Stable;
-        } else if (borrowRateMode === "variable") {
-          rateMode = RateMode.Variable;
-        } else {
-          //random value, to test improper selection of the parameter
-          rateMode = "4";
-        }
-
+ 
         let userToRepayOnBehalf: SignerWithAddress;
         if (!onBehalfOfIndex || onBehalfOfIndex === "") {
           console.log(
@@ -174,8 +164,6 @@ const executeAction = async (
         } else {
           userToRepayOnBehalf = users[parseInt(onBehalfOfIndex)];
         }
-
-        console.log(user.address, userToRepayOnBehalf.address)
 
         await repay(
           reserve,
@@ -210,7 +198,7 @@ const executeAction = async (
       break;
 
     case "swapBorrowRateMode":
-      await swapBorrowRateMode(reserve, user, expected, testEnv, revertMessage);
+      await swapBorrowRateMode(reserve, user, rateMode, expected, testEnv, revertMessage);
       break;
 
     case "rebalanceStableBorrowRate":
