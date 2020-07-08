@@ -4,7 +4,6 @@ pragma solidity ^0.6.8;
 import {SafeMath} from "@openzeppelin/contracts/math/SafeMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {CoreLibrary} from "./CoreLibrary.sol";
 import {ReserveLogic} from "./ReserveLogic.sol";
 import {UserLogic} from "./UserLogic.sol";
 import {WadRayMath} from "./WadRayMath.sol";
@@ -19,8 +18,8 @@ import '@nomiclabs/buidler/console.sol';
 * @title Implements protocol-level logic to check the status of the user across all the reserves
 */
 library GenericLogic {
-    using ReserveLogic for CoreLibrary.ReserveData;
-    using UserLogic for CoreLibrary.UserReserveData;
+    using ReserveLogic for ReserveLogic.ReserveData;
+    using UserLogic for UserLogic.UserReserveData;
     using SafeMath for uint256;
     using WadRayMath for uint256;
 
@@ -51,8 +50,8 @@ library GenericLogic {
         address _reserve,
         address _user,
         uint256 _amount,
-        mapping(address => CoreLibrary.ReserveData) storage _reservesData,
-        mapping(address => mapping(address => CoreLibrary.UserReserveData)) storage _usersData,
+        mapping(address => ReserveLogic.ReserveData) storage _reservesData,
+        mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
         address[] calldata _reserves,
         address _oracle
     ) external view returns (bool) {
@@ -143,8 +142,8 @@ library GenericLogic {
     **/
     function calculateUserAccountData(
         address _user,
-        mapping(address => CoreLibrary.ReserveData) storage _reservesData,
-        mapping(address => mapping(address => CoreLibrary.UserReserveData)) storage _usersReserveData,
+        mapping(address => ReserveLogic.ReserveData) storage _reservesData,
+        mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersReserveData,
         address[] memory _reserves,
         address _oracle
     ) public view returns (uint256, uint256, uint256, uint256, uint256, uint256) {
@@ -154,7 +153,7 @@ library GenericLogic {
 
             vars.currentReserveAddress = _reserves[vars.i];
 
-            CoreLibrary.ReserveData storage currentReserve = _reservesData[vars
+            ReserveLogic.ReserveData storage currentReserve = _reservesData[vars
                 .currentReserveAddress];
 
             vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(_user);

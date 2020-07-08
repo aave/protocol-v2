@@ -4,7 +4,6 @@ pragma solidity ^0.6.8;
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-import {CoreLibrary} from './CoreLibrary.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {UserLogic} from './UserLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
@@ -21,8 +20,8 @@ import '@nomiclabs/buidler/console.sol';
  * @notice Implements functions to validate specific action on the protocol.
  */
 library ValidationLogic {
-  using ReserveLogic for CoreLibrary.ReserveData;
-  using UserLogic for CoreLibrary.UserReserveData;
+  using ReserveLogic for ReserveLogic.ReserveData;
+  using UserLogic for UserLogic.UserReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using UniversalERC20 for IERC20;
@@ -32,7 +31,7 @@ library ValidationLogic {
    * @param _reserve the reserve state on which the user is depositing
    * @param _amount the amount to be deposited
    */
-  function validateDeposit(CoreLibrary.ReserveData storage _reserve, uint256 _amount)
+  function validateDeposit(ReserveLogic.ReserveData storage _reserve, uint256 _amount)
     external
     view
   {
@@ -46,7 +45,7 @@ library ValidationLogic {
    * @param _amount the amount to be redeemed
    */
   function validateRedeem(
-    CoreLibrary.ReserveData storage _reserve,
+    ReserveLogic.ReserveData storage _reserve,
     address _reserveAddress,
     uint256 _amount
   ) external view {
@@ -72,7 +71,7 @@ library ValidationLogic {
     uint256 availableLiquidity;
     uint256 finalUserBorrowRate;
     uint256 healthFactor;
-    CoreLibrary.InterestRateMode rateMode;
+    ReserveLogic.InterestRateMode rateMode;
     bool healthFactorBelowThreshold;
   }
 
@@ -92,15 +91,15 @@ library ValidationLogic {
    */
 
   function validateBorrow(
-    CoreLibrary.ReserveData storage _reserve,
-    CoreLibrary.UserReserveData storage _user,
+    ReserveLogic.ReserveData storage _reserve,
+    UserLogic.UserReserveData storage _user,
     address _reserveAddress,
     uint256 _amount,
     uint256 _amountInETH,
     uint256 _interestRateMode,
     uint256 _maxStableLoanPercent,
-    mapping(address => CoreLibrary.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => CoreLibrary.UserReserveData)) storage _usersData,
+    mapping(address => ReserveLogic.ReserveData) storage _reservesData,
+    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
     address[] calldata _reserves,
     address _oracle
   ) external view {
@@ -112,8 +111,8 @@ library ValidationLogic {
 
     //validate interest rate mode
     require(
-      uint256(CoreLibrary.InterestRateMode.VARIABLE) == _interestRateMode ||
-        uint256(CoreLibrary.InterestRateMode.STABLE) == _interestRateMode,
+      uint256(ReserveLogic.InterestRateMode.VARIABLE) == _interestRateMode ||
+        uint256(ReserveLogic.InterestRateMode.STABLE) == _interestRateMode,
       'Invalid interest rate mode selected'
     );
 
@@ -163,7 +162,7 @@ library ValidationLogic {
      *    liquidity
      **/
 
-    if (vars.rateMode == CoreLibrary.InterestRateMode.STABLE) {
+    if (vars.rateMode == ReserveLogic.InterestRateMode.STABLE) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
       require(_reserve.isStableBorrowRateEnabled, '11');
@@ -195,10 +194,10 @@ library ValidationLogic {
    * @param _msgValue the value passed to the repay() function
    */
   function validateRepay(
-    CoreLibrary.ReserveData storage _reserve,
+    ReserveLogic.ReserveData storage _reserve,
     address _reserveAddress,
     uint256 _amountSent,
-    CoreLibrary.InterestRateMode _rateMode,
+    ReserveLogic.InterestRateMode _rateMode,
     address _onBehalfOf,
     uint256 _stableBorrowBalance,
     uint256 _variableBorrowBalance,
@@ -211,9 +210,9 @@ library ValidationLogic {
 
     require(
       (_stableBorrowBalance > 0 &&
-        CoreLibrary.InterestRateMode(_rateMode) == CoreLibrary.InterestRateMode.STABLE) ||
+        ReserveLogic.InterestRateMode(_rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
         (_variableBorrowBalance > 0 &&
-          CoreLibrary.InterestRateMode(_rateMode) == CoreLibrary.InterestRateMode.VARIABLE),
+          ReserveLogic.InterestRateMode(_rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
       '16'
     );
 
@@ -237,21 +236,21 @@ library ValidationLogic {
    * @param _currentRateMode the rate mode of the borrow
    */
   function validateSwapRateMode(
-    CoreLibrary.ReserveData storage _reserve,
-    CoreLibrary.UserReserveData storage _user,
+    ReserveLogic.ReserveData storage _reserve,
+    UserLogic.UserReserveData storage _user,
     uint256 _stableBorrowBalance,
     uint256 _variableBorrowBalance,
-    CoreLibrary.InterestRateMode _currentRateMode
+    ReserveLogic.InterestRateMode _currentRateMode
   ) external view {
     require(_reserve.isActive, 'Action requires an active reserve');
     require(!_reserve.isFreezed, 'Action requires an unfreezed reserve');
 
-    if (_currentRateMode == CoreLibrary.InterestRateMode.STABLE) {
+    if (_currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
       require(
         _stableBorrowBalance > 0,
         'User does not have a stable rate loan in progress on this reserve'
       );
-    } else if (_currentRateMode == CoreLibrary.InterestRateMode.VARIABLE) {
+    } else if (_currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
       require(
         _variableBorrowBalance > 0,
         'User does not have a variable rate loan in progress on this reserve'
@@ -286,10 +285,10 @@ library ValidationLogic {
    * @param _usersData the data of all the users
    */
   function validateSetUseReserveAsCollateral(
-    CoreLibrary.ReserveData storage _reserve,
+    ReserveLogic.ReserveData storage _reserve,
     address _reserveAddress,
-    mapping(address => CoreLibrary.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => CoreLibrary.UserReserveData)) storage _usersData,
+    mapping(address => ReserveLogic.ReserveData) storage _reservesData,
+    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
     address[] calldata _reserves,
     address _oracle
   ) external view {
@@ -317,7 +316,7 @@ library ValidationLogic {
    * @param _amount the amount being validated
    */
   function internalValidateReserveStateAndAmount(
-    CoreLibrary.ReserveData storage _reserve,
+    ReserveLogic.ReserveData storage _reserve,
     uint256 _amount
   ) internal view {
     require(_reserve.isActive, 'Action requires an active reserve');

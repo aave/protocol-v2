@@ -12,7 +12,6 @@ import "../configuration/LendingPoolAddressesProvider.sol";
 import "../tokenization/AToken.sol";
 import "../tokenization/interfaces/IStableDebtToken.sol";
 import "../tokenization/interfaces/IVariableDebtToken.sol";
-import "../libraries/CoreLibrary.sol";
 import "../libraries/WadRayMath.sol";
 import "../interfaces/IPriceOracleGetter.sol";
 import "../libraries/EthAddressLib.sol";
@@ -31,14 +30,14 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     using SafeMath for uint256;
     using WadRayMath for uint256;
     using Address for address;
-    using ReserveLogic for CoreLibrary.ReserveData;
-    using UserLogic for CoreLibrary.UserReserveData;
+    using ReserveLogic for ReserveLogic.ReserveData;
+    using UserLogic for UserLogic.UserReserveData;
 
     LendingPoolAddressesProvider public addressesProvider;
     IFeeProvider feeProvider;
 
-    mapping(address => CoreLibrary.ReserveData) internal reserves;
-    mapping(address => mapping(address => CoreLibrary.UserReserveData)) internal usersReserveData;
+    mapping(address => ReserveLogic.ReserveData) internal reserves;
+    mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
 
     address[] public reservesList;
 
@@ -86,7 +85,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         uint256 originationFee;
         uint256 feeLiquidated;
         uint256 liquidatedCollateralForFee;
-        CoreLibrary.InterestRateMode borrowRateMode;
+        ReserveLogic.InterestRateMode borrowRateMode;
         uint256 userStableRate;
         uint256 maxCollateralToLiquidate;
         uint256 principalAmountNeeded;
@@ -119,9 +118,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         uint256 _purchaseAmount,
         bool _receiveAToken
     ) external payable returns (uint256, string memory) {
-        CoreLibrary.ReserveData storage principalReserve = reserves[_reserve];
-        CoreLibrary.ReserveData storage collateralReserve = reserves[_collateral];
-        CoreLibrary.UserReserveData storage userCollateral = usersReserveData[_user][_collateral];
+        ReserveLogic.ReserveData storage principalReserve = reserves[_reserve];
+        ReserveLogic.ReserveData storage collateralReserve = reserves[_collateral];
+        UserLogic.UserReserveData storage userCollateral = usersReserveData[_user][_collateral];
 
         LiquidationCallLocalVars memory vars;
 
@@ -287,8 +286,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     * @return principalAmountNeeded the purchase amount
     **/
     function calculateAvailableCollateralToLiquidate(
-        CoreLibrary.ReserveData storage _collateralReserve,
-        CoreLibrary.ReserveData storage _principalReserve,
+        ReserveLogic.ReserveData storage _collateralReserve,
+        ReserveLogic.ReserveData storage _principalReserve,
         address _collateralAddress,
         address _principalAddress,
         uint256 _purchaseAmount,

@@ -20,7 +20,6 @@ export enum eContractid {
   FeeProvider = "FeeProvider",
   LendingPoolParametersProvider = "LendingPoolParametersProvider",
   LendingPoolConfigurator = "LendingPoolConfigurator",
-  CoreLibrary = "CoreLibrary",
   ValidationLogic = "ValidationLogic",
   ReserveLogic = "ReserveLogic",
   UserLogic = "UserLogic",

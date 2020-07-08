@@ -10,7 +10,6 @@ import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import '../configuration/LendingPoolAddressesProvider.sol';
 import '../tokenization/AToken.sol';
 import '../libraries/WadRayMath.sol';
-import '../libraries/CoreLibrary.sol';
 import '../libraries/ReserveLogic.sol';
 import '../libraries/UserLogic.sol';
 import '../libraries/GenericLogic.sol';
@@ -35,9 +34,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using Address for address payable;
-  using ReserveLogic for CoreLibrary.ReserveData;
-  using UserLogic for CoreLibrary.UserReserveData;
-  using CoreLibrary for CoreLibrary.ReserveData;
+  using ReserveLogic for ReserveLogic.ReserveData;
+  using UserLogic for UserLogic.UserReserveData;
 
   //main configuration parameters
   uint256 private constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
@@ -49,8 +47,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   IFeeProvider feeProvider;
   using UniversalERC20 for IERC20;
 
-  mapping(address => CoreLibrary.ReserveData) internal reserves;
-  mapping(address => mapping(address => CoreLibrary.UserReserveData)) internal usersReserveData;
+  mapping(address => ReserveLogic.ReserveData) internal reserves;
+  mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
 
   address[] public reservesList;
 
@@ -263,8 +261,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _amount,
     uint16 _referralCode
   ) external payable nonReentrant {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-    CoreLibrary.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
+    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     ValidationLogic.validateDeposit(reserve, _amount);
 
@@ -302,8 +300,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _amount,
     uint256 _aTokenBalanceAfterRedeem
   ) external nonReentrant {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-    CoreLibrary.UserReserveData storage user = usersReserveData[_user][_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
+    UserLogic.UserReserveData storage user = usersReserveData[_user][_reserve];
 
     ValidationLogic.validateRedeem(reserve, _reserve, _amount);
 
@@ -333,8 +331,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _interestRateMode,
     uint16 _referralCode
   ) external nonReentrant {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-    CoreLibrary.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
+    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     uint256 amountInETH = IPriceOracleGetter(addressesProvider.getPriceOracle())
       .getAssetPrice(_reserve)
@@ -363,7 +361,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     uint256 userStableRate = reserve.currentStableBorrowRate;
 
-    if (CoreLibrary.InterestRateMode(_interestRateMode) == CoreLibrary.InterestRateMode.STABLE) {
+    if (ReserveLogic.InterestRateMode(_interestRateMode) == ReserveLogic.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(msg.sender, _amount, userStableRate);
       uint40 stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress)
         .getUserLastUpdated(msg.sender);
@@ -381,7 +379,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       msg.sender,
       _amount,
       _interestRateMode,
-      CoreLibrary.InterestRateMode(_interestRateMode) == CoreLibrary.InterestRateMode.STABLE
+      ReserveLogic.InterestRateMode(_interestRateMode) == ReserveLogic.InterestRateMode.STABLE
         ? userStableRate
         : reserve.currentVariableBorrowRate,
       _referralCode,
@@ -413,18 +411,18 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address payable _onBehalfOf
   ) external payable nonReentrant {
     RepayLocalVars memory vars;
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-    CoreLibrary.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
+    UserLogic.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
     (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(
       _onBehalfOf,
       reserve
     );
 
-    CoreLibrary.InterestRateMode rateMode = CoreLibrary.InterestRateMode(_rateMode);
+    ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
     //default to max amount
-    vars.paybackAmount = rateMode == CoreLibrary.InterestRateMode.STABLE
+    vars.paybackAmount = rateMode == ReserveLogic.InterestRateMode.STABLE
       ? vars.stableDebt
       : vars.variableDebt;
 
@@ -447,7 +445,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     reserve.updateCumulativeIndexesAndTimestamp();
 
     //burns an equivalent amount of debt tokens
-    if (rateMode == CoreLibrary.InterestRateMode.STABLE) {
+    if (rateMode == ReserveLogic.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
     } else {
       IVariableDebtToken(reserve.variableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
@@ -482,15 +480,15 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _rateMode the rate mode that the user wants to swap
    **/
   function swapBorrowRateMode(address _reserve, uint256 _rateMode) external nonReentrant {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-    CoreLibrary.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
+    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(
       msg.sender,
       reserve
     );
 
-    CoreLibrary.InterestRateMode rateMode = CoreLibrary.InterestRateMode(_rateMode);
+    ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
     ValidationLogic.validateSwapRateMode(
       reserve,
@@ -502,7 +500,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    if (rateMode == CoreLibrary.InterestRateMode.STABLE) {
+    if (rateMode == ReserveLogic.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender,stableDebt);
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableDebt);
@@ -534,7 +532,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _user the address of the user to be rebalanced
    **/
   function rebalanceStableBorrowRate(address _reserve, address _user) external nonReentrant {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     IStableDebtToken stableDebtToken = IStableDebtToken(reserve.stableDebtTokenAddress);
 
@@ -587,8 +585,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     nonReentrant
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
-    CoreLibrary.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
+    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
@@ -671,7 +669,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   ) public nonReentrant {
     FlashLoanLocalVars memory vars;
 
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     //check that the reserve has enough available liquidity
     vars.availableLiquidityBefore = IERC20(_reserve).universalBalanceOf(address(this));
@@ -744,7 +742,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       bool isFreezed
     )
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     return (
       reserve.decimals,
@@ -777,7 +775,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       uint40 lastUpdateTimestamp
     )
   {
-    CoreLibrary.ReserveData memory reserve = reserves[_reserve];
+    ReserveLogic.ReserveData memory reserve = reserves[_reserve];
     return (
       IERC20(_reserve).universalBalanceOf(address(this)),
       IERC20(reserve.stableDebtTokenAddress).totalSupply(),
@@ -845,7 +843,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       bool usageAsCollateralEnabled
     )
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(_user);
     (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(
@@ -961,7 +959,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     onlyLendingPoolConfigurator
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     reserve.isStableBorrowRateEnabled = _enabled;
   }
 
@@ -970,7 +968,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function setReserveActive(address _reserve, bool _active) external onlyLendingPoolConfigurator {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     if (!_active) {
       reserve.isActive = false;
@@ -992,7 +990,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     onlyLendingPoolConfigurator
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     reserve.isFreezed = _isFreezed;
   }
 
@@ -1005,7 +1003,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     onlyLendingPoolConfigurator
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     reserve.baseLTVasCollateral = _ltv;
   }
 
@@ -1018,7 +1016,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     onlyLendingPoolConfigurator
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     reserve.liquidationThreshold = _threshold;
   }
 
@@ -1031,7 +1029,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     onlyLendingPoolConfigurator
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     reserve.liquidationBonus = _bonus;
   }
 
@@ -1044,7 +1042,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     onlyLendingPoolConfigurator
   {
-    CoreLibrary.ReserveData storage reserve = reserves[_reserve];
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     reserve.decimals = _decimals;
   }
 

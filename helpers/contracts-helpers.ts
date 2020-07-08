@@ -143,7 +143,6 @@ const deployLibrary = async(libraryId: eContractid) => {
 
 export const linkLibrariesToArtifact = async(artifact: Artifact) => {
 
-  const coreLibrary = await deployLibrary(eContractid.CoreLibrary);
   const userLogic = await deployLibrary(eContractid.UserLogic);
   const reserveLogic = await deployLibrary(eContractid.ReserveLogic);
 
@@ -185,7 +184,6 @@ export const linkLibrariesToArtifact = async(artifact: Artifact) => {
 
 
   const linkedBytecode = linkBytecode(artifact, {
-    [eContractid.CoreLibrary]: coreLibrary.address,
     [eContractid.UserLogic]: userLogic.address,
     [eContractid.ReserveLogic] : reserveLogic.address,
     [eContractid.GenericLogic] : genericLogic.address,
