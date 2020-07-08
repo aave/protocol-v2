@@ -4,6 +4,7 @@ pragma solidity ^0.6.8;
 import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title UniversalERC20 library
@@ -37,8 +38,13 @@ library UniversalERC20 {
     }
 
     if (isETH(token)) {
+      console.log("transfer of ETH, value %s", amount);
+      console.log("Balance is %s", address(this).balance);
+
       (bool result, ) = payable(to).call{value: amount, gas: DEFAULT_TRANSFER_GAS}('');
+      console.log("Transfer done, result %s", result);
       require(result, 'ETH_TRANSFER_FAILED');
+    
     } else {
       token.safeTransfer(to, amount);
     }
@@ -166,6 +172,6 @@ library UniversalERC20 {
    * @return boolean
    **/
   function isETH(IERC20 token) internal pure returns (bool) {
-    return (address(token) == address(ZERO_ADDRESS) || address(token) == address(ETH_ADDRESS));
+    return (address(token) == address(ETH_ADDRESS));
   }
 }

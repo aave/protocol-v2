@@ -10,10 +10,11 @@ import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
 
 import "../configuration/LendingPoolAddressesProvider.sol";
 import "../tokenization/AToken.sol";
+import "../tokenization/interfaces/IStableDebtToken.sol";
+import "../tokenization/interfaces/IVariableDebtToken.sol";
 import "../libraries/CoreLibrary.sol";
 import "../libraries/WadRayMath.sol";
 import "../interfaces/IPriceOracleGetter.sol";
-import {IFeeProvider} from "../interfaces/IFeeProvider.sol";
 import "../libraries/EthAddressLib.sol";
 import "../libraries/GenericLogic.sol";
 import "../libraries/UserLogic.sol";
@@ -120,13 +121,12 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     ) external payable returns (uint256, string memory) {
         CoreLibrary.ReserveData storage principalReserve = reserves[_reserve];
         CoreLibrary.ReserveData storage collateralReserve = reserves[_collateral];
-        CoreLibrary.UserReserveData storage userCollateral = usersReserveData[msg
-            .sender][_collateral];
+        CoreLibrary.UserReserveData storage userCollateral = usersReserveData[_user][_collateral];
 
         LiquidationCallLocalVars memory vars;
 
         (, , , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
-            msg.sender,
+            _user,
             reserves,
             usersReserveData,
             reservesList,
@@ -140,7 +140,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             );
         }
 
-        vars.userCollateralBalance = IERC20(_collateral).balanceOf(_user);
+        vars.userCollateralBalance = IERC20(collateralReserve.aTokenAddress).balanceOf(_user);
 
         //if _user hasn't deposited this specific collateral, nothing can be liquidated
         if (vars.userCollateralBalance == 0) {
@@ -213,6 +213,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             }
         }
 
+        console.log("Balance before liquidation is %s", IERC20(principalReserve.stableDebtTokenAddress).balanceOf(_user));
+
         //TODO Burn debt tokens
         if(vars.userVariableDebt >= vars.actualAmountToLiquidate){
             IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(_user, vars.actualAmountToLiquidate);
@@ -221,6 +223,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(_user, vars.userVariableDebt);
             IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(_user, vars.actualAmountToLiquidate.sub(vars.userVariableDebt));
         }
+
+        console.log("Balance after liquidation is %s", IERC20(principalReserve.stableDebtTokenAddress).balanceOf(_user));
 
         vars.collateralAtoken = AToken(collateralReserve.aTokenAddress);
 
@@ -235,8 +239,12 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             //otherwise receives the underlying asset
             //burn the equivalent amount of atoken
             vars.collateralAtoken.burnOnLiquidation(_user, vars.maxCollateralToLiquidate);
+            console.log("Burned %s collateral tokens, collateral %s",vars.maxCollateralToLiquidate, _collateral);
+
             IERC20(_collateral).universalTransfer(msg.sender, vars.maxCollateralToLiquidate);
         }
+
+        console.log("Transferring principal, amount %s",vars.actualAmountToLiquidate);
 
         //transfers the principal currency to the pool
         IERC20(_reserve).universalTransferFromSenderToThis(vars.actualAmountToLiquidate, true);

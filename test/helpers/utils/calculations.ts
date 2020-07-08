@@ -326,8 +326,6 @@ export const calcExpectedReserveDataAfterBorrow = (
 ): ReserveData => {
   const expectedReserveData = <ReserveData>{};
 
-  console.log('Computing borrow, amountBorrowed: ', amountBorrowed, ' Rate mode: ', borrowRateMode);
-
   expectedReserveData.address = reserveDataBeforeAction.address;
 
   const amountBorrowedBN = new BigNumber(amountBorrowed);
@@ -419,8 +417,7 @@ export const calcExpectedReserveDataAfterRepay = (
   txTimestamp: BigNumber,
   currentTimestamp: BigNumber
 ): ReserveData => {
-  console.log('Computing repay, amount repaid: ', amountRepaid, ' Rate mode: ', borrowRateMode);
-
+ 
   const expectedReserveData: ReserveData = <ReserveData>{};
 
   expectedReserveData.address = reserveDataBeforeAction.address;
@@ -766,7 +763,6 @@ export const calcExpectedReserveDataAfterSwapRateMode = (
   rateMode: string,
   txTimestamp: BigNumber
 ): ReserveData => {
-  console.log('Computing swap, Rate mode: ', rateMode);
 
   const expectedReserveData: ReserveData = <ReserveData>{};
 
@@ -1246,7 +1242,7 @@ const calcExpectedVariableDebtUserIndex = (
   return calcExpectedReserveNormalizedDebt(reserveDataBeforeAction, currentTimestamp);
 };
 
-const calcExpectedVariableDebtTokenBalance = (
+export const calcExpectedVariableDebtTokenBalance = (
   reserveDataBeforeAction: ReserveData,
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber
@@ -1266,7 +1262,7 @@ const calcExpectedVariableDebtTokenBalance = (
     .rayToWad();
 };
 
-const calcExpectedStableDebtTokenBalance = (
+export const calcExpectedStableDebtTokenBalance = (
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber
 ) => {

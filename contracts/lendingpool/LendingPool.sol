@@ -731,6 +731,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     external
     view
     returns (
+      uint256 decimals,
       uint256 ltv,
       uint256 liquidationThreshold,
       uint256 liquidationBonus,
@@ -746,6 +747,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     CoreLibrary.ReserveData storage reserve = reserves[_reserve];
 
     return (
+      reserve.decimals,
       reserve.baseLTVasCollateral,
       reserve.liquidationThreshold,
       reserve.liquidationBonus,

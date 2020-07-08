@@ -5,8 +5,12 @@ import {APPROVAL_AMOUNT_LENDING_POOL, MOCK_ETH_ADDRESS, oneEther} from '../helpe
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
 import {ProtocolErrors, RateMode} from '../helpers/types';
+import { calcExpectedVariableDebtTokenBalance } from './helpers/utils/calculations';
+import { getUserData, getReserveData } from './helpers/utils/helpers';
 
-const {expect} = require('chai');
+const chai = require('chai');
+chai.use(require('chai-bignumber')());
+const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => {
   const {
@@ -42,7 +46,6 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     });
 
     //user 2 borrows
-
     const userGlobalData = await pool.getUserAccountData(borrower.address);
     const daiPrice = await oracle.getAssetPrice(dai.address);
 
@@ -59,7 +62,6 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .borrow(dai.address, amountDAIToBorrow, RateMode.Variable, '0');
 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
-    console.log('userGlobalDataAfter.healthFactor', userGlobalDataAfter.healthFactor.toString());
 
     expect(userGlobalDataAfter.currentLiquidationThreshold).to.be.bignumber.equal(
       '80',
@@ -78,18 +80,14 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const daiPrice = await oracle.getAssetPrice(dai.address);
 
-    //halving the price of ETH - means doubling the DAIETH exchange rate
-    console.log('DAI price before', daiPrice.toString());
-
     await oracle.setAssetPrice(
       dai.address,
       new BigNumber(daiPrice.toString()).multipliedBy(1.15).toFixed(0)
     );
-    console.log('DAI price after', (await oracle.getAssetPrice(dai.address)).toString());
 
     const userGlobalData = await pool.getUserAccountData(borrower.address);
 
-    expect(userGlobalData.healthFactor).to.be.bignumber.lt(oneEther.toFixed(0), INVALID_HF);
+    expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(oneEther, INVALID_HF);
   });
 
   it('LIQUIDATION - Tries to liquidate a different currency than the loan principal', async () => {
@@ -107,20 +105,17 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).revertedWith(USER_DID_NOT_BORROW_SPECIFIED);
   });
 
-  it(
-    'LIQUIDATION - Tries to liquidate a different ' + 'collateral than the borrower collateral',
-    async () => {
-      const {pool, dai, users} = testEnv;
-      const borrower = users[1];
+  it('LIQUIDATION - Tries to liquidate a different collateral than the borrower collateral', async () => {
+    const {pool, dai, users} = testEnv;
+    const borrower = users[1];
 
-      await expect(
-        pool.liquidationCall(dai.address, dai.address, borrower.address, oneEther.toString(), true)
-      ).revertedWith(INVALID_COLLATERAL_TO_LIQUIDATE);
-    }
-  );
+    await expect(
+      pool.liquidationCall(dai.address, dai.address, borrower.address, oneEther.toString(), true)
+    ).revertedWith(INVALID_COLLATERAL_TO_LIQUIDATE);
+  });
 
   it('LIQUIDATION - Liquidates the borrow', async () => {
-    const {pool, dai, users, addressesProvider, oracle} = testEnv;
+    const {pool, dai, users, oracle} = testEnv;
     const borrower = users[1];
 
     //mints dai to the caller
@@ -130,17 +125,16 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //approve protocol to access depositor wallet
     await dai.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    const userReserveDataBefore = await pool.getUserReserveData(dai.address, borrower.address);
-
-    const daiReserveDataBefore = await pool.getReserveData(dai.address);
+    const daiReserveDataBefore = await getReserveData(pool, dai.address);
     const ethReserveDataBefore = await pool.getReserveData(MOCK_ETH_ADDRESS);
 
-    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
-      .plus(userReserveDataBefore.currentVariableDebt.toString())
+    const userReserveDataBefore = await getUserData(pool, dai.address, borrower.address);
+
+    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
       .div(2)
       .toFixed(0);
 
-    await pool.liquidationCall(
+    const tx = await pool.liquidationCall(
       MOCK_ETH_ADDRESS,
       dai.address,
       borrower.address,
@@ -155,15 +149,15 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const daiReserveDataAfter = await pool.getReserveData(dai.address);
     const ethReserveDataAfter = await pool.getReserveData(MOCK_ETH_ADDRESS);
 
-    const feeAddress = await addressesProvider.getTokenDistributor();
-
-    const feeAddressBalance = await BRE.ethers.provider.getBalance(feeAddress);
-
     const collateralPrice = (await oracle.getAssetPrice(MOCK_ETH_ADDRESS)).toString();
     const principalPrice = (await oracle.getAssetPrice(dai.address)).toString();
 
-    const collateralDecimals = (await pool.getReserveDecimals(MOCK_ETH_ADDRESS)).toString();
-    const principalDecimals = (await pool.getReserveDecimals(dai.address)).toString();
+    const collateralDecimals = (
+      await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS)
+    ).decimals.toString();
+    const principalDecimals = (
+      await pool.getReserveConfigurationData(dai.address)
+    ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice)
       .times(new BigNumber(amountToLiquidate).times(105))
@@ -171,15 +165,26 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .div(new BigNumber(collateralPrice).times(new BigNumber(10).pow(principalDecimals)))
       .decimalPlaces(0, BigNumber.ROUND_DOWN);
 
-    expect(userGlobalDataAfter.healthFactor).to.be.bignumber.gt(
+    if(!tx.blockNumber){
+      expect(false, "Invalid block number");
+      return;
+    }
+
+   const txTimestamp = new BigNumber((await BRE.ethers.provider.getBlock(tx.blockNumber)).timestamp);
+
+    const variableDebtBeforeTx = calcExpectedVariableDebtTokenBalance(
+      daiReserveDataBefore,
+      userReserveDataBefore, 
+      txTimestamp      
+    );
+
+    expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
       oneEther.toFixed(0),
       'Invalid health factor'
     );
 
-    expect(feeAddressBalance).to.be.bignumber.gt('0');
-
     expect(userReserveDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
-      new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
+      new BigNumber(variableDebtBeforeTx)
         .minus(amountToLiquidate)
         .toFixed(0),
       'Invalid user borrow balance after liquidation'
@@ -199,8 +204,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it(
-    'User 3 deposits 1000 USDC, user 4 1 ETH,' +
-      ' user 4 borrows - drops HF, liquidates the borrow',
+    'User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow',
     async () => {
       const {users, pool, usdc, oracle, addressesProvider} = testEnv;
       const depositor = users[3];
@@ -262,7 +266,6 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       const ethReserveDataBefore = await pool.getReserveData(MOCK_ETH_ADDRESS);
 
       const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
-        .plus(userReserveDataBefore.currentStableDebt.toString())
         .div(2)
         .toFixed(0);
 
@@ -281,15 +284,15 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       const usdcReserveDataAfter = await pool.getReserveData(usdc.address);
       const ethReserveDataAfter = await pool.getReserveData(MOCK_ETH_ADDRESS);
 
-      const feeAddress = await addressesProvider.getTokenDistributor();
-
-      const feeAddressBalance = await BRE.ethers.provider.getBalance(feeAddress);
-
       const collateralPrice = (await oracle.getAssetPrice(MOCK_ETH_ADDRESS)).toString();
       const principalPrice = (await oracle.getAssetPrice(usdc.address)).toString();
 
-      const collateralDecimals = (await pool.getReserveDecimals(MOCK_ETH_ADDRESS)).toString();
-      const principalDecimals = (await pool.getReserveDecimals(usdc.address)).toString();
+      const collateralDecimals = (
+        await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS)
+      ).decimals.toString();
+      const principalDecimals = (
+        await pool.getReserveConfigurationData(usdc.address)
+      ).decimals.toString();
 
       const expectedCollateralLiquidated = new BigNumber(principalPrice)
         .times(new BigNumber(amountToLiquidate).times(105))
@@ -297,21 +300,19 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
         .div(new BigNumber(collateralPrice).times(new BigNumber(10).pow(principalDecimals)))
         .decimalPlaces(0, BigNumber.ROUND_DOWN);
 
-      expect(userGlobalDataAfter.healthFactor).to.be.bignumber.gt(
+      expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         'Invalid health factor'
       );
 
-      expect(feeAddressBalance).to.be.bignumber.gt('0');
-
-      expect(userReserveDataAfter.principalBorrowBalance).to.be.bignumber.almostEqual(
-        new BigNumber(userReserveDataBefore.currentBorrowBalance.toString())
+      expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
+        new BigNumber(userReserveDataBefore.currentStableDebt.toString())
           .minus(amountToLiquidate)
           .toFixed(0),
         'Invalid user borrow balance after liquidation'
       );
-
-      expect(usdcReserveDataAfter.availableLiquidity).to.be.bignumber.almostEqual(
+    
+      expect(usdcReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
         new BigNumber(usdcReserveDataBefore.availableLiquidity.toString())
           .plus(amountToLiquidate)
           .toFixed(0),

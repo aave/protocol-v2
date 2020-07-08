@@ -270,8 +270,6 @@ const initReserves = async (
       ]
       )
 
-      console.log(`Debt tokens for ${assetSymbol}: stable ${stableDebtToken.address} variable ${variableDebtToken.address}`)
-
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search("UNI") === -1) {
           assetSymbol = `Uni${assetSymbol}`;
@@ -525,7 +523,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     fallbackOracle.address,
   ]);
   await waitForTx(
-    await addressesProvider.setPriceOracle(chainlinkProxyPriceProvider.address)
+    await addressesProvider.setPriceOracle(fallbackOracle.address)
   );
 
   const lendingRateOracle = await deployLendingRateOracle();

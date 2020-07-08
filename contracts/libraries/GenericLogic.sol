@@ -11,6 +11,7 @@ import {WadRayMath} from "./WadRayMath.sol";
 
 import "../interfaces/IPriceOracleGetter.sol";
 import {IFeeProvider} from "../interfaces/IFeeProvider.sol";
+import '@nomiclabs/buidler/console.sol';
 
 /**
 * @title GenericLogic library
@@ -150,7 +151,7 @@ library GenericLogic {
         CalculateUserAccountDataVars memory vars;
 
         for (vars.i = 0; vars.i < _reserves.length; vars.i++) {
-            
+
             vars.currentReserveAddress = _reserves[vars.i];
 
             CoreLibrary.ReserveData storage currentReserve = _reservesData[vars
@@ -236,7 +237,10 @@ library GenericLogic {
         uint256 borrowBalanceETH,
         uint256 totalFeesETH,
         uint256 liquidationThreshold
-    ) internal pure returns (uint256) {
+    ) internal view returns (uint256) {
+
+        console.log("Borrow balance ETH is %s", borrowBalanceETH);
+
         if (borrowBalanceETH == 0) return uint256(-1);
 
         return

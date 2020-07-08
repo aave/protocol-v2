@@ -36,6 +36,7 @@
     "buidler-typechain": "0.1.1",
     "chai": "4.2.0",
     "chai-bignumber": "3.0.0",
+    "chai-bn": "^0.2.1",
     "ethereum-waffle": "2.5.1",
     "ethers": "4.0.47",
     "husky": "^4.2.5",

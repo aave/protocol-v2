@@ -37,7 +37,6 @@ interface LendingPoolLiquidationManagerInterface extends Interface {
         _user,
         _purchaseAmount,
         _liquidatedCollateralAmount,
-        _accruedBorrowInterest,
         _liquidator,
         _receiveAToken,
         _timestamp
@@ -47,25 +46,6 @@ interface LendingPoolLiquidationManagerInterface extends Interface {
         string | null,
         null,
         null,
-        null,
-        null,
-        null,
-        null
-      ]): string[];
-    }>;
-
-    OriginationFeeLiquidated: TypedEventDescription<{
-      encodeTopics([
-        _collateral,
-        _reserve,
-        _user,
-        _feeLiquidated,
-        _liquidatedCollateralForFee,
-        _timestamp
-      ]: [
-        string | null,
-        string | null,
-        string | null,
         null,
         null,
         null
@@ -138,18 +118,8 @@ export class LendingPoolLiquidationManager extends Contract {
       _user: string | null,
       _purchaseAmount: null,
       _liquidatedCollateralAmount: null,
-      _accruedBorrowInterest: null,
       _liquidator: null,
       _receiveAToken: null,
-      _timestamp: null
-    ): EventFilter;
-
-    OriginationFeeLiquidated(
-      _collateral: string | null,
-      _reserve: string | null,
-      _user: string | null,
-      _feeLiquidated: null,
-      _liquidatedCollateralForFee: null,
       _timestamp: null
     ): EventFilter;
   };

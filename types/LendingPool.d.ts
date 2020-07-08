@@ -385,6 +385,7 @@ export class LendingPool extends Contract {
     getReserveConfigurationData(
       _reserve: string
     ): Promise<{
+      decimals: BigNumber;
       ltv: BigNumber;
       liquidationThreshold: BigNumber;
       liquidationBonus: BigNumber;
@@ -398,13 +399,14 @@ export class LendingPool extends Contract {
       0: BigNumber;
       1: BigNumber;
       2: BigNumber;
-      3: string;
+      3: BigNumber;
       4: string;
-      5: boolean;
+      5: string;
       6: boolean;
       7: boolean;
       8: boolean;
       9: boolean;
+      10: boolean;
     }>;
 
     getReserveData(
@@ -650,6 +652,7 @@ export class LendingPool extends Contract {
   getReserveConfigurationData(
     _reserve: string
   ): Promise<{
+    decimals: BigNumber;
     ltv: BigNumber;
     liquidationThreshold: BigNumber;
     liquidationBonus: BigNumber;
@@ -663,13 +666,14 @@ export class LendingPool extends Contract {
     0: BigNumber;
     1: BigNumber;
     2: BigNumber;
-    3: string;
+    3: BigNumber;
     4: string;
-    5: boolean;
+    5: string;
     6: boolean;
     7: boolean;
     8: boolean;
     9: boolean;
+    10: boolean;
   }>;
 
   getReserveData(

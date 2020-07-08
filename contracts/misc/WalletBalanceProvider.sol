@@ -92,7 +92,7 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reserves.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      (, , , , , , , , bool isActive,) = pool.getReserveConfigurationData(reserves[j]);
+      (, , , , , , , , , bool isActive,) = pool.getReserveConfigurationData(reserves[j]);
 
       if (!isActive) {
         balances[j] = 0;
