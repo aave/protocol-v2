@@ -14,7 +14,6 @@ import "../tokenization/interfaces/IStableDebtToken.sol";
 import "../tokenization/interfaces/IVariableDebtToken.sol";
 import "../libraries/WadRayMath.sol";
 import "../interfaces/IPriceOracleGetter.sol";
-import "../libraries/EthAddressLib.sol";
 import "../libraries/GenericLogic.sol";
 import "../libraries/UserLogic.sol";
 import "../libraries/ReserveLogic.sol";
