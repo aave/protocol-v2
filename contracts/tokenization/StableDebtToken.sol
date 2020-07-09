@@ -67,20 +67,36 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 _balanceIncrease
   );
 
+ /**
+  * @dev returns the average stable rate across all the stable rate debt
+  * @return the average stable rate
+  **/
   function getAverageStableRate() external virtual override view returns (uint256) {
     return avgStableRate;
   }
 
+ /**
+  * @dev returns the timestamp of the last user action
+  * @return the last update timestamp
+  **/
   function getUserLastUpdated(address _user) external virtual override view returns (uint40) {
     return usersData[_user].lastUpdateTimestamp;
   }
 
-
+ /**
+  * @dev returns the stable rate of the user
+  * @param _user the address of the user
+  * @return the stable rate of _user
+  **/
   function getUserStableRate(address _user) external virtual override view returns (uint256) {
     return usersData[_user].currentRate;
   }
 
 
+  /**
+  * @dev calculates the current user debt balance
+  * @return the accumulated debt of the user
+  **/
   function balanceOf(address account) public virtual override view returns (uint256) {
     if(balances[account] == 0) {
         return 0;
