@@ -1209,7 +1209,6 @@ const calcExpectedAverageStableBorrowRate = (
   amountChanged: string | BigNumber,
   rate: BigNumber
 ) => {
-  console.log(avgStableRateBefore, totalBorrowsStableBefore);
   const weightedTotalBorrows = avgStableRateBefore.multipliedBy(totalBorrowsStableBefore);
   const weightedAmountBorrowed = rate.multipliedBy(amountChanged);
   const totalBorrowedStable = totalBorrowsStableBefore.plus(new BigNumber(amountChanged));

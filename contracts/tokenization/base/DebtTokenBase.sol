@@ -1,13 +1,17 @@
 pragma solidity ^0.6.0;
 
-import '@openzeppelin/contracts/GSN/Context.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
+import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {LendingPool} from '../../lendingpool/LendingPool.sol';
 
-
+/** 
+* @title contract DebtTokenBase
+* @author Aave
+* @notice base contract for StableDebtToken and VariableDebtToken 
+*/ 
 abstract contract DebtTokenBase is IERC20 {
   using SafeMath for uint256;
   using Address for address;
@@ -16,31 +20,27 @@ abstract contract DebtTokenBase is IERC20 {
 
   string public name;
   string public symbol;
-  uint8  public decimals;
+  uint8 public decimals;
   address public underlyingAssetAddress;
 
   LendingPool internal pool;
   mapping(address => uint256) internal balances;
 
-
-
-      modifier onlyLendingPool {
-        require(
-            msg.sender == address(pool),
-            "The caller of this function must be a lending pool"
-        );
-        _;
-    }
-
+  /**
+  * @dev only lending pool can call functions marked by this modifier
+  **/
+  modifier onlyLendingPool {
+    require(msg.sender == address(pool), 'INVALID_CALLER');
+    _;
+  }
 
   /**
-   * @dev Sets the values for {name} and {symbol}, initializes {decimals} with
-   * a default value of 18.
-   *
-   * To select a different value for {decimals}, use {_setupDecimals}.
-   *
-   * All three of these values are immutable: they can only be set once during
-   * construction.
+   * @dev initializes the debt token.
+   * @param _name the name of the token
+   * @param _symbol the symbol of the token
+   * @param _decimals the decimals of the token
+   * @param _underlying the underlying asset of the debt token
+   * @param _addressesProvider the addresses provider of the protocol
    */
   function init(
     string memory _name,
@@ -56,35 +56,48 @@ abstract contract DebtTokenBase is IERC20 {
     pool = LendingPool(payable(_addressesProvider.getLendingPool()));
   }
 
+  /**
+   * @dev calculates the accumulated debt balance of the user
+   * @return the debt balance of the user
+   **/
+  function balanceOf(address _user) public virtual override view returns (uint256);
 
   /**
-   * @dev See {IERC20-balanceOf}.
-   */
-  function balanceOf(address account) public virtual override view returns (uint256);
-
-
-  /**
-   * @dev See {IERC20-balanceOf}.
-   */
-  function principalBalanceOf(address account) public view returns (uint256) {
-    return balances[account];
+   * @dev returns the principal debt balance of the user from 
+   * @return the debt balance of the user since the last burn/mint action
+   **/
+  function principalBalanceOf(address _user) public view returns (uint256) {
+    return balances[_user];
   }
 
   /**
-   * @dev See {IERC20-transfer}.
-   *
-   * Requirements:
-   *
-   * - `recipient` cannot be the zero address.
-   * - the caller must have a balance of at least `amount`.
-   */
-  function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+  * @dev basic accounting for the mint action 
+  * @dev _user the target user of the minting action
+  * @dev _amount the amount to mint
+  **/
+  function _mint(address _user, uint256 _amount) internal {
+    totalSupply = totalSupply.add(_amount);
+    balances[_user] = balances[_user].add(_amount);
+  }
+
+  /**
+  * @dev basic accounting for the burn action 
+  * @dev _user the target user of the burning action
+  * @dev _amount the amount to burn
+  **/
+  function _burn(address _user, uint256 _amount) internal {
+    totalSupply = totalSupply.sub(_amount);
+    balances[_user] = balances[_user].sub(_amount);
+  }
+
+  /**
+  * @dev being non transferrable, the debt token does not implement any of the 
+  * standard ERC20 functions for transfer and allowance. 
+  **/
+  function transfer(address recipient, uint256 _amount) public virtual override returns (bool) {
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
-  /**
-   * @dev See {IERC20-allowance}.
-   */
   function allowance(address owner, address spender)
     public
     virtual
@@ -95,70 +108,27 @@ abstract contract DebtTokenBase is IERC20 {
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  /**
-   * @dev See {IERC20-approve}.
-   *
-   * Requirements:
-   *
-   * - `spender` cannot be the zero address.
-   */
-  function approve(address spender, uint256 amount) public virtual override returns (bool) {
+  function approve(address spender, uint256 _amount) public virtual override returns (bool) {
     revert('APPROVAL_NOT_SUPPORTED');
   }
 
   function transferFrom(
     address sender,
     address recipient,
-    uint256 amount
+    uint256 _amount
   ) public virtual override returns (bool) {
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
-  /**
-   * @dev Atomically increases the allowance granted to `spender` by the caller.
-   *
-   * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {IERC20-approve}.
-   *
-   * Emits an {Approval} event indicating the updated allowance.
-   *
-   * Requirements:
-   *
-   * - `spender` cannot be the zero address.
-   */
   function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  /**
-   * @dev Atomically decreases the allowance granted to `spender` by the caller.
-   *
-   * This is an alternative to {approve} that can be used as a mitigation for
-   * problems described in {IERC20-approve}.
-   *
-   * Emits an {Approval} event indicating the updated allowance.
-   *
-   * Requirements:
-   *
-   * - `spender` cannot be the zero address.
-   * - `spender` must have allowance for the caller of at least
-   * `subtractedValue`.
-   */
   function decreaseAllowance(address spender, uint256 subtractedValue)
     public
     virtual
     returns (bool)
   {
     revert('ALLOWANCE_NOT_SUPPORTED');
-  }
-
-  function _mint(address account, uint256 amount) internal {
-    totalSupply = totalSupply.add(amount);
-    balances[account] = balances[account].add(amount);
-  }
-
-  function _burn(address account, uint256 amount) internal {
-    totalSupply = totalSupply.sub(amount);
-    balances[account] = balances[account].sub(amount);
   }
 }
