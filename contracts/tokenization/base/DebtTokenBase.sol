@@ -30,7 +30,7 @@ abstract contract DebtTokenBase is IERC20 {
   * @dev only lending pool can call functions marked by this modifier
   **/
   modifier onlyLendingPool {
-    require(msg.sender == address(pool), 'INVALID_CALLER');
+    require(msg.sender == address(pool), 'The caller of this function must be a lending pool');
     _;
   }
 
