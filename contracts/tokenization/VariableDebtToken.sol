@@ -58,6 +58,10 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 _index
   );
 
+  /**
+  * @dev calculates the accumulated debt balance of the user
+  * @return the debt balance of the user
+  **/
   function balanceOf(address _user) public virtual override view returns (uint256) {
     if (balances[_user] == 0) {
       return 0;
@@ -70,6 +74,11 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
         .rayDiv(userIndexes[_user])
         .rayToWad();
   }
+
+  /**
+  * @dev returns the index of the last user action
+  * @return the user index
+  **/
 
   function getUserIndex(address _user) public virtual override view returns (uint256) {
     return userIndexes[_user];
