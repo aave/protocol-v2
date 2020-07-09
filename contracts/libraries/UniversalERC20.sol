@@ -38,11 +38,8 @@ library UniversalERC20 {
     }
 
     if (isETH(token)) {
-      console.log("transfer of ETH, value %s", amount);
-      console.log("Balance is %s", address(this).balance);
-
+   
       (bool result, ) = payable(to).call{value: amount, gas: DEFAULT_TRANSFER_GAS}('');
-      console.log("Transfer done, result %s", result);
       require(result, 'ETH_TRANSFER_FAILED');
     
     } else {

@@ -449,15 +449,6 @@ export const calcExpectedReserveDataAfterRepay = (
       userDataBeforeAction.principalStableDebt
     );
 
-    console.log(
-      'Debt accrued: ',
-      debtAccrued.toFixed(),
-      ' Total liquidity:',
-      reserveDataBeforeAction.totalLiquidity.toFixed(),
-      ' total borrow stable: ',
-      reserveDataBeforeAction.totalBorrowsStable.toFixed()
-    );
-
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
 
     expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable

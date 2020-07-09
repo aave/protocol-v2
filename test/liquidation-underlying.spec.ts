@@ -178,8 +178,6 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       txTimestamp.plus(2)
     );
 
-    console.log("debt: ", stableDebtBeforeTx.toFixed(), userReserveDataBefore.currentStableDebt.toFixed(), userReserveDataAfter.currentStableDebt.toString())
-
     expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
       new BigNumber(stableDebtBeforeTx).minus(amountToLiquidate).toFixed(0),
       'Invalid user debt after liquidation'
@@ -189,8 +187,6 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       new BigNumber(daiReserveDataBefore.availableLiquidity).plus(amountToLiquidate).toFixed(0),
       'Invalid principal available liquidity'
     );
-
-    console.log('eth liquidity: ', daiReserveDataAfter.availableLiquidity.toString());
 
     expect(ethReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
       new BigNumber(ethReserveDataBefore.availableLiquidity)
@@ -303,14 +299,6 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       'Invalid health factor'
     );
 
-    console.log(
-      'Debt: ',
-      userReserveDataAfter.currentStableDebt.toString(),
-      new BigNumber(userReserveDataBefore.currentStableDebt.toString())
-        .minus(amountToLiquidate)
-        .toFixed(0)
-    );
-
     expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
       new BigNumber(userReserveDataBefore.currentStableDebt.toString())
         .minus(amountToLiquidate)
@@ -321,14 +309,6 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     expect(usdcReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
       new BigNumber(usdcReserveDataBefore.availableLiquidity).plus(amountToLiquidate).toFixed(0),
       'Invalid principal available liquidity'
-    );
-
-    console.log(
-      'Debt: ',
-      usdcReserveDataAfter.availableLiquidity.toString(),
-      new BigNumber(usdcReserveDataBefore.availableLiquidity.toString())
-        .plus(amountToLiquidate)
-        .toFixed(0)
     );
 
     expect(ethReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(

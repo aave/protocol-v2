@@ -186,14 +186,14 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
                     require(_success, "ERROR_ON_EXCHANGE");
                     _amountToBurn = abi.decode(_result, (uint256));
                 }
-                internalBurn(_amountToBurn);
+                _burn(_amountToBurn);
             }
         }
     }
 
     /// @notice Internal function to send _amount of tokenToBurn to the 0x0 address
     /// @param _amount The amount to burn
-    function internalBurn(uint256 _amount) internal {
+    function _burn(uint256 _amount) internal {
         require(IERC20(tokenToBurn).transfer(recipientBurn, _amount), "INTERNAL_BURN. Reverted transfer to recipientBurn address");
         emit Burn(_amount);
     }

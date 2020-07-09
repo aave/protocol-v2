@@ -211,8 +211,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             }
         }
 
-        console.log("Balance before liquidation is %s", IERC20(principalReserve.stableDebtTokenAddress).balanceOf(_user));
-
         //TODO Burn debt tokens
         if(vars.userVariableDebt >= vars.actualAmountToLiquidate){
             IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(_user, vars.actualAmountToLiquidate);
@@ -221,8 +219,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(_user, vars.userVariableDebt);
             IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(_user, vars.actualAmountToLiquidate.sub(vars.userVariableDebt));
         }
-
-        console.log("Balance after liquidation is %s", IERC20(principalReserve.stableDebtTokenAddress).balanceOf(_user));
 
         vars.collateralAtoken = AToken(collateralReserve.aTokenAddress);
 
@@ -237,12 +233,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
             //otherwise receives the underlying asset
             //burn the equivalent amount of atoken
             vars.collateralAtoken.burnOnLiquidation(_user, vars.maxCollateralToLiquidate);
-            console.log("Burned %s collateral tokens, collateral %s",vars.maxCollateralToLiquidate, _collateral);
-
+   
             IERC20(_collateral).universalTransfer(msg.sender, vars.maxCollateralToLiquidate);
         }
-
-        console.log("Transferring principal, amount %s",vars.actualAmountToLiquidate);
 
         //transfers the principal currency to the pool
         IERC20(_reserve).universalTransferFromSenderToThis(vars.actualAmountToLiquidate, true);

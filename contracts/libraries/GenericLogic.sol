@@ -238,8 +238,6 @@ library GenericLogic {
         uint256 liquidationThreshold
     ) internal view returns (uint256) {
 
-        console.log("Borrow balance ETH is %s", borrowBalanceETH);
-
         if (borrowBalanceETH == 0) return uint256(-1);
 
         return

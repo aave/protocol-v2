@@ -1,14 +1,24 @@
 pragma solidity ^0.6.0;
 
-import '@openzeppelin/contracts/GSN/Context.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
+import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/MathUtils.sol';
 import {WadRayMath} from '../libraries/WadRayMath.sol';
 import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
 
+/**
+* @title contract StableDebtToken
+*
+* @notice defines the interface for the stable debt token
+*
+* @dev it does not inherit from IERC20 to save in code size
+*
+* @author Aave
+*
+**/
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -23,6 +33,15 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   mapping(address => UserData) usersData;
 
+  /**
+  * @dev emitted when new stable debt is minted
+  * @param _user the address of the user
+  * @param _amount the amount minted
+  * @param _previousBalance the previous balance of the user
+  * @param _currentBalance the current balance of the user
+  * @param _balanceIncrease the debt increase since the last update
+  * @param _newRate the rate of the debt after the minting
+  **/
   event mintDebt(
     address _user,
     uint256 _amount,
@@ -31,6 +50,15 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 _balanceIncrease,
     uint256 _newRate
   );
+
+  /**
+  * @dev emitted when new stable debt is burned
+  * @param _user the address of the user
+  * @param _amount the amount minted
+  * @param _previousBalance the previous balance of the user
+  * @param _currentBalance the current balance of the user
+  * @param _balanceIncrease the debt increase since the last update
+  **/
   event burnDebt(
     address _user,
     uint256 _amount,
@@ -52,9 +80,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return usersData[_user].currentRate;
   }
 
-  /**
-   * @dev See {IERC20-balanceOf}.
-   */
+
   function balanceOf(address account) public virtual override view returns (uint256) {
     if(balances[account] == 0) {
         return 0;
@@ -69,15 +95,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return balances[account].wadToRay().rayMul(cumulatedInterest).rayToWad();
   }
 
-  /** @dev Creates `amount` tokens and assigns them to `account`, increasing
-   * the total supply.
-   *
-   * Emits a {Transfer} event with `from` set to the zero address.
-   *
-   * Requirements
-   *
-   * - `to` cannot be the zero address.
-   */
 
   struct MintLocalVars {
     uint256 newSupply;
@@ -85,45 +102,55 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 newStableRate;
   }
 
+  /**
+  * @dev mints debt token to the target user. The resulting rate is the weighted average
+  * between the rate of the new debt and the rate of the previous debt
+  * @param _user the address of the user
+  * @param _amount the amount of debt tokens to mint
+  * @param _rate the rate of the debt being minted.
+  **/
   function mint(
-    address account,
-    uint256 amount,
-    uint256 rate
+    address _user,
+    uint256 _amount,
+    uint256 _rate
   ) public override onlyLendingPool {
 
     MintLocalVars memory vars;
 
+    //cumulates the user debt
     (
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
-    ) = internalCumulateBalance(account);
+    ) = _cumulateBalance(_user);
 
+    vars.newSupply = totalSupply.add(_amount);
 
-    vars.newSupply = totalSupply.add(amount);
+    vars.amountInRay = _amount.wadToRay();
 
-    vars.amountInRay = amount.wadToRay();
-
-    vars.newStableRate = usersData[account]
+    //calculates the new stable rate for the user
+    vars.newStableRate = usersData[_user]
       .currentRate
       .rayMul(currentBalance.wadToRay())
-      .add(vars.amountInRay.rayMul(rate))
-      .rayDiv(currentBalance.add(amount).wadToRay());
+      .add(vars.amountInRay.rayMul(_rate))
+      .rayDiv(currentBalance.add(_amount).wadToRay());
 
-    usersData[account].currentRate = vars.newStableRate;
+    usersData[_user].currentRate = vars.newStableRate;
 
-    usersData[account].lastUpdateTimestamp = uint40(block.timestamp);
+    //solium-disable-next-line
+    usersData[_user].lastUpdateTimestamp = uint40(block.timestamp);
 
+    //calculates the updated average stable rate
     avgStableRate = avgStableRate
       .rayMul(totalSupply.wadToRay())
-      .add(rate.rayMul(vars.amountInRay))
+      .add(_rate.rayMul(vars.amountInRay))
       .rayDiv(vars.newSupply.wadToRay());
 
-    internalMint(account, amount);
+    _mint(_user, _amount);
 
     emit mintDebt(
-      account,
-      amount,
+      _user,
+      _amount,
       previousBalance,
       currentBalance,
       balanceIncrease,
@@ -132,22 +159,16 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev Destroys `amount` tokens from `account`, reducing the
-   * total supply.
-   *
-   * Emits a {Transfer} event with `to` set to the zero address.
-   *
-   * Requirements
-   *
-   * - `account` cannot be the zero address.
-   * - `account` must have at least `amount` tokens.
-   */
-  function burn(address _account, uint256 _amount) public override onlyLendingPool {
+  * @dev burns debt of the target user.
+  * @param _user the address of the user
+  * @param _amount the amount of debt tokens to mint
+  **/
+  function burn(address _user, uint256 _amount) public override onlyLendingPool {
     (
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
-    ) = internalCumulateBalance(_account);
+    ) = _cumulateBalance(_user);
 
     uint256 newSupply = totalSupply.sub(_amount);
 
@@ -158,18 +179,18 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     } else {
       avgStableRate = avgStableRate
         .rayMul(totalSupply.wadToRay())
-        .sub(usersData[_account].currentRate.rayMul(amountInRay))
+        .sub(usersData[_user].currentRate.rayMul(amountInRay))
         .rayDiv(newSupply.wadToRay());
     }
 
     if(_amount == currentBalance){
-      usersData[_account].currentRate = 0;
-      usersData[_account].lastUpdateTimestamp = 0;
+      usersData[_user].currentRate = 0;
+      usersData[_user].lastUpdateTimestamp = 0;
     }
 
-    internalBurn(_account, _amount);
+    _burn(_user, _amount);
 
-    emit burnDebt(_account, _amount, previousBalance, currentBalance, balanceIncrease);
+    emit burnDebt(_user, _amount, previousBalance, currentBalance, balanceIncrease);
   }
 
   /**
@@ -177,7 +198,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param _user the address of the user for which the interest is being accumulated
    * @return the previous principal balance, the new principal balance, the balance increase
    **/
-  function internalCumulateBalance(address _user)
+  function _cumulateBalance(address _user)
     internal
     returns (
       uint256,
@@ -194,7 +215,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     //calculate the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
     //mints an amount of tokens equivalent to the amount accumulated
-    internalMint(_user, balanceIncrease);
+    _mint(_user, balanceIncrease);
 
     return (
       previousPrincipalBalance,

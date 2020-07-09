@@ -152,12 +152,12 @@ abstract contract DebtTokenBase is IERC20 {
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  function internalMint(address account, uint256 amount) internal {
+  function _mint(address account, uint256 amount) internal {
     totalSupply = totalSupply.add(amount);
     balances[account] = balances[account].add(amount);
   }
 
-  function internalBurn(address account, uint256 amount) internal {
+  function _burn(address account, uint256 amount) internal {
     totalSupply = totalSupply.sub(amount);
     balances[account] = balances[account].sub(amount);
   }

@@ -69,7 +69,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       uint256 balanceIncrease
     ) = internalCumulateBalance(account);
 
-    internalMint(account, amount);
+    _mint(account, amount);
 
     userIndexes[account] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
 
@@ -94,7 +94,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       uint256 balanceIncrease
     ) = internalCumulateBalance(account);
 
-    internalBurn(account, amount);
+    _burn(account, amount);
 
     //if user repaid everything
     if (currentBalance == amount) {
@@ -130,7 +130,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
 
     //mints an amount of tokens equivalent to the amount accumulated
-    internalMint(_user, balanceIncrease);
+    _mint(_user, balanceIncrease);
 
     return (
       previousPrincipalBalance,
