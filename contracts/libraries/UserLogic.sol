@@ -44,6 +44,12 @@ library UserLogic {
       _amount > IERC20(_reserve.aTokenAddress).balanceOf(_userAddress);
   }
 
+  /**
+   * @dev fetches the user current stable and variable debt balances
+   * @param _user the user
+   * @param _reserve the reserve object
+   * @return the stable and variable debt balance
+   **/
   function getUserCurrentDebt(address _user,ReserveLogic.ReserveData storage _reserve)
     internal
     view
@@ -55,7 +61,13 @@ library UserLogic {
     );
   }
 
-    function getUserPrincipalDebt(address _user,ReserveLogic.ReserveData storage _reserve)
+  /**
+   * @dev fetches the user principal stable and variable debt balances
+   * @param _user the user
+   * @param _reserve the reserve object
+   * @return the stable and variable debt balance
+   **/
+  function getUserPrincipalDebt(address _user,ReserveLogic.ReserveData storage _reserve)
     internal
     view
     returns (uint256, uint256)
