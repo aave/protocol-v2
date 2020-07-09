@@ -13,7 +13,7 @@ import {
 interface IStableDebtTokenInterface extends Interface {
   functions: {
     burn: TypedFunctionDescription<{
-      encode([_account, _amount]: [string, BigNumberish]): string;
+      encode([_user, _amount]: [string, BigNumberish]): string;
     }>;
 
     getAverageStableRate: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -27,7 +27,7 @@ interface IStableDebtTokenInterface extends Interface {
     }>;
 
     mint: TypedFunctionDescription<{
-      encode([account, amount, rate]: [
+      encode([_user, _amount, _rate]: [
         string,
         BigNumberish,
         BigNumberish
@@ -56,7 +56,7 @@ export class IStableDebtToken extends Contract {
 
   functions: {
     burn(
-      _account: string,
+      _user: string,
       _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -68,15 +68,15 @@ export class IStableDebtToken extends Contract {
     getUserStableRate(_user: string): Promise<BigNumber>;
 
     mint(
-      account: string,
-      amount: BigNumberish,
-      rate: BigNumberish,
+      _user: string,
+      _amount: BigNumberish,
+      _rate: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
   };
 
   burn(
-    _account: string,
+    _user: string,
     _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -88,16 +88,16 @@ export class IStableDebtToken extends Contract {
   getUserStableRate(_user: string): Promise<BigNumber>;
 
   mint(
-    account: string,
-    amount: BigNumberish,
-    rate: BigNumberish,
+    _user: string,
+    _amount: BigNumberish,
+    _rate: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
   filters: {};
 
   estimate: {
-    burn(_account: string, _amount: BigNumberish): Promise<BigNumber>;
+    burn(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
     getAverageStableRate(): Promise<BigNumber>;
 
@@ -106,9 +106,9 @@ export class IStableDebtToken extends Contract {
     getUserStableRate(_user: string): Promise<BigNumber>;
 
     mint(
-      account: string,
-      amount: BigNumberish,
-      rate: BigNumberish
+      _user: string,
+      _amount: BigNumberish,
+      _rate: BigNumberish
     ): Promise<BigNumber>;
   };
 }

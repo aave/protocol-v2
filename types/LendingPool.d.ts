@@ -81,6 +81,10 @@ interface LendingPoolInterface extends Interface {
       encode([_reserve]: [string]): string;
     }>;
 
+    getReserveTokensAddresses: TypedFunctionDescription<{
+      encode([_reserve]: [string]): string;
+    }>;
+
     getReserves: TypedFunctionDescription<{ encode([]: []): string }>;
 
     getUserAccountData: TypedFunctionDescription<{
@@ -390,7 +394,6 @@ export class LendingPool extends Contract {
       liquidationThreshold: BigNumber;
       liquidationBonus: BigNumber;
       interestRateStrategyAddress: string;
-      aTokenAddress: string;
       usageAsCollateralEnabled: boolean;
       borrowingEnabled: boolean;
       stableBorrowRateEnabled: boolean;
@@ -401,12 +404,11 @@ export class LendingPool extends Contract {
       2: BigNumber;
       3: BigNumber;
       4: string;
-      5: string;
+      5: boolean;
       6: boolean;
       7: boolean;
       8: boolean;
       9: boolean;
-      10: boolean;
     }>;
 
     getReserveData(
@@ -437,6 +439,17 @@ export class LendingPool extends Contract {
     getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
     getReserveNormalizedVariableDebt(_reserve: string): Promise<BigNumber>;
+
+    getReserveTokensAddresses(
+      _reserve: string
+    ): Promise<{
+      aTokenAddress: string;
+      stableDebtTokenAddress: string;
+      variableDebtTokenAddress: string;
+      0: string;
+      1: string;
+      2: string;
+    }>;
 
     getReserves(): Promise<string[]>;
 
@@ -657,7 +670,6 @@ export class LendingPool extends Contract {
     liquidationThreshold: BigNumber;
     liquidationBonus: BigNumber;
     interestRateStrategyAddress: string;
-    aTokenAddress: string;
     usageAsCollateralEnabled: boolean;
     borrowingEnabled: boolean;
     stableBorrowRateEnabled: boolean;
@@ -668,12 +680,11 @@ export class LendingPool extends Contract {
     2: BigNumber;
     3: BigNumber;
     4: string;
-    5: string;
+    5: boolean;
     6: boolean;
     7: boolean;
     8: boolean;
     9: boolean;
-    10: boolean;
   }>;
 
   getReserveData(
@@ -704,6 +715,17 @@ export class LendingPool extends Contract {
   getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
   getReserveNormalizedVariableDebt(_reserve: string): Promise<BigNumber>;
+
+  getReserveTokensAddresses(
+    _reserve: string
+  ): Promise<{
+    aTokenAddress: string;
+    stableDebtTokenAddress: string;
+    variableDebtTokenAddress: string;
+    0: string;
+    1: string;
+    2: string;
+  }>;
 
   getReserves(): Promise<string[]>;
 
@@ -1003,6 +1025,8 @@ export class LendingPool extends Contract {
     getReserveNormalizedIncome(_reserve: string): Promise<BigNumber>;
 
     getReserveNormalizedVariableDebt(_reserve: string): Promise<BigNumber>;
+
+    getReserveTokensAddresses(_reserve: string): Promise<BigNumber>;
 
     getReserves(): Promise<BigNumber>;
 

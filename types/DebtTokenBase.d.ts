@@ -17,12 +17,10 @@ interface DebtTokenBaseInterface extends Interface {
     }>;
 
     approve: TypedFunctionDescription<{
-      encode([spender, amount]: [string, BigNumberish]): string;
+      encode([spender, _amount]: [string, BigNumberish]): string;
     }>;
 
-    balanceOf: TypedFunctionDescription<{
-      encode([account]: [string]): string;
-    }>;
+    balanceOf: TypedFunctionDescription<{ encode([_user]: [string]): string }>;
 
     decimals: TypedFunctionDescription<{ encode([]: []): string }>;
 
@@ -47,7 +45,7 @@ interface DebtTokenBaseInterface extends Interface {
     name: TypedFunctionDescription<{ encode([]: []): string }>;
 
     principalBalanceOf: TypedFunctionDescription<{
-      encode([account]: [string]): string;
+      encode([_user]: [string]): string;
     }>;
 
     symbol: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -55,11 +53,11 @@ interface DebtTokenBaseInterface extends Interface {
     totalSupply: TypedFunctionDescription<{ encode([]: []): string }>;
 
     transfer: TypedFunctionDescription<{
-      encode([recipient, amount]: [string, BigNumberish]): string;
+      encode([recipient, _amount]: [string, BigNumberish]): string;
     }>;
 
     transferFrom: TypedFunctionDescription<{
-      encode([sender, recipient, amount]: [
+      encode([sender, recipient, _amount]: [
         string,
         string,
         BigNumberish
@@ -111,11 +109,11 @@ export class DebtTokenBase extends Contract {
 
     approve(
       spender: string,
-      amount: BigNumberish,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    balanceOf(account: string): Promise<BigNumber>;
+    balanceOf(_user: string): Promise<BigNumber>;
 
     decimals(): Promise<number>;
 
@@ -142,7 +140,7 @@ export class DebtTokenBase extends Contract {
 
     name(): Promise<string>;
 
-    principalBalanceOf(account: string): Promise<BigNumber>;
+    principalBalanceOf(_user: string): Promise<BigNumber>;
 
     symbol(): Promise<string>;
 
@@ -150,14 +148,14 @@ export class DebtTokenBase extends Contract {
 
     transfer(
       recipient: string,
-      amount: BigNumberish,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      amount: BigNumberish,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -168,11 +166,11 @@ export class DebtTokenBase extends Contract {
 
   approve(
     spender: string,
-    amount: BigNumberish,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  balanceOf(account: string): Promise<BigNumber>;
+  balanceOf(_user: string): Promise<BigNumber>;
 
   decimals(): Promise<number>;
 
@@ -199,7 +197,7 @@ export class DebtTokenBase extends Contract {
 
   name(): Promise<string>;
 
-  principalBalanceOf(account: string): Promise<BigNumber>;
+  principalBalanceOf(_user: string): Promise<BigNumber>;
 
   symbol(): Promise<string>;
 
@@ -207,14 +205,14 @@ export class DebtTokenBase extends Contract {
 
   transfer(
     recipient: string,
-    amount: BigNumberish,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
   transferFrom(
     sender: string,
     recipient: string,
-    amount: BigNumberish,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -233,9 +231,9 @@ export class DebtTokenBase extends Contract {
   estimate: {
     allowance(owner: string, spender: string): Promise<BigNumber>;
 
-    approve(spender: string, amount: BigNumberish): Promise<BigNumber>;
+    approve(spender: string, _amount: BigNumberish): Promise<BigNumber>;
 
-    balanceOf(account: string): Promise<BigNumber>;
+    balanceOf(_user: string): Promise<BigNumber>;
 
     decimals(): Promise<BigNumber>;
 
@@ -259,18 +257,18 @@ export class DebtTokenBase extends Contract {
 
     name(): Promise<BigNumber>;
 
-    principalBalanceOf(account: string): Promise<BigNumber>;
+    principalBalanceOf(_user: string): Promise<BigNumber>;
 
     symbol(): Promise<BigNumber>;
 
     totalSupply(): Promise<BigNumber>;
 
-    transfer(recipient: string, amount: BigNumberish): Promise<BigNumber>;
+    transfer(recipient: string, _amount: BigNumberish): Promise<BigNumber>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      amount: BigNumberish
+      _amount: BigNumberish
     ): Promise<BigNumber>;
 
     underlyingAssetAddress(): Promise<BigNumber>;

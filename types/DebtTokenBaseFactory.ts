@@ -99,7 +99,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "amount",
+        name: "_amount",
         type: "uint256"
       }
     ],
@@ -118,7 +118,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "account",
+        name: "_user",
         type: "address"
       }
     ],
@@ -244,7 +244,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "account",
+        name: "_user",
         type: "address"
       }
     ],
@@ -294,7 +294,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "amount",
+        name: "_amount",
         type: "uint256"
       }
     ],
@@ -323,7 +323,7 @@ const _abi = [
       },
       {
         internalType: "uint256",
-        name: "amount",
+        name: "_amount",
         type: "uint256"
       }
     ],

@@ -262,7 +262,7 @@ const initReserves = async (
       )
 
       const variableDebtToken = await deployVariableDebtToken([
-        `Aave stable debt bearing ${assetSymbol}`,
+        `Aave variable debt bearing ${assetSymbol}`,
         `stableDebt${assetSymbol}`,
         reserveDecimals,
         tokenAddress,

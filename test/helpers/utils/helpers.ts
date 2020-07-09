@@ -17,6 +17,7 @@ export const getReserveData = async (
 ): Promise<ReserveData> => {
   const data: any = await pool.getReserveData(reserve);
   const configuration: any = await pool.getReserveConfigurationData(reserve);
+  const tokenAddresses: any = await pool.getReserveTokensAddresses(reserve);
   const rateOracle = await getLendingRateOracle();
 
   const rate = (await rateOracle.getMarketBorrowRate(reserve)).toString();
@@ -48,7 +49,7 @@ export const getReserveData = async (
     variableBorrowIndex: new BigNumber(data.variableBorrowIndex),
     lastUpdateTimestamp: new BigNumber(data.lastUpdateTimestamp),
     address: reserve,
-    aTokenAddress: configuration.aTokenAddress,
+    aTokenAddress: tokenAddresses.aTokenAddress,
     symbol,
     decimals,
     marketStableRate: new BigNumber(rate),
@@ -126,7 +127,7 @@ const getATokenUserData = async (
   user: string,
   pool: LendingPool
 ) => {
-  const aTokenAddress: string = (await pool.getReserveConfigurationData(reserve)).aTokenAddress;
+  const aTokenAddress: string = (await pool.getReserveTokensAddresses(reserve)).aTokenAddress;
 
   const aToken = await getAToken(aTokenAddress);
   const [

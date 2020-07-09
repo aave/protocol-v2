@@ -13,15 +13,15 @@ import {
 interface IVariableDebtTokenInterface extends Interface {
   functions: {
     burn: TypedFunctionDescription<{
-      encode([_account, _amount]: [string, BigNumberish]): string;
+      encode([_user, _amount]: [string, BigNumberish]): string;
     }>;
 
     getUserIndex: TypedFunctionDescription<{
-      encode([_account]: [string]): string;
+      encode([_user]: [string]): string;
     }>;
 
     mint: TypedFunctionDescription<{
-      encode([account, amount]: [string, BigNumberish]): string;
+      encode([_user, _amount]: [string, BigNumberish]): string;
     }>;
   };
 
@@ -46,41 +46,41 @@ export class IVariableDebtToken extends Contract {
 
   functions: {
     burn(
-      _account: string,
+      _user: string,
       _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    getUserIndex(_account: string): Promise<BigNumber>;
+    getUserIndex(_user: string): Promise<BigNumber>;
 
     mint(
-      account: string,
-      amount: BigNumberish,
+      _user: string,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
   };
 
   burn(
-    _account: string,
+    _user: string,
     _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  getUserIndex(_account: string): Promise<BigNumber>;
+  getUserIndex(_user: string): Promise<BigNumber>;
 
   mint(
-    account: string,
-    amount: BigNumberish,
+    _user: string,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
   filters: {};
 
   estimate: {
-    burn(_account: string, _amount: BigNumberish): Promise<BigNumber>;
+    burn(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
-    getUserIndex(_account: string): Promise<BigNumber>;
+    getUserIndex(_user: string): Promise<BigNumber>;
 
-    mint(account: string, amount: BigNumberish): Promise<BigNumber>;
+    mint(_user: string, _amount: BigNumberish): Promise<BigNumber>;
   };
 }

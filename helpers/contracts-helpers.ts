@@ -102,7 +102,7 @@ const deployContract = async <ContractType extends Contract>(
   return contract;
 };
 
-const getContract = async <ContractType extends Contract>(
+export const getContract = async <ContractType extends Contract>(
   contractName: string,
   address: string
 ): Promise<ContractType> =>

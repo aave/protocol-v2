@@ -17,15 +17,13 @@ interface VariableDebtTokenInterface extends Interface {
     }>;
 
     approve: TypedFunctionDescription<{
-      encode([spender, amount]: [string, BigNumberish]): string;
+      encode([spender, _amount]: [string, BigNumberish]): string;
     }>;
 
-    balanceOf: TypedFunctionDescription<{
-      encode([account]: [string]): string;
-    }>;
+    balanceOf: TypedFunctionDescription<{ encode([_user]: [string]): string }>;
 
     burn: TypedFunctionDescription<{
-      encode([account, amount]: [string, BigNumberish]): string;
+      encode([_user, _amount]: [string, BigNumberish]): string;
     }>;
 
     decimals: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -53,13 +51,13 @@ interface VariableDebtTokenInterface extends Interface {
     }>;
 
     mint: TypedFunctionDescription<{
-      encode([account, amount]: [string, BigNumberish]): string;
+      encode([_user, _amount]: [string, BigNumberish]): string;
     }>;
 
     name: TypedFunctionDescription<{ encode([]: []): string }>;
 
     principalBalanceOf: TypedFunctionDescription<{
-      encode([account]: [string]): string;
+      encode([_user]: [string]): string;
     }>;
 
     symbol: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -67,11 +65,11 @@ interface VariableDebtTokenInterface extends Interface {
     totalSupply: TypedFunctionDescription<{ encode([]: []): string }>;
 
     transfer: TypedFunctionDescription<{
-      encode([recipient, amount]: [string, BigNumberish]): string;
+      encode([recipient, _amount]: [string, BigNumberish]): string;
     }>;
 
     transferFrom: TypedFunctionDescription<{
-      encode([sender, recipient, amount]: [
+      encode([sender, recipient, _amount]: [
         string,
         string,
         BigNumberish
@@ -145,15 +143,15 @@ export class VariableDebtToken extends Contract {
 
     approve(
       spender: string,
-      amount: BigNumberish,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    balanceOf(account: string): Promise<BigNumber>;
+    balanceOf(_user: string): Promise<BigNumber>;
 
     burn(
-      account: string,
-      amount: BigNumberish,
+      _user: string,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -183,14 +181,14 @@ export class VariableDebtToken extends Contract {
     ): Promise<ContractTransaction>;
 
     mint(
-      account: string,
-      amount: BigNumberish,
+      _user: string,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
     name(): Promise<string>;
 
-    principalBalanceOf(account: string): Promise<BigNumber>;
+    principalBalanceOf(_user: string): Promise<BigNumber>;
 
     symbol(): Promise<string>;
 
@@ -198,14 +196,14 @@ export class VariableDebtToken extends Contract {
 
     transfer(
       recipient: string,
-      amount: BigNumberish,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      amount: BigNumberish,
+      _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -216,15 +214,15 @@ export class VariableDebtToken extends Contract {
 
   approve(
     spender: string,
-    amount: BigNumberish,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  balanceOf(account: string): Promise<BigNumber>;
+  balanceOf(_user: string): Promise<BigNumber>;
 
   burn(
-    account: string,
-    amount: BigNumberish,
+    _user: string,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -254,14 +252,14 @@ export class VariableDebtToken extends Contract {
   ): Promise<ContractTransaction>;
 
   mint(
-    account: string,
-    amount: BigNumberish,
+    _user: string,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
   name(): Promise<string>;
 
-  principalBalanceOf(account: string): Promise<BigNumber>;
+  principalBalanceOf(_user: string): Promise<BigNumber>;
 
   symbol(): Promise<string>;
 
@@ -269,14 +267,14 @@ export class VariableDebtToken extends Contract {
 
   transfer(
     recipient: string,
-    amount: BigNumberish,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
   transferFrom(
     sender: string,
     recipient: string,
-    amount: BigNumberish,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -313,11 +311,11 @@ export class VariableDebtToken extends Contract {
   estimate: {
     allowance(owner: string, spender: string): Promise<BigNumber>;
 
-    approve(spender: string, amount: BigNumberish): Promise<BigNumber>;
+    approve(spender: string, _amount: BigNumberish): Promise<BigNumber>;
 
-    balanceOf(account: string): Promise<BigNumber>;
+    balanceOf(_user: string): Promise<BigNumber>;
 
-    burn(account: string, amount: BigNumberish): Promise<BigNumber>;
+    burn(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
     decimals(): Promise<BigNumber>;
 
@@ -341,22 +339,22 @@ export class VariableDebtToken extends Contract {
       _addressesProvider: string
     ): Promise<BigNumber>;
 
-    mint(account: string, amount: BigNumberish): Promise<BigNumber>;
+    mint(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
     name(): Promise<BigNumber>;
 
-    principalBalanceOf(account: string): Promise<BigNumber>;
+    principalBalanceOf(_user: string): Promise<BigNumber>;
 
     symbol(): Promise<BigNumber>;
 
     totalSupply(): Promise<BigNumber>;
 
-    transfer(recipient: string, amount: BigNumberish): Promise<BigNumber>;
+    transfer(recipient: string, _amount: BigNumberish): Promise<BigNumber>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      amount: BigNumberish
+      _amount: BigNumberish
     ): Promise<BigNumber>;
 
     underlyingAssetAddress(): Promise<BigNumber>;

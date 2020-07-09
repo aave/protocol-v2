@@ -734,7 +734,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       uint256 liquidationThreshold,
       uint256 liquidationBonus,
       address interestRateStrategyAddress,
-      address aTokenAddress,
       bool usageAsCollateralEnabled,
       bool borrowingEnabled,
       bool stableBorrowRateEnabled,
@@ -750,13 +749,28 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       reserve.liquidationThreshold,
       reserve.liquidationBonus,
       reserve.interestRateStrategyAddress,
-      reserve.aTokenAddress,
       reserve.usageAsCollateralEnabled,
       reserve.borrowingEnabled,
       reserve.isStableBorrowRateEnabled,
       reserve.isActive,
       reserve.isFreezed
     );
+  }
+
+  function getReserveTokensAddresses(address _reserve) 
+  external
+  view
+  returns(
+    address aTokenAddress,
+    address stableDebtTokenAddress,
+    address variableDebtTokenAddress
+  ){
+    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
+
+    return (
+      reserve.aTokenAddress,
+      reserve.stableDebtTokenAddress,
+      reserve.variableDebtTokenAddress);
   }
 
   function getReserveData(address _reserve)
