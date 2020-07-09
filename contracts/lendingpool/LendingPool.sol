@@ -635,7 +635,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         _receiveAToken
       )
     );
-    require(success, '24');
+    require(success, 'Liquidation call failed');
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
