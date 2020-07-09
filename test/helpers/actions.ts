@@ -443,8 +443,6 @@ export const repay = async (
         .repay(reserve, amountToRepay, rateMode, onBehalfOf.address, txOptions)
     );
 
-    console.log('Done.');
-
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
     const {

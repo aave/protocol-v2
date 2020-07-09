@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../libraries/EthAddressLib.sol";
-import "../libraries/UintConstants.sol";
 
 interface IExchangeAdapter {
     using SafeERC20 for IERC20;
