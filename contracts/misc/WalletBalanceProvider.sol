@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '../configuration/LendingPoolAddressesProvider.sol';
 import '../lendingpool/LendingPool.sol';
-import '../libraries/EthAddressLib.sol';
+import '../libraries/UniversalERC20.sol';
 
 /**
  * @title WalletBalanceProvider contract
@@ -18,6 +18,7 @@ import '../libraries/EthAddressLib.sol';
 contract WalletBalanceProvider {
   using Address for address payable;
   using Address for address;
+  using UniversalERC20 for IERC20;
 
   LendingPoolAddressesProvider provider;
 
@@ -47,11 +48,12 @@ contract WalletBalanceProvider {
       return 0;
     }
   }
-
-  /// @notice Fetches, for a list of _users and _tokens (ETH included with mock address), the balances
-  /// @param _users The list of users
-  /// @param _tokens The list of tokens
-  /// @return And array with the concatenation of, for each user, his/her balances
+  /**
+  * @notice Fetches, for a list of _users and _tokens (ETH included with mock address), the balances
+  * @param _users The list of users
+  * @param _tokens The list of tokens
+  * @return And array with the concatenation of, for each user, his/her balances
+  **/
   function batchBalanceOf(address[] memory _users, address[] memory _tokens)
     public
     view
@@ -62,7 +64,7 @@ contract WalletBalanceProvider {
     for (uint256 i = 0; i < _users.length; i++) {
       for (uint256 j = 0; j < _tokens.length; j++) {
         uint256 _offset = i * _tokens.length;
-        if (_tokens[j] == EthAddressLib.ethAddress()) {
+        if (IERC20(_tokens[j]).isETH()) {
           balances[_offset + j] = _users[i].balance; // ETH balance
         } else {
           if (!_tokens[j].isContract()) {
@@ -76,7 +78,7 @@ contract WalletBalanceProvider {
 
     return balances;
   }
-
+  
   /**
     @dev provides balances of user wallet for all reserves available on the pool
     */
@@ -98,7 +100,7 @@ contract WalletBalanceProvider {
         balances[j] = 0;
         continue;
       }
-      if (reserves[j] != EthAddressLib.ethAddress()) {
+      if (IERC20(reserves[j]).isETH()) {
         balances[j] = balanceOf(_user, reserves[j]);
       } else {
         balances[j] = _user.balance; // ETH balance
