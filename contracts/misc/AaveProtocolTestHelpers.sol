@@ -38,7 +38,7 @@ contract AaveProtocolTestHelpers {
         for (uint256 i = 0; i < reserves.length; i++) {
             (address aTokenAddress,,) = pool.getReserveTokensAddresses(reserves[i]);
             aTokens[i] = TokenData({
-                symbol: AToken(aTokenAddress).symbol(),
+                symbol: AToken(payable(aTokenAddress)).symbol(),
                 tokenAddress: aTokenAddress
             });
         }

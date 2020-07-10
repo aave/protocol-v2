@@ -53,7 +53,8 @@ library ValidationLogic {
 
     require(msg.sender == _reserve.aTokenAddress, '31');
 
-    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).universalBalanceOf(address(this));
+    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).universalBalanceOf(address(_reserve.aTokenAddress));
+
     require(currentAvailableLiquidity >= _amount, '4');
   }
 
@@ -117,7 +118,7 @@ library ValidationLogic {
     );
 
     //check that the amount is available in the reserve
-    vars.availableLiquidity = IERC20(_reserveAddress).universalBalanceOf(address(this));
+    vars.availableLiquidity = IERC20(_reserveAddress).universalBalanceOf(address(_reserve.aTokenAddress));
 
     require(vars.availableLiquidity >= _amount, '7');
 

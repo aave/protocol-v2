@@ -21,14 +21,13 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
 
     receive() external payable {}
 
-    function transferFundsBackToPoolInternal(address _reserve, uint256 _amount) internal {
+    function transferFundsBackInternal(address _reserve, address _destination, uint256 _amount) internal {
 
-        address payable pool = payable(addressesProvider.getLendingPool());
-
-        transferInternal(pool,_reserve, _amount);
+        transferInternal(payable(_destination),_reserve, _amount);
     }
 
     function transferInternal(address payable _destination, address _reserve, uint256  _amount) internal {
+        
         if(_reserve == EthAddressLib.ethAddress()) {
             //solium-disable-next-line
             _destination.call{value: _amount}("");

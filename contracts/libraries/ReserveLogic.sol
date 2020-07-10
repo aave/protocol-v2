@@ -15,6 +15,7 @@ import '../interfaces/ILendingRateOracle.sol';
 import '../interfaces/IReserveInterestRateStrategy.sol';
 import '../tokenization/AToken.sol';
 import './WadRayMath.sol';
+import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title ReserveLogic library
@@ -56,7 +57,7 @@ library ReserveLogic {
     /**
      * @dev address of the aToken representing the asset
      **/
-    address aTokenAddress;
+    address payable aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
     /**
@@ -193,7 +194,7 @@ library ReserveLogic {
       _self.lastVariableBorrowCumulativeIndex = WadRayMath.ray();
     }
 
-    _self.aTokenAddress = _aTokenAddress;
+    _self.aTokenAddress = payable(_aTokenAddress);
     _self.stableDebtTokenAddress = _stableDebtAddress;
     _self.variableDebtTokenAddress = _variableDebtAddress;
     _self.decimals = _decimals;
@@ -353,15 +354,11 @@ library ReserveLogic {
     uint256 _liquidityAdded,
     uint256 _liquidityTaken
   ) internal {
+
     uint256 currentAvgStableRate = IStableDebtToken(_reserve.stableDebtTokenAddress)
       .getAverageStableRate();
 
-    uint256 balance = IERC20(_reserveAddress).universalBalanceOf(address(this));
-
-    //if the reserve is ETH, the msg.value has already been cumulated to the balance of the reserve
-    if (IERC20(_reserveAddress).isETH()) {
-      balance = balance.sub(msg.value);
-    }
+    uint256 balance = IERC20(_reserveAddress).universalBalanceOf(_reserve.aTokenAddress);
 
     (
       uint256 newLiquidityRate,

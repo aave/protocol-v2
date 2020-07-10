@@ -24,6 +24,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
     function executeOperation(
         address _reserve,
+        address _destination,
         uint256 _amount,
         uint256 _fee,
         bytes memory _params) public override {
@@ -46,7 +47,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
             token.mint(_fee);
         }
         //returning amount + fee to the destination
-        transferFundsBackToPoolInternal(_reserve, _amount.add(_fee));
+        transferFundsBackInternal(_reserve, _destination, _amount.add(_fee));
         emit ExecutedWithSuccess(_reserve, _amount, _fee);
     }
 }
