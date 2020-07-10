@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import "./ERC20.sol";
-import "../configuration/LendingPoolAddressesProvider.sol";
-import "../lendingpool/LendingPool.sol";
-import "../libraries/WadRayMath.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import {ERC20} from "./ERC20.sol";
+import {LendingPoolAddressesProvider} from "../configuration/LendingPoolAddressesProvider.sol";
+import {LendingPool} from "../lendingpool/LendingPool.sol";
+import {WadRayMath} from "../libraries/WadRayMath.sol";
 
 /**
  * @title Aave ERC20 AToken
@@ -14,6 +15,7 @@ import "../libraries/WadRayMath.sol";
  */
 contract AToken is ERC20 {
     using WadRayMath for uint256;
+    using SafeERC20 for ERC20;
 
     uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
@@ -151,6 +153,7 @@ contract AToken is ERC20 {
         addressesProvider = _addressesProvider;
         pool = LendingPool(payable(addressesProvider.getLendingPool()));
         underlyingAssetAddress = _underlyingAsset;
+        ERC20(underlyingAssetAddress).safeApprove(address(pool), type(uint256).max);
     }
 
     /**
