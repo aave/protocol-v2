@@ -3,8 +3,6 @@ pragma solidity ^0.6.8;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "../libraries/UintConstants.sol";
-
 interface IExchangeAdapter {
     event Exchange(
         address indexed from,

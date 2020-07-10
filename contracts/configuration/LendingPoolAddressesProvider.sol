@@ -17,12 +17,9 @@ import "../interfaces/ILendingPoolAddressesProvider.sol";
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider, AddressStorage {
     //events
     event LendingPoolUpdated(address indexed newAddress);
-    event LendingPoolCoreUpdated(address indexed newAddress);
-    event LendingPoolParametersProviderUpdated(address indexed newAddress);
     event LendingPoolManagerUpdated(address indexed newAddress);
     event LendingPoolConfiguratorUpdated(address indexed newAddress);
     event LendingPoolLiquidationManagerUpdated(address indexed newAddress);
-    event LendingPoolDataProviderUpdated(address indexed newAddress);
     event EthereumAddressUpdated(address indexed newAddress);
     event PriceOracleUpdated(address indexed newAddress);
     event LendingRateOracleUpdated(address indexed newAddress);
@@ -34,7 +31,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider,
     bytes32 private constant LENDING_POOL = "LENDING_POOL";
     bytes32 private constant LENDING_POOL_CORE = "LENDING_POOL_CORE";
     bytes32 private constant LENDING_POOL_CONFIGURATOR = "LENDING_POOL_CONFIGURATOR";
-    bytes32 private constant LENDING_POOL_PARAMETERS_PROVIDER = "PARAMETERS_PROVIDER";
     bytes32 private constant LENDING_POOL_MANAGER = "LENDING_POOL_MANAGER";
     bytes32 private constant LENDING_POOL_LIQUIDATION_MANAGER = "LIQUIDATION_MANAGER";
     bytes32 private constant LENDING_POOL_FLASHLOAN_PROVIDER = "FLASHLOAN_PROVIDER";
@@ -66,24 +62,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider,
     }
 
     /**
-    * @dev returns the address of the LendingPoolCore proxy
-    * @return the lending pool core proxy address
-     */
-    function getLendingPoolCore() public override view returns (address payable) {
-        address payable core = payable(getAddress(LENDING_POOL_CORE));
-        return core;
-    }
-
-    /**
-    * @dev updates the implementation of the lending pool core
-    * @param _lendingPoolCore the new lending pool core implementation
-    **/
-    function setLendingPoolCoreImpl(address _lendingPoolCore) public override onlyOwner {
-        updateImplInternal(LENDING_POOL_CORE, _lendingPoolCore);
-        emit LendingPoolCoreUpdated(_lendingPoolCore);
-    }
-
-    /**
     * @dev returns the address of the LendingPoolConfigurator proxy
     * @return the lending pool configurator proxy address
     **/
@@ -98,40 +76,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider,
     function setLendingPoolConfiguratorImpl(address _configurator) public override onlyOwner {
         updateImplInternal(LENDING_POOL_CONFIGURATOR, _configurator);
         emit LendingPoolConfiguratorUpdated(_configurator);
-    }
-
-    /**
-    * @dev returns the address of the LendingPoolDataProvider proxy
-    * @return the lending pool data provider proxy address
-     */
-    function getLendingPoolDataProvider() public override view returns (address) {
-        return getAddress(DATA_PROVIDER);
-    }
-
-    /**
-    * @dev updates the implementation of the lending pool data provider
-    * @param _provider the new lending pool data provider implementation
-    **/
-    function setLendingPoolDataProviderImpl(address _provider) public override onlyOwner {
-        updateImplInternal(DATA_PROVIDER, _provider);
-        emit LendingPoolDataProviderUpdated(_provider);
-    }
-
-    /**
-    * @dev returns the address of the LendingPoolParametersProvider proxy
-    * @return the address of the Lending pool parameters provider proxy
-    **/
-    function getLendingPoolParametersProvider() public override view returns (address) {
-        return getAddress(LENDING_POOL_PARAMETERS_PROVIDER);
-    }
-
-    /**
-    * @dev updates the implementation of the lending pool parameters provider
-    * @param _parametersProvider the new lending pool parameters provider implementation
-    **/
-    function setLendingPoolParametersProviderImpl(address _parametersProvider) public override onlyOwner {
-        updateImplInternal(LENDING_POOL_PARAMETERS_PROVIDER, _parametersProvider);
-        emit LendingPoolParametersProviderUpdated(_parametersProvider);
     }
 
     /**

@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 import "../libraries/openzeppelin-upgradeability/VersionedInitializable.sol";
-import "../interfaces/IKyberNetworkProxyInterface.sol";
 import "../interfaces/IExchangeAdapter.sol";
 import "../libraries/UniversalERC20.sol";
 
@@ -55,9 +54,6 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
 
     /// @notice Instead of using 100 for percentages, higher base to have more precision in the distribution
     uint256 public constant DISTRIBUTION_BASE = 10000;
-
-   /// @notice DEPRECATED
-    IKyberNetworkProxyInterface public kyberProxy;
 
     /// @notice The address of the token to burn (LEND token)
     address public tokenToBurn;
@@ -181,14 +177,14 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
                     require(_success, "ERROR_ON_EXCHANGE");
                     _amountToBurn = abi.decode(_result, (uint256));
                 }
-                internalBurn(_amountToBurn);
+                _burn(_amountToBurn);
             }
         }
     }
 
     /// @notice Internal function to send _amount of tokenToBurn to the 0x0 address
     /// @param _amount The amount to burn
-    function internalBurn(uint256 _amount) internal {
+    function _burn(uint256 _amount) internal {
         require(IERC20(tokenToBurn).transfer(recipientBurn, _amount), "INTERNAL_BURN. Reverted transfer to recipientBurn address");
         emit Burn(_amount);
     }
