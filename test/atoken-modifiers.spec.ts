@@ -25,4 +25,11 @@ makeSuite('AToken: Modifiers', (testEnv: TestEnv) => {
       aDai.transferOnLiquidation(deployer.address, users[0].address, '1')
     ).to.be.revertedWith(INVALID_POOL_CALLER_MSG_1);
   });
+
+  it('Tries to invoke transferUnderlyingTo not being the LendingPool', async () => {
+    const {deployer, users, aDai} = testEnv;
+    await expect(aDai.transferUnderlyingTo(deployer.address, '1')).to.be.revertedWith(
+      INVALID_POOL_CALLER_MSG_1
+    );
+  });
 });
