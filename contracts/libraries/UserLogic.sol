@@ -5,8 +5,8 @@ import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import "../tokenization/base/DebtTokenBase.sol";
-import "./ReserveLogic.sol";
+import '../tokenization/base/DebtTokenBase.sol';
+import './ReserveLogic.sol';
 
 /**
  * @title UserLogic library
@@ -14,7 +14,6 @@ import "./ReserveLogic.sol";
  * @notice Implements user specific logic.
  */
 library UserLogic {
-
   using SafeMath for uint256;
 
   struct UserReserveData {
@@ -50,7 +49,7 @@ library UserLogic {
    * @param _reserve the reserve object
    * @return the stable and variable debt balance
    **/
-  function getUserCurrentDebt(address _user,ReserveLogic.ReserveData storage _reserve)
+  function getUserCurrentDebt(address _user, ReserveLogic.ReserveData storage _reserve)
     internal
     view
     returns (uint256, uint256)
@@ -67,7 +66,7 @@ library UserLogic {
    * @param _reserve the reserve object
    * @return the stable and variable debt balance
    **/
-  function getUserPrincipalDebt(address _user,ReserveLogic.ReserveData storage _reserve)
+  function getUserPrincipalDebt(address _user, ReserveLogic.ReserveData storage _reserve)
     internal
     view
     returns (uint256, uint256)

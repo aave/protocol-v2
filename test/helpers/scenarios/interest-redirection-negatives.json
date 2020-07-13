@@ -94,7 +94,7 @@
             "to": "2"
           },
           "expected": "revert",
-          "revertMessage" : "Interest stream can only be redirected if there is a valid balance"
+          "revertMessage": "Interest stream can only be redirected if there is a valid balance"
         }
       ]
     }

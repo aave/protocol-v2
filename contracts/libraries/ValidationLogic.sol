@@ -271,9 +271,8 @@ library ValidationLogic {
           IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
       );
-    }
-    else {
-      revert("Invalid interest rate mode selected");
+    } else {
+      revert('Invalid interest rate mode selected');
     }
   }
 

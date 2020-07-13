@@ -7,11 +7,12 @@ import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {LendingPool} from '../../lendingpool/LendingPool.sol';
 
-/** 
-* @title contract DebtTokenBase
-* @author Aave
-* @notice base contract for StableDebtToken and VariableDebtToken 
-*/ 
+/**
+ * @title contract DebtTokenBase
+ * @author Aave
+ * @notice base contract for StableDebtToken and VariableDebtToken
+ */
+
 abstract contract DebtTokenBase is IERC20 {
   using SafeMath for uint256;
   using Address for address;
@@ -27,8 +28,8 @@ abstract contract DebtTokenBase is IERC20 {
   mapping(address => uint256) internal balances;
 
   /**
-  * @dev only lending pool can call functions marked by this modifier
-  **/
+   * @dev only lending pool can call functions marked by this modifier
+   **/
   modifier onlyLendingPool {
     require(msg.sender == address(pool), 'The caller of this function must be a lending pool');
     _;
@@ -63,7 +64,7 @@ abstract contract DebtTokenBase is IERC20 {
   function balanceOf(address _user) public virtual override view returns (uint256);
 
   /**
-   * @dev returns the principal debt balance of the user from 
+   * @dev returns the principal debt balance of the user from
    * @return the debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address _user) public view returns (uint256) {
@@ -71,29 +72,29 @@ abstract contract DebtTokenBase is IERC20 {
   }
 
   /**
-  * @dev basic accounting for the mint action 
-  * @dev _user the target user of the minting action
-  * @dev _amount the amount to mint
-  **/
+   * @dev basic accounting for the mint action
+   * @dev _user the target user of the minting action
+   * @dev _amount the amount to mint
+   **/
   function _mint(address _user, uint256 _amount) internal {
     totalSupply = totalSupply.add(_amount);
     balances[_user] = balances[_user].add(_amount);
   }
 
   /**
-  * @dev basic accounting for the burn action 
-  * @dev _user the target user of the burning action
-  * @dev _amount the amount to burn
-  **/
+   * @dev basic accounting for the burn action
+   * @dev _user the target user of the burning action
+   * @dev _amount the amount to burn
+   **/
   function _burn(address _user, uint256 _amount) internal {
     totalSupply = totalSupply.sub(_amount);
     balances[_user] = balances[_user].sub(_amount);
   }
 
   /**
-  * @dev being non transferrable, the debt token does not implement any of the 
-  * standard ERC20 functions for transfer and allowance. 
-  **/
+   * @dev being non transferrable, the debt token does not implement any of the
+   * standard ERC20 functions for transfer and allowance.
+   **/
   function transfer(address recipient, uint256 _amount) public virtual override returns (bool) {
     revert('TRANSFER_NOT_SUPPORTED');
   }

@@ -61,7 +61,9 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiquidityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
-    const totalLiquidity = new BigNumber(reserveData.availableLiquidity).plus(reserveData.totalBorrowsStable).plus(reserveData.totalBorrowsVariable);
+    const totalLiquidity = new BigNumber(reserveData.availableLiquidity)
+      .plus(reserveData.totalBorrowsStable)
+      .plus(reserveData.totalBorrowsVariable);
 
     expect(totalLiquidity.toString()).to.be.equal('1000504000000000000');
     expect(currentLiquidityRate.toString()).to.be.equal('0');
@@ -91,7 +93,9 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiqudityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
-    const totalLiquidity = new BigNumber(reserveData.availableLiquidity).plus(reserveData.totalBorrowsStable).plus(reserveData.totalBorrowsVariable);
+    const totalLiquidity = new BigNumber(reserveData.availableLiquidity)
+      .plus(reserveData.totalBorrowsStable)
+      .plus(reserveData.totalBorrowsVariable);
 
     expect(totalLiquidity.toString()).to.be.equal('1001134317520000000');
     expect(currentLiqudityRate.toString()).to.be.equal('0');

@@ -274,7 +274,7 @@
             "user": "1",
             "onBehalfOf": "1",
             "borrowRateMode": "variable",
-             "sendValue": "0"
+            "sendValue": "0"
           },
           "expected": "revert",
           "revertMessage": "Amount must be greater than 0"
@@ -508,7 +508,7 @@
             "user": "1",
             "onBehalfOf": "1",
             "borrowRateMode": "variable"
-             },
+          },
           "expected": "success"
         }
       ]

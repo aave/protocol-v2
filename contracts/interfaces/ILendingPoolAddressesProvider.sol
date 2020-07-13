@@ -7,29 +7,35 @@ pragma solidity ^0.6.8;
  */
 
 interface ILendingPoolAddressesProvider {
+  function getLendingPool() external view returns (address);
 
-    function getLendingPool() external view returns (address);
-    function setLendingPoolImpl(address _pool) external;
+  function setLendingPoolImpl(address _pool) external;
 
-    function getLendingPoolConfigurator() external view returns (address);
-    function setLendingPoolConfiguratorImpl(address _configurator) external;
+  function getLendingPoolConfigurator() external view returns (address);
 
-    function getTokenDistributor() external view returns (address);
-    function setTokenDistributor(address _tokenDistributor) external;
+  function setLendingPoolConfiguratorImpl(address _configurator) external;
 
-    function getFeeProvider() external view returns (address);
-    function setFeeProviderImpl(address _feeProvider) external;
+  function getTokenDistributor() external view returns (address);
 
-    function getLendingPoolLiquidationManager() external view returns (address);
-    function setLendingPoolLiquidationManager(address _manager) external;
+  function setTokenDistributor(address _tokenDistributor) external;
 
-    function getLendingPoolManager() external view returns (address);
-    function setLendingPoolManager(address _lendingPoolManager) external;
+  function getFeeProvider() external view returns (address);
 
-    function getPriceOracle() external view returns (address);
-    function setPriceOracle(address _priceOracle) external;
+  function setFeeProviderImpl(address _feeProvider) external;
 
-    function getLendingRateOracle() external view returns (address);
-    function setLendingRateOracle(address _lendingRateOracle) external;
+  function getLendingPoolLiquidationManager() external view returns (address);
 
+  function setLendingPoolLiquidationManager(address _manager) external;
+
+  function getLendingPoolManager() external view returns (address);
+
+  function setLendingPoolManager(address _lendingPoolManager) external;
+
+  function getPriceOracle() external view returns (address);
+
+  function setPriceOracle(address _priceOracle) external;
+
+  function getLendingRateOracle() external view returns (address);
+
+  function setLendingRateOracle(address _lendingRateOracle) external;
 }

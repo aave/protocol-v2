@@ -2,7 +2,7 @@
 pragma solidity ^0.6.8;
 
 contract IERC20DetailedBytes {
-    bytes32  public  name;
-    bytes32  public  symbol;
-    uint256  public  decimals;
+  bytes32 public name;
+  bytes32 public symbol;
+  uint256 public decimals;
 }

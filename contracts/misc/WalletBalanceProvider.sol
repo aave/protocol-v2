@@ -48,12 +48,13 @@ contract WalletBalanceProvider {
       return 0;
     }
   }
+
   /**
-  * @notice Fetches, for a list of _users and _tokens (ETH included with mock address), the balances
-  * @param _users The list of users
-  * @param _tokens The list of tokens
-  * @return And array with the concatenation of, for each user, his/her balances
-  **/
+   * @notice Fetches, for a list of _users and _tokens (ETH included with mock address), the balances
+   * @param _users The list of users
+   * @param _tokens The list of tokens
+   * @return And array with the concatenation of, for each user, his/her balances
+   **/
   function batchBalanceOf(address[] memory _users, address[] memory _tokens)
     public
     view
@@ -78,7 +79,7 @@ contract WalletBalanceProvider {
 
     return balances;
   }
-  
+
   /**
     @dev provides balances of user wallet for all reserves available on the pool
     */
@@ -94,7 +95,7 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reserves.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      (, , , , , , , , bool isActive,) = pool.getReserveConfigurationData(reserves[j]);
+      (, , , , , , , , bool isActive, ) = pool.getReserveConfigurationData(reserves[j]);
 
       if (!isActive) {
         balances[j] = 0;

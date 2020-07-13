@@ -10,15 +10,15 @@ import {WadRayMath} from '../libraries/WadRayMath.sol';
 import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
 
 /**
-* @title contract StableDebtToken
-*
-* @notice defines the interface for the stable debt token
-*
-* @dev it does not inherit from IERC20 to save in code size
-*
-* @author Aave
-*
-**/
+ * @title contract StableDebtToken
+ *
+ * @notice defines the interface for the stable debt token
+ *
+ * @dev it does not inherit from IERC20 to save in code size
+ *
+ * @author Aave
+ *
+ **/
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -34,14 +34,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   mapping(address => UserData) usersData;
 
   /**
-  * @dev emitted when new stable debt is minted
-  * @param _user the address of the user
-  * @param _amount the amount minted
-  * @param _previousBalance the previous balance of the user
-  * @param _currentBalance the current balance of the user
-  * @param _balanceIncrease the debt increase since the last update
-  * @param _newRate the rate of the debt after the minting
-  **/
+   * @dev emitted when new stable debt is minted
+   * @param _user the address of the user
+   * @param _amount the amount minted
+   * @param _previousBalance the previous balance of the user
+   * @param _currentBalance the current balance of the user
+   * @param _balanceIncrease the debt increase since the last update
+   * @param _newRate the rate of the debt after the minting
+   **/
   event mintDebt(
     address _user,
     uint256 _amount,
@@ -52,13 +52,13 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   );
 
   /**
-  * @dev emitted when new stable debt is burned
-  * @param _user the address of the user
-  * @param _amount the amount minted
-  * @param _previousBalance the previous balance of the user
-  * @param _currentBalance the current balance of the user
-  * @param _balanceIncrease the debt increase since the last update
-  **/
+   * @dev emitted when new stable debt is burned
+   * @param _user the address of the user
+   * @param _amount the amount minted
+   * @param _previousBalance the previous balance of the user
+   * @param _currentBalance the current balance of the user
+   * @param _balanceIncrease the debt increase since the last update
+   **/
   event burnDebt(
     address _user,
     uint256 _amount,
@@ -67,39 +67,38 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 _balanceIncrease
   );
 
- /**
-  * @dev returns the average stable rate across all the stable rate debt
-  * @return the average stable rate
-  **/
+  /**
+   * @dev returns the average stable rate across all the stable rate debt
+   * @return the average stable rate
+   **/
   function getAverageStableRate() external virtual override view returns (uint256) {
     return avgStableRate;
   }
 
- /**
-  * @dev returns the timestamp of the last user action
-  * @return the last update timestamp
-  **/
+  /**
+   * @dev returns the timestamp of the last user action
+   * @return the last update timestamp
+   **/
   function getUserLastUpdated(address _user) external virtual override view returns (uint40) {
     return usersData[_user].lastUpdateTimestamp;
   }
 
- /**
-  * @dev returns the stable rate of the user
-  * @param _user the address of the user
-  * @return the stable rate of _user
-  **/
+  /**
+   * @dev returns the stable rate of the user
+   * @param _user the address of the user
+   * @return the stable rate of _user
+   **/
   function getUserStableRate(address _user) external virtual override view returns (uint256) {
     return usersData[_user].currentRate;
   }
 
-
   /**
-  * @dev calculates the current user debt balance
-  * @return the accumulated debt of the user
-  **/
+   * @dev calculates the current user debt balance
+   * @return the accumulated debt of the user
+   **/
   function balanceOf(address account) public virtual override view returns (uint256) {
-    if(balances[account] == 0) {
-        return 0;
+    if (balances[account] == 0) {
+      return 0;
     }
 
     UserData storage userData = usersData[account];
@@ -111,7 +110,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return balances[account].wadToRay().rayMul(cumulatedInterest).rayToWad();
   }
 
-
   struct MintLocalVars {
     uint256 newSupply;
     uint256 amountInRay;
@@ -119,26 +117,23 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-  * @dev mints debt token to the target user. The resulting rate is the weighted average
-  * between the rate of the new debt and the rate of the previous debt
-  * @param _user the address of the user
-  * @param _amount the amount of debt tokens to mint
-  * @param _rate the rate of the debt being minted.
-  **/
+   * @dev mints debt token to the target user. The resulting rate is the weighted average
+   * between the rate of the new debt and the rate of the previous debt
+   * @param _user the address of the user
+   * @param _amount the amount of debt tokens to mint
+   * @param _rate the rate of the debt being minted.
+   **/
   function mint(
     address _user,
     uint256 _amount,
     uint256 _rate
   ) public override onlyLendingPool {
-
     MintLocalVars memory vars;
 
     //cumulates the user debt
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _cumulateBalance(_user);
+    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = _cumulateBalance(
+      _user
+    );
 
     vars.newSupply = totalSupply.add(_amount);
 
@@ -175,16 +170,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-  * @dev burns debt of the target user.
-  * @param _user the address of the user
-  * @param _amount the amount of debt tokens to mint
-  **/
+   * @dev burns debt of the target user.
+   * @param _user the address of the user
+   * @param _amount the amount of debt tokens to mint
+   **/
   function burn(address _user, uint256 _amount) public override onlyLendingPool {
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _cumulateBalance(_user);
+    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = _cumulateBalance(
+      _user
+    );
 
     uint256 newSupply = totalSupply.sub(_amount);
 
@@ -199,7 +192,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
         .rayDiv(newSupply.wadToRay());
     }
 
-    if(_amount == currentBalance){
+    if (_amount == currentBalance) {
       usersData[_user].currentRate = 0;
       usersData[_user].lastUpdateTimestamp = 0;
     }
@@ -224,8 +217,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   {
     uint256 previousPrincipalBalance = balances[_user];
 
-    if(previousPrincipalBalance == 0){
-      return (0,0,0);
+    if (previousPrincipalBalance == 0) {
+      return (0, 0, 0);
     }
 
     //calculate the accrued interest since the last accumulation

@@ -124,11 +124,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _user the address of the user executing the swap
    * @param _timestamp the timestamp of the action
    **/
-  event Swap(
-    address indexed _reserve,
-    address indexed _user,
-    uint256 _timestamp
-  );
+  event Swap(address indexed _reserve, address indexed _user, uint256 _timestamp);
 
   /**
    * @dev emitted when a user enables a reserve as collateral
@@ -414,10 +410,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserLogic.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
-    (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(
-      _onBehalfOf,
-      reserve
-    );
+    (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(_onBehalfOf, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
@@ -483,26 +476,17 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
-    (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(
-      msg.sender,
-      reserve
-    );
+    (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(msg.sender, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
-    ValidationLogic.validateSwapRateMode(
-      reserve,
-      user,
-      stableDebt,
-      variableDebt,
-      rateMode
-    );
+    ValidationLogic.validateSwapRateMode(reserve, user, stableDebt, variableDebt, rateMode);
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
     if (rateMode == ReserveLogic.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
-      IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender,stableDebt);
+      IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableDebt);
     } else {
       //do the opposite
@@ -757,20 +741,22 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     );
   }
 
-  function getReserveTokensAddresses(address _reserve) 
-  external
-  view
-  returns(
-    address aTokenAddress,
-    address stableDebtTokenAddress,
-    address variableDebtTokenAddress
-  ){
+  function getReserveTokensAddresses(address _reserve)
+    external
+    view
+    returns (
+      address aTokenAddress,
+      address stableDebtTokenAddress,
+      address variableDebtTokenAddress
+    )
+  {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     return (
       reserve.aTokenAddress,
       reserve.stableDebtTokenAddress,
-      reserve.variableDebtTokenAddress);
+      reserve.variableDebtTokenAddress
+    );
   }
 
   function getReserveData(address _reserve)
@@ -860,12 +846,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(_user);
-    (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(
-      _user,
-      reserve
-    );
-    (principalStableDebt, principalVariableDebt) = UserLogic
-      .getUserPrincipalDebt(_user, reserve);
+    (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(_user, reserve);
+    (principalStableDebt, principalVariableDebt) = UserLogic.getUserPrincipalDebt(_user, reserve);
     liquidityRate = reserve.currentLiquidityRate;
     stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(

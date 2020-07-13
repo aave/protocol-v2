@@ -83,11 +83,7 @@ library ReserveLogic {
    * @param _reserve the reserve object
    * @return the normalized income. expressed in ray
    **/
-  function getNormalizedIncome(ReserveData storage _reserve)
-    internal
-    view
-    returns (uint256)
-  {
+  function getNormalizedIncome(ReserveData storage _reserve) internal view returns (uint256) {
     uint256 cumulated = MathUtils
       .calculateLinearInterest(_reserve.currentLiquidityRate, _reserve.lastUpdateTimestamp)
       .rayMul(_reserve.lastLiquidityCumulativeIndex);
@@ -102,11 +98,7 @@ library ReserveLogic {
    * @param _reserve the reserve object
    * @return the normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(ReserveData storage _reserve)
-    internal
-    view
-    returns (uint256)
-  {
+  function getNormalizedDebt(ReserveData storage _reserve) internal view returns (uint256) {
     uint256 cumulated = MathUtils
       .calculateCompoundedInterest(_reserve.currentVariableBorrowRate, _reserve.lastUpdateTimestamp)
       .rayMul(_reserve.lastVariableBorrowCumulativeIndex);
@@ -413,10 +405,11 @@ library ReserveLogic {
    * @param _reserve the reserve address
    * @return the reserve current stable borrow rate
    **/
-  function getReserveCurrentStableBorrowRate(
-    ReserveData storage _reserve,
-    uint256 _baseRate
-  ) public view returns (uint256) {
+  function getReserveCurrentStableBorrowRate(ReserveData storage _reserve, uint256 _baseRate)
+    public
+    view
+    returns (uint256)
+  {
     return _reserve.currentStableBorrowRate == 0 ? _baseRate : _reserve.currentStableBorrowRate;
   }
 

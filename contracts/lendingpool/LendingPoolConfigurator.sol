@@ -30,7 +30,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address _interestRateStrategyAddress
   );
 
-   /**
+  /**
    * @dev emitted when borrowing is enabled on a reserve
    * @param _reserve the address of the reserve
    * @param _stableRateEnabled true if stable rate borrowing is enabled, false otherwise
@@ -173,7 +173,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
       abi.encodePacked('Aave Interest bearing ', IERC20Detailed(_reserve).name())
     );
     string memory aTokenSymbol = string(abi.encodePacked('a', IERC20Detailed(_reserve).symbol()));
-
 
     initReserveWithData(
       _reserve,
