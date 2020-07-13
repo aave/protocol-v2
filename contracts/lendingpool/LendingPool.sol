@@ -710,7 +710,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       vars.protocolFee
     );
 
-    IERC20(_reserve).universalTransfer(addressesProvider.getTokenDistributor(), vars.protocolFee);
+    //transfer funds to the receiver
+    AToken(vars.aTokenAddress).transferUnderlyingTo(
+      addressesProvider.getTokenDistributor(),
+      vars.protocolFee
+    );
 
     //solium-disable-next-line
     emit FlashLoan(_receiver, _reserve, _amount, vars.amountFee, vars.protocolFee, block.timestamp);

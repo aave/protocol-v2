@@ -6,6 +6,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../interfaces/IFlashLoanReceiver.sol';
 import '../../interfaces/ILendingPoolAddressesProvider.sol';
 import '../../libraries/UniversalERC20.sol';
+import '@nomiclabs/buidler/console.sol';
 
 abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
   using UniversalERC20 for IERC20;
@@ -32,12 +33,6 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
     address _reserve,
     uint256 _amount
   ) internal {
-    if (IERC20(_reserve).isETH()) {
-      //solium-disable-next-line
-      _destination.call{value: _amount}('');
-      return;
-    }
-
     IERC20(_reserve).universalTransfer(_destination, _amount);
   }
 

@@ -639,15 +639,30 @@ contract AToken is ERC20 {
     }
   }
 
-  function transferUnderlyingTo(address _user, uint256 _amount)
+  /**
+   * @dev transfers the underlying asset to the target. Used by the lendingpool to transfer
+   * assets in borrow(), redeem() and flashLoan()
+   * @param _target the target of the transfer
+   * @param _amount the amount to transfer
+   * @return the amount transferred
+   **/
+
+  function transferUnderlyingTo(address _target, uint256 _amount)
     external
     onlyLendingPool
     returns (uint256)
   {
-    ERC20(underlyingAssetAddress).universalTransfer(_user, _amount);
+    ERC20(underlyingAssetAddress).universalTransfer(_target, _amount);
+    return _amount;
   }
 
-  receive() external payable{
-      require(ERC20(underlyingAssetAddress).isETH(), "Transfers are only allowed if the underlying asset is ETH");
+  /**
+   * @dev receive() function for aTokens who hold ETH as the underlying asset
+   **/
+  receive() external payable {
+    require(
+      ERC20(underlyingAssetAddress).isETH(),
+      'Transfers are only allowed if the underlying asset is ETH'
+    );
   }
 }
