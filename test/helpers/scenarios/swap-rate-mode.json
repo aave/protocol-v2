@@ -11,7 +11,6 @@
             "reserve": "DAI",
             "user": "1",
             "borrowRateMode": "variable"
-     
           },
           "expected": "revert",
           "revertMessage": "User does not have a variable rate loan in progress on this reserve"

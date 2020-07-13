@@ -11,7 +11,6 @@ usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
 
-
 ['misc'].forEach((folder) => {
   const tasksPath = path.join(__dirname, 'tasks', folder);
   fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
@@ -89,7 +88,7 @@ const config: any = {
         count: 20,
       },
     },
-  }
+  },
 };
 
 export default config;

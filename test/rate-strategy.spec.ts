@@ -5,9 +5,9 @@
 //   ITestEnvWithoutInstances,
 // } from "../utils/types"
 // import {
-  
+
 //   LendingPoolAddressesProviderInstance,
-  
+
 //   DefaultReserveInterestRateStrategyInstance,
 //   MintableERC20Instance,
 // } from "../utils/typechain-types/truffle-contracts"
@@ -36,7 +36,7 @@
 //       getLendingPoolAddressesProviderInstance,
 //       getAavePoolReservesParams,
 //     } = _testEnvProvider
-    
+
 //     const instances = await Promise.all([
 //       getAllAssetsInstances(),
 //       getLendingPoolAddressesProviderInstance()

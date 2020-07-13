@@ -357,7 +357,6 @@
             "user": "3",
             "onBehalfOf": "3",
             "borrowRateMode": "stable"
-
           },
           "expected": "success"
         },

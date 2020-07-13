@@ -7,7 +7,7 @@ import {makeSuite} from './helpers/make-suite';
 import {ProtocolErrors, RateMode} from '../helpers/types';
 import {borrow} from './helpers/actions';
 import {calcExpectedStableDebtTokenBalance} from './helpers/utils/calculations';
-import { getUserData } from './helpers/utils/helpers';
+import {getUserData} from './helpers/utils/helpers';
 
 const chai = require('chai');
 chai.use(require('chai-bignumber')());
@@ -126,7 +126,6 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     //approve protocol to access the liquidator wallet
     await dai.connect(liquidator.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-
 
     const daiReserveDataBefore: any = await pool.getReserveData(dai.address);
     const ethReserveDataBefore: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
@@ -282,8 +281,12 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const collateralPrice = await oracle.getAssetPrice(MOCK_ETH_ADDRESS);
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
-    const collateralDecimals = (await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS)).decimals.toString();
-    const principalDecimals = (await pool.getReserveConfigurationData(usdc.address)).decimals.toString();
+    const collateralDecimals = (
+      await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS)
+    ).decimals.toString();
+    const principalDecimals = (
+      await pool.getReserveConfigurationData(usdc.address)
+    ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())
       .times(new BigNumber(amountToLiquidate).times(105))
@@ -345,7 +348,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     //mints usdc to the liquidator
-    await usdc.connect(liquidator.signer).mint(await convertToCurrencyDecimals(usdc.address, '1000'));
+    await usdc
+      .connect(liquidator.signer)
+      .mint(await convertToCurrencyDecimals(usdc.address, '1000'));
 
     //approve protocol to access depositor wallet
     await usdc.connect(liquidator.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -377,12 +382,18 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const usdcReserveDataAfter: any = await pool.getReserveData(usdc.address);
     const lendReserveDataAfter: any = await pool.getReserveData(lend.address);
 
-    const collateralDecimals = (await pool.getReserveConfigurationData(lend.address)).decimals.toString();
-    const principalDecimals = (await pool.getReserveConfigurationData(usdc.address)).decimals.toString();
+    const collateralDecimals = (
+      await pool.getReserveConfigurationData(lend.address)
+    ).decimals.toString();
+    const principalDecimals = (
+      await pool.getReserveConfigurationData(usdc.address)
+    ).decimals.toString();
 
     const expectedCollateralLiquidated = oneEther.multipliedBy('1000');
 
-    const liquidationBonus = (await pool.getReserveConfigurationData(lend.address)).liquidationBonus.toString();
+    const liquidationBonus = (
+      await pool.getReserveConfigurationData(lend.address)
+    ).liquidationBonus.toString();
 
     const expectedPrincipal = new BigNumber(collateralPrice.toString())
       .times(expectedCollateralLiquidated)

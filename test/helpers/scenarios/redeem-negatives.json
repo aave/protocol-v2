@@ -73,25 +73,25 @@
           "expected": "success"
         },
         {
-            "name": "borrow",
-            "args": {
-              "reserve": "DAI",
-              "amount": "100",
-              "user": "1",
-              "borrowRateMode": "stable"
-            },
-            "expected": "success"
+          "name": "borrow",
+          "args": {
+            "reserve": "DAI",
+            "amount": "100",
+            "user": "1",
+            "borrowRateMode": "stable"
           },
-          {
-            "name": "redeem",
-            "args": {
-              "reserve": "ETH",
-              "amount": "-1",
-              "user": "1"
-            },
-            "expected": "revert",
-            "revertMessage" : "Transfer cannot be allowed."
-          }
+          "expected": "success"
+        },
+        {
+          "name": "redeem",
+          "args": {
+            "reserve": "ETH",
+            "amount": "-1",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Transfer cannot be allowed."
+        }
       ]
     }
   ]

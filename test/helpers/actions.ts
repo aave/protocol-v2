@@ -436,7 +436,6 @@ export const repay = async (
   }
 
   if (expectedResult === 'success') {
-
     const txResult = await waitForTx(
       await pool
         .connect(user.signer)
@@ -570,7 +569,9 @@ export const swapBorrowRateMode = async (
   );
 
   if (expectedResult === 'success') {
-    const txResult = await waitForTx(await pool.connect(user.signer).swapBorrowRateMode(reserve, rateMode));
+    const txResult = await waitForTx(
+      await pool.connect(user.signer).swapBorrowRateMode(reserve, rateMode)
+    );
 
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
@@ -609,8 +610,8 @@ export const swapBorrowRateMode = async (
     //   );
     // });
   } else if (expectedResult === 'revert') {
-    await expect(pool.connect(user.signer).swapBorrowRateMode(reserve, rateMode), revertMessage).to.be
-      .reverted;
+    await expect(pool.connect(user.signer).swapBorrowRateMode(reserve, rateMode), revertMessage).to
+      .be.reverted;
   }
 };
 

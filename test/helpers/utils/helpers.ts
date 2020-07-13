@@ -1,15 +1,15 @@
-import {LendingPool} from "../../../types/LendingPool";
-import {ReserveData, UserReserveData} from "./interfaces";
+import {LendingPool} from '../../../types/LendingPool';
+import {ReserveData, UserReserveData} from './interfaces';
 import {
   getLendingRateOracle,
   getIErc20Detailed,
   getMintableErc20,
   getAToken,
-} from "../../../helpers/contracts-helpers";
-import {MOCK_ETH_ADDRESS, ZERO_ADDRESS} from "../../../helpers/constants";
-import {tEthereumAddress} from "../../../helpers/types";
-import BigNumber from "bignumber.js";
-import {getDb, BRE} from "../../../helpers/misc-utils";
+} from '../../../helpers/contracts-helpers';
+import {MOCK_ETH_ADDRESS, ZERO_ADDRESS} from '../../../helpers/constants';
+import {tEthereumAddress} from '../../../helpers/types';
+import BigNumber from 'bignumber.js';
+import {getDb, BRE} from '../../../helpers/misc-utils';
 
 export const getReserveData = async (
   pool: LendingPool,
@@ -23,17 +23,25 @@ export const getReserveData = async (
   const rate = (await rateOracle.getMarketBorrowRate(reserve)).toString();
 
   const isEthReserve = reserve === MOCK_ETH_ADDRESS;
-  let symbol = "ETH";
+  let symbol = 'ETH';
   let decimals = new BigNumber(18);
   if (!isEthReserve) {
     const token = await getIErc20Detailed(reserve);
     symbol = await token.symbol();
     decimals = new BigNumber(await token.decimals());
   }
-  
-  const totalLiquidity = new BigNumber(data.availableLiquidity).plus(data.totalBorrowsStable).plus(data.totalBorrowsVariable);
 
-  const utilizationRate = new BigNumber(totalLiquidity.eq(0) ? 0 : new BigNumber(data.totalBorrowsStable).plus(data.totalBorrowsVariable).rayDiv(totalLiquidity))
+  const totalLiquidity = new BigNumber(data.availableLiquidity)
+    .plus(data.totalBorrowsStable)
+    .plus(data.totalBorrowsVariable);
+
+  const utilizationRate = new BigNumber(
+    totalLiquidity.eq(0)
+      ? 0
+      : new BigNumber(data.totalBorrowsStable)
+          .plus(data.totalBorrowsVariable)
+          .rayDiv(totalLiquidity)
+  );
 
   return {
     totalLiquidity,
@@ -77,9 +85,7 @@ export const getUserData = async (
   let walletBalance;
 
   if (reserve === MOCK_ETH_ADDRESS) {
-    walletBalance = new BigNumber(
-      (await BRE.ethers.provider.getBalance(user)).toString()
-    );
+    walletBalance = new BigNumber((await BRE.ethers.provider.getBalance(user)).toString());
   } else {
     const token = await getMintableErc20(reserve);
     walletBalance = new BigNumber((await token.balanceOf(user)).toString());
@@ -88,9 +94,7 @@ export const getUserData = async (
   return {
     principalATokenBalance: new BigNumber(principalATokenBalance),
     interestRedirectionAddress,
-    redirectionAddressRedirectedBalance: new BigNumber(
-      redirectionAddressRedirectedBalance
-    ),
+    redirectionAddressRedirectedBalance: new BigNumber(redirectionAddressRedirectedBalance),
     redirectedBalance: new BigNumber(redirectedBalance),
     currentATokenUserIndex: new BigNumber(userIndex),
     currentATokenBalance: new BigNumber(userData.currentATokenBalance.toString()),
@@ -108,7 +112,7 @@ export const getUserData = async (
 };
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
-  if (symbol.toUpperCase() === "ETH") {
+  if (symbol.toUpperCase() === 'ETH') {
     return MOCK_ETH_ADDRESS;
   }
 
@@ -122,11 +126,7 @@ export const getReserveAddressFromSymbol = async (symbol: string) => {
   return token.address;
 };
 
-const getATokenUserData = async (
-  reserve: string,
-  user: string,
-  pool: LendingPool
-) => {
+const getATokenUserData = async (reserve: string, user: string, pool: LendingPool) => {
   const aTokenAddress: string = (await pool.getReserveTokensAddresses(reserve)).aTokenAddress;
 
   const aToken = await getAToken(aTokenAddress);
@@ -144,12 +144,8 @@ const getATokenUserData = async (
 
   const redirectionAddressRedirectedBalance =
     interestRedirectionAddress !== ZERO_ADDRESS
-      ? new BigNumber(
-          (
-            await aToken.getRedirectedBalance(interestRedirectionAddress)
-          ).toString()
-        )
-      : new BigNumber("0");
+      ? new BigNumber((await aToken.getRedirectedBalance(interestRedirectionAddress)).toString())
+      : new BigNumber('0');
 
   return [
     userIndex.toString(),

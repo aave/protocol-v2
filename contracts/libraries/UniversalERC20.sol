@@ -38,10 +38,8 @@ library UniversalERC20 {
     }
 
     if (isETH(token)) {
-   
       (bool result, ) = payable(to).call{value: amount, gas: DEFAULT_TRANSFER_GAS}('');
       require(result, 'ETH_TRANSFER_FAILED');
-    
     } else {
       token.safeTransfer(to, amount);
     }
@@ -102,7 +100,9 @@ library UniversalERC20 {
       require(msg.value >= amount, 'The amount and the value sent to deposit do not match');
       if (returnExcess) {
         // Return remainder if exist
-        (bool result, ) = msg.sender.call{value: msg.value.sub(amount), gas: DEFAULT_TRANSFER_GAS}('');
+        (bool result, ) = msg.sender.call{value: msg.value.sub(amount), gas: DEFAULT_TRANSFER_GAS}(
+          ''
+        );
         require(result, 'ETH_TRANSFER_FAILED');
       }
     } else {

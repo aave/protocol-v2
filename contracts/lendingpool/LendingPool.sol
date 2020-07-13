@@ -124,11 +124,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _user the address of the user executing the swap
    * @param _timestamp the timestamp of the action
    **/
-  event Swap(
-    address indexed _reserve,
-    address indexed _user,
-    uint256 _timestamp
-  );
+  event Swap(address indexed _reserve, address indexed _user, uint256 _timestamp);
 
   /**
    * @dev emitted when a user enables a reserve as collateral
@@ -261,7 +257,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _amount,
     uint16 _referralCode
   ) external payable nonReentrant {
-
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
@@ -316,7 +311,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       user.useAsCollateral = false;
     }
 
-    
     AToken(reserve.aTokenAddress).transferUnderlyingTo(_user, _amount);
 
     //solium-disable-next-line
@@ -419,10 +413,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserLogic.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
-    (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(
-      _onBehalfOf,
-      reserve
-    );
+    (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(_onBehalfOf, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
@@ -458,7 +449,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     reserve.updateInterestRates(_reserve, vars.paybackAmount, 0);
 
-    IERC20(_reserve).universalTransferFrom(msg.sender, reserve.aTokenAddress, vars.paybackAmount, false);
+    IERC20(_reserve).universalTransferFrom(
+      msg.sender,
+      reserve.aTokenAddress,
+      vars.paybackAmount,
+      false
+    );
 
     if (IERC20(_reserve).isETH()) {
       //send excess ETH back to the caller if needed
@@ -488,26 +484,17 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
-    (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(
-      msg.sender,
-      reserve
-    );
+    (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(msg.sender, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
-    ValidationLogic.validateSwapRateMode(
-      reserve,
-      user,
-      stableDebt,
-      variableDebt,
-      rateMode
-    );
+    ValidationLogic.validateSwapRateMode(reserve, user, stableDebt, variableDebt, rateMode);
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
     if (rateMode == ReserveLogic.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
-      IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender,stableDebt);
+      IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableDebt);
     } else {
       //do the opposite
@@ -673,7 +660,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _amount,
     bytes memory _params
   ) public nonReentrant {
-
     FlashLoanLocalVars memory vars;
 
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
@@ -688,7 +674,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     //protocol fee is the part of the amountFee reserved for the protocol - the rest goes to depositors
     vars.protocolFee = vars.amountFee.mul(FLASHLOAN_FEE_PROTOCOL).div(10000);
-
 
     require(
       vars.availableLiquidityBefore >= _amount,
@@ -767,20 +752,22 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     );
   }
 
-  function getReserveTokensAddresses(address _reserve) 
-  external
-  view
-  returns(
-    address aTokenAddress,
-    address stableDebtTokenAddress,
-    address variableDebtTokenAddress
-  ){
+  function getReserveTokensAddresses(address _reserve)
+    external
+    view
+    returns (
+      address aTokenAddress,
+      address stableDebtTokenAddress,
+      address variableDebtTokenAddress
+    )
+  {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     return (
       reserve.aTokenAddress,
       reserve.stableDebtTokenAddress,
-      reserve.variableDebtTokenAddress);
+      reserve.variableDebtTokenAddress
+    );
   }
 
   function getReserveData(address _reserve)
@@ -870,12 +857,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(_user);
-    (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(
-      _user,
-      reserve
-    );
-    (principalStableDebt, principalVariableDebt) = UserLogic
-      .getUserPrincipalDebt(_user, reserve);
+    (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(_user, reserve);
+    (principalStableDebt, principalVariableDebt) = UserLogic.getUserPrincipalDebt(_user, reserve);
     liquidityRate = reserve.currentLiquidityRate;
     stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(

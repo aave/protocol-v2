@@ -109,7 +109,6 @@
           },
           "expected": "success"
         }
-      
       ]
     },
     {
@@ -123,11 +122,9 @@
             "useAsCollateral": "false"
           },
           "expected": "revert",
-          "revertMessage" : "User deposit is already being used as collateral"
+          "revertMessage": "User deposit is already being used as collateral"
         }
       ]
     }
   ]
 }
- 
-

@@ -1,5 +1,5 @@
-import {evmRevert, evmSnapshot, BRE} from "../../helpers/misc-utils";
-import {Signer} from "ethers";
+import {evmRevert, evmSnapshot, BRE} from '../../helpers/misc-utils';
+import {Signer} from 'ethers';
 import {
   getEthersSigners,
   getLendingPool,
@@ -7,20 +7,21 @@ import {
   getAaveProtocolTestHelpers,
   getAToken,
   getMintableErc20,
-  getLendingPoolConfiguratorProxy, getPriceOracle,
+  getLendingPoolConfiguratorProxy,
+  getPriceOracle,
 } from '../../helpers/contracts-helpers';
-import {tEthereumAddress} from "../../helpers/types";
-import {LendingPool} from "../../types/LendingPool";
-import {AaveProtocolTestHelpers} from "../../types/AaveProtocolTestHelpers";
-import {MintableErc20} from "../../types/MintableErc20";
-import {AToken} from "../../types/AToken";
-import {LendingPoolConfigurator} from "../../types/LendingPoolConfigurator";
+import {tEthereumAddress} from '../../helpers/types';
+import {LendingPool} from '../../types/LendingPool';
+import {AaveProtocolTestHelpers} from '../../types/AaveProtocolTestHelpers';
+import {MintableErc20} from '../../types/MintableErc20';
+import {AToken} from '../../types/AToken';
+import {LendingPoolConfigurator} from '../../types/LendingPoolConfigurator';
 
-import chai from "chai";
+import chai from 'chai';
 // @ts-ignore
-import bignumberChai from "chai-bignumber";
-import { PriceOracle } from '../../types/PriceOracle';
-import { LendingPoolAddressesProvider } from "../../types/LendingPoolAddressesProvider";
+import bignumberChai from 'chai-bignumber';
+import {PriceOracle} from '../../types/PriceOracle';
+import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
 chai.use(bignumberChai());
 
 export interface SignerWithAddress {
@@ -38,12 +39,12 @@ export interface TestEnv {
   aDai: AToken;
   usdc: MintableErc20;
   lend: MintableErc20;
-  addressesProvider: LendingPoolAddressesProvider
+  addressesProvider: LendingPoolAddressesProvider;
 }
 
-let buidlerevmSnapshotId: string = "0x1";
+let buidlerevmSnapshotId: string = '0x1';
 const setBuidlerevmSnapshotId = (id: string) => {
-  if (BRE.network.name === "buidlerevm") {
+  if (BRE.network.name === 'buidlerevm') {
     buidlerevmSnapshotId = id;
   }
 };
@@ -59,7 +60,7 @@ const testEnv: TestEnv = {
   aDai: {} as AToken,
   usdc: {} as MintableErc20,
   lend: {} as MintableErc20,
-  addressesProvider: {} as LendingPoolAddressesProvider
+  addressesProvider: {} as LendingPoolAddressesProvider,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -77,28 +78,26 @@ export async function initializeMakeSuite() {
   }
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
-  console.log("Pool loaded");
+  console.log('Pool loaded');
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
-  console.log("Configurator loaded");
-  
+  console.log('Configurator loaded');
+
   testEnv.oracle = await getPriceOracle();
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
- 
+
   testEnv.helpersContract = await getAaveProtocolTestHelpers();
- 
- 
+
   const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
-    (aToken) => aToken.symbol === "aDAI"
+    (aToken) => aToken.symbol === 'aDAI'
   )?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
- 
-  const daiAddress = reservesTokens.find(token => token.symbol === "DAI")?.tokenAddress;
-  const usdcAddress = reservesTokens.find(token => token.symbol === "USDC")?.tokenAddress;
-  const lendAddress = reservesTokens.find(token => token.symbol === "LEND")?.tokenAddress;
-  
+  const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
+  const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
+  const lendAddress = reservesTokens.find((token) => token.symbol === 'LEND')?.tokenAddress;
+
   if (!aDaiAddress) {
     console.log(`atoken-modifiers.spec: aDAI not correctly initialized`);
     process.exit(1);

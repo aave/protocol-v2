@@ -53,7 +53,9 @@ library ValidationLogic {
 
     require(msg.sender == _reserve.aTokenAddress, '31');
 
-    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).universalBalanceOf(address(_reserve.aTokenAddress));
+    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).universalBalanceOf(
+      address(_reserve.aTokenAddress)
+    );
 
     require(currentAvailableLiquidity >= _amount, '4');
   }
@@ -118,7 +120,9 @@ library ValidationLogic {
     );
 
     //check that the amount is available in the reserve
-    vars.availableLiquidity = IERC20(_reserveAddress).universalBalanceOf(address(_reserve.aTokenAddress));
+    vars.availableLiquidity = IERC20(_reserveAddress).universalBalanceOf(
+      address(_reserve.aTokenAddress)
+    );
 
     require(vars.availableLiquidity >= _amount, '7');
 
@@ -272,9 +276,8 @@ library ValidationLogic {
           IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
       );
-    }
-    else {
-      revert("Invalid interest rate mode selected");
+    } else {
+      revert('Invalid interest rate mode selected');
     }
   }
 

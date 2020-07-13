@@ -1,13 +1,7 @@
-import BigNumber from "bignumber.js";
-import {
-  RAY,
-  WAD,
-  HALF_RAY,
-  HALF_WAD,
-  WAD_RAY_RATIO,
-} from "../../../helpers/constants";
+import BigNumber from 'bignumber.js';
+import {RAY, WAD, HALF_RAY, HALF_WAD, WAD_RAY_RATIO} from '../../../helpers/constants';
 
-declare module "bignumber.js" {
+declare module 'bignumber.js' {
   interface BigNumber {
     ray: () => BigNumber;
     wad: () => BigNumber;
@@ -39,26 +33,17 @@ BigNumber.prototype.halfWad = (): BigNumber => {
 };
 
 BigNumber.prototype.wadMul = function (b: BigNumber): BigNumber {
-  return this.halfWad()
-    .plus(this.multipliedBy(b))
-    .div(WAD)
-    .decimalPlaces(0, BigNumber.ROUND_DOWN);
+  return this.halfWad().plus(this.multipliedBy(b)).div(WAD).decimalPlaces(0, BigNumber.ROUND_DOWN);
 };
 
 BigNumber.prototype.wadDiv = function (a: BigNumber): BigNumber {
   const halfA = a.div(2).decimalPlaces(0, BigNumber.ROUND_DOWN);
 
-  return halfA
-    .plus(this.multipliedBy(WAD))
-    .div(a)
-    .decimalPlaces(0, BigNumber.ROUND_DOWN);
+  return halfA.plus(this.multipliedBy(WAD)).div(a).decimalPlaces(0, BigNumber.ROUND_DOWN);
 };
 
 BigNumber.prototype.rayMul = function (a: BigNumber): BigNumber {
-  return this.halfRay()
-    .plus(this.multipliedBy(a))
-    .div(RAY)
-    .decimalPlaces(0, BigNumber.ROUND_DOWN);
+  return this.halfRay().plus(this.multipliedBy(a)).div(RAY).decimalPlaces(0, BigNumber.ROUND_DOWN);
 };
 
 BigNumber.prototype.rayDiv = function (a: BigNumber): BigNumber {
@@ -74,17 +59,11 @@ BigNumber.prototype.rayDiv = function (a: BigNumber): BigNumber {
 BigNumber.prototype.rayToWad = function (): BigNumber {
   const halfRatio = new BigNumber(WAD_RAY_RATIO).div(2);
 
-  return halfRatio
-    .plus(this)
-    .div(WAD_RAY_RATIO)
-    .decimalPlaces(0, BigNumber.ROUND_DOWN);
+  return halfRatio.plus(this).div(WAD_RAY_RATIO).decimalPlaces(0, BigNumber.ROUND_DOWN);
 };
 
 BigNumber.prototype.wadToRay = function (): BigNumber {
-  return this.multipliedBy(WAD_RAY_RATIO).decimalPlaces(
-    0,
-    BigNumber.ROUND_DOWN
-  );
+  return this.multipliedBy(WAD_RAY_RATIO).decimalPlaces(0, BigNumber.ROUND_DOWN);
 };
 
 BigNumber.prototype.rayPow = function (n: BigNumber): BigNumber {
