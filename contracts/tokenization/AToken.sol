@@ -482,7 +482,8 @@ contract AToken is ERC20 {
     address targetOfRedirectionAddress = interestRedirectionAddresses[redirectionAddress];
 
     if (targetOfRedirectionAddress != address(0)) {
-      cumulateBalanceInternal(targetOfRedirectionAddress);
+      redirectedBalances[targetOfRedirectionAddress] = redirectedBalances[targetOfRedirectionAddress]
+        .add(balanceIncrease);
     }
 
     emit RedirectedBalanceUpdated(
