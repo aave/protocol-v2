@@ -555,7 +555,7 @@ contract AToken is ERC20 {
 
     bool fromIndexReset = false;
     //reset the user data if the remaining balance is 0
-    if (fromBalance.sub(_value) == 0) {
+    if (fromBalance.sub(_value) == 0 && _from != _to) {
       fromIndexReset = resetDataOnZeroBalanceInternal(_from);
     }
 

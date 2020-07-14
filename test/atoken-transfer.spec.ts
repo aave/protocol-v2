@@ -188,4 +188,19 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
       INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
     );
   });
+
+  it('User 1 transfers the whole amount to himself', async () => {
+    const {users, pool, aDai, dai} = testEnv;
+
+    const user1BalanceBefore = await aDai.balanceOf(users[1].address);
+
+    await aDai.connect(users[1].signer).transfer(users[1].address, user1BalanceBefore);
+
+    const user1BalanceAfter = await aDai.balanceOf(users[1].address);
+
+    expect(user1BalanceAfter.toString()).to.be.equal(
+      user1BalanceBefore,
+      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
+    );
+  });
 });
