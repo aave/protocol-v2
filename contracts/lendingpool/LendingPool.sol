@@ -262,7 +262,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     ValidationLogic.validateDeposit(reserve, _amount);
 
-    AToken aToken = AToken(reserve.aTokenAddress);
+    AToken aToken = AToken(payable(reserve.aTokenAddress));
 
     bool isFirstDeposit = aToken.balanceOf(msg.sender) == 0;
 
@@ -276,8 +276,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     //minting AToken to user 1:1 with the specific exchange rate
     aToken.mintOnDeposit(msg.sender, _amount);
 
-    //transfer to the core contract
-    IERC20(_reserve).universalTransferFromSenderToThis(_amount, true);
+    //transfer to the aToken contract
+    IERC20(_reserve).universalTransferFrom(msg.sender, address(aToken), _amount, true);
 
     //solium-disable-next-line
     emit Deposit(_reserve, msg.sender, _amount, _referralCode, block.timestamp);
@@ -299,16 +299,19 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserLogic.UserReserveData storage user = usersReserveData[_user][_reserve];
 
+    AToken aToken = AToken(payable(reserve.aTokenAddress));
+
     ValidationLogic.validateRedeem(reserve, _reserve, _amount);
+
+    reserve.updateCumulativeIndexesAndTimestamp();
+
+    reserve.updateInterestRates(_reserve, 0, _amount);
 
     if (_aTokenBalanceAfterRedeem == 0) {
       user.useAsCollateral = false;
     }
 
-    reserve.updateCumulativeIndexesAndTimestamp();
-    reserve.updateInterestRates(_reserve, 0, _amount);
-
-    IERC20(_reserve).universalTransfer(_user, _amount);
+    AToken(reserve.aTokenAddress).transferUnderlyingTo(_user, _amount);
 
     //solium-disable-next-line
     emit RedeemUnderlying(_reserve, _user, _amount, block.timestamp);
@@ -368,7 +371,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     reserve.updateInterestRates(_reserve, 0, _amount);
 
     //if we reached this point, we can transfer
-    IERC20(_reserve).universalTransfer(msg.sender, _amount);
+    AToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, _amount);
 
     emit Borrow(
       _reserve,
@@ -446,7 +449,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     reserve.updateInterestRates(_reserve, vars.paybackAmount, 0);
 
-    IERC20(_reserve).universalTransferFromSenderToThis(vars.paybackAmount, false);
+    IERC20(_reserve).universalTransferFrom(
+      msg.sender,
+      reserve.aTokenAddress,
+      vars.paybackAmount,
+      false
+    );
 
     if (IERC20(_reserve).isETH()) {
       //send excess ETH back to the caller if needed
@@ -635,6 +643,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 protocolFeeBips;
     uint256 amountFee;
     uint256 protocolFee;
+    address payable aTokenAddress;
   }
 
   /**
@@ -655,8 +664,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
+    vars.aTokenAddress = payable(reserve.aTokenAddress);
+
     //check that the reserve has enough available liquidity
-    vars.availableLiquidityBefore = IERC20(_reserve).universalBalanceOf(address(this));
+    vars.availableLiquidityBefore = IERC20(_reserve).universalBalanceOf(vars.aTokenAddress);
 
     //calculate amount fee
     vars.amountFee = _amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
@@ -679,13 +690,13 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address payable userPayable = address(uint160(_receiver));
 
     //transfer funds to the receiver
-    IERC20(_reserve).universalTransfer(userPayable, _amount);
+    AToken(vars.aTokenAddress).transferUnderlyingTo(userPayable, _amount);
 
     //execute action of the receiver
-    receiver.executeOperation(_reserve, _amount, vars.amountFee, _params);
+    receiver.executeOperation(_reserve, vars.aTokenAddress, _amount, vars.amountFee, _params);
 
     //check that the actual balance of the core contract includes the returned amount
-    uint256 availableLiquidityAfter = IERC20(_reserve).universalBalanceOf(address(this));
+    uint256 availableLiquidityAfter = IERC20(_reserve).universalBalanceOf(vars.aTokenAddress);
 
     require(
       availableLiquidityAfter == vars.availableLiquidityBefore.add(vars.amountFee),
@@ -699,7 +710,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       vars.protocolFee
     );
 
-    IERC20(_reserve).universalTransfer(addressesProvider.getTokenDistributor(), vars.protocolFee);
+    //transfer funds to the receiver
+    AToken(vars.aTokenAddress).transferUnderlyingTo(
+      addressesProvider.getTokenDistributor(),
+      vars.protocolFee
+    );
 
     //solium-disable-next-line
     emit FlashLoan(_receiver, _reserve, _amount, vars.amountFee, vars.protocolFee, block.timestamp);
@@ -777,7 +792,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   {
     ReserveLogic.ReserveData memory reserve = reserves[_reserve];
     return (
-      IERC20(_reserve).universalBalanceOf(address(this)),
+      IERC20(_reserve).universalBalanceOf(reserve.aTokenAddress),
       IERC20(reserve.stableDebtTokenAddress).totalSupply(),
       IERC20(reserve.variableDebtTokenAddress).totalSupply(),
       reserve.currentLiquidityRate,

@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import './ERC20.sol';
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../lendingpool/LendingPool.sol';
-import '../libraries/WadRayMath.sol';
+import {ERC20} from './ERC20.sol';
+import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {LendingPool} from '../lendingpool/LendingPool.sol';
+import {WadRayMath} from '../libraries/WadRayMath.sol';
+import {UniversalERC20} from '../libraries/UniversalERC20.sol';
+import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title Aave ERC20 AToken
@@ -14,6 +16,7 @@ import '../libraries/WadRayMath.sol';
  */
 contract AToken is ERC20 {
   using WadRayMath for uint256;
+  using UniversalERC20 for ERC20;
 
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
@@ -635,5 +638,32 @@ contract AToken is ERC20 {
     } else {
       return false;
     }
+  }
+
+  /**
+   * @dev transfers the underlying asset to the target. Used by the lendingpool to transfer
+   * assets in borrow(), redeem() and flashLoan()
+   * @param _target the target of the transfer
+   * @param _amount the amount to transfer
+   * @return the amount transferred
+   **/
+
+  function transferUnderlyingTo(address _target, uint256 _amount)
+    external
+    onlyLendingPool
+    returns (uint256)
+  {
+    ERC20(underlyingAssetAddress).universalTransfer(_target, _amount);
+    return _amount;
+  }
+
+  /**
+   * @dev receive() function for aTokens who hold ETH as the underlying asset
+   **/
+  receive() external payable {
+    require(
+      ERC20(underlyingAssetAddress).isETH(),
+      'Transfers are only allowed if the underlying asset is ETH'
+    );
   }
 }

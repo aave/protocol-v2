@@ -201,13 +201,21 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     //of _collateral to cover the actual amount that is being liquidated, hence we liquidate
     //a smaller amount
 
+    vars.collateralAtoken = AToken(payable(collateralReserve.aTokenAddress));
+
+    //if principalAmountNeeded < vars.ActualAmountToLiquidate, there isn't enough
+    //of _collateral to cover the actual amount that is being liquidated, hence we liquidate
+    //a smaller amount
+
     if (vars.principalAmountNeeded < vars.actualAmountToLiquidate) {
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
 
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!_receiveAToken) {
-      uint256 currentAvailableCollateral = IERC20(_collateral).universalBalanceOf(address(this));
+      uint256 currentAvailableCollateral = IERC20(_collateral).universalBalanceOf(
+        address(vars.collateralAtoken)
+      );
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
           uint256(LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
@@ -216,7 +224,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       }
     }
 
-    //TODO Burn debt tokens
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
         _user,
@@ -233,8 +240,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       );
     }
 
-    vars.collateralAtoken = AToken(collateralReserve.aTokenAddress);
-
     //if liquidator reclaims the aToken, he receives the equivalent atoken amount
     if (_receiveAToken) {
       vars.collateralAtoken.transferOnLiquidation(_user, msg.sender, vars.maxCollateralToLiquidate);
@@ -242,12 +247,16 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       //otherwise receives the underlying asset
       //burn the equivalent amount of atoken
       vars.collateralAtoken.burnOnLiquidation(_user, vars.maxCollateralToLiquidate);
-
-      IERC20(_collateral).universalTransfer(msg.sender, vars.maxCollateralToLiquidate);
+      vars.collateralAtoken.transferUnderlyingTo(msg.sender, vars.maxCollateralToLiquidate);
     }
 
-    //transfers the principal currency to the pool
-    IERC20(_reserve).universalTransferFromSenderToThis(vars.actualAmountToLiquidate, true);
+    //transfers the principal currency to the aToken
+    IERC20(_reserve).universalTransferFrom(
+      msg.sender,
+      principalReserve.aTokenAddress,
+      vars.actualAmountToLiquidate,
+      true
+    );
 
     emit LiquidationCall(
       _collateral,

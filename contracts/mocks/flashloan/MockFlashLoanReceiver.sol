@@ -25,6 +25,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
   function executeOperation(
     address _reserve,
+    address _destination,
     uint256 _amount,
     uint256 _fee,
     bytes memory _params
@@ -34,7 +35,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
     //check the contract has the specified balance
     require(
-      _amount <= IERC20(_reserve).universalBalanceOf(address(this)),
+      _amount <= getBalanceInternal(address(this), _reserve),
       'Invalid balance for the contract'
     );
 
@@ -49,8 +50,10 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     if (!IERC20(_reserve).isETH()) {
       token.mint(_fee);
     }
+
     //returning amount + fee to the destination
-    transferFundsBackToPoolInternal(_reserve, _amount.add(_fee));
+    transferFundsBackInternal(_reserve, _destination, _amount.add(_fee));
+
     emit ExecutedWithSuccess(_reserve, _amount, _fee);
   }
 }
