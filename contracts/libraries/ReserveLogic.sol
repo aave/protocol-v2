@@ -301,25 +301,6 @@ library ReserveLogic {
   }
 
   /**
-   * @dev updates the state of the core as a consequence of a liquidation action.
-   * @param _collateralReserve the collateral reserve that is being liquidated
-   * @param _collateralToLiquidate the amount of collateral being liquidated
-   * @param _liquidatorReceivesAToken true if the liquidator will receive aTokens, false otherwise
-   **/
-  function updateStateOnLiquidationAsCollateral(
-    ReserveData storage _collateralReserve,
-    address _collateralReserveAddress,
-    uint256 _collateralToLiquidate,
-    bool _liquidatorReceivesAToken
-  ) external {
-    _collateralReserve.updateCumulativeIndexesAndTimestamp();
-
-    if (!_liquidatorReceivesAToken) {
-      updateInterestRates(_collateralReserve, _collateralReserveAddress, 0, _collateralToLiquidate);
-    }
-  }
-
-  /**
    * @dev gets the total liquidity in the reserve. The total liquidity is the balance of the core contract + total borrows
    * @param _reserve the reserve address
    * @return the total liquidity
