@@ -211,7 +211,6 @@ contract AToken is ERC20 {
     (, uint256 currentBalance, uint256 balanceIncrease, uint256 index) = cumulateBalanceInternal(
       msg.sender
     );
-
     uint256 amountToRedeem = _amount;
 
     //if amount is equal to uint(-1), the user wants to redeem everything
@@ -439,7 +438,6 @@ contract AToken is ERC20 {
     )
   {
     uint256 previousPrincipalBalance = super.balanceOf(_user);
-
     //calculate the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
     //mints an amount of tokens equivalent to the amount accumulated
@@ -487,7 +485,7 @@ contract AToken is ERC20 {
     // if the redirection address is also redirecting the interest, we accumulate his balance
     // and update his chain of redirection
     if (targetOfRedirectionAddress != address(0)) {
-      cumulateBalanceInternal(targetOfRedirectionAddress);
+      updateRedirectedBalanceOfRedirectionAddressInternal(redirectionAddress, balanceIncrease, 0);
     }
 
     emit RedirectedBalanceUpdated(
