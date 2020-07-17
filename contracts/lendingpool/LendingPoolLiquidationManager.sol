@@ -201,15 +201,11 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     //of _collateral to cover the actual amount that is being liquidated, hence we liquidate
     //a smaller amount
 
-    vars.collateralAtoken = AToken(payable(collateralReserve.aTokenAddress));
-
-    //if principalAmountNeeded < vars.ActualAmountToLiquidate, there isn't enough
-    //of _collateral to cover the actual amount that is being liquidated, hence we liquidate
-    //a smaller amount
-
     if (vars.principalAmountNeeded < vars.actualAmountToLiquidate) {
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
+
+    vars.collateralAtoken = AToken(payable(collateralReserve.aTokenAddress));
 
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!_receiveAToken) {
@@ -223,6 +219,10 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         );
       }
     }
+
+    //update the principal reserve
+    principalReserve.updateCumulativeIndexesAndTimestamp();
+    principalReserve.updateInterestRates(_reserve, vars.actualAmountToLiquidate, 0);
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
@@ -245,6 +245,11 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       vars.collateralAtoken.transferOnLiquidation(_user, msg.sender, vars.maxCollateralToLiquidate);
     } else {
       //otherwise receives the underlying asset
+
+      //updating collateral reserve
+      collateralReserve.updateCumulativeIndexesAndTimestamp();
+      collateralReserve.updateInterestRates(_collateral, 0, vars.maxCollateralToLiquidate);
+
       //burn the equivalent amount of atoken
       vars.collateralAtoken.burnOnLiquidation(_user, vars.maxCollateralToLiquidate);
       vars.collateralAtoken.transferUnderlyingTo(msg.sender, vars.maxCollateralToLiquidate);

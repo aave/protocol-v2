@@ -197,6 +197,18 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       'Invalid principal available liquidity'
     );
 
+    //the liquidity index of the principal reserve needs to be bigger than the index before
+    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+      daiReserveDataBefore.liquidityIndex.toString(),
+      'Invalid liquidity index'
+    );
+
+    //the principal APY after a liquidation needs to be lower than the APY before
+    expect(daiReserveDataAfter.liquidityRate.toString()).to.be.bignumber.lt(
+      daiReserveDataBefore.liquidityRate.toString(),
+      'Invalid liquidity APY'
+    );
+
     expect(ethReserveDataAfter.availableLiquidity).to.be.bignumber.almostEqual(
       new BigNumber(ethReserveDataBefore.availableLiquidity.toString()).toFixed(0),
       'Invalid collateral available liquidity'
@@ -315,6 +327,18 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
         .plus(amountToLiquidate)
         .toFixed(0),
       'Invalid principal available liquidity'
+    );
+
+    //the liquidity index of the principal reserve needs to be bigger than the index before
+    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+      usdcReserveDataBefore.liquidityIndex.toString(),
+      'Invalid liquidity index'
+    );
+
+    //the principal APY after a liquidation needs to be lower than the APY before
+    expect(usdcReserveDataAfter.liquidityRate.toString()).to.be.bignumber.lt(
+      usdcReserveDataBefore.liquidityRate.toString(),
+      'Invalid liquidity APY'
     );
 
     expect(ethReserveDataAfter.availableLiquidity).to.be.bignumber.almostEqual(
