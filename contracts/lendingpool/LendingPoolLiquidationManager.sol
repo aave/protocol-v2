@@ -19,6 +19,7 @@ import '../libraries/GenericLogic.sol';
 import '../libraries/UserLogic.sol';
 import '../libraries/ReserveLogic.sol';
 import '../libraries/UniversalERC20.sol';
+import '../libraries/ReserveConfiguration.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
@@ -32,6 +33,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using Address for address;
   using ReserveLogic for ReserveLogic.ReserveData;
   using UserLogic for UserLogic.UserReserveData;
+  using ReserveConfiguration for ReserveConfiguration.Map;
 
   LendingPoolAddressesProvider public addressesProvider;
   IFeeProvider feeProvider;
@@ -124,7 +126,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     LiquidationCallLocalVars memory vars;
 
-    (, , , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
+    (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       _user,
       reserves,
       usersReserveData,
@@ -150,7 +152,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     }
 
     vars.isCollateralEnabled =
-      collateralReserve.usageAsCollateralEnabled &&
+      collateralReserve.configuration.getLiquidationThreshold() > 0 &&
       userCollateral.useAsCollateral;
 
     //if _collateral isn't enabled as collateral by _user, it cannot be liquidated
@@ -316,9 +318,11 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     vars.collateralPrice = oracle.getAssetPrice(_collateralAddress);
     vars.principalCurrencyPrice = oracle.getAssetPrice(_principalAddress);
-    vars.liquidationBonus = _collateralReserve.liquidationBonus;
-    vars.principalDecimals = _principalReserve.decimals;
-    vars.collateralDecimals = _collateralReserve.decimals;
+
+    (, , vars.liquidationBonus, vars.collateralDecimals) = _collateralReserve
+      .configuration
+      .getParams();
+    vars.principalDecimals = _principalReserve.configuration.getDecimals();
 
     //this is the maximum possible amount of the selected collateral that can be liquidated, given the
     //max amount of principal currency that is available for liquidation.

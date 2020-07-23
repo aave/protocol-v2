@@ -360,18 +360,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const feeProviderProxy = await getFeeProvider(await addressesProvider.getFeeProvider());
   await insertContractAddressInDb(eContractid.FeeProvider, feeProviderProxy.address);
 
-  const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator();
-  await waitForTx(
-    await addressesProvider.setLendingPoolConfiguratorImpl(lendingPoolConfiguratorImpl.address)
-  );
-  const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
-    await addressesProvider.getLendingPoolConfigurator()
-  );
-  await insertContractAddressInDb(
-    eContractid.LendingPoolConfigurator,
-    lendingPoolConfiguratorProxy.address
-  );
-
   const lendingPoolImpl = await deployLendingPool();
 
   console.log('Deployed lending pool, address:', lendingPoolImpl.address);
@@ -386,6 +374,18 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.log('implementation set, address:', lendingPoolProxy.address);
 
   await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
+
+  const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator();
+  await waitForTx(
+    await addressesProvider.setLendingPoolConfiguratorImpl(lendingPoolConfiguratorImpl.address)
+  );
+  const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
+    await addressesProvider.getLendingPoolConfigurator()
+  );
+  await insertContractAddressInDb(
+    eContractid.LendingPoolConfigurator,
+    lendingPoolConfiguratorProxy.address
+  );
 
   const fallbackOracle = await deployPriceOracle();
   await waitForTx(await fallbackOracle.setEthUsdPrice(MOCK_USD_PRICE_IN_WEI));

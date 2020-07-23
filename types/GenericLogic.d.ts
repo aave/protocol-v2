@@ -13,12 +13,10 @@ interface GenericLogicInterface extends Interface {
     }>;
 
     calculateAvailableBorrowsETH: TypedFunctionDescription<{
-      encode([collateralBalanceETH, borrowBalanceETH, totalFeesETH, ltv, _feeProvider]: [
+      encode([collateralBalanceETH, borrowBalanceETH, ltv]: [
         BigNumberish,
         BigNumberish,
-        BigNumberish,
-        BigNumberish,
-        string
+        BigNumberish
       ]): string;
     }>;
   };
@@ -45,9 +43,7 @@ export class GenericLogic extends Contract {
     calculateAvailableBorrowsETH(
       collateralBalanceETH: BigNumberish,
       borrowBalanceETH: BigNumberish,
-      totalFeesETH: BigNumberish,
-      ltv: BigNumberish,
-      _feeProvider: string
+      ltv: BigNumberish
     ): Promise<BigNumber>;
   };
 
@@ -56,9 +52,7 @@ export class GenericLogic extends Contract {
   calculateAvailableBorrowsETH(
     collateralBalanceETH: BigNumberish,
     borrowBalanceETH: BigNumberish,
-    totalFeesETH: BigNumberish,
-    ltv: BigNumberish,
-    _feeProvider: string
+    ltv: BigNumberish
   ): Promise<BigNumber>;
 
   filters: {};
@@ -69,9 +63,7 @@ export class GenericLogic extends Contract {
     calculateAvailableBorrowsETH(
       collateralBalanceETH: BigNumberish,
       borrowBalanceETH: BigNumberish,
-      totalFeesETH: BigNumberish,
-      ltv: BigNumberish,
-      _feeProvider: string
+      ltv: BigNumberish
     ): Promise<BigNumber>;
   };
 }

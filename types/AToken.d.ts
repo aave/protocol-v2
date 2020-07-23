@@ -92,6 +92,10 @@ interface ATokenInterface extends Interface {
       encode([_from, _to, _value]: [string, string, BigNumberish]): string;
     }>;
 
+    transferUnderlyingTo: TypedFunctionDescription<{
+      encode([_target, _amount]: [string, BigNumberish]): string;
+    }>;
+
     underlyingAssetAddress: TypedFunctionDescription<{
       encode([]: []): string;
     }>;
@@ -277,6 +281,12 @@ export class AToken extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
+    transferUnderlyingTo(
+      _target: string,
+      _amount: BigNumberish,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
     underlyingAssetAddress(): Promise<string>;
   };
 
@@ -369,6 +379,12 @@ export class AToken extends Contract {
     _from: string,
     _to: string,
     _value: BigNumberish,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  transferUnderlyingTo(
+    _target: string,
+    _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -477,6 +493,8 @@ export class AToken extends Contract {
     transferFrom(sender: string, recipient: string, amount: BigNumberish): Promise<BigNumber>;
 
     transferOnLiquidation(_from: string, _to: string, _value: BigNumberish): Promise<BigNumber>;
+
+    transferUnderlyingTo(_target: string, _amount: BigNumberish): Promise<BigNumber>;
 
     underlyingAssetAddress(): Promise<BigNumber>;
   };
