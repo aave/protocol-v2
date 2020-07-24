@@ -156,8 +156,7 @@ library GenericLogic {
   {
     CalculateUserAccountDataVars memory vars;
 
-    vars.reservesLength = _reserves.length;
-    for (vars.i = 0; vars.i < vars.reservesLength; vars.i++) {
+    for (vars.i = 0; vars.i < _reserves.length; vars.i++) {
       vars.currentReserveAddress = _reserves[vars.i];
 
       ReserveLogic.ReserveData storage currentReserve = _reservesData[vars.currentReserveAddress];
