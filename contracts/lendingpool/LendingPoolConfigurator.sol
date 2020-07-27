@@ -13,8 +13,8 @@ import '../tokenization/AToken.sol';
 /**
  * @title LendingPoolConfigurator contract
  * @author Aave
- * @notice Executes configuration methods on the LendingPoolCore contract. Allows to enable/disable reserves,
- * and LiquidationThreshold different protocol parameters.
+ * @notice Executes configuration methods on the LendingPoolCore contract. Allows to enable/disable reserves
+ * and set different protocol parameters.
  **/
 
 contract LendingPoolConfigurator is VersionedInitializable {
