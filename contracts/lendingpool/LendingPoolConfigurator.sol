@@ -229,7 +229,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     currentConfig.setDecimals(_underlyingAssetDecimals);
 
     currentConfig.setActive(true);
-    currentConfig.setFreezed(false);
+    currentConfig.setFrozen(false);
 
     pool.setConfiguration(_reserve, currentConfig.data);
 
@@ -391,7 +391,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   function freezeReserve(address _reserve) external onlyLendingPoolManager {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
 
-    currentConfig.setFreezed(true);
+    currentConfig.setFrozen(true);
 
     pool.setConfiguration(_reserve, currentConfig.data);
 
@@ -405,7 +405,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   function unfreezeReserve(address _reserve) external onlyLendingPoolManager {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
 
-    currentConfig.setFreezed(false);
+    currentConfig.setFrozen(false);
 
     pool.setConfiguration(_reserve, currentConfig.data);
 

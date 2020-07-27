@@ -755,7 +755,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       reserve.configuration.getBorrowingEnabled(),
       reserve.configuration.getStableRateBorrowingEnabled(),
       reserve.configuration.getActive(),
-      reserve.configuration.getFreezed()
+      reserve.configuration.getFrozen()
     );
   }
 
