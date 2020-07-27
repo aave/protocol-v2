@@ -23,6 +23,6 @@ library PercentageMath {
   function percentDiv(uint256 value, uint256 percentage) internal pure returns (uint256) {
     uint256 halfPercentage = percentage / 2;
 
-    return halfPercentage.add(value.mul(PERCENTAGE_FACTOR)).div(halfPercentage);
+    return halfPercentage.add(value.mul(PERCENTAGE_FACTOR)).div(percentage);
   }
 }

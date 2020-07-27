@@ -20,6 +20,7 @@ import '../libraries/UserLogic.sol';
 import '../libraries/ReserveLogic.sol';
 import '../libraries/UniversalERC20.sol';
 import '../libraries/ReserveConfiguration.sol';
+import {PercentageMath} from '../libraries/PercentageMath.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
@@ -30,6 +31,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using UniversalERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
+  using PercentageMath for uint256;
   using Address for address;
   using ReserveLogic for ReserveLogic.ReserveData;
   using UserLogic for UserLogic.UserReserveData;
@@ -177,11 +179,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     }
 
     //all clear - calculate the max principal amount that can be liquidated
-    vars.maxPrincipalAmountToLiquidate = vars
-      .userStableDebt
-      .add(vars.userVariableDebt)
-      .mul(LIQUIDATION_CLOSE_FACTOR_PERCENT)
-      .div(100);
+    vars.maxPrincipalAmountToLiquidate = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
+      LIQUIDATION_CLOSE_FACTOR_PERCENT
+    );
 
     vars.actualAmountToLiquidate = _purchaseAmount > vars.maxPrincipalAmountToLiquidate
       ? vars.maxPrincipalAmountToLiquidate
@@ -331,8 +331,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       .mul(_purchaseAmount)
       .mul(10**vars.collateralDecimals)
       .div(vars.collateralPrice.mul(10**vars.principalDecimals))
-      .mul(vars.liquidationBonus)
-      .div(100);
+      .percentMul(vars.liquidationBonus);
 
     if (vars.maxAmountCollateralToLiquidate > _userCollateralBalance) {
       collateralAmount = _userCollateralBalance;
@@ -341,8 +340,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
         .mul(collateralAmount)
         .mul(10**vars.principalDecimals)
         .div(vars.principalCurrencyPrice.mul(10**vars.collateralDecimals))
-        .mul(100)
-        .div(vars.liquidationBonus);
+        .percentDiv(vars.liquidationBonus);
     } else {
       collateralAmount = vars.maxAmountCollateralToLiquidate;
       principalAmountNeeded = _purchaseAmount;

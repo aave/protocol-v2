@@ -8,6 +8,7 @@ import {ReserveLogic} from './ReserveLogic.sol';
 import {UserLogic} from './UserLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
+import {PercentageMath} from './PercentageMath.sol';
 import {UniversalERC20} from './UniversalERC20.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -24,6 +25,7 @@ library ValidationLogic {
   using UserLogic for UserLogic.UserReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
+  using PercentageMath for uint256;
   using UniversalERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
 
@@ -161,7 +163,7 @@ library ValidationLogic {
     require(vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD, '8');
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(_amountInETH).mul(100).div(
+    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(_amountInETH).percentDiv(
       vars.currentLtv
     ); //LTV is calculated in percentage
 
@@ -193,7 +195,7 @@ library ValidationLogic {
 
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity
-      uint256 maxLoanSizeStable = vars.availableLiquidity.mul(_maxStableLoanPercent).div(100);
+      uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(_maxStableLoanPercent);
 
       require(_amount <= maxLoanSizeStable, '13');
     }
