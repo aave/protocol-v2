@@ -13,7 +13,7 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 library PercentageMath {
   using SafeMath for uint256;
 
-  uint256 constant PERCENTAGE_FACTOR = 1e2; //percentage plus two decimals
+  uint256 constant PERCENTAGE_FACTOR = 1e4; //percentage plus two decimals
   uint256 constant HALF_PERCENT = PERCENTAGE_FACTOR / 2;
 
   function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256) {
