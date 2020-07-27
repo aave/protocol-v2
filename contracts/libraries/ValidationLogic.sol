@@ -221,7 +221,7 @@ library ValidationLogic {
     uint256 _actualPaybackAmount,
     uint256 _msgValue
   ) external view {
-    (bool isActive, , , ) = _reserve.configuration.getFlags();
+    bool isActive = _reserve.configuration.getActive();
 
     require(isActive, 'Action requires an active reserve');
 

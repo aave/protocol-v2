@@ -83,7 +83,7 @@ library ReserveConfiguration {
   /**
    * @dev sets the liquidation bonus of the reserve
    * @param _self the reserve configuration
-   * @param _ltv the new liquidation bonus
+   * @param _bonus the new liquidation bonus
    **/
   function setLiquidationBonus(ReserveConfiguration.Map memory _self, uint256 _bonus) internal {
     _self.data = (_self.data & LIQUIDATION_BONUS_MASK) | (_bonus << 32);
