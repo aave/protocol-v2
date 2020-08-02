@@ -45,7 +45,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
   address[] public reservesList;
 
-  uint256 constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 50;
+  uint256 constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
   /**
    * @dev emitted when a borrower is liquidated

@@ -425,7 +425,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       .div(
         new BigNumber(principalPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
       )
-      .times(100)
+      .times(10000)
       .div(liquidationBonus.toString())
       .decimalPlaces(0, BigNumber.ROUND_DOWN);
 
