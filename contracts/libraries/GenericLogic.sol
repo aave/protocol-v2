@@ -8,7 +8,7 @@ import {ReserveLogic} from './ReserveLogic.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 import {UserLogic} from './UserLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
-
+import {PercentageMath} from './PercentageMath.sol';
 import '../interfaces/IPriceOracleGetter.sol';
 import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 import '@nomiclabs/buidler/console.sol';
@@ -23,6 +23,7 @@ library GenericLogic {
   using UserLogic for UserLogic.UserReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
+  using PercentageMath for uint256;
   using ReserveConfiguration for ReserveConfiguration.Map;
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1e18;
@@ -237,7 +238,7 @@ library GenericLogic {
   ) internal view returns (uint256) {
     if (borrowBalanceETH == 0) return uint256(-1);
 
-    return (collateralBalanceETH.mul(liquidationThreshold).div(100)).wadDiv(borrowBalanceETH);
+    return (collateralBalanceETH.percentMul(liquidationThreshold)).wadDiv(borrowBalanceETH);
   }
 
   /**
@@ -254,7 +255,7 @@ library GenericLogic {
     uint256 borrowBalanceETH,
     uint256 ltv
   ) external view returns (uint256) {
-    uint256 availableBorrowsETH = collateralBalanceETH.mul(ltv).div(100); //ltv is in percentage
+    uint256 availableBorrowsETH = collateralBalanceETH.percentMul(ltv); //ltv is in percentage
 
     if (availableBorrowsETH < borrowBalanceETH) {
       return 0;
