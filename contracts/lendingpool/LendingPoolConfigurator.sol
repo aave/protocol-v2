@@ -1,22 +1,25 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
+pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
 
 import '../interfaces/IERC20Detailed.sol';
 import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import '../libraries/ReserveConfiguration.sol';
 import '../configuration/LendingPoolAddressesProvider.sol';
 import '../tokenization/AToken.sol';
 
 /**
  * @title LendingPoolConfigurator contract
  * @author Aave
- * @notice Executes configuration methods on the LendingPoolCore contract. Allows to enable/disable reserves,
+ * @notice Executes configuration methods on the LendingPoolCore contract. Allows to enable/disable reserves
  * and set different protocol parameters.
  **/
 
 contract LendingPoolConfigurator is VersionedInitializable {
   using SafeMath for uint256;
+  using ReserveConfiguration for ReserveConfiguration.Map;
 
   /**
    * @dev emitted when a reserve is initialized.
@@ -135,6 +138,8 @@ contract LendingPoolConfigurator is VersionedInitializable {
   event ReserveInterestRateStrategyChanged(address _reserve, address _strategy);
 
   LendingPoolAddressesProvider public poolAddressesProvider;
+  LendingPool public pool;
+
   /**
    * @dev only the lending pool manager can call functions affected by this modifier
    **/
@@ -154,6 +159,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
   function initialize(LendingPoolAddressesProvider _poolAddressesProvider) public initializer {
     poolAddressesProvider = _poolAddressesProvider;
+    pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
   }
 
   /**
@@ -210,14 +216,22 @@ contract LendingPoolConfigurator is VersionedInitializable {
       _aTokenSymbol
     );
 
-    LendingPool(payable(poolAddressesProvider.getLendingPool())).initReserve(
+    pool.initReserve(
       _reserve,
       address(aTokenInstance),
       _stableDebtTokenAddress,
       _variableDebtTokenAddress,
-      _underlyingAssetDecimals,
       _interestRateStrategyAddress
     );
+
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setDecimals(_underlyingAssetDecimals);
+
+    currentConfig.setActive(true);
+    currentConfig.setFrozen(false);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit ReserveInitialized(_reserve, address(aTokenInstance), _interestRateStrategyAddress);
   }
@@ -231,8 +245,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
     external
     onlyLendingPoolManager
   {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveBorrowingEnabled(_reserve, _stableBorrowRateEnabled, true);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setBorrowingEnabled(true);
+    currentConfig.setStableRateBorrowingEnabled(_stableBorrowRateEnabled);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
+
     emit BorrowingEnabledOnReserve(_reserve, _stableBorrowRateEnabled);
   }
 
@@ -241,8 +260,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function disableBorrowingOnReserve(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveBorrowingEnabled(_reserve, false, false);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setBorrowingEnabled(false);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
     emit BorrowingDisabledOnReserve(_reserve);
   }
 
@@ -259,13 +281,14 @@ contract LendingPoolConfigurator is VersionedInitializable {
     uint256 _liquidationThreshold,
     uint256 _liquidationBonus
   ) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.enableReserveAsCollateral(
-      _reserve,
-      _baseLTVasCollateral,
-      _liquidationThreshold,
-      _liquidationBonus
-    );
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setLtv(_baseLTVasCollateral);
+    currentConfig.setLiquidationThreshold(_liquidationThreshold);
+    currentConfig.setLiquidationBonus(_liquidationBonus);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
+
     emit ReserveEnabledAsCollateral(
       _reserve,
       _baseLTVasCollateral,
@@ -279,8 +302,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function disableReserveAsCollateral(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.disableReserveAsCollateral(_reserve);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setLtv(0);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit ReserveDisabledAsCollateral(_reserve);
   }
@@ -290,8 +316,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function enableReserveStableRate(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveStableBorrowRateEnabled(_reserve, true);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setStableRateBorrowingEnabled(true);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit StableRateEnabledOnReserve(_reserve);
   }
@@ -301,8 +330,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function disableReserveStableRate(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveStableBorrowRateEnabled(_reserve, false);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setStableRateBorrowingEnabled(false);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit StableRateDisabledOnReserve(_reserve);
   }
@@ -312,8 +344,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function activateReserve(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveActive(_reserve, true);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setActive(true);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit ReserveActivated(_reserve);
   }
@@ -323,7 +358,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function deactivateReserve(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
     (
       uint256 availableLiquidity,
       uint256 totalBorrowsStable,
@@ -340,7 +374,12 @@ contract LendingPoolConfigurator is VersionedInitializable {
       availableLiquidity == 0 && totalBorrowsStable == 0 && totalBorrowsVariable == 0,
       'The liquidity of the reserve needs to be 0'
     );
-    pool.setReserveActive(_reserve, false);
+
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setActive(false);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit ReserveDeactivated(_reserve);
   }
@@ -350,8 +389,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function freezeReserve(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveFreeze(_reserve, true);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setFrozen(true);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit ReserveFreezed(_reserve);
   }
@@ -361,8 +403,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    **/
   function unfreezeReserve(address _reserve) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveFreeze(_reserve, false);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setFrozen(false);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
 
     emit ReserveUnfreezed(_reserve);
   }
@@ -372,12 +417,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    * @param _ltv the new value for the loan to value
    **/
-  function setReserveBaseLTVasCollateral(address _reserve, uint256 _ltv)
-    external
-    onlyLendingPoolManager
-  {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveBaseLTVasCollateral(_reserve, _ltv);
+  function setLtv(address _reserve, uint256 _ltv) external onlyLendingPoolManager {
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setLtv(_ltv);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
+
     emit ReserveBaseLtvChanged(_reserve, _ltv);
   }
 
@@ -386,12 +432,16 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    * @param _threshold the new value for the liquidation threshold
    **/
-  function setReserveLiquidationThreshold(address _reserve, uint256 _threshold)
+  function setLiquidationThreshold(address _reserve, uint256 _threshold)
     external
     onlyLendingPoolManager
   {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveLiquidationThreshold(_reserve, _threshold);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setLiquidationThreshold(_threshold);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
+
     emit ReserveLiquidationThresholdChanged(_reserve, _threshold);
   }
 
@@ -400,12 +450,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _reserve the address of the reserve
    * @param _bonus the new value for the liquidation bonus
    **/
-  function setReserveLiquidationBonus(address _reserve, uint256 _bonus)
-    external
-    onlyLendingPoolManager
-  {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveLiquidationBonus(_reserve, _bonus);
+  function setLiquidationBonus(address _reserve, uint256 _bonus) external onlyLendingPoolManager {
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setLiquidationBonus(_bonus);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
+
     emit ReserveLiquidationBonusChanged(_reserve, _bonus);
   }
 
@@ -415,8 +466,12 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param _decimals the new number of decimals
    **/
   function setReserveDecimals(address _reserve, uint256 _decimals) external onlyLendingPoolManager {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
-    pool.setReserveDecimals(_reserve, _decimals);
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(_reserve);
+
+    currentConfig.setDecimals(_decimals);
+
+    pool.setConfiguration(_reserve, currentConfig.data);
+
     emit ReserveDecimalsChanged(_reserve, _decimals);
   }
 
@@ -429,7 +484,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
     external
     onlyLendingPoolManager
   {
-    LendingPool pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
     pool.setReserveInterestRateStrategyAddress(_reserve, _rateStrategyAddress);
     emit ReserveInterestRateStrategyChanged(_reserve, _rateStrategyAddress);
   }

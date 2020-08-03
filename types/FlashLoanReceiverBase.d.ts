@@ -11,7 +11,8 @@ interface FlashLoanReceiverBaseInterface extends Interface {
     addressesProvider: TypedFunctionDescription<{encode([]: []): string}>;
 
     executeOperation: TypedFunctionDescription<{
-      encode([_reserve, _amount, _fee, _params]: [
+      encode([_reserve, _destination, _amount, _fee, _params]: [
+        string,
         string,
         BigNumberish,
         BigNumberish,
@@ -41,6 +42,7 @@ export class FlashLoanReceiverBase extends Contract {
 
     executeOperation(
       _reserve: string,
+      _destination: string,
       _amount: BigNumberish,
       _fee: BigNumberish,
       _params: Arrayish,
@@ -52,6 +54,7 @@ export class FlashLoanReceiverBase extends Contract {
 
   executeOperation(
     _reserve: string,
+    _destination: string,
     _amount: BigNumberish,
     _fee: BigNumberish,
     _params: Arrayish,
@@ -65,6 +68,7 @@ export class FlashLoanReceiverBase extends Contract {
 
     executeOperation(
       _reserve: string,
+      _destination: string,
       _amount: BigNumberish,
       _fee: BigNumberish,
       _params: Arrayish

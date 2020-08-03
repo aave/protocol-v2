@@ -9,6 +9,7 @@ import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import '../interfaces/IExchangeAdapter.sol';
 import '../libraries/UniversalERC20.sol';
+import {PercentageMath} from '../libraries/PercentageMath.sol';
 
 /// @title TokenDistributor
 /// @author Aave
@@ -22,6 +23,7 @@ import '../libraries/UniversalERC20.sol';
 ///    and burn it (sending to address(0) the tokenToBurn)
 contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
   using SafeMath for uint256;
+  using PercentageMath for uint256;
   using UniversalERC20 for IERC20;
 
   struct Distribution {
@@ -126,10 +128,9 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
     public
   {
     for (uint256 i = 0; i < _tokens.length; i++) {
-      uint256 _amountToDistribute = _tokens[i]
-        .universalBalanceOf(address(this))
-        .mul(_percentages[i])
-        .div(100);
+      uint256 _amountToDistribute = _tokens[i].universalBalanceOf(address(this)).percentMul(
+        _percentages[i]
+      );
 
       if (_amountToDistribute <= 0) {
         continue;

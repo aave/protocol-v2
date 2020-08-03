@@ -167,45 +167,45 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Changes LTV of the reserve', async () => {
     const {configurator, pool} = testEnv;
-    await configurator.setReserveBaseLTVasCollateral(MOCK_ETH_ADDRESS, '60');
+    await configurator.setLtv(MOCK_ETH_ADDRESS, '60');
     const {ltv}: any = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
     expect(ltv).to.be.bignumber.equal('60', 'Invalid LTV');
   });
 
-  it('Check the onlyLendingPoolManager on setReserveBaseLTVasCollateral', async () => {
+  it('Check the onlyLendingPoolManager on setLtv', async () => {
     const {configurator, users} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setReserveBaseLTVasCollateral(MOCK_ETH_ADDRESS, '75'),
+      configurator.connect(users[2].signer).setLtv(MOCK_ETH_ADDRESS, '75'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Changes liquidation threshold of the reserve', async () => {
     const {configurator, pool} = testEnv;
-    await configurator.setReserveLiquidationThreshold(MOCK_ETH_ADDRESS, '75');
+    await configurator.setLiquidationThreshold(MOCK_ETH_ADDRESS, '75');
     const {liquidationThreshold}: any = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
     expect(liquidationThreshold).to.be.bignumber.equal('75', 'Invalid Liquidation threshold');
   });
 
-  it('Check the onlyLendingPoolManager on setReserveLiquidationThreshold', async () => {
+  it('Check the onlyLendingPoolManager on setLiquidationThreshold', async () => {
     const {configurator, users} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setReserveLiquidationThreshold(MOCK_ETH_ADDRESS, '80'),
+      configurator.connect(users[2].signer).setLiquidationThreshold(MOCK_ETH_ADDRESS, '80'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Changes liquidation bonus of the reserve', async () => {
     const {configurator, pool} = testEnv;
-    await configurator.setReserveLiquidationBonus(MOCK_ETH_ADDRESS, '110');
+    await configurator.setLiquidationBonus(MOCK_ETH_ADDRESS, '110');
     const {liquidationBonus} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
     expect(liquidationBonus).to.be.bignumber.equal('110', 'Invalid Liquidation discount');
   });
 
-  it('Check the onlyLendingPoolManager on setReserveLiquidationBonus', async () => {
+  it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {
     const {configurator, users} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setReserveLiquidationBonus(MOCK_ETH_ADDRESS, '80'),
+      configurator.connect(users[2].signer).setLiquidationBonus(MOCK_ETH_ADDRESS, '80'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
@@ -218,10 +218,10 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
-  it('Check the onlyLendingPoolManager on setReserveLiquidationBonus', async () => {
+  it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {
     const {configurator, users} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setReserveLiquidationBonus(MOCK_ETH_ADDRESS, '80'),
+      configurator.connect(users[2].signer).setLiquidationBonus(MOCK_ETH_ADDRESS, '80'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });

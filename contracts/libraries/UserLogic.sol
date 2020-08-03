@@ -7,6 +7,7 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../tokenization/base/DebtTokenBase.sol';
 import './ReserveLogic.sol';
+import './ReserveConfiguration.sol';
 
 /**
  * @title UserLogic library
@@ -15,6 +16,7 @@ import './ReserveLogic.sol';
  */
 library UserLogic {
   using SafeMath for uint256;
+  using ReserveConfiguration for ReserveConfiguration.Map;
 
   struct UserReserveData {
     //defines if a specific deposit should or not be used as a collateral in borrows
@@ -39,7 +41,7 @@ library UserLogic {
 
     return
       !_user.useAsCollateral ||
-      !_reserve.usageAsCollateralEnabled ||
+      _reserve.configuration.getLtv() == 0 ||
       _amount > IERC20(_reserve.aTokenAddress).balanceOf(_userAddress);
   }
 

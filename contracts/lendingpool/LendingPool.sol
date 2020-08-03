@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
+pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
 import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
@@ -14,6 +15,7 @@ import '../libraries/ReserveLogic.sol';
 import '../libraries/UserLogic.sol';
 import '../libraries/GenericLogic.sol';
 import '../libraries/ValidationLogic.sol';
+import '../libraries/ReserveConfiguration.sol';
 import '../libraries/UniversalERC20.sol';
 import '../tokenization/interfaces/IStableDebtToken.sol';
 import '../tokenization/interfaces/IVariableDebtToken.sol';
@@ -36,6 +38,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   using Address for address payable;
   using ReserveLogic for ReserveLogic.ReserveData;
   using UserLogic for UserLogic.UserReserveData;
+  using ReserveConfiguration for ReserveConfiguration.Map;
 
   //main configuration parameters
   uint256 private constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
@@ -336,7 +339,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 amountInETH = IPriceOracleGetter(addressesProvider.getPriceOracle())
       .getAssetPrice(_reserve)
       .mul(_amount)
-      .div(10**reserve.decimals); //price is in ether
+      .div(10**reserve.configuration.getDecimals()); //price is in ether
 
     ValidationLogic.validateBorrow(
       reserve,
@@ -743,16 +746,16 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     return (
-      reserve.decimals,
-      reserve.baseLTVasCollateral,
-      reserve.liquidationThreshold,
-      reserve.liquidationBonus,
+      reserve.configuration.getDecimals(),
+      reserve.configuration.getLtv(),
+      reserve.configuration.getLiquidationThreshold(),
+      reserve.configuration.getLiquidationBonus(),
       reserve.interestRateStrategyAddress,
-      reserve.usageAsCollateralEnabled,
-      reserve.borrowingEnabled,
-      reserve.isStableBorrowRateEnabled,
-      reserve.isActive,
-      reserve.isFreezed
+      reserve.configuration.getLtv() != 0,
+      reserve.configuration.getBorrowingEnabled(),
+      reserve.configuration.getStableRateBorrowingEnabled(),
+      reserve.configuration.getActive(),
+      reserve.configuration.getFrozen()
     );
   }
 
@@ -811,7 +814,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     returns (
       uint256 totalCollateralETH,
       uint256 totalBorrowsETH,
-      uint256 totalFeesETH,
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
@@ -821,7 +823,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     (
       totalCollateralETH,
       totalBorrowsETH,
-      totalFeesETH,
       ltv,
       currentLiquidationThreshold,
       healthFactor
@@ -836,9 +837,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
       totalCollateralETH,
       totalBorrowsETH,
-      totalFeesETH,
-      ltv,
-      address(feeProvider)
+      ltv
     );
   }
 
@@ -885,7 +884,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @dev initializes a reserve
    * @param _reserve the address of the reserve
    * @param _aTokenAddress the address of the overlying aToken contract
-   * @param _decimals the decimals of the reserve currency
    * @param _interestRateStrategyAddress the address of the interest rate strategy contract
    **/
   function initReserve(
@@ -893,14 +891,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address _aTokenAddress,
     address _stableDebtAddress,
     address _variableDebtAddress,
-    uint256 _decimals,
     address _interestRateStrategyAddress
   ) external onlyLendingPoolConfigurator {
     reserves[_reserve].init(
       _aTokenAddress,
       _stableDebtAddress,
       _variableDebtAddress,
-      _decimals,
       _interestRateStrategyAddress
     );
     addReserveToListInternal(_reserve);
@@ -919,142 +915,19 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     reserves[_reserve].interestRateStrategyAddress = _rateStrategyAddress;
   }
 
-  /**
-   * @dev enables borrowing on a reserve. Also sets the stable rate borrowing
-   * @param _reserve the address of the reserve
-   * @param _stableBorrowRateEnabled true if the stable rate needs to be enabled, false otherwise
-   **/
-
-  function setReserveBorrowingEnabled(
-    address _reserve,
-    bool _borrowingEnabled,
-    bool _stableBorrowRateEnabled
-  ) external onlyLendingPoolConfigurator {
-    if (_borrowingEnabled) {
-      reserves[_reserve].enableBorrowing(_stableBorrowRateEnabled);
-    } else {
-      reserves[_reserve].disableBorrowing();
-    }
-  }
-
-  /**
-   * @dev enables a reserve to be used as collateral
-   * @param _reserve the address of the reserve
-   **/
-  function enableReserveAsCollateral(
-    address _reserve,
-    uint256 _baseLTVasCollateral,
-    uint256 _liquidationThreshold,
-    uint256 _liquidationBonus
-  ) external onlyLendingPoolConfigurator {
-    reserves[_reserve].enableAsCollateral(
-      _baseLTVasCollateral,
-      _liquidationThreshold,
-      _liquidationBonus
-    );
-  }
-
-  /**
-   * @dev disables a reserve to be used as collateral
-   * @param _reserve the address of the reserve
-   **/
-  function disableReserveAsCollateral(address _reserve) external onlyLendingPoolConfigurator {
-    reserves[_reserve].disableAsCollateral();
-  }
-
-  /**
-   * @dev enable the stable borrow rate mode on a reserve
-   * @param _reserve the address of the reserve
-   **/
-  function setReserveStableBorrowRateEnabled(address _reserve, bool _enabled)
+  function setConfiguration(address _reserve, uint256 _configuration)
     external
     onlyLendingPoolConfigurator
   {
-    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    reserve.isStableBorrowRateEnabled = _enabled;
+    reserves[_reserve].configuration.data = _configuration;
   }
 
-  /**
-   * @dev activates a reserve
-   * @param _reserve the address of the reserve
-   **/
-  function setReserveActive(address _reserve, bool _active) external onlyLendingPoolConfigurator {
-    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-
-    if (!_active) {
-      reserve.isActive = false;
-    } else {
-      require(
-        reserve.lastLiquidityCumulativeIndex > 0 && reserve.lastVariableBorrowCumulativeIndex > 0,
-        'Reserve has not been initialized yet'
-      );
-      reserve.isActive = true;
-    }
-  }
-
-  /**
-   * @notice allows the configurator to freeze the reserve.
-   * A freezed reserve does not allow any action apart from repay, redeem, liquidationCall, rebalance.
-   * @param _reserve the address of the reserve
-   **/
-  function setReserveFreeze(address _reserve, bool _isFreezed)
+  function getConfiguration(address _reserve)
     external
-    onlyLendingPoolConfigurator
+    view
+    returns (ReserveConfiguration.Map memory)
   {
-    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    reserve.isFreezed = _isFreezed;
-  }
-
-  /**
-   * @notice allows the configurator to update the loan to value of a reserve
-   * @param _reserve the address of the reserve
-   * @param _ltv the new loan to value
-   **/
-  function setReserveBaseLTVasCollateral(address _reserve, uint256 _ltv)
-    external
-    onlyLendingPoolConfigurator
-  {
-    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    reserve.baseLTVasCollateral = _ltv;
-  }
-
-  /**
-   * @notice allows the configurator to update the liquidation threshold of a reserve
-   * @param _reserve the address of the reserve
-   * @param _threshold the new liquidation threshold
-   **/
-  function setReserveLiquidationThreshold(address _reserve, uint256 _threshold)
-    external
-    onlyLendingPoolConfigurator
-  {
-    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    reserve.liquidationThreshold = _threshold;
-  }
-
-  /**
-   * @notice allows the configurator to update the liquidation bonus of a reserve
-   * @param _reserve the address of the reserve
-   * @param _bonus the new liquidation bonus
-   **/
-  function setReserveLiquidationBonus(address _reserve, uint256 _bonus)
-    external
-    onlyLendingPoolConfigurator
-  {
-    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    reserve.liquidationBonus = _bonus;
-  }
-
-  /**
-   * @notice allows the configurator to update the reserve decimals
-   * @param _reserve the address of the reserve
-   * @param _decimals the decimals of the reserve
-   **/
-  function setReserveDecimals(address _reserve, uint256 _decimals)
-    external
-    onlyLendingPoolConfigurator
-  {
-    ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    reserve.decimals = _decimals;
+    return reserves[_reserve].configuration;
   }
 
   /**

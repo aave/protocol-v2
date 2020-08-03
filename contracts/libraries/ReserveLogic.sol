@@ -9,6 +9,7 @@ import {MathUtils} from './MathUtils.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {UniversalERC20} from './UniversalERC20.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
+import {ReserveConfiguration} from './ReserveConfiguration.sol';
 
 import '../configuration/LendingPoolAddressesProvider.sol';
 import '../interfaces/ILendingRateOracle.sol';
@@ -29,6 +30,7 @@ library ReserveLogic {
   using Address for address;
   using UserLogic for UserLogic.UserReserveData;
   using ReserveLogic for ReserveLogic.ReserveData;
+  using ReserveConfiguration for ReserveConfiguration.Map;
 
   enum InterestRateMode {NONE, STABLE, VARIABLE}
 
@@ -46,14 +48,7 @@ library ReserveLogic {
     uint256 currentStableBorrowRate;
     //variable borrow index. Expressed in ray
     uint256 lastVariableBorrowCumulativeIndex;
-    //the ltv of the reserve. Expressed in percentage (0-100)
-    uint256 baseLTVasCollateral;
-    //the liquidation threshold of the reserve. Expressed in percentage (0-100)
-    uint256 liquidationThreshold;
-    //the liquidation bonus of the reserve. Expressed in percentage
-    uint256 liquidationBonus;
-    //the decimals of the reserve asset
-    uint256 decimals;
+    ReserveConfiguration.Map configuration;
     /**
      * @dev address of the aToken representing the asset
      **/
@@ -65,16 +60,8 @@ library ReserveLogic {
      **/
     address interestRateStrategyAddress;
     uint40 lastUpdateTimestamp;
-    // borrowingEnabled = true means users can borrow from this reserve
-    bool borrowingEnabled;
-    // usageAsCollateralEnabled = true means users can use this reserve as collateral
-    bool usageAsCollateralEnabled;
     // isStableBorrowRateEnabled = true means users can borrow at a stable rate
     bool isStableBorrowRateEnabled;
-    // isActive = true means the reserve has been activated and properly configured
-    bool isActive;
-    // isFreezed = true means the reserve only allows repays and redeems, but not deposits, new borrowings or rate swap
-    bool isFreezed;
   }
 
   /**
@@ -164,7 +151,6 @@ library ReserveLogic {
    * @dev initializes a reserve
    * @param _self the reserve object
    * @param _aTokenAddress the address of the overlying atoken contract
-   * @param _decimals the number of decimals of the underlying asset
    * @param _interestRateStrategyAddress the address of the interest rate strategy contract
    **/
   function init(
@@ -172,11 +158,9 @@ library ReserveLogic {
     address _aTokenAddress,
     address _stableDebtAddress,
     address _variableDebtAddress,
-    uint256 _decimals,
     address _interestRateStrategyAddress
   ) external {
     require(_self.aTokenAddress == address(0), 'Reserve has already been initialized');
-
     if (_self.lastLiquidityCumulativeIndex == 0) {
       //if the reserve has not been initialized yet
       _self.lastLiquidityCumulativeIndex = WadRayMath.ray();
@@ -189,63 +173,7 @@ library ReserveLogic {
     _self.aTokenAddress = payable(_aTokenAddress);
     _self.stableDebtTokenAddress = _stableDebtAddress;
     _self.variableDebtTokenAddress = _variableDebtAddress;
-    _self.decimals = _decimals;
-
     _self.interestRateStrategyAddress = _interestRateStrategyAddress;
-    _self.isActive = true;
-    _self.isFreezed = false;
-  }
-
-  /**
-   * @dev enables borrowing on a reserve
-   * @param _self the reserve object
-   * @param _stableBorrowRateEnabled true if the stable borrow rate must be enabled by default, false otherwise
-   **/
-  function enableBorrowing(ReserveData storage _self, bool _stableBorrowRateEnabled) external {
-    require(_self.borrowingEnabled == false, 'Reserve is already enabled');
-
-    _self.borrowingEnabled = true;
-    _self.isStableBorrowRateEnabled = _stableBorrowRateEnabled;
-  }
-
-  /**
-   * @dev disables borrowing on a reserve
-   * @param _self the reserve object
-   **/
-  function disableBorrowing(ReserveData storage _self) external {
-    _self.borrowingEnabled = false;
-  }
-
-  /**
-   * @dev enables a reserve to be used as collateral
-   * @param _self the reserve object
-   * @param _baseLTVasCollateral the loan to value of the asset when used as collateral
-   * @param _liquidationThreshold the threshold at which loans using this asset as collateral will be considered undercollateralized
-   * @param _liquidationBonus the bonus liquidators receive to liquidate this asset
-   **/
-  function enableAsCollateral(
-    ReserveData storage _self,
-    uint256 _baseLTVasCollateral,
-    uint256 _liquidationThreshold,
-    uint256 _liquidationBonus
-  ) external {
-    require(_self.usageAsCollateralEnabled == false, 'Reserve is already enabled as collateral');
-
-    _self.usageAsCollateralEnabled = true;
-    _self.baseLTVasCollateral = _baseLTVasCollateral;
-    _self.liquidationThreshold = _liquidationThreshold;
-    _self.liquidationBonus = _liquidationBonus;
-
-    if (_self.lastLiquidityCumulativeIndex == 0)
-      _self.lastLiquidityCumulativeIndex = WadRayMath.ray();
-  }
-
-  /**
-   * @dev disables a reserve as collateral
-   * @param _self the reserve object
-   **/
-  function disableAsCollateral(ReserveData storage _self) external {
-    _self.usageAsCollateralEnabled = false;
   }
 
   function getTotalBorrows(ReserveData storage _self) internal view returns (uint256) {

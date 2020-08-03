@@ -8,8 +8,9 @@ import {ReserveLogic} from './ReserveLogic.sol';
 import {UserLogic} from './UserLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
+import {PercentageMath} from './PercentageMath.sol';
 import {UniversalERC20} from './UniversalERC20.sol';
-
+import {ReserveConfiguration} from './ReserveConfiguration.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 import '@nomiclabs/buidler/console.sol';
@@ -24,7 +25,9 @@ library ValidationLogic {
   using UserLogic for UserLogic.UserReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
+  using PercentageMath for uint256;
   using UniversalERC20 for IERC20;
+  using ReserveConfiguration for ReserveConfiguration.Map;
 
   /**
    * @dev validates a deposit.
@@ -35,6 +38,8 @@ library ValidationLogic {
     external
     view
   {
+    (bool isActive, bool isFreezed, , ) = _reserve.configuration.getFlags();
+
     internalValidateReserveStateAndAmount(_reserve, _amount);
   }
 
@@ -68,7 +73,6 @@ library ValidationLogic {
     uint256 amountOfCollateralNeededETH;
     uint256 userCollateralBalanceETH;
     uint256 userBorrowBalanceETH;
-    uint256 userTotalFeesETH;
     uint256 borrowBalanceIncrease;
     uint256 currentReserveStableRate;
     uint256 availableLiquidity;
@@ -76,6 +80,10 @@ library ValidationLogic {
     uint256 healthFactor;
     ReserveLogic.InterestRateMode rateMode;
     bool healthFactorBelowThreshold;
+    bool isActive;
+    bool isFreezed;
+    bool borrowingEnabled;
+    bool stableRateBorrowingEnabled;
   }
 
   /**
@@ -108,9 +116,19 @@ library ValidationLogic {
   ) external view {
     ValidateBorrowLocalVars memory vars;
 
-    internalValidateReserveStateAndAmount(_reserve, _amount);
+    //internalValidateReserveStateAndAmount(_reserve, _amount);
 
-    require(_reserve.borrowingEnabled, '5');
+    (
+      vars.isActive,
+      vars.isFreezed,
+      vars.borrowingEnabled,
+      vars.stableRateBorrowingEnabled
+    ) = _reserve.configuration.getFlags();
+
+    require(vars.isActive, 'Action requires an active reserve');
+    require(!vars.isFreezed, 'Action requires an unfreezed reserve');
+
+    require(vars.borrowingEnabled, '5');
 
     //validate interest rate mode
     require(
@@ -129,7 +147,6 @@ library ValidationLogic {
     (
       vars.userCollateralBalanceETH,
       vars.userBorrowBalanceETH,
-      vars.userTotalFeesETH,
       vars.currentLtv,
       vars.currentLiquidationThreshold,
       vars.healthFactor
@@ -146,12 +163,9 @@ library ValidationLogic {
     require(vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD, '8');
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.amountOfCollateralNeededETH = vars
-      .userBorrowBalanceETH
-      .add(vars.userTotalFeesETH)
-      .add(_amountInETH)
-      .mul(100)
-      .div(vars.currentLtv); //LTV is calculated in percentage
+    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(_amountInETH).percentDiv(
+      vars.currentLtv
+    ); //LTV is calculated in percentage
 
     require(
       vars.amountOfCollateralNeededETH <= vars.userCollateralBalanceETH,
@@ -170,18 +184,18 @@ library ValidationLogic {
     if (vars.rateMode == ReserveLogic.InterestRateMode.STABLE) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
-      require(_reserve.isStableBorrowRateEnabled, '11');
+      require(vars.stableRateBorrowingEnabled, '11');
 
       require(
         !_user.useAsCollateral ||
-          !_reserve.usageAsCollateralEnabled ||
+          _reserve.configuration.getLtv() == 0 ||
           _amount > IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
       );
 
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity
-      uint256 maxLoanSizeStable = vars.availableLiquidity.mul(_maxStableLoanPercent).div(100);
+      uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(_maxStableLoanPercent);
 
       require(_amount <= maxLoanSizeStable, '13');
     }
@@ -209,7 +223,9 @@ library ValidationLogic {
     uint256 _actualPaybackAmount,
     uint256 _msgValue
   ) external view {
-    require(_reserve.isActive, 'Action requires an active reserve');
+    bool isActive = _reserve.configuration.getActive();
+
+    require(isActive, 'Action requires an active reserve');
 
     require(_amountSent > 0, 'Amount must be greater than 0');
 
@@ -247,8 +263,10 @@ library ValidationLogic {
     uint256 _variableBorrowBalance,
     ReserveLogic.InterestRateMode _currentRateMode
   ) external view {
-    require(_reserve.isActive, 'Action requires an active reserve');
-    require(!_reserve.isFreezed, 'Action requires an unfreezed reserve');
+    (bool isActive, bool isFreezed, , bool stableRateEnabled) = _reserve.configuration.getFlags();
+
+    require(isActive, 'Action requires an active reserve');
+    require(!isFreezed, 'Action requires an unfreezed reserve');
 
     if (_currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
       require(
@@ -267,11 +285,11 @@ library ValidationLogic {
        * more collateral than he is borrowing, artificially lowering
        * the interest rate, borrowing at variable, and switching to stable
        **/
-      require(_reserve.isStableBorrowRateEnabled, '11');
+      require(stableRateEnabled, '11');
 
       require(
         !_user.useAsCollateral ||
-          !_reserve.usageAsCollateralEnabled ||
+          _reserve.configuration.getLtv() == 0 ||
           _stableBorrowBalance.add(_variableBorrowBalance) >
           IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
@@ -323,8 +341,6 @@ library ValidationLogic {
     ReserveLogic.ReserveData storage _reserve,
     uint256 _amount
   ) internal view {
-    require(_reserve.isActive, 'Action requires an active reserve');
-    require(!_reserve.isFreezed, 'Action requires an unfreezed reserve');
     require(_amount > 0, 'Amount must be greater than 0');
   }
 }
