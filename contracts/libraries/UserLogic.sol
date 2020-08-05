@@ -8,6 +8,8 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../tokenization/base/DebtTokenBase.sol';
 import './ReserveLogic.sol';
 import './ReserveConfiguration.sol';
+import './UserConfiguration.sol';
+
 
 /**
  * @title UserLogic library
@@ -20,6 +22,7 @@ library UserLogic {
 
   struct UserReserveData {
     //defines if a specific deposit should or not be used as a collateral in borrows
+    UserConfiguration.Map configuration;
     bool useAsCollateral;
   }
 

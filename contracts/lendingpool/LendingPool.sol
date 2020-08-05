@@ -16,6 +16,7 @@ import '../libraries/UserLogic.sol';
 import '../libraries/GenericLogic.sol';
 import '../libraries/ValidationLogic.sol';
 import '../libraries/ReserveConfiguration.sol';
+import '../libraries/UserConfiguration.sol';
 import '../libraries/UniversalERC20.sol';
 import '../tokenization/interfaces/IStableDebtToken.sol';
 import '../tokenization/interfaces/IVariableDebtToken.sol';
@@ -39,6 +40,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   using ReserveLogic for ReserveLogic.ReserveData;
   using UserLogic for UserLogic.UserReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   //main configuration parameters
   uint256 private constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
@@ -52,6 +54,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
+  mapping(address => UserConfiguration.Map) internal usersConfig;
 
   address[] public reservesList;
 
@@ -274,6 +277,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     if (isFirstDeposit) {
       user.useAsCollateral = true;
+      usersConfig[msg.sender].setLending(reserve.index, true);
+      console.log("User %s configuration %s", msg.sender, usersConfig[msg.sender].data);
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
@@ -312,6 +317,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     if (_aTokenBalanceAfterRedeem == 0) {
       user.useAsCollateral = false;
+      usersConfig[_user].setLending(reserve.index, false);
     }
 
     AToken(reserve.aTokenAddress).transferUnderlyingTo(_user, _amount);
@@ -335,6 +341,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   ) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
+    UserConfiguration.Map storage userConfig = usersConfig[msg.sender];
 
     uint256 amountInETH = IPriceOracleGetter(addressesProvider.getPriceOracle())
       .getAssetPrice(_reserve)
@@ -350,7 +357,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       _interestRateMode,
       MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
       reserves,
-      usersReserveData,
+      usersConfig[msg.sender],
       reservesList,
       addressesProvider.getPriceOracle()
     );
@@ -372,6 +379,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     reserve.updateInterestRates(_reserve, 0, _amount);
+
+    if(!userConfig.isBorrowing(reserve.index)){
+      userConfig.setBorrowing(reserve.index, true);
+      console.log("User %s configuration %s", msg.sender, userConfig.data);
+    }
 
     //if we reached this point, we can transfer
     AToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, _amount);
@@ -404,6 +416,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 variableDebt;
     uint256 paybackAmount;
     uint256 currentStableRate;
+    uint256 totalDebt;
   }
 
   function repay(
@@ -417,6 +430,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     UserLogic.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
     (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(_onBehalfOf, reserve);
+
+    vars.totalDebt = vars.stableDebt.add(vars.variableDebt);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
@@ -451,6 +466,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     reserve.updateInterestRates(_reserve, vars.paybackAmount, 0);
+    
+    if(vars.totalDebt.sub(vars.paybackAmount) == 0){
+      usersConfig[_onBehalfOf].setBorrowing(reserve.index, false);
+    }
 
     IERC20(_reserve).universalTransferFrom(
       msg.sender,
@@ -587,7 +606,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       reserve,
       _reserve,
       reserves,
-      usersReserveData,
+      usersConfig[msg.sender],
       reservesList,
       addressesProvider.getPriceOracle()
     );
@@ -829,7 +848,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ) = GenericLogic.calculateUserAccountData(
       _user,
       reserves,
-      usersReserveData,
+      usersConfig[_user],
       reservesList,
       addressesProvider.getPriceOracle()
     );
@@ -943,7 +962,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       if (reservesList[i] == _reserve) {
         reserveAlreadyAdded = true;
       }
-    if (!reserveAlreadyAdded) reservesList.push(_reserve);
+    if (!reserveAlreadyAdded) {
+      reserves[_reserve].index = uint8(reservesList.length);
+      reservesList.push(_reserve);
+    }
   }
 
   function getReserveNormalizedIncome(address _reserve) external view returns (uint256) {
@@ -965,7 +987,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         _user,
         _amount,
         reserves,
-        usersReserveData,
+        usersConfig[_user],
         reservesList,
         addressesProvider.getPriceOracle()
       );

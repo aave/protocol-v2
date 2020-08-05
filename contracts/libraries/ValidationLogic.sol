@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
+pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -11,6 +12,7 @@ import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
 import {UniversalERC20} from './UniversalERC20.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
+import {UserConfiguration} from './UserConfiguration.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 import '@nomiclabs/buidler/console.sol';
@@ -28,6 +30,7 @@ library ValidationLogic {
   using PercentageMath for uint256;
   using UniversalERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   /**
    * @dev validates a deposit.
@@ -96,7 +99,6 @@ library ValidationLogic {
    * @param _interestRateMode the interest rate mode at which the user is borrowing
    * @param _maxStableLoanPercent the max amount of the liquidity that can be borrowed at stable rate, in percentage
    * @param _reservesData the state of all the reserves
-   * @param _usersData the state of all the users for all the reserves
    * @param _reserves the addresses of all the active reserves
    * @param _oracle the price oracle
    */
@@ -110,7 +112,7 @@ library ValidationLogic {
     uint256 _interestRateMode,
     uint256 _maxStableLoanPercent,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
+    UserConfiguration.Map calldata userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view {
@@ -153,7 +155,7 @@ library ValidationLogic {
     ) = GenericLogic.calculateUserAccountData(
       msg.sender,
       _reservesData,
-      _usersData,
+      userConfig,
       _reserves,
       _oracle
     );
@@ -304,13 +306,12 @@ library ValidationLogic {
    * @param _reserve the state of the reserve that the user is enabling or disabling as collateral
    * @param _reserveAddress the address of the reserve
    * @param _reservesData the data of all the reserves
-   * @param _usersData the data of all the users
    */
   function validateSetUseReserveAsCollateral(
     ReserveLogic.ReserveData storage _reserve,
     address _reserveAddress,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
+    UserConfiguration.Map calldata userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view {
@@ -324,7 +325,7 @@ library ValidationLogic {
         msg.sender,
         underlyingBalance,
         _reservesData,
-        _usersData,
+        userConfig,
         _reserves,
         _oracle
       ),

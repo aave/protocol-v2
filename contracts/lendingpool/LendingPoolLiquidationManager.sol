@@ -20,6 +20,7 @@ import '../libraries/UserLogic.sol';
 import '../libraries/ReserveLogic.sol';
 import '../libraries/UniversalERC20.sol';
 import '../libraries/ReserveConfiguration.sol';
+import '../libraries/UserConfiguration.sol';
 import {PercentageMath} from '../libraries/PercentageMath.sol';
 
 /**
@@ -36,12 +37,14 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using ReserveLogic for ReserveLogic.ReserveData;
   using UserLogic for UserLogic.UserReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   LendingPoolAddressesProvider public addressesProvider;
   IFeeProvider feeProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
+  mapping(address => UserConfiguration.Map) usersConfig;
 
   address[] public reservesList;
 
@@ -131,7 +134,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       _user,
       reserves,
-      usersReserveData,
+      usersConfig[_user],
       reservesList,
       addressesProvider.getPriceOracle()
     );

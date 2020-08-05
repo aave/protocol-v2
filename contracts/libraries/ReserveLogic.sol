@@ -62,6 +62,8 @@ library ReserveLogic {
     uint40 lastUpdateTimestamp;
     // isStableBorrowRateEnabled = true means users can borrow at a stable rate
     bool isStableBorrowRateEnabled;
+
+    uint8 index;
   }
 
   /**

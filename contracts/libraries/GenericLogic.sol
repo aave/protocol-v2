@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
+pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import {ReserveLogic} from './ReserveLogic.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
+import {UserConfiguration} from './UserConfiguration.sol';
 import {UserLogic} from './UserLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
@@ -25,6 +27,7 @@ library GenericLogic {
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1e18;
 
@@ -55,16 +58,21 @@ library GenericLogic {
     address _user,
     uint256 _amount,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
+    UserConfiguration.Map calldata _userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view returns (bool) {
+
+    if(!_userConfig.isBorrowingAny()){
+      return true;
+    }
+    
     // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     balanceDecreaseAllowedLocalVars memory vars;
 
     (vars.ltv, , , vars.decimals) = _reservesData[_reserve].configuration.getParams();
 
-    if (vars.ltv == 0 || !_usersData[_user][_reserve].useAsCollateral) {
+    if (vars.ltv == 0 || !_userConfig.isLending(_reservesData[_reserve].index)) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer
     }
 
@@ -74,7 +82,7 @@ library GenericLogic {
       ,
       vars.currentLiquidationThreshold,
 
-    ) = calculateUserAccountData(_user, _reservesData, _usersData, _reserves, _oracle);
+    ) = calculateUserAccountData(_user, _reservesData, _userConfig, _reserves, _oracle);
 
     if (vars.borrowBalanceETH == 0) {
       return true; //no borrows - no reasons to block the transfer
@@ -134,18 +142,17 @@ library GenericLogic {
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
    * @param _user the address of the user
    * @param _reservesData data of all the reserves
-   * @param _usersReserveData data
    * @return the total liquidity, total collateral, total borrow balances of the user in ETH.
    * also the average Ltv, liquidation threshold, and the health factor
    **/
   function calculateUserAccountData(
     address _user,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersReserveData,
+    UserConfiguration.Map memory userConfig,
     address[] memory _reserves,
     address _oracle
   )
-    public
+    internal
     view
     returns (
       uint256,
@@ -158,6 +165,11 @@ library GenericLogic {
     CalculateUserAccountDataVars memory vars;
 
     for (vars.i = 0; vars.i < _reserves.length; vars.i++) {
+
+      if(!userConfig.isLendingOrBorrowing(vars.i)){
+        continue;
+      }
+
       vars.currentReserveAddress = _reserves[vars.i];
 
       ReserveLogic.ReserveData storage currentReserve = _reservesData[vars.currentReserveAddress];
@@ -186,7 +198,7 @@ library GenericLogic {
           .mul(vars.compoundedLiquidityBalance)
           .div(vars.tokenUnit);
 
-        if (vars.ltv != 0 && _usersReserveData[_user][_reserves[vars.i]].useAsCollateral) {
+        if (vars.ltv != 0 && userConfig.isLending(vars.i)) {
           vars.totalCollateralBalanceETH = vars.totalCollateralBalanceETH.add(liquidityBalanceETH);
 
           vars.avgLtv = vars.avgLtv.add(liquidityBalanceETH.mul(vars.ltv));
