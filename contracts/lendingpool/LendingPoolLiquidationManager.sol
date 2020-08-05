@@ -43,8 +43,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   IFeeProvider feeProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
-  mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
-  mapping(address => UserConfiguration.Map) usersConfig;
+  mapping(address => UserConfiguration.Map) internal usersConfig;
 
   address[] public reservesList;
 
@@ -127,7 +126,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   ) external payable returns (uint256, string memory) {
     ReserveLogic.ReserveData storage principalReserve = reserves[_reserve];
     ReserveLogic.ReserveData storage collateralReserve = reserves[_collateral];
-    UserLogic.UserReserveData storage userCollateral = usersReserveData[_user][_collateral];
+    UserConfiguration.Map storage userConfig = usersConfig[_user];
 
     LiquidationCallLocalVars memory vars;
 
@@ -148,17 +147,10 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     vars.userCollateralBalance = IERC20(collateralReserve.aTokenAddress).balanceOf(_user);
 
-    //if _user hasn't deposited this specific collateral, nothing can be liquidated
-    if (vars.userCollateralBalance == 0) {
-      return (
-        uint256(LiquidationErrors.NO_COLLATERAL_AVAILABLE),
-        'Invalid collateral to liquidate'
-      );
-    }
 
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-      userCollateral.useAsCollateral;
+      userConfig.isUsingAsCollateral(collateralReserve.index);
 
     //if _collateral isn't enabled as collateral by _user, it cannot be liquidated
     if (!vars.isCollateralEnabled) {

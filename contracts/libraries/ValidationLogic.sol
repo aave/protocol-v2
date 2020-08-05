@@ -92,33 +92,30 @@ library ValidationLogic {
   /**
    * @dev validates a borrow.
    * @param _reserve the reserve state from which the user is borrowing
-   * @param _user the state of the user for the specific reserve
    * @param _reserveAddress the address of the reserve
    * @param _amount the amount to be borrowed
    * @param _amountInETH the amount to be borrowed, in ETH
    * @param _interestRateMode the interest rate mode at which the user is borrowing
    * @param _maxStableLoanPercent the max amount of the liquidity that can be borrowed at stable rate, in percentage
    * @param _reservesData the state of all the reserves
+   * @param _userConfig the state of the user for the specific reserve
    * @param _reserves the addresses of all the active reserves
    * @param _oracle the price oracle
    */
 
   function validateBorrow(
     ReserveLogic.ReserveData storage _reserve,
-    UserLogic.UserReserveData storage _user,
     address _reserveAddress,
     uint256 _amount,
     uint256 _amountInETH,
     uint256 _interestRateMode,
     uint256 _maxStableLoanPercent,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    UserConfiguration.Map calldata userConfig,
+    UserConfiguration.Map storage _userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view {
     ValidateBorrowLocalVars memory vars;
-
-    //internalValidateReserveStateAndAmount(_reserve, _amount);
 
     (
       vars.isActive,
@@ -155,7 +152,7 @@ library ValidationLogic {
     ) = GenericLogic.calculateUserAccountData(
       msg.sender,
       _reservesData,
-      userConfig,
+      _userConfig,
       _reserves,
       _oracle
     );
@@ -189,7 +186,7 @@ library ValidationLogic {
       require(vars.stableRateBorrowingEnabled, '11');
 
       require(
-        !_user.useAsCollateral ||
+        !_userConfig.isUsingAsCollateral(_reserve.index) ||
           _reserve.configuration.getLtv() == 0 ||
           _amount > IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
@@ -253,14 +250,14 @@ library ValidationLogic {
   /**
    * @dev validates a swap of borrow rate mode.
    * @param _reserve the reserve state on which the user is swapping the rate
-   * @param _user the user state for the reserve on which user is swapping the rate
+   * @param _userConfig the user reserves configuration
    * @param _stableBorrowBalance the stable borrow balance of the user
    * @param _variableBorrowBalance the stable borrow balance of the user
    * @param _currentRateMode the rate mode of the borrow
    */
   function validateSwapRateMode(
     ReserveLogic.ReserveData storage _reserve,
-    UserLogic.UserReserveData storage _user,
+    UserConfiguration.Map storage _userConfig,
     uint256 _stableBorrowBalance,
     uint256 _variableBorrowBalance,
     ReserveLogic.InterestRateMode _currentRateMode
@@ -290,7 +287,7 @@ library ValidationLogic {
       require(stableRateEnabled, '11');
 
       require(
-        !_user.useAsCollateral ||
+        !_userConfig.isUsingAsCollateral(_reserve.index) ||
           _reserve.configuration.getLtv() == 0 ||
           _stableBorrowBalance.add(_variableBorrowBalance) >
           IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
@@ -311,7 +308,7 @@ library ValidationLogic {
     ReserveLogic.ReserveData storage _reserve,
     address _reserveAddress,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    UserConfiguration.Map calldata userConfig,
+    UserConfiguration.Map storage userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view {

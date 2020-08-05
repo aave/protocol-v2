@@ -63,16 +63,16 @@ library GenericLogic {
     address _oracle
   ) external view returns (bool) {
 
-    if(!_userConfig.isBorrowingAny()){
+    if (!_userConfig.isBorrowingAny() || !_userConfig.isUsingAsCollateral(_reservesData[_reserve].index)) {
       return true;
     }
-    
+
     // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     balanceDecreaseAllowedLocalVars memory vars;
 
     (vars.ltv, , , vars.decimals) = _reservesData[_reserve].configuration.getParams();
 
-    if (vars.ltv == 0 || !_userConfig.isLending(_reservesData[_reserve].index)) {
+    if (vars.ltv == 0) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer
     }
 
@@ -130,6 +130,7 @@ library GenericLogic {
     uint256 avgLtv;
     uint256 avgLiquidationThreshold;
     uint256 reservesLength;
+    UserConfiguration.Map userConfig;
     bool healthFactorBelowThreshold;
     address currentReserveAddress;
     bool usageAsCollateralEnabled;
@@ -148,7 +149,7 @@ library GenericLogic {
   function calculateUserAccountData(
     address _user,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    UserConfiguration.Map memory userConfig,
+    UserConfiguration.Map memory _userConfig,
     address[] memory _reserves,
     address _oracle
   )
@@ -164,51 +165,48 @@ library GenericLogic {
   {
     CalculateUserAccountDataVars memory vars;
 
+    if (_userConfig.isEmpty()) {
+      return (0, 0, 0, 0, uint256(-1));
+    }
     for (vars.i = 0; vars.i < _reserves.length; vars.i++) {
-
-      if(!userConfig.isLendingOrBorrowing(vars.i)){
+      if (!_userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
         continue;
       }
 
       vars.currentReserveAddress = _reserves[vars.i];
-
       ReserveLogic.ReserveData storage currentReserve = _reservesData[vars.currentReserveAddress];
-
-      vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(_user);
-      vars.compoundedBorrowBalance = IERC20(currentReserve.stableDebtTokenAddress).balanceOf(_user);
-      vars.compoundedBorrowBalance = vars.compoundedBorrowBalance.add(
-        IERC20(currentReserve.variableDebtTokenAddress).balanceOf(_user)
-      );
-
-      if (vars.compoundedLiquidityBalance == 0 && vars.compoundedBorrowBalance == 0) {
-        continue;
-      }
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals) = currentReserve
         .configuration
         .getParams();
 
       vars.tokenUnit = 10**vars.decimals;
-      vars.reserveUnitPrice = IPriceOracleGetter(_oracle).getAssetPrice(_reserves[vars.i]);
+      vars.reserveUnitPrice = IPriceOracleGetter(_oracle).getAssetPrice(vars.currentReserveAddress);
 
-      //liquidity and collateral balance
-      if (vars.compoundedLiquidityBalance > 0) {
+      if (vars.ltv != 0 && _userConfig.isUsingAsCollateral(vars.i)) {
+        vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(_user);
+
         uint256 liquidityBalanceETH = vars
           .reserveUnitPrice
           .mul(vars.compoundedLiquidityBalance)
           .div(vars.tokenUnit);
 
-        if (vars.ltv != 0 && userConfig.isLending(vars.i)) {
-          vars.totalCollateralBalanceETH = vars.totalCollateralBalanceETH.add(liquidityBalanceETH);
+        vars.totalCollateralBalanceETH = vars.totalCollateralBalanceETH.add(liquidityBalanceETH);
 
-          vars.avgLtv = vars.avgLtv.add(liquidityBalanceETH.mul(vars.ltv));
-          vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
-            liquidityBalanceETH.mul(vars.liquidationThreshold)
-          );
-        }
+        vars.avgLtv = vars.avgLtv.add(liquidityBalanceETH.mul(vars.ltv));
+        vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
+          liquidityBalanceETH.mul(vars.liquidationThreshold)
+        );
       }
 
-      if (vars.compoundedBorrowBalance > 0) {
+      if (_userConfig.isBorrowing(vars.i)) {
+        vars.compoundedBorrowBalance = IERC20(currentReserve.stableDebtTokenAddress).balanceOf(
+          _user
+        );
+        vars.compoundedBorrowBalance = vars.compoundedBorrowBalance.add(
+          IERC20(currentReserve.variableDebtTokenAddress).balanceOf(_user)
+        );
+
         vars.totalBorrowBalanceETH = vars.totalBorrowBalanceETH.add(
           vars.reserveUnitPrice.mul(vars.compoundedBorrowBalance).div(vars.tokenUnit)
         );

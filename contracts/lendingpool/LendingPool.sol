@@ -53,7 +53,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   using UniversalERC20 for IERC20;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
-  mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
   mapping(address => UserConfiguration.Map) internal usersConfig;
 
   address[] public reservesList;
@@ -264,7 +263,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint16 _referralCode
   ) external payable nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     ValidationLogic.validateDeposit(reserve, _amount);
 
@@ -276,9 +274,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     reserve.updateInterestRates(_reserve, _amount, 0);
 
     if (isFirstDeposit) {
-      user.useAsCollateral = true;
-      usersConfig[msg.sender].setLending(reserve.index, true);
-      console.log("User %s configuration %s", msg.sender, usersConfig[msg.sender].data);
+      usersConfig[msg.sender].setUsingAsCollateral(reserve.index, true);
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
@@ -305,7 +301,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _aTokenBalanceAfterRedeem
   ) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[_user][_reserve];
 
     AToken aToken = AToken(payable(reserve.aTokenAddress));
 
@@ -316,8 +311,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     reserve.updateInterestRates(_reserve, 0, _amount);
 
     if (_aTokenBalanceAfterRedeem == 0) {
-      user.useAsCollateral = false;
-      usersConfig[_user].setLending(reserve.index, false);
+      usersConfig[_user].setUsingAsCollateral(reserve.index, false);
     }
 
     AToken(reserve.aTokenAddress).transferUnderlyingTo(_user, _amount);
@@ -340,7 +334,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint16 _referralCode
   ) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
     UserConfiguration.Map storage userConfig = usersConfig[msg.sender];
 
     uint256 amountInETH = IPriceOracleGetter(addressesProvider.getPriceOracle())
@@ -350,7 +343,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     ValidationLogic.validateBorrow(
       reserve,
-      user,
       _reserve,
       _amount,
       amountInETH,
@@ -382,7 +374,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     if(!userConfig.isBorrowing(reserve.index)){
       userConfig.setBorrowing(reserve.index, true);
-      console.log("User %s configuration %s", msg.sender, userConfig.data);
     }
 
     //if we reached this point, we can transfer
@@ -427,7 +418,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   ) external payable nonReentrant {
     RepayLocalVars memory vars;
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
     (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(_onBehalfOf, reserve);
 
@@ -504,13 +494,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    **/
   function swapBorrowRateMode(address _reserve, uint256 _rateMode) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(msg.sender, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
-    ValidationLogic.validateSwapRateMode(reserve, user, stableDebt, variableDebt, rateMode);
+    ValidationLogic.validateSwapRateMode(reserve, usersConfig[msg.sender], stableDebt, variableDebt, rateMode);
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
@@ -600,7 +589,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     nonReentrant
   {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
@@ -611,7 +599,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       addressesProvider.getPriceOracle()
     );
 
-    user.useAsCollateral = _useAsCollateral;
+    usersConfig[msg.sender].setUsingAsCollateral(reserve.index, _useAsCollateral);
 
     if (_useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(_reserve, msg.sender);
@@ -886,7 +874,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(
       _user
     );
-    usageAsCollateralEnabled = usersReserveData[_user][_reserve].useAsCollateral;
+    usageAsCollateralEnabled = usersConfig[_user].isUsingAsCollateral(reserve.index);
     variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(_user);
   }
 
