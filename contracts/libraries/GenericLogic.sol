@@ -128,7 +128,6 @@ library GenericLogic {
     uint256 avgLtv;
     uint256 avgLiquidationThreshold;
     uint256 reservesLength;
-    UserConfiguration.Map userConfig;
     bool healthFactorBelowThreshold;
     address currentReserveAddress;
     bool usageAsCollateralEnabled;
@@ -141,7 +140,10 @@ library GenericLogic {
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
    * @param _user the address of the user
    * @param _reservesData data of all the reserves
-   * @return the total liquidity, total collateral, total borrow balances of the user in ETH.
+   * @param _userConfig the configuration of the user
+   * @param _reserves the list of the available reserves
+   * @param _oracle the price oracle address
+   * @return the total collateral and total borrow balance of the user in ETH, the avg ltv and liquidation threshold and the HF
    * also the average Ltv, liquidation threshold, and the health factor
    **/
   function calculateUserAccountData(

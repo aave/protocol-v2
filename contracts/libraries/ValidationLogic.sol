@@ -301,12 +301,15 @@ library ValidationLogic {
    * @param _reserve the state of the reserve that the user is enabling or disabling as collateral
    * @param _reserveAddress the address of the reserve
    * @param _reservesData the data of all the reserves
+   * @param _userConfig the state of the user for the specific reserve
+   * @param _reserves the addresses of all the active reserves
+   * @param _oracle the price oracle
    */
   function validateSetUseReserveAsCollateral(
     ReserveLogic.ReserveData storage _reserve,
     address _reserveAddress,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    UserConfiguration.Map storage userConfig,
+    UserConfiguration.Map storage _userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view {
@@ -320,7 +323,7 @@ library ValidationLogic {
         msg.sender,
         underlyingBalance,
         _reservesData,
-        userConfig,
+        _userConfig,
         _reserves,
         _oracle
       ),
