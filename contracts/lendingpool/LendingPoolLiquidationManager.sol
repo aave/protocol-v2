@@ -16,7 +16,7 @@ import '../tokenization/interfaces/IVariableDebtToken.sol';
 import '../libraries/WadRayMath.sol';
 import '../interfaces/IPriceOracleGetter.sol';
 import '../libraries/GenericLogic.sol';
-import '../libraries/UserLogic.sol';
+import '../libraries/Helpers.sol';
 import '../libraries/ReserveLogic.sol';
 import '../libraries/UniversalERC20.sol';
 import '../libraries/ReserveConfiguration.sol';
@@ -35,7 +35,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using PercentageMath for uint256;
   using Address for address;
   using ReserveLogic for ReserveLogic.ReserveData;
-  using UserLogic for UserLogic.UserReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
@@ -161,7 +160,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     }
 
     //if the user hasn't borrowed the specific currency defined by _reserve, it cannot be liquidated
-    (vars.userStableDebt, vars.userVariableDebt) = UserLogic.getUserCurrentDebt(
+    (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(
       _user,
       principalReserve
     );

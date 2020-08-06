@@ -8,7 +8,6 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 import {UserConfiguration} from './UserConfiguration.sol';
-import {UserLogic} from './UserLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
 import '../interfaces/IPriceOracleGetter.sol';
@@ -22,7 +21,6 @@ import '@nomiclabs/buidler/console.sol';
  */
 library GenericLogic {
   using ReserveLogic for ReserveLogic.ReserveData;
-  using UserLogic for UserLogic.UserReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;

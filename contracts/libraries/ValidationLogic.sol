@@ -6,7 +6,6 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import {ReserveLogic} from './ReserveLogic.sol';
-import {UserLogic} from './UserLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
@@ -24,7 +23,6 @@ import '@nomiclabs/buidler/console.sol';
  */
 library ValidationLogic {
   using ReserveLogic for ReserveLogic.ReserveData;
-  using UserLogic for UserLogic.UserReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;

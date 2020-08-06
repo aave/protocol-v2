@@ -12,7 +12,7 @@ import '../configuration/LendingPoolAddressesProvider.sol';
 import '../tokenization/AToken.sol';
 import '../libraries/WadRayMath.sol';
 import '../libraries/ReserveLogic.sol';
-import '../libraries/UserLogic.sol';
+import '../libraries/Helpers.sol';
 import '../libraries/GenericLogic.sol';
 import '../libraries/ValidationLogic.sol';
 import '../libraries/ReserveConfiguration.sol';
@@ -38,7 +38,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   using WadRayMath for uint256;
   using Address for address payable;
   using ReserveLogic for ReserveLogic.ReserveData;
-  using UserLogic for UserLogic.UserReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
@@ -419,7 +418,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     RepayLocalVars memory vars;
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
-    (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(_onBehalfOf, reserve);
+    (vars.stableDebt, vars.variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
 
     vars.totalDebt = vars.stableDebt.add(vars.variableDebt);
 
@@ -495,7 +494,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   function swapBorrowRateMode(address _reserve, uint256 _rateMode) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
-    (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(msg.sender, reserve);
+    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
@@ -867,8 +866,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(_user);
-    (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(_user, reserve);
-    (principalStableDebt, principalVariableDebt) = UserLogic.getUserPrincipalDebt(_user, reserve);
+    (currentStableDebt, currentVariableDebt) = Helpers.getUserCurrentDebt(_user, reserve);
+    (principalStableDebt, principalVariableDebt) = Helpers.getUserPrincipalDebt(_user, reserve);
     liquidityRate = reserve.currentLiquidityRate;
     stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(
