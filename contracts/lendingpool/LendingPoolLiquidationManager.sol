@@ -16,10 +16,11 @@ import '../tokenization/interfaces/IVariableDebtToken.sol';
 import '../libraries/WadRayMath.sol';
 import '../interfaces/IPriceOracleGetter.sol';
 import '../libraries/GenericLogic.sol';
-import '../libraries/UserLogic.sol';
+import '../libraries/Helpers.sol';
 import '../libraries/ReserveLogic.sol';
 import '../libraries/UniversalERC20.sol';
 import '../libraries/ReserveConfiguration.sol';
+import '../libraries/UserConfiguration.sol';
 import {PercentageMath} from '../libraries/PercentageMath.sol';
 
 /**
@@ -34,14 +35,14 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using PercentageMath for uint256;
   using Address for address;
   using ReserveLogic for ReserveLogic.ReserveData;
-  using UserLogic for UserLogic.UserReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   LendingPoolAddressesProvider public addressesProvider;
   IFeeProvider feeProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
-  mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
+  mapping(address => UserConfiguration.Map) internal usersConfig;
 
   address[] public reservesList;
 
@@ -124,14 +125,14 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   ) external payable returns (uint256, string memory) {
     ReserveLogic.ReserveData storage principalReserve = reserves[_reserve];
     ReserveLogic.ReserveData storage collateralReserve = reserves[_collateral];
-    UserLogic.UserReserveData storage userCollateral = usersReserveData[_user][_collateral];
+    UserConfiguration.Map storage userConfig = usersConfig[_user];
 
     LiquidationCallLocalVars memory vars;
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       _user,
       reserves,
-      usersReserveData,
+      usersConfig[_user],
       reservesList,
       addressesProvider.getPriceOracle()
     );
@@ -145,17 +146,10 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     vars.userCollateralBalance = IERC20(collateralReserve.aTokenAddress).balanceOf(_user);
 
-    //if _user hasn't deposited this specific collateral, nothing can be liquidated
-    if (vars.userCollateralBalance == 0) {
-      return (
-        uint256(LiquidationErrors.NO_COLLATERAL_AVAILABLE),
-        'Invalid collateral to liquidate'
-      );
-    }
 
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-      userCollateral.useAsCollateral;
+      userConfig.isUsingAsCollateral(collateralReserve.index);
 
     //if _collateral isn't enabled as collateral by _user, it cannot be liquidated
     if (!vars.isCollateralEnabled) {
@@ -166,7 +160,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     }
 
     //if the user hasn't borrowed the specific currency defined by _reserve, it cannot be liquidated
-    (vars.userStableDebt, vars.userVariableDebt) = UserLogic.getUserCurrentDebt(
+    (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(
       _user,
       principalReserve
     );

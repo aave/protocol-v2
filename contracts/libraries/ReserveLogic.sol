@@ -3,8 +3,6 @@ pragma solidity ^0.6.8;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-
-import {UserLogic} from './UserLogic.sol';
 import {MathUtils} from './MathUtils.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {UniversalERC20} from './UniversalERC20.sol';
@@ -28,7 +26,6 @@ library ReserveLogic {
   using WadRayMath for uint256;
   using UniversalERC20 for IERC20;
   using Address for address;
-  using UserLogic for UserLogic.UserReserveData;
   using ReserveLogic for ReserveLogic.ReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
 
@@ -62,6 +59,8 @@ library ReserveLogic {
     uint40 lastUpdateTimestamp;
     // isStableBorrowRateEnabled = true means users can borrow at a stable rate
     bool isStableBorrowRateEnabled;
+
+    uint8 index;
   }
 
   /**

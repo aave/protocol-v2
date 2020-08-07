@@ -10,6 +10,7 @@ usePlugin('buidler-typechain');
 usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
+//usePlugin('buidler-gas-reporter');
 
 ['misc'].forEach((folder) => {
   const tasksPath = path.join(__dirname, 'tasks', folder);

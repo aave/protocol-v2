@@ -47,7 +47,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     HF_IS_NOT_BELLOW_THRESHOLD,
     INVALID_HF,
     USER_DID_NOT_BORROW_SPECIFIED,
-    INVALID_COLLATERAL_TO_LIQUIDATE,
+    THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
   } = ProtocolErrors;
 
   it('LIQUIDATION - Deposits ETH, borrows DAI', async () => {

@@ -17,7 +17,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     HF_IS_NOT_BELLOW_THRESHOLD,
     INVALID_HF,
     USER_DID_NOT_BORROW_SPECIFIED,
-    INVALID_COLLATERAL_TO_LIQUIDATE,
+    THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
   } = ProtocolErrors;
 
   it('LIQUIDATION - Deposits ETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
@@ -111,7 +111,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await expect(
       pool.liquidationCall(dai.address, dai.address, borrower.address, oneEther.toString(), true)
-    ).revertedWith(INVALID_COLLATERAL_TO_LIQUIDATE);
+    ).revertedWith(THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED);
   });
 
   it('LIQUIDATION - Liquidates the borrow', async () => {

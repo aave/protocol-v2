@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
+pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import {ReserveLogic} from './ReserveLogic.sol';
-import {UserLogic} from './UserLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
 import {UniversalERC20} from './UniversalERC20.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
+import {UserConfiguration} from './UserConfiguration.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 import '@nomiclabs/buidler/console.sol';
@@ -22,12 +23,12 @@ import '@nomiclabs/buidler/console.sol';
  */
 library ValidationLogic {
   using ReserveLogic for ReserveLogic.ReserveData;
-  using UserLogic for UserLogic.UserReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using UniversalERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   /**
    * @dev validates a deposit.
@@ -89,34 +90,30 @@ library ValidationLogic {
   /**
    * @dev validates a borrow.
    * @param _reserve the reserve state from which the user is borrowing
-   * @param _user the state of the user for the specific reserve
    * @param _reserveAddress the address of the reserve
    * @param _amount the amount to be borrowed
    * @param _amountInETH the amount to be borrowed, in ETH
    * @param _interestRateMode the interest rate mode at which the user is borrowing
    * @param _maxStableLoanPercent the max amount of the liquidity that can be borrowed at stable rate, in percentage
    * @param _reservesData the state of all the reserves
-   * @param _usersData the state of all the users for all the reserves
+   * @param _userConfig the state of the user for the specific reserve
    * @param _reserves the addresses of all the active reserves
    * @param _oracle the price oracle
    */
 
   function validateBorrow(
     ReserveLogic.ReserveData storage _reserve,
-    UserLogic.UserReserveData storage _user,
     address _reserveAddress,
     uint256 _amount,
     uint256 _amountInETH,
     uint256 _interestRateMode,
     uint256 _maxStableLoanPercent,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
+    UserConfiguration.Map storage _userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view {
     ValidateBorrowLocalVars memory vars;
-
-    //internalValidateReserveStateAndAmount(_reserve, _amount);
 
     (
       vars.isActive,
@@ -153,7 +150,7 @@ library ValidationLogic {
     ) = GenericLogic.calculateUserAccountData(
       msg.sender,
       _reservesData,
-      _usersData,
+      _userConfig,
       _reserves,
       _oracle
     );
@@ -187,7 +184,7 @@ library ValidationLogic {
       require(vars.stableRateBorrowingEnabled, '11');
 
       require(
-        !_user.useAsCollateral ||
+        !_userConfig.isUsingAsCollateral(_reserve.index) ||
           _reserve.configuration.getLtv() == 0 ||
           _amount > IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
@@ -251,14 +248,14 @@ library ValidationLogic {
   /**
    * @dev validates a swap of borrow rate mode.
    * @param _reserve the reserve state on which the user is swapping the rate
-   * @param _user the user state for the reserve on which user is swapping the rate
+   * @param _userConfig the user reserves configuration
    * @param _stableBorrowBalance the stable borrow balance of the user
    * @param _variableBorrowBalance the stable borrow balance of the user
    * @param _currentRateMode the rate mode of the borrow
    */
   function validateSwapRateMode(
     ReserveLogic.ReserveData storage _reserve,
-    UserLogic.UserReserveData storage _user,
+    UserConfiguration.Map storage _userConfig,
     uint256 _stableBorrowBalance,
     uint256 _variableBorrowBalance,
     ReserveLogic.InterestRateMode _currentRateMode
@@ -288,7 +285,7 @@ library ValidationLogic {
       require(stableRateEnabled, '11');
 
       require(
-        !_user.useAsCollateral ||
+        !_userConfig.isUsingAsCollateral(_reserve.index) ||
           _reserve.configuration.getLtv() == 0 ||
           _stableBorrowBalance.add(_variableBorrowBalance) >
           IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
@@ -304,13 +301,15 @@ library ValidationLogic {
    * @param _reserve the state of the reserve that the user is enabling or disabling as collateral
    * @param _reserveAddress the address of the reserve
    * @param _reservesData the data of all the reserves
-   * @param _usersData the data of all the users
+   * @param _userConfig the state of the user for the specific reserve
+   * @param _reserves the addresses of all the active reserves
+   * @param _oracle the price oracle
    */
   function validateSetUseReserveAsCollateral(
     ReserveLogic.ReserveData storage _reserve,
     address _reserveAddress,
     mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    mapping(address => mapping(address => UserLogic.UserReserveData)) storage _usersData,
+    UserConfiguration.Map storage _userConfig,
     address[] calldata _reserves,
     address _oracle
   ) external view {
@@ -324,7 +323,7 @@ library ValidationLogic {
         msg.sender,
         underlyingBalance,
         _reservesData,
-        _usersData,
+        _userConfig,
         _reserves,
         _oracle
       ),

@@ -12,10 +12,11 @@ import '../configuration/LendingPoolAddressesProvider.sol';
 import '../tokenization/AToken.sol';
 import '../libraries/WadRayMath.sol';
 import '../libraries/ReserveLogic.sol';
-import '../libraries/UserLogic.sol';
+import '../libraries/Helpers.sol';
 import '../libraries/GenericLogic.sol';
 import '../libraries/ValidationLogic.sol';
 import '../libraries/ReserveConfiguration.sol';
+import '../libraries/UserConfiguration.sol';
 import '../libraries/UniversalERC20.sol';
 import '../tokenization/interfaces/IStableDebtToken.sol';
 import '../tokenization/interfaces/IVariableDebtToken.sol';
@@ -37,8 +38,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   using WadRayMath for uint256;
   using Address for address payable;
   using ReserveLogic for ReserveLogic.ReserveData;
-  using UserLogic for UserLogic.UserReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   //main configuration parameters
   uint256 private constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
@@ -51,7 +52,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   using UniversalERC20 for IERC20;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
-  mapping(address => mapping(address => UserLogic.UserReserveData)) internal usersReserveData;
+  mapping(address => UserConfiguration.Map) internal usersConfig;
 
   address[] public reservesList;
 
@@ -261,7 +262,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint16 _referralCode
   ) external payable nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     ValidationLogic.validateDeposit(reserve, _amount);
 
@@ -273,7 +273,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     reserve.updateInterestRates(_reserve, _amount, 0);
 
     if (isFirstDeposit) {
-      user.useAsCollateral = true;
+      usersConfig[msg.sender].setUsingAsCollateral(reserve.index, true);
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
@@ -300,7 +300,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _aTokenBalanceAfterRedeem
   ) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[_user][_reserve];
 
     AToken aToken = AToken(payable(reserve.aTokenAddress));
 
@@ -311,7 +310,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     reserve.updateInterestRates(_reserve, 0, _amount);
 
     if (_aTokenBalanceAfterRedeem == 0) {
-      user.useAsCollateral = false;
+      usersConfig[_user].setUsingAsCollateral(reserve.index, false);
     }
 
     AToken(reserve.aTokenAddress).transferUnderlyingTo(_user, _amount);
@@ -334,7 +333,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint16 _referralCode
   ) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
+    UserConfiguration.Map storage userConfig = usersConfig[msg.sender];
 
     uint256 amountInETH = IPriceOracleGetter(addressesProvider.getPriceOracle())
       .getAssetPrice(_reserve)
@@ -343,14 +342,13 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     ValidationLogic.validateBorrow(
       reserve,
-      user,
       _reserve,
       _amount,
       amountInETH,
       _interestRateMode,
       MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
       reserves,
-      usersReserveData,
+      usersConfig[msg.sender],
       reservesList,
       addressesProvider.getPriceOracle()
     );
@@ -372,6 +370,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     reserve.updateInterestRates(_reserve, 0, _amount);
+
+    if(!userConfig.isBorrowing(reserve.index)){
+      userConfig.setBorrowing(reserve.index, true);
+    }
 
     //if we reached this point, we can transfer
     AToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, _amount);
@@ -404,6 +406,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 variableDebt;
     uint256 paybackAmount;
     uint256 currentStableRate;
+    uint256 totalDebt;
   }
 
   function repay(
@@ -414,9 +417,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   ) external payable nonReentrant {
     RepayLocalVars memory vars;
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[_onBehalfOf][_reserve];
 
-    (vars.stableDebt, vars.variableDebt) = UserLogic.getUserCurrentDebt(_onBehalfOf, reserve);
+    (vars.stableDebt, vars.variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
+
+    vars.totalDebt = vars.stableDebt.add(vars.variableDebt);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
@@ -451,6 +455,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     reserve.updateInterestRates(_reserve, vars.paybackAmount, 0);
+    
+    if(vars.totalDebt.sub(vars.paybackAmount) == 0){
+      usersConfig[_onBehalfOf].setBorrowing(reserve.index, false);
+    }
 
     IERC20(_reserve).universalTransferFrom(
       msg.sender,
@@ -485,13 +493,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    **/
   function swapBorrowRateMode(address _reserve, uint256 _rateMode) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
-    (uint256 stableDebt, uint256 variableDebt) = UserLogic.getUserCurrentDebt(msg.sender, reserve);
+    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
-    ValidationLogic.validateSwapRateMode(reserve, user, stableDebt, variableDebt, rateMode);
+    ValidationLogic.validateSwapRateMode(reserve, usersConfig[msg.sender], stableDebt, variableDebt, rateMode);
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
@@ -581,18 +588,17 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     nonReentrant
   {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
-    UserLogic.UserReserveData storage user = usersReserveData[msg.sender][_reserve];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
       _reserve,
       reserves,
-      usersReserveData,
+      usersConfig[msg.sender],
       reservesList,
       addressesProvider.getPriceOracle()
     );
 
-    user.useAsCollateral = _useAsCollateral;
+    usersConfig[msg.sender].setUsingAsCollateral(reserve.index, _useAsCollateral);
 
     if (_useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(_reserve, msg.sender);
@@ -829,7 +835,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ) = GenericLogic.calculateUserAccountData(
       _user,
       reserves,
-      usersReserveData,
+      usersConfig[_user],
       reservesList,
       addressesProvider.getPriceOracle()
     );
@@ -860,14 +866,14 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(_user);
-    (currentStableDebt, currentVariableDebt) = UserLogic.getUserCurrentDebt(_user, reserve);
-    (principalStableDebt, principalVariableDebt) = UserLogic.getUserPrincipalDebt(_user, reserve);
+    (currentStableDebt, currentVariableDebt) = Helpers.getUserCurrentDebt(_user, reserve);
+    (principalStableDebt, principalVariableDebt) = Helpers.getUserPrincipalDebt(_user, reserve);
     liquidityRate = reserve.currentLiquidityRate;
     stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(_user);
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(
       _user
     );
-    usageAsCollateralEnabled = usersReserveData[_user][_reserve].useAsCollateral;
+    usageAsCollateralEnabled = usersConfig[_user].isUsingAsCollateral(reserve.index);
     variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(_user);
   }
 
@@ -943,7 +949,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       if (reservesList[i] == _reserve) {
         reserveAlreadyAdded = true;
       }
-    if (!reserveAlreadyAdded) reservesList.push(_reserve);
+    if (!reserveAlreadyAdded) {
+      reserves[_reserve].index = uint8(reservesList.length);
+      reservesList.push(_reserve);
+    }
   }
 
   function getReserveNormalizedIncome(address _reserve) external view returns (uint256) {
@@ -965,7 +974,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
         _user,
         _amount,
         reserves,
-        usersReserveData,
+        usersConfig[_user],
         reservesList,
         addressesProvider.getPriceOracle()
       );
