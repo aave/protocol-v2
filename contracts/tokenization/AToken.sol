@@ -6,7 +6,9 @@ import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddresse
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/WadRayMath.sol';
 import {UniversalERC20} from '../libraries/UniversalERC20.sol';
-import {VersionedInitializable} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {
+  VersionedInitializable
+} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 
 import '@nomiclabs/buidler/console.sol';
 
@@ -16,7 +18,7 @@ import '@nomiclabs/buidler/console.sol';
  * @dev Implementation of the interest bearing token for the DLP protocol.
  * @author Aave
  */
-contract AToken is  VersionedInitializable, ERC20 {
+contract AToken is VersionedInitializable, ERC20 {
   using WadRayMath for uint256;
   using UniversalERC20 for ERC20;
 
@@ -141,8 +143,10 @@ contract AToken is  VersionedInitializable, ERC20 {
     _;
   }
 
-  constructor() public ERC20(_name, _symbol) {
-  }
+  constructor(string memory _tokenName, string memory _tokenSymbol)
+    public
+    ERC20(_tokenName, _tokenSymbol)
+  {}
 
   function getRevision() internal override pure returns (uint256) {
     return ATOKEN_REVISION;
@@ -155,16 +159,13 @@ contract AToken is  VersionedInitializable, ERC20 {
     string calldata _tokenName,
     string calldata _tokenSymbol
   ) external initializer {
-
     _name = _tokenName;
     _symbol = _tokenSymbol;
     _setupDecimals(_underlyingAssetDecimals);
     addressesProvider = _addressesProvider;
     pool = LendingPool(payable(addressesProvider.getLendingPool()));
     underlyingAssetAddress = _underlyingAsset;
-
   }
-
 
   /**
    * @notice ERC20 implementation internal function backing transfer() and transferFrom()

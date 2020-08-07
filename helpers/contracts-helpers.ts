@@ -286,6 +286,16 @@ export const deployVariableDebtToken = async ([
   return token;
 };
 
+export const deployGenericAToken = async ([
+  name,
+  symbol
+]: [string, string]) => {
+  const token = await deployContract<AToken>(eContractid.AToken, [name, symbol]);
+
+  return token;
+};
+
+
 export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) => {
   return await getContract<LendingPoolAddressesProvider>(
     eContractid.LendingPoolAddressesProvider,
