@@ -283,10 +283,12 @@ export const deployVariableDebtToken = async ([
 };
 
 export const deployGenericAToken = async ([
+  poolAddress,
+  underlyingAssetAddress,
   name,
   symbol
-]: [string, string]) => {
-  const token = await deployContract<AToken>(eContractid.AToken, [name, symbol]);
+]: [ tEthereumAddress, tEthereumAddress, string, string]) => {
+  const token = await deployContract<AToken>(eContractid.AToken, [poolAddress, underlyingAssetAddress, name, symbol]);
 
   return token;
 };

@@ -57,13 +57,11 @@ interface ATokenInterface extends Interface {
     }>;
 
     initialize: TypedFunctionDescription<{
-      encode([
-        _addressesProvider,
-        _underlyingAsset,
-        _underlyingAssetDecimals,
-        _tokenName,
-        _tokenSymbol
-      ]: [string, string, BigNumberish, string, string]): string;
+      encode([_underlyingAssetDecimals, _tokenName, _tokenSymbol]: [
+        BigNumberish,
+        string,
+        string
+      ]): string;
     }>;
 
     isTransferAllowed: TypedFunctionDescription<{
@@ -271,8 +269,6 @@ export class AToken extends Contract {
     ): Promise<ContractTransaction>;
 
     initialize(
-      _addressesProvider: string,
-      _underlyingAsset: string,
       _underlyingAssetDecimals: BigNumberish,
       _tokenName: string,
       _tokenSymbol: string,
@@ -386,8 +382,6 @@ export class AToken extends Contract {
   ): Promise<ContractTransaction>;
 
   initialize(
-    _addressesProvider: string,
-    _underlyingAsset: string,
     _underlyingAssetDecimals: BigNumberish,
     _tokenName: string,
     _tokenSymbol: string,
@@ -553,8 +547,6 @@ export class AToken extends Contract {
     ): Promise<BigNumber>;
 
     initialize(
-      _addressesProvider: string,
-      _underlyingAsset: string,
       _underlyingAssetDecimals: BigNumberish,
       _tokenName: string,
       _tokenSymbol: string

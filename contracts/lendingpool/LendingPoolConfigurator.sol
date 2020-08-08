@@ -166,35 +166,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
   /**
    * @dev initializes a reserve
    * @param _reserve the address of the reserve to be initialized
+   * @param _aTokenInstance  the name of the aToken contract
+   * @param _stableDebtTokenAddress the address of the stable debt token contract
+   * @param _variableDebtTokenAddress the address of the variable debt token contract
    * @param _underlyingAssetDecimals the decimals of the reserve underlying asset
    * @param _interestRateStrategyAddress the address of the interest rate strategy contract for this reserve
    **/
   function initReserve(
-    address _reserve,
-    uint8 _underlyingAssetDecimals,
-    address _aTokenInstance,
-    address _interestRateStrategyAddress,
-    address _stableDebtTokenAddress,
-    address _variableDebtTokenAddress
-  ) external onlyLendingPoolManager {
-    initReserveWithData(
-      _reserve,
-      _aTokenInstance,
-      _stableDebtTokenAddress,
-      _variableDebtTokenAddress,
-      _underlyingAssetDecimals,
-      _interestRateStrategyAddress
-    );
-  }
-
-  /**
-   * @dev initializes a reserve using aTokenData provided externally (useful if the underlying ERC20 contract doesn't expose name or decimals)
-   * @param _reserve the address of the reserve to be initialized
-   * @param _aTokenInstance  the name of the aToken contract
-   * @param _underlyingAssetDecimals the decimals of the reserve underlying asset
-   * @param _interestRateStrategyAddress the address of the interest rate strategy contract for this reserve
-   **/
-  function initReserveWithData(
     address _reserve,
     address _aTokenInstance,
     address _stableDebtTokenAddress,
@@ -206,9 +184,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     InitializableAdminUpgradeabilityProxy aTokenProxy = new InitializableAdminUpgradeabilityProxy();
 
     bytes memory params = abi.encodeWithSignature(
-      'initialize(address,address,uint8,string,string)',
-      address(poolAddressesProvider),
-      _reserve,
+      'initialize(uint8,string,string)',
       _underlyingAssetDecimals,
       IERC20Detailed(_aTokenInstance).name(),
       IERC20Detailed(_aTokenInstance).symbol()

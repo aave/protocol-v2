@@ -241,6 +241,8 @@ const initReserves = async (
       ]);
 
       const aToken = await deployGenericAToken([
+        lendingPool.address,
+        tokenAddress,
         `Aave interest bearing ${assetSymbol}`,
         `a${assetSymbol}`
       ]);
@@ -254,7 +256,7 @@ const initReserves = async (
         }
       }
 
-      await lendingPoolConfigurator.initReserveWithData(
+      await lendingPoolConfigurator.initReserve(
         tokenAddress,
         aToken.address,
         stableDebtToken.address,
