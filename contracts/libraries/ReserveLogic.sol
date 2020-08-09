@@ -71,8 +71,14 @@ library ReserveLogic {
    * @return the normalized income. expressed in ray
    **/
   function getNormalizedIncome(ReserveData storage _reserve) internal view returns (uint256) {
+    uint40 timestamp = _reserve.lastUpdateTimestamp;
+    
+    if(timestamp == uint40(block.timestamp)) { //if the index was updated in the same block, no need to perform any calculation
+      return _reserve.lastLiquidityCumulativeIndex;
+    }
+
     uint256 cumulated = MathUtils
-      .calculateLinearInterest(_reserve.currentLiquidityRate, _reserve.lastUpdateTimestamp)
+      .calculateLinearInterest(_reserve.currentLiquidityRate, timestamp)
       .rayMul(_reserve.lastLiquidityCumulativeIndex);
 
     return cumulated;
@@ -86,8 +92,15 @@ library ReserveLogic {
    * @return the normalized variable debt. expressed in ray
    **/
   function getNormalizedDebt(ReserveData storage _reserve) internal view returns (uint256) {
+
+    uint40 timestamp = _reserve.lastUpdateTimestamp;
+
+    if(timestamp == uint40(block.timestamp)) { //if the index was updated in the same block, no need to perform any calculation
+      return _reserve.lastVariableBorrowCumulativeIndex;
+    }
+
     uint256 cumulated = MathUtils
-      .calculateCompoundedInterest(_reserve.currentVariableBorrowRate, _reserve.lastUpdateTimestamp)
+      .calculateCompoundedInterest(_reserve.currentVariableBorrowRate, timestamp)
       .rayMul(_reserve.lastVariableBorrowCumulativeIndex);
 
     return cumulated;
