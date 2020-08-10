@@ -151,7 +151,7 @@ contract AToken is VersionedInitializable, ERC20 {
     underlyingAssetAddress = _underlyingAssetAddress;
   }
 
-  function getRevision() internal override pure returns (uint256) {
+  function getRevision() internal virtual override pure returns (uint256) {
     return ATOKEN_REVISION;
   }
 
@@ -159,7 +159,7 @@ contract AToken is VersionedInitializable, ERC20 {
     uint8 _underlyingAssetDecimals,
     string calldata _tokenName,
     string calldata _tokenSymbol
-  ) external initializer {
+  ) external virtual initializer {
     _name = _tokenName;
     _symbol = _tokenSymbol;
     _setupDecimals(_underlyingAssetDecimals);
@@ -465,12 +465,7 @@ contract AToken is VersionedInitializable, ERC20 {
     }
     //updates the user index
     uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
-    return (
-      previousBalance,
-      currBalance,
-      balanceIncrease,
-      index
-    );
+    return (previousBalance, currBalance, balanceIncrease, index);
   }
 
   /**

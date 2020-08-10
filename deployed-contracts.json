@@ -447,5 +447,11 @@
       "address": "0xd4e934C2749CA8C1618659D02E7B28B074bf4df7",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
+  },
+  "MockAToken": {
+    "buidlerevm": {
+      "address": "0xccdf1DECe9c9631081b952Cd51A579E75c33C565",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    }
   }
 }

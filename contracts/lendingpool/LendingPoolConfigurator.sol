@@ -10,6 +10,7 @@ import '../configuration/LendingPoolAddressesProvider.sol';
 import '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
 import {LendingPool} from './LendingPool.sol';
 import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
+import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -211,10 +212,15 @@ contract LendingPoolConfigurator is VersionedInitializable {
     emit ReserveInitialized(_reserve, address(aTokenProxy), _interestRateStrategyAddress);
   }
 
+  /**
+   * @dev updates the aToken implementation for the _reserve
+   * @param _reserve the address of the reserve to be updated
+   * @param _implementation the address of the new aToken implementation
+   **/
   function updateAToken(address _reserve, address _implementation) external onlyLendingPoolManager {
     (address aTokenAddress, , ) = pool.getReserveTokensAddresses(_reserve);
 
-    uint8 decimals = IERC20Detailed(aTokenAddress).decimals();
+    (uint256 decimals, , , , , , , , , ) = pool.getReserveConfigurationData(_reserve);
 
     InitializableAdminUpgradeabilityProxy aTokenProxy = InitializableAdminUpgradeabilityProxy(
       payable(aTokenAddress)
@@ -222,9 +228,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',
-      decimals,
-      IERC20Detailed(aTokenAddress).name(),
-      IERC20Detailed(aTokenAddress).symbol()
+      uint8(decimals),
+      IERC20Detailed(_implementation).name(),
+      IERC20Detailed(_implementation).symbol()
     );
 
     aTokenProxy.upgradeToAndCall(_implementation, params);

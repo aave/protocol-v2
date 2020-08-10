@@ -77,7 +77,7 @@ export const getCurrentBlock = async () => {
 export const decodeAbiNumber = (data: string): number =>
   parseInt(utils.defaultAbiCoder.decode(['uint256'], data).toString());
 
-const deployContract = async <ContractType extends Contract>(
+export const deployContract = async <ContractType extends Contract>(
   contractName: string,
   args: any[]
 ): Promise<ContractType> => {
@@ -282,17 +282,21 @@ export const deployVariableDebtToken = async ([
   return token;
 };
 
-export const deployGenericAToken = async ([
-  poolAddress,
-  underlyingAssetAddress,
-  name,
-  symbol
-]: [ tEthereumAddress, tEthereumAddress, string, string]) => {
-  const token = await deployContract<AToken>(eContractid.AToken, [poolAddress, underlyingAssetAddress, name, symbol]);
+export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, name, symbol]: [
+  tEthereumAddress,
+  tEthereumAddress,
+  string,
+  string
+]) => {
+  const token = await deployContract<AToken>(eContractid.AToken, [
+    poolAddress,
+    underlyingAssetAddress,
+    name,
+    symbol,
+  ]);
 
   return token;
 };
-
 
 export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) => {
   return await getContract<LendingPoolAddressesProvider>(
