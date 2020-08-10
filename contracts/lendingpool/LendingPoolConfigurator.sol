@@ -180,7 +180,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
     uint8 _underlyingAssetDecimals,
     address _interestRateStrategyAddress
   ) public onlyLendingPoolManager {
-
     InitializableAdminUpgradeabilityProxy aTokenProxy = new InitializableAdminUpgradeabilityProxy();
 
     bytes memory params = abi.encodeWithSignature(
@@ -210,6 +209,25 @@ contract LendingPoolConfigurator is VersionedInitializable {
     pool.setConfiguration(_reserve, currentConfig.data);
 
     emit ReserveInitialized(_reserve, address(aTokenProxy), _interestRateStrategyAddress);
+  }
+
+  function updateAToken(address _reserve, address _implementation) external onlyLendingPoolManager {
+    (address aTokenAddress, , ) = pool.getReserveTokensAddresses(_reserve);
+
+    uint8 decimals = IERC20Detailed(aTokenAddress).decimals();
+
+    InitializableAdminUpgradeabilityProxy aTokenProxy = InitializableAdminUpgradeabilityProxy(
+      payable(aTokenAddress)
+    );
+
+    bytes memory params = abi.encodeWithSignature(
+      'initialize(uint8,string,string)',
+      decimals,
+      IERC20Detailed(aTokenAddress).name(),
+      IERC20Detailed(aTokenAddress).symbol()
+    );
+
+    aTokenProxy.upgradeToAndCall(_implementation, params);
   }
 
   /**
