@@ -58,6 +58,10 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 _index
   );
 
+    constructor(address _pool, address _underlyingAsset) DebtTokenBase(_pool, _underlyingAsset) public {
+    
+  }
+  
   /**
    * @dev calculates the accumulated debt balance of the user
    * @return the debt balance of the user

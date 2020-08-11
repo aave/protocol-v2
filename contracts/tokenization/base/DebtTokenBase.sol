@@ -22,9 +22,9 @@ abstract contract DebtTokenBase is IERC20 {
   string public name;
   string public symbol;
   uint8 public decimals;
-  address public underlyingAssetAddress;
+  address public immutable underlyingAssetAddress;
 
-  LendingPool internal pool;
+  LendingPool internal immutable pool;
   mapping(address => uint256) internal balances;
 
   /**
@@ -35,26 +35,24 @@ abstract contract DebtTokenBase is IERC20 {
     _;
   }
 
+  constructor(address _pool, address _underlyingAssetAddress) public {
+    pool = LendingPool(payable(_pool));
+    underlyingAssetAddress = _underlyingAssetAddress; 
+  }
   /**
    * @dev initializes the debt token.
    * @param _name the name of the token
    * @param _symbol the symbol of the token
    * @param _decimals the decimals of the token
-   * @param _underlying the underlying asset of the debt token
-   * @param _addressesProvider the addresses provider of the protocol
    */
   function init(
     string memory _name,
     string memory _symbol,
-    uint8 _decimals,
-    address _underlying,
-    ILendingPoolAddressesProvider _addressesProvider
+    uint8 _decimals
   ) public {
     name = _name;
     symbol = _symbol;
     decimals = _decimals;
-    underlyingAssetAddress = _underlying;
-    pool = LendingPool(payable(_addressesProvider.getLendingPool()));
   }
 
   /**

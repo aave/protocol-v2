@@ -13,11 +13,21 @@ export class StableDebtTokenFactory extends ContractFactory {
     super(_abi, _bytecode, signer);
   }
 
-  deploy(overrides?: TransactionOverrides): Promise<StableDebtToken> {
-    return super.deploy(overrides) as Promise<StableDebtToken>;
+  deploy(
+    _pool: string,
+    _underlyingAsset: string,
+    overrides?: TransactionOverrides
+  ): Promise<StableDebtToken> {
+    return super.deploy(_pool, _underlyingAsset, overrides) as Promise<
+      StableDebtToken
+    >;
   }
-  getDeployTransaction(overrides?: TransactionOverrides): UnsignedTransaction {
-    return super.getDeployTransaction(overrides);
+  getDeployTransaction(
+    _pool: string,
+    _underlyingAsset: string,
+    overrides?: TransactionOverrides
+  ): UnsignedTransaction {
+    return super.getDeployTransaction(_pool, _underlyingAsset, overrides);
   }
   attach(address: string): StableDebtToken {
     return super.attach(address) as StableDebtToken;
@@ -34,6 +44,22 @@ export class StableDebtTokenFactory extends ContractFactory {
 }
 
 const _abi = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_pool",
+        type: "address"
+      },
+      {
+        internalType: "address",
+        name: "_underlyingAsset",
+        type: "address"
+      }
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor"
+  },
   {
     anonymous: false,
     inputs: [
@@ -377,16 +403,6 @@ const _abi = [
         internalType: "uint8",
         name: "_decimals",
         type: "uint8"
-      },
-      {
-        internalType: "address",
-        name: "_underlying",
-        type: "address"
-      },
-      {
-        internalType: "contract ILendingPoolAddressesProvider",
-        name: "_addressesProvider",
-        type: "address"
       }
     ],
     name: "init",

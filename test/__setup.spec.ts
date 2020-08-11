@@ -229,7 +229,7 @@ const initReserves = async (
         `stableDebt${assetSymbol}`,
         reserveDecimals,
         tokenAddress,
-        lendingPoolAddressesProvider.address,
+        lendingPool.address,
       ]);
 
       const variableDebtToken = await deployVariableDebtToken([
@@ -237,7 +237,7 @@ const initReserves = async (
         `stableDebt${assetSymbol}`,
         reserveDecimals,
         tokenAddress,
-        lendingPoolAddressesProvider.address,
+        lendingPool.address,
       ]);
 
       const aToken = await deployGenericAToken([

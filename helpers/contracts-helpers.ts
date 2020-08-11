@@ -259,11 +259,11 @@ export const deployStableDebtToken = async ([
   symbol,
   decimals,
   underlyingAsset,
-  addressesProvider,
+  poolAddress,
 ]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
-  const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, []);
+  const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [poolAddress, underlyingAsset]);
 
-  await token.init(name, symbol, decimals, underlyingAsset, addressesProvider);
+  await token.init(name, symbol, decimals);
 
   return token;
 };
@@ -273,11 +273,11 @@ export const deployVariableDebtToken = async ([
   symbol,
   decimals,
   underlyingAsset,
-  addressesProvider,
+  poolAddress,
 ]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
-  const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, []);
+  const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [poolAddress, underlyingAsset]);
 
-  await token.init(name, symbol, decimals, underlyingAsset, addressesProvider);
+  await token.init(name, symbol, decimals);
 
   return token;
 };

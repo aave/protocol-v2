@@ -275,7 +275,7 @@ contract AToken is VersionedInitializable, ERC20 {
    */
   function mintOnDeposit(address _account, uint256 _amount) external onlyLendingPool {
     //cumulates the balance of the user
-    (, , uint256 balanceIncrease, uint256 index) = cumulateBalanceInternal(_account);
+    (, , uint256 balanceIncrease, uint256 index) = cumulateBalanceConditionalInternal(_account,false);
 
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest
@@ -283,7 +283,7 @@ contract AToken is VersionedInitializable, ERC20 {
     updateRedirectedBalanceOfRedirectionAddressInternal(_account, balanceIncrease.add(_amount), 0);
 
     //mint an equivalent amount of tokens to cover the new deposit
-    _mint(_account, _amount);
+    _mint(_account, _amount.add(balanceIncrease));
 
     emit MintOnDeposit(_account, _amount, balanceIncrease, index);
   }
@@ -443,7 +443,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @return the previous principal balance, the new principal balance, the balance increase
    * and the new user index
    **/
-  function cumulateBalanceInternal(address _user)
+  function cumulateBalanceConditionalInternal(address _user, bool _mintBalanceIncrease)
     internal
     returns (
       uint256,
@@ -461,12 +461,27 @@ contract AToken is VersionedInitializable, ERC20 {
       //calculate the accrued interest since the last accumulation
       balanceIncrease = currBalance.sub(previousBalance);
       //mints an amount of tokens equivalent to the amount accumulated
+      if(_mintBalanceIncrease) {        
       _mint(_user, balanceIncrease);
+      }
     }
     //updates the user index
     uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
     return (previousBalance, currBalance, balanceIncrease, index);
   }
+
+    function cumulateBalanceInternal(address _user)
+    internal
+    returns (
+      uint256,
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    return cumulateBalanceConditionalInternal(_user, true);
+  }
+
 
   /**
    * @dev updates the redirected balance of the user. If the user is not redirecting his

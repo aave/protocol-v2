@@ -1262,12 +1262,29 @@ const calcCompoundedInterest = (
   currentTimestamp: BigNumber,
   lastUpdateTimestamp: BigNumber
 ) => {
+
   const timeDifference = currentTimestamp.minus(lastUpdateTimestamp);
 
-  const ratePerSecond = rate.div(ONE_YEAR);
-  const compoundedInterest = ratePerSecond.plus(RAY).rayPow(timeDifference);
+  const expMinusOne = timeDifference.minus(1);
+  const expMinusTwo = timeDifference.minus(2);
 
-  return compoundedInterest;
+  const ratePerSecond = rate.div(ONE_YEAR);
+
+  const basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
+  const basePowerThree = basePowerTwo.rayMul(ratePerSecond);
+
+  const secondTerm = timeDifference.times(expMinusOne).times(basePowerTwo).div(2);
+  const thirdTerm = timeDifference
+    .times(expMinusOne)
+    .times(expMinusTwo)
+    .times(basePowerThree)
+    .div(6);
+
+  return new BigNumber(RAY)
+    .plus(ratePerSecond.times(timeDifference))
+    .plus(secondTerm)
+    .plus(thirdTerm);
+      
 };
 
 const calcExpectedInterestRates = (

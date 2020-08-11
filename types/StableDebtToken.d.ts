@@ -49,12 +49,10 @@ interface StableDebtTokenInterface extends Interface {
     }>;
 
     init: TypedFunctionDescription<{
-      encode([_name, _symbol, _decimals, _underlying, _addressesProvider]: [
+      encode([_name, _symbol, _decimals]: [
         string,
         string,
-        BigNumberish,
-        string,
-        string
+        BigNumberish
       ]): string;
     }>;
 
@@ -190,8 +188,6 @@ export class StableDebtToken extends Contract {
       _name: string,
       _symbol: string,
       _decimals: BigNumberish,
-      _underlying: string,
-      _addressesProvider: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -266,8 +262,6 @@ export class StableDebtToken extends Contract {
     _name: string,
     _symbol: string,
     _decimals: BigNumberish,
-    _underlying: string,
-    _addressesProvider: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -358,9 +352,7 @@ export class StableDebtToken extends Contract {
     init(
       _name: string,
       _symbol: string,
-      _decimals: BigNumberish,
-      _underlying: string,
-      _addressesProvider: string
+      _decimals: BigNumberish
     ): Promise<BigNumber>;
 
     mint(

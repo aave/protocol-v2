@@ -67,6 +67,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 _balanceIncrease
   );
 
+  constructor(address _pool, address _underlyingAsset) DebtTokenBase(_pool, _underlyingAsset) public {
+
+  }
   /**
    * @dev returns the average stable rate across all the stable rate debt
    * @return the average stable rate
