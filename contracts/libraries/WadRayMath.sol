@@ -113,20 +113,4 @@ library WadRayMath {
     return a.mul(WAD_RAY_RATIO);
   }
 
-  /**
-   * @dev calculates base^exp. The code uses the ModExp precompile
-   * @return z base^exp, in ray
-   */
-  //solium-disable-next-line
-  function rayPow(uint256 x, uint256 n) internal pure returns (uint256 z) {
-    z = n % 2 != 0 ? x : RAY;
-
-    for (n /= 2; n != 0; n /= 2) {
-      x = rayMul(x, x);
-
-      if (n % 2 != 0) {
-        z = rayMul(z, x);
-      }
-    }
-  }
 }
