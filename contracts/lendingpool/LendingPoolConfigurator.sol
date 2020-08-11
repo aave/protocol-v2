@@ -167,7 +167,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   /**
    * @dev initializes a reserve
    * @param _reserve the address of the reserve to be initialized
-   * @param _aTokenInstance  the name of the aToken contract
+   * @param _aTokenImpl  the address of the aToken contract implementation
    * @param _stableDebtTokenAddress the address of the stable debt token contract
    * @param _variableDebtTokenAddress the address of the variable debt token contract
    * @param _underlyingAssetDecimals the decimals of the reserve underlying asset
@@ -175,7 +175,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    **/
   function initReserve(
     address _reserve,
-    address _aTokenInstance,
+    address _aTokenImpl,
     address _stableDebtTokenAddress,
     address _variableDebtTokenAddress,
     uint8 _underlyingAssetDecimals,
@@ -186,11 +186,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',
       _underlyingAssetDecimals,
-      IERC20Detailed(_aTokenInstance).name(),
-      IERC20Detailed(_aTokenInstance).symbol()
+      IERC20Detailed(_aTokenImpl).name(),
+      IERC20Detailed(_aTokenImpl).symbol()
     );
 
-    aTokenProxy.initialize(_aTokenInstance, address(this), params);
+    aTokenProxy.initialize(_aTokenImpl, address(this), params);
 
     pool.initReserve(
       _reserve,
