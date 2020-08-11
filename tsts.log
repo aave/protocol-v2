@@ -1,0 +1,2638 @@
+All contracts have already been compiled, skipping compilation.
+
+-> Deploying test environment...
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0xb586d7783b4f19aca0817f2817d4d524c88a3b82eddb822789753d1569448533
+contract address: 0xD5A0587aAEB195028909E98930B391dFB3f9F589
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** DAI ***
+
+Network: localhost
+tx: 0xb586d7783b4f19aca0817f2817d4d524c88a3b82eddb822789753d1569448533
+contract address: 0xD5A0587aAEB195028909E98930B391dFB3f9F589
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x17f1ad3a71bff8ddb086b3a29e0eab189798c7d35ac26ca1fd3cc4f739d0d4b9
+contract address: 0xaD3AdbC18E4AD090034A6C74Eda61f4310dce313
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** LEND ***
+
+Network: localhost
+tx: 0x17f1ad3a71bff8ddb086b3a29e0eab189798c7d35ac26ca1fd3cc4f739d0d4b9
+contract address: 0xaD3AdbC18E4AD090034A6C74Eda61f4310dce313
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0xca99910956648226bd377089f602824bd5f64b05c43fda0453c2b11fde138e8b
+contract address: 0x25a88BbA9c8D2a46e3Ff4bFe98712DF7A1044fB6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** TUSD ***
+
+Network: localhost
+tx: 0xca99910956648226bd377089f602824bd5f64b05c43fda0453c2b11fde138e8b
+contract address: 0x25a88BbA9c8D2a46e3Ff4bFe98712DF7A1044fB6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x7654a1b1e5c6f396c168a71db5a9aff5706f8f5769a9139aafeee636132dcda8
+contract address: 0x16d1802cd7cfcb67955BBBa26bAae1cE559B5F5B
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** BAT ***
+
+Network: localhost
+tx: 0x7654a1b1e5c6f396c168a71db5a9aff5706f8f5769a9139aafeee636132dcda8
+contract address: 0x16d1802cd7cfcb67955BBBa26bAae1cE559B5F5B
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0xf0572fc05c6b6a1c492d3a01656d4bf4cfae18cf36eb2445e900f87f2bc62585
+contract address: 0xE58d8c88f5A670f16BE8F7864707170F43e943A6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** USDC ***
+
+Network: localhost
+tx: 0xf0572fc05c6b6a1c492d3a01656d4bf4cfae18cf36eb2445e900f87f2bc62585
+contract address: 0xE58d8c88f5A670f16BE8F7864707170F43e943A6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x0ed01d58842adba8e7d0225f32861c619ef0d63f82b76a661dcdef8259312ff5
+contract address: 0xfdAF4f6e47e854c05bE158993d32872e784F0502
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** USDT ***
+
+Network: localhost
+tx: 0x0ed01d58842adba8e7d0225f32861c619ef0d63f82b76a661dcdef8259312ff5
+contract address: 0xfdAF4f6e47e854c05bE158993d32872e784F0502
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0xddb5f1909ea97c0cb2fbbd04e60e6a97533911b033dae68e13e498172be3f88a
+contract address: 0x92edC13A10036A3C50396f2B63148a3e9a8D589e
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** SUSD ***
+
+Network: localhost
+tx: 0xddb5f1909ea97c0cb2fbbd04e60e6a97533911b033dae68e13e498172be3f88a
+contract address: 0x92edC13A10036A3C50396f2B63148a3e9a8D589e
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0xeb716a2750602d4ba8db1c4efee18b5323b3fcd9bb1a2267cfdd14c552630d9d
+contract address: 0xE5C277cDb7E10372918Ac54Ce54022910A24FE88
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** ZRX ***
+
+Network: localhost
+tx: 0xeb716a2750602d4ba8db1c4efee18b5323b3fcd9bb1a2267cfdd14c552630d9d
+contract address: 0xE5C277cDb7E10372918Ac54Ce54022910A24FE88
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x2e6f6babd892cc75a3c2630835fdb41a8ac20b06606d896ba80775c57ce99ec0
+contract address: 0xF5742a599a0F4520089cbf2EBBa66Bb4F471B85F
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MKR ***
+
+Network: localhost
+tx: 0x2e6f6babd892cc75a3c2630835fdb41a8ac20b06606d896ba80775c57ce99ec0
+contract address: 0xF5742a599a0F4520089cbf2EBBa66Bb4F471B85F
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x90484426bb324067dc5b2b4f897390cef832f9875973d66f5c74cc90afe4340b
+contract address: 0x380EF388e13D8cAdeACef6eF682C7B7D85865076
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** WBTC ***
+
+Network: localhost
+tx: 0x90484426bb324067dc5b2b4f897390cef832f9875973d66f5c74cc90afe4340b
+contract address: 0x380EF388e13D8cAdeACef6eF682C7B7D85865076
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x180405090baf7a2cb35b4453f858ebb463aeb383d5574de209ec1ff6c9fc7d72
+contract address: 0xC89577DED8441e52C17C13D527b85b225C5c8311
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** LINK ***
+
+Network: localhost
+tx: 0x180405090baf7a2cb35b4453f858ebb463aeb383d5574de209ec1ff6c9fc7d72
+contract address: 0xC89577DED8441e52C17C13D527b85b225C5c8311
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x0aff12a4e1949b7e88aeeac10c2dbc63126d9784aa26247e9d60938e7ca8a7df
+contract address: 0xD4b06774A717Ff5A7c20c8712e31c6BbfFcb1F01
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** KNC ***
+
+Network: localhost
+tx: 0x0aff12a4e1949b7e88aeeac10c2dbc63126d9784aa26247e9d60938e7ca8a7df
+contract address: 0xD4b06774A717Ff5A7c20c8712e31c6BbfFcb1F01
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0xf94f401499afea0ef833233195ab8b3352061626b4848065309d068f81341795
+contract address: 0xbe66dC9DFEe580ED968403e35dF7b5159f873df8
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MANA ***
+
+Network: localhost
+tx: 0xf94f401499afea0ef833233195ab8b3352061626b4848065309d068f81341795
+contract address: 0xbe66dC9DFEe580ED968403e35dF7b5159f873df8
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x1a455d398c833e8568c2330bd08cd1398d2e327e9bc9912ebc09ef63cac19ae7
+contract address: 0x93AfC6Df4bB8F62F2493B19e577f8382c0BA9EBC
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** REP ***
+
+Network: localhost
+tx: 0x1a455d398c833e8568c2330bd08cd1398d2e327e9bc9912ebc09ef63cac19ae7
+contract address: 0x93AfC6Df4bB8F62F2493B19e577f8382c0BA9EBC
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x5d7ef2fa40a15b6b35a850bb52298cba290dd484dc0c2220bcf6f1c59b71f572
+contract address: 0x75Ded61646B5945BdDd0CD9a9Db7c8288DA6F810
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** SNX ***
+
+Network: localhost
+tx: 0x5d7ef2fa40a15b6b35a850bb52298cba290dd484dc0c2220bcf6f1c59b71f572
+contract address: 0x75Ded61646B5945BdDd0CD9a9Db7c8288DA6F810
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x66323417565315754c3e690c819da610047a75eea1dbff9ace2e4f1b96f722e9
+contract address: 0xdE7c40e675bF1aA45c18cCbaEb9662B16b0Ddf7E
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** BUSD ***
+
+Network: localhost
+tx: 0x66323417565315754c3e690c819da610047a75eea1dbff9ace2e4f1b96f722e9
+contract address: 0xdE7c40e675bF1aA45c18cCbaEb9662B16b0Ddf7E
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770555
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x590cf5ab8151b9c3f791c52537ff1d5350fef57119dade8feaad1dd1a7da7500
+contract address: 0xEcb928A3c079a1696Aa5244779eEc3dE1717fACd
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** USD ***
+
+Network: localhost
+tx: 0x590cf5ab8151b9c3f791c52537ff1d5350fef57119dade8feaad1dd1a7da7500
+contract address: 0xEcb928A3c079a1696Aa5244779eEc3dE1717fACd
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3770435
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x99b8ab1454c11bc7772d5d74d561b3303245172fcebe4fd0bf0eadc7c630d973
+contract address: 0xDFbeeed692AA81E7f86E72F7ACbEA2A1C4d63544
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771395
+
+******
+
+*** UNI_DAI_ETH ***
+
+Network: localhost
+tx: 0x99b8ab1454c11bc7772d5d74d561b3303245172fcebe4fd0bf0eadc7c630d973
+contract address: 0xDFbeeed692AA81E7f86E72F7ACbEA2A1C4d63544
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771395
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x0c2bdc441aa4b7f78ba04c26053aaf04807b8ebd1558e779d0a12cc86fb51fce
+contract address: 0x5191aA68c7dB195181Dd2441dBE23A48EA24b040
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** UNI_USDC_ETH ***
+
+Network: localhost
+tx: 0x0c2bdc441aa4b7f78ba04c26053aaf04807b8ebd1558e779d0a12cc86fb51fce
+contract address: 0x5191aA68c7dB195181Dd2441dBE23A48EA24b040
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x8a093c424df4bfee30b00570abe92496772d8c6510ac37623fe2ff9dba6a8bba
+contract address: 0x8F9422aa37215c8b3D1Ea1674138107F84D68F26
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** UNI_SETH_ETH ***
+
+Network: localhost
+tx: 0x8a093c424df4bfee30b00570abe92496772d8c6510ac37623fe2ff9dba6a8bba
+contract address: 0x8F9422aa37215c8b3D1Ea1674138107F84D68F26
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x94d62111a7ffcdca5888e8ac7eea84ca0977ee44ee7b52517039536446897c80
+contract address: 0xa89E20284Bd638F31b0011D0fC754Fc9d2fa73e3
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** UNI_LINK_ETH ***
+
+Network: localhost
+tx: 0x94d62111a7ffcdca5888e8ac7eea84ca0977ee44ee7b52517039536446897c80
+contract address: 0xa89E20284Bd638F31b0011D0fC754Fc9d2fa73e3
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x4b5d449af171dc55d70923e1d41f0bee93d0d0f371b98cf1072e552e18d041fd
+contract address: 0xaA935993065F2dDB1d13623B1941C7AEE3A60F23
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771395
+
+******
+
+*** UNI_MKR_ETH ***
+
+Network: localhost
+tx: 0x4b5d449af171dc55d70923e1d41f0bee93d0d0f371b98cf1072e552e18d041fd
+contract address: 0xaA935993065F2dDB1d13623B1941C7AEE3A60F23
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771395
+
+******
+
+*** MintableERC20 ***
+
+Network: localhost
+tx: 0x876f15e035bb292b0f73707a18abb5568abb6381084d989e999a05e95de46121
+contract address: 0x35A2624888e207e4B3434E9a9E250bF6Ee68FeA3
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** UNI_LEND_ETH ***
+
+Network: localhost
+tx: 0x876f15e035bb292b0f73707a18abb5568abb6381084d989e999a05e95de46121
+contract address: 0x35A2624888e207e4B3434E9a9E250bF6Ee68FeA3
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 3771515
+
+******
+
+*** LendingPoolAddressesProvider ***
+
+Network: localhost
+tx: 0x3fce8f0464b62f280e1c7b8dd33e27d15b6f716adf04106873adb61bc3bf7a53
+contract address: 0x1f569c307949a908A4b8Ff7453a88Ca0b8D8df13
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 7132975
+
+******
+
+*** LendingPoolAddressesProviderRegistry ***
+
+Network: localhost
+tx: 0xc5f5f7f5f572a0f2b6539cddd35d50bdb340b7a79296efacfd25945ddfa5066c
+contract address: 0x0766c9592a8686CAB0081b4f35449462c6e82F11
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2407480
+
+******
+
+*** FeeProvider ***
+
+Network: localhost
+tx: 0xb1ad34af13934db51b5717e5f1b835dd0d978c21e53aae0bc6009d90203268dd
+contract address: 0x48bb3E35D2D6994374db457a6Bf61de2d9cC8E49
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 1393725
+
+******
+
+Deployed lending pool, address: 0x09F7bF33B3F8922268B34103af3a8AF83148C9B1
+Added pool to addresses provider
+Address is  0x0aA65C476219C5507F920252A84a766fBA750f7d
+implementation set, address: 0x0aA65C476219C5507F920252A84a766fBA750f7d
+*** LendingPoolConfigurator ***
+
+Network: localhost
+tx: 0xb51529c0793a473a3982ba7314edab9d613c4ce83fbad05bd67565aac39ba2aa
+contract address: 0x0Aac5442574A9b15d65fc3DCF536C43a1bB4e512
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** PriceOracle ***
+
+Network: localhost
+tx: 0x2b4e27f785af2d067f0d274568cfbdb016d85a9076bca507e4b8b9b5ec9ae467
+contract address: 0xE0fC5Da76E489677078d00d3f321e9777c76381B
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 767525
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x83fc39840efebce5312a964640fc0036c5b14cc2e1c33d9bea51c2402492f9e5
+contract address: 0x82939Bfa1608CB3Cb4c8E3AF848C195Cc1ea5b63
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524490
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x00d8b37e7bfcfb1f75ed89ad6efd11f98a2227468d95548135bc430fd6307a61
+contract address: 0xBB4BfCbfA82dA2dD614E5bd0454b76de16519d05
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x20235dbccc8ca31f61f05e9c7d34cebfe18a2d762f02c591ef61c3d0f8f69c0a
+contract address: 0x44Bb29434CB04e2Ca36F034A470CA95f64aEbc7E
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x86c571896d74d3a55f74b78f63600835ab3fe16465e0a72c26823306f09c862a
+contract address: 0x8038eE724A0F18bB11634CC78f123047Fa01bc80
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x46de2d0fc1bd0a2708fa5bddb33fc28c66222bbd423ebef46fb956417bce68ce
+contract address: 0xF82a40B63CBCEc5e80d577167B8d3b1DcfE84e5c
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524490
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x60f63168eb72023b798702dafa8aa0d4587eecd410d5e47ed7eaee34753cf88b
+contract address: 0xA6004580E827191150006D4748330F7F57FDB054
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524490
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x01aa9c52bbdb824545c70d1e386fa31b27ae481cbddbbba82870ad89f5ed2a75
+contract address: 0x2B46D647B648Cc432dca68aa0f2Edc08386e7b57
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0xa369e6bdd66fae952bcd4820f55c965b05eab6aae218c0bd716bd9bb79fb936a
+contract address: 0xb207EcaA1771F05A674E7d24A082b2892DDC66bc
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524490
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x12824ebced7299823ea62b962c5bf53866576739114c2828a144165be60f93af
+contract address: 0x2F7e8dCe87DE8d723b897b8220Cf25e1CD2a2Ea6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0xa36cddf6caff448dc0454af5fe33929f88c86d17d54a1e905b1db402e82f7d5e
+contract address: 0xa191baa1E96FeFE2b700C536E245725F09717275
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x40bd33f15fb9d9b7232159422b1570c398c26204faff63588b37e13e3c90aa0b
+contract address: 0xbD51e397Aa5012aa91628f0354f9670805BfA94E
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524550
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x33a21c4f39473824c720f0d956a6f4b35c62077a097f204dbbaed3ff3a6e3cb7
+contract address: 0xFc40e47aFD52bD460D65B06c828E54A13d288CE4
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x1faa932094ef2a5fd7d1d6189f9d2bc45aa19769118a42186e8d99e2d89bc068
+contract address: 0x5795a1e56931bB7Fb8389821f3574983502A785d
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524370
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x4ce6fb9d018f5c1164150e3e99923b870e5af843597329e272f3ce3d6409c960
+contract address: 0x715Ad5d800535dB0d334F9F42e3eC393947996e3
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524370
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x443e96ba770ae00e109d83f9ed6799cc0e0c318e477f13366cde539a4a88dc2b
+contract address: 0xC452C5244F701108B4e8E8BCe693160046b30332
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x1f861433bf8be55232170a5b6eaf1f16e4a335821f4c42b5e79f6eee405bcd15
+contract address: 0x0B63c002cb44B2e5e580C3B3560a27F4101D95c0
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0xbc759930c4b4202686ca6f1597b0c50e529b231ebc1a3f8bf74371d7cd0af3e5
+contract address: 0x3F80d60280cc4AdF3e5891765b5545A6B36ebe57
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x2fbc3e3a032ab919e4ac94274bf1b4a71e6586c14818303941a40dfb05fd24b4
+contract address: 0xCeB290A2C6614BF23B2faa0f0B8067F29C48DB0F
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x4174404dc611a04751bfee2754742a4a5213fdd493614bb289248b7841f4ccc2
+contract address: 0x90ee8009AA6add17A0de8Ee22666a91602fa4adf
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x863e04b0b967fe53e664d9c3cc8617b1fbafd7f36b8922567e02e7c577b2d784
+contract address: 0xc5BeCE9e44E7dE5464f102f6cD4e5b7aBC94B059
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x365c924632506d3c1b3c94b361719a6d9a72aaf2bf16a8a302fa5fa465758e99
+contract address: 0xF63EA31f84CFF5D1Eb4b8C3ca0D9489490fB98d5
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0x0b28e3dc60d77543c41d9140624daf77796467269a4dcbe5533e8301c9444f74
+contract address: 0xD8f534d97D241Fc9EC4A224C90BDD5E3F3990874
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** MockAggregator ***
+
+Network: localhost
+tx: 0xebdfc0702b3e8fa0937922a35084b8ee7ac18ad96670567992fe6d142eec0d31
+contract address: 0xDCAB55FBf59a253B3Fb0CD2Ba45F0c02413dF375
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 524430
+
+******
+
+*** ChainlinkProxyPriceProvider ***
+
+Network: localhost
+tx: 0x252c1220976c612e307ba95546ab521169ec3a2d834e558309a88f097f13d2df
+contract address: 0x293965D84cE150Cbf5F36332ba47e997e2763bf2
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 6220980
+
+******
+
+*** LendingRateOracle ***
+
+Network: localhost
+tx: 0xd1419a6cc75c664b8ca393ec7d9da98b2c43d8405acfc49daa7617248feacfb4
+contract address: 0x7549d6bb05083613eF87b723595553dCc570Ca21
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 1719980
+
+******
+
+Initialize configuration
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x17a7e5dcc03fb1a55300548f547c6a97d682a29576108481f27654a67b64e6e7
+contract address: 0xd5B734c970729Cc6372F7d712C485827d93eD14f
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2894455
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0xc82988f9a8e23d20d2a78ac935bbbe06d60f8b9f71705772674c995c56f925e9
+contract address: 0xb4A57e40bD901D0987F7A3b45ECdE67779E394D6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0xd8a3d3c280c625409aaa52c0e8cbf7350c4ae22751c0c76627670c0be85b70f5
+contract address: 0xA16D202146aC158562294F67a5631aabdc96B1aD
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x32ba625b68069b863e911a594214ea7dd7bd7405ba53c21a02572347e88b3c84
+contract address: 0x4A9559FEF44B25F1A7157e047cD09683fe45c599
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0xcf2358a9c62d40389a64cc1952dbfde666b741936ac1b9c094125da2a783d2dd
+contract address: 0xe94Cb57AD747445c13C08A931F3f1421C540eB5F
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2894455
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0xf4aa282d726eed9c329098a21e2df10d8dd5f3adbba8e02624ee881dcfc6c3fa
+contract address: 0xE2ba935c1b3e833aFD45dA9CBCBDd2e90875ba30
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x530d34cbf1eed77cb7b0cf0235e9a52921176944466aeb6f3576db74c39377a0
+contract address: 0x303CEAFd0aF91A63576FF7dEFc01E66ca2D19E3a
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0xe6c93a13ec6fdeeb44c80fa9f888ca14fd384acd705866551f893e9839cc0e80
+contract address: 0x5366cD335B002b009304Dc74a21EC97e94510177
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x18896d7ea90749e376733f53ded0bc35192eb240af22e0c2e1ce2351cb6210ac
+contract address: 0x71FF58Af627447C233Febdb9390CFB6c52fAA3a7
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2894455
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0xe9b91854c458b0afc9033dbec4eaf485e4367a1c672d2ab6cf3ec95b87f1ede9
+contract address: 0x3E447b144e446558c2467d95FcF17Eaee9d704Bf
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0xeb4d8103ac1056631cbae0553dafbd908049d8feb8b5cca92adbb2d9dbbd79b1
+contract address: 0x6174769FBbC16D956a7bf70c3Ae7283341CAe3B6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x51cb8e5f536a05ca4eb21fe2fb7046a780996def5ded7bbcacdf284ec8a133d1
+contract address: 0x09d5c8d8EB9dF4A9779778d4B2c66943F1A0f923
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0xf53898b9abef9f08550b54f552fd74adee31e74d5986d63d93a5eb6088843769
+contract address: 0x23Fa899d0b780f2f439354DcdC325ff738d1234d
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2894455
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0xe509995bf97d52be3a8e86c57a526f00ef8493fb2dbd6a9af98e9b0469d9d710
+contract address: 0x398A7a447E4D9007Fa1A5F82F2D07F0B369bD26f
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0xa3ec3a0ff5900819819f1b68b9ef5cea33797ba73c44cc5bc8f767528c84f056
+contract address: 0xE95b5DF6c8c8b8AE04bb8ccA9802E5faf8E2a380
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x6a227b837b83929185ad091b87d8b237f558220bdb7085b4619d62718ba7797a
+contract address: 0x9cbEE5c0A6178F61dcD57C3b21180C8602aBdAc1
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x23fe6c2e83c173ea95031c47d56dc4d279c5d4a1cab6cc46d88f83a771f3abfb
+contract address: 0x3Eb52adc2294219C9A8F27C6a0BCcBBBEEeB0637
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2894455
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x2c2dc2bc4e87408bd8fbf517c4d6431a3bbadaa8d02d1fa036a5ef1d3eccb8e3
+contract address: 0x1b52F7d75DA9b64daF2D8ad2E7eaf75205c99d3B
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x68e01336deeef4f2d494fa2a4b2d6ff73e64f6d13a79f7f2141de43bf678a3af
+contract address: 0xEC828976783079948F5DfAc8e61de6a895EB59D2
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0xc6ec785b8a82511ffcc15c0573fdd6590795705aa29d02fe5d90681226f4d795
+contract address: 0xdB70141346347383D8e01c565E74b1a607f3Dd05
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0xc1e41b9c5256a08443a6eeaf991490c1b460d20ea36ffcac2f38e055a18948cd
+contract address: 0x3597899d1c79b516D724b33c6b5e404dCdD45Da1
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x9b5ec497973ae678f4cffe5845d61c0f44ca824fb8b4552f18014fb203270ca5
+contract address: 0xc489495Ad73C2E75fbBA3916df7BD186F6b1696F
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0xf13b63caec88020573d4f55cca61b7891bc5c9d663b7a9fc8b622df4fcf1cecc
+contract address: 0x1FB3ccD743653c4f8533268fFe4a9a9DA97db500
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x6e94e7e8ee70f6df78c35160bcfdcff8682912fcd57a7ca74e3fdae7410dacbe
+contract address: 0x54f9224C1A99951ABc0A7e843CE19a92dFA2E3c4
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x0d9532270cc3f366e8cde750e0505d0970bf6274f2f966d69351a42c0dbdf2c6
+contract address: 0x662b3D8C8Dc691C46334bcB2229336063e3c2487
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0xab74ca6869857c82008a1e29326f92573c484db33b618deeb052d4df5f5c0446
+contract address: 0xEa02aebdf8DccbD3bf2BaA9eeBa48b0275D370b8
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x6f687710634d834f8e41044253e3849b15069e8e6bac8456bf271ae029ce2b82
+contract address: 0x5a3343A0CF72dC6933362676Bb5831784CaA0014
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0xfc17f737acea5399366c6ee283f8fa33defe386cac8d2bee0b380d6dc414c9e1
+contract address: 0x3c3AB51fF33032159e82E1FDEe6503dEd082F1d9
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x4d4701fadeb218ad077ad9ef81babaffcb738eeb308ca77a7bb02caec4ab961f
+contract address: 0x50fE7A36aE65481EDD7EAc23bb8E317B7B6bB3E4
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x0a2da6bb7bfb307b6b0aea321d5d999ee6f94d1b57a9f7d53cd4aadee8ab645c
+contract address: 0x09e2af829b1C36A6A8876925D1557C0FA1FF7eF5
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x7df04703a54863a123a3c86fca710d1d88977de643750dfe39fedeb9172bcdab
+contract address: 0x912e47ab2257B0fE50516444bb6a12CffaCFA322
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x201043d0143f780adb92bc45f0649929eb3cb113ba929806b8b72f03977e581f
+contract address: 0x04e3A49CE67e0030B455b915c091B02473F0C564
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x68ec4522283aac98f8e96998cf238b33940fb25290d32bdefe1af26f06bd2ed2
+contract address: 0xAB45290275E6970b7B76FbaC8b39619EE05D0B69
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0xc0baf40da2684ab97dd25cfd41cfcf156d78120127da7af33f963db2ea01031f
+contract address: 0xb1c9e66a9064208a930e446811aBE8f4c24310e0
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0xd49cf021c25e552dc070454193f22f21771fd62c36cc5dd28b32f44b3a199bfa
+contract address: 0x26976F523B6dE4315c6A181b0983Eb98F638Bac6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x64f34395df43a62a220e7d96fffd26860d525f21aca610f1407f1b4486f4865f
+contract address: 0x43d8f4f99eCEE76977B75F1659ad34d6A7652c93
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x59bb3c704f40cfc66fdca8cdd6f499bd7fbc420806d302d14987f030906cab1d
+contract address: 0x2f77845F39273850bf6d734e21c0D8E7bdfF50F8
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x41d6f64f12525966590670c30982789b2e99562af9d2a0734892590a552d3e2f
+contract address: 0x36e10ACD624a048BC1e2B3B70B37B46a4BA36534
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x41288fb10efbd96f61c6a15a83f881d30c46e25636bba4d072d672c759f69b8a
+contract address: 0x708e2B13F6EB3f62686BAC1795c1e3C09e91eEaF
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0xd3604771fa07de8a051ceabff9a685d1d79c182732f7e34c0e93ddb015fdac5c
+contract address: 0x65df659Be90a49356a33458d806d9dE3d8F03969
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x92dbacbff977df187e7189123d5b2b63368febb34e761277b7599223582faba8
+contract address: 0xE5464F611113932335B397Eb0dD1601a896005C6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x0148f2dd93282f475c0ac15a07709268c5dd58a6fce01fe55acff3cecf6d8305
+contract address: 0xF0cDB2EcE3A2188048b79B1f94b434c594B807fB
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0xdd5e77a53b106861a3e9c2ae036cb8e3d5608237cf43a5b390a8f4547b1487c8
+contract address: 0x7C95b1ad025F0C9aB14192f87bF2aD53889bE4F7
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x798402acc384eddd9197c7375cf9eb31c12e164952c0a1a0aa6db6af9a6d0383
+contract address: 0x9bD0Bec44106D8Ea8fFb6296d7A84742a290E064
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x42639282634282b44aa8f16f23d337dcb57353014dfaa4987856acab3dc16690
+contract address: 0x34Ac3eB6180FdD94043664C22043F004734Dc480
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0xb8ae978124802e1aa93dc3d42da9de44b6d43818fd27d1b3096bda66f31b6959
+contract address: 0x04dE7A5bCCf369cb28AB389BfD7a6262E870B0a6
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x65647123c5a778c59c670e5e15592c0a1b5ab7be584870d199b16d1f169214f5
+contract address: 0xC9366C94D1760624DFa702Ee99a04E9f6271Aa70
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0xa288a1069e06c47c959a10a51986209396cba4ec8d5ac056287443b8d5620364
+contract address: 0x54F1df7dB2E46dbeF18CF97A376b79108166fa36
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x80b9a652e3b430b97157425adb5d2c186e0423fa9218a5d0771b1fef786a9c1d
+contract address: 0xe681Daa8C5aA5029F448592566407df7752B598f
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x2fbc56e578008d75138a6134da27a28f17f5f273ac2279b9c2bfa6a68fd2d1e2
+contract address: 0x267B07Fd1032e9A4e10dBF2600C8407ee6CA1e8c
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0xc80b72e899c867ccb8ecb02fae690a5875d3c3becfde60cacd2d816f98ded2c1
+contract address: 0x2E10b24b10692fa972510051A1e296D4535043ad
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x118d82908574b47c2c96baea811a1157b7c2bbcbf98233c7d96494d739b40cc2
+contract address: 0xdF19a9539Fdd701D8334299C6Dd04931e4022303
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x314555024b1197ce574d97db099aba5bd79944f22ae9c0d585c80ecf1f9f9eaa
+contract address: 0x02BB514187B830d6A2111197cd7D8cb60650B970
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x94bce0fa8e80f653108a008145512d3ba902bbb49ef77380b0b01992e6dd1798
+contract address: 0x6774Ce86Abf5EBB22E9F45b5f55daCbB4170aD7f
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x7b24ce6596f6079de9c62f7718e9d1f4e6473018c6302bb9fc1ccafe855826e3
+contract address: 0x06b98cAa1CAAe2B91Fb9af09348eDC09CEe99785
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x5b415df3d680696fde66f03dc345437ea6069a445c480ad02775a68a42b805d3
+contract address: 0xd8f831Ef919D3f38694f2797CD44D7Cc7d595A67
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x3bb8d016b9f8fa56f58208510459ca98e612d04dd414029a6e800c81bd503cfb
+contract address: 0xc52Df73f1BBe582061C65a2bd36A1d685f0a2BE5
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2893975
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x4f8e0f57cfed31132f47c4da4da70270934af455ee96e58ffa197115311d87c8
+contract address: 0x90E125753e21Eb5b955e9C0937E372061151AbC9
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x3b331d27bec69ae268455156f9098a02e64d91f0a4a344b6fb9b17de5ce1edf0
+contract address: 0x09157249a5937Bd78fea52CE189887Bd55c13050
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0x663957fccce41b06194f2231e610677c80a3eacdd493c5a1742594cbe16915cf
+contract address: 0xF85d6001ADaD5376ef63143bdf1f11D9b163ac4f
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x5b6663de08b715d3fa236fccef530ed9dee2ce565360ebcc99a6c01f9bf92ea7
+contract address: 0xEe0765D93faB6C76de1Bf6026Ba7437695B43aC5
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2894455
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x55dba43d79dcfed558dedf193d37386f890a33d7bb5e96085b1e68f5e996933d
+contract address: 0x532447985f1d598c0B07DE5310953d6AE6253F09
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x21f04ccc7c43f69d69d56a47aaba9e73afc97a3c24c0e3292aadebab57ac8d93
+contract address: 0x2c71cD16ec6a8AC3F0768ff56A6Ab944F676cFe2
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0xa189496ad16fe2b668bb2b7f3a94326a35714b69c285bb7b07414fc5af6ad2ff
+contract address: 0x8eF6CAbcAE15FB78b436e67B26FFE80Ba7ef8424
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** DefaultReserveInterestRateStrategy ***
+
+Network: localhost
+tx: 0x08b33ac77d57c986ed8294b8ad9ed271fc83afe9447168ac586c982568e47fee
+contract address: 0xA106BFbDB5C925A04358bE49db41aDd308a1458f
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2894455
+
+******
+
+*** StableDebtToken ***
+
+Network: localhost
+tx: 0x94451a9819c88f248847094985b88e7c3770313cc9d1acc80fd07b2a30354d40
+contract address: 0x9c91aEaD98b1354C7B0EAfb8ff539d0796c79894
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5442070
+
+******
+
+*** VariableDebtToken ***
+
+Network: localhost
+tx: 0x7596bc800660d0cf45c83079467d411e49a3c545583b5862d18b1e33404587e6
+contract address: 0x145b7B6368Df63e7F3497b0A948B30fC1A4d5E55
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 5016520
+
+******
+
+*** AToken ***
+
+Network: localhost
+tx: 0xe22c7593b3442952259b1619377a2c4a4978f0e818010289eb8975e8cb665c2b
+contract address: 0x142bFA0788F794d3D0aE1EC36373ee034aABC11f
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 9499999
+
+******
+
+*** TokenDistributor ***
+
+Network: localhost
+tx: 0xb829e68bba9b67bcd27c4793b8e25aceca28324f38177175d0ee529723834c01
+contract address: 0xEd9d04D6ab74581b95567C9aFcF8459B5a6A4Ccf
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 7785615
+
+******
+
+WARNING: Multiple definitions for initialize
+*** InitializableAdminUpgradeabilityProxy ***
+
+Network: localhost
+tx: 0xd1a52cdd2095ee0d3609f3600f6c89fc734549e1a67a81ddfa91782f0bb07368
+contract address: 0x8E2a05B9Abd9a2a3046879074d7D136213AaDCb9
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2954430
+
+******
+
+*** MockFlashLoanReceiver ***
+
+Network: localhost
+tx: 0x361c98faf968a5f0e753ae6e5cdadf97b57be83cddd44fc925c4b1f0998eaedb
+contract address: 0x8EA6693b23224fFD1C2AfbB161f15b398F8cB5FA
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2861720
+
+******
+
+*** WalletBalanceProvider ***
+
+Network: localhost
+tx: 0x00e823ab98484ebe48686e7e2dd79cd57b114209c6967cf00a37423e29b5769a
+contract address: 0xFb017937aB8EABb9506A03E6c76DcA99C6D095c7
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2899900
+
+******
+
+*** AaveProtocolTestHelpers ***
+
+Network: localhost
+tx: 0xc8f41a659f0db9fcce0769dc2e51937a1629912260de835a53a682ac1df5a95a
+contract address: 0xc6b70Da02A963fCA0016C7548E1f43511EFe11eC
+deployer address: 0xc783df8a850f42e7F7e57013759C285caa701eB6
+gas price: 8000000000
+gas used: 2818975
+
+******
+
+setup: 35.826s
+Pool loaded
+Configurator loaded
+
+***************
+Setup and snapshot finished
+***************
+
+  AToken: Modifiers
+    ✓ Tries to invoke mintOnDeposit not being the LendingPool
+    ✓ Tries to invoke burnOnLiquidation not being the LendingPool
+    ✓ Tries to invoke transferOnLiquidation not being the LendingPool
+    ✓ Tries to invoke transferUnderlyingTo not being the LendingPool
+
+  AToken: Transfer
+    ✓ User 0 deposits 1000 DAI, transfers to user 1
+    ✓ User 1 redirects interest to user 2, transfers 500 DAI back to user 0
+    ✓ User 0 transfers back to user 1
+    ✓ User 0 deposits 1 ETH and user tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)
+    ✓ User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)
+    ✓ User 0 tries to transfer 0 balance (revert expected)
+    ✓ User 1 repays the borrow, transfers aDAI back to user 0
+    ✓ User 0 redirects interest to user 2, transfers 500 aDAI to user 1. User 1 redirects to user 3. User 0 transfers another 100 aDAI
+    ✓ User 1 transfers the whole amount to himself
+
+  LendingPoolConfigurator
+
+    1) Deactivates the ETH reserve
+    ✓ Rectivates the ETH reserve
+    ✓ Check the onlyLendingPoolManager on deactivateReserve 
+    ✓ Check the onlyLendingPoolManager on activateReserve 
+    ✓ Freezes the ETH reserve
+    ✓ Unfreezes the ETH reserve
+    ✓ Check the onlyLendingPoolManager on freezeReserve 
+    ✓ Check the onlyLendingPoolManager on unfreezeReserve 
+    ✓ Deactivates the ETH reserve for borrowing
+
+    2) Activates the ETH reserve for borrowing
+    ✓ Check the onlyLendingPoolManager on disableBorrowingOnReserve 
+    ✓ Check the onlyLendingPoolManager on enableBorrowingOnReserve 
+    ✓ Deactivates the ETH reserve as collateral
+    ✓ Activates the ETH reserve as collateral
+    ✓ Check the onlyLendingPoolManager on disableReserveAsCollateral 
+    ✓ Check the onlyLendingPoolManager on enableReserveAsCollateral 
+    ✓ Disable stable borrow rate on the ETH reserve
+    ✓ Enables stable borrow rate on the ETH reserve
+    ✓ Check the onlyLendingPoolManager on disableReserveStableRate
+    ✓ Check the onlyLendingPoolManager on enableReserveStableRate
+    ✓ Changes LTV of the reserve
+    ✓ Check the onlyLendingPoolManager on setLtv
+    ✓ Changes liquidation threshold of the reserve
+    ✓ Check the onlyLendingPoolManager on setLiquidationThreshold
+    ✓ Changes liquidation bonus of the reserve
+    ✓ Check the onlyLendingPoolManager on setLiquidationBonus
+    ✓ Check the onlyLendingPoolManager on setReserveDecimals
+    ✓ Check the onlyLendingPoolManager on setLiquidationBonus
+    ✓ Reverts when trying to disable the DAI reserve with liquidity on it
+
+  LendingPool FlashLoan function
+    ✓ Deposits ETH into the reserve
+
+    3) Takes ETH flashloan, returns the funds correctly
+
+    4) Takes an ETH flashloan as big as the available liquidity
+    ✓ Takes ETH flashloan, does not return the funds (revert expected)
+    ✓ tries to take a very small flashloan, which would result in 0 fees (revert expected)
+
+    5) tries to take a flashloan that is bigger than the available liquidity (revert expected)
+    ✓ tries to take a flashloan using a non contract address as receiver (revert expected)
+    ✓ Deposits DAI into the reserve
+
+    6) Takes out a 500 DAI flashloan, returns the funds correctly
+    ✓ Takes out a 500 DAI flashloan, does not return the funds (revert expected)
+
+  LendingPoolAddressesProvider
+    ✓ Test the accessibility of the LendingPoolAddressesProvider
+
+  LendingPool liquidation - liquidator receiving aToken
+
+    7) LIQUIDATION - Deposits ETH, borrows DAI/Check liquidation fails because health factor is above 1
+
+    8) LIQUIDATION - Drop the health factor below 1
+
+    9) LIQUIDATION - Tries to liquidate a different currency than the loan principal
+
+    10) LIQUIDATION - Tries to liquidate a different collateral than the borrower collateral
+
+    11) LIQUIDATION - Liquidates the borrow
+
+    12) User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow
+
+  LendingPool liquidation - liquidator receiving the underlying asset
+
+    13) LIQUIDATION - Deposits ETH, borrows DAI
+
+    14) LIQUIDATION - Drop the health factor below 1
+
+    15) LIQUIDATION - Liquidates the borrow
+
+    16) User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow
+
+    17) User 4 deposits 1000 LEND - drops HF, liquidates the LEND, which results on a lower amount being liquidated
+
+  LendingPool: Borrow negatives (reverts)
+    ✓ User 0 deposits 1000 DAI, user 1 deposits 1 ETH as collateral and tries to borrow 100 DAI with rate mode NONE (revert expected)
+    ✓ User 0 deposits 1000 DAI, user 1 deposits 1 ETH as collateral and tries to borrow 100 DAI with an invalid rate mode (revert expected)
+
+  LendingPool: Borrow/repay (stable rate)
+
+    18) User 0 deposits 1000 DAI, user 1 deposits 1 ETH as collateral and borrows 100 DAI at stable rate
+    ✓ User 1 tries to borrow the rest of the DAI liquidity (revert expected)
+    ✓ User 1 repays the DAI borrow after one year
+    ✓ User 0 redeems the deposited DAI plus interest
+
+    19) User 1 deposits 1000 DAI, user 2 tries to borrow 1000 DAI at a stable rate without any collateral (revert expected)
+
+    20) User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 ETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 redeems
+    ✓ User 0 deposits 1000 DAI, user 1 deposits 2 ETH and borrow 100 DAI at stable rate first, then 100 DAI at variable rate, repays everything. User 0 redeems
+
+  LendingPool: Borrow/repay (variable rate)
+    ✓ User 2 deposits 1 DAI to account for rounding errors
+    ✓ User 0 deposits 1000 DAI, user 1 deposits 1 ETH as collateral and borrows 100 DAI at variable rate
+    ✓ User 1 tries to borrow the rest of the DAI liquidity (revert expected)
+    ✓ User 1 tries to repay 0 DAI (revert expected)
+    ✓ User 1 repays a small amount of DAI, enough to cover a small part of the interest
+    ✓ User 1 repays the DAI borrow after one year
+    ✓ User 0 redeems the deposited DAI plus interest
+    ✓ User 1 redeems the collateral
+    ✓ User 2 deposits a small amount of ETH to account for rounding errors
+    ✓ User 0 deposits 1 ETH, user 1 deposits 100 LINK as collateral and borrows 0.5 ETH at variable rate
+    ✓ User 1 tries to repay 0 ETH
+    ✓ User 1 tries to repay without sending any ETH value (revert expected)
+    ✓ User 2 tries to repay everything on behalf of user 1 using uint(-1) (revert expected)
+    ✓ User 3 repays a small amount of ETH on behalf of user 1
+    ✓ User 1 repays the ETH borrow after one year
+    ✓ User 0 redeems the deposited ETH plus interest
+    ✓ User 1 redeems the collateral
+    ✓ User 2 deposits 1 USDC to account for rounding errors
+    ✓ User 0 deposits 1000 USDC, user 1 deposits 1 ETH as collateral and borrows 100 USDC at variable rate
+
+    21) User 1 tries to borrow the rest of the USDC liquidity (revert expected)
+    ✓ User 1 repays the USDC borrow after one year
+    ✓ User 0 redeems the deposited USDC plus interest
+    ✓ User 1 redeems the collateral
+
+    22) User 1 deposits 1000 DAI, user 3 tries to borrow 1000 DAI without any collateral (revert expected)
+
+    23) user 3 deposits 0.1 ETH collateral to borrow 100 DAI; 0.1 ETH is not enough to borrow 100 DAI (revert expected)
+    ✓ user 3 redeems the 0.1 ETH
+    ✓ User 1 deposits 1000 USDC, user 3 tries to borrow 1000 USDC without any collateral (revert expected)
+
+    24) user 3 deposits 0.1 ETH collateral to borrow 100 USDC; 0.1 ETH is not enough to borrow 100 USDC (revert expected)
+    ✓ user 3 redeems the 0.1 ETH
+
+    25) User 0 deposits 1000 DAI, user 6 deposits 2 ETH and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 redeems
+
+  LendingPool: Deposit
+    ✓ User 0 Deposits 1000 DAI in an empty reserve
+    ✓ User 1 deposits 1000 DAI after user 1
+    ✓ User 0 deposits 1000 USDC in an empty reserve
+    ✓ User 1 deposits 1000 USDC after user 0
+    ✓ User 0 deposits 1 ETH in an empty reserve
+    ✓ User 1 deposits 1 ETH after user 0
+    ✓ User 1 deposits 0 ETH (revert expected)
+    ✓ User 1 deposits 0 DAI
+    ✓ User 1 tries to deposit ETH without sending any value
+    ✓ User 1 tries to deposit ETH by sending less value than required
+
+  AToken: interest rate redirection negative test cases
+    ✓ User 0 deposits 1000 DAI, tries to give allowance to redirect interest to himself (revert expected)
+    ✓ User 1 tries to redirect the interest of user 0 without allowance (revert expected)
+
+    26) User 0 tries to redirect the interest to user 2 twice (revert expected)
+
+    27) User 3 with 0 balance tries to redirect the interest to user 2 (revert expected)
+
+  AToken: interest rate redirection
+
+    28) User 0 deposits 1000 DAI, redirects the interest to user 2
+    ✓ User 1 deposits 1 ETH, borrows 100 DAI, repays after one year. Users 0 deposits another 1000 DAI. Redirected balance of user 2 is updated
+    ✓ User 1 borrows another 100 DAI, repay the whole amount. Users 0 and User 2 redeem
+
+    29) User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 0 redirects interest back to himself, user 1 borrows another 100 DAI and after another year repays the whole amount. Users 0 and User 2 redeem
+
+    30) User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 2 redirects interest to user 3. user 1 borrows another 100 DAI, user 0 deposits another 100 DAI. User 1 repays the whole amount. Users 0, 2 first 1 DAI, then everything. User 3 redeems
+
+  LendingPool: Rebalance stable rate
+    ✓ User 0 tries to rebalance user 1 who has no borrows in progress (revert expected)
+    ✓ User 0 deposits 1000 DAI, user 1 deposits 1 ETH, borrows 100 DAI at a variable rate, user 0 rebalances user 1 (revert expected)
+
+    31) User 1 swaps to stable, user 0 tries to rebalance but the conditions are not met (revert expected)
+
+    32) User 2 deposits ETH and borrows the remaining DAI, causing the stable rates to rise (liquidity rate < user 1 borrow rate). User 0 tries to rebalance user 1 (revert expected)
+
+    33) User 2 borrows more DAI, causing the liquidity rate to rise above user 1 stable borrow rate User 0 rebalances user 1
+
+  LendingPool: Redeem negative test cases
+    ✓ Users 0 Deposits 1000 DAI and tries to redeem 0 DAI (revert expected)
+
+    34) Users 0 tries to redeem 1100 DAI from the 1000 DAI deposited (revert expected)
+
+    35) Users 1 deposits 1 ETH, borrows 100 DAI, tries to redeem the 1 ETH deposited (revert expected)
+
+  LendingPool: Redeem
+    ✓ User 0 Deposits 1000 DAI in an empty reserve
+    ✓ User 0 redeems half of the deposited DAI
+    ✓ User 0 redeems remaining half of the deposited DAI
+    ✓ User 0 Deposits 1000 USDC in an empty reserve
+    ✓ User 0 redeems half of the deposited USDC
+    ✓ User 0 redeems remaining half of the deposited USDC
+    ✓ User 0 Deposits 1 ETH in an empty reserve
+    ✓ User 0 redeems half of the deposited ETH
+    ✓ User 0 redeems remaining half of the deposited ETH
+
+    36) Users 0 and 1 Deposit 1000 DAI, both redeem
+    ✓ Users 0 deposits 1000 DAI, user 1 Deposit 1000 USDC and 1 ETH, borrows 100 DAI. User 1 tries to redeem all the USDC
+
+  LendingPool: Usage as collateral
+
+    37) User 0 Deposits 1000 DAI, disables DAI as collateral
+
+    38) User 1 Deposits 2 ETH, disables ETH as collateral, borrows 400 DAI (revert expected)
+    ✓ User 1 enables ETH as collateral, borrows 400 DAI
+
+    39) User 1 disables ETH as collateral (revert expected)
+
+  LendingPool: Swap rate mode
+    ✓ User 0 tries to swap rate mode without any variable rate loan in progress (revert expected)
+
+    40) User 0 tries to swap rate mode without any stable rate loan in progress (revert expected)
+
+    41) User 0 deposits 1000 DAI, user 1 deposits 2 ETH as collateral, borrows 100 DAI at variable rate and swaps to stable after one year
+
+    42) User 1 borrows another 100 DAI, and swaps back to variable after one year, repays the loan
+
+  Stable debt token tests
+    ✓ Tries to invoke mint not being the LendingPool
+    ✓ Tries to invoke burn not being the LendingPool
+
+  Variable debt token tests
+    ✓ Tries to invoke mint not being the LendingPool
+    ✓ Tries to invoke burn not being the LendingPool
+
+·------------------------------------------------------------------|---------------------------|-------------|-----------------------------·
+|                       [90mSolc version: 0.6.8[39m                        ·  [90mOptimizer enabled: true[39m  ·  [90mRuns: 200[39m  ·  [90mBlock limit: 10000000 gas[39m  │
+···································································|···························|·············|······························
+|  [32m[1mMethods[22m[39m                                                         ·               [90m75 gwei/gas[39m               ·       [31m320.77 eur/eth[39m        │
+·································|·································|·············|·············|·············|···············|··············
+|  [1mContract[22m                      ·  [1mMethod[22m                         ·  [32mMin[39m        ·  [32mMax[39m        ·  [32mAvg[39m        ·  [1m# calls[22m      ·  [1meur (avg)[22m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mAToken[39m                        ·  redeem                         ·     [36m245418[39m  ·     [31m619747[39m  ·     502050  ·           [90m32[39m  ·      [32m12.08[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mAToken[39m                        ·  redirectInterestStream         ·     [36m130611[39m  ·     [31m149823[39m  ·     143415  ·            [90m3[39m  ·       [32m3.45[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPool[39m                   ·  borrow                         ·     [36m556414[39m  ·     [31m628041[39m  ·     586871  ·           [90m17[39m  ·      [32m14.12[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPool[39m                   ·  deposit                        ·     [36m169815[39m  ·     [31m332253[39m  ·     220161  ·           [90m69[39m  ·       [32m5.30[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPool[39m                   ·  flashLoan                      ·     [36m148930[39m  ·     [31m189947[39m  ·     169439  ·            [90m2[39m  ·       [32m4.08[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPool[39m                   ·  repay                          ·      [36m97914[39m  ·     [31m253341[39m  ·     175710  ·           [90m15[39m  ·       [32m4.23[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPool[39m                   ·  setUserUseReserveAsCollateral  ·      [36m99215[39m  ·     [31m404713[39m  ·     201091  ·            [90m3[39m  ·       [32m4.84[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPool[39m                   ·  swapBorrowRateMode             ·          -  ·          -  ·     235403  ·            [90m4[39m  ·       [32m5.66[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolAddressesProvider[39m  ·  transferOwnership              ·          -  ·          -  ·      30839  ·            [90m1[39m  ·       [32m0.74[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  activateReserve                ·          -  ·          -  ·      47054  ·            [90m4[39m  ·       [32m1.13[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  disableBorrowingOnReserve      ·          -  ·          -  ·      51242  ·            [90m1[39m  ·       [32m1.23[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  disableReserveAsCollateral     ·          -  ·          -  ·      51156  ·            [90m2[39m  ·       [32m1.23[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  disableReserveStableRate       ·          -  ·          -  ·      51285  ·            [90m2[39m  ·       [32m1.23[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  enableBorrowingOnReserve       ·          -  ·          -  ·      51767  ·            [90m3[39m  ·       [32m1.25[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  enableReserveAsCollateral      ·          -  ·          -  ·      52667  ·            [90m4[39m  ·       [32m1.27[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  enableReserveStableRate        ·          -  ·          -  ·      51165  ·            [90m4[39m  ·       [32m1.23[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  freezeReserve                  ·          -  ·          -  ·      51200  ·            [90m2[39m  ·       [32m1.23[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  setLiquidationBonus            ·          -  ·          -  ·      51477  ·            [90m5[39m  ·       [32m1.24[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  setLiquidationThreshold        ·          -  ·          -  ·      51500  ·            [90m3[39m  ·       [32m1.24[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  setLtv                         ·          -  ·          -  ·      51506  ·            [90m3[39m  ·       [32m1.24[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mLendingPoolConfigurator[39m       ·  unfreezeReserve                ·          -  ·          -  ·      51263  ·            [90m4[39m  ·       [32m1.23[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mMintableERC20[39m                 ·  approve                        ·      [36m24907[39m  ·      [31m44119[39m  ·      33110  ·           [90m29[39m  ·       [32m0.80[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mMintableERC20[39m                 ·  mint                           ·      [36m35427[39m  ·      [31m65475[39m  ·      41150  ·           [90m29[39m  ·       [32m0.99[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mMintableERC20[39m                 ·  transfer                       ·     [36m211451[39m  ·     [31m542702[39m  ·     437409  ·           [90m13[39m  ·      [32m10.52[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [90mMockFlashLoanReceiver[39m         ·  setFailExecutionTransfer       ·          -  ·          -  ·      27239  ·            [90m6[39m  ·       [32m0.66[39m  │
+·································|·································|·············|·············|·············|···············|··············
+|  [32m[1mDeployments[22m[39m                                                     ·                                         ·  [1m% of limit[22m   ·             │
+···································································|·············|·············|·············|···············|··············
+|  ValidationLogic                                                 ·          -  ·          -  ·    1232435  ·       [90m12.3 %[39m  ·      [32m29.65[39m  │
+·------------------------------------------------------------------|-------------|-------------|-------------|---------------|-------------·
+
+  111 passing (8m)
+  42 failing
+
+  1) LendingPoolConfigurator
+       Deactivates the ETH reserve:
+     Error: VM Exception while processing transaction: revert The liquidity of the reserve needs to be 0
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  2) LendingPoolConfigurator
+       Activates the ETH reserve for borrowing:
+
+      AssertionError: expected '1000000000951293759814590868' to equal '1000000000000000000000000000'
+      + expected - actual
+
+      -1000000000951293759814590868
+      +1000000000000000000000000000
+      
+      at /src/test/configurator.spec.ts:199:66
+      at step (test/configurator.spec.ts:33:23)
+      at Object.next (test/configurator.spec.ts:14:53)
+      at fulfilled (test/configurator.spec.ts:5:58)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  3) LendingPool FlashLoan function
+       Takes ETH flashloan, returns the funds correctly:
+
+      AssertionError: expected '2000504000285388128' to equal '1000504000000000000'
+      + expected - actual
+
+      -2000504000285388128
+      +1000504000000000000
+      
+      at /src/test/flashloan.spec.ts:112:61
+      at step (test/flashloan.spec.ts:33:23)
+      at Object.next (test/flashloan.spec.ts:14:53)
+      at fulfilled (test/flashloan.spec.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  4) LendingPool FlashLoan function
+       Takes an ETH flashloan as big as the available liquidity:
+
+      AssertionError: expected '2001134317805388128' to equal '1001134317520000000'
+      + expected - actual
+
+      -2001134317805388128
+      +1001134317520000000
+      
+      at /src/test/flashloan.spec.ts:148:61
+      at step (test/flashloan.spec.ts:33:23)
+      at Object.next (test/flashloan.spec.ts:14:53)
+      at fulfilled (test/flashloan.spec.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  5) LendingPool FlashLoan function
+       tries to take a flashloan that is bigger than the available liquidity (revert expected):
+
+      AssertionError: There is not enough liquidity available to borrow: Expected transaction to be reverted with There is not enough liquidity available to borrow, but other exception was thrown: VM Exception while processing transaction: revert The actual balance of the protocol is inconsistent
+      + expected - actual
+
+      -VM Exception while processing transaction: revert The actual balance of the protocol is inconsistent
+      +Transaction reverted with There is not enough liquidity available to borrow.
+      
+  
+
+  6) LendingPool FlashLoan function
+       Takes out a 500 DAI flashloan, returns the funds correctly:
+     AssertionError: Expected "3000315000000000000000" to be equal 1000315000000000000000
+      at /src/test/flashloan.spec.ts:275:50
+      at step (test/flashloan.spec.ts:33:23)
+      at Object.next (test/flashloan.spec.ts:14:53)
+      at fulfilled (test/flashloan.spec.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  7) LendingPool liquidation - liquidator receiving aToken
+       LIQUIDATION - Deposits ETH, borrows DAI/Check liquidation fails because health factor is above 1:
+
+      AssertionError: expected '4239' to equal '8000'
+      + expected - actual
+
+      -4239
+      +8000
+      
+      at /src/test/liquidation-atoken.spec.ts:115:93
+      at step (test/liquidation-atoken.spec.ts:33:23)
+      at Object.next (test/liquidation-atoken.spec.ts:14:53)
+      at fulfilled (test/liquidation-atoken.spec.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  8) LendingPool liquidation - liquidator receiving aToken
+       LIQUIDATION - Drop the health factor below 1:
+
+      AssertionError: expected '1124284537640968172' to be less than '1000000000000000000'
+      + expected - actual
+
+      -1124284537640968172
+      +1000000000000000000
+      
+      at /src/test/liquidation-atoken.spec.ts:141:84
+      at step (test/liquidation-atoken.spec.ts:33:23)
+      at Object.next (test/liquidation-atoken.spec.ts:14:53)
+      at fulfilled (test/liquidation-atoken.spec.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  9) LendingPool liquidation - liquidator receiving aToken
+       LIQUIDATION - Tries to liquidate a different currency than the loan principal:
+
+      AssertionError: Expected transaction to be reverted with User did not borrow the specified currency, but other exception was thrown: VM Exception while processing transaction: revert Health factor is not below the threshold
+      + expected - actual
+
+      -VM Exception while processing transaction: revert Health factor is not below the threshold
+      +Transaction reverted with User did not borrow the specified currency.
+      
+  
+
+  10) LendingPool liquidation - liquidator receiving aToken
+       LIQUIDATION - Tries to liquidate a different collateral than the borrower collateral:
+
+      AssertionError: Expected transaction to be reverted with Invalid collateral to liquidate, but other exception was thrown: VM Exception while processing transaction: revert Health factor is not below the threshold
+      + expected - actual
+
+      -VM Exception while processing transaction: revert Health factor is not below the threshold
+      +Transaction reverted with Invalid collateral to liquidate.
+      
+  
+
+  11) LendingPool liquidation - liquidator receiving aToken
+       LIQUIDATION - Liquidates the borrow:
+     Error: VM Exception while processing transaction: revert Health factor is not below the threshold
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  12) LendingPool liquidation - liquidator receiving aToken
+       User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow:
+     Error: VM Exception while processing transaction: revert SafeMath: division by zero
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  13) LendingPool liquidation - liquidator receiving the underlying asset
+       LIQUIDATION - Deposits ETH, borrows DAI:
+
+      AssertionError: expected '3713' to equal '8000'
+      + expected - actual
+
+      -3713
+      +8000
+      
+      at /src/test/liquidation-underlying.spec.ts:131:104
+      at step (test/liquidation-underlying.spec.ts:33:23)
+      at Object.next (test/liquidation-underlying.spec.ts:14:53)
+      at fulfilled (test/liquidation-underlying.spec.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  14) LendingPool liquidation - liquidator receiving the underlying asset
+       LIQUIDATION - Drop the health factor below 1:
+
+      AssertionError: expected '1071094219531376009' to be less than '1000000000000000000'
+      + expected - actual
+
+      -1071094219531376009
+      +1000000000000000000
+      
+      at /src/test/liquidation-underlying.spec.ts:152:84
+      at step (test/liquidation-underlying.spec.ts:33:23)
+      at Object.next (test/liquidation-underlying.spec.ts:14:53)
+      at fulfilled (test/liquidation-underlying.spec.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  15) LendingPool liquidation - liquidator receiving the underlying asset
+       LIQUIDATION - Liquidates the borrow:
+     Error: VM Exception while processing transaction: revert Health factor is not below the threshold
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  16) LendingPool liquidation - liquidator receiving the underlying asset
+       User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow:
+     Error: VM Exception while processing transaction: revert Health factor is not below the threshold
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  17) LendingPool liquidation - liquidator receiving the underlying asset
+       User 4 deposits 1000 LEND - drops HF, liquidates the LEND, which results on a lower amount being liquidated:
+     Error: VM Exception while processing transaction: revert Health factor is not below the threshold
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  18) LendingPool: Borrow/repay (stable rate)
+       User 0 deposits 1000 DAI, user 1 deposits 1 ETH as collateral and borrows 100 DAI at stable rate:
+     Error: VM Exception while processing transaction: revert There is not enough collateral to cover a new borrow
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  19) LendingPool: Borrow/repay (stable rate)
+       User 1 deposits 1000 DAI, user 2 tries to borrow 1000 DAI at a stable rate without any collateral (revert expected):
+
+      AssertionError: expected '0' to be almost equal or equal '430000012860363335935' for property principalStableDebt
+      + expected - actual
+
+      -0
+      +430000012860363335935
+      
+      at expectEqual (test/helpers/actions.ts:618:30)
+      at /src/test/helpers/actions.ts:206:17
+      at step (test/helpers/actions.ts:33:23)
+      at Object.next (test/helpers/actions.ts:14:53)
+      at fulfilled (test/helpers/actions.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  20) LendingPool: Borrow/repay (stable rate)
+       User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 ETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 redeems:
+     Error: VM Exception while processing transaction: revert There is not enough collateral to cover a new borrow
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  21) LendingPool: Borrow/repay (variable rate)
+       User 1 tries to borrow the rest of the USDC liquidity (revert expected):
+
+      AssertionError: There is not enough collateral to cover a new borrow: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  22) LendingPool: Borrow/repay (variable rate)
+       User 1 deposits 1000 DAI, user 3 tries to borrow 1000 DAI without any collateral (revert expected):
+
+      AssertionError: The collateral balance is 0: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  23) LendingPool: Borrow/repay (variable rate)
+       user 3 deposits 0.1 ETH collateral to borrow 100 DAI; 0.1 ETH is not enough to borrow 100 DAI (revert expected):
+
+      AssertionError: There is not enough collateral to cover a new borrow: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  24) LendingPool: Borrow/repay (variable rate)
+       user 3 deposits 0.1 ETH collateral to borrow 100 USDC; 0.1 ETH is not enough to borrow 100 USDC (revert expected):
+
+      AssertionError: There is not enough collateral to cover a new borrow: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  25) LendingPool: Borrow/repay (variable rate)
+       User 0 deposits 1000 DAI, user 6 deposits 2 ETH and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 redeems:
+     Error: VM Exception while processing transaction: revert There is not enough collateral to cover a new borrow
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  26) AToken: interest rate redirection negative test cases
+       User 0 tries to redirect the interest to user 2 twice (revert expected):
+
+      AssertionError: expected '3000000004822739128894' to be almost equal or equal '3000002775243319210929' for property redirectionAddressRedirectedBalance
+      + expected - actual
+
+      -3000000004822739128894
+      +3000002775243319210929
+      
+      at expectEqual (test/helpers/actions.ts:618:30)
+      at /src/test/helpers/actions.ts:537:17
+      at step (test/helpers/actions.ts:33:23)
+      at Object.next (test/helpers/actions.ts:14:53)
+      at fulfilled (test/helpers/actions.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  27) AToken: interest rate redirection negative test cases
+       User 3 with 0 balance tries to redirect the interest to user 2 (revert expected):
+
+      AssertionError: Interest stream can only be redirected if there is a valid balance: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  28) AToken: interest rate redirection
+       User 0 deposits 1000 DAI, redirects the interest to user 2:
+     Error: VM Exception while processing transaction: revert Interest is already redirected to the user
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  29) AToken: interest rate redirection
+       User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 0 redirects interest back to himself, user 1 borrows another 100 DAI and after another year repays the whole amount. Users 0 and User 2 redeem:
+
+      AssertionError: expected '1020723447797511083136' to be almost equal or equal '1020723447806037392232' for property redirectionAddressRedirectedBalance
+      + expected - actual
+
+      -1020723447797511083136
+      +1020723447806037392232
+      
+      at expectEqual (test/helpers/actions.ts:618:30)
+      at /src/test/helpers/actions.ts:537:17
+      at step (test/helpers/actions.ts:33:23)
+      at Object.next (test/helpers/actions.ts:14:53)
+      at fulfilled (test/helpers/actions.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  30) AToken: interest rate redirection
+       User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 2 redirects interest to user 3. user 1 borrows another 100 DAI, user 0 deposits another 100 DAI. User 1 repays the whole amount. Users 0, 2 first 1 DAI, then everything. User 3 redeems:
+     Error: VM Exception while processing transaction: revert Interest is already redirected to the user
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  31) LendingPool: Rebalance stable rate
+       User 1 swaps to stable, user 0 tries to rebalance but the conditions are not met (revert expected):
+     Error: VM Exception while processing transaction: revert 12
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  32) LendingPool: Rebalance stable rate
+       User 2 deposits ETH and borrows the remaining DAI, causing the stable rates to rise (liquidity rate < user 1 borrow rate). User 0 tries to rebalance user 1 (revert expected):
+     Error: VM Exception while processing transaction: revert There is not enough collateral to cover a new borrow
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  33) LendingPool: Rebalance stable rate
+       User 2 borrows more DAI, causing the liquidity rate to rise above user 1 stable borrow rate User 0 rebalances user 1:
+     Error: VM Exception while processing transaction: revert There is not enough collateral to cover a new borrow
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  34) LendingPool: Redeem negative test cases
+       Users 0 tries to redeem 1100 DAI from the 1000 DAI deposited (revert expected):
+
+      AssertionError: User cannot redeem more than the available balance: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  35) LendingPool: Redeem negative test cases
+       Users 1 deposits 1 ETH, borrows 100 DAI, tries to redeem the 1 ETH deposited (revert expected):
+
+      AssertionError: Transfer cannot be allowed.: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  36) LendingPool: Redeem
+       Users 0 and 1 Deposit 1000 DAI, both redeem:
+
+      AssertionError: expected '100000000000000000000' to be almost equal or equal '101885376842214025499' for property principalStableDebt
+      + expected - actual
+
+      -100000000000000000000
+      +101885376842214025499
+      
+      at expectEqual (test/helpers/actions.ts:618:30)
+      at /src/test/helpers/actions.ts:206:17
+      at step (test/helpers/actions.ts:33:23)
+      at Object.next (test/helpers/actions.ts:14:53)
+      at fulfilled (test/helpers/actions.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  37) LendingPool: Usage as collateral
+       User 0 Deposits 1000 DAI, disables DAI as collateral:
+
+      AssertionError: expected '3000000006486135113480' to be almost equal or equal '3000000005405612189577' for property currentATokenBalance
+      + expected - actual
+
+      -3000000006486135113480
+      +3000000005405612189577
+      
+      at expectEqual (test/helpers/actions.ts:618:30)
+      at /src/test/helpers/actions.ts:420:17
+      at step (test/helpers/actions.ts:33:23)
+      at Object.next (test/helpers/actions.ts:14:53)
+      at fulfilled (test/helpers/actions.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+  38) LendingPool: Usage as collateral
+       User 1 Deposits 2 ETH, disables ETH as collateral, borrows 400 DAI (revert expected):
+
+      AssertionError: The collateral balance is 0: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  39) LendingPool: Usage as collateral
+       User 1 disables ETH as collateral (revert expected):
+
+      AssertionError: User deposit is already being used as collateral: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  40) LendingPool: Swap rate mode
+       User 0 tries to swap rate mode without any stable rate loan in progress (revert expected):
+
+      AssertionError: User does not have a stable rate loan in progress on this reserve: Expected transaction to be reverted
+      + expected - actual
+
+      -Transaction NOT reverted.
+      +Transaction reverted.
+      
+  
+
+  41) LendingPool: Swap rate mode
+       User 0 deposits 1000 DAI, user 1 deposits 2 ETH as collateral, borrows 100 DAI at variable rate and swaps to stable after one year:
+     Error: VM Exception while processing transaction: revert 12
+      at HttpProvider.send (node_modules/@nomiclabs/buidler/src/internal/core/providers/http.ts:36:34)
+      at getMultipliedGasEstimation (node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:150:45)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:108:14
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/accounts.ts:219:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:63:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at /src/node_modules/@nomiclabs/buidler/src/internal/core/providers/gas-providers.ts:82:21
+      at Proxy.cloningSendWrapper (node_modules/@nomiclabs/buidler/src/internal/core/providers/wrapper.ts:9:12)
+      at EthersProviderWrapper.send (node_modules/@nomiclabs/buidler-ethers/src/ethers-provider-wrapper.ts:13:48)
+      at EthersProviderWrapper.JsonRpcProvider.perform (node_modules/ethers/providers/json-rpc-provider.js:304:29)
+      at /src/node_modules/ethers/providers/base-provider.js:846:34
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+      at async Promise.all (index 1)
+      at async Promise.all (index 0)
+
+  42) LendingPool: Swap rate mode
+       User 1 borrows another 100 DAI, and swaps back to variable after one year, repays the loan:
+
+      AssertionError: expected '10711430955331434378759' to be almost equal or equal '10652813512167291105893' for property totalLiquidity
+      + expected - actual
+
+      -10711430955331434378759
+      +10652813512167291105893
+      
+      at expectEqual (test/helpers/actions.ts:618:30)
+      at /src/test/helpers/actions.ts:458:17
+      at step (test/helpers/actions.ts:33:23)
+      at Object.next (test/helpers/actions.ts:14:53)
+      at fulfilled (test/helpers/actions.ts:5:58)
+      at runMicrotasks (<anonymous>)
+      at processTicksAndRejections (internal/process/task_queues.js:97:5)
+
+
+

@@ -54,23 +54,12 @@ interface LendingPoolConfiguratorInterface extends Interface {
     initReserve: TypedFunctionDescription<{
       encode([
         _reserve,
-        _underlyingAssetDecimals,
-        _interestRateStrategyAddress,
-        _stableDebtTokenAddress,
-        _variableDebtTokenAddress,
-      ]: [string, BigNumberish, string, string, string]): string;
-    }>;
-
-    initReserveWithData: TypedFunctionDescription<{
-      encode([
-        _reserve,
-        _aTokenName,
-        _aTokenSymbol,
+        _aTokenInstance,
         _stableDebtTokenAddress,
         _variableDebtTokenAddress,
         _underlyingAssetDecimals,
         _interestRateStrategyAddress,
-      ]: [string, string, string, string, string, BigNumberish, string]): string;
+      ]: [string, string, string, string, BigNumberish, string]): string;
     }>;
 
     initialize: TypedFunctionDescription<{
@@ -103,6 +92,10 @@ interface LendingPoolConfiguratorInterface extends Interface {
 
     unfreezeReserve: TypedFunctionDescription<{
       encode([_reserve]: [string]): string;
+    }>;
+
+    updateAToken: TypedFunctionDescription<{
+      encode([_reserve, _implementation]: [string, string]): string;
     }>;
   };
 
@@ -246,17 +239,7 @@ export class LendingPoolConfigurator extends Contract {
 
     initReserve(
       _reserve: string,
-      _underlyingAssetDecimals: BigNumberish,
-      _interestRateStrategyAddress: string,
-      _stableDebtTokenAddress: string,
-      _variableDebtTokenAddress: string,
-      overrides?: TransactionOverrides
-    ): Promise<ContractTransaction>;
-
-    initReserveWithData(
-      _reserve: string,
-      _aTokenName: string,
-      _aTokenSymbol: string,
+      _aTokenInstance: string,
       _stableDebtTokenAddress: string,
       _variableDebtTokenAddress: string,
       _underlyingAssetDecimals: BigNumberish,
@@ -305,6 +288,12 @@ export class LendingPoolConfigurator extends Contract {
 
     unfreezeReserve(
       _reserve: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    updateAToken(
+      _reserve: string,
+      _implementation: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
   };
@@ -356,17 +345,7 @@ export class LendingPoolConfigurator extends Contract {
 
   initReserve(
     _reserve: string,
-    _underlyingAssetDecimals: BigNumberish,
-    _interestRateStrategyAddress: string,
-    _stableDebtTokenAddress: string,
-    _variableDebtTokenAddress: string,
-    overrides?: TransactionOverrides
-  ): Promise<ContractTransaction>;
-
-  initReserveWithData(
-    _reserve: string,
-    _aTokenName: string,
-    _aTokenSymbol: string,
+    _aTokenInstance: string,
     _stableDebtTokenAddress: string,
     _variableDebtTokenAddress: string,
     _underlyingAssetDecimals: BigNumberish,
@@ -414,6 +393,12 @@ export class LendingPoolConfigurator extends Contract {
   ): Promise<ContractTransaction>;
 
   unfreezeReserve(_reserve: string, overrides?: TransactionOverrides): Promise<ContractTransaction>;
+
+  updateAToken(
+    _reserve: string,
+    _implementation: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
 
   filters: {
     BorrowingDisabledOnReserve(_reserve: string | null): EventFilter;
@@ -489,16 +474,7 @@ export class LendingPoolConfigurator extends Contract {
 
     initReserve(
       _reserve: string,
-      _underlyingAssetDecimals: BigNumberish,
-      _interestRateStrategyAddress: string,
-      _stableDebtTokenAddress: string,
-      _variableDebtTokenAddress: string
-    ): Promise<BigNumber>;
-
-    initReserveWithData(
-      _reserve: string,
-      _aTokenName: string,
-      _aTokenSymbol: string,
+      _aTokenInstance: string,
       _stableDebtTokenAddress: string,
       _variableDebtTokenAddress: string,
       _underlyingAssetDecimals: BigNumberish,
@@ -525,5 +501,7 @@ export class LendingPoolConfigurator extends Contract {
     ): Promise<BigNumber>;
 
     unfreezeReserve(_reserve: string): Promise<BigNumber>;
+
+    updateAToken(_reserve: string, _implementation: string): Promise<BigNumber>;
   };
 }

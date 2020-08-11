@@ -353,13 +353,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       addressesProvider.getPriceOracle()
     );
 
-    //borrow passed
-    reserve.updateCumulativeIndexesAndTimestamp();
-
-    //solium-disable-next-line
-    reserve.lastUpdateTimestamp = uint40(block.timestamp);
-
+    //caching the current stable borrow rate
     uint256 userStableRate = reserve.currentStableBorrowRate;
+
+    reserve.updateCumulativeIndexesAndTimestamp();
 
     if (ReserveLogic.InterestRateMode(_interestRateMode) == ReserveLogic.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(msg.sender, _amount, userStableRate);

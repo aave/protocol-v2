@@ -2,10 +2,13 @@
 pragma solidity ^0.6.8;
 
 import {ERC20} from './ERC20.sol';
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/WadRayMath.sol';
 import {UniversalERC20} from '../libraries/UniversalERC20.sol';
+import {
+  VersionedInitializable
+} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+
 import '@nomiclabs/buidler/console.sol';
 
 /**
@@ -14,7 +17,7 @@ import '@nomiclabs/buidler/console.sol';
  * @dev Implementation of the interest bearing token for the DLP protocol.
  * @author Aave
  */
-contract AToken is ERC20 {
+contract AToken is VersionedInitializable, ERC20 {
   using WadRayMath for uint256;
   using UniversalERC20 for ERC20;
 
@@ -117,15 +120,16 @@ contract AToken is ERC20 {
 
   event InterestRedirectionAllowanceChanged(address indexed _from, address indexed _to);
 
-  address public underlyingAssetAddress;
+  address public immutable underlyingAssetAddress;
 
   mapping(address => uint256) private userIndexes;
   mapping(address => address) private interestRedirectionAddresses;
   mapping(address => uint256) private redirectedBalances;
   mapping(address => address) private interestRedirectionAllowances;
 
-  LendingPoolAddressesProvider private addressesProvider;
-  LendingPool private pool;
+  LendingPool private immutable pool;
+
+  uint256 public constant ATOKEN_REVISION = 0x1;
 
   modifier onlyLendingPool {
     require(msg.sender == address(pool), 'The caller of this function must be a lending pool');
@@ -138,16 +142,27 @@ contract AToken is ERC20 {
   }
 
   constructor(
-    LendingPoolAddressesProvider _addressesProvider,
-    address _underlyingAsset,
+    LendingPool _pool,
+    address _underlyingAssetAddress,
+    string memory _tokenName,
+    string memory _tokenSymbol
+  ) public ERC20(_tokenName, _tokenSymbol) {
+    pool = _pool;
+    underlyingAssetAddress = _underlyingAssetAddress;
+  }
+
+  function getRevision() internal virtual override pure returns (uint256) {
+    return ATOKEN_REVISION;
+  }
+
+  function initialize(
     uint8 _underlyingAssetDecimals,
-    string memory _name,
-    string memory _symbol
-  ) public ERC20(_name, _symbol) {
+    string calldata _tokenName,
+    string calldata _tokenSymbol
+  ) external virtual initializer {
+    _name = _tokenName;
+    _symbol = _tokenSymbol;
     _setupDecimals(_underlyingAssetDecimals);
-    addressesProvider = _addressesProvider;
-    pool = LendingPool(payable(addressesProvider.getLendingPool()));
-    underlyingAssetAddress = _underlyingAsset;
   }
 
   /**
@@ -437,19 +452,20 @@ contract AToken is ERC20 {
       uint256
     )
   {
-    uint256 previousPrincipalBalance = super.balanceOf(_user);
-    //calculate the accrued interest since the last accumulation
-    uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
-    //mints an amount of tokens equivalent to the amount accumulated
-    _mint(_user, balanceIncrease);
+    uint256 currBalance = balanceOf(_user);
+    uint256 balanceIncrease = 0;
+    uint256 previousBalance = 0;
+
+    if (currBalance != 0) {
+      previousBalance = super.balanceOf(_user);
+      //calculate the accrued interest since the last accumulation
+      balanceIncrease = currBalance.sub(previousBalance);
+      //mints an amount of tokens equivalent to the amount accumulated
+      _mint(_user, balanceIncrease);
+    }
     //updates the user index
     uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
-    return (
-      previousPrincipalBalance,
-      previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease,
-      index
-    );
+    return (previousBalance, currBalance, balanceIncrease, index);
   }
 
   /**

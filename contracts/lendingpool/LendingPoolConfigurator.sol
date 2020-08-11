@@ -4,11 +4,13 @@ pragma experimental ABIEncoderV2;
 
 import '@openzeppelin/contracts/math/SafeMath.sol';
 
-import '../interfaces/IERC20Detailed.sol';
 import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import '../libraries/ReserveConfiguration.sol';
 import '../configuration/LendingPoolAddressesProvider.sol';
-import '../tokenization/AToken.sol';
+import '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+import {LendingPool} from './LendingPool.sol';
+import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
+import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -165,60 +167,35 @@ contract LendingPoolConfigurator is VersionedInitializable {
   /**
    * @dev initializes a reserve
    * @param _reserve the address of the reserve to be initialized
+   * @param _aTokenImpl  the address of the aToken contract implementation
+   * @param _stableDebtTokenAddress the address of the stable debt token contract
+   * @param _variableDebtTokenAddress the address of the variable debt token contract
    * @param _underlyingAssetDecimals the decimals of the reserve underlying asset
    * @param _interestRateStrategyAddress the address of the interest rate strategy contract for this reserve
    **/
   function initReserve(
     address _reserve,
-    uint8 _underlyingAssetDecimals,
-    address _interestRateStrategyAddress,
-    address _stableDebtTokenAddress,
-    address _variableDebtTokenAddress
-  ) external onlyLendingPoolManager {
-    string memory aTokenName = string(
-      abi.encodePacked('Aave Interest bearing ', IERC20Detailed(_reserve).name())
-    );
-    string memory aTokenSymbol = string(abi.encodePacked('a', IERC20Detailed(_reserve).symbol()));
-
-    initReserveWithData(
-      _reserve,
-      aTokenName,
-      aTokenSymbol,
-      _stableDebtTokenAddress,
-      _variableDebtTokenAddress,
-      _underlyingAssetDecimals,
-      _interestRateStrategyAddress
-    );
-  }
-
-  /**
-   * @dev initializes a reserve using aTokenData provided externally (useful if the underlying ERC20 contract doesn't expose name or decimals)
-   * @param _reserve the address of the reserve to be initialized
-   * @param _aTokenName the name of the aToken contract
-   * @param _aTokenSymbol the symbol of the aToken contract
-   * @param _underlyingAssetDecimals the decimals of the reserve underlying asset
-   * @param _interestRateStrategyAddress the address of the interest rate strategy contract for this reserve
-   **/
-  function initReserveWithData(
-    address _reserve,
-    string memory _aTokenName,
-    string memory _aTokenSymbol,
+    address _aTokenImpl,
     address _stableDebtTokenAddress,
     address _variableDebtTokenAddress,
     uint8 _underlyingAssetDecimals,
     address _interestRateStrategyAddress
   ) public onlyLendingPoolManager {
-    AToken aTokenInstance = new AToken(
-      poolAddressesProvider,
-      _reserve,
+    
+    InitializableAdminUpgradeabilityProxy aTokenProxy = new InitializableAdminUpgradeabilityProxy();
+
+    bytes memory params = abi.encodeWithSignature(
+      'initialize(uint8,string,string)',
       _underlyingAssetDecimals,
-      _aTokenName,
-      _aTokenSymbol
+      IERC20Detailed(_aTokenImpl).name(),
+      IERC20Detailed(_aTokenImpl).symbol()
     );
+
+    aTokenProxy.initialize(_aTokenImpl, address(this), params);
 
     pool.initReserve(
       _reserve,
-      address(aTokenInstance),
+      address(aTokenProxy),
       _stableDebtTokenAddress,
       _variableDebtTokenAddress,
       _interestRateStrategyAddress
@@ -233,7 +210,31 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     pool.setConfiguration(_reserve, currentConfig.data);
 
-    emit ReserveInitialized(_reserve, address(aTokenInstance), _interestRateStrategyAddress);
+    emit ReserveInitialized(_reserve, address(aTokenProxy), _interestRateStrategyAddress);
+  }
+
+  /**
+   * @dev updates the aToken implementation for the _reserve
+   * @param _reserve the address of the reserve to be updated
+   * @param _implementation the address of the new aToken implementation
+   **/
+  function updateAToken(address _reserve, address _implementation) external onlyLendingPoolManager {
+    (address aTokenAddress, , ) = pool.getReserveTokensAddresses(_reserve);
+
+    (uint256 decimals, , , , , , , , , ) = pool.getReserveConfigurationData(_reserve);
+
+    InitializableAdminUpgradeabilityProxy aTokenProxy = InitializableAdminUpgradeabilityProxy(
+      payable(aTokenAddress)
+    );
+
+    bytes memory params = abi.encodeWithSignature(
+      'initialize(uint8,string,string)',
+      uint8(decimals),
+      IERC20Detailed(_implementation).name(),
+      IERC20Detailed(_implementation).symbol()
+    );
+
+    aTokenProxy.upgradeToAndCall(_implementation, params);
   }
 
   /**

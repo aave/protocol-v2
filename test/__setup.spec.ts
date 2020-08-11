@@ -26,6 +26,7 @@ import {
   registerContractInJsonDb,
   deployStableDebtToken,
   deployVariableDebtToken,
+  deployGenericAToken
 } from '../helpers/contracts-helpers';
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {Wallet, ContractTransaction, ethers, Signer} from 'ethers';
@@ -239,6 +240,14 @@ const initReserves = async (
         lendingPoolAddressesProvider.address,
       ]);
 
+      const aToken = await deployGenericAToken([
+        lendingPool.address,
+        tokenAddress,
+        `Aave interest bearing ${assetSymbol}`,
+        `a${assetSymbol}`
+      ]);
+
+
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search('UNI') === -1) {
           assetSymbol = `Uni${assetSymbol}`;
@@ -247,10 +256,9 @@ const initReserves = async (
         }
       }
 
-      await lendingPoolConfigurator.initReserveWithData(
+      await lendingPoolConfigurator.initReserve(
         tokenAddress,
-        `Aave Interest bearing ${assetSymbol}`,
-        `a${assetSymbol}`,
+        aToken.address,
         stableDebtToken.address,
         variableDebtToken.address,
         reserveDecimals,
