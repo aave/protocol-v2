@@ -181,6 +181,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     uint8 _underlyingAssetDecimals,
     address _interestRateStrategyAddress
   ) public onlyLendingPoolManager {
+    
     InitializableAdminUpgradeabilityProxy aTokenProxy = new InitializableAdminUpgradeabilityProxy();
 
     bytes memory params = abi.encodeWithSignature(
