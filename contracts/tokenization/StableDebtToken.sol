@@ -67,9 +67,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 _balanceIncrease
   );
 
-  constructor(address _pool, address _underlyingAsset) DebtTokenBase(_pool, _underlyingAsset) public {
+  constructor(address _pool, address _underlyingAsset)
+    public
+    DebtTokenBase(_pool, _underlyingAsset)
+  {}
 
-  }
   /**
    * @dev returns the average stable rate across all the stable rate debt
    * @return the average stable rate
@@ -114,7 +116,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   struct MintLocalVars {
-    uint256 newSupply;
+    uint256 supplyAfterMint;
+    uint256 supplyBeforeMint;
     uint256 amountInRay;
     uint256 newStableRate;
   }
@@ -134,11 +137,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     MintLocalVars memory vars;
 
     //cumulates the user debt
-    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = _cumulateBalance(
-      _user
-    );
+    (
+      uint256 previousBalance,
+      uint256 currentBalance,
+      uint256 balanceIncrease
+    ) = _calculateBalanceIncrease(_user);
 
-    vars.newSupply = totalSupply.add(_amount);
+    vars.supplyBeforeMint = totalSupply.add(balanceIncrease);
+    vars.supplyAfterMint = vars.supplyBeforeMint.add(_amount);
 
     vars.amountInRay = _amount.wadToRay();
 
@@ -156,11 +162,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     //calculates the updated average stable rate
     avgStableRate = avgStableRate
-      .rayMul(totalSupply.wadToRay())
+      .rayMul(vars.supplyBeforeMint.wadToRay())
       .add(_rate.rayMul(vars.amountInRay))
-      .rayDiv(vars.newSupply.wadToRay());
+      .rayDiv(vars.supplyAfterMint.wadToRay());
 
-    _mint(_user, _amount);
+    _mint(_user, _amount.add(balanceIncrease));
 
     emit mintDebt(
       _user,
@@ -178,11 +184,16 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param _amount the amount of debt tokens to mint
    **/
   function burn(address _user, uint256 _amount) public override onlyLendingPool {
-    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = _cumulateBalance(
-      _user
-    );
+    (
+      uint256 previousBalance,
+      uint256 currentBalance,
+      uint256 balanceIncrease
+    ) = _calculateCumulatedBalance(_user);
 
-    uint256 newSupply = totalSupply.sub(_amount);
+    uint256 supplyBeforeBurn = totalSupply.add(balanceIncrease);
+    uint256 supplyAfterBurn = supplyBeforeBurn.sub(_amount);
+
+    uint256 newSupply = totalSupply.add(balanceIncrease).sub(_amount);
 
     uint256 amountInRay = _amount.wadToRay();
 
@@ -190,9 +201,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       avgStableRate = 0;
     } else {
       avgStableRate = avgStableRate
-        .rayMul(totalSupply.wadToRay())
+        .rayMul(supplyBeforeBurn.wadToRay())
         .sub(usersData[_user].currentRate.rayMul(amountInRay))
-        .rayDiv(newSupply.wadToRay());
+        .rayDiv(supplyAfterBurn.wadToRay());
     }
 
     if (_amount == currentBalance) {
@@ -200,17 +211,21 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       usersData[_user].lastUpdateTimestamp = 0;
     }
 
-    _burn(_user, _amount);
+    if (balanceIncrease > _amount) {
+      _mint(_user, balanceIncrease.sub(_amount));
+    } else {
+      _burn(_user, _amount.sub(balanceIncrease));
+    }
 
     emit burnDebt(_user, _amount, previousBalance, currentBalance, balanceIncrease);
   }
 
   /**
-   * @dev accumulates the accrued interest of the user to the principal balance
+   * @dev calculates the increase in balance since the last user action
    * @param _user the address of the user for which the interest is being accumulated
    * @return the previous principal balance, the new principal balance, the balance increase
    **/
-  function _cumulateBalance(address _user)
+  function _calculateBalanceIncrease(address _user)
     internal
     returns (
       uint256,
@@ -226,8 +241,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     //calculate the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
-    //mints an amount of tokens equivalent to the amount accumulated
-    _mint(_user, balanceIncrease);
 
     return (
       previousPrincipalBalance,

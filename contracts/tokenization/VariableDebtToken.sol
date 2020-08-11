@@ -58,10 +58,11 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 _index
   );
 
-    constructor(address _pool, address _underlyingAsset) DebtTokenBase(_pool, _underlyingAsset) public {
-    
-  }
-  
+  constructor(address _pool, address _underlyingAsset)
+    public
+    DebtTokenBase(_pool, _underlyingAsset)
+  {}
+
   /**
    * @dev calculates the accumulated debt balance of the user
    * @return the debt balance of the user
@@ -94,11 +95,13 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param _amount the amount of debt being minted
    **/
   function mint(address _user, uint256 _amount) public override onlyLendingPool {
-    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = _cumulateBalance(
-      _user
-    );
+    (
+      uint256 previousBalance,
+      uint256 currentBalance,
+      uint256 balanceIncrease
+    ) = _calculateCumulatedBalance(_user);
 
-    _mint(_user, _amount);
+    _mint(_user, _amount.add(balanceIncrease));
 
     userIndexes[_user] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
 
@@ -118,11 +121,17 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param _amount the amount of debt being burned
    **/
   function burn(address _user, uint256 _amount) public override onlyLendingPool {
-    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = _cumulateBalance(
-      _user
-    );
+    (
+      uint256 previousBalance,
+      uint256 currentBalance,
+      uint256 balanceIncrease
+    ) = _calculateBalanceIncrease(_user);
 
-    _burn(_user, _amount);
+    if (balanceIncrease > _amount) {
+      _mint(_user, balanceIncrease.sub(_amount));
+    } else {
+      _burn(_user, _amount.sub(balanceIncrease));
+    }
 
     //if user repaid everything
     if (currentBalance == _amount) {
@@ -142,12 +151,12 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   }
 
   /**
-   * @dev accumulates the accrued interest of the user to the principal balance
+   * @dev calculates the increase in balance since the last user interaction
    * @param _user the address of the user for which the interest is being accumulated
    * @return the previous principal balance, the new principal balance, the balance increase
    * and the new user index
    **/
-  function _cumulateBalance(address _user)
+  function _calculateBalanceIncrease(address _user)
     internal
     returns (
       uint256,
@@ -163,9 +172,6 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     //calculate the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
-
-    //mints an _amount of tokens equivalent to the _amount accumulated
-    _mint(_user, balanceIncrease);
 
     return (
       previousPrincipalBalance,

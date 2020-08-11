@@ -223,9 +223,10 @@ contract AToken is VersionedInitializable, ERC20 {
     require(_amount > 0, 'Amount to redeem needs to be > 0');
 
     //cumulates the balance of the user
-    (, uint256 currentBalance, uint256 balanceIncrease, uint256 index) = cumulateBalanceInternal(
+    (, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(
       msg.sender
     );
+
     uint256 amountToRedeem = _amount;
 
     //if amount is equal to uint(-1), the user wants to redeem everything
@@ -247,13 +248,21 @@ contract AToken is VersionedInitializable, ERC20 {
       amountToRedeem
     );
 
-    // burns tokens equivalent to the amount requested
-    _burn(msg.sender, amountToRedeem);
+    if(balanceIncrease > amountToRedeem){
+      _mint(msg.sender, balanceIncrease.sub(amountToRedeem));
+    }
+    else{
+      _burn(msg.sender, amountToRedeem.sub(balanceIncrease));
+    }
 
-    bool userIndexReset = false;
+    uint256 userIndex = 0;
+
     //reset the user data if the remaining balance is 0
     if (currentBalance.sub(amountToRedeem) == 0) {
-      userIndexReset = resetDataOnZeroBalanceInternal(msg.sender);
+      resetDataOnZeroBalanceInternal(msg.sender);
+    } else {
+       //updates the user index
+       userIndex = userIndexes[msg.sender] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
     }
 
     // executes redeem of the underlying asset
@@ -264,28 +273,32 @@ contract AToken is VersionedInitializable, ERC20 {
       currentBalance.sub(amountToRedeem)
     );
 
-    emit Redeem(msg.sender, amountToRedeem, balanceIncrease, userIndexReset ? 0 : index);
+    emit Redeem(msg.sender, amountToRedeem, balanceIncrease, userIndex);
   }
 
   /**
    * @dev mints token in the event of users depositing the underlying asset into the lending pool
    * only lending pools can call this function
-   * @param _account the address receiving the minted tokens
+   * @param _user the address receiving the minted tokens
    * @param _amount the amount of tokens to mint
    */
-  function mintOnDeposit(address _account, uint256 _amount) external onlyLendingPool {
+  function mintOnDeposit(address _user, uint256 _amount) external onlyLendingPool {
+ 
     //cumulates the balance of the user
-    (, , uint256 balanceIncrease, uint256 index) = cumulateBalanceConditionalInternal(_account,false);
+    (, , uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
+    //updates the user index
+    uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
+    
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest
     //and the amount deposited
-    updateRedirectedBalanceOfRedirectionAddressInternal(_account, balanceIncrease.add(_amount), 0);
+    updateRedirectedBalanceOfRedirectionAddressInternal(_user, balanceIncrease.add(_amount), 0);
 
     //mint an equivalent amount of tokens to cover the new deposit
-    _mint(_account, _amount.add(balanceIncrease));
+    _mint(_user, _amount.add(balanceIncrease));
 
-    emit MintOnDeposit(_account, _amount, balanceIncrease, index);
+    emit MintOnDeposit(_user, _amount, balanceIncrease, index);
   }
 
   /**
@@ -437,13 +450,40 @@ contract AToken is VersionedInitializable, ERC20 {
     return redirectedBalances[_user];
   }
 
+
   /**
+  * @dev calculates the increase in balance since the last user action
+  * @param _user the address of the user
+  * @return the last user principal balance, the current balance and the balance increase
+  **/
+  function calculateBalanceIncreaseInternal(address _user)
+    internal
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    uint256 currentBalance = balanceOf(_user);
+    uint256 balanceIncrease = 0;
+    uint256 previousBalance = 0;
+
+    if (currentBalance != 0) {
+      previousBalance = super.balanceOf(_user);
+      //calculate the accrued interest since the last accumulation
+      balanceIncrease = currentBalance.sub(previousBalance);
+    }
+    
+    return (previousBalance, currentBalance, balanceIncrease);
+  }
+
+    /**
    * @dev accumulates the accrued interest of the user to the principal balance
    * @param _user the address of the user for which the interest is being accumulated
    * @return the previous principal balance, the new principal balance, the balance increase
    * and the new user index
    **/
-  function cumulateBalanceConditionalInternal(address _user, bool _mintBalanceIncrease)
+  function cumulateBalanceInternal(address _user)
     internal
     returns (
       uint256,
@@ -452,36 +492,16 @@ contract AToken is VersionedInitializable, ERC20 {
       uint256
     )
   {
-    uint256 currBalance = balanceOf(_user);
-    uint256 balanceIncrease = 0;
-    uint256 previousBalance = 0;
+    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
-    if (currBalance != 0) {
-      previousBalance = super.balanceOf(_user);
-      //calculate the accrued interest since the last accumulation
-      balanceIncrease = currBalance.sub(previousBalance);
-      //mints an amount of tokens equivalent to the amount accumulated
-      if(_mintBalanceIncrease) {        
-      _mint(_user, balanceIncrease);
-      }
-    }
+    _mint(_user, balanceIncrease);
+
     //updates the user index
     uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
-    return (previousBalance, currBalance, balanceIncrease, index);
-  }
 
-    function cumulateBalanceInternal(address _user)
-    internal
-    returns (
-      uint256,
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    return cumulateBalanceConditionalInternal(_user, true);
-  }
-
+    return (previousBalance, currentBalance, balanceIncrease, index);
+ 
+   }
 
   /**
    * @dev updates the redirected balance of the user. If the user is not redirecting his
