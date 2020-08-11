@@ -1265,8 +1265,12 @@ const calcCompoundedInterest = (
 
   const timeDifference = currentTimestamp.minus(lastUpdateTimestamp);
 
+  if(timeDifference.eq(0)){
+    return new BigNumber(RAY);
+  }
+
   const expMinusOne = timeDifference.minus(1);
-  const expMinusTwo = timeDifference.minus(2);
+  const expMinusTwo = timeDifference.gt(2) ? timeDifference.minus(2) : 0;
 
   const ratePerSecond = rate.div(ONE_YEAR);
 

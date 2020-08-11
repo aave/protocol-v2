@@ -57,7 +57,8 @@ library MathUtils {
     }
 
      uint256 expMinusOne = exp.sub(1);
-     uint256 expMinusTwo = exp.sub(2);
+
+     uint256 expMinusTwo = exp > 2 ? exp.sub(2) : 0;
 
     uint256 ratePerSecond = _rate.div(31536000);
      
