@@ -33,12 +33,10 @@ interface DebtTokenBaseInterface extends Interface {
     }>;
 
     init: TypedFunctionDescription<{
-      encode([_name, _symbol, _decimals, _underlying, _addressesProvider]: [
+      encode([_name, _symbol, _decimals]: [
         string,
         string,
-        BigNumberish,
-        string,
-        string
+        BigNumberish
       ]): string;
     }>;
 
@@ -133,8 +131,6 @@ export class DebtTokenBase extends Contract {
       _name: string,
       _symbol: string,
       _decimals: BigNumberish,
-      _underlying: string,
-      _addressesProvider: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -190,8 +186,6 @@ export class DebtTokenBase extends Contract {
     _name: string,
     _symbol: string,
     _decimals: BigNumberish,
-    _underlying: string,
-    _addressesProvider: string,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -250,9 +244,7 @@ export class DebtTokenBase extends Contract {
     init(
       _name: string,
       _symbol: string,
-      _decimals: BigNumberish,
-      _underlying: string,
-      _addressesProvider: string
+      _decimals: BigNumberish
     ): Promise<BigNumber>;
 
     name(): Promise<BigNumber>;

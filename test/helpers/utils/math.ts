@@ -13,7 +13,6 @@ declare module 'bignumber.js' {
     rayDiv: (a: BigNumber) => BigNumber;
     rayToWad: () => BigNumber;
     wadToRay: () => BigNumber;
-    rayPow: (n: BigNumber) => BigNumber;
   }
 }
 
@@ -64,18 +63,4 @@ BigNumber.prototype.rayToWad = function (): BigNumber {
 
 BigNumber.prototype.wadToRay = function (): BigNumber {
   return this.multipliedBy(WAD_RAY_RATIO).decimalPlaces(0, BigNumber.ROUND_DOWN);
-};
-
-BigNumber.prototype.rayPow = function (n: BigNumber): BigNumber {
-  let z = !n.modulo(2).eq(0) ? this : new BigNumber(RAY);
-  let x = new BigNumber(this);
-
-  for (n = n.div(2); !n.eq(0); n = n.div(2)) {
-    x = x.rayMul(x);
-
-    if (!n.modulo(2).eq(0)) {
-      z = z.rayMul(x);
-    }
-  }
-  return z;
 };

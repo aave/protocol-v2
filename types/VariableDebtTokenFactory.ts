@@ -13,11 +13,21 @@ export class VariableDebtTokenFactory extends ContractFactory {
     super(_abi, _bytecode, signer);
   }
 
-  deploy(overrides?: TransactionOverrides): Promise<VariableDebtToken> {
-    return super.deploy(overrides) as Promise<VariableDebtToken>;
+  deploy(
+    _pool: string,
+    _underlyingAsset: string,
+    overrides?: TransactionOverrides
+  ): Promise<VariableDebtToken> {
+    return super.deploy(_pool, _underlyingAsset, overrides) as Promise<
+      VariableDebtToken
+    >;
   }
-  getDeployTransaction(overrides?: TransactionOverrides): UnsignedTransaction {
-    return super.getDeployTransaction(overrides);
+  getDeployTransaction(
+    _pool: string,
+    _underlyingAsset: string,
+    overrides?: TransactionOverrides
+  ): UnsignedTransaction {
+    return super.getDeployTransaction(_pool, _underlyingAsset, overrides);
   }
   attach(address: string): VariableDebtToken {
     return super.attach(address) as VariableDebtToken;
@@ -34,6 +44,22 @@ export class VariableDebtTokenFactory extends ContractFactory {
 }
 
 const _abi = [
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_pool",
+        type: "address"
+      },
+      {
+        internalType: "address",
+        name: "_underlyingAsset",
+        type: "address"
+      }
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor"
+  },
   {
     anonymous: false,
     inputs: [
@@ -351,16 +377,6 @@ const _abi = [
         internalType: "uint8",
         name: "_decimals",
         type: "uint8"
-      },
-      {
-        internalType: "address",
-        name: "_underlying",
-        type: "address"
-      },
-      {
-        internalType: "contract ILendingPoolAddressesProvider",
-        name: "_addressesProvider",
-        type: "address"
       }
     ],
     name: "init",

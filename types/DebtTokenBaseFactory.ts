@@ -17,6 +17,22 @@ export class DebtTokenBaseFactory {
 
 const _abi = [
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_pool",
+        type: "address"
+      },
+      {
+        internalType: "address",
+        name: "_underlyingAssetAddress",
+        type: "address"
+      }
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor"
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -210,16 +226,6 @@ const _abi = [
         internalType: "uint8",
         name: "_decimals",
         type: "uint8"
-      },
-      {
-        internalType: "address",
-        name: "_underlying",
-        type: "address"
-      },
-      {
-        internalType: "contract ILendingPoolAddressesProvider",
-        name: "_addressesProvider",
-        type: "address"
       }
     ],
     name: "init",

@@ -31,7 +31,14 @@ library MathUtils {
   }
 
   /**
-   * @dev function to calculate the interest using a compounded interest rate formula
+   * @dev function to calculate the interest using a compounded interest rate formula.
+   * To avoid expensive exponentiation, the calculation is performed using a binomial approximation:
+   *
+   *  (1+x)^n = 1+n*x+[n/2*(n-1)]*x^2+[n/6*(n-1)*(n-2)*x^3...  
+   *
+   * The approximation slightly underpays liquidity providers, with the advantage of great gas cost reductions.
+   * The whitepaper contains reference to the approximation and a table showing the margin of error per different time periods.
+   *
    * @param _rate the interest rate, in ray
    * @param _lastUpdateTimestamp the timestamp of the last update of the interest
    * @return the interest rate compounded during the timeDelta, in ray
@@ -41,11 +48,30 @@ library MathUtils {
     view
     returns (uint256)
   {
+
     //solium-disable-next-line
-    uint256 timeDifference = block.timestamp.sub(uint256(_lastUpdateTimestamp));
+    uint256 exp = block.timestamp.sub(uint256(_lastUpdateTimestamp));
 
-    uint256 ratePerSecond = _rate.div(SECONDS_PER_YEAR);
+    if(exp == 0){
+      return WadRayMath.ray();
+    }
 
-    return ratePerSecond.add(WadRayMath.ray()).rayPow(timeDifference);
+     uint256 expMinusOne = exp.sub(1);
+
+     uint256 expMinusTwo = exp > 2 ? exp.sub(2) : 0;
+
+    uint256 ratePerSecond = _rate.div(31536000);
+     
+     uint basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
+     uint basePowerThree = basePowerTwo.rayMul(ratePerSecond);
+
+
+    
+    uint256 secondTerm = exp.mul(expMinusOne).mul(basePowerTwo).div(2);
+    uint256 thirdTerm = exp.mul(expMinusOne).mul(expMinusTwo).mul(basePowerThree).div(6);
+    
+
+    return WadRayMath.ray().add(ratePerSecond.mul(exp)).add(secondTerm).add(thirdTerm);
+
   }
 }
