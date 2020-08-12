@@ -99,7 +99,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
-    ) = _calculateCumulatedBalance(_user);
+    ) = _calculateBalanceIncrease(_user);
 
     _mint(_user, _amount.add(balanceIncrease));
 

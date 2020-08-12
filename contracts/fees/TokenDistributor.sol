@@ -8,7 +8,7 @@ import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 
 import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import '../interfaces/IExchangeAdapter.sol';
-import '../libraries/UniversalERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {PercentageMath} from '../libraries/PercentageMath.sol';
 
 /// @title TokenDistributor
@@ -24,7 +24,7 @@ import {PercentageMath} from '../libraries/PercentageMath.sol';
 contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
 
   struct Distribution {
     address[] receivers;
@@ -102,7 +102,7 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
   /// @param _tokens list of ERC20 tokens to distribute
   function distribute(IERC20[] memory _tokens) public {
     for (uint256 i = 0; i < _tokens.length; i++) {
-      uint256 _balanceToDistribute = _tokens[i].universalBalanceOf(address(this));
+      uint256 _balanceToDistribute = _tokens[i].balanceOf(address(this));
 
       if (_balanceToDistribute <= 0) {
         continue;
@@ -128,7 +128,7 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
     public
   {
     for (uint256 i = 0; i < _tokens.length; i++) {
-      uint256 _amountToDistribute = _tokens[i].universalBalanceOf(address(this)).percentMul(
+      uint256 _amountToDistribute = _tokens[i].balanceOf(address(this)).percentMul(
         _percentages[i]
       );
 
@@ -170,7 +170,7 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
       }
 
       if (_distribution.receivers[j] != address(0)) {
-        _token.universalTransfer(_distribution.receivers[j], _amount);
+        _token.safeTransfer(_distribution.receivers[j], _amount);
         emit Distributed(_distribution.receivers[j], _distribution.percentages[j], _amount);
       } else {
         uint256 _amountToBurn = _amount;

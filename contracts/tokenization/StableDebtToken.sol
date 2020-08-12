@@ -188,7 +188,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
-    ) = _calculateCumulatedBalance(_user);
+    ) = _calculateBalanceIncrease(_user);
 
     uint256 supplyBeforeBurn = totalSupply.add(balanceIncrease);
     uint256 supplyAfterBurn = supplyBeforeBurn.sub(_amount);

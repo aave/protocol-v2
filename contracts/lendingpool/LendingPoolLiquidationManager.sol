@@ -18,10 +18,10 @@ import '../interfaces/IPriceOracleGetter.sol';
 import '../libraries/GenericLogic.sol';
 import '../libraries/Helpers.sol';
 import '../libraries/ReserveLogic.sol';
-import '../libraries/UniversalERC20.sol';
 import '../libraries/ReserveConfiguration.sol';
 import '../libraries/UserConfiguration.sol';
 import {PercentageMath} from '../libraries/PercentageMath.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
@@ -29,7 +29,7 @@ import {PercentageMath} from '../libraries/PercentageMath.sol';
  * @notice Implements the liquidation function.
  **/
 contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializable {
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
@@ -205,7 +205,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!_receiveAToken) {
-      uint256 currentAvailableCollateral = IERC20(_collateral).universalBalanceOf(
+      uint256 currentAvailableCollateral = IERC20(_collateral).balanceOf(
         address(vars.collateralAtoken)
       );
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
@@ -252,11 +252,10 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     }
 
     //transfers the principal currency to the aToken
-    IERC20(_reserve).universalTransferFrom(
+    IERC20(_reserve).safeTransferFrom(
       msg.sender,
       principalReserve.aTokenAddress,
-      vars.actualAmountToLiquidate,
-      true
+      vars.actualAmountToLiquidate
     );
 
     emit LiquidationCall(

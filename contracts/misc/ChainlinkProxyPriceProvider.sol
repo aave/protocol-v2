@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '../interfaces/IPriceOracleGetter.sol';
 import '../interfaces/IChainlinkAggregator.sol';
-import '../libraries/UniversalERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 /// @title ChainlinkProxyPriceProvider
 /// @author Aave
@@ -16,7 +16,7 @@ import '../libraries/UniversalERC20.sol';
 /// - Owned by the Aave governance system, allowed to add sources for assets, replace them
 ///   and change the fallbackOracle
 contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
 
   event AssetSourceUpdated(address indexed asset, address indexed source);
   event FallbackOracleUpdated(address indexed fallbackOracle);
@@ -77,9 +77,6 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
   /// @param _asset The asset address
   function getAssetPrice(address _asset) public override view returns (uint256) {
     IChainlinkAggregator source = assetsSources[_asset];
-    if (IERC20(_asset).isETH()) {
-      return 1 ether;
-    } else {
       // If there is no registered source for the asset, call the fallbackOracle
       if (address(source) == address(0)) {
         return IPriceOracleGetter(fallbackOracle).getAssetPrice(_asset);
@@ -91,7 +88,6 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
           return IPriceOracleGetter(fallbackOracle).getAssetPrice(_asset);
         }
       }
-    }
   }
 
   /// @notice Gets a list of prices from a list of assets addresses

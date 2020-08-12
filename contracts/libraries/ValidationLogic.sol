@@ -9,7 +9,7 @@ import {ReserveLogic} from './ReserveLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
-import {UniversalERC20} from './UniversalERC20.sol';
+import {SafeERC20}  from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 import {UserConfiguration} from './UserConfiguration.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -26,7 +26,7 @@ library ValidationLogic {
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
@@ -59,7 +59,7 @@ library ValidationLogic {
 
     require(msg.sender == _reserve.aTokenAddress, '31');
 
-    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).universalBalanceOf(
+    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).balanceOf(
       address(_reserve.aTokenAddress)
     );
 
@@ -135,7 +135,7 @@ library ValidationLogic {
     );
 
     //check that the amount is available in the reserve
-    vars.availableLiquidity = IERC20(_reserveAddress).universalBalanceOf(
+    vars.availableLiquidity = IERC20(_reserveAddress).balanceOf(
       address(_reserve.aTokenAddress)
     );
 
@@ -237,11 +237,6 @@ library ValidationLogic {
     require(
       _amountSent != uint256(-1) || msg.sender == _onBehalfOf,
       'To repay on behalf of an user an explicit amount to repay is needed'
-    );
-
-    require(
-      !IERC20(_reserveAddress).isETH() || _msgValue >= _actualPaybackAmount,
-      'Invalid msg.value sent for the repayment'
     );
   }
 

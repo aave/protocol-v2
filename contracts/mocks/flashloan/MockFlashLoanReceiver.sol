@@ -6,11 +6,11 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '../../flashloan/base/FlashLoanReceiverBase.sol';
 import '../tokens/MintableERC20.sol';
-import '../../libraries/UniversalERC20.sol';
+import {SafeERC20}  from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 contract MockFlashLoanReceiver is FlashLoanReceiverBase {
   using SafeMath for uint256;
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
 
   event ExecutedWithFail(address _reserve, uint256 _amount, uint256 _fee);
   event ExecutedWithSuccess(address _reserve, uint256 _amount, uint256 _fee);
@@ -35,7 +35,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
     //check the contract has the specified balance
     require(
-      _amount <= getBalanceInternal(address(this), _reserve),
+      _amount <= IERC20(_reserve).balanceOf(address(this)),
       'Invalid balance for the contract'
     );
 
@@ -47,9 +47,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     //execution does not fail - mint tokens and return them to the _destination
     //note: if the reserve is eth, the mock contract must receive at least _fee ETH before calling executeOperation
 
-    if (!IERC20(_reserve).isETH()) {
-      token.mint(_fee);
-    }
+    token.mint(_fee);
 
     //returning amount + fee to the destination
     transferFundsBackInternal(_reserve, _destination, _amount.add(_fee));
