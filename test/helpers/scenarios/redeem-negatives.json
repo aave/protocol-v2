@@ -60,8 +60,25 @@
       ]
     },
     {
-      "description": "Users 1 deposits 1 ETH, borrows 100 DAI, tries to redeem the 1 ETH deposited (revert expected)",
+      "description": "Users 1 deposits 1 WETH, borrows 100 DAI, tries to redeem the 1 WETH deposited (revert expected)",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
         {
           "name": "deposit",
           "args": {
