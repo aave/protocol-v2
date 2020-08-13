@@ -12,7 +12,7 @@ BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
 
 const scenarioFolder = './test/helpers/scenarios/';
 
-const selectedScenarios: string[] = ['redeem-negatives.json'];
+const selectedScenarios: string[] = ['borrow-negatives.json'];
 
 fs.readdirSync(scenarioFolder).forEach((file) => {
   if (selectedScenarios.length > 0 && !selectedScenarios.includes(file)) return;
