@@ -90,14 +90,16 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     );
   });
 
-  it('User 0 deposits 1 ETH and user tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)', async () => {
+  it('User 0 deposits 1 WETH and user 1 tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)', async () => {
     const {users, pool, weth} = testEnv;
 
+    await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
+
+    await weth.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    
     await pool
       .connect(users[0].signer)
-      .deposit(weth.address, ethers.utils.parseEther('1.0'), '0', {
-        value: ethers.utils.parseEther('1.0'),
-      });
+      .deposit(weth.address, ethers.utils.parseEther('1.0'), '0');
     await expect(
       pool
         .connect(users[1].signer)
@@ -132,11 +134,14 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
   it('User 1 repays the borrow, transfers aDAI back to user 0', async () => {
     const {users, pool, aDai, dai, weth} = testEnv;
+ 
+    await weth.connect(users[1].signer).mint(await convertToCurrencyDecimals(weth.address, '2'));
+
+    await weth.connect(users[1].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+ 
     await pool
       .connect(users[1].signer)
-      .repay(weth.address, MAX_UINT_AMOUNT, RateMode.Stable, users[1].address, {
-        value: ethers.utils.parseEther('1'),
-      });
+      .repay(weth.address, MAX_UINT_AMOUNT, RateMode.Stable, users[1].address);
 
     const aDAItoTransfer = await convertToCurrencyDecimals(aDai.address, '1000');
 

@@ -50,7 +50,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
   } = ProtocolErrors;
 
-  it('LIQUIDATION - Deposits ETH, borrows DAI', async () => {
+  it('LIQUIDATION - Deposits WETH, borrows DAI', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
     const depositor = users[0];
     const borrower = users[1];
@@ -68,6 +68,12 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //user 2 deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
+    //mints WETH to borrower
+    await weth.connect(borrower.signer).mint(await convertToCurrencyDecimals(weth.address, '1000'));
+
+    //approve protocol to access the borrower wallet
+    await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    
     await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
       value: amountETHtoDeposit,
     });
@@ -207,7 +213,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
   });
 
-  it('User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
+  it('User 3 deposits 1000 USDC, user 4 1 WETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
     const {usdc, users, pool, oracle, weth} = testEnv;
 
     const depositor = users[3];
@@ -230,6 +236,12 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //borrower deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
+    //mints WETH to borrower
+    await weth.connect(borrower.signer).mint(await convertToCurrencyDecimals(weth.address, '1000'));
+
+    //approve protocol to access the borrower wallet
+    await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    
     await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
       value: amountETHtoDeposit,
     });

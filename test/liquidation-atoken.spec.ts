@@ -20,7 +20,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
   } = ProtocolErrors;
 
-  it('LIQUIDATION - Deposits ETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
+  it('LIQUIDATION - Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
     const depositor = users[0];
     const borrower = users[1];
@@ -35,15 +35,20 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
     await pool.connect(depositor.signer).deposit(dai.address, amountDAItoDeposit, '0');
 
-    //user 2 deposits 1 ETH
+
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
+  
+    //mints WETH to borrower
+    await weth.connect(borrower.signer).mint(amountETHtoDeposit);
+
+    //approve protocol to access borrower wallet
+    await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    
+    //user 2 deposits 1 WETH
     await pool
       .connect(borrower.signer)
-      .deposit(weth.address, amountETHtoDeposit, '0', {value: amountETHtoDeposit});
+      .deposit(weth.address, amountETHtoDeposit, '0');
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
-      value: amountETHtoDeposit,
-    });
 
     //user 2 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -75,7 +80,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('LIQUIDATION - Drop the health factor below 1', async () => {
-    const {dai, weth, users, pool, oracle} = testEnv;
+    const {dai, users, pool, oracle} = testEnv;
     const borrower = users[1];
 
     const daiPrice = await oracle.getAssetPrice(dai.address);
@@ -215,7 +220,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
   });
 
-  it('User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
+  it('User 3 deposits 1000 USDC, user 4 1 WETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
     const {users, pool, usdc, oracle, weth} = testEnv;
     const depositor = users[3];
     const borrower = users[4];
@@ -235,6 +240,12 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //user 4 deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
+    //mints WETH to borrower
+    await weth.connect(borrower.signer).mint(amountETHtoDeposit);
+
+    //approve protocol to access borrower wallet
+    await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    
     await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
       value: amountETHtoDeposit,
     });
