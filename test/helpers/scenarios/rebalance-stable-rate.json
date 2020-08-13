@@ -50,7 +50,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "1",
             "sendValue": "1"
@@ -110,7 +111,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "5",
             "user": "2",
             "sendValue": "5"
@@ -145,7 +147,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "3",
             "user": "2",
             "sendValue": "3"

@@ -6,7 +6,7 @@ import {
   getMintableErc20,
   getAToken,
 } from '../../../helpers/contracts-helpers';
-import {MOCK_ETH_ADDRESS, ZERO_ADDRESS} from '../../../helpers/constants';
+import {ZERO_ADDRESS} from '../../../helpers/constants';
 import {tEthereumAddress} from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import {getDb, BRE} from '../../../helpers/misc-utils';
@@ -22,14 +22,9 @@ export const getReserveData = async (
 
   const rate = (await rateOracle.getMarketBorrowRate(reserve)).toString();
 
-  const isEthReserve = reserve === MOCK_ETH_ADDRESS;
-  let symbol = 'ETH';
-  let decimals = new BigNumber(18);
-  if (!isEthReserve) {
-    const token = await getIErc20Detailed(reserve);
-    symbol = await token.symbol();
-    decimals = new BigNumber(await token.decimals());
-  }
+  const token = await getIErc20Detailed(reserve);
+  const symbol = await token.symbol();
+  const decimals = new BigNumber(await token.decimals());
 
   const totalLiquidity = new BigNumber(data.availableLiquidity)
     .plus(data.totalBorrowsStable)
@@ -82,14 +77,8 @@ export const getUserData = async (
     interestRedirectionAddress,
   ] = aTokenData;
 
-  let walletBalance;
-
-  if (reserve === MOCK_ETH_ADDRESS) {
-    walletBalance = new BigNumber((await BRE.ethers.provider.getBalance(user)).toString());
-  } else {
-    const token = await getMintableErc20(reserve);
-    walletBalance = new BigNumber((await token.balanceOf(user)).toString());
-  }
+  const token = await getMintableErc20(reserve);
+  const walletBalance = new BigNumber((await token.balanceOf(user)).toString());
 
   return {
     principalATokenBalance: new BigNumber(principalATokenBalance),
@@ -112,14 +101,13 @@ export const getUserData = async (
 };
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
-  if (symbol.toUpperCase() === 'ETH') {
-    return MOCK_ETH_ADDRESS;
-  }
+
 
   const token = await getMintableErc20(
     (await getDb().get(`${symbol}.${BRE.network.name}`).value()).address
   );
 
+  
   if (!token) {
     throw `Could not find instance for contract ${symbol}`;
   }

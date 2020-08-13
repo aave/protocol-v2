@@ -48,7 +48,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "2",
             "user": "1",
             "sendValue": "2"
@@ -58,7 +59,8 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -83,7 +85,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "2",
             "user": "1",
             "sendValue": "2"
@@ -93,7 +96,8 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "user": "1",
             "useAsCollateral": "true"
           },
@@ -117,7 +121,8 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "user": "1",
             "useAsCollateral": "false"
           },

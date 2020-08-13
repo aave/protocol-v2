@@ -4,7 +4,7 @@ import {configuration as calculationsConfiguration} from './helpers/utils/calcul
 import fs from 'fs';
 import BigNumber from 'bignumber.js';
 import {makeSuite} from './helpers/make-suite';
-import {MOCK_ETH_ADDRESS, getReservesConfigByPool} from '../helpers/constants';
+import {getReservesConfigByPool} from '../helpers/constants';
 import {AavePools, iAavePoolAssets, IReserveParams} from '../helpers/types';
 import {executeStory} from './helpers/scenario-engine';
 
@@ -26,7 +26,6 @@ fs.readdirSync(scenarioFolder).forEach((file) => {
       calculationsConfiguration.reservesParams = <iAavePoolAssets<IReserveParams>>(
         getReservesConfigByPool(AavePools.proto)
       );
-      calculationsConfiguration.ethereumAddress = MOCK_ETH_ADDRESS;
     });
 
     for (const story of scenario.stories) {

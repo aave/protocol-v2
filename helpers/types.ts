@@ -73,7 +73,7 @@ export type tStringTokenSmallUnits = string; // 1 wei, or 1 basic unit of USDC, 
 export type tBigNumberTokenSmallUnits = BigNumber;
 
 export interface iAssetBase<T> {
-  ETH: T;
+  WETH: T;
   DAI: T;
   TUSD: T;
   USDC: T;
@@ -107,7 +107,7 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iAavePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'ETH'
+  | 'WETH'
   | 'DAI'
   | 'TUSD'
   | 'USDC'
@@ -124,6 +124,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'ZRX'
   | 'SNX'
   | 'BUSD'
+  | 'WETH'
 >;
 
 export type iUniAssets<T> = Pick<
@@ -133,7 +134,7 @@ export type iUniAssets<T> = Pick<
 
 export type iAaveSecondPoolAssets<T> = Pick<
   iAssetBase<T>,
-  | 'ETH'
+  | 'WETH'
   | 'DAI'
   | 'USDC'
   | 'USDT'
@@ -156,7 +157,7 @@ export enum TokenContractId {
   LEND = 'LEND',
   TUSD = 'TUSD',
   BAT = 'BAT',
-  ETH = 'ETH',
+  WETH = 'WETH',
   USDC = 'USDC',
   USDT = 'USDT',
   SUSD = 'SUSD',

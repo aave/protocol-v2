@@ -64,7 +64,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "2",
             "user": "1",
             "sendValue": "2"

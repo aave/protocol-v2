@@ -65,7 +65,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "1",
             "sendValue": "1"
@@ -187,7 +188,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "1"
           },
@@ -201,7 +203,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.001",
             "user": "2",
             "sendValue": "0.001"
@@ -216,7 +219,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "0",
             "sendValue": "1"
@@ -253,7 +257,8 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.5",
             "borrowRateMode": "variable",
             "user": "1",
@@ -269,7 +274,8 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0",
             "user": "1",
             "onBehalfOf": "1",
@@ -287,7 +293,8 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "1",
             "borrowRateMode": "variable",
@@ -305,7 +312,8 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "2",
             "borrowRateMode": "variable",
@@ -323,7 +331,8 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.2",
             "user": "3",
             "borrowRateMode": "variable",
@@ -340,7 +349,8 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "borrowRateMode": "variable",
             "user": "1",
@@ -357,7 +367,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "0"
           },
@@ -443,7 +454,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "1",
             "sendValue": "1"
@@ -533,7 +545,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "1"
           },
@@ -589,7 +602,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.1",
             "user": "3",
             "sendValue": "0.1"
@@ -615,7 +629,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "3"
           },
@@ -671,7 +686,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.1",
             "user": "3",
             "sendValue": "0.1"
@@ -697,7 +713,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "3"
           },
@@ -737,7 +754,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "2",
             "user": "6",
             "sendValue": "2"

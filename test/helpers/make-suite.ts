@@ -35,6 +35,8 @@ export interface TestEnv {
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolTestHelpers;
+  weth: MintableErc20;
+  aEth: AToken;
   dai: MintableErc20;
   aDai: AToken;
   usdc: MintableErc20;
@@ -56,6 +58,8 @@ const testEnv: TestEnv = {
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolTestHelpers,
   oracle: {} as PriceOracle,
+  weth: {} as MintableErc20,
+  aEth: {} as AToken,
   dai: {} as MintableErc20,
   aDai: {} as AToken,
   usdc: {} as MintableErc20,
@@ -91,26 +95,35 @@ export async function initializeMakeSuite() {
   const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
     (aToken) => aToken.symbol === 'aDAI'
   )?.tokenAddress;
+  
+
+  const aEthAddress = (await testEnv.helpersContract.getAllATokens()).find(
+    (aToken) => aToken.symbol === 'aETH'
+  )?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   const lendAddress = reservesTokens.find((token) => token.symbol === 'LEND')?.tokenAddress;
+  const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
-  if (!aDaiAddress) {
-    console.log(`atoken-modifiers.spec: aDAI not correctly initialized`);
+  if (!aDaiAddress || !aEthAddress) {
+    console.log(`atoken-modifiers.spec: aTokens not correctly initialized`);
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress || !lendAddress) {
+  if (!daiAddress || !usdcAddress || !lendAddress || ! wethAddress) {
     console.log(`atoken-modifiers.spec: USDC or DAI not correctly initialized`);
     process.exit(1);
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
+  testEnv.aEth = await getAToken(aEthAddress);
+
   testEnv.dai = await getMintableErc20(daiAddress);
   testEnv.usdc = await getMintableErc20(usdcAddress);
   testEnv.lend = await getMintableErc20(lendAddress);
+  testEnv.weth = await getMintableErc20(wethAddress);
 }
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {

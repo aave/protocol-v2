@@ -132,7 +132,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "0",
             "sendValue": "1"
@@ -147,7 +148,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "1",
             "sendValue": "1"
@@ -162,7 +164,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0",
             "user": "1"
           },
@@ -192,7 +195,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "1",
             "sendValue": "0"
@@ -208,7 +212,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
             "user": "1",
             "sendValue": "0.5"

@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import {BRE} from '../helpers/misc-utils';
-import {APPROVAL_AMOUNT_LENDING_POOL, MOCK_ETH_ADDRESS, oneEther} from '../helpers/constants';
+import {APPROVAL_AMOUNT_LENDING_POOL, oneEther} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
 import {ProtocolErrors, RateMode} from '../helpers/types';
@@ -51,7 +51,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   } = ProtocolErrors;
 
   it('LIQUIDATION - Deposits ETH, borrows DAI', async () => {
-    const {dai, users, pool, oracle} = testEnv;
+    const {dai, weth, users, pool, oracle} = testEnv;
     const depositor = users[0];
     const borrower = users[1];
 
@@ -66,9 +66,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     await pool.connect(depositor.signer).deposit(dai.address, amountDAItoDeposit, '0');
     //user 2 deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(MOCK_ETH_ADDRESS, '1');
+    const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
-    await pool.connect(borrower.signer).deposit(MOCK_ETH_ADDRESS, amountETHtoDeposit, '0', {
+    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
       value: amountETHtoDeposit,
     });
 
@@ -98,7 +98,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('LIQUIDATION - Drop the health factor below 1', async () => {
-    const {dai, users, pool, oracle} = testEnv;
+    const {dai, weth, users, pool, oracle} = testEnv;
     const borrower = users[1];
 
     const daiPrice = await oracle.getAssetPrice(dai.address);
@@ -117,7 +117,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('LIQUIDATION - Liquidates the borrow', async () => {
-    const {dai, users, pool, oracle} = testEnv;
+    const {dai, weth, users, pool, oracle} = testEnv;
     const liquidator = users[3];
     const borrower = users[1];
 
@@ -128,7 +128,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     await dai.connect(liquidator.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const daiReserveDataBefore: any = await pool.getReserveData(dai.address);
-    const ethReserveDataBefore: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
+    const ethReserveDataBefore: any = await pool.getReserveData(weth.address);
 
     const userReserveDataBefore: any = await getUserData(pool, dai.address, borrower.address);
 
@@ -138,18 +138,18 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     const tx = await pool
       .connect(liquidator.signer)
-      .liquidationCall(MOCK_ETH_ADDRESS, dai.address, borrower.address, amountToLiquidate, false);
+      .liquidationCall(weth.address, dai.address, borrower.address, amountToLiquidate, false);
 
     const userReserveDataAfter: any = await getUserData(pool, dai.address, borrower.address);
 
     const daiReserveDataAfter: any = await pool.getReserveData(dai.address);
-    const ethReserveDataAfter: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
+    const ethReserveDataAfter: any = await pool.getReserveData(weth.address);
 
-    const collateralPrice = await oracle.getAssetPrice(MOCK_ETH_ADDRESS);
+    const collateralPrice = await oracle.getAssetPrice(weth.address);
     const principalPrice = await oracle.getAssetPrice(dai.address);
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS)
+      await pool.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
       await pool.getReserveConfigurationData(dai.address)
@@ -208,7 +208,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('User 3 deposits 1000 USDC, user 4 1 ETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const {usdc, users, pool, oracle, addressesProvider} = testEnv;
+    const {usdc, users, pool, oracle, weth} = testEnv;
 
     const depositor = users[3];
     const borrower = users[4];
@@ -228,9 +228,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     await pool.connect(depositor.signer).deposit(usdc.address, amountUSDCtoDeposit, '0');
 
     //borrower deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(MOCK_ETH_ADDRESS, '1');
+    const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
-    await pool.connect(borrower.signer).deposit(MOCK_ETH_ADDRESS, amountETHtoDeposit, '0', {
+    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
       value: amountETHtoDeposit,
     });
 
@@ -272,7 +272,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     const usdcReserveDataBefore: any = await pool.getReserveData(usdc.address);
-    const ethReserveDataBefore: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
+    const ethReserveDataBefore: any = await pool.getReserveData(weth.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt)
       .div(2)
@@ -281,20 +281,20 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     await pool
       .connect(liquidator.signer)
-      .liquidationCall(MOCK_ETH_ADDRESS, usdc.address, borrower.address, amountToLiquidate, false);
+      .liquidationCall(weth.address, usdc.address, borrower.address, amountToLiquidate, false);
 
     const userReserveDataAfter: any = await pool.getUserReserveData(usdc.address, borrower.address);
 
     const userGlobalDataAfter: any = await pool.getUserAccountData(borrower.address);
 
     const usdcReserveDataAfter: any = await pool.getReserveData(usdc.address);
-    const ethReserveDataAfter: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
+    const ethReserveDataAfter: any = await pool.getReserveData(weth.address);
 
-    const collateralPrice = await oracle.getAssetPrice(MOCK_ETH_ADDRESS);
+    const collateralPrice = await oracle.getAssetPrice(weth.address);
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS)
+      await pool.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
       await pool.getReserveConfigurationData(usdc.address)

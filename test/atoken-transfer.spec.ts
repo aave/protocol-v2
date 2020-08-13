@@ -1,6 +1,5 @@
 import {
   APPROVAL_AMOUNT_LENDING_POOL,
-  MOCK_ETH_ADDRESS,
   AAVE_REFERRAL,
   MAX_UINT_AMOUNT,
   ZERO_ADDRESS,
@@ -76,7 +75,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 0 transfers back to user 1', async () => {
-    const {users, aDai, dai} = testEnv;
+    const {users, aDai, dai, weth} = testEnv;
     const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '500');
 
     await aDai.connect(users[0].signer).transfer(users[1].address, aDAItoTransfer);
@@ -92,30 +91,30 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 0 deposits 1 ETH and user tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)', async () => {
-    const {users, pool} = testEnv;
+    const {users, pool, weth} = testEnv;
 
     await pool
       .connect(users[0].signer)
-      .deposit(MOCK_ETH_ADDRESS, ethers.utils.parseEther('1.0'), '0', {
+      .deposit(weth.address, ethers.utils.parseEther('1.0'), '0', {
         value: ethers.utils.parseEther('1.0'),
       });
     await expect(
       pool
         .connect(users[1].signer)
-        .borrow(MOCK_ETH_ADDRESS, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL),
+        .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL),
       ZERO_COLLATERAL
     ).to.be.revertedWith(ZERO_COLLATERAL);
   });
 
   it('User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)', async () => {
-    const {users, pool, aDai, dai} = testEnv;
+    const {users, pool, aDai, dai, weth} = testEnv;
     await pool.connect(users[1].signer).setUserUseReserveAsCollateral(dai.address, true);
 
     const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '1000');
 
     await pool
       .connect(users[1].signer)
-      .borrow(MOCK_ETH_ADDRESS, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL);
+      .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL);
 
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
@@ -124,7 +123,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 0 tries to transfer 0 balance (revert expected)', async () => {
-    const {users, pool, aDai, dai} = testEnv;
+    const {users, pool, aDai, dai, weth} = testEnv;
     await expect(
       aDai.connect(users[0].signer).transfer(users[1].address, '0'),
       TRANSFERRED_AMOUNT_GT_ZERO
@@ -132,10 +131,10 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 1 repays the borrow, transfers aDAI back to user 0', async () => {
-    const {users, pool, aDai, dai} = testEnv;
+    const {users, pool, aDai, dai, weth} = testEnv;
     await pool
       .connect(users[1].signer)
-      .repay(MOCK_ETH_ADDRESS, MAX_UINT_AMOUNT, RateMode.Stable, users[1].address, {
+      .repay(weth.address, MAX_UINT_AMOUNT, RateMode.Stable, users[1].address, {
         value: ethers.utils.parseEther('1'),
       });
 
@@ -159,7 +158,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 0 redirects interest to user 2, transfers 500 aDAI to user 1. User 1 redirects to user 3. User 0 transfers another 100 aDAI', async () => {
-    const {users, pool, aDai, dai} = testEnv;
+    const {users, pool, aDai, dai, weth} = testEnv;
 
     let aDAItoTransfer = await convertToCurrencyDecimals(aDai.address, '500');
 

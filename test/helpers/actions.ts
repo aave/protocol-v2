@@ -23,7 +23,7 @@ import {
   convertToCurrencyDecimals,
   getAToken,
 } from '../../helpers/contracts-helpers';
-import {MOCK_ETH_ADDRESS, ONE_YEAR, MAX_UINT_AMOUNT} from '../../helpers/constants';
+import {ONE_YEAR, MAX_UINT_AMOUNT} from '../../helpers/constants';
 import {TestEnv, SignerWithAddress} from './make-suite';
 import {BRE, increaseTime, timeLatest} from '../../helpers/misc-utils';
 
@@ -115,10 +115,6 @@ export const configuration: ActionsConfig = <ActionsConfig>{};
 export const mint = async (reserveSymbol: string, amount: string, user: SignerWithAddress) => {
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
-  if (MOCK_ETH_ADDRESS.toLowerCase() === reserve.toLowerCase()) {
-    throw 'Cannot mint ethereum. Mint action is most likely not needed in this story';
-  }
-
   const token = await getMintableErc20(reserve);
 
   await waitForTx(
@@ -129,10 +125,6 @@ export const mint = async (reserveSymbol: string, amount: string, user: SignerWi
 export const approve = async (reserveSymbol: string, user: SignerWithAddress, testEnv: TestEnv) => {
   const {pool} = testEnv;
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
-
-  if (MOCK_ETH_ADDRESS.toLowerCase() === reserve.toLowerCase()) {
-    throw 'Cannot mint ethereum. Mint action is most likely not needed in this story';
-  }
 
   const token = await getMintableErc20(reserve);
 
@@ -162,13 +154,9 @@ export const deposit = async (
     testEnv
   );
 
-  if (MOCK_ETH_ADDRESS === reserve) {
-    if (sendValue) {
-      const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
-      txOptions.value = valueToSend;
-    } else {
-      txOptions.value = amountToDeposit;
-    }
+  if (sendValue) {
+    const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
+    txOptions.value = valueToSend;
   }
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
@@ -413,26 +401,9 @@ export const repay = async (
 
   const txOptions: any = {};
 
-  if (MOCK_ETH_ADDRESS === reserve) {
-    if (sendValue) {
-      const valueToSend =
-        rateMode == RateMode.Stable
-          ? userDataBefore.currentStableDebt
-          : userDataBefore.currentVariableDebt;
-
-      if (sendValue !== '-1') {
-        const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
-        txOptions.value = '0x' + new BigNumber(valueToSend.toString()).toString(16);
-      } else {
-        txOptions.value =
-          '0x' +
-          valueToSend
-            .plus((await convertToCurrencyDecimals(reserve, '0.1')).toString())
-            .toString(16); //add 0.1 ETH to the repayment amount to cover for accrued interest during tx execution
-      }
-    } else {
-      txOptions.value = amountToRepay;
-    }
+  if (sendValue) {
+    const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
+    txOptions.value = '0x' + new BigNumber(valueToSend.toString()).toString(16);
   }
 
   if (expectedResult === 'success') {
