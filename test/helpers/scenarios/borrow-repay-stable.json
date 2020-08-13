@@ -179,7 +179,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 ETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 redeems",
+      "description": "User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 WETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 redeems",
       "actions": [
         {
           "name": "mint",
