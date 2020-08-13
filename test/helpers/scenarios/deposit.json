@@ -127,32 +127,64 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 ETH in an empty reserve",
+      "description": "User 0 deposits 1 WETH in an empty reserve",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "0"
+          },
+          "expected": "success"
+        },
         {
           "name": "deposit",
           "args": {
             "reserve": "WETH",
 
             "amount": "1",
-            "user": "0",
-            "sendValue": "1"
+            "user": "0"
           },
           "expected": "success"
         }
       ]
     },
     {
-      "description": "User 1 deposits 1 ETH after user 0",
+      "description": "User 1 deposits 1 WETH after user 0",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
         {
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "1",
-            "user": "1",
-            "sendValue": "1"
+            "user": "1"
           },
           "expected": "success"
         }
@@ -161,6 +193,15 @@
     {
       "description": "User 1 deposits 0 ETH (revert expected)",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
         {
           "name": "deposit",
           "args": {
@@ -186,40 +227,6 @@
           },
           "expected": "revert",
           "revertMessage": "Amount must be greater than 0"
-        }
-      ]
-    },
-    {
-      "description": "User 1 tries to deposit ETH without sending any value",
-      "actions": [
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "WETH",
-
-            "amount": "1",
-            "user": "1",
-            "sendValue": "0"
-          },
-          "expected": "revert",
-          "revertMessage": "The amount and the value sent to deposit do not match"
-        }
-      ]
-    },
-    {
-      "description": "User 1 tries to deposit ETH by sending less value than required",
-      "actions": [
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "WETH",
-
-            "amount": "1",
-            "user": "1",
-            "sendValue": "0.5"
-          },
-          "expected": "revert",
-          "revertMessage": "The amount and the value sent to deposit do not match"
         }
       ]
     }
