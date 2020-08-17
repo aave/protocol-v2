@@ -4,7 +4,7 @@ pragma solidity ^0.6.8;
 import {ERC20} from './ERC20.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/WadRayMath.sol';
-import {UniversalERC20} from '../libraries/UniversalERC20.sol';
+import {SafeERC20}  from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -19,7 +19,7 @@ import '@nomiclabs/buidler/console.sol';
  */
 contract AToken is VersionedInitializable, ERC20 {
   using WadRayMath for uint256;
-  using UniversalERC20 for ERC20;
+  using SafeERC20 for ERC20;
 
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
@@ -702,17 +702,14 @@ contract AToken is VersionedInitializable, ERC20 {
     onlyLendingPool
     returns (uint256)
   {
-    ERC20(underlyingAssetAddress).universalTransfer(_target, _amount);
+    ERC20(underlyingAssetAddress).safeTransfer(_target, _amount);
     return _amount;
   }
 
   /**
-   * @dev receive() function for aTokens who hold ETH as the underlying asset
+   * @dev aTokens should not receive ETH
    **/
   receive() external payable {
-    require(
-      ERC20(underlyingAssetAddress).isETH(),
-      'Transfers are only allowed if the underlying asset is ETH'
-    );
+    revert();
   }
 }

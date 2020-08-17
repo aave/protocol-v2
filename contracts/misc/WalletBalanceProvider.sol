@@ -6,7 +6,7 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import '../configuration/LendingPoolAddressesProvider.sol';
 import '../lendingpool/LendingPool.sol';
-import '../libraries/UniversalERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 /**
  * @title WalletBalanceProvider contract
@@ -18,7 +18,7 @@ import '../libraries/UniversalERC20.sol';
 contract WalletBalanceProvider {
   using Address for address payable;
   using Address for address;
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
 
   LendingPoolAddressesProvider provider;
 
@@ -65,14 +65,10 @@ contract WalletBalanceProvider {
     for (uint256 i = 0; i < _users.length; i++) {
       for (uint256 j = 0; j < _tokens.length; j++) {
         uint256 _offset = i * _tokens.length;
-        if (IERC20(_tokens[j]).isETH()) {
-          balances[_offset + j] = _users[i].balance; // ETH balance
+        if (!_tokens[j].isContract()) {
+          revert('INVALID_TOKEN');
         } else {
-          if (!_tokens[j].isContract()) {
-            revert('INVALID_TOKEN');
-          } else {
-            balances[_offset + j] = balanceOf(_users[i], _tokens[j]);
-          }
+          balances[_offset + j] = balanceOf(_users[i], _tokens[j]);
         }
       }
     }
@@ -101,11 +97,7 @@ contract WalletBalanceProvider {
         balances[j] = 0;
         continue;
       }
-      if (IERC20(reserves[j]).isETH()) {
         balances[j] = balanceOf(_user, reserves[j]);
-      } else {
-        balances[j] = _user.balance; // ETH balance
-      }
     }
 
     return (reserves, balances);

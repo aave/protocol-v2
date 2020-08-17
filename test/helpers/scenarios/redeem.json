@@ -121,15 +121,32 @@
       ]
     },
     {
-      "description": "User 0 Deposits 1 ETH in an empty reserve",
+      "description": "User 0 Deposits 1 WETH in an empty reserve",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "0"
+          },
+          "expected": "success"
+        },
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
-            "user": "0",
-            "sendValue": "1"
+            "user": "0"
           },
           "expected": "success"
         }
@@ -141,7 +158,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.5",
             "user": "0"
           },
@@ -155,7 +173,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "0"
           },
@@ -222,7 +241,7 @@
       ]
     },
     {
-      "description": "Users 0 deposits 1000 DAI, user 1 Deposit 1000 USDC and 1 ETH, borrows 100 DAI. User 1 tries to redeem all the USDC",
+      "description": "Users 0 deposits 1000 DAI, user 1 Deposit 1000 USDC and 1 WETH, borrows 100 DAI. User 1 tries to redeem all the USDC",
       "actions": [
         {
           "name": "mint",
@@ -277,12 +296,29 @@
           "expected": "success"
         },
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
-            "user": "1",
-            "sendValue": "1"
+            "user": "1"
           },
           "expected": "success"
         },

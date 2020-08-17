@@ -5,7 +5,7 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {MathUtils} from './MathUtils.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {UniversalERC20} from './UniversalERC20.sol';
+import {SafeERC20}  from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 
@@ -24,7 +24,7 @@ import '@nomiclabs/buidler/console.sol';
 library ReserveLogic {
   using SafeMath for uint256;
   using WadRayMath for uint256;
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
   using Address for address;
   using ReserveLogic for ReserveLogic.ReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
@@ -253,7 +253,7 @@ library ReserveLogic {
     returns (uint256)
   {
     return
-      IERC20(_reserveAddress).universalBalanceOf(address(this)).add(_reserve.getTotalBorrows());
+      IERC20(_reserveAddress).balanceOf(address(this)).add(_reserve.getTotalBorrows());
   }
 
   /**
@@ -272,7 +272,7 @@ library ReserveLogic {
     uint256 currentAvgStableRate = IStableDebtToken(_reserve.stableDebtTokenAddress)
       .getAverageStableRate();
 
-    uint256 balance = IERC20(_reserveAddress).universalBalanceOf(_reserve.aTokenAddress);
+    uint256 balance = IERC20(_reserveAddress).balanceOf(_reserve.aTokenAddress);
 
     (
       uint256 newLiquidityRate,
@@ -348,7 +348,7 @@ library ReserveLogic {
       return 0;
     }
 
-    uint256 availableLiquidity = IERC20(_reserveAddress).universalBalanceOf(address(this));
+    uint256 availableLiquidity = IERC20(_reserveAddress).balanceOf(address(this));
 
     return totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
   }

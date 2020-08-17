@@ -34,7 +34,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 ETH as collateral and borrows 100 DAI at variable rate",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 WETH as collateral and borrows 100 DAI at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -63,12 +63,29 @@
           "expected": "success"
         },
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
-            "user": "1",
-            "sendValue": "1"
+            "user": "1"
           },
           "expected": "success"
         },
@@ -187,7 +204,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "1"
           },
@@ -196,30 +214,64 @@
       ]
     },
     {
-      "description": "User 2 deposits a small amount of ETH to account for rounding errors",
+      "description": "User 2 deposits a small amount of WETH to account for rounding errors",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "0.001",
+            "user": "2"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "2"
+          },
+          "expected": "success"
+        },
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.001",
-            "user": "2",
-            "sendValue": "0.001"
+            "user": "2"
           },
           "expected": "success"
         }
       ]
     },
     {
-      "description": "User 0 deposits 1 ETH, user 1 deposits 100 LINK as collateral and borrows 0.5 ETH at variable rate",
+      "description": "User 0 deposits 1 WETH, user 1 deposits 100 LINK as collateral and borrows 0.5 ETH at variable rate",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "0"
+          },
+          "expected": "success"
+        },
         {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
-            "user": "0",
-            "sendValue": "1"
+            "user": "0"
           },
           "expected": "success"
         },
@@ -253,7 +305,8 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.5",
             "borrowRateMode": "variable",
             "user": "1",
@@ -269,33 +322,14 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
             "amount": "0",
             "user": "1",
             "onBehalfOf": "1",
-            "borrowRateMode": "variable",
-            "sendValue": "0"
+            "borrowRateMode": "variable"
           },
           "expected": "revert",
           "revertMessage": "Amount must be greater than 0"
-        }
-      ]
-    },
-    {
-      "description": "User 1 tries to repay without sending any ETH value (revert expected)",
-      "actions": [
-        {
-          "name": "repay",
-          "args": {
-            "reserve": "ETH",
-            "amount": "-1",
-            "user": "1",
-            "borrowRateMode": "variable",
-            "onBehalfOf": "1",
-            "sendValue": "0"
-          },
-          "expected": "revert",
-          "revertMessage": "Invalid msg.value sent for the repayment"
         }
       ]
     },
@@ -305,12 +339,12 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "2",
             "borrowRateMode": "variable",
-            "onBehalfOf": "1",
-            "sendValue": "-1"
+            "onBehalfOf": "1"
           },
           "expected": "revert",
           "revertMessage": "To repay on behalf of an user an explicit amount to repay is needed"
@@ -318,46 +352,81 @@
       ]
     },
     {
-      "description": "User 3 repays a small amount of ETH on behalf of user 1",
+      "description": "User 3 repays a small amount of WETH on behalf of user 1",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "3"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "3"
+          },
+          "expected": "success"
+        },
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.2",
             "user": "3",
             "borrowRateMode": "variable",
-            "onBehalfOf": "1",
-            "sendValue": "0.2"
+            "onBehalfOf": "1"
           },
           "expected": "success"
         }
       ]
     },
     {
-      "description": "User 1 repays the ETH borrow after one year",
+      "description": "User 1 repays the WETH borrow after one year",
       "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "2"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "2"
+          },
+          "expected": "success"
+        },
         {
           "name": "repay",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "borrowRateMode": "variable",
             "user": "1",
-            "onBehalfOf": "1",
-            "sendValue": "-1"
+            "onBehalfOf": "1"
           },
           "expected": "success"
         }
       ]
     },
     {
-      "description": "User 0 redeems the deposited ETH plus interest",
+      "description": "User 0 redeems the deposited WETH plus interest",
       "actions": [
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "0"
           },
@@ -412,7 +481,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 USDC, user 1 deposits 1 ETH as collateral and borrows 100 USDC at variable rate",
+      "description": "User 0 deposits 1000 USDC, user 1 deposits 1 WETH as collateral and borrows 100 USDC at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -441,12 +510,29 @@
           "expected": "success"
         },
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
-            "user": "1",
-            "sendValue": "1"
+            "user": "1"
           },
           "expected": "success"
         },
@@ -533,7 +619,7 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
             "amount": "-1",
             "user": "1"
           },
@@ -587,12 +673,29 @@
       "description": "user 3 deposits 0.1 ETH collateral to borrow 100 DAI; 0.1 ETH is not enough to borrow 100 DAI (revert expected)",
       "actions": [
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "0.1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.1",
-            "user": "3",
-            "sendValue": "0.1"
+            "user": "3"
           },
           "expected": "success"
         },
@@ -615,7 +718,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "3"
           },
@@ -669,12 +773,29 @@
       "description": "user 3 deposits 0.1 ETH collateral to borrow 100 USDC; 0.1 ETH is not enough to borrow 100 USDC (revert expected)",
       "actions": [
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "3"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "0.1",
-            "user": "3",
-            "sendValue": "0.1"
+            "user": "3"
           },
           "expected": "success"
         },
@@ -697,7 +818,8 @@
         {
           "name": "redeem",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "-1",
             "user": "3"
           },
@@ -706,7 +828,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 6 deposits 2 ETH and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 redeems",
+      "description": "User 0 deposits 1000 DAI, user 6 deposits 2 WETH and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 redeems",
       "actions": [
         {
           "name": "mint",
@@ -735,12 +857,29 @@
           "expected": "success"
         },
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "2",
+            "user": "6"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "6"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "2",
-            "user": "6",
-            "sendValue": "2"
+            "user": "6"
           },
           "expected": "success"
         },

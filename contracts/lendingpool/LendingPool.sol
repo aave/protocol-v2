@@ -17,7 +17,6 @@ import '../libraries/GenericLogic.sol';
 import '../libraries/ValidationLogic.sol';
 import '../libraries/ReserveConfiguration.sol';
 import '../libraries/UserConfiguration.sol';
-import '../libraries/UniversalERC20.sol';
 import '../tokenization/interfaces/IStableDebtToken.sol';
 import '../tokenization/interfaces/IVariableDebtToken.sol';
 
@@ -25,6 +24,7 @@ import '../interfaces/IFeeProvider.sol';
 import '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import './LendingPoolLiquidationManager.sol';
 import '../interfaces/IPriceOracleGetter.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import '@nomiclabs/buidler/console.sol';
 
 /**
@@ -49,7 +49,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   LendingPoolAddressesProvider public addressesProvider;
   IFeeProvider feeProvider;
-  using UniversalERC20 for IERC20;
+  using SafeERC20 for IERC20;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;
@@ -280,7 +280,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     aToken.mintOnDeposit(msg.sender, _amount);
 
     //transfer to the aToken contract
-    IERC20(_reserve).universalTransferFrom(msg.sender, address(aToken), _amount, true);
+    IERC20(_reserve).safeTransferFrom(msg.sender, address(aToken), _amount);
 
     //solium-disable-next-line
     emit Deposit(_reserve, msg.sender, _amount, _referralCode, block.timestamp);
@@ -457,21 +457,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       usersConfig[_onBehalfOf].setBorrowing(reserve.index, false);
     }
 
-    IERC20(_reserve).universalTransferFrom(
+    IERC20(_reserve).safeTransferFrom(
       msg.sender,
       reserve.aTokenAddress,
-      vars.paybackAmount,
-      false
+      vars.paybackAmount
     );
-
-    if (IERC20(_reserve).isETH()) {
-      //send excess ETH back to the caller if needed
-      uint256 exceedAmount = msg.value.sub(vars.paybackAmount);
-
-      if (exceedAmount > 0) {
-        IERC20(_reserve).universalTransfer(msg.sender, exceedAmount);
-      }
-    }
 
     emit Repay(
       _reserve,
@@ -673,7 +663,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     vars.aTokenAddress = payable(reserve.aTokenAddress);
 
     //check that the reserve has enough available liquidity
-    vars.availableLiquidityBefore = IERC20(_reserve).universalBalanceOf(vars.aTokenAddress);
+    vars.availableLiquidityBefore = IERC20(_reserve).balanceOf(vars.aTokenAddress);
 
     //calculate amount fee
     vars.amountFee = _amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
@@ -702,7 +692,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     receiver.executeOperation(_reserve, vars.aTokenAddress, _amount, vars.amountFee, _params);
 
     //check that the actual balance of the core contract includes the returned amount
-    uint256 availableLiquidityAfter = IERC20(_reserve).universalBalanceOf(vars.aTokenAddress);
+    uint256 availableLiquidityAfter = IERC20(_reserve).balanceOf(vars.aTokenAddress);
 
     require(
       availableLiquidityAfter == vars.availableLiquidityBefore.add(vars.amountFee),
@@ -798,7 +788,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   {
     ReserveLogic.ReserveData memory reserve = reserves[_reserve];
     return (
-      IERC20(_reserve).universalBalanceOf(reserve.aTokenAddress),
+      IERC20(_reserve).balanceOf(reserve.aTokenAddress),
       IERC20(reserve.stableDebtTokenAddress).totalSupply(),
       IERC20(reserve.variableDebtTokenAddress).totalSupply(),
       reserve.currentLiquidityRate,

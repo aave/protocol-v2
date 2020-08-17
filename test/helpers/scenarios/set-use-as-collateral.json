@@ -46,19 +46,37 @@
       "description": "User 1 Deposits 2 ETH, disables ETH as collateral, borrows 400 DAI (revert expected)",
       "actions": [
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "2",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "2",
-            "user": "1",
-            "sendValue": "2"
+            "user": "1"
           },
           "expected": "success"
         },
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -81,19 +99,9 @@
       "description": "User 1 enables ETH as collateral, borrows 400 DAI",
       "actions": [
         {
-          "name": "deposit",
-          "args": {
-            "reserve": "ETH",
-            "amount": "2",
-            "user": "1",
-            "sendValue": "2"
-          },
-          "expected": "success"
-        },
-        {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
             "user": "1",
             "useAsCollateral": "true"
           },
@@ -117,7 +125,8 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "user": "1",
             "useAsCollateral": "false"
           },

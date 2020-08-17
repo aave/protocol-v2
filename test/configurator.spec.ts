@@ -1,5 +1,5 @@
 import {TestEnv, makeSuite} from './helpers/make-suite';
-import {MOCK_ETH_ADDRESS, RAY, APPROVAL_AMOUNT_LENDING_POOL} from '../helpers/constants';
+import {RAY, APPROVAL_AMOUNT_LENDING_POOL} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {ProtocolErrors} from '../helpers/types';
 
@@ -9,219 +9,219 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   const {INVALID_POOL_MANAGER_CALLER_MSG} = ProtocolErrors;
 
   it('Deactivates the ETH reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.deactivateReserve(MOCK_ETH_ADDRESS);
-    const {isActive} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.deactivateReserve(weth.address);
+    const {isActive} = await pool.getReserveConfigurationData(weth.address);
     expect(isActive).to.be.equal(false);
   });
 
   it('Rectivates the ETH reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.activateReserve(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.activateReserve(weth.address);
 
-    const {isActive} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {isActive} = await pool.getReserveConfigurationData(weth.address);
     expect(isActive).to.be.equal(true);
   });
 
   it('Check the onlyLendingPoolManager on deactivateReserve ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).deactivateReserve(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).deactivateReserve(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Check the onlyLendingPoolManager on activateReserve ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).activateReserve(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).activateReserve(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Freezes the ETH reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.freezeReserve(MOCK_ETH_ADDRESS);
-    const {isFreezed} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.freezeReserve(weth.address);
+    const {isFreezed} = await pool.getReserveConfigurationData(weth.address);
     expect(isFreezed).to.be.equal(true);
   });
 
   it('Unfreezes the ETH reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.unfreezeReserve(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.unfreezeReserve(weth.address);
 
-    const {isFreezed} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {isFreezed} = await pool.getReserveConfigurationData(weth.address);
     expect(isFreezed).to.be.equal(false);
   });
 
   it('Check the onlyLendingPoolManager on freezeReserve ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).freezeReserve(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).freezeReserve(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Check the onlyLendingPoolManager on unfreezeReserve ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).unfreezeReserve(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).unfreezeReserve(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Deactivates the ETH reserve for borrowing', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.disableBorrowingOnReserve(MOCK_ETH_ADDRESS);
-    const {borrowingEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.disableBorrowingOnReserve(weth.address);
+    const {borrowingEnabled} = await pool.getReserveConfigurationData(weth.address);
     expect(borrowingEnabled).to.be.equal(false);
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.enableBorrowingOnReserve(MOCK_ETH_ADDRESS, true);
-    const {borrowingEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
-    const {variableBorrowIndex} = await pool.getReserveData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.enableBorrowingOnReserve(weth.address, true);
+    const {borrowingEnabled} = await pool.getReserveConfigurationData(weth.address);
+    const {variableBorrowIndex} = await pool.getReserveData(weth.address);
     expect(borrowingEnabled).to.be.equal(true);
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
 
   it('Check the onlyLendingPoolManager on disableBorrowingOnReserve ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).disableBorrowingOnReserve(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).disableBorrowingOnReserve(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Check the onlyLendingPoolManager on enableBorrowingOnReserve ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).enableBorrowingOnReserve(MOCK_ETH_ADDRESS, true),
+      configurator.connect(users[2].signer).enableBorrowingOnReserve(weth.address, true),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Deactivates the ETH reserve as collateral', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.disableReserveAsCollateral(MOCK_ETH_ADDRESS);
-    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.disableReserveAsCollateral(weth.address);
+    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(weth.address);
     expect(usageAsCollateralEnabled).to.be.equal(false);
   });
 
   it('Activates the ETH reserve as collateral', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.enableReserveAsCollateral(MOCK_ETH_ADDRESS, '75', '80', '105');
+    const {configurator, pool, weth} = testEnv;
+    await configurator.enableReserveAsCollateral(weth.address, '75', '80', '105');
 
-    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(weth.address);
     expect(usageAsCollateralEnabled).to.be.equal(true);
   });
 
   it('Check the onlyLendingPoolManager on disableReserveAsCollateral ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).disableReserveAsCollateral(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).disableReserveAsCollateral(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Check the onlyLendingPoolManager on enableReserveAsCollateral ', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
       configurator
         .connect(users[2].signer)
-        .enableReserveAsCollateral(MOCK_ETH_ADDRESS, '75', '80', '105'),
+        .enableReserveAsCollateral(weth.address, '75', '80', '105'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Disable stable borrow rate on the ETH reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.disableReserveStableRate(MOCK_ETH_ADDRESS);
-    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.disableReserveStableRate(weth.address);
+    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(weth.address);
     expect(stableBorrowRateEnabled).to.be.equal(false);
   });
 
   it('Enables stable borrow rate on the ETH reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.enableReserveStableRate(MOCK_ETH_ADDRESS);
-    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.enableReserveStableRate(weth.address);
+    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(weth.address);
     expect(stableBorrowRateEnabled).to.be.equal(true);
   });
 
   it('Check the onlyLendingPoolManager on disableReserveStableRate', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).disableReserveStableRate(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).disableReserveStableRate(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Check the onlyLendingPoolManager on enableReserveStableRate', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).enableReserveStableRate(MOCK_ETH_ADDRESS),
+      configurator.connect(users[2].signer).enableReserveStableRate(weth.address),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Changes LTV of the reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.setLtv(MOCK_ETH_ADDRESS, '60');
-    const {ltv}: any = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.setLtv(weth.address, '60');
+    const {ltv}: any = await pool.getReserveConfigurationData(weth.address);
     expect(ltv).to.be.bignumber.equal('60', 'Invalid LTV');
   });
 
   it('Check the onlyLendingPoolManager on setLtv', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setLtv(MOCK_ETH_ADDRESS, '75'),
+      configurator.connect(users[2].signer).setLtv(weth.address, '75'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Changes liquidation threshold of the reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.setLiquidationThreshold(MOCK_ETH_ADDRESS, '75');
-    const {liquidationThreshold}: any = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.setLiquidationThreshold(weth.address, '75');
+    const {liquidationThreshold}: any = await pool.getReserveConfigurationData(weth.address);
     expect(liquidationThreshold).to.be.bignumber.equal('75', 'Invalid Liquidation threshold');
   });
 
   it('Check the onlyLendingPoolManager on setLiquidationThreshold', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setLiquidationThreshold(MOCK_ETH_ADDRESS, '80'),
+      configurator.connect(users[2].signer).setLiquidationThreshold(weth.address, '80'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Changes liquidation bonus of the reserve', async () => {
-    const {configurator, pool} = testEnv;
-    await configurator.setLiquidationBonus(MOCK_ETH_ADDRESS, '110');
-    const {liquidationBonus} = await pool.getReserveConfigurationData(MOCK_ETH_ADDRESS);
+    const {configurator, pool, weth} = testEnv;
+    await configurator.setLiquidationBonus(weth.address, '110');
+    const {liquidationBonus} = await pool.getReserveConfigurationData(weth.address);
     expect(liquidationBonus).to.be.bignumber.equal('110', 'Invalid Liquidation discount');
   });
 
   it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setLiquidationBonus(MOCK_ETH_ADDRESS, '80'),
+      configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Check the onlyLendingPoolManager on setReserveDecimals', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setReserveDecimals(MOCK_ETH_ADDRESS, '80'),
+      configurator.connect(users[2].signer).setReserveDecimals(weth.address, '80'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });
 
   it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {
-    const {configurator, users} = testEnv;
+    const {configurator, users, weth} = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setLiquidationBonus(MOCK_ETH_ADDRESS, '80'),
+      configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
       INVALID_POOL_MANAGER_CALLER_MSG
     ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
   });

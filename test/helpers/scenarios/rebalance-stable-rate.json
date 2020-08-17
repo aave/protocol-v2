@@ -48,12 +48,29 @@
           "expected": "success"
         },
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "1",
-            "user": "1",
-            "sendValue": "1"
+            "user": "1"
           },
           "expected": "success"
         },
@@ -108,12 +125,29 @@
       "description": "User 2 deposits ETH and borrows the remaining DAI, causing the stable rates to rise (liquidity rate < user 1 borrow rate). User 0 tries to rebalance user 1 (revert expected)",
       "actions": [
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "5",
+            "user": "2"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "2"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "5",
-            "user": "2",
-            "sendValue": "5"
+            "user": "2"
           },
           "expected": "success"
         },
@@ -143,12 +177,29 @@
       "description": "User 2 borrows more DAI, causing the liquidity rate to rise above user 1 stable borrow rate User 0 rebalances user 1",
       "actions": [
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "3",
+            "user": "2"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "2"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "3",
-            "user": "2",
-            "sendValue": "3"
+            "user": "2"
           },
           "expected": "success"
         },

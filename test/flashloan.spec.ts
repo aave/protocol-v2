@@ -1,5 +1,5 @@
 import {TestEnv, makeSuite} from './helpers/make-suite';
-import {MOCK_ETH_ADDRESS, APPROVAL_AMOUNT_LENDING_POOL, oneRay} from '../helpers/constants';
+import {APPROVAL_AMOUNT_LENDING_POOL, oneRay} from '../helpers/constants';
 import {
   convertToCurrencyDecimals,
   getMockFlashLoanReceiver,
@@ -29,34 +29,29 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Deposits ETH into the reserve', async () => {
-    const {pool} = testEnv;
+    const {pool, weth} = testEnv;
     const amountToDeposit = ethers.utils.parseEther('1');
 
-    await pool.deposit(MOCK_ETH_ADDRESS, amountToDeposit, '0', {
-      value: amountToDeposit,
-    });
+    await weth.mint(amountToDeposit);
+
+    await weth.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    await pool.deposit(weth.address, amountToDeposit, '0');
   });
 
   it('Takes ETH flashloan, returns the funds correctly', async () => {
-    const {pool, deployer} = testEnv;
-
-    // move funds to the MockFlashLoanReceiver contract to pay the fee
-    await deployer.signer.sendTransaction({
-      value: ethers.utils.parseEther('0.5'),
-      to: _mockFlashLoanReceiver.address,
-    });
+    const {pool, deployer, weth} = testEnv;
 
     await pool.flashLoan(
       _mockFlashLoanReceiver.address,
-      MOCK_ETH_ADDRESS,
+      weth.address,
       ethers.utils.parseEther('0.8'),
       '0x10'
     );
 
     ethers.utils.parseUnits('10000');
 
-    const reserveData: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
-    const tokenDistributorBalance = await BRE.ethers.provider.getBalance(_tokenDistributor.address);
+    const reserveData: any = await pool.getReserveData(weth.address);
 
     const currentLiquidityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
@@ -65,30 +60,28 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       .plus(reserveData.totalBorrowsStable)
       .plus(reserveData.totalBorrowsVariable);
 
+    const tokenDistributorBalance = await weth.balanceOf(_tokenDistributor.address);
+    
+
     expect(totalLiquidity.toString()).to.be.equal('1000504000000000000');
     expect(currentLiquidityRate.toString()).to.be.equal('0');
     expect(currentLiquidityIndex.toString()).to.be.equal('1000504000000000000000000000');
-    expect(tokenDistributorBalance.toString()).to.be.equal('216000000000000');
+    expect(tokenDistributorBalance).to.be.equal('216000000000000');
   });
 
   it('Takes an ETH flashloan as big as the available liquidity', async () => {
-    const {pool, deployer} = testEnv;
-
-    // move funds to the MockFlashLoanReceiver contract to pay the fee
-    await deployer.signer.sendTransaction({
-      value: ethers.utils.parseEther('0.5'),
-      to: _mockFlashLoanReceiver.address,
-    });
+    const {pool, deployer, weth} = testEnv;
 
     const txResult = await pool.flashLoan(
       _mockFlashLoanReceiver.address,
-      MOCK_ETH_ADDRESS,
+      weth.address,
       '1000504000000000000',
       '0x10'
     );
 
-    const reserveData: any = await pool.getReserveData(MOCK_ETH_ADDRESS);
-    const tokenDistributorBalance = await BRE.ethers.provider.getBalance(_tokenDistributor.address);
+    const reserveData: any = await pool.getReserveData(weth.address);
+    const tokenDistributorBalance = await weth.balanceOf(_tokenDistributor.address);
+    
 
     const currentLiqudityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
@@ -103,21 +96,17 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     expect(tokenDistributorBalance.toString()).to.be.equal('486136080000000');
   });
 
-  it('Takes ETH flashloan, does not return the funds (revert expected)', async () => {
-    const {pool, deployer} = testEnv;
+  it('Takes WETH flashloan, does not return the funds (revert expected)', async () => {
+    const {pool, deployer, weth} = testEnv;
 
     // move funds to the MockFlashLoanReceiver contract to pay the fee
-    await deployer.signer.sendTransaction({
-      value: ethers.utils.parseEther('0.5'),
-      to: _mockFlashLoanReceiver.address,
-    });
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
     await expect(
       pool.flashLoan(
         _mockFlashLoanReceiver.address,
-        MOCK_ETH_ADDRESS,
+        weth.address,
         ethers.utils.parseEther('0.8'),
         '0x10'
       )
@@ -125,12 +114,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('tries to take a very small flashloan, which would result in 0 fees (revert expected)', async () => {
-    const {pool} = testEnv;
+    const {pool, weth} = testEnv;
 
     await expect(
       pool.flashLoan(
         _mockFlashLoanReceiver.address,
-        MOCK_ETH_ADDRESS,
+        weth.address,
         '1', //1 wei loan
         '0x10'
       )
@@ -138,12 +127,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {
-    const {pool} = testEnv;
+    const {pool, weth} = testEnv;
 
     await expect(
       pool.flashLoan(
         _mockFlashLoanReceiver.address,
-        MOCK_ETH_ADDRESS,
+        weth.address,
         '1004415000000000000', //slightly higher than the available liquidity
         '0x10'
       ),
@@ -152,9 +141,9 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('tries to take a flashloan using a non contract address as receiver (revert expected)', async () => {
-    const {pool, deployer} = testEnv;
+    const {pool, deployer, weth} = testEnv;
 
-    await expect(pool.flashLoan(deployer.address, MOCK_ETH_ADDRESS, '1000000000000000000', '0x10'))
+    await expect(pool.flashLoan(deployer.address, weth.address, '1000000000000000000', '0x10'))
       .to.be.reverted;
   });
 

@@ -45,7 +45,6 @@ import {MintableErc20} from '../types/MintableErc20';
 import {
   MOCK_USD_PRICE_IN_WEI,
   ALL_ASSETS_INITIAL_PRICES,
-  MOCK_ETH_ADDRESS,
   USD_ADDRESS,
   MOCK_CHAINLINK_AGGREGATORS_PRICES,
   LENDING_RATE_ORACLE_RATES_COMMON,
@@ -67,7 +66,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
-    if (tokenSymbol !== 'ETH') {
       let decimals = 18;
 
       let configData = (<any>protoConfigData)[tokenSymbol];
@@ -86,7 +84,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
         configData ? configData.reserveDecimals : 18,
       ]);
       await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
-    }
   }
 
   return tokens;
@@ -225,16 +222,16 @@ const initReserves = async (
       ]);
 
       const stableDebtToken = await deployStableDebtToken([
-        `Aave stable debt bearing ${assetSymbol}`,
-        `stableDebt${assetSymbol}`,
+        `Aave stable debt bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
+        `stableDebt${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
         reserveDecimals,
         tokenAddress,
         lendingPool.address,
       ]);
 
       const variableDebtToken = await deployVariableDebtToken([
-        `Aave variable debt bearing ${assetSymbol}`,
-        `stableDebt${assetSymbol}`,
+        `Aave variable debt bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
+        `variableDebt${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
         reserveDecimals,
         tokenAddress,
         lendingPool.address,
@@ -243,9 +240,9 @@ const initReserves = async (
       const aToken = await deployGenericAToken([
         lendingPool.address,
         tokenAddress,
-        `Aave interest bearing ${assetSymbol}`,
-        `a${assetSymbol}`
-      ]);
+        `Aave interest bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
+        `a${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
+         ]);
 
 
       if (process.env.POOL === AavePools.secondary) {
@@ -400,7 +397,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await setInitialAssetPricesInOracle(
     ALL_ASSETS_INITIAL_PRICES,
     {
-      ETH: MOCK_ETH_ADDRESS,
+      WETH: mockTokens.WETH.address,
       DAI: mockTokens.DAI.address,
       TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
@@ -461,7 +458,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const {USD, ...tokensAddressesWithoutUsd} = allTokenAddresses;
   const allReservesAddresses = {
-    ETH: MOCK_ETH_ADDRESS,
     ...tokensAddressesWithoutUsd,
   };
   await setInitialMarketRatesInRatesOracle(

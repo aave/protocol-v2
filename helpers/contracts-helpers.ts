@@ -29,7 +29,6 @@ import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {WalletBalanceProvider} from '../types/WalletBalanceProvider';
 import {AToken} from '../types/AToken';
 import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
-import {MOCK_ETH_ADDRESS} from './constants';
 import BigNumber from 'bignumber.js';
 import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
@@ -261,7 +260,10 @@ export const deployStableDebtToken = async ([
   underlyingAsset,
   poolAddress,
 ]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
-  const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [poolAddress, underlyingAsset]);
+  const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
+    poolAddress,
+    underlyingAsset,
+  ]);
 
   await token.init(name, symbol, decimals);
 
@@ -275,7 +277,10 @@ export const deployVariableDebtToken = async ([
   underlyingAsset,
   poolAddress,
 ]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
-  const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [poolAddress, underlyingAsset]);
+  const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
+    poolAddress,
+    underlyingAsset,
+  ]);
 
   await token.init(name, symbol, decimals);
 
@@ -466,25 +471,16 @@ export const getParamPerPool = <T>({proto, secondary}: iParamsPerPool<T>, pool: 
 };
 
 export const convertToCurrencyDecimals = async (tokenAddress: tEthereumAddress, amount: string) => {
-  const isEth = tokenAddress === MOCK_ETH_ADDRESS;
-  let decimals = '18';
-
-  if (!isEth) {
-    const token = await getIErc20Detailed(tokenAddress);
-    decimals = (await token.decimals()).toString();
-  }
+  const token = await getIErc20Detailed(tokenAddress);
+  let decimals = (await token.decimals()).toString();
 
   return ethers.utils.parseUnits(amount, decimals);
 };
 
 export const convertToCurrencyUnits = async (tokenAddress: string, amount: string) => {
-  const isEth = tokenAddress === MOCK_ETH_ADDRESS;
 
-  let decimals = new BigNumber(18);
-  if (!isEth) {
-    const token = await getIErc20Detailed(tokenAddress);
-    decimals = new BigNumber(await token.decimals());
-  }
+  const token = await getIErc20Detailed(tokenAddress);
+  let decimals = new BigNumber(await token.decimals());
   const currencyUnit = new BigNumber(10).pow(decimals);
   const amountInCurrencyUnits = new BigNumber(amount).div(currencyUnit);
   return amountInCurrencyUnits.toFixed();

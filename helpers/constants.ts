@@ -38,7 +38,6 @@ export const APPROVAL_AMOUNT_LENDING_POOL = '1000000000000000000000000000';
 export const TOKEN_DISTRIBUTOR_PERCENTAGE_BASE = '10000';
 export const MOCK_USD_PRICE_IN_WEI = '5848466240000000';
 export const USD_ADDRESS = '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96';
-export const MOCK_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const ONE_ADDRESS = '0x0000000000000000000000000000000000000001';
 export const AAVE_REFERRAL = '0';
@@ -92,6 +91,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES: iAssetAggregatorBase<string> = {
   MANA: oneEther.multipliedBy('0.000158').toFixed(),
   SNX: oneEther.multipliedBy('0.00442616').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
+  WETH: oneEther.toFixed(),
   USD: MOCK_USD_PRICE_IN_WEI,
   UNI_DAI_ETH: oneEther.multipliedBy('2.1').toFixed(),
   UNI_USDC_ETH: oneEther.multipliedBy('2.1').toFixed(),
@@ -103,11 +103,10 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES: iAssetAggregatorBase<string> = {
 
 export const ALL_ASSETS_INITIAL_PRICES: iAssetBase<string> = {
   ...MOCK_CHAINLINK_AGGREGATORS_PRICES,
-  ETH: oneEther.toFixed(),
 };
 
 export const LENDING_RATE_ORACLE_RATES_COMMON: iAavePoolAssets<IMarketRates> = {
-  ETH: {
+  WETH: {
     borrowRate: oneRay.multipliedBy(0.03).toFixed(),
   },
   DAI: {
@@ -255,7 +254,7 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
           stableBorrowRateEnabled: true,
           reserveDecimals: '18',
         },
-        ETH: {
+        WETH: {
           baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
           variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
           variableRateSlope2: new BigNumber(0.5).multipliedBy(oneRay).toFixed(),
@@ -387,7 +386,7 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
         },
       },
       [AavePools.secondary]: {
-        ETH: {
+        WETH: {
           baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
           variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
           variableRateSlope2: new BigNumber(0.5).multipliedBy(oneRay).toFixed(),

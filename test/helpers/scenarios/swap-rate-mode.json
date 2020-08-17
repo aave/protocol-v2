@@ -62,12 +62,29 @@
           "expected": "success"
         },
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "2",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
-            "reserve": "ETH",
+            "reserve": "WETH",
+
             "amount": "2",
-            "user": "1",
-            "sendValue": "2"
+            "user": "1"
           },
           "expected": "success"
         },
