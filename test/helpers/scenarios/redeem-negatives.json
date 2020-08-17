@@ -85,8 +85,7 @@
             "reserve": "WETH",
 
             "amount": "1",
-            "user": "1",
-            "sendValue": "1"
+            "user": "1"
           },
           "expected": "success"
         },

@@ -220,7 +220,7 @@
           "name": "mint",
           "args": {
             "reserve": "WETH",
-            "amount": "1",
+            "amount": "0.001",
             "user": "2"
           },
           "expected": "success"
@@ -239,8 +239,7 @@
             "reserve": "WETH",
 
             "amount": "0.001",
-            "user": "2",
-            "sendValue": "0.001"
+            "user": "2"
           },
           "expected": "success"
         }
@@ -327,8 +326,7 @@
             "amount": "0",
             "user": "1",
             "onBehalfOf": "1",
-            "borrowRateMode": "variable",
-            "sendValue": "0"
+            "borrowRateMode": "variable"
           },
           "expected": "revert",
           "revertMessage": "Amount must be greater than 0"
@@ -797,8 +795,7 @@
             "reserve": "WETH",
 
             "amount": "0.1",
-            "user": "3",
-            "sendValue": "0.1"
+            "user": "3"
           },
           "expected": "success"
         },
@@ -882,8 +879,7 @@
             "reserve": "WETH",
 
             "amount": "2",
-            "user": "6",
-            "sendValue": "2"
+            "user": "6"
           },
           "expected": "success"
         },

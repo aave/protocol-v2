@@ -46,13 +46,29 @@
       "description": "User 1 deposits 1 ETH, borrows 100 DAI, repays after one year. Users 0 deposits another 1000 DAI. Redirected balance of user 2 is updated",
       "actions": [
         {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "2",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
           "name": "deposit",
           "args": {
             "reserve": "WETH",
 
             "amount": "2",
-            "user": "1",
-            "sendValue": "2"
+            "user": "1"
           },
           "expected": "success"
         },
