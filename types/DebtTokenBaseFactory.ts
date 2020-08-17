@@ -213,6 +213,11 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint8",
+        name: "_decimals",
+        type: "uint8"
+      },
+      {
         internalType: "string",
         name: "_name",
         type: "string"
@@ -221,14 +226,9 @@ const _abi = [
         internalType: "string",
         name: "_symbol",
         type: "string"
-      },
-      {
-        internalType: "uint8",
-        name: "_decimals",
-        type: "uint8"
       }
     ],
-    name: "init",
+    name: "initialize",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"

@@ -265,8 +265,6 @@ export const deployStableDebtToken = async ([
     underlyingAsset,
   ]);
 
-  await token.init(name, symbol, decimals);
-
   return token;
 };
 
@@ -281,8 +279,6 @@ export const deployVariableDebtToken = async ([
     poolAddress,
     underlyingAsset,
   ]);
-
-  await token.init(name, symbol, decimals);
 
   return token;
 };

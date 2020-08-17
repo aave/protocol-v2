@@ -12,6 +12,8 @@ import {
 
 interface VariableDebtTokenInterface extends Interface {
   functions: {
+    DEBT_TOKEN_REVISION: TypedFunctionDescription<{ encode([]: []): string }>;
+
     allowance: TypedFunctionDescription<{
       encode([owner, spender]: [string, string]): string;
     }>;
@@ -40,11 +42,11 @@ interface VariableDebtTokenInterface extends Interface {
       encode([spender, addedValue]: [string, BigNumberish]): string;
     }>;
 
-    init: TypedFunctionDescription<{
-      encode([_name, _symbol, _decimals]: [
+    initialize: TypedFunctionDescription<{
+      encode([_decimals, _name, _symbol]: [
+        BigNumberish,
         string,
-        string,
-        BigNumberish
+        string
       ]): string;
     }>;
 
@@ -137,6 +139,8 @@ export class VariableDebtToken extends Contract {
   interface: VariableDebtTokenInterface;
 
   functions: {
+    DEBT_TOKEN_REVISION(): Promise<BigNumber>;
+
     allowance(owner: string, spender: string): Promise<BigNumber>;
 
     approve(
@@ -169,10 +173,10 @@ export class VariableDebtToken extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    init(
+    initialize(
+      _decimals: BigNumberish,
       _name: string,
       _symbol: string,
-      _decimals: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -206,6 +210,8 @@ export class VariableDebtToken extends Contract {
     underlyingAssetAddress(): Promise<string>;
   };
 
+  DEBT_TOKEN_REVISION(): Promise<BigNumber>;
+
   allowance(owner: string, spender: string): Promise<BigNumber>;
 
   approve(
@@ -238,10 +244,10 @@ export class VariableDebtToken extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  init(
+  initialize(
+    _decimals: BigNumberish,
     _name: string,
     _symbol: string,
-    _decimals: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -303,6 +309,8 @@ export class VariableDebtToken extends Contract {
   };
 
   estimate: {
+    DEBT_TOKEN_REVISION(): Promise<BigNumber>;
+
     allowance(owner: string, spender: string): Promise<BigNumber>;
 
     approve(spender: string, _amount: BigNumberish): Promise<BigNumber>;
@@ -325,10 +333,10 @@ export class VariableDebtToken extends Contract {
       addedValue: BigNumberish
     ): Promise<BigNumber>;
 
-    init(
+    initialize(
+      _decimals: BigNumberish,
       _name: string,
-      _symbol: string,
-      _decimals: BigNumberish
+      _symbol: string
     ): Promise<BigNumber>;
 
     mint(_user: string, _amount: BigNumberish): Promise<BigNumber>;

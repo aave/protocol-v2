@@ -6,6 +6,7 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {LendingPool} from '../../lendingpool/LendingPool.sol';
+import {VersionedInitializable} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 
 /**
  * @title contract DebtTokenBase
@@ -13,7 +14,7 @@ import {LendingPool} from '../../lendingpool/LendingPool.sol';
  * @notice base contract for StableDebtToken and VariableDebtToken
  */
 
-abstract contract DebtTokenBase is IERC20 {
+abstract contract DebtTokenBase is IERC20, VersionedInitializable {
   using SafeMath for uint256;
   using Address for address;
 
@@ -45,11 +46,11 @@ abstract contract DebtTokenBase is IERC20 {
    * @param _symbol the symbol of the token
    * @param _decimals the decimals of the token
    */
-  function init(
+  function initialize(
+    uint8 _decimals,
     string memory _name,
-    string memory _symbol,
-    uint8 _decimals
-  ) public {
+    string memory _symbol
+  ) public initializer {
     name = _name;
     symbol = _symbol;
     decimals = _decimals;
