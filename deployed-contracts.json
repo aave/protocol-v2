@@ -467,5 +467,17 @@
       "address": "0x501A498e8FDA589038d6526C2153a9fdc9d8eDD2",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
+  },
+  "MockStableDebtToken": {
+    "buidlerevm": {
+      "address": "0x6aaF7e94e099291a94ed8E245c90f4766CE9bB7C",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    }
+  },
+  "MockVariableDebtToken": {
+    "buidlerevm": {
+      "address": "0x40A939911b662656C0EE71c19B954DB1911Dc8e3",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    }
   }
 }

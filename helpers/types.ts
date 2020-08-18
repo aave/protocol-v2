@@ -38,6 +38,8 @@ export enum eContractid {
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
+  MockStableDebtToken = 'MockStableDebtToken',
+  MockVariableDebtToken = 'MockVariableDebtToken',
   AaveProtocolTestHelpers = 'AaveProtocolTestHelpers',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',

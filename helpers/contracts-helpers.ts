@@ -258,7 +258,7 @@ export const deployStableDebtToken = async ([
   symbol,
   underlyingAsset,
   poolAddress,
-]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
+]: [string, string, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
     poolAddress,
     underlyingAsset,
@@ -274,7 +274,7 @@ export const deployVariableDebtToken = async ([
   symbol,
   underlyingAsset,
   poolAddress,
-]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
+]: [string, string, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
     poolAddress,
     underlyingAsset,

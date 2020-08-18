@@ -27,6 +27,16 @@ const _abi = [
         internalType: "address",
         name: "_underlyingAssetAddress",
         type: "address"
+      },
+      {
+        internalType: "string",
+        name: "_name",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "_symbol",
+        type: "string"
       }
     ],
     stateMutability: "nonpayable",

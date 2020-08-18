@@ -101,9 +101,25 @@ interface LendingPoolConfiguratorInterface extends Interface {
     updateAToken: TypedFunctionDescription<{
       encode([_reserve, _implementation]: [string, string]): string;
     }>;
+
+    updateStableDebtToken: TypedFunctionDescription<{
+      encode([_reserve, _implementation]: [string, string]): string;
+    }>;
+
+    updateVariableDebtToken: TypedFunctionDescription<{
+      encode([_reserve, _implementation]: [string, string]): string;
+    }>;
   };
 
   events: {
+    ATokenUpgraded: TypedEventDescription<{
+      encodeTopics([_reserve, _proxy, _implementation]: [
+        null,
+        null,
+        null
+      ]): string[];
+    }>;
+
     BorrowingDisabledOnReserve: TypedEventDescription<{
       encodeTopics([_reserve]: [string | null]): string[];
     }>;
@@ -171,12 +187,28 @@ interface LendingPoolConfiguratorInterface extends Interface {
       encodeTopics([_reserve]: [string | null]): string[];
     }>;
 
+    StableDebtTokenUpgraded: TypedEventDescription<{
+      encodeTopics([_reserve, _proxy, _implementation]: [
+        null,
+        null,
+        null
+      ]): string[];
+    }>;
+
     StableRateDisabledOnReserve: TypedEventDescription<{
       encodeTopics([_reserve]: [string | null]): string[];
     }>;
 
     StableRateEnabledOnReserve: TypedEventDescription<{
       encodeTopics([_reserve]: [string | null]): string[];
+    }>;
+
+    VariableDebtTokenUpgraded: TypedEventDescription<{
+      encodeTopics([_reserve, _proxy, _implementation]: [
+        null,
+        null,
+        null
+      ]): string[];
     }>;
   };
 }
@@ -313,6 +345,18 @@ export class LendingPoolConfigurator extends Contract {
       _implementation: string,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
+
+    updateStableDebtToken(
+      _reserve: string,
+      _implementation: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
+
+    updateVariableDebtToken(
+      _reserve: string,
+      _implementation: string,
+      overrides?: TransactionOverrides
+    ): Promise<ContractTransaction>;
   };
 
   CONFIGURATOR_REVISION(): Promise<BigNumber>;
@@ -426,7 +470,25 @@ export class LendingPoolConfigurator extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
+  updateStableDebtToken(
+    _reserve: string,
+    _implementation: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
+  updateVariableDebtToken(
+    _reserve: string,
+    _implementation: string,
+    overrides?: TransactionOverrides
+  ): Promise<ContractTransaction>;
+
   filters: {
+    ATokenUpgraded(
+      _reserve: null,
+      _proxy: null,
+      _implementation: null
+    ): EventFilter;
+
     BorrowingDisabledOnReserve(_reserve: string | null): EventFilter;
 
     BorrowingEnabledOnReserve(
@@ -475,9 +537,21 @@ export class LendingPoolConfigurator extends Contract {
 
     ReserveUnfreezed(_reserve: string | null): EventFilter;
 
+    StableDebtTokenUpgraded(
+      _reserve: null,
+      _proxy: null,
+      _implementation: null
+    ): EventFilter;
+
     StableRateDisabledOnReserve(_reserve: string | null): EventFilter;
 
     StableRateEnabledOnReserve(_reserve: string | null): EventFilter;
+
+    VariableDebtTokenUpgraded(
+      _reserve: null,
+      _proxy: null,
+      _implementation: null
+    ): EventFilter;
   };
 
   estimate: {
@@ -549,5 +623,15 @@ export class LendingPoolConfigurator extends Contract {
     unfreezeReserve(_reserve: string): Promise<BigNumber>;
 
     updateAToken(_reserve: string, _implementation: string): Promise<BigNumber>;
+
+    updateStableDebtToken(
+      _reserve: string,
+      _implementation: string
+    ): Promise<BigNumber>;
+
+    updateVariableDebtToken(
+      _reserve: string,
+      _implementation: string
+    ): Promise<BigNumber>;
   };
 }
