@@ -68,16 +68,18 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 _balanceIncrease
   );
 
-  constructor(address _pool, address _underlyingAsset)
-    public
-    DebtTokenBase(_pool, _underlyingAsset)
-  {}
+  constructor(
+    address _pool,
+    address _underlyingAsset,
+    string memory _name,
+    string memory _symbol
+  ) public DebtTokenBase(_pool, _underlyingAsset, _name, _symbol) {}
 
   /**
    * @dev gets the revision of the stable debt token implementation
    * @return the debt token implementation revision
    **/
-  function getRevision() internal override pure returns(uint256) {
+  function getRevision() internal virtual override pure returns (uint256) {
     return DEBT_TOKEN_REVISION;
   }
 

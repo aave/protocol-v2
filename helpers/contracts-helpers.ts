@@ -256,13 +256,14 @@ export const deployDefaultReserveInterestRateStrategy = async ([
 export const deployStableDebtToken = async ([
   name,
   symbol,
-  decimals,
   underlyingAsset,
   poolAddress,
 ]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
     poolAddress,
     underlyingAsset,
+    name, 
+    symbol
   ]);
 
   return token;
@@ -271,13 +272,14 @@ export const deployStableDebtToken = async ([
 export const deployVariableDebtToken = async ([
   name,
   symbol,
-  decimals,
   underlyingAsset,
   poolAddress,
 ]: [string, string, string, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
     poolAddress,
     underlyingAsset,
+    name, 
+    symbol
   ]);
 
   return token;

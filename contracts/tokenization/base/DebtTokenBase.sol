@@ -6,7 +6,9 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {LendingPool} from '../../lendingpool/LendingPool.sol';
-import {VersionedInitializable} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {
+  VersionedInitializable
+} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 
 /**
  * @title contract DebtTokenBase
@@ -36,10 +38,18 @@ abstract contract DebtTokenBase is IERC20, VersionedInitializable {
     _;
   }
 
-  constructor(address _pool, address _underlyingAssetAddress) public {
+  constructor(
+    address _pool,
+    address _underlyingAssetAddress,
+    string memory _name,
+    string memory _symbol
+  ) public {
     pool = LendingPool(payable(_pool));
-    underlyingAssetAddress = _underlyingAssetAddress; 
+    underlyingAssetAddress = _underlyingAssetAddress;
+    name = _name;
+    symbol = _symbol;
   }
+
   /**
    * @dev initializes the debt token.
    * @param _name the name of the token

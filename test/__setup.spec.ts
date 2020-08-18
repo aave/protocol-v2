@@ -224,7 +224,6 @@ const initReserves = async (
       const stableDebtToken = await deployStableDebtToken([
         `Aave stable debt bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
         `stableDebt${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
-        reserveDecimals,
         tokenAddress,
         lendingPool.address,
       ]);
@@ -232,7 +231,6 @@ const initReserves = async (
       const variableDebtToken = await deployVariableDebtToken([
         `Aave variable debt bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
         `variableDebt${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
-        reserveDecimals,
         tokenAddress,
         lendingPool.address,
       ]);
