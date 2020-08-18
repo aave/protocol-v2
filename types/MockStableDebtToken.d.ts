@@ -10,7 +10,7 @@ import {
   TypedFunctionDescription
 } from ".";
 
-interface StableDebtTokenInterface extends Interface {
+interface MockStableDebtTokenInterface extends Interface {
   functions: {
     DEBT_TOKEN_REVISION: TypedFunctionDescription<{ encode([]: []): string }>;
 
@@ -133,21 +133,21 @@ interface StableDebtTokenInterface extends Interface {
   };
 }
 
-export class StableDebtToken extends Contract {
-  connect(signerOrProvider: Signer | Provider | string): StableDebtToken;
-  attach(addressOrName: string): StableDebtToken;
-  deployed(): Promise<StableDebtToken>;
+export class MockStableDebtToken extends Contract {
+  connect(signerOrProvider: Signer | Provider | string): MockStableDebtToken;
+  attach(addressOrName: string): MockStableDebtToken;
+  deployed(): Promise<MockStableDebtToken>;
 
-  on(event: EventFilter | string, listener: Listener): StableDebtToken;
-  once(event: EventFilter | string, listener: Listener): StableDebtToken;
+  on(event: EventFilter | string, listener: Listener): MockStableDebtToken;
+  once(event: EventFilter | string, listener: Listener): MockStableDebtToken;
   addListener(
     eventName: EventFilter | string,
     listener: Listener
-  ): StableDebtToken;
-  removeAllListeners(eventName: EventFilter | string): StableDebtToken;
-  removeListener(eventName: any, listener: Listener): StableDebtToken;
+  ): MockStableDebtToken;
+  removeAllListeners(eventName: EventFilter | string): MockStableDebtToken;
+  removeListener(eventName: any, listener: Listener): MockStableDebtToken;
 
-  interface: StableDebtTokenInterface;
+  interface: MockStableDebtTokenInterface;
 
   functions: {
     DEBT_TOKEN_REVISION(): Promise<BigNumber>;

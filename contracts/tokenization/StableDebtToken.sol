@@ -24,6 +24,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   using WadRayMath for uint256;
   using Address for address;
 
+  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
   struct UserData {
     uint256 currentRate;
     uint40 lastUpdateTimestamp;
@@ -67,10 +68,20 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 _balanceIncrease
   );
 
-  constructor(address _pool, address _underlyingAsset)
-    public
-    DebtTokenBase(_pool, _underlyingAsset)
-  {}
+  constructor(
+    address _pool,
+    address _underlyingAsset,
+    string memory _name,
+    string memory _symbol
+  ) public DebtTokenBase(_pool, _underlyingAsset, _name, _symbol) {}
+
+  /**
+   * @dev gets the revision of the stable debt token implementation
+   * @return the debt token implementation revision
+   **/
+  function getRevision() internal virtual override pure returns (uint256) {
+    return DEBT_TOKEN_REVISION;
+  }
 
   /**
    * @dev returns the average stable rate across all the stable rate debt

@@ -10,7 +10,7 @@ import {
   TypedFunctionDescription
 } from ".";
 
-interface StableDebtTokenInterface extends Interface {
+interface MockVariableDebtTokenInterface extends Interface {
   functions: {
     DEBT_TOKEN_REVISION: TypedFunctionDescription<{ encode([]: []): string }>;
 
@@ -22,9 +22,7 @@ interface StableDebtTokenInterface extends Interface {
       encode([spender, _amount]: [string, BigNumberish]): string;
     }>;
 
-    balanceOf: TypedFunctionDescription<{
-      encode([account]: [string]): string;
-    }>;
+    balanceOf: TypedFunctionDescription<{ encode([_user]: [string]): string }>;
 
     burn: TypedFunctionDescription<{
       encode([_user, _amount]: [string, BigNumberish]): string;
@@ -36,13 +34,7 @@ interface StableDebtTokenInterface extends Interface {
       encode([spender, subtractedValue]: [string, BigNumberish]): string;
     }>;
 
-    getAverageStableRate: TypedFunctionDescription<{ encode([]: []): string }>;
-
-    getUserLastUpdated: TypedFunctionDescription<{
-      encode([_user]: [string]): string;
-    }>;
-
-    getUserStableRate: TypedFunctionDescription<{
+    getUserIndex: TypedFunctionDescription<{
       encode([_user]: [string]): string;
     }>;
 
@@ -59,11 +51,7 @@ interface StableDebtTokenInterface extends Interface {
     }>;
 
     mint: TypedFunctionDescription<{
-      encode([_user, _amount, _rate]: [
-        string,
-        BigNumberish,
-        BigNumberish
-      ]): string;
+      encode([_user, _amount]: [string, BigNumberish]): string;
     }>;
 
     name: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -116,8 +104,9 @@ interface StableDebtTokenInterface extends Interface {
         _amount,
         _previousBalance,
         _currentBalance,
-        _balanceIncrease
-      ]: [null, null, null, null, null]): string[];
+        _balanceIncrease,
+        _index
+      ]: [null, null, null, null, null, null]): string[];
     }>;
 
     mintDebt: TypedEventDescription<{
@@ -127,27 +116,27 @@ interface StableDebtTokenInterface extends Interface {
         _previousBalance,
         _currentBalance,
         _balanceIncrease,
-        _newRate
+        _index
       ]: [null, null, null, null, null, null]): string[];
     }>;
   };
 }
 
-export class StableDebtToken extends Contract {
-  connect(signerOrProvider: Signer | Provider | string): StableDebtToken;
-  attach(addressOrName: string): StableDebtToken;
-  deployed(): Promise<StableDebtToken>;
+export class MockVariableDebtToken extends Contract {
+  connect(signerOrProvider: Signer | Provider | string): MockVariableDebtToken;
+  attach(addressOrName: string): MockVariableDebtToken;
+  deployed(): Promise<MockVariableDebtToken>;
 
-  on(event: EventFilter | string, listener: Listener): StableDebtToken;
-  once(event: EventFilter | string, listener: Listener): StableDebtToken;
+  on(event: EventFilter | string, listener: Listener): MockVariableDebtToken;
+  once(event: EventFilter | string, listener: Listener): MockVariableDebtToken;
   addListener(
     eventName: EventFilter | string,
     listener: Listener
-  ): StableDebtToken;
-  removeAllListeners(eventName: EventFilter | string): StableDebtToken;
-  removeListener(eventName: any, listener: Listener): StableDebtToken;
+  ): MockVariableDebtToken;
+  removeAllListeners(eventName: EventFilter | string): MockVariableDebtToken;
+  removeListener(eventName: any, listener: Listener): MockVariableDebtToken;
 
-  interface: StableDebtTokenInterface;
+  interface: MockVariableDebtTokenInterface;
 
   functions: {
     DEBT_TOKEN_REVISION(): Promise<BigNumber>;
@@ -160,7 +149,7 @@ export class StableDebtToken extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    balanceOf(account: string): Promise<BigNumber>;
+    balanceOf(_user: string): Promise<BigNumber>;
 
     burn(
       _user: string,
@@ -176,11 +165,7 @@ export class StableDebtToken extends Contract {
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
-    getAverageStableRate(): Promise<BigNumber>;
-
-    getUserLastUpdated(_user: string): Promise<number>;
-
-    getUserStableRate(_user: string): Promise<BigNumber>;
+    getUserIndex(_user: string): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,
@@ -198,7 +183,6 @@ export class StableDebtToken extends Contract {
     mint(
       _user: string,
       _amount: BigNumberish,
-      _rate: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
 
@@ -236,7 +220,7 @@ export class StableDebtToken extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  balanceOf(account: string): Promise<BigNumber>;
+  balanceOf(_user: string): Promise<BigNumber>;
 
   burn(
     _user: string,
@@ -252,11 +236,7 @@ export class StableDebtToken extends Contract {
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
-  getAverageStableRate(): Promise<BigNumber>;
-
-  getUserLastUpdated(_user: string): Promise<number>;
-
-  getUserStableRate(_user: string): Promise<BigNumber>;
+  getUserIndex(_user: string): Promise<BigNumber>;
 
   increaseAllowance(
     spender: string,
@@ -274,7 +254,6 @@ export class StableDebtToken extends Contract {
   mint(
     _user: string,
     _amount: BigNumberish,
-    _rate: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
 
@@ -315,7 +294,8 @@ export class StableDebtToken extends Contract {
       _amount: null,
       _previousBalance: null,
       _currentBalance: null,
-      _balanceIncrease: null
+      _balanceIncrease: null,
+      _index: null
     ): EventFilter;
 
     mintDebt(
@@ -324,7 +304,7 @@ export class StableDebtToken extends Contract {
       _previousBalance: null,
       _currentBalance: null,
       _balanceIncrease: null,
-      _newRate: null
+      _index: null
     ): EventFilter;
   };
 
@@ -335,7 +315,7 @@ export class StableDebtToken extends Contract {
 
     approve(spender: string, _amount: BigNumberish): Promise<BigNumber>;
 
-    balanceOf(account: string): Promise<BigNumber>;
+    balanceOf(_user: string): Promise<BigNumber>;
 
     burn(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
@@ -346,11 +326,7 @@ export class StableDebtToken extends Contract {
       subtractedValue: BigNumberish
     ): Promise<BigNumber>;
 
-    getAverageStableRate(): Promise<BigNumber>;
-
-    getUserLastUpdated(_user: string): Promise<BigNumber>;
-
-    getUserStableRate(_user: string): Promise<BigNumber>;
+    getUserIndex(_user: string): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,
@@ -363,11 +339,7 @@ export class StableDebtToken extends Contract {
       _symbol: string
     ): Promise<BigNumber>;
 
-    mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish
-    ): Promise<BigNumber>;
+    mint(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
     name(): Promise<BigNumber>;
 

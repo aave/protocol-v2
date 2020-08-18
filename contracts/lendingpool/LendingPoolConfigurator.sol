@@ -32,6 +32,8 @@ contract LendingPoolConfigurator is VersionedInitializable {
   event ReserveInitialized(
     address indexed _reserve,
     address indexed _aToken,
+    address _stableDebtToken,
+    address _variableDebtToken,
     address _interestRateStrategyAddress
   );
 
@@ -139,6 +141,32 @@ contract LendingPoolConfigurator is VersionedInitializable {
    **/
   event ReserveInterestRateStrategyChanged(address _reserve, address _strategy);
 
+
+  /**
+   * @dev emitted when an aToken implementation is upgraded
+   * @param _reserve the address of the reserve
+   * @param _proxy the aToken proxy address
+   * @param _implementation the new aToken implementation
+   **/
+  event ATokenUpgraded(address _reserve, address _proxy, address _implementation);
+
+    /**
+   * @dev emitted when the implementation of a stable debt token is upgraded
+   * @param _reserve the address of the reserve
+   * @param _proxy the stable debt token proxy address
+   * @param _implementation the new aToken implementation
+   **/
+  event StableDebtTokenUpgraded(address _reserve, address _proxy, address _implementation);
+
+    /**
+   * @dev emitted when the implementation of a variable debt token is upgraded
+   * @param _reserve the address of the reserve
+   * @param _proxy the variable debt token proxy address
+   * @param _implementation the new aToken implementation
+   **/
+  event VariableDebtTokenUpgraded(address _reserve, address _proxy, address _implementation);
+
+
   LendingPoolAddressesProvider public poolAddressesProvider;
   LendingPool public pool;
 
@@ -168,36 +196,45 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev initializes a reserve
    * @param _reserve the address of the reserve to be initialized
    * @param _aTokenImpl  the address of the aToken contract implementation
-   * @param _stableDebtTokenAddress the address of the stable debt token contract
-   * @param _variableDebtTokenAddress the address of the variable debt token contract
+   * @param _stableDebtTokenImpl the address of the stable debt token contract
+   * @param _variableDebtTokenImpl the address of the variable debt token contract
    * @param _underlyingAssetDecimals the decimals of the reserve underlying asset
    * @param _interestRateStrategyAddress the address of the interest rate strategy contract for this reserve
    **/
   function initReserve(
     address _reserve,
     address _aTokenImpl,
-    address _stableDebtTokenAddress,
-    address _variableDebtTokenAddress,
+    address _stableDebtTokenImpl,
+    address _variableDebtTokenImpl,
     uint8 _underlyingAssetDecimals,
     address _interestRateStrategyAddress
   ) public onlyLendingPoolManager {
-    
-    InitializableAdminUpgradeabilityProxy aTokenProxy = new InitializableAdminUpgradeabilityProxy();
-
-    bytes memory params = abi.encodeWithSignature(
-      'initialize(uint8,string,string)',
+    address aTokenProxyAddress = _initWithProxy(
+      _aTokenImpl,
       _underlyingAssetDecimals,
       IERC20Detailed(_aTokenImpl).name(),
       IERC20Detailed(_aTokenImpl).symbol()
     );
 
-    aTokenProxy.initialize(_aTokenImpl, address(this), params);
+    address stableDebtTokenProxyAddress = _initWithProxy(
+      _stableDebtTokenImpl,
+      _underlyingAssetDecimals,
+      IERC20Detailed(_stableDebtTokenImpl).name(),
+      IERC20Detailed(_stableDebtTokenImpl).symbol()
+    );
+
+    address variableDebtTokenProxyAddress = _initWithProxy(
+      _variableDebtTokenImpl,
+      _underlyingAssetDecimals,
+      IERC20Detailed(_variableDebtTokenImpl).name(),
+      IERC20Detailed(_variableDebtTokenImpl).symbol()
+    );
 
     pool.initReserve(
       _reserve,
-      address(aTokenProxy),
-      _stableDebtTokenAddress,
-      _variableDebtTokenAddress,
+      aTokenProxyAddress,
+      stableDebtTokenProxyAddress,
+      variableDebtTokenProxyAddress,
       _interestRateStrategyAddress
     );
 
@@ -210,7 +247,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     pool.setConfiguration(_reserve, currentConfig.data);
 
-    emit ReserveInitialized(_reserve, address(aTokenProxy), _interestRateStrategyAddress);
+    emit ReserveInitialized(
+      _reserve,
+      aTokenProxyAddress,
+      stableDebtTokenProxyAddress,
+      variableDebtTokenProxyAddress,
+      _interestRateStrategyAddress
+    );
   }
 
   /**
@@ -223,18 +266,64 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     (uint256 decimals, , , , , , , , , ) = pool.getReserveConfigurationData(_reserve);
 
-    InitializableAdminUpgradeabilityProxy aTokenProxy = InitializableAdminUpgradeabilityProxy(
-      payable(aTokenAddress)
-    );
-
-    bytes memory params = abi.encodeWithSignature(
-      'initialize(uint8,string,string)',
+    _upgradeImplementation(
+      aTokenAddress,
+      _implementation,
       uint8(decimals),
       IERC20Detailed(_implementation).name(),
       IERC20Detailed(_implementation).symbol()
     );
 
-    aTokenProxy.upgradeToAndCall(_implementation, params);
+    emit ATokenUpgraded(_reserve, aTokenAddress, _implementation);
+  }
+
+  /**
+   * @dev updates the stable debt token implementation for the _reserve
+   * @param _reserve the address of the reserve to be updated
+   * @param _implementation the address of the new aToken implementation
+   **/
+  function updateStableDebtToken(address _reserve, address _implementation)
+    external
+    onlyLendingPoolManager
+  {
+    (, address stableDebtToken, ) = pool.getReserveTokensAddresses(_reserve);
+
+    (uint256 decimals, , , , , , , , , ) = pool.getReserveConfigurationData(_reserve);
+
+    _upgradeImplementation(
+      stableDebtToken,
+      _implementation,
+      uint8(decimals),
+      IERC20Detailed(_implementation).name(),
+      IERC20Detailed(_implementation).symbol()
+    );
+
+    emit StableDebtTokenUpgraded(_reserve, stableDebtToken, _implementation);
+
+  }
+
+  /**
+   * @dev updates the variable debt token implementation for the _reserve
+   * @param _reserve the address of the reserve to be updated
+   * @param _implementation the address of the new aToken implementation
+   **/
+  function updateVariableDebtToken(address _reserve, address _implementation)
+    external
+    onlyLendingPoolManager
+  {
+    (, , address variableDebtToken) = pool.getReserveTokensAddresses(_reserve);
+
+    (uint256 decimals, , , , , , , , , ) = pool.getReserveConfigurationData(_reserve);
+
+    _upgradeImplementation(
+      variableDebtToken,
+      _implementation,
+      uint8(decimals),
+      IERC20Detailed(_implementation).name(),
+      IERC20Detailed(_implementation).symbol()
+    );
+
+    emit VariableDebtTokenUpgraded(_reserve, variableDebtToken, _implementation);
   }
 
   /**
@@ -487,5 +576,50 @@ contract LendingPoolConfigurator is VersionedInitializable {
   {
     pool.setReserveInterestRateStrategyAddress(_reserve, _rateStrategyAddress);
     emit ReserveInterestRateStrategyChanged(_reserve, _rateStrategyAddress);
+  }
+
+  /**
+   *
+   *
+   **/
+  function _initWithProxy(
+    address _implementation,
+    uint8 _decimals,
+    string memory _name,
+    string memory _symbol
+  ) internal returns (address) {
+    InitializableAdminUpgradeabilityProxy proxy = new InitializableAdminUpgradeabilityProxy();
+
+    bytes memory params = abi.encodeWithSignature(
+      'initialize(uint8,string,string)',
+      _decimals,
+      _name,
+      _symbol
+    );
+
+    proxy.initialize(_implementation, address(this), params);
+
+    return address(proxy);
+  }
+
+  function _upgradeImplementation(
+    address _proxy,
+    address _implementation,
+    uint8 _decimals,
+    string memory _name,
+    string memory _symbol
+  ) internal returns (address) {
+    InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(
+      payable(_proxy)
+    );
+
+    bytes memory params = abi.encodeWithSignature(
+      'initialize(uint8,string,string)',
+      _decimals,
+      _name,
+      _symbol
+    );
+
+    proxy.upgradeToAndCall(_implementation, params);
   }
 }

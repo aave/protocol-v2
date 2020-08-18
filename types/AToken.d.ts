@@ -69,7 +69,7 @@ interface ATokenInterface extends Interface {
     }>;
 
     mintOnDeposit: TypedFunctionDescription<{
-      encode([_account, _amount]: [string, BigNumberish]): string;
+      encode([_user, _amount]: [string, BigNumberish]): string;
     }>;
 
     name: TypedFunctionDescription<{ encode([]: []): string }>;
@@ -278,7 +278,7 @@ export class AToken extends Contract {
     isTransferAllowed(_user: string, _amount: BigNumberish): Promise<boolean>;
 
     mintOnDeposit(
-      _account: string,
+      _user: string,
       _amount: BigNumberish,
       overrides?: TransactionOverrides
     ): Promise<ContractTransaction>;
@@ -391,7 +391,7 @@ export class AToken extends Contract {
   isTransferAllowed(_user: string, _amount: BigNumberish): Promise<boolean>;
 
   mintOnDeposit(
-    _account: string,
+    _user: string,
     _amount: BigNumberish,
     overrides?: TransactionOverrides
   ): Promise<ContractTransaction>;
@@ -554,7 +554,7 @@ export class AToken extends Contract {
 
     isTransferAllowed(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
-    mintOnDeposit(_account: string, _amount: BigNumberish): Promise<BigNumber>;
+    mintOnDeposit(_user: string, _amount: BigNumberish): Promise<BigNumber>;
 
     name(): Promise<BigNumber>;
 
