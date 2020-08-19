@@ -36,12 +36,14 @@ library ValidationLogic {
    * @param _amount the amount to be deposited
    */
   function validateDeposit(ReserveLogic.ReserveData storage _reserve, uint256 _amount)
-    external
+    internal
     view
   {
     (bool isActive, bool isFreezed, , ) = _reserve.configuration.getFlags();
 
     require(_amount > 0, 'Amount must be greater than 0');
+    require(isActive, 'Action requires an active reserve');
+    require(!isFreezed, 'Action requires an unfreezed reserve');
   }
 
   /**
