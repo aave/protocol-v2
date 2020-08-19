@@ -11,7 +11,6 @@ import {UserConfiguration} from './UserConfiguration.sol';
 import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
 import '../interfaces/IPriceOracleGetter.sol';
-import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 import '@nomiclabs/buidler/console.sol';
 
 /**
@@ -60,8 +59,10 @@ library GenericLogic {
     address[] calldata _reserves,
     address _oracle
   ) external view returns (bool) {
-
-    if (!_userConfig.isBorrowingAny() || !_userConfig.isUsingAsCollateral(_reservesData[_reserve].index)) {
+    if (
+      !_userConfig.isBorrowingAny() ||
+      !_userConfig.isUsingAsCollateral(_reservesData[_reserve].index)
+    ) {
       return true;
     }
 

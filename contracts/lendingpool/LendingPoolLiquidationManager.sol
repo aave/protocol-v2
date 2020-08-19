@@ -39,7 +39,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using UserConfiguration for UserConfiguration.Map;
 
   LendingPoolAddressesProvider public addressesProvider;
-  IFeeProvider feeProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;

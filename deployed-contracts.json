@@ -146,7 +146,8 @@
   },
   "TokenDistributor": {
     "buidlerevm": {
-      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
+      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
       "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
@@ -164,7 +165,7 @@
   },
   "MockFlashLoanReceiver": {
     "buidlerevm": {
-      "address": "0x3bDA11B584dDff7F66E0cFe1da1562c92B45db60"
+      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10"
     },
     "localhost": {
       "address": "0x3bDA11B584dDff7F66E0cFe1da1562c92B45db60"
@@ -172,7 +173,7 @@
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0x392E5355a0e88Bd394F717227c752670fb3a8020",
+      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -412,7 +413,7 @@
   },
   "AaveProtocolTestHelpers": {
     "buidlerevm": {
-      "address": "0x3b050AFb4ac4ACE646b31fF3639C1CD43aC31460"
+      "address": "0xC6bA6049F86d528698B5924B8fC2FE7289D38578"
     },
     "localhost": {
       "address": "0x3b050AFb4ac4ACE646b31fF3639C1CD43aC31460"
@@ -450,7 +451,7 @@
   },
   "MockAToken": {
     "buidlerevm": {
-      "address": "0xD4B5A49d5bA242572ec3f4A8E52B97a10AF2543a",
+      "address": "0x3b050AFb4ac4ACE646b31fF3639C1CD43aC31460",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -470,7 +471,7 @@
   },
   "MockStableDebtToken": {
     "buidlerevm": {
-      "address": "0x6aaF7e94e099291a94ed8E245c90f4766CE9bB7C",
+      "address": "0xEBAB67ee3ef604D5c250A53b4b8fcbBC6ec3007C",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -480,7 +481,7 @@
   },
   "MockVariableDebtToken": {
     "buidlerevm": {
-      "address": "0x40A939911b662656C0EE71c19B954DB1911Dc8e3",
+      "address": "0xBE36BE5680244Ae1A6F983E4A6f6E1c142cdAbe3",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {

@@ -5,7 +5,7 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {MathUtils} from './MathUtils.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {SafeERC20}  from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 
@@ -227,8 +227,7 @@ library ReserveLogic {
     ReserveData storage _reserve,
     address _reserveAddress,
     uint256 _availableLiquidityBefore,
-    uint256 _income,
-    uint256 _protocolFee
+    uint256 _income
   ) external {
     //compounding the cumulated interest
     _reserve.updateCumulativeIndexesAndTimestamp();
@@ -252,8 +251,7 @@ library ReserveLogic {
     view
     returns (uint256)
   {
-    return
-      IERC20(_reserveAddress).balanceOf(address(this)).add(_reserve.getTotalBorrows());
+    return IERC20(_reserveAddress).balanceOf(address(this)).add(_reserve.getTotalBorrows());
   }
 
   /**

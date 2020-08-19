@@ -25,7 +25,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   event PriceOracleUpdated(address indexed newAddress);
   event LendingRateOracleUpdated(address indexed newAddress);
   event FeeProviderUpdated(address indexed newAddress);
-  event TokenDistributorUpdated(address indexed newAddress);
 
   event ProxyCreated(bytes32 id, address indexed newAddress);
 
@@ -144,15 +143,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function setLendingRateOracle(address lendingRateOracle) external override onlyOwner {
     _addresses[LENDING_RATE_ORACLE] = lendingRateOracle;
     emit LendingRateOracleUpdated(lendingRateOracle);
-  }
-
-  function getTokenDistributor() external override view returns (address) {
-    return _addresses[TOKEN_DISTRIBUTOR];
-  }
-
-  function setTokenDistributor(address tokenDistributor) external override onlyOwner {
-    _addresses[TOKEN_DISTRIBUTOR] = tokenDistributor;
-    emit TokenDistributorUpdated(tokenDistributor);
   }
 
   /**

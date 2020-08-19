@@ -15,10 +15,6 @@ interface ILendingPoolAddressesProvider {
 
   function setLendingPoolConfiguratorImpl(address configurator) external;
 
-  function getTokenDistributor() external view returns (address);
-
-  function setTokenDistributor(address tokenDistributor) external;
-
   function getFeeProvider() external view returns (address);
 
   function setFeeProviderImpl(address feeProvider) external;
