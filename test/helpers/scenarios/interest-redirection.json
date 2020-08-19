@@ -104,7 +104,7 @@
       ]
     },
     {
-      "description": "User 1 borrows another 100 DAI, repay the whole amount. Users 0 and User 2 redeem",
+      "description": "User 1 borrows another 100 DAI, repay the whole amount. Users 0 and User 2 withdraw",
       "actions": [
         {
           "name": "borrow",
@@ -146,7 +146,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -155,7 +155,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -166,7 +166,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 0 redirects interest back to himself, user 1 borrows another 100 DAI and after another year repays the whole amount. Users 0 and User 2 redeem",
+      "description": "User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 0 redirects interest back to himself, user 1 borrows another 100 DAI and after another year repays the whole amount. Users 0 and User 2 withdraw",
       "actions": [
         {
           "name": "deposit",
@@ -246,7 +246,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -255,7 +255,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -266,7 +266,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 2 redirects interest to user 3. user 1 borrows another 100 DAI, user 0 deposits another 100 DAI. User 1 repays the whole amount. Users 0, 2 first 1 DAI, then everything. User 3 redeems",
+      "description": "User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 2 redirects interest to user 3. user 1 borrows another 100 DAI, user 0 deposits another 100 DAI. User 1 repays the whole amount. Users 0, 2 first 1 DAI, then everything. User 3 withdraws",
       "actions": [
         {
           "name": "deposit",
@@ -355,7 +355,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "1",
@@ -364,7 +364,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "1",
@@ -373,7 +373,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -382,7 +382,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -391,7 +391,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",

@@ -24,14 +24,15 @@ contract AToken is VersionedInitializable, ERC20 {
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
   /**
-   * @dev emitted after the redeem action
+   * @dev emitted after aTokens are burned
    * @param _from the address performing the redeem
    * @param _value the amount to be redeemed
    * @param _fromBalanceIncrease the cumulated balance since the last update of the user
    * @param _fromIndex the last index of the user
    **/
-  event BurnOnWithdraw(
+  event Burn(
     address indexed _from,
+    address indexed _target,
     uint256 _value,
     uint256 _fromBalanceIncrease,
     uint256 _fromIndex
@@ -44,22 +45,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _fromBalanceIncrease the cumulated balance since the last update of the user
    * @param _fromIndex the last index of the user
    **/
-  event MintOnDeposit(
-    address indexed _from,
-    uint256 _value,
-    uint256 _fromBalanceIncrease,
-    uint256 _fromIndex
-  );
-
-  /**
-   * @dev emitted during the liquidation action, when the liquidator reclaims the underlying
-   * asset
-   * @param _from the address from which the tokens are being burned
-   * @param _value the amount to be burned
-   * @param _fromBalanceIncrease the cumulated balance since the last update of the user
-   * @param _fromIndex the last index of the user
-   **/
-  event BurnOnLiquidation(
+  event Mint(
     address indexed _from,
     uint256 _value,
     uint256 _fromBalanceIncrease,
@@ -216,10 +202,15 @@ contract AToken is VersionedInitializable, ERC20 {
   }
 
   /**
-   * @dev redeems aToken for the underlying asset
-   * @param _amount the amount being redeemed
+   * @dev burns the aTokens and sends the equivalent amount of underlying to the target.
+   * only lending pools can call this function
+   * @param _amount the amount being burned
    **/
-  function burnOnWithdraw(address _user, uint256 _amount) external onlyLendingPool {
+  function burn(
+    address _user,
+    address _underlyingTarget,
+    uint256 _amount
+  ) external onlyLendingPool {
     //cumulates the balance of the user
     (, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
@@ -244,19 +235,19 @@ contract AToken is VersionedInitializable, ERC20 {
       userIndex = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
     }
 
-    //transfers the underlying to the user
-    ERC20(underlyingAssetAddress).safeTransfer(_user, _amount);
+    //transfers the underlying to the target
+    ERC20(underlyingAssetAddress).safeTransfer(_underlyingTarget, _amount);
 
-    emit BurnOnWithdraw(msg.sender, _amount, balanceIncrease, userIndex);
+    emit Burn(msg.sender, _underlyingTarget, _amount, balanceIncrease, userIndex);
   }
 
   /**
-   * @dev mints token in the event of users depositing the underlying asset into the lending pool
+   * @dev mints aTokens to _user
    * only lending pools can call this function
    * @param _user the address receiving the minted tokens
    * @param _amount the amount of tokens to mint
    */
-  function mintOnDeposit(address _user, uint256 _amount) external onlyLendingPool {
+  function mint(address _user, uint256 _amount) external onlyLendingPool {
     //cumulates the balance of the user
     (, , uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
@@ -271,36 +262,7 @@ contract AToken is VersionedInitializable, ERC20 {
     //mint an equivalent amount of tokens to cover the new deposit
     _mint(_user, _amount.add(balanceIncrease));
 
-    emit MintOnDeposit(_user, _amount, balanceIncrease, index);
-  }
-
-  /**
-   * @dev burns token in the event of a borrow being liquidated, in case the liquidators reclaims the underlying asset
-   * Transfer of the liquidated asset is executed by the lending pool contract.
-   * only lending pools can call this function
-   * @param _account the address from which burn the aTokens
-   * @param _value the amount to burn
-   **/
-  function burnOnLiquidation(address _account, uint256 _value) external onlyLendingPool {
-    //cumulates the balance of the user being liquidated
-    (, uint256 accountBalance, uint256 balanceIncrease, uint256 index) = cumulateBalanceInternal(
-      _account
-    );
-
-    //adds the accrued interest and substracts the burned amount to
-    //the redirected balance
-    updateRedirectedBalanceOfRedirectionAddressInternal(_account, balanceIncrease, _value);
-
-    //burns the requested amount of tokens
-    _burn(_account, _value);
-
-    bool userIndexReset = false;
-    //reset the user data if the remaining balance is 0
-    if (accountBalance.sub(_value) == 0) {
-      userIndexReset = resetDataOnZeroBalanceInternal(_account);
-    }
-
-    emit BurnOnLiquidation(_account, _value, balanceIncrease, userIndexReset ? 0 : index);
+    emit Mint(_user, _amount, balanceIncrease, index);
   }
 
   /**

@@ -277,7 +277,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
-    aToken.mintOnDeposit(msg.sender, _amount);
+    aToken.mint(msg.sender, _amount);
 
     //transfer to the aToken contract
     IERC20(_reserve).safeTransferFrom(msg.sender, address(aToken), _amount);
@@ -287,8 +287,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   }
 
   /**
-   * @dev Redeems the underlying amount of assets requested by _user.
-   * This function is executed by the overlying aToken contract in response to a redeem action.
+   * @dev withdraws the assets of _user.
    * @param _reserve the address of the reserve
    * @param _amount the underlying amount to be redeemed
    **/
@@ -325,7 +324,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       usersConfig[msg.sender].setUsingAsCollateral(reserve.index, false);
     }
 
-    aToken.burnOnWithdraw(msg.sender, _amount);
+    aToken.burn(msg.sender, msg.sender, amountToWithdraw);
 
     //solium-disable-next-line
     emit Withdraw(_reserve, msg.sender, _amount, block.timestamp);

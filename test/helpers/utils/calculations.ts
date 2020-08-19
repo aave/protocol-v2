@@ -57,7 +57,7 @@ export const calcExpectedUserDataAfterDeposit = (
   if (userDataBeforeAction.currentATokenBalance.eq(0)) {
     expectedUserData.usageAsCollateralEnabled = true;
   } else {
-    //if user is redeeming everything, usageAsCollateralEnabled must be false
+    //if the user is withdrawing everything, usageAsCollateralEnabled must be false
     if (expectedUserData.currentATokenBalance.eq(0)) {
       expectedUserData.usageAsCollateralEnabled = false;
     } else {
@@ -115,8 +115,8 @@ export const calcExpectedUserDataAfterDeposit = (
   return expectedUserData;
 };
 
-export const calcExpectedUserDataAfterRedeem = (
-  amountRedeemed: string,
+export const calcExpectedUserDataAfterWithdraw = (
+  amountWithdrawn: string,
   reserveDataBeforeAction: ReserveData,
   reserveDataAfterAction: ReserveData,
   userDataBeforeAction: UserReserveData,
@@ -132,12 +132,12 @@ export const calcExpectedUserDataAfterRedeem = (
     txTimestamp
   );
 
-  if (amountRedeemed == MAX_UINT_AMOUNT) {
-    amountRedeemed = aTokenBalance.toFixed(0);
+  if (amountWithdrawn == MAX_UINT_AMOUNT) {
+    amountWithdrawn = aTokenBalance.toFixed(0);
   }
 
   expectedUserData.principalATokenBalance = expectedUserData.currentATokenBalance = aTokenBalance.minus(
-    amountRedeemed
+    amountWithdrawn
   );
 
   expectedUserData.currentStableDebt = expectedUserData.principalStableDebt = calcExpectedStableDebtTokenBalance(
@@ -162,7 +162,7 @@ export const calcExpectedUserDataAfterRedeem = (
   if (userDataBeforeAction.currentATokenBalance.eq(0)) {
     expectedUserData.usageAsCollateralEnabled = true;
   } else {
-    //if user is redeeming everything, usageAsCollateralEnabled must be false
+    //if the user is withdrawing everything, usageAsCollateralEnabled must be false
     if (expectedUserData.currentATokenBalance.eq(0)) {
       expectedUserData.usageAsCollateralEnabled = false;
     } else {
@@ -175,9 +175,9 @@ export const calcExpectedUserDataAfterRedeem = (
   if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
     expectedUserData.walletBalance = userDataBeforeAction.walletBalance
       .minus(txCost)
-      .plus(amountRedeemed);
+      .plus(amountWithdrawn);
   } else {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountRedeemed);
+    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountWithdrawn);
   }
 
   expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
@@ -199,7 +199,7 @@ export const calcExpectedUserDataAfterRedeem = (
     expectedUserData,
     userDataBeforeAction.redirectionAddressRedirectedBalance,
     new BigNumber(0),
-    new BigNumber(amountRedeemed)
+    new BigNumber(amountWithdrawn)
   );
 
   return expectedUserData;
@@ -255,8 +255,8 @@ export const calcExpectedReserveDataAfterDeposit = (
   return expectedReserveData;
 };
 
-export const calcExpectedReserveDataAfterRedeem = (
-  amountRedeemed: string,
+export const calcExpectedReserveDataAfterWithdraw = (
+  amountWithdrawn: string,
   reserveDataBeforeAction: ReserveData,
   userDataBeforeAction: UserReserveData,
   txTimestamp: BigNumber
@@ -265,8 +265,8 @@ export const calcExpectedReserveDataAfterRedeem = (
 
   expectedReserveData.address = reserveDataBeforeAction.address;
 
-  if (amountRedeemed == MAX_UINT_AMOUNT) {
-    amountRedeemed = calcExpectedATokenBalance(
+  if (amountWithdrawn == MAX_UINT_AMOUNT) {
+    amountWithdrawn = calcExpectedATokenBalance(
       reserveDataBeforeAction,
       userDataBeforeAction,
       txTimestamp
@@ -274,11 +274,11 @@ export const calcExpectedReserveDataAfterRedeem = (
   }
 
   expectedReserveData.totalLiquidity = new BigNumber(reserveDataBeforeAction.totalLiquidity).minus(
-    amountRedeemed
+    amountWithdrawn
   );
   expectedReserveData.availableLiquidity = new BigNumber(
     reserveDataBeforeAction.availableLiquidity
-  ).minus(amountRedeemed);
+  ).minus(amountWithdrawn);
 
   expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable;
   expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
@@ -1262,10 +1262,9 @@ const calcCompoundedInterest = (
   currentTimestamp: BigNumber,
   lastUpdateTimestamp: BigNumber
 ) => {
-
   const timeDifference = currentTimestamp.minus(lastUpdateTimestamp);
 
-  if(timeDifference.eq(0)){
+  if (timeDifference.eq(0)) {
     return new BigNumber(RAY);
   }
 
@@ -1288,7 +1287,6 @@ const calcCompoundedInterest = (
     .plus(ratePerSecond.times(timeDifference))
     .plus(secondTerm)
     .plus(thirdTerm);
-      
 };
 
 const calcExpectedInterestRates = (

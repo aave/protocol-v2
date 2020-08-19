@@ -146,7 +146,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     vars.userCollateralBalance = IERC20(collateralReserve.aTokenAddress).balanceOf(_user);
 
-
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
       userConfig.isUsingAsCollateral(collateralReserve.index);
@@ -247,8 +246,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       collateralReserve.updateInterestRates(_collateral, 0, vars.maxCollateralToLiquidate);
 
       //burn the equivalent amount of atoken
-      vars.collateralAtoken.burnOnLiquidation(_user, vars.maxCollateralToLiquidate);
-      vars.collateralAtoken.transferUnderlyingTo(msg.sender, vars.maxCollateralToLiquidate);
+      vars.collateralAtoken.burn(_user, msg.sender, vars.maxCollateralToLiquidate);
     }
 
     //transfers the principal currency to the aToken
