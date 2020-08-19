@@ -40,7 +40,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
   bytes32 private constant FEE_PROVIDER = 'FEE_PROVIDER';
   bytes32 private constant WALLET_BALANCE_PROVIDER = 'WALLET_BALANCE_PROVIDER';
-  bytes32 private constant TOKEN_DISTRIBUTOR = 'TOKEN_DISTRIBUTOR';
 
   /**
    * @dev returns the address of the LendingPool proxy
