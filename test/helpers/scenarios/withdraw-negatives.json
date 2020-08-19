@@ -33,7 +33,7 @@
         },
 
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "0",
@@ -48,7 +48,7 @@
       "description": "Users 0 tries to redeem 1100 DAI from the 1000 DAI deposited (revert expected)",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "1100",
@@ -100,7 +100,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "WETH",
 

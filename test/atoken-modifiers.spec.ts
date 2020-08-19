@@ -5,16 +5,14 @@ import {ProtocolErrors} from '../helpers/types';
 makeSuite('AToken: Modifiers', (testEnv: TestEnv) => {
   const {INVALID_POOL_CALLER_MSG_1} = ProtocolErrors;
 
-  it('Tries to invoke mintOnDeposit not being the LendingPool', async () => {
+  it('Tries to invoke mint not being the LendingPool', async () => {
     const {deployer, aDai} = testEnv;
-    await expect(aDai.mintOnDeposit(deployer.address, '1')).to.be.revertedWith(
-      INVALID_POOL_CALLER_MSG_1
-    );
+    await expect(aDai.mint(deployer.address, '1')).to.be.revertedWith(INVALID_POOL_CALLER_MSG_1);
   });
 
-  it('Tries to invoke burnOnLiquidation not being the LendingPool', async () => {
+  it('Tries to invoke burn not being the LendingPool', async () => {
     const {deployer, aDai} = testEnv;
-    await expect(aDai.burnOnLiquidation(deployer.address, '1')).to.be.revertedWith(
+    await expect(aDai.burn(deployer.address, deployer.address, '1')).to.be.revertedWith(
       INVALID_POOL_CALLER_MSG_1
     );
   });

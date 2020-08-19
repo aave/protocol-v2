@@ -2,9 +2,9 @@ import BigNumber from 'bignumber.js';
 
 import {
   calcExpectedReserveDataAfterDeposit,
-  calcExpectedReserveDataAfterRedeem,
+  calcExpectedReserveDataAfterWithdraw,
   calcExpectedUserDataAfterDeposit,
-  calcExpectedUserDataAfterRedeem,
+  calcExpectedUserDataAfterWithdraw,
   calcExpectedReserveDataAfterBorrow,
   calcExpectedUserDataAfterBorrow,
   calcExpectedReserveDataAfterRepay,
@@ -206,7 +206,7 @@ export const deposit = async (
   }
 };
 
-export const redeem = async (
+export const withdraw = async (
   reserveSymbol: string,
   amount: string,
   user: SignerWithAddress,
@@ -214,6 +214,8 @@ export const redeem = async (
   testEnv: TestEnv,
   revertMessage?: string
 ) => {
+  const {pool} = testEnv;
+
   const {
     aTokenInstance,
     reserve,
@@ -221,17 +223,17 @@ export const redeem = async (
     reserveData: reserveDataBefore,
   } = await getDataBeforeAction(reserveSymbol, user.address, testEnv);
 
-  let amountToRedeem = '0';
+  let amountToWithdraw = '0';
 
   if (amount !== '-1') {
-    amountToRedeem = (await convertToCurrencyDecimals(reserve, amount)).toString();
+    amountToWithdraw = (await convertToCurrencyDecimals(reserve, amount)).toString();
   } else {
-    amountToRedeem = MAX_UINT_AMOUNT;
+    amountToWithdraw = MAX_UINT_AMOUNT;
   }
 
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await aTokenInstance.connect(user.signer).redeem(amountToRedeem)
+      await pool.connect(user.signer).withdraw(reserve, amountToWithdraw)
     );
 
     const {
@@ -242,15 +244,15 @@ export const redeem = async (
 
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
-    const expectedReserveData = calcExpectedReserveDataAfterRedeem(
-      amountToRedeem,
+    const expectedReserveData = calcExpectedReserveDataAfterWithdraw(
+      amountToWithdraw,
       reserveDataBefore,
       userDataBefore,
       txTimestamp
     );
 
-    const expectedUserData = calcExpectedUserDataAfterRedeem(
-      amountToRedeem,
+    const expectedUserData = calcExpectedUserDataAfterWithdraw(
+      amountToWithdraw,
       reserveDataBefore,
       expectedReserveData,
       userDataBefore,
@@ -259,7 +261,7 @@ export const redeem = async (
       txCost
     );
 
-    const actualAmountRedeemed = userDataBefore.currentATokenBalance.minus(
+    const actualAmountWithdrawn = userDataBefore.currentATokenBalance.minus(
       expectedUserData.currentATokenBalance
     );
 
@@ -273,7 +275,7 @@ export const redeem = async (
     //   );
     // });
   } else if (expectedResult === 'revert') {
-    await expect(aTokenInstance.connect(user.signer).redeem(amountToRedeem), revertMessage).to.be
+    await expect(pool.connect(user.signer).withdraw(reserve, amountToWithdraw), revertMessage).to.be
       .reverted;
   }
 };

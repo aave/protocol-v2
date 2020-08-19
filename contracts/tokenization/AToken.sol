@@ -4,7 +4,7 @@ pragma solidity ^0.6.8;
 import {ERC20} from './ERC20.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/WadRayMath.sol';
-import {SafeERC20}  from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -24,14 +24,15 @@ contract AToken is VersionedInitializable, ERC20 {
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
   /**
-   * @dev emitted after the redeem action
+   * @dev emitted after aTokens are burned
    * @param _from the address performing the redeem
    * @param _value the amount to be redeemed
    * @param _fromBalanceIncrease the cumulated balance since the last update of the user
    * @param _fromIndex the last index of the user
    **/
-  event Redeem(
+  event Burn(
     address indexed _from,
+    address indexed _target,
     uint256 _value,
     uint256 _fromBalanceIncrease,
     uint256 _fromIndex
@@ -44,22 +45,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _fromBalanceIncrease the cumulated balance since the last update of the user
    * @param _fromIndex the last index of the user
    **/
-  event MintOnDeposit(
-    address indexed _from,
-    uint256 _value,
-    uint256 _fromBalanceIncrease,
-    uint256 _fromIndex
-  );
-
-  /**
-   * @dev emitted during the liquidation action, when the liquidator reclaims the underlying
-   * asset
-   * @param _from the address from which the tokens are being burned
-   * @param _value the amount to be burned
-   * @param _fromBalanceIncrease the cumulated balance since the last update of the user
-   * @param _fromIndex the last index of the user
-   **/
-  event BurnOnLiquidation(
+  event Mint(
     address indexed _from,
     uint256 _value,
     uint256 _fromBalanceIncrease,
@@ -216,80 +202,58 @@ contract AToken is VersionedInitializable, ERC20 {
   }
 
   /**
-   * @dev redeems aToken for the underlying asset
-   * @param _amount the amount being redeemed
+   * @dev burns the aTokens and sends the equivalent amount of underlying to the target.
+   * only lending pools can call this function
+   * @param _amount the amount being burned
    **/
-  function redeem(uint256 _amount) external {
-    require(_amount > 0, 'Amount to redeem needs to be > 0');
-
+  function burn(
+    address _user,
+    address _underlyingTarget,
+    uint256 _amount
+  ) external onlyLendingPool {
     //cumulates the balance of the user
-    (, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(
-      msg.sender
-    );
-
-    uint256 amountToRedeem = _amount;
-
-    //if amount is equal to uint(-1), the user wants to redeem everything
-    if (_amount == UINT_MAX_VALUE) {
-      amountToRedeem = currentBalance;
-    }
-
-    require(amountToRedeem <= currentBalance, 'User cannot redeem more than the available balance');
-
-    //check that the user is allowed to redeem the amount
-    require(isTransferAllowed(msg.sender, amountToRedeem), 'Transfer cannot be allowed.');
+    (, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest,
     //and removing the amount to redeem
-    updateRedirectedBalanceOfRedirectionAddressInternal(
-      msg.sender,
-      balanceIncrease,
-      amountToRedeem
-    );
+    updateRedirectedBalanceOfRedirectionAddressInternal(_user, balanceIncrease, _amount);
 
-    if(balanceIncrease > amountToRedeem){
-      _mint(msg.sender, balanceIncrease.sub(amountToRedeem));
-    }
-    else{
-      _burn(msg.sender, amountToRedeem.sub(balanceIncrease));
+    if (balanceIncrease > _amount) {
+      _mint(_user, balanceIncrease.sub(_amount));
+    } else {
+      _burn(_user, _amount.sub(balanceIncrease));
     }
 
     uint256 userIndex = 0;
 
     //reset the user data if the remaining balance is 0
-    if (currentBalance.sub(amountToRedeem) == 0) {
-      resetDataOnZeroBalanceInternal(msg.sender);
+    if (currentBalance.sub(_amount) == 0) {
+      resetDataOnZeroBalanceInternal(_user);
     } else {
-       //updates the user index
-       userIndex = userIndexes[msg.sender] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
+      //updates the user index
+      userIndex = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
     }
 
-    // executes redeem of the underlying asset
-    pool.redeemUnderlying(
-      underlyingAssetAddress,
-      msg.sender,
-      amountToRedeem,
-      currentBalance.sub(amountToRedeem)
-    );
+    //transfers the underlying to the target
+    ERC20(underlyingAssetAddress).safeTransfer(_underlyingTarget, _amount);
 
-    emit Redeem(msg.sender, amountToRedeem, balanceIncrease, userIndex);
+    emit Burn(msg.sender, _underlyingTarget, _amount, balanceIncrease, userIndex);
   }
 
   /**
-   * @dev mints token in the event of users depositing the underlying asset into the lending pool
+   * @dev mints aTokens to _user
    * only lending pools can call this function
    * @param _user the address receiving the minted tokens
    * @param _amount the amount of tokens to mint
    */
-  function mintOnDeposit(address _user, uint256 _amount) external onlyLendingPool {
- 
+  function mint(address _user, uint256 _amount) external onlyLendingPool {
     //cumulates the balance of the user
     (, , uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
     //updates the user index
     uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
-    
+
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest
     //and the amount deposited
@@ -298,36 +262,7 @@ contract AToken is VersionedInitializable, ERC20 {
     //mint an equivalent amount of tokens to cover the new deposit
     _mint(_user, _amount.add(balanceIncrease));
 
-    emit MintOnDeposit(_user, _amount, balanceIncrease, index);
-  }
-
-  /**
-   * @dev burns token in the event of a borrow being liquidated, in case the liquidators reclaims the underlying asset
-   * Transfer of the liquidated asset is executed by the lending pool contract.
-   * only lending pools can call this function
-   * @param _account the address from which burn the aTokens
-   * @param _value the amount to burn
-   **/
-  function burnOnLiquidation(address _account, uint256 _value) external onlyLendingPool {
-    //cumulates the balance of the user being liquidated
-    (, uint256 accountBalance, uint256 balanceIncrease, uint256 index) = cumulateBalanceInternal(
-      _account
-    );
-
-    //adds the accrued interest and substracts the burned amount to
-    //the redirected balance
-    updateRedirectedBalanceOfRedirectionAddressInternal(_account, balanceIncrease, _value);
-
-    //burns the requested amount of tokens
-    _burn(_account, _value);
-
-    bool userIndexReset = false;
-    //reset the user data if the remaining balance is 0
-    if (accountBalance.sub(_value) == 0) {
-      userIndexReset = resetDataOnZeroBalanceInternal(_account);
-    }
-
-    emit BurnOnLiquidation(_account, _value, balanceIncrease, userIndexReset ? 0 : index);
+    emit Mint(_user, _amount, balanceIncrease, index);
   }
 
   /**
@@ -450,12 +385,11 @@ contract AToken is VersionedInitializable, ERC20 {
     return redirectedBalances[_user];
   }
 
-
   /**
-  * @dev calculates the increase in balance since the last user action
-  * @param _user the address of the user
-  * @return the last user principal balance, the current balance and the balance increase
-  **/
+   * @dev calculates the increase in balance since the last user action
+   * @param _user the address of the user
+   * @return the last user principal balance, the current balance and the balance increase
+   **/
   function calculateBalanceIncreaseInternal(address _user)
     internal
     returns (
@@ -473,11 +407,11 @@ contract AToken is VersionedInitializable, ERC20 {
       //calculate the accrued interest since the last accumulation
       balanceIncrease = currentBalance.sub(previousBalance);
     }
-    
+
     return (previousBalance, currentBalance, balanceIncrease);
   }
 
-    /**
+  /**
    * @dev accumulates the accrued interest of the user to the principal balance
    * @param _user the address of the user for which the interest is being accumulated
    * @return the previous principal balance, the new principal balance, the balance increase
@@ -492,7 +426,11 @@ contract AToken is VersionedInitializable, ERC20 {
       uint256
     )
   {
-    (uint256 previousBalance, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
+    (
+      uint256 previousBalance,
+      uint256 currentBalance,
+      uint256 balanceIncrease
+    ) = calculateBalanceIncreaseInternal(_user);
 
     _mint(_user, balanceIncrease);
 
@@ -500,8 +438,7 @@ contract AToken is VersionedInitializable, ERC20 {
     uint256 index = userIndexes[_user] = pool.getReserveNormalizedIncome(underlyingAssetAddress);
 
     return (previousBalance, currentBalance, balanceIncrease, index);
- 
-   }
+  }
 
   /**
    * @dev updates the redirected balance of the user. If the user is not redirecting his

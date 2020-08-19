@@ -73,13 +73,13 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   );
 
   /**
-   * @dev emitted during a redeem action.
+   * @dev emitted during a withdraw action.
    * @param _reserve the address of the reserve
    * @param _user the address of the user
-   * @param _amount the amount to be deposited
+   * @param _amount the amount to be withdrawn
    * @param _timestamp the timestamp of the action
    **/
-  event RedeemUnderlying(
+  event Withdraw(
     address indexed _reserve,
     address indexed _user,
     uint256 _amount,
@@ -277,7 +277,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
-    aToken.mintOnDeposit(msg.sender, _amount);
+    aToken.mint(msg.sender, _amount);
 
     //transfer to the aToken contract
     IERC20(_reserve).safeTransferFrom(msg.sender, address(aToken), _amount);
@@ -287,36 +287,47 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   }
 
   /**
-   * @dev Redeems the underlying amount of assets requested by _user.
-   * This function is executed by the overlying aToken contract in response to a redeem action.
+   * @dev withdraws the assets of _user.
    * @param _reserve the address of the reserve
-   * @param _user the address of the user performing the action
    * @param _amount the underlying amount to be redeemed
    **/
-  function redeemUnderlying(
-    address _reserve,
-    address payable _user,
-    uint256 _amount,
-    uint256 _aTokenBalanceAfterRedeem
-  ) external nonReentrant {
+  function withdraw(address _reserve, uint256 _amount) external nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     AToken aToken = AToken(payable(reserve.aTokenAddress));
 
-    ValidationLogic.validateRedeem(reserve, _reserve, _amount);
+    uint256 userBalance = aToken.balanceOf(msg.sender);
+
+    uint256 amountToWithdraw = _amount;
+
+    //if amount is equal to uint(-1), the user wants to redeem everything
+    if (_amount == UINT_MAX_VALUE) {
+      amountToWithdraw = userBalance;
+    }
+
+    ValidationLogic.validateWithdraw(
+      _reserve,
+      address(aToken),
+      amountToWithdraw,
+      userBalance,
+      reserves,
+      usersConfig[msg.sender],
+      reservesList,
+      addressesProvider.getPriceOracle()
+    );
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    reserve.updateInterestRates(_reserve, 0, _amount);
+    reserve.updateInterestRates(_reserve, 0, amountToWithdraw);
 
-    if (_aTokenBalanceAfterRedeem == 0) {
-      usersConfig[_user].setUsingAsCollateral(reserve.index, false);
+    if (amountToWithdraw == userBalance) {
+      usersConfig[msg.sender].setUsingAsCollateral(reserve.index, false);
     }
 
-    AToken(reserve.aTokenAddress).transferUnderlyingTo(_user, _amount);
+    aToken.burn(msg.sender, msg.sender, amountToWithdraw);
 
     //solium-disable-next-line
-    emit RedeemUnderlying(_reserve, _user, _amount, block.timestamp);
+    emit Withdraw(_reserve, msg.sender, _amount, block.timestamp);
   }
 
   /**
@@ -368,7 +379,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     reserve.updateInterestRates(_reserve, 0, _amount);
 
-    if(!userConfig.isBorrowing(reserve.index)){
+    if (!userConfig.isBorrowing(reserve.index)) {
       userConfig.setBorrowing(reserve.index, true);
     }
 
@@ -452,16 +463,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     reserve.updateInterestRates(_reserve, vars.paybackAmount, 0);
-    
-    if(vars.totalDebt.sub(vars.paybackAmount) == 0){
+
+    if (vars.totalDebt.sub(vars.paybackAmount) == 0) {
       usersConfig[_onBehalfOf].setBorrowing(reserve.index, false);
     }
 
-    IERC20(_reserve).safeTransferFrom(
-      msg.sender,
-      reserve.aTokenAddress,
-      vars.paybackAmount
-    );
+    IERC20(_reserve).safeTransferFrom(msg.sender, reserve.aTokenAddress, vars.paybackAmount);
 
     emit Repay(
       _reserve,
@@ -485,7 +492,13 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
-    ValidationLogic.validateSwapRateMode(reserve, usersConfig[msg.sender], stableDebt, variableDebt, rateMode);
+    ValidationLogic.validateSwapRateMode(
+      reserve,
+      usersConfig[msg.sender],
+      stableDebt,
+      variableDebt,
+      rateMode
+    );
 
     reserve.updateCumulativeIndexesAndTimestamp();
 

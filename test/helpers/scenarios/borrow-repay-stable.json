@@ -122,10 +122,10 @@
       ]
     },
     {
-      "description": "User 0 redeems the deposited DAI plus interest",
+      "description": "User 0 withdraws the deposited DAI plus interest",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -178,7 +178,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 WETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 redeems",
+      "description": "User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 WETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -475,7 +475,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -486,7 +486,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 2 WETH and borrow 100 DAI at stable rate first, then 100 DAI at variable rate, repays everything. User 0 redeems",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 2 WETH and borrow 100 DAI at stable rate first, then 100 DAI at variable rate, repays everything. User 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -593,7 +593,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",

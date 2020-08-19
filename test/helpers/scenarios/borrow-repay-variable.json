@@ -185,10 +185,10 @@
       ]
     },
     {
-      "description": "User 0 redeems the deposited DAI plus interest",
+      "description": "User 0 withdraws the deposited DAI plus interest",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",
@@ -199,10 +199,10 @@
       ]
     },
     {
-      "description": "User 1 redeems the collateral",
+      "description": "User 1 withdraws the collateral",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "WETH",
 
@@ -420,10 +420,10 @@
       ]
     },
     {
-      "description": "User 0 redeems the deposited WETH plus interest",
+      "description": "User 0 withdraws the deposited WETH plus interest",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "WETH",
 
@@ -435,10 +435,10 @@
       ]
     },
     {
-      "description": "User 1 redeems the collateral",
+      "description": "User 1 withdraws the collateral",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "LINK",
             "amount": "-1",
@@ -600,10 +600,10 @@
       ]
     },
     {
-      "description": "User 0 redeems the deposited USDC plus interest",
+      "description": "User 0 withdraws the deposited USDC plus interest",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "USDC",
             "amount": "-1",
@@ -614,10 +614,10 @@
       ]
     },
     {
-      "description": "User 1 redeems the collateral",
+      "description": "User 1 withdraws the collateral",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "WETH",
             "amount": "-1",
@@ -713,10 +713,10 @@
       ]
     },
     {
-      "description": "user 3 redeems the 0.1 ETH",
+      "description": "user 3 withdraws the 0.1 ETH",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "WETH",
 
@@ -813,10 +813,10 @@
       ]
     },
     {
-      "description": "user 3 redeems the 0.1 ETH",
+      "description": "user 3 withdraws the 0.1 ETH",
       "actions": [
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "WETH",
 
@@ -828,7 +828,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 6 deposits 2 WETH and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 redeems",
+      "description": "User 0 deposits 1000 DAI, user 6 deposits 2 WETH and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -946,7 +946,7 @@
           "expected": "success"
         },
         {
-          "name": "redeem",
+          "name": "withdraw",
           "args": {
             "reserve": "DAI",
             "amount": "-1",

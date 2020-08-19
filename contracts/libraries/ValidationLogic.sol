@@ -9,7 +9,7 @@ import {ReserveLogic} from './ReserveLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from './WadRayMath.sol';
 import {PercentageMath} from './PercentageMath.sol';
-import {SafeERC20}  from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 import {UserConfiguration} from './UserConfiguration.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -41,29 +41,46 @@ library ValidationLogic {
   {
     (bool isActive, bool isFreezed, , ) = _reserve.configuration.getFlags();
 
-    internalValidateReserveStateAndAmount(_reserve, _amount);
+    require(_amount > 0, 'Amount must be greater than 0');
   }
 
   /**
-   * @dev validates a redeem.
-   * @param _reserve the reserve state from which the user is redeeming
+   * @dev validates a withdraw action.
    * @param _reserveAddress the address of the reserve
-   * @param _amount the amount to be redeemed
+   * @param _aTokenAddress the address of the aToken for the reserve
+   * @param _amount the amount to be withdrawn
+   * @param _userBalance the balance of the user
    */
-  function validateRedeem(
-    ReserveLogic.ReserveData storage _reserve,
+  function validateWithdraw(
     address _reserveAddress,
-    uint256 _amount
+    address _aTokenAddress,
+    uint256 _amount,
+    uint256 _userBalance,
+    mapping(address => ReserveLogic.ReserveData) storage _reservesData,
+    UserConfiguration.Map storage _userConfig,
+    address[] calldata _reserves,
+    address _oracle
   ) external view {
-    internalValidateReserveStateAndAmount(_reserve, _amount);
+    require(_amount > 0, 'Amount must be greater than 0');
 
-    require(msg.sender == _reserve.aTokenAddress, '31');
-
-    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).balanceOf(
-      address(_reserve.aTokenAddress)
-    );
+    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).balanceOf(address(_aTokenAddress));
 
     require(currentAvailableLiquidity >= _amount, '4');
+
+    require(_amount <= _userBalance, 'User cannot withdraw more than the available balance');
+
+    require(
+      GenericLogic.balanceDecreaseAllowed(
+        _reserveAddress,
+        msg.sender,
+        _userBalance,
+        _reservesData,
+        _userConfig,
+        _reserves,
+        _oracle
+      ),
+      'Transfer cannot be allowed.'
+    );
   }
 
   struct ValidateBorrowLocalVars {
@@ -135,9 +152,7 @@ library ValidationLogic {
     );
 
     //check that the amount is available in the reserve
-    vars.availableLiquidity = IERC20(_reserveAddress).balanceOf(
-      address(_reserve.aTokenAddress)
-    );
+    vars.availableLiquidity = IERC20(_reserveAddress).balanceOf(address(_reserve.aTokenAddress));
 
     require(vars.availableLiquidity >= _amount, '7');
 
@@ -324,17 +339,5 @@ library ValidationLogic {
       ),
       'User deposit is already being used as collateral'
     );
-  }
-
-  /**
-   * @dev validates that the reserve is active and the amount is greater than 0
-   * @param _reserve the state of the reserve being validated
-   * @param _amount the amount being validated
-   */
-  function internalValidateReserveStateAndAmount(
-    ReserveLogic.ReserveData storage _reserve,
-    uint256 _amount
-  ) internal view {
-    require(_amount > 0, 'Amount must be greater than 0');
   }
 }

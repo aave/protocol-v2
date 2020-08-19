@@ -4,7 +4,7 @@ import {
   approve,
   deposit,
   borrow,
-  redeem,
+  withdraw,
   repay,
   setUseAsCollateral,
   swapBorrowRateMode,
@@ -102,15 +102,15 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       }
       break;
 
-    case 'redeem':
+    case 'withdraw':
       {
         const {amount} = action.args;
 
         if (!amount || amount === '') {
-          throw `Invalid amount to redeem from the ${reserve} reserve`;
+          throw `Invalid amount to withdraw from the ${reserve} reserve`;
         }
 
-        await redeem(reserve, amount, user, expected, testEnv, revertMessage);
+        await withdraw(reserve, amount, user, expected, testEnv, revertMessage);
       }
       break;
     case 'borrow':
