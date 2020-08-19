@@ -58,6 +58,13 @@ import {LendingRateOracle} from '../types/LendingRateOracle';
 import {LendingPool} from '../types/LendingPool';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {initializeMakeSuite} from './helpers/make-suite';
+import path from 'path';
+import fs from 'fs';
+
+['misc'].forEach((folder) => {
+  const tasksPath = path.join('/src/', 'tasks', folder);
+  fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
+});
 
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableErc20} = {};

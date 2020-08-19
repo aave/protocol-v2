@@ -1,6 +1,4 @@
 import {usePlugin, BuidlerConfig} from '@nomiclabs/buidler/config';
-import path from 'path';
-import fs from 'fs';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
@@ -11,11 +9,6 @@ usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
-
-['misc'].forEach((folder) => {
-  const tasksPath = path.join(__dirname, 'tasks', folder);
-  fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
-});
 
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = 10;
