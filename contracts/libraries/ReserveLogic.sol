@@ -9,12 +9,8 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {ReserveConfiguration} from './ReserveConfiguration.sol';
 
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../interfaces/ILendingRateOracle.sol';
-import '../interfaces/IReserveInterestRateStrategy.sol';
-import '../tokenization/AToken.sol';
-import './WadRayMath.sol';
-import '@nomiclabs/buidler/console.sol';
+import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
+import {WadRayMath} from './WadRayMath.sol';
 
 /**
  * @title ReserveLogic library
