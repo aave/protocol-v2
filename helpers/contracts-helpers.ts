@@ -13,7 +13,6 @@ import {
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {MintableErc20} from '../types/MintableErc20';
 import {LendingPoolAddressesProviderRegistry} from '../types/LendingPoolAddressesProviderRegistry';
-import {FeeProvider} from '../types/FeeProvider';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {Artifact} from '@nomiclabs/buidler/types';
@@ -100,9 +99,6 @@ export const deployLendingPoolAddressesProviderRegistry = async () =>
     eContractid.LendingPoolAddressesProviderRegistry,
     []
   );
-
-export const deployFeeProvider = async () =>
-  await deployContract<FeeProvider>(eContractid.FeeProvider, []);
 
 export const deployLendingPoolConfigurator = async () =>
   await deployContract<LendingPoolConfigurator>(eContractid.LendingPoolConfigurator, []);
@@ -328,13 +324,6 @@ export const getLendingPool = async (address?: tEthereumAddress) => {
       address ||
         (await getDb().get(`${eContractid.LendingPool}.${BRE.network.name}`).value()).address
     )
-  );
-};
-
-export const getFeeProvider = async (address?: tEthereumAddress) => {
-  return await getContract<FeeProvider>(
-    eContractid.FeeProvider,
-    address || (await getDb().get(`${eContractid.FeeProvider}.${BRE.network.name}`).value()).address
   );
 };
 

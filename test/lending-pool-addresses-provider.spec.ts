@@ -12,7 +12,6 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
     await addressesProvider.transferOwnership(users[1].address);
 
     for (const contractFunction of [
-      addressesProvider.setFeeProviderImpl,
       addressesProvider.setLendingPoolImpl,
       addressesProvider.setLendingPoolConfiguratorImpl,
       addressesProvider.setLendingPoolLiquidationManager,

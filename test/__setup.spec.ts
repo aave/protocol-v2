@@ -4,7 +4,6 @@ import {
   deployLendingPoolAddressesProvider,
   deployMintableErc20,
   deployLendingPoolAddressesProviderRegistry,
-  deployFeeProvider,
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
@@ -16,7 +15,6 @@ import {
   deployLendingPoolLiquidationManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  getFeeProvider,
   getLendingPool,
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
@@ -361,11 +359,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(
     await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 0)
   );
-
-  const feeProviderImpl = await deployFeeProvider();
-  await waitForTx(await addressesProvider.setFeeProviderImpl(feeProviderImpl.address));
-  const feeProviderProxy = await getFeeProvider(await addressesProvider.getFeeProvider());
-  await insertContractAddressInDb(eContractid.FeeProvider, feeProviderProxy.address);
 
   const lendingPoolImpl = await deployLendingPool();
 

@@ -24,7 +24,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   event EthereumAddressUpdated(address indexed newAddress);
   event PriceOracleUpdated(address indexed newAddress);
   event LendingRateOracleUpdated(address indexed newAddress);
-  event FeeProviderUpdated(address indexed newAddress);
 
   event ProxyCreated(bytes32 id, address indexed newAddress);
 
@@ -38,7 +37,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant ETHEREUM_ADDRESS = 'ETHEREUM_ADDRESS';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
-  bytes32 private constant FEE_PROVIDER = 'FEE_PROVIDER';
   bytes32 private constant WALLET_BALANCE_PROVIDER = 'WALLET_BALANCE_PROVIDER';
 
   /**
@@ -73,23 +71,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function setLendingPoolConfiguratorImpl(address configurator) external override onlyOwner {
     updateImplInternal(LENDING_POOL_CONFIGURATOR, configurator);
     emit LendingPoolConfiguratorUpdated(configurator);
-  }
-
-  /**
-   * @dev returns the address of the FeeProvider proxy
-   * @return the address of the Fee provider proxy
-   **/
-  function getFeeProvider() external override view returns (address) {
-    return _addresses[FEE_PROVIDER];
-  }
-
-  /**
-   * @dev updates the implementation of the FeeProvider proxy
-   * @param feeProvider the new lending pool fee provider implementation
-   **/
-  function setFeeProviderImpl(address feeProvider) external override onlyOwner {
-    updateImplInternal(FEE_PROVIDER, feeProvider);
-    emit FeeProviderUpdated(feeProvider);
   }
 
   /**
