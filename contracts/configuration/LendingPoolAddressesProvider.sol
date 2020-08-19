@@ -4,7 +4,6 @@ pragma solidity ^0.6.8;
 import '@openzeppelin/contracts/access/Ownable.sol';
 import '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
 
-import './AddressStorage.sol';
 import '../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
@@ -14,7 +13,9 @@ import '../interfaces/ILendingPoolAddressesProvider.sol';
  * @author Aave
  **/
 
-contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider, AddressStorage {
+contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
+  mapping(bytes32 => address) private _addresses;
+
   //events
   event LendingPoolUpdated(address indexed newAddress);
   event LendingPoolManagerUpdated(address indexed newAddress);
@@ -46,51 +47,51 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider,
    * @dev returns the address of the LendingPool proxy
    * @return the lending pool proxy address
    **/
-  function getLendingPool() public override view returns (address) {
-    return getAddress(LENDING_POOL);
+  function getLendingPool() external override view returns (address) {
+    return _addresses[LENDING_POOL];
   }
 
   /**
    * @dev updates the implementation of the lending pool
-   * @param _pool the new lending pool implementation
+   * @param pool the new lending pool implementation
    **/
-  function setLendingPoolImpl(address _pool) public override onlyOwner {
-    updateImplInternal(LENDING_POOL, _pool);
-    emit LendingPoolUpdated(_pool);
+  function setLendingPoolImpl(address pool) external override onlyOwner {
+    updateImplInternal(LENDING_POOL, pool);
+    emit LendingPoolUpdated(pool);
   }
 
   /**
    * @dev returns the address of the LendingPoolConfigurator proxy
    * @return the lending pool configurator proxy address
    **/
-  function getLendingPoolConfigurator() public override view returns (address) {
-    return getAddress(LENDING_POOL_CONFIGURATOR);
+  function getLendingPoolConfigurator() external override view returns (address) {
+    return _addresses[LENDING_POOL_CONFIGURATOR];
   }
 
   /**
    * @dev updates the implementation of the lending pool configurator
-   * @param _configurator the new lending pool configurator implementation
+   * @param configurator the new lending pool configurator implementation
    **/
-  function setLendingPoolConfiguratorImpl(address _configurator) public override onlyOwner {
-    updateImplInternal(LENDING_POOL_CONFIGURATOR, _configurator);
-    emit LendingPoolConfiguratorUpdated(_configurator);
+  function setLendingPoolConfiguratorImpl(address configurator) external override onlyOwner {
+    updateImplInternal(LENDING_POOL_CONFIGURATOR, configurator);
+    emit LendingPoolConfiguratorUpdated(configurator);
   }
 
   /**
    * @dev returns the address of the FeeProvider proxy
    * @return the address of the Fee provider proxy
    **/
-  function getFeeProvider() public override view returns (address) {
-    return getAddress(FEE_PROVIDER);
+  function getFeeProvider() external override view returns (address) {
+    return _addresses[FEE_PROVIDER];
   }
 
   /**
    * @dev updates the implementation of the FeeProvider proxy
-   * @param _feeProvider the new lending pool fee provider implementation
+   * @param feeProvider the new lending pool fee provider implementation
    **/
-  function setFeeProviderImpl(address _feeProvider) public override onlyOwner {
-    updateImplInternal(FEE_PROVIDER, _feeProvider);
-    emit FeeProviderUpdated(_feeProvider);
+  function setFeeProviderImpl(address feeProvider) external override onlyOwner {
+    updateImplInternal(FEE_PROVIDER, feeProvider);
+    emit FeeProviderUpdated(feeProvider);
   }
 
   /**
@@ -100,17 +101,17 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider,
    * @return the address of the Lending pool liquidation manager
    **/
 
-  function getLendingPoolLiquidationManager() public override view returns (address) {
-    return getAddress(LENDING_POOL_LIQUIDATION_MANAGER);
+  function getLendingPoolLiquidationManager() external override view returns (address) {
+    return _addresses[LENDING_POOL_LIQUIDATION_MANAGER];
   }
 
   /**
    * @dev updates the address of the Lending pool liquidation manager
-   * @param _manager the new lending pool liquidation manager address
+   * @param manager the new lending pool liquidation manager address
    **/
-  function setLendingPoolLiquidationManager(address _manager) public override onlyOwner {
-    _setAddress(LENDING_POOL_LIQUIDATION_MANAGER, _manager);
-    emit LendingPoolLiquidationManagerUpdated(_manager);
+  function setLendingPoolLiquidationManager(address manager) external override onlyOwner {
+    _addresses[LENDING_POOL_LIQUIDATION_MANAGER] = manager;
+    emit LendingPoolLiquidationManagerUpdated(manager);
   }
 
   /**
@@ -118,49 +119,49 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider,
    * hence the upgradable proxy pattern is not used
    **/
 
-  function getLendingPoolManager() public override view returns (address) {
-    return getAddress(LENDING_POOL_MANAGER);
+  function getLendingPoolManager() external override view returns (address) {
+    return _addresses[LENDING_POOL_MANAGER];
   }
 
-  function setLendingPoolManager(address _lendingPoolManager) public override onlyOwner {
-    _setAddress(LENDING_POOL_MANAGER, _lendingPoolManager);
-    emit LendingPoolManagerUpdated(_lendingPoolManager);
+  function setLendingPoolManager(address lendingPoolManager) external override onlyOwner {
+    _addresses[LENDING_POOL_MANAGER] = lendingPoolManager;
+    emit LendingPoolManagerUpdated(lendingPoolManager);
   }
 
-  function getPriceOracle() public override view returns (address) {
-    return getAddress(PRICE_ORACLE);
+  function getPriceOracle() external override view returns (address) {
+    return _addresses[PRICE_ORACLE];
   }
 
-  function setPriceOracle(address _priceOracle) public override onlyOwner {
-    _setAddress(PRICE_ORACLE, _priceOracle);
-    emit PriceOracleUpdated(_priceOracle);
+  function setPriceOracle(address priceOracle) external override onlyOwner {
+    _addresses[PRICE_ORACLE] = priceOracle;
+    emit PriceOracleUpdated(priceOracle);
   }
 
-  function getLendingRateOracle() public override view returns (address) {
-    return getAddress(LENDING_RATE_ORACLE);
+  function getLendingRateOracle() external override view returns (address) {
+    return _addresses[LENDING_RATE_ORACLE];
   }
 
-  function setLendingRateOracle(address _lendingRateOracle) public override onlyOwner {
-    _setAddress(LENDING_RATE_ORACLE, _lendingRateOracle);
-    emit LendingRateOracleUpdated(_lendingRateOracle);
+  function setLendingRateOracle(address lendingRateOracle) external override onlyOwner {
+    _addresses[LENDING_RATE_ORACLE] = lendingRateOracle;
+    emit LendingRateOracleUpdated(lendingRateOracle);
   }
 
-  function getTokenDistributor() public override view returns (address) {
-    return getAddress(TOKEN_DISTRIBUTOR);
+  function getTokenDistributor() external override view returns (address) {
+    return _addresses[TOKEN_DISTRIBUTOR];
   }
 
-  function setTokenDistributor(address _tokenDistributor) public override onlyOwner {
-    _setAddress(TOKEN_DISTRIBUTOR, _tokenDistributor);
-    emit TokenDistributorUpdated(_tokenDistributor);
+  function setTokenDistributor(address tokenDistributor) external override onlyOwner {
+    _addresses[TOKEN_DISTRIBUTOR] = tokenDistributor;
+    emit TokenDistributorUpdated(tokenDistributor);
   }
 
   /**
    * @dev internal function to update the implementation of a specific component of the protocol
-   * @param _id the id of the contract to be updated
-   * @param _newAddress the address of the new implementation
+   * @param id the id of the contract to be updated
+   * @param newAddress the address of the new implementation
    **/
-  function updateImplInternal(bytes32 _id, address _newAddress) internal {
-    address payable proxyAddress = address(uint160(getAddress(_id)));
+  function updateImplInternal(bytes32 id, address newAddress) internal {
+    address payable proxyAddress = payable(_addresses[id]);
 
     InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(
       proxyAddress
@@ -169,11 +170,11 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider,
 
     if (proxyAddress == address(0)) {
       proxy = new InitializableAdminUpgradeabilityProxy();
-      proxy.initialize(_newAddress, address(this), params);
-      _setAddress(_id, address(proxy));
-      emit ProxyCreated(_id, address(proxy));
+      proxy.initialize(newAddress, address(this), params);
+      _addresses[id] = address(proxy);
+      emit ProxyCreated(id, address(proxy));
     } else {
-      proxy.upgradeToAndCall(_newAddress, params);
+      proxy.upgradeToAndCall(newAddress, params);
     }
   }
 }

@@ -128,7 +128,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_feeProvider",
+        name: "feeProvider",
         type: "address"
       }
     ],
@@ -141,7 +141,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_configurator",
+        name: "configurator",
         type: "address"
       }
     ],
@@ -154,7 +154,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_pool",
+        name: "pool",
         type: "address"
       }
     ],
@@ -167,7 +167,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_manager",
+        name: "manager",
         type: "address"
       }
     ],
@@ -180,7 +180,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_lendingPoolManager",
+        name: "lendingPoolManager",
         type: "address"
       }
     ],
@@ -193,7 +193,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_lendingRateOracle",
+        name: "lendingRateOracle",
         type: "address"
       }
     ],
@@ -206,7 +206,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_priceOracle",
+        name: "priceOracle",
         type: "address"
       }
     ],
@@ -219,7 +219,7 @@ const _abi = [
     inputs: [
       {
         internalType: "address",
-        name: "_tokenDistributor",
+        name: "tokenDistributor",
         type: "address"
       }
     ],

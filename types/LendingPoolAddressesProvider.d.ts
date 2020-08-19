@@ -21,7 +21,6 @@ import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 
 interface LendingPoolAddressesProviderInterface extends ethers.utils.Interface {
   functions: {
-    "getAddress(bytes32)": FunctionFragment;
     "getFeeProvider()": FunctionFragment;
     "getLendingPool()": FunctionFragment;
     "getLendingPoolConfigurator()": FunctionFragment;
@@ -43,10 +42,6 @@ interface LendingPoolAddressesProviderInterface extends ethers.utils.Interface {
     "transferOwnership(address)": FunctionFragment;
   };
 
-  encodeFunctionData(
-    functionFragment: "getAddress",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "getFeeProvider",
     values?: undefined
@@ -121,7 +116,6 @@ interface LendingPoolAddressesProviderInterface extends ethers.utils.Interface {
     values: [string]
   ): string;
 
-  decodeFunctionResult(functionFragment: "getAddress", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getFeeProvider",
     data: BytesLike
@@ -241,20 +235,6 @@ export class LendingPoolAddressesProvider extends Contract {
   interface: LendingPoolAddressesProviderInterface;
 
   functions: {
-    getAddress(
-      _key: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
-    "getAddress(bytes32)"(
-      _key: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
     getFeeProvider(
       overrides?: CallOverrides
     ): Promise<{
@@ -368,82 +348,82 @@ export class LendingPoolAddressesProvider extends Contract {
     "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
 
     setFeeProviderImpl(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setFeeProviderImpl(address)"(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setLendingPoolConfiguratorImpl(
-      _configurator: string,
+      configurator: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setLendingPoolConfiguratorImpl(address)"(
-      _configurator: string,
+      configurator: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setLendingPoolImpl(
-      _pool: string,
+      pool: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setLendingPoolImpl(address)"(
-      _pool: string,
+      pool: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setLendingPoolLiquidationManager(
-      _manager: string,
+      manager: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setLendingPoolLiquidationManager(address)"(
-      _manager: string,
+      manager: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setLendingPoolManager(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setLendingPoolManager(address)"(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setLendingRateOracle(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setLendingRateOracle(address)"(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setPriceOracle(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setPriceOracle(address)"(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     setTokenDistributor(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     "setTokenDistributor(address)"(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -457,13 +437,6 @@ export class LendingPoolAddressesProvider extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
-
-  getAddress(_key: BytesLike, overrides?: CallOverrides): Promise<string>;
-
-  "getAddress(bytes32)"(
-    _key: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<string>;
 
   getFeeProvider(overrides?: CallOverrides): Promise<string>;
 
@@ -508,82 +481,82 @@ export class LendingPoolAddressesProvider extends Contract {
   "renounceOwnership()"(overrides?: Overrides): Promise<ContractTransaction>;
 
   setFeeProviderImpl(
-    _feeProvider: string,
+    feeProvider: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setFeeProviderImpl(address)"(
-    _feeProvider: string,
+    feeProvider: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setLendingPoolConfiguratorImpl(
-    _configurator: string,
+    configurator: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setLendingPoolConfiguratorImpl(address)"(
-    _configurator: string,
+    configurator: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setLendingPoolImpl(
-    _pool: string,
+    pool: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setLendingPoolImpl(address)"(
-    _pool: string,
+    pool: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setLendingPoolLiquidationManager(
-    _manager: string,
+    manager: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setLendingPoolLiquidationManager(address)"(
-    _manager: string,
+    manager: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setLendingPoolManager(
-    _lendingPoolManager: string,
+    lendingPoolManager: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setLendingPoolManager(address)"(
-    _lendingPoolManager: string,
+    lendingPoolManager: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setLendingRateOracle(
-    _lendingRateOracle: string,
+    lendingRateOracle: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setLendingRateOracle(address)"(
-    _lendingRateOracle: string,
+    lendingRateOracle: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setPriceOracle(
-    _priceOracle: string,
+    priceOracle: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setPriceOracle(address)"(
-    _priceOracle: string,
+    priceOracle: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   setTokenDistributor(
-    _tokenDistributor: string,
+    tokenDistributor: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   "setTokenDistributor(address)"(
-    _tokenDistributor: string,
+    tokenDistributor: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -598,13 +571,6 @@ export class LendingPoolAddressesProvider extends Contract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    getAddress(_key: BytesLike, overrides?: CallOverrides): Promise<string>;
-
-    "getAddress(bytes32)"(
-      _key: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
     getFeeProvider(overrides?: CallOverrides): Promise<string>;
 
     "getFeeProvider()"(overrides?: CallOverrides): Promise<string>;
@@ -650,79 +616,79 @@ export class LendingPoolAddressesProvider extends Contract {
     "renounceOwnership()"(overrides?: CallOverrides): Promise<void>;
 
     setFeeProviderImpl(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setFeeProviderImpl(address)"(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setLendingPoolConfiguratorImpl(
-      _configurator: string,
+      configurator: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setLendingPoolConfiguratorImpl(address)"(
-      _configurator: string,
+      configurator: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setLendingPoolImpl(_pool: string, overrides?: CallOverrides): Promise<void>;
+    setLendingPoolImpl(pool: string, overrides?: CallOverrides): Promise<void>;
 
     "setLendingPoolImpl(address)"(
-      _pool: string,
+      pool: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setLendingPoolLiquidationManager(
-      _manager: string,
+      manager: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setLendingPoolLiquidationManager(address)"(
-      _manager: string,
+      manager: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setLendingPoolManager(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setLendingPoolManager(address)"(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setLendingRateOracle(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setLendingRateOracle(address)"(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setPriceOracle(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setPriceOracle(address)"(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     setTokenDistributor(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     "setTokenDistributor(address)"(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -767,13 +733,6 @@ export class LendingPoolAddressesProvider extends Contract {
   };
 
   estimateGas: {
-    getAddress(_key: BytesLike, overrides?: CallOverrides): Promise<BigNumber>;
-
-    "getAddress(bytes32)"(
-      _key: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getFeeProvider(overrides?: CallOverrides): Promise<BigNumber>;
 
     "getFeeProvider()"(overrides?: CallOverrides): Promise<BigNumber>;
@@ -821,82 +780,79 @@ export class LendingPoolAddressesProvider extends Contract {
     "renounceOwnership()"(overrides?: Overrides): Promise<BigNumber>;
 
     setFeeProviderImpl(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setFeeProviderImpl(address)"(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     setLendingPoolConfiguratorImpl(
-      _configurator: string,
+      configurator: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setLendingPoolConfiguratorImpl(address)"(
-      _configurator: string,
+      configurator: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    setLendingPoolImpl(
-      _pool: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    setLendingPoolImpl(pool: string, overrides?: Overrides): Promise<BigNumber>;
 
     "setLendingPoolImpl(address)"(
-      _pool: string,
+      pool: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     setLendingPoolLiquidationManager(
-      _manager: string,
+      manager: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setLendingPoolLiquidationManager(address)"(
-      _manager: string,
+      manager: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     setLendingPoolManager(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setLendingPoolManager(address)"(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     setLendingRateOracle(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setLendingRateOracle(address)"(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     setPriceOracle(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setPriceOracle(address)"(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     setTokenDistributor(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     "setTokenDistributor(address)"(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -912,16 +868,6 @@ export class LendingPoolAddressesProvider extends Contract {
   };
 
   populateTransaction: {
-    getAddress(
-      _key: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    "getAddress(bytes32)"(
-      _key: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     getFeeProvider(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     "getFeeProvider()"(
@@ -989,82 +935,82 @@ export class LendingPoolAddressesProvider extends Contract {
     "renounceOwnership()"(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     setFeeProviderImpl(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setFeeProviderImpl(address)"(
-      _feeProvider: string,
+      feeProvider: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setLendingPoolConfiguratorImpl(
-      _configurator: string,
+      configurator: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setLendingPoolConfiguratorImpl(address)"(
-      _configurator: string,
+      configurator: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setLendingPoolImpl(
-      _pool: string,
+      pool: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setLendingPoolImpl(address)"(
-      _pool: string,
+      pool: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setLendingPoolLiquidationManager(
-      _manager: string,
+      manager: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setLendingPoolLiquidationManager(address)"(
-      _manager: string,
+      manager: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setLendingPoolManager(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setLendingPoolManager(address)"(
-      _lendingPoolManager: string,
+      lendingPoolManager: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setLendingRateOracle(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setLendingRateOracle(address)"(
-      _lendingRateOracle: string,
+      lendingRateOracle: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setPriceOracle(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setPriceOracle(address)"(
-      _priceOracle: string,
+      priceOracle: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     setTokenDistributor(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     "setTokenDistributor(address)"(
-      _tokenDistributor: string,
+      tokenDistributor: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
