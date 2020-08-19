@@ -42,13 +42,13 @@ interface LendingPoolInterface extends ethers.utils.Interface {
     "initialize(address)": FunctionFragment;
     "liquidationCall(address,address,address,uint256,bool)": FunctionFragment;
     "rebalanceStableBorrowRate(address,address)": FunctionFragment;
-    "redeemUnderlying(address,address,uint256,uint256)": FunctionFragment;
     "repay(address,uint256,uint256,address)": FunctionFragment;
     "reservesList(uint256)": FunctionFragment;
     "setConfiguration(address,uint256)": FunctionFragment;
     "setReserveInterestRateStrategyAddress(address,address)": FunctionFragment;
     "setUserUseReserveAsCollateral(address,bool)": FunctionFragment;
     "swapBorrowRateMode(address,uint256)": FunctionFragment;
+    "withdraw(address,uint256)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -129,10 +129,6 @@ interface LendingPoolInterface extends ethers.utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "redeemUnderlying",
-    values: [string, string, BigNumberish, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "repay",
     values: [string, BigNumberish, BigNumberish, string]
   ): string;
@@ -154,6 +150,10 @@ interface LendingPoolInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "swapBorrowRateMode",
+    values: [string, BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdraw",
     values: [string, BigNumberish]
   ): string;
 
@@ -225,10 +225,6 @@ interface LendingPoolInterface extends ethers.utils.Interface {
     functionFragment: "rebalanceStableBorrowRate",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "redeemUnderlying",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "repay", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "reservesList",
@@ -250,6 +246,7 @@ interface LendingPoolInterface extends ethers.utils.Interface {
     functionFragment: "swapBorrowRateMode",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "withdraw", data: BytesLike): Result;
 
   events: {
     "Borrow(address,address,uint256,uint256,uint256,uint16,uint256)": EventFragment;
@@ -258,11 +255,11 @@ interface LendingPoolInterface extends ethers.utils.Interface {
     "LiquidationCall(address,address,address,uint256,uint256,uint256,address,bool,uint256)": EventFragment;
     "OriginationFeeLiquidated(address,address,address,uint256,uint256,uint256)": EventFragment;
     "RebalanceStableBorrowRate(address,address,uint256)": EventFragment;
-    "RedeemUnderlying(address,address,uint256,uint256)": EventFragment;
     "Repay(address,address,address,uint256,uint256)": EventFragment;
     "ReserveUsedAsCollateralDisabled(address,address)": EventFragment;
     "ReserveUsedAsCollateralEnabled(address,address)": EventFragment;
     "Swap(address,address,uint256)": EventFragment;
+    "Withdraw(address,address,uint256,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Borrow"): EventFragment;
@@ -271,7 +268,6 @@ interface LendingPoolInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "LiquidationCall"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "OriginationFeeLiquidated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RebalanceStableBorrowRate"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "RedeemUnderlying"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Repay"): EventFragment;
   getEvent(
     nameOrSignatureOrTopic: "ReserveUsedAsCollateralDisabled"
@@ -280,6 +276,7 @@ interface LendingPoolInterface extends ethers.utils.Interface {
     nameOrSignatureOrTopic: "ReserveUsedAsCollateralEnabled"
   ): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Swap"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Withdraw"): EventFragment;
 }
 
 export class LendingPool extends Contract {
@@ -726,22 +723,6 @@ export class LendingPool extends Contract {
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    redeemUnderlying(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "redeemUnderlying(address,address,uint256,uint256)"(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
     repay(
       _reserve: string,
       _amount: BigNumberish,
@@ -817,6 +798,18 @@ export class LendingPool extends Contract {
     "swapBorrowRateMode(address,uint256)"(
       _reserve: string,
       _rateMode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    withdraw(
+      _reserve: string,
+      _amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<ContractTransaction>;
+
+    "withdraw(address,uint256)"(
+      _reserve: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
@@ -1203,22 +1196,6 @@ export class LendingPool extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  redeemUnderlying(
-    _reserve: string,
-    _user: string,
-    _amount: BigNumberish,
-    _aTokenBalanceAfterRedeem: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "redeemUnderlying(address,address,uint256,uint256)"(
-    _reserve: string,
-    _user: string,
-    _amount: BigNumberish,
-    _aTokenBalanceAfterRedeem: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
   repay(
     _reserve: string,
     _amount: BigNumberish,
@@ -1287,6 +1264,18 @@ export class LendingPool extends Contract {
   "swapBorrowRateMode(address,uint256)"(
     _reserve: string,
     _rateMode: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  withdraw(
+    _reserve: string,
+    _amount: BigNumberish,
+    overrides?: Overrides
+  ): Promise<ContractTransaction>;
+
+  "withdraw(address,uint256)"(
+    _reserve: string,
+    _amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -1673,22 +1662,6 @@ export class LendingPool extends Contract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    redeemUnderlying(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
-    "redeemUnderlying(address,address,uint256,uint256)"(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     repay(
       _reserve: string,
       _amount: BigNumberish,
@@ -1762,6 +1735,18 @@ export class LendingPool extends Contract {
       _rateMode: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdraw(
+      _reserve: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    "withdraw(address,uint256)"(
+      _reserve: string,
+      _amount: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -1819,13 +1804,6 @@ export class LendingPool extends Contract {
       _timestamp: null
     ): EventFilter;
 
-    RedeemUnderlying(
-      _reserve: string | null,
-      _user: string | null,
-      _amount: null,
-      _timestamp: null
-    ): EventFilter;
-
     Repay(
       _reserve: string | null,
       _user: string | null,
@@ -1847,6 +1825,13 @@ export class LendingPool extends Contract {
     Swap(
       _reserve: string | null,
       _user: string | null,
+      _timestamp: null
+    ): EventFilter;
+
+    Withdraw(
+      _reserve: string | null,
+      _user: string | null,
+      _amount: null,
       _timestamp: null
     ): EventFilter;
   };
@@ -2068,22 +2053,6 @@ export class LendingPool extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    redeemUnderlying(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
-    "redeemUnderlying(address,address,uint256,uint256)"(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
-
     repay(
       _reserve: string,
       _amount: BigNumberish,
@@ -2155,6 +2124,18 @@ export class LendingPool extends Contract {
     "swapBorrowRateMode(address,uint256)"(
       _reserve: string,
       _rateMode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    withdraw(
+      _reserve: string,
+      _amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<BigNumber>;
+
+    "withdraw(address,uint256)"(
+      _reserve: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
   };
@@ -2384,22 +2365,6 @@ export class LendingPool extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    redeemUnderlying(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "redeemUnderlying(address,address,uint256,uint256)"(
-      _reserve: string,
-      _user: string,
-      _amount: BigNumberish,
-      _aTokenBalanceAfterRedeem: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
     repay(
       _reserve: string,
       _amount: BigNumberish,
@@ -2471,6 +2436,18 @@ export class LendingPool extends Contract {
     "swapBorrowRateMode(address,uint256)"(
       _reserve: string,
       _rateMode: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    withdraw(
+      _reserve: string,
+      _amount: BigNumberish,
+      overrides?: Overrides
+    ): Promise<PopulatedTransaction>;
+
+    "withdraw(address,uint256)"(
+      _reserve: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };

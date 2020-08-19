@@ -27,7 +27,7 @@ interface MockATokenInterface extends ethers.utils.Interface {
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "burnOnLiquidation(address,uint256)": FunctionFragment;
+    "burn(address,address,uint256)": FunctionFragment;
     "decimals()": FunctionFragment;
     "decreaseAllowance(address,uint256)": FunctionFragment;
     "getInterestRedirectionAddress(address)": FunctionFragment;
@@ -36,10 +36,9 @@ interface MockATokenInterface extends ethers.utils.Interface {
     "increaseAllowance(address,uint256)": FunctionFragment;
     "initialize(uint8,string,string)": FunctionFragment;
     "isTransferAllowed(address,uint256)": FunctionFragment;
-    "mintOnDeposit(address,uint256)": FunctionFragment;
+    "mint(address,uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "principalBalanceOf(address)": FunctionFragment;
-    "redeem(uint256)": FunctionFragment;
     "redirectInterestStream(address)": FunctionFragment;
     "redirectInterestStreamOf(address,address)": FunctionFragment;
     "symbol()": FunctionFragment;
@@ -73,8 +72,8 @@ interface MockATokenInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(
-    functionFragment: "burnOnLiquidation",
-    values: [string, BigNumberish]
+    functionFragment: "burn",
+    values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "decimals", values?: undefined): string;
   encodeFunctionData(
@@ -106,17 +105,13 @@ interface MockATokenInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "mintOnDeposit",
+    functionFragment: "mint",
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "principalBalanceOf",
     values: [string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "redeem",
-    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "redirectInterestStream",
@@ -167,10 +162,7 @@ interface MockATokenInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "burnOnLiquidation",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "decimals", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "decreaseAllowance",
@@ -197,16 +189,12 @@ interface MockATokenInterface extends ethers.utils.Interface {
     functionFragment: "isTransferAllowed",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(
-    functionFragment: "mintOnDeposit",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "principalBalanceOf",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "redeem", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "redirectInterestStream",
     data: BytesLike
@@ -241,24 +229,22 @@ interface MockATokenInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "BalanceTransfer(address,address,uint256,uint256,uint256,uint256,uint256)": EventFragment;
-    "BurnOnLiquidation(address,uint256,uint256,uint256)": EventFragment;
+    "Burn(address,address,uint256,uint256,uint256)": EventFragment;
     "InterestRedirectionAllowanceChanged(address,address)": EventFragment;
     "InterestStreamRedirected(address,address,uint256,uint256,uint256)": EventFragment;
-    "MintOnDeposit(address,uint256,uint256,uint256)": EventFragment;
-    "Redeem(address,uint256,uint256,uint256)": EventFragment;
+    "Mint(address,uint256,uint256,uint256)": EventFragment;
     "RedirectedBalanceUpdated(address,uint256,uint256,uint256,uint256)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BalanceTransfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "BurnOnLiquidation"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Burn"): EventFragment;
   getEvent(
     nameOrSignatureOrTopic: "InterestRedirectionAllowanceChanged"
   ): EventFragment;
   getEvent(nameOrSignatureOrTopic: "InterestStreamRedirected"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "MintOnDeposit"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Redeem"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Mint"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RedirectedBalanceUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
 }
@@ -353,15 +339,17 @@ export class MockAToken extends Contract {
       0: BigNumber;
     }>;
 
-    burnOnLiquidation(
-      _account: string,
-      _value: BigNumberish,
+    burn(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "burnOnLiquidation(address,uint256)"(
-      _account: string,
-      _value: BigNumberish,
+    "burn(address,address,uint256)"(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -473,13 +461,13 @@ export class MockAToken extends Contract {
       0: boolean;
     }>;
 
-    mintOnDeposit(
+    mint(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    "mintOnDeposit(address,uint256)"(
+    "mint(address,uint256)"(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides
@@ -510,16 +498,6 @@ export class MockAToken extends Contract {
     ): Promise<{
       0: BigNumber;
     }>;
-
-    redeem(
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    "redeem(uint256)"(
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
 
     redirectInterestStream(
       _to: string,
@@ -681,15 +659,17 @@ export class MockAToken extends Contract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  burnOnLiquidation(
-    _account: string,
-    _value: BigNumberish,
+  burn(
+    _user: string,
+    _underlyingTarget: string,
+    _amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "burnOnLiquidation(address,uint256)"(
-    _account: string,
-    _value: BigNumberish,
+  "burn(address,address,uint256)"(
+    _user: string,
+    _underlyingTarget: string,
+    _amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -774,13 +754,13 @@ export class MockAToken extends Contract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  mintOnDeposit(
+  mint(
     _user: string,
     _amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  "mintOnDeposit(address,uint256)"(
+  "mint(address,uint256)"(
     _user: string,
     _amount: BigNumberish,
     overrides?: Overrides
@@ -799,16 +779,6 @@ export class MockAToken extends Contract {
     _user: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
-
-  redeem(
-    _amount: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  "redeem(uint256)"(
-    _amount: BigNumberish,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
 
   redirectInterestStream(
     _to: string,
@@ -946,15 +916,17 @@ export class MockAToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    burnOnLiquidation(
-      _account: string,
-      _value: BigNumberish,
+    burn(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "burnOnLiquidation(address,uint256)"(
-      _account: string,
-      _value: BigNumberish,
+    "burn(address,address,uint256)"(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1039,13 +1011,13 @@ export class MockAToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    mintOnDeposit(
+    mint(
       _user: string,
       _amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    "mintOnDeposit(address,uint256)"(
+    "mint(address,uint256)"(
       _user: string,
       _amount: BigNumberish,
       overrides?: CallOverrides
@@ -1064,13 +1036,6 @@ export class MockAToken extends Contract {
       _user: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    redeem(_amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
-
-    "redeem(uint256)"(
-      _amount: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     redirectInterestStream(
       _to: string,
@@ -1176,8 +1141,9 @@ export class MockAToken extends Contract {
       _toIndex: null
     ): EventFilter;
 
-    BurnOnLiquidation(
+    Burn(
       _from: string | null,
+      _target: string | null,
       _value: null,
       _fromBalanceIncrease: null,
       _fromIndex: null
@@ -1196,14 +1162,7 @@ export class MockAToken extends Contract {
       _fromIndex: null
     ): EventFilter;
 
-    MintOnDeposit(
-      _from: string | null,
-      _value: null,
-      _fromBalanceIncrease: null,
-      _fromIndex: null
-    ): EventFilter;
-
-    Redeem(
+    Mint(
       _from: string | null,
       _value: null,
       _fromBalanceIncrease: null,
@@ -1271,15 +1230,17 @@ export class MockAToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    burnOnLiquidation(
-      _account: string,
-      _value: BigNumberish,
+    burn(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "burnOnLiquidation(address,uint256)"(
-      _account: string,
-      _value: BigNumberish,
+    "burn(address,address,uint256)"(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1364,13 +1325,13 @@ export class MockAToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    mintOnDeposit(
+    mint(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    "mintOnDeposit(address,uint256)"(
+    "mint(address,uint256)"(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides
@@ -1388,13 +1349,6 @@ export class MockAToken extends Contract {
     "principalBalanceOf(address)"(
       _user: string,
       overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    redeem(_amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
-
-    "redeem(uint256)"(
-      _amount: BigNumberish,
-      overrides?: Overrides
     ): Promise<BigNumber>;
 
     redirectInterestStream(
@@ -1541,15 +1495,17 @@ export class MockAToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    burnOnLiquidation(
-      _account: string,
-      _value: BigNumberish,
+    burn(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "burnOnLiquidation(address,uint256)"(
-      _account: string,
-      _value: BigNumberish,
+    "burn(address,address,uint256)"(
+      _user: string,
+      _underlyingTarget: string,
+      _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1637,13 +1593,13 @@ export class MockAToken extends Contract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    mintOnDeposit(
+    mint(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    "mintOnDeposit(address,uint256)"(
+    "mint(address,uint256)"(
       _user: string,
       _amount: BigNumberish,
       overrides?: Overrides
@@ -1661,16 +1617,6 @@ export class MockAToken extends Contract {
     "principalBalanceOf(address)"(
       _user: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    redeem(
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    "redeem(uint256)"(
-      _amount: BigNumberish,
-      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     redirectInterestStream(

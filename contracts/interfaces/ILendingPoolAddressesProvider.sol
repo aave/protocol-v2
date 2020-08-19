@@ -9,33 +9,33 @@ pragma solidity ^0.6.8;
 interface ILendingPoolAddressesProvider {
   function getLendingPool() external view returns (address);
 
-  function setLendingPoolImpl(address _pool) external;
+  function setLendingPoolImpl(address pool) external;
 
   function getLendingPoolConfigurator() external view returns (address);
 
-  function setLendingPoolConfiguratorImpl(address _configurator) external;
+  function setLendingPoolConfiguratorImpl(address configurator) external;
 
   function getTokenDistributor() external view returns (address);
 
-  function setTokenDistributor(address _tokenDistributor) external;
+  function setTokenDistributor(address tokenDistributor) external;
 
   function getFeeProvider() external view returns (address);
 
-  function setFeeProviderImpl(address _feeProvider) external;
+  function setFeeProviderImpl(address feeProvider) external;
 
   function getLendingPoolLiquidationManager() external view returns (address);
 
-  function setLendingPoolLiquidationManager(address _manager) external;
+  function setLendingPoolLiquidationManager(address manager) external;
 
   function getLendingPoolManager() external view returns (address);
 
-  function setLendingPoolManager(address _lendingPoolManager) external;
+  function setLendingPoolManager(address lendingPoolManager) external;
 
   function getPriceOracle() external view returns (address);
 
-  function setPriceOracle(address _priceOracle) external;
+  function setPriceOracle(address priceOracle) external;
 
   function getLendingRateOracle() external view returns (address);
 
-  function setLendingRateOracle(address _lendingRateOracle) external;
+  function setLendingRateOracle(address lendingRateOracle) external;
 }
