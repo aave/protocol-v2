@@ -64,10 +64,10 @@ export const insertContractAddressInDb = async (id: eContractid, address: tEther
     .write();
 
 export const getEthersSigners = async (): Promise<Signer[]> =>
-  await Promise.all(await BRE.ethers.signers());
+  await Promise.all(await BRE.ethers.getSigners());
 
 export const getEthersSignersAddresses = async (): Promise<tEthereumAddress[]> =>
-  await Promise.all((await BRE.ethers.signers()).map((signer) => signer.getAddress()));
+  await Promise.all((await BRE.ethers.getSigners()).map((signer) => signer.getAddress()));
 
 export const getCurrentBlock = async () => {
   return BRE.ethers.provider.getBlockNumber();
@@ -80,7 +80,7 @@ export const deployContract = async <ContractType extends Contract>(
   contractName: string,
   args: any[]
 ): Promise<ContractType> => {
-  const contract = (await (await BRE.ethers.getContract(contractName)).deploy(
+  const contract = (await (await BRE.ethers.getContractFactory(contractName)).deploy(
     ...args
   )) as ContractType;
 
@@ -253,33 +253,33 @@ export const deployDefaultReserveInterestRateStrategy = async ([
     ]
   );
 
-export const deployStableDebtToken = async ([
-  name,
-  symbol,
-  underlyingAsset,
-  poolAddress,
-]: [string, string, tEthereumAddress, tEthereumAddress]) => {
+export const deployStableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
+  string,
+  string,
+  tEthereumAddress,
+  tEthereumAddress
+]) => {
   const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
     poolAddress,
     underlyingAsset,
-    name, 
-    symbol
+    name,
+    symbol,
   ]);
 
   return token;
 };
 
-export const deployVariableDebtToken = async ([
-  name,
-  symbol,
-  underlyingAsset,
-  poolAddress,
-]: [string, string, tEthereumAddress, tEthereumAddress]) => {
+export const deployVariableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
+  string,
+  string,
+  tEthereumAddress,
+  tEthereumAddress
+]) => {
   const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
     poolAddress,
     underlyingAsset,
-    name, 
-    symbol
+    name,
+    symbol,
   ]);
 
   return token;
@@ -476,7 +476,6 @@ export const convertToCurrencyDecimals = async (tokenAddress: tEthereumAddress, 
 };
 
 export const convertToCurrencyUnits = async (tokenAddress: string, amount: string) => {
-
   const token = await getIErc20Detailed(tokenAddress);
   let decimals = new BigNumber(await token.decimals());
   const currencyUnit = new BigNumber(10).pow(decimals);

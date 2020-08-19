@@ -30,7 +30,7 @@ import {BRE, increaseTime, timeLatest} from '../../helpers/misc-utils';
 import chai from 'chai';
 import {ReserveData, UserReserveData} from './utils/interfaces';
 import {waitForTx} from '../__setup.spec';
-import {ContractReceipt} from 'ethers/contract';
+import {ContractReceipt} from 'ethers';
 import {ethers} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {tEthereumAddress, RateMode} from '../../helpers/types';
@@ -397,7 +397,7 @@ export const repay = async (
   if (amount !== '-1') {
     amountToRepay = (await convertToCurrencyDecimals(reserve, amount)).toString();
   } else {
-    amountToRepay = ethers.utils.bigNumberify(MAX_UINT_AMOUNT).toString();
+    amountToRepay = MAX_UINT_AMOUNT;
   }
   amountToRepay = '0x' + new BigNumber(amountToRepay).toString(16);
 

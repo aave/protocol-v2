@@ -168,8 +168,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Changes LTV of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.setLtv(weth.address, '60');
-    const {ltv}: any = await pool.getReserveConfigurationData(weth.address);
-    expect(ltv).to.be.bignumber.equal('60', 'Invalid LTV');
+    const {ltv} = await pool.getReserveConfigurationData(weth.address);
+    expect(ltv.toString()).to.be.bignumber.equal('60', 'Invalid LTV');
   });
 
   it('Check the onlyLendingPoolManager on setLtv', async () => {
@@ -183,8 +183,11 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Changes liquidation threshold of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.setLiquidationThreshold(weth.address, '75');
-    const {liquidationThreshold}: any = await pool.getReserveConfigurationData(weth.address);
-    expect(liquidationThreshold).to.be.bignumber.equal('75', 'Invalid Liquidation threshold');
+    const {liquidationThreshold} = await pool.getReserveConfigurationData(weth.address);
+    expect(liquidationThreshold.toString()).to.be.bignumber.equal(
+      '75',
+      'Invalid Liquidation threshold'
+    );
   });
 
   it('Check the onlyLendingPoolManager on setLiquidationThreshold', async () => {
@@ -199,7 +202,10 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, pool, weth} = testEnv;
     await configurator.setLiquidationBonus(weth.address, '110');
     const {liquidationBonus} = await pool.getReserveConfigurationData(weth.address);
-    expect(liquidationBonus).to.be.bignumber.equal('110', 'Invalid Liquidation discount');
+    expect(liquidationBonus.toString()).to.be.bignumber.equal(
+      '110',
+      'Invalid Liquidation discount'
+    );
   });
 
   it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {

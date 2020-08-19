@@ -35,20 +35,16 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
     await pool.connect(depositor.signer).deposit(dai.address, amountDAItoDeposit, '0');
 
-
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
-  
+
     //mints WETH to borrower
     await weth.connect(borrower.signer).mint(amountETHtoDeposit);
 
     //approve protocol to access borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    
-    //user 2 deposits 1 WETH
-    await pool
-      .connect(borrower.signer)
-      .deposit(weth.address, amountETHtoDeposit, '0');
 
+    //user 2 deposits 1 WETH
+    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
 
     //user 2 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -68,7 +64,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
-    expect(userGlobalDataAfter.currentLiquidationThreshold).to.be.bignumber.equal(
+    expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
       '8000',
       'Invalid liquidation threshold'
     );
@@ -100,13 +96,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const borrower = users[1];
     //user 2 tries to borrow
     await expect(
-      pool.liquidationCall(
-        weth.address,
-        weth.address,
-        borrower.address,
-        oneEther.toString(),
-        true
-      )
+      pool.liquidationCall(weth.address, weth.address, borrower.address, oneEther.toString(), true)
     ).revertedWith(USER_DID_NOT_BORROW_SPECIFIED);
   });
 
@@ -190,12 +180,12 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       'Invalid health factor'
     );
 
-    expect(userReserveDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
+    expect(userReserveDataAfter.currentVariableDebt.toString()).to.be.bignumber.almostEqual(
       new BigNumber(variableDebtBeforeTx).minus(amountToLiquidate).toFixed(0),
       'Invalid user borrow balance after liquidation'
     );
 
-    expect(daiReserveDataAfter.availableLiquidity).to.be.bignumber.almostEqual(
+    expect(daiReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
       new BigNumber(daiReserveDataBefore.availableLiquidity.toString())
         .plus(amountToLiquidate)
         .toFixed(0),
@@ -214,7 +204,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       'Invalid liquidity APY'
     );
 
-    expect(ethReserveDataAfter.availableLiquidity).to.be.bignumber.almostEqual(
+    expect(ethReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
       new BigNumber(ethReserveDataBefore.availableLiquidity.toString()).toFixed(0),
       'Invalid collateral available liquidity'
     );
@@ -245,7 +235,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     //approve protocol to access borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    
+
     await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
       value: amountETHtoDeposit,
     });
@@ -352,7 +342,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       'Invalid liquidity APY'
     );
 
-    expect(ethReserveDataAfter.availableLiquidity).to.be.bignumber.almostEqual(
+    expect(ethReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
       new BigNumber(ethReserveDataBefore.availableLiquidity.toString()).toFixed(0),
       'Invalid collateral available liquidity'
     );

@@ -26,7 +26,7 @@ import {
   registerContractInJsonDb,
   deployStableDebtToken,
   deployVariableDebtToken,
-  deployGenericAToken
+  deployGenericAToken,
 } from '../helpers/contracts-helpers';
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {Wallet, ContractTransaction, ethers, Signer} from 'ethers';
@@ -66,24 +66,24 @@ const deployAllMockTokens = async (deployer: Signer) => {
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
-      let decimals = 18;
+    let decimals = 18;
 
-      let configData = (<any>protoConfigData)[tokenSymbol];
+    let configData = (<any>protoConfigData)[tokenSymbol];
 
-      if (!configData) {
-        configData = (<any>secondaryConfigData)[tokenSymbol];
-      }
+    if (!configData) {
+      configData = (<any>secondaryConfigData)[tokenSymbol];
+    }
 
-      if (!configData) {
-        decimals = 18;
-      }
+    if (!configData) {
+      decimals = 18;
+    }
 
-      tokens[tokenSymbol] = await deployMintableErc20([
-        tokenSymbol,
-        tokenSymbol,
-        configData ? configData.reserveDecimals : 18,
-      ]);
-      await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
+    tokens[tokenSymbol] = await deployMintableErc20([
+      tokenSymbol,
+      tokenSymbol,
+      configData ? configData.reserveDecimals : 18,
+    ]);
+    await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
   }
 
   return tokens;
@@ -222,15 +222,15 @@ const initReserves = async (
       ]);
 
       const stableDebtToken = await deployStableDebtToken([
-        `Aave stable debt bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
-        `stableDebt${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
+        `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         tokenAddress,
         lendingPool.address,
       ]);
 
       const variableDebtToken = await deployVariableDebtToken([
-        `Aave variable debt bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
-        `variableDebt${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
+        `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         tokenAddress,
         lendingPool.address,
       ]);
@@ -238,10 +238,9 @@ const initReserves = async (
       const aToken = await deployGenericAToken([
         lendingPool.address,
         tokenAddress,
-        `Aave interest bearing ${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
-        `a${assetSymbol === "WETH" ? "ETH" : assetSymbol}`,
-         ]);
-
+        `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+      ]);
 
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search('UNI') === -1) {
@@ -507,7 +506,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const tokenDistributorImpl = await deployTokenDistributor();
   const tokenDistributorProxy = await deployInitializableAdminUpgradeabilityProxy();
-  const implementationParams = tokenDistributorImpl.interface.functions.initialize.encode([
+  const implementationParams = tokenDistributorImpl.interface.encodeFunctionData('initialize', [
     ZERO_ADDRESS,
     tokensAddressesWithoutUsd.LEND,
     '0x0000000000000000000000000000000000000000', // TODO: finish removal
@@ -516,7 +515,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     Object.values(tokensAddressesWithoutUsd),
   ]);
   await waitForTx(
-    await tokenDistributorProxy.initialize(
+    await tokenDistributorProxy['initialize(address,address,bytes)'](
       tokenDistributorImpl.address,
       await secondaryWallet.getAddress(),
       implementationParams

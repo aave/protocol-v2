@@ -1,7 +1,6 @@
 import {expect} from 'chai';
 import {makeSuite, TestEnv} from './helpers/make-suite';
-import {ProtocolErrors, TokenContractId, eContractid} from '../helpers/types';
-import {getContractAddress} from 'ethers/utils';
+import {ProtocolErrors, eContractid} from '../helpers/types';
 import {getContract} from '../helpers/contracts-helpers';
 import {StableDebtToken} from '../types/StableDebtToken';
 

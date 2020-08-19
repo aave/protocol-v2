@@ -51,17 +51,16 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     ethers.utils.parseUnits('10000');
 
-    const reserveData: any = await pool.getReserveData(weth.address);
+    const reserveData = await pool.getReserveData(weth.address);
 
     const currentLiquidityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
-    const totalLiquidity = new BigNumber(reserveData.availableLiquidity)
-      .plus(reserveData.totalBorrowsStable)
-      .plus(reserveData.totalBorrowsVariable);
+    const totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
+      .plus(reserveData.totalBorrowsStable.toString())
+      .plus(reserveData.totalBorrowsVariable.toString());
 
     const tokenDistributorBalance = await weth.balanceOf(_tokenDistributor.address);
-    
 
     expect(totalLiquidity.toString()).to.be.equal('1000504000000000000');
     expect(currentLiquidityRate.toString()).to.be.equal('0');
@@ -79,16 +78,15 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       '0x10'
     );
 
-    const reserveData: any = await pool.getReserveData(weth.address);
+    const reserveData = await pool.getReserveData(weth.address);
     const tokenDistributorBalance = await weth.balanceOf(_tokenDistributor.address);
-    
 
     const currentLiqudityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
-    const totalLiquidity = new BigNumber(reserveData.availableLiquidity)
-      .plus(reserveData.totalBorrowsStable)
-      .plus(reserveData.totalBorrowsVariable);
+    const totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
+      .plus(reserveData.totalBorrowsStable.toString())
+      .plus(reserveData.totalBorrowsVariable.toString());
 
     expect(totalLiquidity.toString()).to.be.equal('1001134317520000000');
     expect(currentLiqudityRate.toString()).to.be.equal('0');
@@ -143,8 +141,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   it('tries to take a flashloan using a non contract address as receiver (revert expected)', async () => {
     const {pool, deployer, weth} = testEnv;
 
-    await expect(pool.flashLoan(deployer.address, weth.address, '1000000000000000000', '0x10'))
-      .to.be.reverted;
+    await expect(pool.flashLoan(deployer.address, weth.address, '1000000000000000000', '0x10')).to
+      .be.reverted;
   });
 
   it('Deposits DAI into the reserve', async () => {
