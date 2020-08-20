@@ -26,5 +26,5 @@ interface IVariableDebtToken {
    * @dev returns the last index of the user
    * @return the index of the user
    **/
-  function getUserIndex(address _user) external virtual view returns (uint256);
+  function getUserIndex(address _user) external view returns (uint256);
 }
