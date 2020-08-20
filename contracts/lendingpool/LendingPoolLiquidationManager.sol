@@ -293,9 +293,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     address _principalAddress,
     uint256 _purchaseAmount,
     uint256 _userCollateralBalance
-  ) internal view returns (uint256 collateralAmount, uint256 principalAmountNeeded) {
-    collateralAmount = 0;
-    principalAmountNeeded = 0;
+  ) internal view returns (uint256, uint256) {
+    uint256 collateralAmount = 0;
+    uint256 principalAmountNeeded = 0;
     IPriceOracleGetter oracle = IPriceOracleGetter(addressesProvider.getPriceOracle());
 
     // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
@@ -330,7 +330,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       collateralAmount = vars.maxAmountCollateralToLiquidate;
       principalAmountNeeded = _purchaseAmount;
     }
-
     return (collateralAmount, principalAmountNeeded);
   }
 }
