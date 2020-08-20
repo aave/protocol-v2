@@ -32,9 +32,6 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
   uint256 public constant EXCESS_UTILIZATION_RATE = 0.2 * 1e27;
 
-  using WadRayMath for uint256;
-  using SafeMath for uint256;
-
   LendingPoolAddressesProvider public immutable addressesProvider;
 
   //base variable borrow rate when Utilization rate = 0. Expressed in ray
