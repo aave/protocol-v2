@@ -4,14 +4,12 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-
 import {ReserveLogic} from './ReserveLogic.sol';
-import {ReserveConfiguration} from './ReserveConfiguration.sol';
-import {UserConfiguration} from './UserConfiguration.sol';
-import {WadRayMath} from './WadRayMath.sol';
-import {PercentageMath} from './PercentageMath.sol';
-import '../interfaces/IPriceOracleGetter.sol';
-import '@nomiclabs/buidler/console.sol';
+import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../configuration/UserConfiguration.sol';
+import {WadRayMath} from '../math/WadRayMath.sol';
+import {PercentageMath} from '../math/PercentageMath.sol';
+import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title GenericLogic library

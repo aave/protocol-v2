@@ -3,13 +3,11 @@ pragma solidity ^0.6.8;
 
 import {ERC20} from './ERC20.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
-import {WadRayMath} from '../libraries/WadRayMath.sol';
+import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-
-import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title Aave ERC20 AToken

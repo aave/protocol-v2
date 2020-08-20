@@ -2,29 +2,28 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../tokenization/AToken.sol';
-import '../libraries/WadRayMath.sol';
-import '../libraries/ReserveLogic.sol';
-import '../libraries/Helpers.sol';
-import '../libraries/GenericLogic.sol';
-import '../libraries/ValidationLogic.sol';
-import '../libraries/ReserveConfiguration.sol';
-import '../libraries/UserConfiguration.sol';
-import '../tokenization/interfaces/IStableDebtToken.sol';
-import '../tokenization/interfaces/IVariableDebtToken.sol';
-
-import '../flashloan/interfaces/IFlashLoanReceiver.sol';
-import './LendingPoolLiquidationManager.sol';
-import '../interfaces/IPriceOracleGetter.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {
+  VersionedInitializable
+} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {AToken} from '../tokenization/AToken.sol';
+import {Helpers} from '../libraries/helpers/Helpers.sol';
+import {WadRayMath} from '../libraries/math/WadRayMath.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
+import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
+import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
+import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
+import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
+import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
-import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title LendingPool contract
@@ -394,15 +393,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     );
   }
 
-  /**
-   * @notice repays a borrow on the specific reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
-   * @dev the target user is defined by _onBehalfOf. If there is no repayment on behalf of another account,
-   * _onBehalfOf must be equal to msg.sender.
-   * @param _reserve the address of the reserve on which the user borrowed
-   * @param _amount the amount to repay, or uint256(-1) if the user wants to repay everything
-   * @param _onBehalfOf the address for which msg.sender is repaying.
-   **/
-
   struct RepayLocalVars {
     uint256 stableDebt;
     uint256 variableDebt;
@@ -411,6 +401,14 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 totalDebt;
   }
 
+  /**
+   * @notice repays a borrow on the specific reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
+   * @dev the target user is defined by _onBehalfOf. If there is no repayment on behalf of another account,
+   * _onBehalfOf must be equal to msg.sender.
+   * @param _reserve the address of the reserve on which the user borrowed
+   * @param _amount the amount to repay, or uint256(-1) if the user wants to repay everything
+   * @param _onBehalfOf the address for which msg.sender is repaying.
+   **/
   function repay(
     address _reserve,
     uint256 _amount,
@@ -848,8 +846,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   }
 
   receive() external payable {
-    //only contracts can send ETH to the core
-    require(msg.sender.isContract(), '22');
+    revert();
   }
 
   /**

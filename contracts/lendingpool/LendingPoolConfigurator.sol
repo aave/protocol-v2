@@ -2,15 +2,17 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
-
-import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-import '../libraries/ReserveConfiguration.sol';
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {
+  VersionedInitializable
+} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {
+  InitializableAdminUpgradeabilityProxy
+} from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {LendingPool} from './LendingPool.sol';
 import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
-import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title LendingPoolConfigurator contract
