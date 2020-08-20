@@ -4,7 +4,6 @@ pragma solidity ^0.6.8;
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {
   VersionedInitializable
@@ -33,7 +32,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-  using Address for address;
   using ReserveLogic for ReserveLogic.ReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;

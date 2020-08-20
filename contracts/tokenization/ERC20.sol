@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/GSN/Context.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
+import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 
 /**
  * @dev Implementation of the {IERC20} interface.
@@ -32,7 +31,6 @@ import '@openzeppelin/contracts/utils/Address.sol';
  */
 contract ERC20 is Context, IERC20 {
   using SafeMath for uint256;
-  using Address for address;
 
   mapping(address => uint256) private _balances;
 
