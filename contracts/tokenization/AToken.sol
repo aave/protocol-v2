@@ -8,6 +8,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {IAToken, IERC20} from '../interfaces/IAToken.sol';
 
 /**
  * @title Aave ERC20 AToken
@@ -15,7 +16,7 @@ import {
  * @dev Implementation of the interest bearing token for the DLP protocol.
  * @author Aave
  */
-contract AToken is VersionedInitializable, ERC20 {
+contract AToken is VersionedInitializable, ERC20, IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for ERC20;
 
@@ -167,7 +168,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * the recepient redirected balance.
    * @param _to the address to which the interest will be redirected
    **/
-  function redirectInterestStream(address _to) external {
+  function redirectInterestStream(address _to) external override {
     redirectInterestStreamInternal(msg.sender, _to);
   }
 
@@ -179,7 +180,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _from the address of the user whom interest is being redirected
    * @param _to the address to which the interest will be redirected
    **/
-  function redirectInterestStreamOf(address _from, address _to) external {
+  function redirectInterestStreamOf(address _from, address _to) external override {
     require(
       msg.sender == interestRedirectionAllowances[_from],
       'Caller is not allowed to redirect the interest of the user'
@@ -193,7 +194,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _to the address to which the interest will be redirected. Pass address(0) to reset
    * the allowance.
    **/
-  function allowInterestRedirectionTo(address _to) external {
+  function allowInterestRedirectionTo(address _to) external override {
     require(_to != msg.sender, 'User cannot give allowance to himself');
     interestRedirectionAllowances[msg.sender] = _to;
     emit InterestRedirectionAllowanceChanged(msg.sender, _to);
@@ -208,7 +209,7 @@ contract AToken is VersionedInitializable, ERC20 {
     address _user,
     address _underlyingTarget,
     uint256 _amount
-  ) external onlyLendingPool {
+  ) external override onlyLendingPool {
     //cumulates the balance of the user
     (, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
@@ -245,7 +246,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _user the address receiving the minted tokens
    * @param _amount the amount of tokens to mint
    */
-  function mint(address _user, uint256 _amount) external onlyLendingPool {
+  function mint(address _user, uint256 _amount) external override onlyLendingPool {
     //cumulates the balance of the user
     (, , uint256 balanceIncrease) = calculateBalanceIncreaseInternal(_user);
 
@@ -274,7 +275,7 @@ contract AToken is VersionedInitializable, ERC20 {
     address _from,
     address _to,
     uint256 _value
-  ) external onlyLendingPool {
+  ) external override onlyLendingPool {
     //being a normal transfer, the Transfer() and BalanceTransfer() are emitted
     //so no need to emit a specific event here
     executeTransferInternal(_from, _to, _value);
@@ -286,7 +287,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _user the user for which the balance is being calculated
    * @return the total balance of the user
    **/
-  function balanceOf(address _user) public override view returns (uint256) {
+  function balanceOf(address _user) public override(ERC20, IERC20) view returns (uint256) {
     //current principal balance of the user
     uint256 currentPrincipalBalance = super.balanceOf(_user);
     //balance redirected by other users to _user for interest rate accrual
@@ -321,7 +322,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _user the address of the user
    * @return the principal balance of the user
    **/
-  function principalBalanceOf(address _user) external view returns (uint256) {
+  function principalBalanceOf(address _user) external override view returns (uint256) {
     return super.balanceOf(_user);
   }
 
@@ -331,7 +332,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * does that too.
    * @return the current total supply
    **/
-  function totalSupply() public override view returns (uint256) {
+  function totalSupply() public override(ERC20, IERC20) view returns (uint256) {
     uint256 currentSupplyPrincipal = super.totalSupply();
 
     if (currentSupplyPrincipal == 0) {
@@ -351,7 +352,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _amount the amount to check
    * @return true if the _user can transfer _amount, false otherwise
    **/
-  function isTransferAllowed(address _user, uint256 _amount) public view returns (bool) {
+  function isTransferAllowed(address _user, uint256 _amount) public override view returns (bool) {
     return pool.balanceDecreaseAllowed(underlyingAssetAddress, _user, _amount);
   }
 
@@ -360,7 +361,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _user address of the user
    * @return the last user index
    **/
-  function getUserIndex(address _user) external view returns (uint256) {
+  function getUserIndex(address _user) external override view returns (uint256) {
     return userIndexes[_user];
   }
 
@@ -369,7 +370,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _user address of the user
    * @return 0 if there is no redirection, an address otherwise
    **/
-  function getInterestRedirectionAddress(address _user) external view returns (address) {
+  function getInterestRedirectionAddress(address _user) external override view returns (address) {
     return interestRedirectionAddresses[_user];
   }
 
@@ -379,7 +380,7 @@ contract AToken is VersionedInitializable, ERC20 {
    * @param _user address of the user
    * @return the total redirected balance
    **/
-  function getRedirectedBalance(address _user) external view returns (uint256) {
+  function getRedirectedBalance(address _user) external override view returns (uint256) {
     return redirectedBalances[_user];
   }
 
@@ -390,6 +391,7 @@ contract AToken is VersionedInitializable, ERC20 {
    **/
   function calculateBalanceIncreaseInternal(address _user)
     internal
+    view
     returns (
       uint256,
       uint256,
@@ -634,6 +636,7 @@ contract AToken is VersionedInitializable, ERC20 {
 
   function transferUnderlyingTo(address _target, uint256 _amount)
     external
+    override
     onlyLendingPool
     returns (uint256)
   {

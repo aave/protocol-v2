@@ -1,9 +1,9 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: agpl-3.0
+pragma solidity ^0.6.8;
 
 import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -22,7 +22,6 @@ import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   using SafeMath for uint256;
   using WadRayMath for uint256;
-  using Address for address;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
   struct UserData {
@@ -238,6 +237,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    **/
   function _calculateBalanceIncrease(address _user)
     internal
+    view
     returns (
       uint256,
       uint256,

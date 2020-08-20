@@ -1,4 +1,5 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: agpl-3.0
+pragma solidity ^0.6.8;
 
 /**
  * @title interface IVariableDebtToken
@@ -12,14 +13,14 @@ interface IVariableDebtToken {
    * @param _user the user receiving the debt
    * @param _amount the amount of debt being minted
    **/
-  function mint(address _user, uint256 _amount) external virtual;
+  function mint(address _user, uint256 _amount) external;
 
   /**
    * @dev burns user variable debt
    * @param _user the user which debt is burnt
    * @param _amount the amount of debt being burned
    **/
-  function burn(address _user, uint256 _amount) external virtual;
+  function burn(address _user, uint256 _amount) external;
 
   /**
    * @dev returns the last index of the user

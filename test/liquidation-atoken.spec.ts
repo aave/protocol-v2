@@ -236,9 +236,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //approve protocol to access borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
-      value: amountETHtoDeposit,
-    });
+    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);

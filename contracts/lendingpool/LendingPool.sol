@@ -4,13 +4,12 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {AToken} from '../tokenization/AToken.sol';
+import {IAToken} from '../interfaces/IAToken.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
@@ -24,6 +23,7 @@ import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol
 import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
 
 /**
  * @title LendingPool contract
@@ -31,10 +31,9 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
  * @author Aave
  **/
 
-contract LendingPool is ReentrancyGuard, VersionedInitializable {
+contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   using SafeMath for uint256;
   using WadRayMath for uint256;
-  using Address for address payable;
   using ReserveLogic for ReserveLogic.ReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
@@ -253,12 +252,12 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address _reserve,
     uint256 _amount,
     uint16 _referralCode
-  ) external payable nonReentrant {
+  ) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     ValidationLogic.validateDeposit(reserve, _amount);
 
-    AToken aToken = AToken(reserve.aTokenAddress);
+    IAToken aToken = IAToken(reserve.aTokenAddress);
 
     bool isFirstDeposit = aToken.balanceOf(msg.sender) == 0;
 
@@ -284,10 +283,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _reserve the address of the reserve
    * @param _amount the underlying amount to be redeemed
    **/
-  function withdraw(address _reserve, uint256 _amount) external nonReentrant {
+  function withdraw(address _reserve, uint256 _amount) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
-    AToken aToken = AToken(payable(reserve.aTokenAddress));
+    IAToken aToken = IAToken(reserve.aTokenAddress);
 
     uint256 userBalance = aToken.balanceOf(msg.sender);
 
@@ -335,7 +334,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _amount,
     uint256 _interestRateMode,
     uint16 _referralCode
-  ) external nonReentrant {
+  ) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
     UserConfiguration.Map storage userConfig = usersConfig[msg.sender];
 
@@ -377,7 +376,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
 
     //if we reached this point, we can transfer
-    AToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, _amount);
+    IAToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, _amount);
 
     emit Borrow(
       _reserve,
@@ -413,8 +412,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address _reserve,
     uint256 _amount,
     uint256 _rateMode,
-    address payable _onBehalfOf
-  ) external payable nonReentrant {
+    address _onBehalfOf
+  ) external override nonReentrant {
     RepayLocalVars memory vars;
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
@@ -441,8 +440,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
       _onBehalfOf,
       vars.stableDebt,
       vars.variableDebt,
-      vars.paybackAmount,
-      msg.value
+      vars.paybackAmount
     );
 
     reserve.updateCumulativeIndexesAndTimestamp();
@@ -477,7 +475,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _reserve the address of the reserve on which the user borrowed
    * @param _rateMode the rate mode that the user wants to swap
    **/
-  function swapBorrowRateMode(address _reserve, uint256 _rateMode) external nonReentrant {
+  function swapBorrowRateMode(address _reserve, uint256 _rateMode) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -525,7 +523,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _reserve the address of the reserve
    * @param _user the address of the user to be rebalanced
    **/
-  function rebalanceStableBorrowRate(address _reserve, address _user) external nonReentrant {
+  function rebalanceStableBorrowRate(address _reserve, address _user)
+    external
+    override
+    nonReentrant
+  {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
     IStableDebtToken stableDebtToken = IStableDebtToken(reserve.stableDebtTokenAddress);
@@ -577,6 +579,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    **/
   function setUserUseReserveAsCollateral(address _reserve, bool _useAsCollateral)
     external
+    override
     nonReentrant
   {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
@@ -614,7 +617,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address _user,
     uint256 _purchaseAmount,
     bool _receiveAToken
-  ) external payable nonReentrant {
+  ) external override nonReentrant {
     address liquidationManager = addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -650,11 +653,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address _receiver,
     address _reserve,
     uint256 _amount,
-    bytes memory _params
-  ) public nonReentrant {
+    bytes calldata _params
+  ) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
-    address payable aTokenAddress = payable(reserve.aTokenAddress);
+    address aTokenAddress = reserve.aTokenAddress;
 
     //check that the reserve has enough available liquidity
     uint256 availableLiquidityBefore = IERC20(_reserve).balanceOf(aTokenAddress);
@@ -671,10 +674,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     //get the FlashLoanReceiver instance
     IFlashLoanReceiver receiver = IFlashLoanReceiver(_receiver);
 
-    address payable userPayable = address(uint160(_receiver));
-
     //transfer funds to the receiver
-    AToken(aTokenAddress).transferUnderlyingTo(userPayable, _amount);
+    IAToken(aTokenAddress).transferUnderlyingTo(_receiver, _amount);
 
     //execute action of the receiver
     receiver.executeOperation(_reserve, aTokenAddress, _amount, amountFee, _params);
@@ -699,6 +700,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function getReserveConfigurationData(address _reserve)
     external
+    override
     view
     returns (
       uint256 decimals,
@@ -731,6 +733,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function getReserveTokensAddresses(address _reserve)
     external
+    override
     view
     returns (
       address aTokenAddress,
@@ -749,6 +752,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function getReserveData(address _reserve)
     external
+    override
     view
     returns (
       uint256 availableLiquidity,
@@ -780,6 +784,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function getUserAccountData(address _user)
     external
+    override
     view
     returns (
       uint256 totalCollateralETH,
@@ -813,6 +818,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function getUserReserveData(address _reserve, address _user)
     external
+    override
     view
     returns (
       uint256 currentATokenBalance,
@@ -841,7 +847,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(_user);
   }
 
-  function getReserves() external view returns (address[] memory) {
+  function getReserves() external override view returns (address[] memory) {
     return reservesList;
   }
 
@@ -861,7 +867,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address _stableDebtAddress,
     address _variableDebtAddress,
     address _interestRateStrategyAddress
-  ) external onlyLendingPoolConfigurator {
+  ) external override onlyLendingPoolConfigurator {
     reserves[_reserve].init(
       _aTokenAddress,
       _stableDebtAddress,
@@ -879,6 +885,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function setReserveInterestRateStrategyAddress(address _reserve, address _rateStrategyAddress)
     external
+    override
     onlyLendingPoolConfigurator
   {
     reserves[_reserve].interestRateStrategyAddress = _rateStrategyAddress;
@@ -886,6 +893,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function setConfiguration(address _reserve, uint256 _configuration)
     external
+    override
     onlyLendingPoolConfigurator
   {
     reserves[_reserve].configuration.data = _configuration;
@@ -893,6 +901,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
   function getConfiguration(address _reserve)
     external
+    override
     view
     returns (ReserveConfiguration.Map memory)
   {
@@ -918,11 +927,16 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
   }
 
-  function getReserveNormalizedIncome(address _reserve) external view returns (uint256) {
+  function getReserveNormalizedIncome(address _reserve) external override view returns (uint256) {
     return reserves[_reserve].getNormalizedIncome();
   }
 
-  function getReserveNormalizedVariableDebt(address _reserve) external view returns (uint256) {
+  function getReserveNormalizedVariableDebt(address _reserve)
+    external
+    override
+    view
+    returns (uint256)
+  {
     return reserves[_reserve].getNormalizedDebt();
   }
 
@@ -930,7 +944,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address _reserve,
     address _user,
     uint256 _amount
-  ) external view returns (bool) {
+  ) external override view returns (bool) {
     return
       GenericLogic.balanceDecreaseAllowed(
         _reserve,

@@ -25,11 +25,11 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
     address _destination,
     uint256 _amount
   ) internal {
-    transferInternal(payable(_destination), _reserve, _amount);
+    transferInternal(_destination, _reserve, _amount);
   }
 
   function transferInternal(
-    address payable _destination,
+    address _destination,
     address _reserve,
     uint256 _amount
   ) internal {

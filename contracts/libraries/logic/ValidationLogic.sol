@@ -221,7 +221,6 @@ library ValidationLogic {
    * @param _stableBorrowBalance the borrow balance of the user
    * @param _variableBorrowBalance the borrow balance of the user
    * @param _actualPaybackAmount the actual amount being repaid
-   * @param _msgValue the value passed to the repay() function
    */
   function validateRepay(
     ReserveLogic.ReserveData storage _reserve,
@@ -231,8 +230,7 @@ library ValidationLogic {
     address _onBehalfOf,
     uint256 _stableBorrowBalance,
     uint256 _variableBorrowBalance,
-    uint256 _actualPaybackAmount,
-    uint256 _msgValue
+    uint256 _actualPaybackAmount
   ) external view {
     bool isActive = _reserve.configuration.getActive();
 

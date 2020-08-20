@@ -10,7 +10,7 @@ import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {AToken} from '../tokenization/AToken.sol';
+import {IAToken} from '../interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -91,7 +91,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     uint256 maxCollateralToLiquidate;
     uint256 principalAmountNeeded;
     uint256 healthFactor;
-    AToken collateralAtoken;
+    IAToken collateralAtoken;
     bool isCollateralEnabled;
   }
 
@@ -118,7 +118,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     address _user,
     uint256 _purchaseAmount,
     bool _receiveAToken
-  ) external payable returns (uint256, string memory) {
+  ) external returns (uint256, string memory) {
     ReserveLogic.ReserveData storage principalReserve = reserves[_reserve];
     ReserveLogic.ReserveData storage collateralReserve = reserves[_collateral];
     UserConfiguration.Map storage userConfig = usersConfig[_user];
@@ -196,7 +196,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
 
-    vars.collateralAtoken = AToken(payable(collateralReserve.aTokenAddress));
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
 
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!_receiveAToken) {

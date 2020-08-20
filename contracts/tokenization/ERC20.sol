@@ -1,4 +1,5 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: agpl-3.0
+pragma solidity ^0.6.8;
 
 import '@openzeppelin/contracts/GSN/Context.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
