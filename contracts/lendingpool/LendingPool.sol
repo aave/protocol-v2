@@ -20,7 +20,6 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
-import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -44,10 +43,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
   uint256 private constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
   uint256 private constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
   uint256 private constant FLASHLOAN_FEE_TOTAL = 9;
-  uint256 private constant FLASHLOAN_FEE_PROTOCOL = 3000;
 
   LendingPoolAddressesProvider public addressesProvider;
-  IFeeProvider feeProvider;
   using SafeERC20 for IERC20;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
@@ -161,7 +158,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    * @param _reserve the address of the reserve
    * @param _amount the amount requested
    * @param _totalFee the total fee on the amount
-   * @param _protocolFee the part of the fee for the protocol
    * @param _timestamp the timestamp of the action
    **/
   event FlashLoan(
@@ -169,7 +165,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address indexed _reserve,
     uint256 _amount,
     uint256 _totalFee,
-    uint256 _protocolFee,
     uint256 _timestamp
   );
 
@@ -245,7 +240,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
    **/
   function initialize(LendingPoolAddressesProvider _addressesProvider) public initializer {
     addressesProvider = _addressesProvider;
-    feeProvider = IFeeProvider(addressesProvider.getFeeProvider());
   }
 
   /**
@@ -264,7 +258,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
 
     ValidationLogic.validateDeposit(reserve, _amount);
 
-    AToken aToken = AToken(payable(reserve.aTokenAddress));
+    AToken aToken = AToken(reserve.aTokenAddress);
 
     bool isFirstDeposit = aToken.balanceOf(msg.sender) == 0;
 
@@ -644,15 +638,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     }
   }
 
-  struct FlashLoanLocalVars {
-    uint256 availableLiquidityBefore;
-    uint256 totalFeeBips;
-    uint256 protocolFeeBips;
-    uint256 amountFee;
-    uint256 protocolFee;
-    address payable aTokenAddress;
-  }
-
   /**
    * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
@@ -667,29 +652,21 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     uint256 _amount,
     bytes memory _params
   ) public nonReentrant {
-    FlashLoanLocalVars memory vars;
-
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
-    vars.aTokenAddress = payable(reserve.aTokenAddress);
+    address payable aTokenAddress = payable(reserve.aTokenAddress);
 
     //check that the reserve has enough available liquidity
-    vars.availableLiquidityBefore = IERC20(_reserve).balanceOf(vars.aTokenAddress);
+    uint256 availableLiquidityBefore = IERC20(_reserve).balanceOf(aTokenAddress);
 
     //calculate amount fee
-    vars.amountFee = _amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
-
-    //protocol fee is the part of the amountFee reserved for the protocol - the rest goes to depositors
-    vars.protocolFee = vars.amountFee.mul(FLASHLOAN_FEE_PROTOCOL).div(10000);
+    uint256 amountFee = _amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
 
     require(
-      vars.availableLiquidityBefore >= _amount,
+      availableLiquidityBefore >= _amount,
       'There is not enough liquidity available to borrow'
     );
-    require(
-      vars.amountFee > 0 && vars.protocolFee > 0,
-      'The requested amount is too small for a FlashLoan.'
-    );
+    require(amountFee > 0, 'The requested amount is too small for a FlashLoan.');
 
     //get the FlashLoanReceiver instance
     IFlashLoanReceiver receiver = IFlashLoanReceiver(_receiver);
@@ -697,34 +674,23 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable {
     address payable userPayable = address(uint160(_receiver));
 
     //transfer funds to the receiver
-    AToken(vars.aTokenAddress).transferUnderlyingTo(userPayable, _amount);
+    AToken(aTokenAddress).transferUnderlyingTo(userPayable, _amount);
 
     //execute action of the receiver
-    receiver.executeOperation(_reserve, vars.aTokenAddress, _amount, vars.amountFee, _params);
+    receiver.executeOperation(_reserve, aTokenAddress, _amount, amountFee, _params);
 
     //check that the actual balance of the core contract includes the returned amount
-    uint256 availableLiquidityAfter = IERC20(_reserve).balanceOf(vars.aTokenAddress);
+    uint256 availableLiquidityAfter = IERC20(_reserve).balanceOf(aTokenAddress);
 
     require(
-      availableLiquidityAfter == vars.availableLiquidityBefore.add(vars.amountFee),
+      availableLiquidityAfter == availableLiquidityBefore.add(amountFee),
       'The actual balance of the protocol is inconsistent'
     );
 
-    reserve.updateStateOnFlashLoan(
-      _reserve,
-      vars.availableLiquidityBefore,
-      vars.amountFee.sub(vars.protocolFee),
-      vars.protocolFee
-    );
-
-    //transfer funds to the receiver
-    AToken(vars.aTokenAddress).transferUnderlyingTo(
-      addressesProvider.getTokenDistributor(),
-      vars.protocolFee
-    );
+    reserve.updateStateOnFlashLoan(_reserve, availableLiquidityBefore, amountFee);
 
     //solium-disable-next-line
-    emit FlashLoan(_receiver, _reserve, _amount, vars.amountFee, vars.protocolFee, block.timestamp);
+    emit FlashLoan(_receiver, _reserve, _amount, amountFee, block.timestamp);
   }
 
   /**

@@ -22,7 +22,6 @@ import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
-import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
@@ -40,7 +39,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using UserConfiguration for UserConfiguration.Map;
 
   LendingPoolAddressesProvider public addressesProvider;
-  IFeeProvider feeProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;

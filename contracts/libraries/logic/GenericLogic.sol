@@ -10,7 +10,6 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
-import {IFeeProvider} from '../../interfaces/IFeeProvider.sol';
 
 /**
  * @title GenericLogic library

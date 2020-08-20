@@ -13,7 +13,6 @@ import {
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {MintableErc20} from '../types/MintableErc20';
 import {LendingPoolAddressesProviderRegistry} from '../types/LendingPoolAddressesProviderRegistry';
-import {FeeProvider} from '../types/FeeProvider';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {Artifact} from '@nomiclabs/buidler/types';
@@ -23,7 +22,6 @@ import {MockAggregator} from '../types/MockAggregator';
 import {LendingRateOracle} from '../types/LendingRateOracle';
 import {DefaultReserveInterestRateStrategy} from '../types/DefaultReserveInterestRateStrategy';
 import {LendingPoolLiquidationManager} from '../types/LendingPoolLiquidationManager';
-import {TokenDistributor} from '../types/TokenDistributor';
 import {InitializableAdminUpgradeabilityProxy} from '../types/InitializableAdminUpgradeabilityProxy';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {WalletBalanceProvider} from '../types/WalletBalanceProvider';
@@ -101,9 +99,6 @@ export const deployLendingPoolAddressesProviderRegistry = async () =>
     eContractid.LendingPoolAddressesProviderRegistry,
     []
   );
-
-export const deployFeeProvider = async () =>
-  await deployContract<FeeProvider>(eContractid.FeeProvider, []);
 
 export const deployLendingPoolConfigurator = async () =>
   await deployContract<LendingPoolConfigurator>(eContractid.LendingPoolConfigurator, []);
@@ -205,9 +200,6 @@ export const deployLendingPoolLiquidationManager = async () => {
   const liquidationManager = await factory.deploy();
   return (await liquidationManager.deployed()) as LendingPoolLiquidationManager;
 };
-
-export const deployTokenDistributor = async () =>
-  await deployContract<TokenDistributor>(eContractid.TokenDistributor, []);
 
 export const deployInitializableAdminUpgradeabilityProxy = async () =>
   await deployContract<InitializableAdminUpgradeabilityProxy>(
@@ -335,13 +327,6 @@ export const getLendingPool = async (address?: tEthereumAddress) => {
   );
 };
 
-export const getFeeProvider = async (address?: tEthereumAddress) => {
-  return await getContract<FeeProvider>(
-    eContractid.FeeProvider,
-    address || (await getDb().get(`${eContractid.FeeProvider}.${BRE.network.name}`).value()).address
-  );
-};
-
 export const getPriceOracle = async (address?: tEthereumAddress) => {
   return await getContract<PriceOracle>(
     eContractid.PriceOracle,
@@ -399,14 +384,6 @@ export const getMockFlashLoanReceiver = async (address?: tEthereumAddress) => {
     address ||
       (await getDb().get(`${eContractid.MockFlashLoanReceiver}.${BRE.network.name}`).value())
         .address
-  );
-};
-
-export const getTokenDistributor = async (address?: tEthereumAddress) => {
-  return await getContract<TokenDistributor>(
-    eContractid.TokenDistributor,
-    address ||
-      (await getDb().get(`${eContractid.TokenDistributor}.${BRE.network.name}`).value()).address
   );
 };
 

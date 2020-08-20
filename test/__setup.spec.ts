@@ -4,7 +4,6 @@ import {
   deployLendingPoolAddressesProvider,
   deployMintableErc20,
   deployLendingPoolAddressesProviderRegistry,
-  deployFeeProvider,
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
@@ -14,11 +13,8 @@ import {
   deployLendingRateOracle,
   deployDefaultReserveInterestRateStrategy,
   deployLendingPoolLiquidationManager,
-  deployTokenDistributor,
-  deployInitializableAdminUpgradeabilityProxy,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  getFeeProvider,
   getLendingPool,
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
@@ -29,7 +25,7 @@ import {
   deployGenericAToken,
 } from '../helpers/contracts-helpers';
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
-import {Wallet, ContractTransaction, ethers, Signer} from 'ethers';
+import {ContractTransaction, Signer} from 'ethers';
 import {
   TokenContractId,
   eContractid,
@@ -62,7 +58,7 @@ import path from 'path';
 import fs from 'fs';
 
 ['misc'].forEach((folder) => {
-  const tasksPath = path.join('/src/', 'tasks', folder);
+  const tasksPath = path.join(__dirname, '../', 'tasks', folder);
   fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
 });
 
@@ -364,11 +360,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 0)
   );
 
-  const feeProviderImpl = await deployFeeProvider();
-  await waitForTx(await addressesProvider.setFeeProviderImpl(feeProviderImpl.address));
-  const feeProviderProxy = await getFeeProvider(await addressesProvider.getFeeProvider());
-  await insertContractAddressInDb(eContractid.FeeProvider, feeProviderProxy.address);
-
   const lendingPoolImpl = await deployLendingPool();
 
   console.log('Deployed lending pool, address:', lendingPoolImpl.address);
@@ -508,29 +499,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(
     await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
   );
-
-  const {receivers, percentages} = getFeeDistributionParamsCommon(lendingPoolManager);
-
-  const tokenDistributorImpl = await deployTokenDistributor();
-  const tokenDistributorProxy = await deployInitializableAdminUpgradeabilityProxy();
-  const implementationParams = tokenDistributorImpl.interface.encodeFunctionData('initialize', [
-    ZERO_ADDRESS,
-    tokensAddressesWithoutUsd.LEND,
-    '0x0000000000000000000000000000000000000000', // TODO: finish removal
-    receivers,
-    percentages,
-    Object.values(tokensAddressesWithoutUsd),
-  ]);
-  await waitForTx(
-    await tokenDistributorProxy['initialize(address,address,bytes)'](
-      tokenDistributorImpl.address,
-      await secondaryWallet.getAddress(),
-      implementationParams
-    )
-  );
-  await waitForTx(await addressesProvider.setTokenDistributor(tokenDistributorProxy.address));
-
-  await insertContractAddressInDb(eContractid.TokenDistributor, tokenDistributorProxy.address);
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);

@@ -208,8 +208,7 @@ library ReserveLogic {
     ReserveData storage _reserve,
     address _reserveAddress,
     uint256 _availableLiquidityBefore,
-    uint256 _income,
-    uint256 _protocolFee
+    uint256 _income
   ) external {
     //compounding the cumulated interest
     _reserve.updateCumulativeIndexesAndTimestamp();
