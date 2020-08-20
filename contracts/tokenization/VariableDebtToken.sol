@@ -31,7 +31,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param _balanceIncrease the debt accumulated since the last action
    * @param _index the index of the user
    **/
-  event mintDebt(
+  event MintDebt(
     address _user,
     uint256 _amount,
     uint256 _previousBalance,
@@ -49,7 +49,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param _balanceIncrease the debt accumulated since the last action
    * @param _index the index of the user
    **/
-  event burnDebt(
+  event BurnDebt(
     address _user,
     uint256 _amount,
     uint256 _previousBalance,
@@ -95,7 +95,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the user index
    **/
 
-  function getUserIndex(address _user) public virtual override view returns (uint256) {
+  function getUserIndex(address _user) external virtual override view returns (uint256) {
     return userIndexes[_user];
   }
 
@@ -104,7 +104,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param _user the user receiving the debt
    * @param _amount the amount of debt being minted
    **/
-  function mint(address _user, uint256 _amount) public override onlyLendingPool {
+  function mint(address _user, uint256 _amount) external override onlyLendingPool {
     (
       uint256 previousBalance,
       uint256 currentBalance,
@@ -113,16 +113,10 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     _mint(_user, _amount.add(balanceIncrease));
 
-    userIndexes[_user] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
+    uint256 newUserIndex = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
+    userIndexes[_user] = newUserIndex;
 
-    emit mintDebt(
-      _user,
-      _amount,
-      previousBalance,
-      currentBalance,
-      balanceIncrease,
-      userIndexes[_user]
-    );
+    emit MintDebt(_user, _amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
 
   /**
@@ -130,7 +124,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param _user the user which debt is burnt
    * @param _amount the amount of debt being burned
    **/
-  function burn(address _user, uint256 _amount) public override onlyLendingPool {
+  function burn(address _user, uint256 _amount) external override onlyLendingPool {
     (
       uint256 previousBalance,
       uint256 currentBalance,
@@ -143,51 +137,13 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       _burn(_user, _amount.sub(balanceIncrease));
     }
 
-    //if user repaid everything
-    if (currentBalance == _amount) {
-      userIndexes[_user] = 0;
-    } else {
-      userIndexes[_user] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
+    uint256 newUserIndex = 0;
+    //if user not repaid everything
+    if (currentBalance != _amount) {
+      newUserIndex = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
     }
+    userIndexes[_user] = newUserIndex;
 
-    emit burnDebt(
-      _user,
-      _amount,
-      previousBalance,
-      currentBalance,
-      balanceIncrease,
-      userIndexes[_user]
-    );
-  }
-
-  /**
-   * @dev calculates the increase in balance since the last user interaction
-   * @param _user the address of the user for which the interest is being accumulated
-   * @return the previous principal balance, the new principal balance, the balance increase
-   * and the new user index
-   **/
-  function _calculateBalanceIncrease(address _user)
-    internal
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    uint256 previousPrincipalBalance = balances[_user];
-
-    if (previousPrincipalBalance == 0) {
-      return (0, 0, 0);
-    }
-
-    //calculate the accrued interest since the last accumulation
-    uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
-
-    return (
-      previousPrincipalBalance,
-      previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease
-    );
+    emit BurnDebt(_user, _amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
 }
