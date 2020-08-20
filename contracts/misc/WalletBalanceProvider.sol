@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../lendingpool/LendingPool.sol';
+import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 /**
@@ -26,7 +26,7 @@ contract WalletBalanceProvider {
     provider = _provider;
   }
 
-  /** 
+  /**
     @dev Fallback function, don't accept any ETH
     **/
   receive() external payable {
@@ -97,7 +97,7 @@ contract WalletBalanceProvider {
         balances[j] = 0;
         continue;
       }
-        balances[j] = balanceOf(_user, reserves[j]);
+      balances[j] = balanceOf(_user, reserves[j]);
     }
 
     return (reserves, balances);

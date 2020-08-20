@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-import '../interfaces/IPriceOracleGetter.sol';
-import '../interfaces/IChainlinkAggregator.sol';
+import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
+import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 /// @title ChainlinkProxyPriceProvider
@@ -77,17 +77,17 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
   /// @param _asset The asset address
   function getAssetPrice(address _asset) public override view returns (uint256) {
     IChainlinkAggregator source = assetsSources[_asset];
-      // If there is no registered source for the asset, call the fallbackOracle
-      if (address(source) == address(0)) {
-        return IPriceOracleGetter(fallbackOracle).getAssetPrice(_asset);
+    // If there is no registered source for the asset, call the fallbackOracle
+    if (address(source) == address(0)) {
+      return IPriceOracleGetter(fallbackOracle).getAssetPrice(_asset);
+    } else {
+      int256 _price = IChainlinkAggregator(source).latestAnswer();
+      if (_price > 0) {
+        return uint256(_price);
       } else {
-        int256 _price = IChainlinkAggregator(source).latestAnswer();
-        if (_price > 0) {
-          return uint256(_price);
-        } else {
-          return IPriceOracleGetter(fallbackOracle).getAssetPrice(_asset);
-        }
+        return IPriceOracleGetter(fallbackOracle).getAssetPrice(_asset);
       }
+    }
   }
 
   /// @notice Gets a list of prices from a list of assets addresses
