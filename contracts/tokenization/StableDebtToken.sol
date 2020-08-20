@@ -42,7 +42,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param _balanceIncrease the debt increase since the last update
    * @param _newRate the rate of the debt after the minting
    **/
-  event mintDebt(
+  event MintDebt(
     address _user,
     uint256 _amount,
     uint256 _previousBalance,
@@ -59,7 +59,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param _currentBalance the current balance of the user
    * @param _balanceIncrease the debt increase since the last update
    **/
-  event burnDebt(
+  event BurnDebt(
     address _user,
     uint256 _amount,
     uint256 _previousBalance,
@@ -178,7 +178,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     _mint(_user, _amount.add(balanceIncrease));
 
-    emit mintDebt(
+    emit MintDebt(
       _user,
       _amount,
       previousBalance,
@@ -203,16 +203,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 supplyBeforeBurn = totalSupply.add(balanceIncrease);
     uint256 supplyAfterBurn = supplyBeforeBurn.sub(_amount);
 
-    uint256 newSupply = totalSupply.add(balanceIncrease).sub(_amount);
-
-    uint256 amountInRay = _amount.wadToRay();
-
-    if (newSupply == 0) {
+    if (supplyAfterBurn == 0) {
       avgStableRate = 0;
     } else {
       avgStableRate = avgStableRate
         .rayMul(supplyBeforeBurn.wadToRay())
-        .sub(usersData[_user].currentRate.rayMul(amountInRay))
+        .sub(usersData[_user].currentRate.rayMul(_amount.wadToRay()))
         .rayDiv(supplyAfterBurn.wadToRay());
     }
 
@@ -227,36 +223,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _burn(_user, _amount.sub(balanceIncrease));
     }
 
-    emit burnDebt(_user, _amount, previousBalance, currentBalance, balanceIncrease);
-  }
-
-  /**
-   * @dev calculates the increase in balance since the last user action
-   * @param _user the address of the user for which the interest is being accumulated
-   * @return the previous principal balance, the new principal balance, the balance increase
-   **/
-  function _calculateBalanceIncrease(address _user)
-    internal
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    uint256 previousPrincipalBalance = balances[_user];
-
-    if (previousPrincipalBalance == 0) {
-      return (0, 0, 0);
-    }
-
-    //calculate the accrued interest since the last accumulation
-    uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
-
-    return (
-      previousPrincipalBalance,
-      previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease
-    );
+    emit BurnDebt(_user, _amount, previousBalance, currentBalance, balanceIncrease);
   }
 }

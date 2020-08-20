@@ -140,4 +140,35 @@ abstract contract DebtTokenBase is IERC20, VersionedInitializable {
   {
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
+
+  /**
+   * @dev calculates the increase in balance since the last user interaction
+   * @param _user the address of the user for which the interest is being accumulated
+   * @return the previous principal balance, the new principal balance, the balance increase
+   * and the new user index
+   **/
+  function _calculateBalanceIncrease(address _user)
+    internal
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    uint256 previousPrincipalBalance = balances[_user];
+
+    if (previousPrincipalBalance == 0) {
+      return (0, 0, 0);
+    }
+
+    //calculate the accrued interest since the last accumulation
+    uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
+
+    return (
+      previousPrincipalBalance,
+      previousPrincipalBalance.add(balanceIncrease),
+      balanceIncrease
+    );
+  }
 }
