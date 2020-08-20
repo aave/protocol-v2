@@ -5,8 +5,8 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
-import {MathUtils} from '../libraries/MathUtils.sol';
-import {WadRayMath} from '../libraries/WadRayMath.sol';
+import {MathUtils} from '../libraries/math/MathUtils.sol';
+import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
 
 /**

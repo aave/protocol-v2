@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 
 /**
  * @title WadRayMath library
@@ -112,5 +112,4 @@ library WadRayMath {
   function wadToRay(uint256 a) internal pure returns (uint256) {
     return a.mul(WAD_RAY_RATIO);
   }
-
 }

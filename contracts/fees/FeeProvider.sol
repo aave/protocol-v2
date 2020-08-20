@@ -3,7 +3,7 @@ pragma solidity ^0.6.8;
 
 import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import '../interfaces/IFeeProvider.sol';
-import '../libraries/WadRayMath.sol';
+import '../libraries/math/WadRayMath.sol';
 
 /**
  * @title FeeProvider contract

@@ -1,27 +1,28 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-
-import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../tokenization/AToken.sol';
-import '../tokenization/interfaces/IStableDebtToken.sol';
-import '../tokenization/interfaces/IVariableDebtToken.sol';
-import '../libraries/WadRayMath.sol';
-import '../interfaces/IPriceOracleGetter.sol';
-import '../libraries/GenericLogic.sol';
-import '../libraries/Helpers.sol';
-import '../libraries/ReserveLogic.sol';
-import '../libraries/ReserveConfiguration.sol';
-import '../libraries/UserConfiguration.sol';
-import {PercentageMath} from '../libraries/PercentageMath.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
+import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
+import {
+  VersionedInitializable
+} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {AToken} from '../tokenization/AToken.sol';
+import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
+import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
+import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
+import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
+import {Helpers} from '../libraries/helpers/Helpers.sol';
+import {WadRayMath} from '../libraries/math/WadRayMath.sol';
+import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract

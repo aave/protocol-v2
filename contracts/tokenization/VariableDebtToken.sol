@@ -1,12 +1,11 @@
 pragma solidity ^0.6.0;
 
-import '@openzeppelin/contracts/GSN/Context.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
+import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
-import {WadRayMath} from '../libraries/WadRayMath.sol';
-import '@nomiclabs/buidler/console.sol';
+import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
 
 /**

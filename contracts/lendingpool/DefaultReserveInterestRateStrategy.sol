@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '../interfaces/IReserveInterestRateStrategy.sol';
-import '../libraries/WadRayMath.sol';
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../interfaces/ILendingRateOracle.sol';
-
-import '@openzeppelin/contracts/math/SafeMath.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
+import {WadRayMath} from '../libraries/math/WadRayMath.sol';
+import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {ILendingRateOracle} from '../interfaces/ILendingRateOracle.sol';
 
 /**
  * @title DefaultReserveInterestRateStrategy contract

@@ -3,13 +3,13 @@ pragma solidity ^0.6.8;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {MathUtils} from './MathUtils.sol';
-import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
+import {MathUtils} from '../math/MathUtils.sol';
+import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
-import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
-import {ReserveConfiguration} from './ReserveConfiguration.sol';
-import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
-import {WadRayMath} from './WadRayMath.sol';
+import {IStableDebtToken} from '../../tokenization/interfaces/IStableDebtToken.sol';
+import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
+import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
+import {WadRayMath} from '../math/WadRayMath.sol';
 
 /**
  * @title ReserveLogic library
