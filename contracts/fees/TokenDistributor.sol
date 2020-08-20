@@ -9,7 +9,7 @@ import '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import '../interfaces/IExchangeAdapter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
-import {PercentageMath} from '../libraries/PercentageMath.sol';
+import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 
 /// @title TokenDistributor
 /// @author Aave
@@ -128,9 +128,7 @@ contract TokenDistributor is ReentrancyGuard, VersionedInitializable {
     public
   {
     for (uint256 i = 0; i < _tokens.length; i++) {
-      uint256 _amountToDistribute = _tokens[i].balanceOf(address(this)).percentMul(
-        _percentages[i]
-      );
+      uint256 _amountToDistribute = _tokens[i].balanceOf(address(this)).percentMul(_percentages[i]);
 
       if (_amountToDistribute <= 0) {
         continue;
