@@ -1,4 +1,6 @@
 import BigNumber from 'bignumber.js';
+import {MockContract} from 'ethereum-waffle';
+import {MintableErc20} from '../types/MintableErc20';
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -224,3 +226,9 @@ export enum RateMode {
   Stable = '1',
   Variable = '2',
 }
+
+export interface ObjectString {
+  [key: string]: string;
+}
+
+export type MockTokenMap = {[symbol: string]: MockContract | MintableErc20};

@@ -9,7 +9,6 @@ import {
   deployLendingPool,
   deployPriceOracle,
   getLendingPoolConfiguratorProxy,
-  deployMockAggregator,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
   deployDefaultReserveInterestRateStrategy,
@@ -27,16 +26,14 @@ import {
   deployStableDebtToken,
   deployVariableDebtToken,
   deployGenericAToken,
+  getPairsTokenAggregator,
 } from '../helpers/contracts-helpers';
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
-import {Wallet, ContractTransaction, ethers, Signer} from 'ethers';
+import {Signer} from 'ethers';
 import {
   TokenContractId,
   eContractid,
-  iAssetBase,
   tEthereumAddress,
-  iAssetAggregatorBase,
-  IMarketRates,
   iMultiPoolsAssets,
   AavePools,
   IReserveParams,
@@ -52,19 +49,16 @@ import {
   getFeeDistributionParamsCommon,
   ZERO_ADDRESS,
 } from '../helpers/constants';
-import {PriceOracle} from '../types/PriceOracle';
-import {MockAggregator} from '../types/MockAggregator';
-import {LendingRateOracle} from '../types/LendingRateOracle';
 import {LendingPool} from '../types/LendingPool';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {initializeMakeSuite} from './helpers/make-suite';
-import path from 'path';
-import fs from 'fs';
 
-['misc'].forEach((folder) => {
-  const tasksPath = path.join('/src/', 'tasks', folder);
-  fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
-});
+import {
+  setInitialAssetPricesInOracle,
+  setInitialMarketRatesInRatesOracle,
+  deployAllMockAggregators,
+} from '../helpers/oracles-helpers';
+import {waitForTx} from '../helpers/misc-utils';
 
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
@@ -94,181 +88,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
   }
 
   return tokens;
-};
-
-const setInitialAssetPricesInOracle = async (
-  prices: iAssetBase<tEthereumAddress>,
-  assetsAddresses: iAssetBase<tEthereumAddress>,
-  priceOracleInstance: PriceOracle
-) => {
-  for (const [assetSymbol, price] of Object.entries(prices) as [string, string][]) {
-    const assetAddressIndex = Object.keys(assetsAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, assetAddress] = (Object.entries(assetsAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-    await waitForTx(await priceOracleInstance.setAssetPrice(assetAddress, price));
-  }
-};
-
-const deployAllMockAggregators = async (initialPrices: iAssetAggregatorBase<string>) => {
-  const aggregators: {[tokenSymbol: string]: MockAggregator} = {};
-  for (const tokenContractName of Object.keys(initialPrices)) {
-    if (tokenContractName !== 'ETH') {
-      const priceIndex = Object.keys(initialPrices).findIndex(
-        (value) => value === tokenContractName
-      );
-      const [, price] = (Object.entries(initialPrices) as [string, string][])[priceIndex];
-      aggregators[tokenContractName] = await deployMockAggregator(price);
-    }
-  }
-  return aggregators;
-};
-
-const getPairsTokenAggregator = (
-  allAssetsAddresses: {
-    [tokenSymbol: string]: tEthereumAddress;
-  },
-  aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
-): [string[], string[]] => {
-  const {ETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
-
-  const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
-    if (tokenSymbol !== 'ETH') {
-      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
-        (value) => value === tokenSymbol
-      );
-      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
-        string,
-        tEthereumAddress
-      ][])[aggregatorAddressIndex];
-      return [tokenAddress, aggregatorAddress];
-    }
-  });
-
-  const mappedPairs = pairs.map(([asset]) => asset);
-  const mappedAggregators = pairs.map(([, source]) => source);
-
-  return [mappedPairs, mappedAggregators];
-};
-
-const setInitialMarketRatesInRatesOracle = async (
-  marketRates: iMultiPoolsAssets<IMarketRates>,
-  assetsAddresses: {[x: string]: tEthereumAddress},
-  lendingRateOracleInstance: LendingRateOracle
-) => {
-  for (const [assetSymbol, {borrowRate}] of Object.entries(marketRates) as [
-    string,
-    IMarketRates
-  ][]) {
-    const assetAddressIndex = Object.keys(assetsAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, assetAddress] = (Object.entries(assetsAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-    await lendingRateOracleInstance.setMarketBorrowRate(assetAddress, borrowRate);
-  }
-};
-
-const initReserves = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPoolAddressesProvider: LendingPoolAddressesProvider,
-  lendingPool: LendingPool,
-  lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools
-) => {
-  if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
-    console.log(`Invalid Aave pool ${aavePool}`);
-    process.exit(1);
-  }
-
-  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
-    string,
-    IReserveParams
-  ][]) {
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-
-    const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
-      tokenAddress
-    );
-
-    if (reserveInitialized) {
-      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
-      continue;
-    }
-
-    try {
-      const reserveParamIndex = Object.keys(reservesParams).findIndex(
-        (value) => value === assetSymbol
-      );
-      const [
-        ,
-        {
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        },
-      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy([
-        lendingPoolAddressesProvider.address,
-        baseVariableBorrowRate,
-        variableRateSlope1,
-        variableRateSlope2,
-        stableRateSlope1,
-        stableRateSlope2,
-      ]);
-
-      const stableDebtToken = await deployStableDebtToken([
-        `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        tokenAddress,
-        lendingPool.address,
-      ]);
-
-      const variableDebtToken = await deployVariableDebtToken([
-        `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        tokenAddress,
-        lendingPool.address,
-      ]);
-
-      const aToken = await deployGenericAToken([
-        lendingPool.address,
-        tokenAddress,
-        `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-      ]);
-
-      if (process.env.POOL === AavePools.secondary) {
-        if (assetSymbol.search('UNI') === -1) {
-          assetSymbol = `Uni${assetSymbol}`;
-        } else {
-          assetSymbol = assetSymbol.replace(/_/g, '').replace('UNI', 'Uni');
-        }
-      }
-
-      await lendingPoolConfigurator.initReserve(
-        tokenAddress,
-        aToken.address,
-        stableDebtToken.address,
-        variableDebtToken.address,
-        reserveDecimals,
-        rateStrategyContract.address
-      );
-    } catch (e) {
-      console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
-    }
-  }
 };
 
 const enableReservesToBorrow = async (
@@ -347,8 +166,6 @@ const enableReservesAsCollateral = async (
     }
   }
 };
-
-export const waitForTx = async (tx: ContractTransaction) => await tx.wait();
 
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');

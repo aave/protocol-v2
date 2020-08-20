@@ -13,10 +13,15 @@
     "types-gen": "typechain --target ethers-v5 --outDir ./types './artifacts/*.json'",
     "test": "buidler test",
     "test-scenarios": "buidler test test/__setup.spec.ts test/scenario.spec.ts",
-    "dev:coverage": "buidler coverage",
-    "dev:deployment": "buidler dev-deployment",
-    "dev:deployExample": "buidler deploy-Example",
-    "dev:prettier": "prettier --write ."
+    "coverage": "buidler coverage",
+    "evm:dev:migration": "buidler dev-migration",
+    "evm:full:migration": "buidler full-migration",
+    "kovan:dev:migration": "npm run buidler-kovan -- dev-migration --verify",
+    "kovan:full:migration": "npm run buidler-kovan -- full-migration --verify",
+    "ropsten:dev:migration": "npm run buidler-ropsten -- dev-migration --verify",
+    "ropsten:full:migration": "npm run buidler-ropsten -- full-migration --verify",
+    "main:dev:migration": "npm run buidler-main -- dev-migration --verify",
+    "main:full:migration": "npm run buidler-main -- full-migration --verify"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "1.4.4",

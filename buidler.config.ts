@@ -1,3 +1,6 @@
+import path from 'path';
+import fs from 'fs';
+
 import {usePlugin, BuidlerConfig} from '@nomiclabs/buidler/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
@@ -21,6 +24,13 @@ const MNEMONICS: {[network: string]: string} = {
   [eEthereumNetwork.ropsten]: '',
   [eEthereumNetwork.main]: '',
 };
+
+['misc', 'migrations', 'dev-deployment'].forEach((folder) => {
+  const tasksPath = path.join(__dirname, 'tasks', folder);
+  fs.readdirSync(tasksPath)
+    .filter((pth) => pth.includes('.ts'))
+    .forEach((task) => require(`${tasksPath}/${task}`));
+});
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {

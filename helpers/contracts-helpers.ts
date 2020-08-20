@@ -9,6 +9,10 @@ import {
   AavePools,
   iParamsPerNetwork,
   iParamsPerPool,
+  TokenContractId,
+  MockTokenMap,
+  iMultiPoolsAssets,
+  IReserveParams,
 } from './types';
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {MintableErc20} from '../types/MintableErc20';
@@ -33,6 +37,9 @@ import BigNumber from 'bignumber.js';
 import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
+import {MockContract} from 'ethereum-waffle';
+import {getReservesConfigByPool} from './constants';
+import {verifyContract} from './etherscan-verification';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -93,20 +100,47 @@ export const getContract = async <ContractType extends Contract>(
   address: string
 ): Promise<ContractType> => (await BRE.ethers.getContractAt(contractName, address)) as ContractType;
 
-export const deployLendingPoolAddressesProvider = async () =>
-  await deployContract<LendingPoolAddressesProvider>(eContractid.LendingPoolAddressesProvider, []);
+export const deployLendingPoolAddressesProvider = async (verify?: boolean) => {
+  const instance = await deployContract<LendingPoolAddressesProvider>(
+    eContractid.LendingPoolAddressesProvider,
+    []
+  );
+  if (verify) {
+    await verifyContract(eContractid.LendingPoolAddressesProvider, instance.address, []);
+  }
+  return instance;
+};
 
-export const deployLendingPoolAddressesProviderRegistry = async () =>
-  await deployContract<LendingPoolAddressesProviderRegistry>(
+export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolean) => {
+  const instance = await deployContract<LendingPoolAddressesProviderRegistry>(
     eContractid.LendingPoolAddressesProviderRegistry,
     []
   );
+  if (verify) {
+    await verifyContract(eContractid.LendingPoolAddressesProviderRegistry, instance.address, []);
+  }
+  return instance;
+};
 
-export const deployFeeProvider = async () =>
-  await deployContract<FeeProvider>(eContractid.FeeProvider, []);
+export const deployFeeProvider = async (verify?: boolean) => {
+  const instance = await deployContract<FeeProvider>(eContractid.FeeProvider, []);
 
-export const deployLendingPoolConfigurator = async () =>
-  await deployContract<LendingPoolConfigurator>(eContractid.LendingPoolConfigurator, []);
+  if (verify) {
+    await verifyContract(eContractid.FeeProvider, instance.address, []);
+  }
+  return instance;
+};
+
+export const deployLendingPoolConfigurator = async (verify?: boolean) => {
+  const instance = await deployContract<LendingPoolConfigurator>(
+    eContractid.LendingPoolConfigurator,
+    []
+  );
+  if (verify) {
+    await verifyContract(eContractid.LendingPoolConfigurator, instance.address, []);
+  }
+  return instance;
+};
 
 const deployLibrary = async (libraryId: eContractid) => {
   const factory = await BRE.ethers.getContractFactory(libraryId);
@@ -162,20 +196,27 @@ export const linkLibrariesToArtifact = async (artifact: Artifact) => {
   return factory;
 };
 
-export const deployLendingPool = async () => {
+export const deployLendingPool = async (verify?: boolean) => {
   const lendingPoolArtifact = await readArtifact(
     BRE.config.paths.artifacts,
     eContractid.LendingPool
   );
-
   const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
-
   const lendingPool = await factory.deploy();
-  return (await lendingPool.deployed()) as LendingPool;
+  const instance = (await lendingPool.deployed()) as LendingPool;
+  if (verify) {
+    await verifyContract(eContractid.LendingPool, instance.address, []);
+  }
+  return instance;
 };
 
-export const deployPriceOracle = async () =>
-  await deployContract<PriceOracle>(eContractid.PriceOracle, []);
+export const deployPriceOracle = async (verify?: boolean) => {
+  const instance = await deployContract<PriceOracle>(eContractid.PriceOracle, []);
+  if (verify) {
+    await verifyContract(eContractid.PriceOracle, instance.address, []);
+  }
+  return instance;
+};
 
 export const deployMockAggregator = async (price: tStringTokenSmallUnits) =>
   await deployContract<MockAggregator>(eContractid.MockAggregator, [price]);
@@ -481,4 +522,180 @@ export const convertToCurrencyUnits = async (tokenAddress: string, amount: strin
   const currencyUnit = new BigNumber(10).pow(decimals);
   const amountInCurrencyUnits = new BigNumber(amount).div(currencyUnit);
   return amountInCurrencyUnits.toFixed();
+};
+
+export const deployAllMockTokens = async (verify?: boolean) => {
+  const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
+
+  const protoConfigData = getReservesConfigByPool(AavePools.proto);
+  const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
+
+  for (const tokenSymbol of Object.keys(TokenContractId)) {
+    let decimals = 18;
+
+    let configData = (<any>protoConfigData)[tokenSymbol];
+
+    if (!configData) {
+      configData = (<any>secondaryConfigData)[tokenSymbol];
+    }
+
+    if (!configData) {
+      decimals = 18;
+    }
+
+    tokens[tokenSymbol] = await deployMintableErc20([
+      tokenSymbol,
+      tokenSymbol,
+      configData ? configData.reserveDecimals : 18,
+    ]);
+    await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
+
+    if (verify) {
+      await verifyContract(eContractid.MintableERC20, tokens[tokenSymbol].address, []);
+    }
+  }
+  return tokens;
+};
+
+export const getMockedTokens = async () => {
+  const db = getDb();
+  const tokens: MockTokenMap = await Object.keys(TokenContractId).reduce<Promise<MockTokenMap>>(
+    async (acc, tokenSymbol) => {
+      const accumulator = await acc;
+      const address = db.get(`${tokenSymbol.toUpperCase()}.${BRE.network.name}`).value().address;
+      accumulator[tokenSymbol] = await getContract<MintableErc20>(
+        eContractid.MintableERC20,
+        address
+      );
+      return Promise.resolve(acc);
+    },
+    Promise.resolve({})
+  );
+  return tokens;
+};
+
+export const getPairsTokenAggregator = (
+  allAssetsAddresses: {
+    [tokenSymbol: string]: tEthereumAddress;
+  },
+  aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
+): [string[], string[]] => {
+  const {ETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
+
+  const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
+    if (tokenSymbol !== 'ETH') {
+      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
+        (value) => value === tokenSymbol
+      );
+      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
+        string,
+        tEthereumAddress
+      ][])[aggregatorAddressIndex];
+      return [tokenAddress, aggregatorAddress];
+    }
+  });
+
+  const mappedPairs = pairs.map(([asset]) => asset);
+  const mappedAggregators = pairs.map(([, source]) => source);
+
+  return [mappedPairs, mappedAggregators];
+};
+
+export const initReserves = async (
+  reservesParams: iMultiPoolsAssets<IReserveParams>,
+  tokenAddresses: {[symbol: string]: tEthereumAddress},
+  lendingPoolAddressesProvider: LendingPoolAddressesProvider,
+  lendingPool: LendingPool,
+  lendingPoolConfigurator: LendingPoolConfigurator,
+  aavePool: AavePools
+) => {
+  if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
+    console.log(`Invalid Aave pool ${aavePool}`);
+    process.exit(1);
+  }
+
+  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
+    string,
+    IReserveParams
+  ][]) {
+    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
+      (value) => value === assetSymbol
+    );
+    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
+      assetAddressIndex
+    ];
+
+    const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
+      tokenAddress
+    );
+
+    if (reserveInitialized) {
+      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
+      continue;
+    }
+
+    try {
+      const reserveParamIndex = Object.keys(reservesParams).findIndex(
+        (value) => value === assetSymbol
+      );
+      const [
+        ,
+        {
+          baseVariableBorrowRate,
+          variableRateSlope1,
+          variableRateSlope2,
+          stableRateSlope1,
+          stableRateSlope2,
+        },
+      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
+      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy([
+        lendingPoolAddressesProvider.address,
+        baseVariableBorrowRate,
+        variableRateSlope1,
+        variableRateSlope2,
+        stableRateSlope1,
+        stableRateSlope2,
+      ]);
+
+      const stableDebtToken = await deployStableDebtToken([
+        `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        tokenAddress,
+        lendingPool.address,
+      ]);
+
+      const variableDebtToken = await deployVariableDebtToken([
+        `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        tokenAddress,
+        lendingPool.address,
+      ]);
+
+      const aToken = await deployGenericAToken([
+        lendingPool.address,
+        tokenAddress,
+        `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+      ]);
+
+      if (process.env.POOL === AavePools.secondary) {
+        if (assetSymbol.search('UNI') === -1) {
+          assetSymbol = `Uni${assetSymbol}`;
+        } else {
+          assetSymbol = assetSymbol.replace(/_/g, '').replace('UNI', 'Uni');
+        }
+      }
+
+      await lendingPoolConfigurator.initReserve(
+        tokenAddress,
+        aToken.address,
+        stableDebtToken.address,
+        variableDebtToken.address,
+        reserveDecimals,
+        rateStrategyContract.address
+      );
+    } catch (e) {
+      console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
+    }
+  }
 };
