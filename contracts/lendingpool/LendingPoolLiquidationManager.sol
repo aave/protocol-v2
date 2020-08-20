@@ -88,9 +88,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     uint256 actualAmountToLiquidate;
     uint256 liquidationRatio;
     uint256 maxAmountCollateralToLiquidate;
-    uint256 originationFee;
-    uint256 feeLiquidated;
-    uint256 liquidatedCollateralForFee;
     ReserveLogic.InterestRateMode borrowRateMode;
     uint256 userStableRate;
     uint256 maxCollateralToLiquidate;
