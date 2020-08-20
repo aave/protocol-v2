@@ -215,6 +215,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     if (_amount == currentBalance) {
       usersData[_user].currentRate = 0;
       usersData[_user].lastUpdateTimestamp = 0;
+    } else {
+      //solium-disable-next-line
+      usersData[_user].lastUpdateTimestamp = uint40(block.timestamp);
     }
 
     if (balanceIncrease > _amount) {
