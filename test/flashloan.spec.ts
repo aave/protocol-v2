@@ -60,10 +60,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   it('Takes an ETH flashloan as big as the available liquidity', async () => {
     const {pool, weth} = testEnv;
 
+    const reserveDataBefore = await pool.getReserveData(weth.address);
+
+    console.log("Total liquidity is ", reserveDataBefore.availableLiquidity.toString());
+
     const txResult = await pool.flashLoan(
       _mockFlashLoanReceiver.address,
       weth.address,
-      '1000504000000000000',
+      '1000720000000000000',
       '0x10'
     );
 
@@ -76,9 +80,9 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       .plus(reserveData.totalBorrowsStable.toString())
       .plus(reserveData.totalBorrowsVariable.toString());
 
-    expect(totalLiquidity.toString()).to.be.equal('1001620454000000000');
+    expect(totalLiquidity.toString()).to.be.equal('1001620648000000000');
     expect(currentLiqudityRate.toString()).to.be.equal('0');
-    expect(currentLiquidityIndex.toString()).to.be.equal('1001134317520000000000000000');
+    expect(currentLiquidityIndex.toString()).to.be.equal('1001620648000000000000000000');
   });
 
   it('Takes WETH flashloan, does not return the funds (revert expected)', async () => {
