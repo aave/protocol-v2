@@ -5,7 +5,7 @@ import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {LendingPool} from '../lendingpool/LendingPool.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 /**
@@ -84,7 +84,7 @@ contract WalletBalanceProvider {
     view
     returns (address[] memory, uint256[] memory)
   {
-    LendingPool pool = LendingPool(payable(provider.getLendingPool()));
+    ILendingPool pool = ILendingPool(provider.getLendingPool());
 
     address[] memory reserves = pool.getReserves();
 

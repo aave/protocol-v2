@@ -11,7 +11,7 @@ import {
 } from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {LendingPool} from './LendingPool.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
 
 /**
@@ -168,7 +168,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   event VariableDebtTokenUpgraded(address _reserve, address _proxy, address _implementation);
 
   LendingPoolAddressesProvider public poolAddressesProvider;
-  LendingPool public pool;
+  ILendingPool public pool;
 
   /**
    * @dev only the lending pool manager can call functions affected by this modifier
@@ -189,7 +189,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
   function initialize(LendingPoolAddressesProvider _poolAddressesProvider) public initializer {
     poolAddressesProvider = _poolAddressesProvider;
-    pool = LendingPool(payable(poolAddressesProvider.getLendingPool()));
+    pool = ILendingPool(poolAddressesProvider.getLendingPool());
   }
 
   /**
@@ -584,7 +584,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address _reserve,
     address _proxy,
     address _implementation
-  ) internal returns (address) {
+  ) internal {
     InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(
       payable(_proxy)
     );

@@ -61,7 +61,7 @@ library ReserveLogic {
     uint256 lastVariableBorrowCumulativeIndex;
     //stores the reserve configuration
     ReserveConfiguration.Map configuration;
-    address payable aTokenAddress;
+    address aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
     address interestRateStrategyAddress;
@@ -193,7 +193,7 @@ library ReserveLogic {
       _self.lastVariableBorrowCumulativeIndex = WadRayMath.ray();
     }
 
-    _self.aTokenAddress = payable(_aTokenAddress);
+    _self.aTokenAddress = _aTokenAddress;
     _self.stableDebtTokenAddress = _stableDebtAddress;
     _self.variableDebtTokenAddress = _variableDebtAddress;
     _self.interestRateStrategyAddress = _interestRateStrategyAddress;

@@ -1,11 +1,11 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: agpl-3.0
+pragma solidity ^0.6.8;
 
 import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {LendingPool} from '../../lendingpool/LendingPool.sol';
+import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {
   VersionedInitializable
 } from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -18,7 +18,6 @@ import {
 
 abstract contract DebtTokenBase is IERC20, VersionedInitializable {
   using SafeMath for uint256;
-  using Address for address;
 
   uint256 public override totalSupply;
 
@@ -27,7 +26,7 @@ abstract contract DebtTokenBase is IERC20, VersionedInitializable {
   uint8 public decimals;
   address public immutable underlyingAssetAddress;
 
-  LendingPool internal immutable pool;
+  ILendingPool internal immutable pool;
   mapping(address => uint256) internal balances;
 
   /**
@@ -44,7 +43,7 @@ abstract contract DebtTokenBase is IERC20, VersionedInitializable {
     string memory _name,
     string memory _symbol
   ) public {
-    pool = LendingPool(payable(_pool));
+    pool = ILendingPool(_pool);
     underlyingAssetAddress = _underlyingAssetAddress;
     name = _name;
     symbol = _symbol;

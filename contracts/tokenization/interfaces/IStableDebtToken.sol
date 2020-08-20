@@ -1,4 +1,5 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: agpl-3.0
+pragma solidity ^0.6.8;
 
 /**
  * @title interface IStableDebtToken
@@ -23,30 +24,30 @@ interface IStableDebtToken {
     address _user,
     uint256 _amount,
     uint256 _rate
-  ) external virtual;
+  ) external;
 
   /**
    * @dev burns debt of the target user.
    * @param _user the address of the user
    * @param _amount the amount of debt tokens to mint
    **/
-  function burn(address _user, uint256 _amount) external virtual;
+  function burn(address _user, uint256 _amount) external;
 
   /**
    * @dev returns the average rate of all the stable rate loans.
    * @return the average stable rate
    **/
-  function getAverageStableRate() external virtual view returns (uint256);
+  function getAverageStableRate() external view returns (uint256);
 
   /**
    * @dev returns the stable rate of the user debt
    * @return the stable rate of the user
    **/
-  function getUserStableRate(address _user) external virtual view returns (uint256);
+  function getUserStableRate(address _user) external view returns (uint256);
 
   /**
    * @dev returns the timestamp of the last update of the user
    * @return the timestamp
    **/
-  function getUserLastUpdated(address _user) external virtual view returns (uint40);
+  function getUserLastUpdated(address _user) external view returns (uint40);
 }

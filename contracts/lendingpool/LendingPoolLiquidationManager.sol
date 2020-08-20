@@ -4,13 +4,12 @@ pragma solidity ^0.6.8;
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import {Address} from '@openzeppelin/contracts/utils/Address.sol';
 import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {AToken} from '../tokenization/AToken.sol';
+import {IAToken} from '../interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -33,7 +32,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-  using Address for address;
   using ReserveLogic for ReserveLogic.ReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
@@ -91,7 +89,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     uint256 maxCollateralToLiquidate;
     uint256 principalAmountNeeded;
     uint256 healthFactor;
-    AToken collateralAtoken;
+    IAToken collateralAtoken;
     bool isCollateralEnabled;
   }
 
@@ -118,7 +116,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     address _user,
     uint256 _purchaseAmount,
     bool _receiveAToken
-  ) external payable returns (uint256, string memory) {
+  ) external returns (uint256, string memory) {
     ReserveLogic.ReserveData storage principalReserve = reserves[_reserve];
     ReserveLogic.ReserveData storage collateralReserve = reserves[_collateral];
     UserConfiguration.Map storage userConfig = usersConfig[_user];
@@ -196,7 +194,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
 
-    vars.collateralAtoken = AToken(payable(collateralReserve.aTokenAddress));
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
 
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!_receiveAToken) {

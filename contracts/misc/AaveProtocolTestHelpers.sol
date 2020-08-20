@@ -1,10 +1,10 @@
+// SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
-import {LendingPool} from '../lendingpool/LendingPool.sol';
-import {AToken} from '../tokenization/AToken.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
 
 contract AaveProtocolTestHelpers {
   struct TokenData {
@@ -19,7 +19,7 @@ contract AaveProtocolTestHelpers {
   }
 
   function getAllReservesTokens() external view returns (TokenData[] memory) {
-    LendingPool pool = LendingPool(payable(ADDRESSES_PROVIDER.getLendingPool()));
+    ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     address[] memory reserves = pool.getReserves();
     TokenData[] memory reservesTokens = new TokenData[](reserves.length);
     for (uint256 i = 0; i < reserves.length; i++) {
@@ -34,13 +34,13 @@ contract AaveProtocolTestHelpers {
   }
 
   function getAllATokens() external view returns (TokenData[] memory) {
-    LendingPool pool = LendingPool(payable(ADDRESSES_PROVIDER.getLendingPool()));
+    ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     address[] memory reserves = pool.getReserves();
     TokenData[] memory aTokens = new TokenData[](reserves.length);
     for (uint256 i = 0; i < reserves.length; i++) {
       (address aTokenAddress, , ) = pool.getReserveTokensAddresses(reserves[i]);
       aTokens[i] = TokenData({
-        symbol: AToken(payable(aTokenAddress)).symbol(),
+        symbol: IERC20Detailed(aTokenAddress).symbol(),
         tokenAddress: aTokenAddress
       });
     }
