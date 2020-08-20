@@ -658,6 +658,10 @@ export const calcExpectedUserDataAfterRepay = (
         '0'
       );
     }
+    else{
+      expectedUserData.stableBorrowRate = userDataBeforeAction.stableBorrowRate;
+      expectedUserData.stableRateLastUpdated = txTimestamp;
+    }
   } else {
     expectedUserData.currentStableDebt = stableBorrowBalance;
     expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;

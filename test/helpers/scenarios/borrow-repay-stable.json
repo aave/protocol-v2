@@ -88,7 +88,41 @@
       ]
     },
     {
-      "description": "User 1 repays the DAI borrow after one year",
+      "description": "User 1 repays the half of the DAI borrow after one year",
+      "actions": [
+        {
+          "name": "mint",
+          "description": "Mint 10 DAI to cover the interest",
+          "args": {
+            "reserve": "DAI",
+            "amount": "10",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "DAI",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "repay",
+          "args": {
+            "reserve": "DAI",
+            "amount": "50",
+            "user": "1",
+            "onBehalfOf": "1",
+            "borrowRateMode": "stable"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 1 repays the rest of the DAI borrow after one year",
       "actions": [
         {
           "name": "mint",
