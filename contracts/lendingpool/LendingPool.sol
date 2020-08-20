@@ -392,14 +392,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     );
   }
 
-  struct RepayLocalVars {
-    uint256 stableDebt;
-    uint256 variableDebt;
-    uint256 paybackAmount;
-    uint256 currentStableRate;
-    uint256 totalDebt;
-  }
-
   /**
    * @notice repays a borrow on the specific reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
    * @dev the target user is defined by _onBehalfOf. If there is no repayment on behalf of another account,
@@ -414,22 +406,19 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     uint256 _rateMode,
     address _onBehalfOf
   ) external override nonReentrant {
-    RepayLocalVars memory vars;
     ReserveLogic.ReserveData storage reserve = reserves[_reserve];
 
-    (vars.stableDebt, vars.variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
-
-    vars.totalDebt = vars.stableDebt.add(vars.variableDebt);
+    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
 
     //default to max amount
-    vars.paybackAmount = rateMode == ReserveLogic.InterestRateMode.STABLE
-      ? vars.stableDebt
-      : vars.variableDebt;
+    uint256 paybackAmount = rateMode == ReserveLogic.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
 
-    if (_amount != UINT_MAX_VALUE && _amount < vars.paybackAmount) {
-      vars.paybackAmount = _amount;
+    if (_amount != UINT_MAX_VALUE && _amount < paybackAmount) {
+      paybackAmount = _amount;
     }
 
     ValidationLogic.validateRepay(
@@ -438,33 +427,33 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       _amount,
       rateMode,
       _onBehalfOf,
-      vars.stableDebt,
-      vars.variableDebt,
-      vars.paybackAmount
+      stableDebt,
+      variableDebt,
+      paybackAmount
     );
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
     //burns an equivalent amount of debt tokens
     if (rateMode == ReserveLogic.InterestRateMode.STABLE) {
-      IStableDebtToken(reserve.stableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
+      IStableDebtToken(reserve.stableDebtTokenAddress).burn(_onBehalfOf, paybackAmount);
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(_onBehalfOf, vars.paybackAmount);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(_onBehalfOf, paybackAmount);
     }
 
-    reserve.updateInterestRates(_reserve, vars.paybackAmount, 0);
+    reserve.updateInterestRates(_reserve, paybackAmount, 0);
 
-    if (vars.totalDebt.sub(vars.paybackAmount) == 0) {
+    if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
       usersConfig[_onBehalfOf].setBorrowing(reserve.index, false);
     }
 
-    IERC20(_reserve).safeTransferFrom(msg.sender, reserve.aTokenAddress, vars.paybackAmount);
+    IERC20(_reserve).safeTransferFrom(msg.sender, reserve.aTokenAddress, paybackAmount);
 
     emit Repay(
       _reserve,
       _onBehalfOf,
       msg.sender,
-      vars.paybackAmount,
+      paybackAmount,
       //solium-disable-next-line
       block.timestamp
     );
