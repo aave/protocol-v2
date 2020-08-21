@@ -8,7 +8,7 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IAToken} from '../interfaces/IAToken.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -37,19 +37,19 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   using ReserveLogic for ReserveLogic.ReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
+  using SafeERC20 for IERC20;
 
   //main configuration parameters
-  uint256 private constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
-  uint256 private constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
-  uint256 private constant FLASHLOAN_FEE_TOTAL = 9;
+  uint256 public constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
+  uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
+  uint256 public constant FLASHLOAN_FEE_TOTAL = 9;
 
-  LendingPoolAddressesProvider public addressesProvider;
-  using SafeERC20 for IERC20;
+  ILendingPoolAddressesProvider internal addressesProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal _reserves;
   mapping(address => UserConfiguration.Map) internal _usersConfig;
 
-  address[] public reservesList;
+  address[] internal reservesList;
 
   /**
    * @dev emitted on deposit
@@ -207,7 +207,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
    * AddressesProvider.
    * @param provider the address of the LendingPoolAddressesProvider registry
    **/
-  function initialize(LendingPoolAddressesProvider provider) public initializer {
+  function initialize(ILendingPoolAddressesProvider provider) public initializer {
     addressesProvider = provider;
   }
 
@@ -821,29 +821,29 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       _variableDebtAddress,
       _interestRateStrategyAddress
     );
-    addReserveToListInternal(asset);
+    _addReserveToList(asset);
   }
 
   /**
    * @dev updates the address of the interest rate strategy contract
    * @param asset the address of the reserve
-   * @param _rateStrategyAddress the address of the interest rate strategy contract
+   * @param rateStrategyAddress the address of the interest rate strategy contract
    **/
 
-  function setReserveInterestRateStrategyAddress(address asset, address _rateStrategyAddress)
+  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
     onlyLendingPoolConfigurator
   {
-    _reserves[asset].interestRateStrategyAddress = _rateStrategyAddress;
+    _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
-  function setConfiguration(address asset, uint256 _configuration)
+  function setConfiguration(address asset, uint256 configuration)
     external
     override
     onlyLendingPoolConfigurator
   {
-    _reserves[asset].configuration.data = _configuration;
+    _reserves[asset].configuration.data = configuration;
   }
 
   function getConfiguration(address asset)
@@ -862,7 +862,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   /**
    * @dev adds a reserve to the array of the _reserves address
    **/
-  function addReserveToListInternal(address asset) internal {
+  function _addReserveToList(address asset) internal {
     bool reserveAlreadyAdded = false;
     for (uint256 i = 0; i < reservesList.length; i++)
       if (reservesList[i] == asset) {
@@ -874,10 +874,20 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     }
   }
 
+  /**
+  * @dev returns the normalized income per unit of asset
+  * @param asset the address of the reserve
+  * @return the reserve normalized income
+   */
   function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
     return _reserves[asset].getNormalizedIncome();
   }
 
+  /**
+  * @dev returns the normalized variable debt per unit of asset
+  * @param asset the address of the reserve
+  * @return the reserve normalized debt
+   */
   function getReserveNormalizedVariableDebt(address asset)
     external
     override
@@ -887,20 +897,35 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     return _reserves[asset].getNormalizedDebt();
   }
 
+  /**
+  * @dev validate if a balance decrease for an asset is allowed
+  * @param asset the address of the reserve
+  * @param user the user related to the balance decrease
+  * @param amount the amount being transferred/redeemed
+  * @return true if the balance decrease can be allowed, false otherwise
+   */
   function balanceDecreaseAllowed(
     address asset,
-    address _user,
+    address user,
     uint256 amount
   ) external override view returns (bool) {
     return
       GenericLogic.balanceDecreaseAllowed(
         asset,
-        _user,
+        user,
         amount,
         _reserves,
-        _usersConfig[_user],
+        _usersConfig[user],
         reservesList,
         addressesProvider.getPriceOracle()
       );
+  }
+
+  function getReservesList() external view returns(address[] memory){
+      return reservesList;
+  }
+
+  function getAddressesProvider() external view returns(ILendingPoolAddressesProvider){
+    return addressesProvider;
   }
 }
