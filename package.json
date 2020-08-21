@@ -19,7 +19,7 @@
     "test": "buidler test",
     "test-scenarios": "buidler test test/__setup.spec.ts test/scenario.spec.ts",
     "aave:evm:dev:migration": "npm run buidler:aave -- dev-migration",
-    "aave:evm:full:migration": "buidler full-migration",
+    "aave:evm:full:migration": "npm run buidler:aave -- full-migration",
     "aave:kovan:dev:migration": "npm run buidler:aave:kovan -- dev-migration --verify",
     "aave:kovan:full:migration": "npm run buidler:aave:kovan -- full-migration --verify",
     "aave:ropsten:dev:migration": "npm run buidler:aave:ropsten -- dev-migration --verify",
