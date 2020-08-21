@@ -112,8 +112,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the accumulated debt of the user
    **/
   function balanceOf(address account) public virtual override view returns (uint256) {
-    uint256 accountsBalance = _balances[account];
-    if (accountsBalance == 0) {
+    uint256 accountBalance = _balances[account];
+    if (accountBalance == 0) {
       return 0;
     }
 
@@ -123,7 +123,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       userData.currentRate,
       userData.lastUpdateTimestamp
     );
-    return accountsBalance.wadToRay().rayMul(cumulatedInterest).rayToWad();
+    return accountBalance.wadToRay().rayMul(cumulatedInterest).rayToWad();
   }
 
   struct MintLocalVars {
