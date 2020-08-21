@@ -17,6 +17,7 @@
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
     "dev:prettier": "prettier --write .",
+    "ci:test": "npm run compile && npm run types-gen && npm run test",
     "ci:clean": "rm -rf ./artifacts ./cache ./types"
   },
   "devDependencies": {
