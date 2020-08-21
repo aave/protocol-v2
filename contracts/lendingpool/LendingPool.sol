@@ -921,10 +921,16 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       );
   }
 
+  /**
+  * @dev returns the list of the initialized reserves
+  **/
   function getReservesList() external view returns(address[] memory){
       return reservesList;
   }
 
+  /**
+  * @dev returns the addresses provider
+  **/
   function getAddressesProvider() external view returns(ILendingPoolAddressesProvider){
     return addressesProvider;
   }
