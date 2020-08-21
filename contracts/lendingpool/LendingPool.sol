@@ -239,8 +239,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   ) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
-    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
-
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
     
     //default to max amount
