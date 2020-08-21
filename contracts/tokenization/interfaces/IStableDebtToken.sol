@@ -14,6 +14,40 @@ pragma solidity ^0.6.8;
 
 interface IStableDebtToken {
   /**
+   * @dev emitted when new stable debt is minted
+   * @param user the address of the user
+   * @param amount the amount minted
+   * @param previousBalance the previous balance of the user
+   * @param currentBalance the current balance of the user
+   * @param balanceIncrease the debt increase since the last update
+   * @param newRate the rate of the debt after the minting
+   **/
+  event MintDebt(
+    address user,
+    uint256 amount,
+    uint256 previousBalance,
+    uint256 currentBalance,
+    uint256 balanceIncrease,
+    uint256 newRate
+  );
+
+  /**
+   * @dev emitted when new stable debt is burned
+   * @param user the address of the user
+   * @param amount the amount minted
+   * @param previousBalance the previous balance of the user
+   * @param currentBalance the current balance of the user
+   * @param balanceIncrease the debt increase since the last update
+   **/
+  event BurnDebt(
+    address user,
+    uint256 amount,
+    uint256 previousBalance,
+    uint256 currentBalance,
+    uint256 balanceIncrease
+  );
+
+  /**
    * @dev mints debt token to the target user. The resulting rate is the weighted average
    * between the rate of the new debt and the rate of the previous debt
    * @param user the address of the user

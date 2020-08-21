@@ -52,141 +52,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   address[] internal reservesList;
 
   /**
-   * @dev emitted on deposit
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   * @param amount the amount to be deposited
-   * @param referral the referral number of the action
-   **/
-  event Deposit(
-    address indexed reserve,
-    address indexed user,
-    uint256 amount,
-    uint16 indexed referral
-  );
-
-  /**
-   * @dev emitted during a withdraw action.
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   * @param amount the amount to be withdrawn
-   **/
-  event Withdraw(address indexed reserve, address indexed user, uint256 amount);
-
-  /**
-   * @dev emitted on borrow
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   * @param amount the amount to be deposited
-   * @param borrowRateMode the rate mode, can be either 1-stable or 2-variable
-   * @param borrowRate the rate at which the user has borrowed
-   * @param referral the referral number of the action
-   **/
-  event Borrow(
-    address indexed reserve,
-    address indexed user,
-    uint256 amount,
-    uint256 borrowRateMode,
-    uint256 borrowRate,
-    uint16 indexed referral
-  );
-  /**
-   * @dev emitted on repay
-   * @param reserve the address of the reserve
-   * @param user the address of the user for which the repay has been executed
-   * @param repayer the address of the user that has performed the repay action
-   * @param amount the amount repaid
-   **/
-  event Repay(
-    address indexed reserve,
-    address indexed user,
-    address indexed repayer,
-    uint256 amount
-  );
-  /**
-   * @dev emitted when a user performs a rate swap
-   * @param reserve the address of the reserve
-   * @param user the address of the user executing the swap
-   **/
-  event Swap(address indexed reserve, address indexed user, uint256 timestamp);
-
-  /**
-   * @dev emitted when a user enables a reserve as collateral
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   **/
-  event ReserveUsedAsCollateralEnabled(address indexed reserve, address indexed user);
-
-  /**
-   * @dev emitted when a user disables a reserve as collateral
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   **/
-  event ReserveUsedAsCollateralDisabled(address indexed reserve, address indexed user);
-
-  /**
-   * @dev emitted when the stable rate of a user gets rebalanced
-   * @param reserve the address of the reserve
-   * @param user the address of the user for which the rebalance has been executed
-   **/
-  event RebalanceStableBorrowRate(address indexed reserve, address indexed user);
-  /**
-   * @dev emitted when a flashloan is executed
-   * @param target the address of the flashLoanReceiver
-   * @param reserve the address of the reserve
-   * @param amount the amount requested
-   * @param totalFee the total fee on the amount
-   **/
-  event FlashLoan(
-    address indexed target,
-    address indexed reserve,
-    uint256 amount,
-    uint256 totalFee
-  );
-  /**
-   * @dev these events are not emitted directly by the LendingPool
-   * but they are declared here as the LendingPoolLiquidationManager
-   * is executed using a delegateCall().
-   * This allows to have the events in the generated ABI for LendingPool.
-   **/
-
-  /**
-   * @dev emitted when a borrow fee is liquidated
-   * @param collateral the address of the collateral being liquidated
-   * @param reserve the address of the reserve
-   * @param user the address of the user being liquidated
-   * @param feeLiquidated the total fee liquidated
-   * @param liquidatedCollateralForFee the amount of collateral received by the protocol in exchange for the fee
-   **/
-  event OriginationFeeLiquidated(
-    address indexed collateral,
-    address indexed reserve,
-    address indexed user,
-    uint256 feeLiquidated,
-    uint256 liquidatedCollateralForFee
-  );
-  /**
-   * @dev emitted when a borrower is liquidated
-   * @param collateral the address of the collateral being liquidated
-   * @param reserve the address of the reserve
-   * @param user the address of the user being liquidated
-   * @param purchaseAmount the total amount liquidated
-   * @param liquidatedCollateralAmount the amount of collateral being liquidated
-   * @param accruedBorrowInterest the amount of interest accrued by the borrower since the last action
-   * @param liquidator the address of the liquidator
-   * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
-   **/
-  event LiquidationCall(
-    address indexed collateral,
-    address indexed reserve,
-    address indexed user,
-    uint256 purchaseAmount,
-    uint256 liquidatedCollateralAmount,
-    uint256 accruedBorrowInterest,
-    address liquidator,
-    bool receiveAToken
-  );
-  /**
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
   modifier onlyLendingPoolConfigurator {
@@ -413,12 +278,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, paybackAmount);
 
-    emit Repay(
-      asset,
-      _onBehalfOf,
-      msg.sender,
-      paybackAmount
-    );
+    emit Repay(asset, _onBehalfOf, msg.sender, paybackAmount);
   }
 
   /**
@@ -509,10 +369,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     reserve.updateInterestRates(asset, 0, 0);
 
-    emit RebalanceStableBorrowRate(
-      asset,
-      _user
-    );
+    emit RebalanceStableBorrowRate(asset, _user);
 
     return;
   }
@@ -884,18 +741,18 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   }
 
   /**
-  * @dev returns the normalized income per unit of asset
-  * @param asset the address of the reserve
-  * @return the reserve normalized income
+   * @dev returns the normalized income per unit of asset
+   * @param asset the address of the reserve
+   * @return the reserve normalized income
    */
   function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
     return _reserves[asset].getNormalizedIncome();
   }
 
   /**
-  * @dev returns the normalized variable debt per unit of asset
-  * @param asset the address of the reserve
-  * @return the reserve normalized debt
+   * @dev returns the normalized variable debt per unit of asset
+   * @param asset the address of the reserve
+   * @return the reserve normalized debt
    */
   function getReserveNormalizedVariableDebt(address asset)
     external
@@ -907,11 +764,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   }
 
   /**
-  * @dev validate if a balance decrease for an asset is allowed
-  * @param asset the address of the reserve
-  * @param user the user related to the balance decrease
-  * @param amount the amount being transferred/redeemed
-  * @return true if the balance decrease can be allowed, false otherwise
+   * @dev validate if a balance decrease for an asset is allowed
+   * @param asset the address of the reserve
+   * @param user the user related to the balance decrease
+   * @param amount the amount being transferred/redeemed
+   * @return true if the balance decrease can be allowed, false otherwise
    */
   function balanceDecreaseAllowed(
     address asset,
@@ -931,16 +788,16 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   }
 
   /**
-  * @dev returns the list of the initialized reserves
-  **/
-  function getReservesList() external view returns(address[] memory){
-      return reservesList;
+   * @dev returns the list of the initialized reserves
+   **/
+  function getReservesList() external view returns (address[] memory) {
+    return reservesList;
   }
 
   /**
-  * @dev returns the addresses provider
-  **/
-  function getAddressesProvider() external view returns(ILendingPoolAddressesProvider){
+   * @dev returns the addresses provider
+   **/
+  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
     return addressesProvider;
   }
 }

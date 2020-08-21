@@ -12,12 +12,12 @@ interface IExchangeAdapter {
     uint256 toAmount
   );
 
-  function approveExchange(IERC20[] calldata _tokens) external;
+  function approveExchange(IERC20[] calldata tokens) external;
 
   function exchange(
-    address _from,
-    address _to,
-    uint256 _amount,
-    uint256 _maxSlippage
+    address from,
+    address to,
+    uint256 amount,
+    uint256 maxSlippage
   ) external returns (uint256);
 }

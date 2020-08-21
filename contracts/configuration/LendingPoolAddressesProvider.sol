@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {
+  InitializableAdminUpgradeabilityProxy
+} from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
 
-import '../interfaces/ILendingPoolAddressesProvider.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title LendingPoolAddressesProvider contract
@@ -15,17 +17,6 @@ import '../interfaces/ILendingPoolAddressesProvider.sol';
 
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
   mapping(bytes32 => address) private _addresses;
-
-  //events
-  event LendingPoolUpdated(address indexed newAddress);
-  event LendingPoolManagerUpdated(address indexed newAddress);
-  event LendingPoolConfiguratorUpdated(address indexed newAddress);
-  event LendingPoolLiquidationManagerUpdated(address indexed newAddress);
-  event EthereumAddressUpdated(address indexed newAddress);
-  event PriceOracleUpdated(address indexed newAddress);
-  event LendingRateOracleUpdated(address indexed newAddress);
-
-  event ProxyCreated(bytes32 id, address indexed newAddress);
 
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';
   bytes32 private constant LENDING_POOL_CORE = 'LENDING_POOL_CORE';

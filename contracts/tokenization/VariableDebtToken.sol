@@ -22,42 +22,6 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   mapping(address => uint256) private _userIndexes;
 
-  /**
-   * @dev emitted when new variable debt is minted
-   * @param user the user receiving the debt
-   * @param amount the amount of debt being minted
-   * @param previousBalance the previous balance of the user
-   * @param currentBalance the current balance of the user
-   * @param balanceIncrease the debt accumulated since the last action
-   * @param index the index of the user
-   **/
-  event MintDebt(
-    address user,
-    uint256 amount,
-    uint256 previousBalance,
-    uint256 currentBalance,
-    uint256 balanceIncrease,
-    uint256 index
-  );
-
-  /**
-   * @dev emitted when variable debt is burnt
-   * @param user the user which debt has been burned
-   * @param amount the amount of debt being burned
-   * @param previousBalance the previous balance of the user
-   * @param currentBalance the current balance of the user
-   * @param balanceIncrease the debt accumulated since the last action
-   * @param index the index of the user
-   **/
-  event BurnDebt(
-    address user,
-    uint256 amount,
-    uint256 previousBalance,
-    uint256 currentBalance,
-    uint256 balanceIncrease,
-    uint256 index
-  );
-
   constructor(
     address pool,
     address underlyingAsset,
