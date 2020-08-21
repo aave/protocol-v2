@@ -4,7 +4,7 @@ stages:
 test:
   stage: test
   when:
-    - production
+    - always
   tags:
     - aave-build-runner
   before_script:
