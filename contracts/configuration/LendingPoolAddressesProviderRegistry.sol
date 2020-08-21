@@ -11,10 +11,6 @@ import '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
  **/
 
 contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesProviderRegistry {
-  //events
-  event AddressesProviderRegistered(address indexed newAddress);
-  event AddressesProviderUnregistered(address indexed newAddress);
-
   mapping(address => uint256) addressesProviders;
   address[] addressesProvidersList;
 

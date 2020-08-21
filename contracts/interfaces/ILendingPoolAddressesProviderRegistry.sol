@@ -7,6 +7,10 @@ pragma solidity ^0.6.8;
  **/
 
 interface ILendingPoolAddressesProviderRegistry {
+  //events
+  event AddressesProviderRegistered(address indexed newAddress);
+  event AddressesProviderUnregistered(address indexed newAddress);
+
   function getAddressesProvidersList() external view returns (address[] memory);
 
   function isAddressesProviderRegistered(address _provider) external view returns (uint256);
