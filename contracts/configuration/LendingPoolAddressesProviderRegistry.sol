@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {
+  ILendingPoolAddressesProviderRegistry
+} from '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
 
 /**
  * @title LendingPoolAddressesProviderRegistry contract
@@ -15,21 +17,21 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   event AddressesProviderRegistered(address indexed newAddress);
   event AddressesProviderUnregistered(address indexed newAddress);
 
-  mapping(address => uint256) addressesProviders;
-  address[] addressesProvidersList;
+  mapping(address => uint256) internal _addressesProviders;
+  address[] internal _addressesProvidersList;
 
   /**
    * @dev returns if an addressesProvider is registered or not
-   * @param _provider the addresses provider
+   * @param provider the addresses provider
    * @return true if the addressesProvider is registered, false otherwise
    **/
-  function isAddressesProviderRegistered(address _provider)
+  function isAddressesProviderRegistered(address provider)
     external
     override
     view
     returns (uint256)
   {
-    return addressesProviders[_provider];
+    return _addressesProviders[provider];
   }
 
   /**
@@ -37,13 +39,13 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @return the list of addressesProviders
    **/
   function getAddressesProvidersList() external override view returns (address[] memory) {
-    uint256 maxLength = addressesProvidersList.length;
+    uint256 maxLength = _addressesProvidersList.length;
 
     address[] memory activeProviders = new address[](maxLength);
 
-    for (uint256 i = 0; i < addressesProvidersList.length; i++) {
-      if (addressesProviders[addressesProvidersList[i]] > 0) {
-        activeProviders[i] = addressesProvidersList[i];
+    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
+      if (_addressesProviders[_addressesProvidersList[i]] > 0) {
+        activeProviders[i] = _addressesProvidersList[i];
       }
     }
 
@@ -52,35 +54,35 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev adds a lending pool to the list of registered lending pools
-   * @param _provider the pool address to be registered
+   * @param provider the pool address to be registered
    **/
-  function registerAddressesProvider(address _provider, uint256 _id) public override onlyOwner {
-    addressesProviders[_provider] = _id;
-    addToAddressesProvidersListInternal(_provider);
-    emit AddressesProviderRegistered(_provider);
+  function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
+    _addressesProviders[provider] = id;
+    _addToAddressesProvidersList(provider);
+    emit AddressesProviderRegistered(provider);
   }
 
   /**
    * @dev removes a lending pool from the list of registered lending pools
-   * @param _provider the pool address to be unregistered
+   * @param provider the pool address to be unregistered
    **/
-  function unregisterAddressesProvider(address _provider) public override onlyOwner {
-    require(addressesProviders[_provider] > 0, 'Provider is not registered');
-    addressesProviders[_provider] = 0;
-    emit AddressesProviderUnregistered(_provider);
+  function unregisterAddressesProvider(address provider) external override onlyOwner {
+    require(_addressesProviders[provider] > 0, 'Provider is not registered');
+    _addressesProviders[provider] = 0;
+    emit AddressesProviderUnregistered(provider);
   }
 
   /**
    * @dev adds to the list of the addresses providers, if it wasn't already added before
-   * @param _provider the pool address to be added
+   * @param provider the pool address to be added
    **/
-  function addToAddressesProvidersListInternal(address _provider) internal {
-    for (uint256 i = 0; i < addressesProvidersList.length; i++) {
-      if (addressesProvidersList[i] == _provider) {
+  function _addToAddressesProvidersList(address provider) internal {
+    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
+      if (_addressesProvidersList[i] == provider) {
         return;
       }
     }
 
-    addressesProvidersList.push(_provider);
+    _addressesProvidersList.push(provider);
   }
 }

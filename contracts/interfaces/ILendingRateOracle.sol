@@ -10,10 +10,10 @@ interface ILendingRateOracle {
   /**
     @dev returns the market borrow rate in ray
     **/
-  function getMarketBorrowRate(address _asset) external view returns (uint256);
+  function getMarketBorrowRate(address asset) external view returns (uint256);
 
   /**
     @dev sets the market borrow rate. Rate value must be in ray
     **/
-  function setMarketBorrowRate(address _asset, uint256 _rate) external;
+  function setMarketBorrowRate(address asset, uint256 rate) external;
 }
