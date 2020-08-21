@@ -677,8 +677,18 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       'The actual balance of the protocol is inconsistent'
     );
 
-    reserve.updateStateOnFlashLoan(_reserve, availableLiquidityBefore, amountFee);
+       //compounding the cumulated interest
+    reserve.updateCumulativeIndexesAndTimestamp();
 
+    uint256 totalLiquidityBefore = availableLiquidityBefore
+      .add(IERC20(reserve.variableDebtTokenAddress).totalSupply())
+      .add(IERC20(reserve.stableDebtTokenAddress).totalSupply());
+
+    //compounding the received fee into the reserve
+    reserve.cumulateToLiquidityIndex(totalLiquidityBefore, amountFee);
+
+    //refresh interest rates
+    reserve.updateInterestRates(reserve, asset, amountFee, 0);
     //solium-disable-next-line
     emit FlashLoan(_receiver, _reserve, _amount, amountFee, block.timestamp);
   }
