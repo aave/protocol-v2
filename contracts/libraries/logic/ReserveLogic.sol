@@ -49,7 +49,7 @@ library ReserveLogic {
   // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
   struct ReserveData {
     //the liquidity index. Expressed in ray
-    uint256 lastLiquidityCumulativeIndex;
+    uint256 lastLiquidityIndex;
     //the current supply rate. Expressed in ray
     uint256 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
@@ -57,7 +57,7 @@ library ReserveLogic {
     //the current stable borrow rate. Expressed in ray
     uint256 currentStableBorrowRate;
     //variable borrow index. Expressed in ray
-    uint256 lastVariableBorrowCumulativeIndex;
+    uint256 lastVariableBorrowIndex;
     //stores the reserve configuration
     ReserveConfiguration.Map configuration;
     address aTokenAddress;
@@ -82,12 +82,12 @@ library ReserveLogic {
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.lastLiquidityCumulativeIndex;
+      return reserve.lastLiquidityIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateLinearInterest(reserve.currentLiquidityRate, timestamp)
-      .rayMul(reserve.lastLiquidityCumulativeIndex);
+      .rayMul(reserve.lastLiquidityIndex);
 
     return cumulated;
   }
@@ -105,12 +105,12 @@ library ReserveLogic {
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.lastVariableBorrowCumulativeIndex;
+      return reserve.lastVariableBorrowIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp)
-      .rayMul(reserve.lastVariableBorrowCumulativeIndex);
+      .rayMul(reserve.lastVariableBorrowIndex);
 
     return cumulated;
   }
@@ -131,16 +131,16 @@ library ReserveLogic {
         reserve.lastUpdateTimestamp
       );
 
-      reserve.lastLiquidityCumulativeIndex = cumulatedLiquidityInterest.rayMul(
-        reserve.lastLiquidityCumulativeIndex
+      reserve.lastLiquidityIndex = cumulatedLiquidityInterest.rayMul(
+        reserve.lastLiquidityIndex
       );
 
       uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
         reserve.currentVariableBorrowRate,
         reserve.lastUpdateTimestamp
       );
-      reserve.lastVariableBorrowCumulativeIndex = cumulatedVariableBorrowInterest.rayMul(
-        reserve.lastVariableBorrowCumulativeIndex
+      reserve.lastVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(
+        reserve.lastVariableBorrowIndex
       );
     }
 
@@ -164,8 +164,8 @@ library ReserveLogic {
 
     uint256 cumulatedLiquidity = amountToLiquidityRatio.add(WadRayMath.ray());
 
-    reserve.lastLiquidityCumulativeIndex = cumulatedLiquidity.rayMul(
-      reserve.lastLiquidityCumulativeIndex
+    reserve.lastLiquidityIndex = cumulatedLiquidity.rayMul(
+      reserve.lastLiquidityIndex
     );
   }
 
@@ -183,13 +183,13 @@ library ReserveLogic {
     address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), 'Reserve has already been initialized');
-    if (reserve.lastLiquidityCumulativeIndex == 0) {
+    if (reserve.lastLiquidityIndex == 0) {
       //if the reserve has not been initialized yet
-      reserve.lastLiquidityCumulativeIndex = WadRayMath.ray();
+      reserve.lastLiquidityIndex = WadRayMath.ray();
     }
 
-    if (reserve.lastVariableBorrowCumulativeIndex == 0) {
-      reserve.lastVariableBorrowCumulativeIndex = WadRayMath.ray();
+    if (reserve.lastVariableBorrowIndex == 0) {
+      reserve.lastVariableBorrowIndex = WadRayMath.ray();
     }
 
     reserve.aTokenAddress = aTokenAddress;
@@ -238,8 +238,8 @@ library ReserveLogic {
       newStableRate,
       currentAvgStableRate,
       newVariableRate,
-      reserve.lastLiquidityCumulativeIndex,
-      reserve.lastVariableBorrowCumulativeIndex
+      reserve.lastLiquidityIndex,
+      reserve.lastVariableBorrowIndex
     );
   }
 }
