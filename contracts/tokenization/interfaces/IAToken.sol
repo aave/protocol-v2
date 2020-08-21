@@ -5,6 +5,84 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 interface IAToken is IERC20 {
   /**
+   * @dev emitted after aTokens are burned
+   * @param from the address performing the redeem
+   * @param value the amount to be redeemed
+   * @param fromBalanceIncrease the cumulated balance since the last update of the user
+   * @param fromIndex the last index of the user
+   **/
+  event Burn(
+    address indexed from,
+    address indexed target,
+    uint256 value,
+    uint256 fromBalanceIncrease,
+    uint256 fromIndex
+  );
+
+  /**
+   * @dev emitted after the mint action
+   * @param from the address performing the mint
+   * @param value the amount to be minted
+   * @param fromBalanceIncrease the cumulated balance since the last update of the user
+   * @param fromIndex the last index of the user
+   **/
+  event Mint(address indexed from, uint256 value, uint256 fromBalanceIncrease, uint256 fromIndex);
+
+  /**
+   * @dev emitted during the transfer action
+   * @param from the address from which the tokens are being transferred
+   * @param to the adress of the destination
+   * @param value the amount to be minted
+   * @param fromBalanceIncrease the cumulated balance since the last update of the user
+   * @param toBalanceIncrease the cumulated balance since the last update of the destination
+   * @param fromIndex the last index of the user
+   * @param toIndex the last index of the liquidator
+   **/
+  event BalanceTransfer(
+    address indexed from,
+    address indexed to,
+    uint256 value,
+    uint256 fromBalanceIncrease,
+    uint256 toBalanceIncrease,
+    uint256 fromIndex,
+    uint256 toIndex
+  );
+
+  /**
+   * @dev emitted when the accumulation of the interest
+   * by an user is redirected to another user
+   * @param from the address from which the interest is being redirected
+   * @param to the adress of the destination
+   * @param fromBalanceIncrease the cumulated balance since the last update of the user
+   * @param fromIndex the last index of the user
+   **/
+  event InterestStreamRedirected(
+    address indexed from,
+    address indexed to,
+    uint256 redirectedBalance,
+    uint256 fromBalanceIncrease,
+    uint256 fromIndex
+  );
+
+  /**
+   * @dev emitted when the redirected balance of an user is being updated
+   * @param targetAddress the address of which the balance is being updated
+   * @param targetBalanceIncrease the cumulated balance since the last update of the target
+   * @param targetIndex the last index of the user
+   * @param redirectedBalanceAdded the redirected balance being added
+   * @param redirectedBalanceRemoved the redirected balance being removed
+   **/
+  event RedirectedBalanceUpdated(
+    address indexed targetAddress,
+    uint256 targetBalanceIncrease,
+    uint256 targetIndex,
+    uint256 redirectedBalanceAdded,
+    uint256 redirectedBalanceRemoved
+  );
+
+  event InterestRedirectionAllowanceChanged(address indexed from, address indexed to);
+
+  /**
    * @dev redirects the interest generated to a target address.
    * when the interest is redirected, the user balance is added to
    * the recepient redirected balance.

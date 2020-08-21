@@ -18,17 +18,6 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
   mapping(bytes32 => address) private _addresses;
 
-  //events
-  event LendingPoolUpdated(address indexed newAddress);
-  event LendingPoolManagerUpdated(address indexed newAddress);
-  event LendingPoolConfiguratorUpdated(address indexed newAddress);
-  event LendingPoolLiquidationManagerUpdated(address indexed newAddress);
-  event EthereumAddressUpdated(address indexed newAddress);
-  event PriceOracleUpdated(address indexed newAddress);
-  event LendingRateOracleUpdated(address indexed newAddress);
-
-  event ProxyCreated(bytes32 id, address indexed newAddress);
-
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';
   bytes32 private constant LENDING_POOL_CORE = 'LENDING_POOL_CORE';
   bytes32 private constant LENDING_POOL_CONFIGURATOR = 'LENDING_POOL_CONFIGURATOR';

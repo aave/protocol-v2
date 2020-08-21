@@ -14,25 +14,25 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
 
   ILendingPoolAddressesProvider public addressesProvider;
 
-  constructor(ILendingPoolAddressesProvider _provider) public {
-    addressesProvider = _provider;
+  constructor(ILendingPoolAddressesProvider provider) public {
+    addressesProvider = provider;
   }
 
   receive() external payable {}
 
   function transferFundsBackInternal(
-    address _reserve,
-    address _destination,
-    uint256 _amount
+    address reserve,
+    address destination,
+    uint256 amount
   ) internal {
-    transferInternal(_destination, _reserve, _amount);
+    transferInternal(destination, reserve, amount);
   }
 
   function transferInternal(
-    address _destination,
-    address _reserve,
-    uint256 _amount
+    address destination,
+    address reserve,
+    uint256 amount
   ) internal {
-    IERC20(_reserve).safeTransfer(_destination, _amount);
+    IERC20(reserve).safeTransfer(destination, amount);
   }
 }
