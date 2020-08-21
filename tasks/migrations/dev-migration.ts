@@ -25,10 +25,8 @@ task('dev-migration', 'Deploy development enviroment')
     console.log('4. Deploy oracles');
     await localBRE.run('deploy-oracles');
 
-    // 5. Initialize lending pool configuration
-    //
-    // console.log('5. Initialize lending pool')
-    // await localBRE.run('initialize-lending-pool');
+    console.log('5. Initialize lending pool');
+    await localBRE.run('initialize-lending-pool');
 
     console.log('\nFinished migration');
   });

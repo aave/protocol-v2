@@ -218,24 +218,51 @@ export const deployPriceOracle = async (verify?: boolean) => {
   return instance;
 };
 
-export const deployMockAggregator = async (price: tStringTokenSmallUnits) =>
-  await deployContract<MockAggregator>(eContractid.MockAggregator, [price]);
+export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify?: boolean) => {
+  const args = [price];
+  const instance = await deployContract<MockAggregator>(eContractid.MockAggregator, args);
+  if (verify) {
+    await verifyContract(eContractid.MockAggregator, instance.address, args);
+  }
+  return instance;
+};
 
-export const deployChainlinkProxyPriceProvider = async ([
-  assetsAddresses,
-  sourcesAddresses,
-  fallbackOracleAddress,
-]: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress]) =>
-  await deployContract<MockAggregator>(eContractid.ChainlinkProxyPriceProvider, [
-    assetsAddresses,
-    sourcesAddresses,
-    fallbackOracleAddress,
-  ]);
+export const deployChainlinkProxyPriceProvider = async (
+  [assetsAddresses, sourcesAddresses, fallbackOracleAddress]: [
+    tEthereumAddress[],
+    tEthereumAddress[],
+    tEthereumAddress
+  ],
+  verify?: boolean
+) => {
+  const args = [assetsAddresses, sourcesAddresses, fallbackOracleAddress];
+  const instance = await deployContract<MockAggregator>(
+    eContractid.ChainlinkProxyPriceProvider,
+    args
+  );
+  if (verify) {
+    await verifyContract(eContractid.MockAggregator, instance.address, args);
+  }
+  return instance;
+};
 
-export const deployLendingRateOracle = async () =>
-  await deployContract<LendingRateOracle>(eContractid.LendingRateOracle, []);
+export const getChainlingProxyPriceProvider = async (address?: tEthereumAddress) =>
+  await getContract<MockAggregator>(
+    eContractid.ChainlinkProxyPriceProvider,
+    address ||
+      (await getDb().get(`${eContractid.ChainlinkProxyPriceProvider}.${BRE.network.name}`).value())
+        .address
+  );
 
-export const deployLendingPoolLiquidationManager = async () => {
+export const deployLendingRateOracle = async (verify?: boolean) => {
+  const instance = await deployContract<LendingRateOracle>(eContractid.LendingRateOracle, []);
+  if (verify) {
+    await verifyContract(eContractid.LendingRateOracle, instance.address, []);
+  }
+  return instance;
+};
+
+export const deployLendingPoolLiquidationManager = async (verify?: boolean) => {
   const liquidationManagerArtifact = await readArtifact(
     BRE.config.paths.artifacts,
     eContractid.LendingPoolLiquidationManager
@@ -247,29 +274,70 @@ export const deployLendingPoolLiquidationManager = async () => {
   return (await liquidationManager.deployed()) as LendingPoolLiquidationManager;
 };
 
-export const deployTokenDistributor = async () =>
-  await deployContract<TokenDistributor>(eContractid.TokenDistributor, []);
+export const deployTokenDistributor = async (verify?: boolean) => {
+  const instance = await deployContract<TokenDistributor>(eContractid.TokenDistributor, []);
+  if (verify) {
+    await verifyContract(eContractid.TokenDistributor, instance.address, []);
+  }
+  return instance;
+};
 
-export const deployInitializableAdminUpgradeabilityProxy = async () =>
-  await deployContract<InitializableAdminUpgradeabilityProxy>(
+export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) => {
+  const instance = await deployContract<InitializableAdminUpgradeabilityProxy>(
     eContractid.InitializableAdminUpgradeabilityProxy,
     []
   );
+  if (verify) {
+    await verifyContract(eContractid.InitializableAdminUpgradeabilityProxy, instance.address, []);
+  }
+  return instance;
+};
 
-export const deployMockFlashLoanReceiver = async (addressesProvider: tEthereumAddress) =>
-  await deployContract<MockFlashLoanReceiver>(eContractid.MockFlashLoanReceiver, [
-    addressesProvider,
-  ]);
+export const deployMockFlashLoanReceiver = async (
+  addressesProvider: tEthereumAddress,
+  verify?: boolean
+) => {
+  const args = [addressesProvider];
+  const instance = await deployContract<MockFlashLoanReceiver>(
+    eContractid.MockFlashLoanReceiver,
+    args
+  );
+  if (verify) {
+    await verifyContract(eContractid.MockFlashLoanReceiver, instance.address, args);
+  }
+  return instance;
+};
 
-export const deployWalletBalancerProvider = async (addressesProvider: tEthereumAddress) =>
-  await deployContract<WalletBalanceProvider>(eContractid.WalletBalanceProvider, [
-    addressesProvider,
-  ]);
+export const deployWalletBalancerProvider = async (
+  addressesProvider: tEthereumAddress,
+  verify?: boolean
+) => {
+  const args = [addressesProvider];
+  const instance = await deployContract<WalletBalanceProvider>(
+    eContractid.WalletBalanceProvider,
+    args
+  );
+  if (verify) {
+    await verifyContract(eContractid.WalletBalanceProvider, instance.address, args);
+  }
+  return instance;
+};
 
-export const deployAaveProtocolTestHelpers = async (addressesProvider: tEthereumAddress) =>
-  await deployContract<AaveProtocolTestHelpers>(eContractid.AaveProtocolTestHelpers, [
-    addressesProvider,
-  ]);
+export const deployAaveProtocolTestHelpers = async (
+  addressesProvider: tEthereumAddress,
+  verify?: boolean
+) => {
+  const args = [addressesProvider];
+  const instance = await deployContract<AaveProtocolTestHelpers>(
+    eContractid.AaveProtocolTestHelpers,
+    args
+  );
+
+  if (verify) {
+    await verifyContract(eContractid.AaveProtocolTestHelpers, instance.address, args);
+  }
+  return instance;
+};
 
 export const deployMintableErc20 = async ([name, symbol, decimals]: [string, string, number]) =>
   await deployContract<MintableErc20>(eContractid.MintableERC20, [name, symbol, decimals]);

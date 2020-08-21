@@ -4,13 +4,15 @@ import {
   IMarketRates,
   iAssetBase,
   iAssetAggregatorBase,
+  eContractid,
 } from './types';
 
 import {LendingRateOracle} from '../types/LendingRateOracle';
 import {PriceOracle} from '../types/PriceOracle';
 import {MockAggregator} from '../types/MockAggregator';
-import {deployMockAggregator} from './contracts-helpers';
+import {deployMockAggregator, getContract} from './contracts-helpers';
 import {waitForTx} from './misc-utils';
+import {verifyContract} from './etherscan-verification';
 
 export const setInitialMarketRatesInRatesOracle = async (
   marketRates: iMultiPoolsAssets<IMarketRates>,
@@ -47,7 +49,10 @@ export const setInitialAssetPricesInOracle = async (
   }
 };
 
-export const deployAllMockAggregators = async (initialPrices: iAssetAggregatorBase<string>) => {
+export const deployAllMockAggregators = async (
+  initialPrices: iAssetAggregatorBase<string>,
+  verify?: boolean
+) => {
   const aggregators: {[tokenSymbol: string]: MockAggregator} = {};
   for (const tokenContractName of Object.keys(initialPrices)) {
     if (tokenContractName !== 'ETH') {
@@ -55,7 +60,7 @@ export const deployAllMockAggregators = async (initialPrices: iAssetAggregatorBa
         (value) => value === tokenContractName
       );
       const [, price] = (Object.entries(initialPrices) as [string, string][])[priceIndex];
-      aggregators[tokenContractName] = await deployMockAggregator(price);
+      aggregators[tokenContractName] = await deployMockAggregator(price, verify);
     }
   }
   return aggregators;

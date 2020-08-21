@@ -42,3 +42,11 @@ export const increaseTime = async (secondsToIncrease: number) => {
 };
 
 export const waitForTx = async (tx: ContractTransaction) => await tx.wait();
+
+export const filterMapBy = (raw: {[key: string]: any}, fn: (key: string) => boolean) =>
+  Object.keys(raw)
+    .filter(fn)
+    .reduce<{[key: string]: any}>((obj, key) => {
+      obj[key] = raw[key];
+      return obj;
+    }, {});

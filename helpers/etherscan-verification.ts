@@ -22,7 +22,7 @@ function delay(ms: number) {
 export const verifyContract = async (
   contractName: string,
   address: string,
-  constructorArguments: string[],
+  constructorArguments: (string | string[])[],
   libraries?: string
 ) => {
   const currentNetwork = BRE.network.name;

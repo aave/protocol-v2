@@ -110,7 +110,7 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "buidlerevm": {
-      "address": "0x830bceA96E56DBC1F8578f75fBaC0AF16B32A07d",
+      "address": "0xE91bBe8ee03560E3dda2786f95335F5399813Ca0",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -146,7 +146,7 @@
   },
   "TokenDistributor": {
     "buidlerevm": {
-      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
+      "address": "0x3bDA11B584dDff7F66E0cFe1da1562c92B45db60"
     },
     "localhost": {
       "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
@@ -154,7 +154,7 @@
   },
   "InitializableAdminUpgradeabilityProxy": {
     "buidlerevm": {
-      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4",
+      "address": "0x3bDA11B584dDff7F66E0cFe1da1562c92B45db60",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -164,7 +164,7 @@
   },
   "MockFlashLoanReceiver": {
     "buidlerevm": {
-      "address": "0x3bDA11B584dDff7F66E0cFe1da1562c92B45db60"
+      "address": "0xEBAB67ee3ef604D5c250A53b4b8fcbBC6ec3007C"
     },
     "localhost": {
       "address": "0x3bDA11B584dDff7F66E0cFe1da1562c92B45db60"
@@ -172,7 +172,7 @@
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0x392E5355a0e88Bd394F717227c752670fb3a8020",
+      "address": "0xBE36BE5680244Ae1A6F983E4A6f6E1c142cdAbe3",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -412,7 +412,7 @@
   },
   "AaveProtocolTestHelpers": {
     "buidlerevm": {
-      "address": "0x3b050AFb4ac4ACE646b31fF3639C1CD43aC31460"
+      "address": "0xD67ba212bA61226DF3d20B2bD92deD3A6770f32d"
     },
     "localhost": {
       "address": "0x3b050AFb4ac4ACE646b31fF3639C1CD43aC31460"
@@ -420,7 +420,7 @@
   },
   "StableDebtToken": {
     "buidlerevm": {
-      "address": "0xA0AB1cB92A4AF81f84dCd258155B5c25D247b54E",
+      "address": "0x3870a14c5057f596e385ea21537792fE4fF4C1BE",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -430,7 +430,7 @@
   },
   "VariableDebtToken": {
     "buidlerevm": {
-      "address": "0x5f7134cd38C826a7649f9Cc47dda24d834DD2967",
+      "address": "0x4977FC58783ceBCC310311C800B786EcAf45F98f",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -444,7 +444,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "buidlerevm": {
-      "address": "0xE91bBe8ee03560E3dda2786f95335F5399813Ca0",
+      "address": "0x32eF223A01fB55Fd862E6E30d5F4A3b2d44f9586",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },

@@ -21,6 +21,7 @@ import {
 } from '../../helpers/oracles-helpers';
 import {tEthereumAddress} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
+import {getAllAggregatorsAddresses, getAllTokenAddresses} from '../../helpers/mock-helpers';
 
 task('deploy-oracles', 'Deploy oracles for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
@@ -64,39 +65,23 @@ task('deploy-oracles', 'Deploy oracles for dev enviroment')
       fallbackOracle
     );
 
-    // TODO: Missing verify
-    const mockAggregators = await deployAllMockAggregators(MOCK_CHAINLINK_AGGREGATORS_PRICES);
+    const mockAggregators = await deployAllMockAggregators(
+      MOCK_CHAINLINK_AGGREGATORS_PRICES,
+      verify
+    );
 
-    const allTokenAddresses = Object.entries(mockTokens).reduce(
-      (accum: {[tokenSymbol: string]: tEthereumAddress}, [tokenSymbol, tokenContract]) => ({
-        ...accum,
-        [tokenSymbol]: tokenContract.address,
-      }),
-      {}
-    );
-    const allAggregatorsAddresses = Object.entries(mockAggregators).reduce(
-      (accum: {[tokenSymbol: string]: tEthereumAddress}, [tokenSymbol, aggregator]) => ({
-        ...accum,
-        [tokenSymbol]: aggregator.address,
-      }),
-      {}
-    );
+    const allTokenAddresses = getAllTokenAddresses(mockTokens);
+    const allAggregatorsAddresses = getAllAggregatorsAddresses(mockAggregators);
 
     const [tokens, aggregators] = getPairsTokenAggregator(
       allTokenAddresses,
       allAggregatorsAddresses
     );
 
-    // TODO: Missing verify and getter
-    const chainlinkProxyPriceProvider = await deployChainlinkProxyPriceProvider([
-      tokens,
-      aggregators,
-      fallbackOracle.address,
-    ]);
+    await deployChainlinkProxyPriceProvider([tokens, aggregators, fallbackOracle.address], verify);
     await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
-    // TODO: Missing verify
-    const lendingRateOracle = await deployLendingRateOracle();
+    const lendingRateOracle = await deployLendingRateOracle(verify);
     await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
 
     const {USD, ...tokensAddressesWithoutUsd} = allTokenAddresses;
