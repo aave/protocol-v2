@@ -103,12 +103,12 @@ abstract contract DebtTokenBase is IERC20, VersionedInitializable {
    * @dev being non transferrable, the debt token does not implement any of the
    * standard ERC20 functions for transfer and allowance.
    **/
-  function transfer(address recipient, uint256 _amount) public virtual override returns (bool) {
+  function transfer(address recipient, uint256 _amount) external virtual override returns (bool) {
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
   function allowance(address owner, address spender)
-    public
+    external
     virtual
     override
     view
@@ -117,7 +117,7 @@ abstract contract DebtTokenBase is IERC20, VersionedInitializable {
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  function approve(address spender, uint256 _amount) public virtual override returns (bool) {
+  function approve(address spender, uint256 _amount) external virtual override returns (bool) {
     revert('APPROVAL_NOT_SUPPORTED');
   }
 
@@ -125,16 +125,16 @@ abstract contract DebtTokenBase is IERC20, VersionedInitializable {
     address sender,
     address recipient,
     uint256 _amount
-  ) public virtual override returns (bool) {
+  ) external virtual override returns (bool) {
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
-  function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+  function increaseAllowance(address spender, uint256 addedValue) external virtual returns (bool) {
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
   function decreaseAllowance(address spender, uint256 subtractedValue)
-    public
+    external
     virtual
     returns (bool)
   {

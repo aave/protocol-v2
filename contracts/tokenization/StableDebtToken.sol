@@ -143,7 +143,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     address _user,
     uint256 _amount,
     uint256 _rate
-  ) public override onlyLendingPool {
+  ) external override onlyLendingPool {
     MintLocalVars memory vars;
 
     //cumulates the user debt
@@ -193,7 +193,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param _user the address of the user
    * @param _amount the amount of debt tokens to mint
    **/
-  function burn(address _user, uint256 _amount) public override onlyLendingPool {
+  function burn(address _user, uint256 _amount) external override onlyLendingPool {
     (
       uint256 previousBalance,
       uint256 currentBalance,
