@@ -377,11 +377,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
-
+    
     //default to max amount
     uint256 paybackAmount = rateMode == ReserveLogic.InterestRateMode.STABLE
-      ? stableDebt
-      : variableDebt;
+      ? IERC20(reserve.stableDebtTokenAddress).balanceOf(_onBehalfOf)
+      : IERC20(reserve.variableDebtTokenAddress).balanceOf(_onBehalfOf);
 
     if (amount != UINT_MAX_VALUE && amount < paybackAmount) {
       paybackAmount = amount;
@@ -389,13 +389,11 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     ValidationLogic.validateRepay(
       reserve,
-      asset,
       amount,
       rateMode,
       _onBehalfOf,
       stableDebt,
-      variableDebt,
-      paybackAmount
+      variableDebt
     );
 
     reserve.updateCumulativeIndexesAndTimestamp();

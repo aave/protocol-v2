@@ -56,7 +56,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    **/
   function registerAddressesProvider(address _provider, uint256 _id) public override onlyOwner {
     addressesProviders[_provider] = _id;
-    addToAddressesProvidersListInternal(_provider);
+    _addToAddressesProvidersList(_provider);
     emit AddressesProviderRegistered(_provider);
   }
 
@@ -74,7 +74,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @dev adds to the list of the addresses providers, if it wasn't already added before
    * @param _provider the pool address to be added
    **/
-  function addToAddressesProvidersListInternal(address _provider) internal {
+  function _addToAddressesProvidersList(address _provider) internal {
     for (uint256 i = 0; i < addressesProvidersList.length; i++) {
       if (addressesProvidersList[i] == _provider) {
         return;

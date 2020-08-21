@@ -178,8 +178,8 @@ library ReserveLogic {
   function init(
     ReserveData storage reserve,
     address aTokenAddress,
-    address _stableDebtAddress,
-    address _variableDebtAddress,
+    address stableDebtTokenAddress,
+    address variableDebtTokenAddress,
     address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), 'Reserve has already been initialized');
@@ -193,8 +193,8 @@ library ReserveLogic {
     }
 
     reserve.aTokenAddress = aTokenAddress;
-    reserve.stableDebtTokenAddress = _stableDebtAddress;
-    reserve.variableDebtTokenAddress = _variableDebtAddress;
+    reserve.stableDebtTokenAddress = stableDebtTokenAddress;
+    reserve.variableDebtTokenAddress = variableDebtTokenAddress;
     reserve.interestRateStrategyAddress = interestRateStrategyAddress;
   }
 
@@ -202,14 +202,14 @@ library ReserveLogic {
    * @dev Updates the reserve current stable borrow rate Rf, the current variable borrow rate Rv and the current liquidity rate Rl.
    * Also updates the lastUpdateTimestamp value. Please refer to the whitepaper for further information.
    * @param reserve the address of the reserve to be updated
-   * @param _liquidityAdded the amount of liquidity added to the protocol (deposit or repay) in the previous action
-   * @param _liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
+   * @param liquidityAdded the amount of liquidity added to the protocol (deposit or repay) in the previous action
+   * @param liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
    **/
   function updateInterestRates(
     ReserveData storage reserve,
     address reserveAddress,
-    uint256 _liquidityAdded,
-    uint256 _liquidityTaken
+    uint256 liquidityAdded,
+    uint256 liquidityTaken
   ) internal {
     uint256 currentAvgStableRate = IStableDebtToken(reserve.stableDebtTokenAddress)
       .getAverageStableRate();
@@ -222,7 +222,7 @@ library ReserveLogic {
       uint256 newVariableRate
     ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
       reserveAddress,
-      balance.add(_liquidityAdded).sub(_liquidityTaken),
+      balance.add(liquidityAdded).sub(liquidityTaken),
       IERC20(reserve.stableDebtTokenAddress).totalSupply(),
       IERC20(reserve.variableDebtTokenAddress).totalSupply(),
       currentAvgStableRate

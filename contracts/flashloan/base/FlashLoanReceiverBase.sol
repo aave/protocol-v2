@@ -20,15 +20,15 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
 
   receive() external payable {}
 
-  function transferFundsBackInternal(
+  function _transferFundsBack(
     address _reserve,
     address _destination,
     uint256 _amount
   ) internal {
-    transferInternal(_destination, _reserve, _amount);
+    _transfer(_destination, _reserve, _amount);
   }
 
-  function transferInternal(
+  function _transfer(
     address _destination,
     address _reserve,
     uint256 _amount

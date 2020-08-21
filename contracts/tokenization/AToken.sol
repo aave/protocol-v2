@@ -154,7 +154,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     address to,
     uint256 amount
   ) internal override whenTransferAllowed(from, amount) {
-    executeTransferInternal(from, to, amount);
+    _executeTransfer(from, to, amount);
   }
 
   /**
@@ -164,7 +164,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param to the address to which the interest will be redirected
    **/
   function redirectInterestStream(address to) external override {
-    redirectInterestStreamInternal(msg.sender, to);
+    _redirectInterestStream(msg.sender, to);
   }
 
   /**
@@ -180,7 +180,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       msg.sender == _interestRedirectionAllowances[from],
       'Caller is not allowed to redirect the interest of the user'
     );
-    redirectInterestStreamInternal(from, to);
+    _redirectInterestStream(from, to);
   }
 
   /**
@@ -206,12 +206,12 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     uint256 amount
   ) external override onlyLendingPool {
     //cumulates the balance of the user
-    (, uint256 currentBalance, uint256 balanceIncrease) = calculateBalanceIncreaseInternal(user);
+    (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(user);
 
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest,
     //and removing the amount to redeem
-    updateRedirectedBalanceOfRedirectionAddressInternal(user, balanceIncrease, amount);
+    _updateRedirectedBalanceOfRedirectionAddress(user, balanceIncrease, amount);
 
     if (balanceIncrease > amount) {
       _mint(user, balanceIncrease.sub(amount));
@@ -223,7 +223,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
     //reset the user data if the remaining balance is 0
     if (currentBalance.sub(amount) == 0) {
-      resetDataOnZeroBalanceInternal(user);
+      _resetDataOnZeroBalance(user);
     } else {
       //updates the user index
       userIndex = _userIndexes[user] = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
@@ -243,7 +243,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    */
   function mint(address user, uint256 amount) external override onlyLendingPool {
     //cumulates the balance of the user
-    (, , uint256 balanceIncrease) = calculateBalanceIncreaseInternal(user);
+    (, , uint256 balanceIncrease) = _calculateBalanceIncrease(user);
 
     //updates the user index
     uint256 index = _userIndexes[user] = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
@@ -251,7 +251,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest
     //and the amount deposited
-    updateRedirectedBalanceOfRedirectionAddressInternal(user, balanceIncrease.add(amount), 0);
+    _updateRedirectedBalanceOfRedirectionAddress(user, balanceIncrease.add(amount), 0);
 
     //mint an equivalent amount of tokens to cover the new deposit
     _mint(user, amount.add(balanceIncrease));
@@ -273,7 +273,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   ) external override onlyLendingPool {
     //being a normal transfer, the Transfer() and BalanceTransfer() are emitted
     //so no need to emit a specific event here
-    executeTransferInternal(from, to, value);
+    _executeTransfer(from, to, value);
   }
 
   /**
@@ -298,7 +298,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       //accruing for himself means that both the principal balance and
       //the redirected balance partecipate in the interest
       return
-        calculateCumulatedBalanceInternal(user, currentPrincipalBalance.add(redirectedBalance)).sub(
+        _calculateCumulatedBalance(user, currentPrincipalBalance.add(redirectedBalance)).sub(
           redirectedBalance
         );
     } else {
@@ -307,7 +307,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       //by the redirected balance is added to the current principal balance.
       return
         currentPrincipalBalance.add(
-          calculateCumulatedBalanceInternal(user, redirectedBalance).sub(redirectedBalance)
+          _calculateCumulatedBalance(user, redirectedBalance).sub(redirectedBalance)
         );
     }
   }
@@ -385,7 +385,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param user the address of the user
    * @return the last user principal balance, the current balance and the balance increase
    **/
-  function calculateBalanceIncreaseInternal(address user)
+  function _calculateBalanceIncrease(address user)
     internal
     view
     returns (
@@ -413,7 +413,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return the previous principal balance, the new principal balance, the balance increase
    * and the new user index
    **/
-  function cumulateBalanceInternal(address user)
+  function _cumulateBalance(address user)
     internal
     returns (
       uint256,
@@ -426,7 +426,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
-    ) = calculateBalanceIncreaseInternal(user);
+    ) = _calculateBalanceIncrease(user);
 
     _mint(user, balanceIncrease);
 
@@ -443,7 +443,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param balanceToAdd the amount to add to the redirected balance
    * @param balanceToRemove the amount to remove from the redirected balance
    **/
-  function updateRedirectedBalanceOfRedirectionAddressInternal(
+  function _updateRedirectedBalanceOfRedirectionAddress(
     address user,
     uint256 balanceToAdd,
     uint256 balanceToRemove
@@ -455,7 +455,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     }
 
     //compound balances of the redirected address
-    (, , uint256 balanceIncrease, uint256 index) = cumulateBalanceInternal(redirectionAddress);
+    (, , uint256 balanceIncrease, uint256 index) = _cumulateBalance(redirectionAddress);
 
     //updating the redirected balance
     _redirectedBalances[redirectionAddress] = _redirectedBalances[redirectionAddress]
@@ -469,7 +469,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     // if the redirection address is also redirecting the interest, we accumulate his balance
     // and update his chain of redirection
     if (targetOfRedirectionAddress != address(0)) {
-      updateRedirectedBalanceOfRedirectionAddressInternal(redirectionAddress, balanceIncrease, 0);
+      _updateRedirectedBalanceOfRedirectionAddress(redirectionAddress, balanceIncrease, 0);
     }
 
     emit RedirectedBalanceUpdated(
@@ -487,7 +487,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param balance the balance on which the interest is calculated
    * @return the interest rate accrued
    **/
-  function calculateCumulatedBalanceInternal(address user, uint256 balance)
+  function _calculateCumulatedBalance(address user, uint256 balance)
     internal
     view
     returns (uint256)
@@ -507,7 +507,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param to the destination address
    * @param value the amount to transfer
    **/
-  function executeTransferInternal(
+  function _executeTransfer(
     address from,
     address to,
     uint256 value
@@ -520,20 +520,20 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       uint256 fromBalance,
       uint256 fromBalanceIncrease,
       uint256 fromIndex
-    ) = cumulateBalanceInternal(from);
+    ) = _cumulateBalance(from);
 
     //cumulate the balance of the receiver
-    (, , uint256 toBalanceIncrease, uint256 toIndex) = cumulateBalanceInternal(to);
+    (, , uint256 toBalanceIncrease, uint256 toIndex) = _cumulateBalance(to);
 
     //if the sender is redirecting his interest towards someone else,
     //adds to the redirected balance the accrued interest and removes the amount
     //being transferred
-    updateRedirectedBalanceOfRedirectionAddressInternal(from, fromBalanceIncrease, value);
+    _updateRedirectedBalanceOfRedirectionAddress(from, fromBalanceIncrease, value);
 
     //if the receiver is redirecting his interest towards someone else,
     //adds to the redirected balance the accrued interest and the amount
     //being transferred
-    updateRedirectedBalanceOfRedirectionAddressInternal(to, toBalanceIncrease.add(value), 0);
+    _updateRedirectedBalanceOfRedirectionAddress(to, toBalanceIncrease.add(value), 0);
 
     //performs the transfer
     super._transfer(from, to, value);
@@ -541,7 +541,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     bool fromIndexReset = false;
     //reset the user data if the remaining balance is 0
     if (fromBalance.sub(value) == 0 && from != to) {
-      fromIndexReset = resetDataOnZeroBalanceInternal(from);
+      fromIndexReset = _resetDataOnZeroBalance(from);
     }
 
     emit BalanceTransfer(
@@ -561,7 +561,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param from the address from which transfer the aTokens
    * @param to the destination address
    **/
-  function redirectInterestStreamInternal(address from, address to) internal {
+  function _redirectInterestStream(address from, address to) internal {
     address currentRedirectionAddress = _interestRedirectionAddresses[from];
 
     require(to != currentRedirectionAddress, 'Interest is already redirected to the user');
@@ -572,7 +572,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       uint256 fromBalance,
       uint256 balanceIncrease,
       uint256 fromIndex
-    ) = cumulateBalanceInternal(from);
+    ) = _cumulateBalance(from);
 
     require(fromBalance > 0, 'Interest stream can only be redirected if there is a valid balance');
 
@@ -580,7 +580,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //the redirection address we substract the redirected balance of the previous
     //recipient
     if (currentRedirectionAddress != address(0)) {
-      updateRedirectedBalanceOfRedirectionAddressInternal(from, 0, previousPrincipalBalance);
+      _updateRedirectedBalanceOfRedirectionAddress(from, 0, previousPrincipalBalance);
     }
 
     //if the user is redirecting the interest back to himself,
@@ -595,7 +595,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     _interestRedirectionAddresses[from] = to;
 
     //adds the user balance to the redirected balance of the destination
-    updateRedirectedBalanceOfRedirectionAddressInternal(from, fromBalance, 0);
+    _updateRedirectedBalanceOfRedirectionAddress(from, fromBalance, 0);
 
     emit InterestStreamRedirected(from, to, fromBalance, balanceIncrease, fromIndex);
   }
@@ -606,7 +606,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param user the address of the user
    * @return true if the user index has also been reset, false otherwise. useful to emit the proper user index value
    **/
-  function resetDataOnZeroBalanceInternal(address user) internal returns (bool) {
+  function _resetDataOnZeroBalance(address user) internal returns (bool) {
     //if the user has 0 principal balance, the interest stream redirection gets reset
     _interestRedirectionAddresses[user] = address(0);
 
