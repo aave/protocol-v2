@@ -13,15 +13,15 @@ chai.use(require('chai-bignumber')());
 
 const {expect} = chai;
 
-const almostEqual: any = function (this: any, expected: any, actual: any): any {
+const almostEqual: any = function (this: any, expected: any, actual: any, message: string): any {
   this.assert(
     expected.plus(new BigNumber(1)).eq(actual) ||
       expected.plus(new BigNumber(2)).eq(actual) ||
       actual.plus(new BigNumber(1)).eq(expected) ||
       actual.plus(new BigNumber(2)).eq(expected) ||
       expected.eq(actual),
-    'expected #{act} to be almost equal #{exp}',
-    'expected #{act} to be different from #{exp}',
+    `${message} expected #{act} to be almost equal #{exp}`,
+    `${message} expected #{act} to be different from #{exp}`,
     expected.toString(),
     actual.toString()
   );
@@ -29,11 +29,11 @@ const almostEqual: any = function (this: any, expected: any, actual: any): any {
 
 chai.use(function (chai: any, utils: any) {
   chai.Assertion.overwriteMethod('almostEqual', function (original: any) {
-    return function (this: any, value: any) {
+    return function (this: any, value: any, message: string) {
       if (utils.flag(this, 'bignumber')) {
         var expected = new BigNumber(value);
         var actual = new BigNumber(this._obj);
-        almostEqual.apply(this, [expected, actual]);
+        almostEqual.apply(this, [expected, actual, message]);
       } else {
         original.apply(this, arguments);
       }
@@ -175,7 +175,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     const stableDebtBeforeTx = calcExpectedStableDebtTokenBalance(
       userReserveDataBefore,
-      txTimestamp.plus(2)
+      txTimestamp
     );
 
     expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(

@@ -101,7 +101,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('LIQUIDATION - Tries to liquidate a different collateral than the borrower collateral', async () => {
-    const {pool, dai, weth, users} = testEnv;
+    const {pool, dai, users} = testEnv;
     const borrower = users[1];
 
     await expect(
