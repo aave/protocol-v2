@@ -483,6 +483,12 @@ export const getAaveProtocolTestHelpers = async (address?: tEthereumAddress) => 
   );
 };
 
+export const getFeeProvider = async (address?: tEthereumAddress) =>
+  await getContract<FeeProvider>(
+    eContractid.FeeProvider,
+    address || (await getDb().get(`${eContractid.FeeProvider}.${BRE.network.name}`).value()).address
+  );
+
 export const getInterestRateStrategy = async (address?: tEthereumAddress) => {
   return await getContract<DefaultReserveInterestRateStrategy>(
     eContractid.DefaultReserveInterestRateStrategy,

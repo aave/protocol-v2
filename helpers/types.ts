@@ -43,6 +43,8 @@ export enum eContractid {
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
+  FeeProvider = 'FeeProvider',
+  TokenDistributor = 'TokenDistributor',
 }
 
 export enum ProtocolErrors {

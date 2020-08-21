@@ -31,8 +31,7 @@
   },
   "FeeProvider": {
     "buidlerevm": {
-      "address": "0xFAe0fd738dAbc8a0426F47437322b6d026A9FD95",
-      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+      "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
     },
     "localhost": {
       "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
@@ -50,7 +49,7 @@
   },
   "LendingPoolConfigurator": {
     "buidlerevm": {
-      "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
+      "address": "0x9EC0480CF106d6dc1c7849BA141a56F874170F97"
     },
     "localhost": {
       "address": "0x9EC0480CF106d6dc1c7849BA141a56F874170F97"
@@ -63,7 +62,7 @@
   },
   "LendingPool": {
     "buidlerevm": {
-      "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
+      "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
     },
     "localhost": {
       "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
@@ -71,7 +70,7 @@
   },
   "PriceOracle": {
     "buidlerevm": {
-      "address": "0x1750499D05Ed1674d822430FB960d5F6731fDf64",
+      "address": "0x099d9fF8F818290C8b5B7Db5bFca84CEebd2714c",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -81,7 +80,7 @@
   },
   "MockAggregator": {
     "buidlerevm": {
-      "address": "0xEC1C93A9f6a9e18E97784c76aC52053587FcDB89",
+      "address": "0xAF6BA11790D1942625C0c2dA07da19AB63845cfF",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -91,7 +90,7 @@
   },
   "ChainlinkProxyPriceProvider": {
     "buidlerevm": {
-      "address": "0x7B6C3e5486D9e6959441ab554A889099eed76290",
+      "address": "0xD83D2773a7873ae2b5f8Fb92097e20a8C64F691E",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -101,7 +100,7 @@
   },
   "LendingRateOracle": {
     "buidlerevm": {
-      "address": "0xD83D2773a7873ae2b5f8Fb92097e20a8C64F691E",
+      "address": "0xf91aC1098F3b154671Ce83290114aaE45ac0225f",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
