@@ -18,7 +18,6 @@
     "types-gen": "typechain --target ethers-v5 --outDir ./types './artifacts/*.json'",
     "test": "buidler test",
     "test-scenarios": "buidler test test/__setup.spec.ts test/scenario.spec.ts",
-    "coverage": "buidler coverage",
     "aave:evm:dev:migration": "npm run buidler:aave -- dev-migration",
     "aave:evm:full:migration": "buidler full-migration",
     "aave:kovan:dev:migration": "npm run buidler:aave:kovan -- dev-migration --verify",
@@ -26,7 +25,13 @@
     "aave:ropsten:dev:migration": "npm run buidler:aave:ropsten -- dev-migration --verify",
     "aave:ropsten:full:migration": "npm run buidler:aave:ropsten -- full-migration --verify",
     "aave:main:dev:migration": "npm run buidler:aave:main -- dev-migration --verify",
-    "uniswap:evm:dev:migration": "npm run buidler:uniswap -- dev-migration"
+    "uniswap:evm:dev:migration": "npm run buidler:uniswap -- dev-migration",
+    "dev:coverage": "buidler coverage",
+    "dev:deployment": "buidler dev-deployment",
+    "dev:deployExample": "buidler deploy-Example",
+    "dev:prettier": "prettier --write .",
+    "ci:test": "npm run compile && npm run types-gen && npm run test",
+    "ci:clean": "rm -rf ./artifacts ./cache ./types"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "1.4.4",

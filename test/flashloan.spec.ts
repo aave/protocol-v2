@@ -1,14 +1,8 @@
 import {TestEnv, makeSuite} from './helpers/make-suite';
 import {APPROVAL_AMOUNT_LENDING_POOL, oneRay} from '../helpers/constants';
-import {
-  convertToCurrencyDecimals,
-  getMockFlashLoanReceiver,
-  getTokenDistributor,
-} from '../helpers/contracts-helpers';
+import {convertToCurrencyDecimals, getMockFlashLoanReceiver} from '../helpers/contracts-helpers';
 import {ethers} from 'ethers';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
-import {TokenDistributor} from '../types/TokenDistributor';
-import {BRE} from '../helpers/misc-utils';
 import {ProtocolErrors} from '../helpers/types';
 import BigNumber from 'bignumber.js';
 
@@ -16,7 +10,6 @@ const {expect} = require('chai');
 
 makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
-  let _tokenDistributor = {} as TokenDistributor;
   const {
     INCONSISTENT_PROTOCOL_BALANCE,
     TOO_SMALL_FLASH_LOAN,
@@ -25,7 +18,6 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
   before(async () => {
     _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
-    _tokenDistributor = await getTokenDistributor();
   });
 
   it('Deposits ETH into the reserve', async () => {
@@ -60,26 +52,26 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       .plus(reserveData.totalBorrowsStable.toString())
       .plus(reserveData.totalBorrowsVariable.toString());
 
-    const tokenDistributorBalance = await weth.balanceOf(_tokenDistributor.address);
-
-    expect(totalLiquidity.toString()).to.be.equal('1000504000000000000');
+    expect(totalLiquidity.toString()).to.be.equal('1000720000000000000');
     expect(currentLiquidityRate.toString()).to.be.equal('0');
-    expect(currentLiquidityIndex.toString()).to.be.equal('1000504000000000000000000000');
-    expect(tokenDistributorBalance).to.be.equal('216000000000000');
+    expect(currentLiquidityIndex.toString()).to.be.equal('1000720000000000000000000000');
   });
 
   it('Takes an ETH flashloan as big as the available liquidity', async () => {
-    const {pool, deployer, weth} = testEnv;
+    const {pool, weth} = testEnv;
+
+    const reserveDataBefore = await pool.getReserveData(weth.address);
+
+    console.log('Total liquidity is ', reserveDataBefore.availableLiquidity.toString());
 
     const txResult = await pool.flashLoan(
       _mockFlashLoanReceiver.address,
       weth.address,
-      '1000504000000000000',
+      '1000720000000000000',
       '0x10'
     );
 
     const reserveData = await pool.getReserveData(weth.address);
-    const tokenDistributorBalance = await weth.balanceOf(_tokenDistributor.address);
 
     const currentLiqudityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
@@ -88,10 +80,9 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       .plus(reserveData.totalBorrowsStable.toString())
       .plus(reserveData.totalBorrowsVariable.toString());
 
-    expect(totalLiquidity.toString()).to.be.equal('1001134317520000000');
+    expect(totalLiquidity.toString()).to.be.equal('1001620648000000000');
     expect(currentLiqudityRate.toString()).to.be.equal('0');
-    expect(currentLiquidityIndex.toString()).to.be.equal('1001134317520000000000000000');
-    expect(tokenDistributorBalance.toString()).to.be.equal('486136080000000');
+    expect(currentLiquidityIndex.toString()).to.be.equal('1001620648000000000000000000');
   });
 
   it('Takes WETH flashloan, does not return the funds (revert expected)', async () => {
@@ -180,22 +171,15 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiquidityIndex = reserveData.liquidityIndex.toString();
     const currentUserBalance = userData.currentATokenBalance.toString();
 
-    const expectedLiquidity = ethers.utils.parseEther('1000.315');
-
-    const tokenDistributorBalance = await dai.balanceOf(_tokenDistributor.address);
+    const expectedLiquidity = ethers.utils.parseEther('1000.450');
 
     expect(totalLiquidity).to.be.equal(expectedLiquidity, 'Invalid total liquidity');
     expect(currentLiqudityRate).to.be.equal('0', 'Invalid liquidity rate');
     expect(currentLiquidityIndex).to.be.equal(
-      new BigNumber('1.000315').multipliedBy(oneRay).toFixed(),
+      new BigNumber('1.00045').multipliedBy(oneRay).toFixed(),
       'Invalid liquidity index'
     );
     expect(currentUserBalance.toString()).to.be.equal(expectedLiquidity, 'Invalid user balance');
-
-    expect(tokenDistributorBalance.toString()).to.be.equal(
-      ethers.utils.parseEther('0.135'),
-      'Invalid token distributor balance'
-    );
   });
 
   it('Takes out a 500 DAI flashloan, does not return the funds (revert expected)', async () => {

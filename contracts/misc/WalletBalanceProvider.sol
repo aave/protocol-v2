@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/utils/Address.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
-import '../configuration/LendingPoolAddressesProvider.sol';
-import '../lendingpool/LendingPool.sol';
+import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 
 /**
@@ -20,13 +20,13 @@ contract WalletBalanceProvider {
   using Address for address;
   using SafeERC20 for IERC20;
 
-  LendingPoolAddressesProvider provider;
+  LendingPoolAddressesProvider internal immutable _provider;
 
-  constructor(LendingPoolAddressesProvider _provider) public {
-    provider = _provider;
+  constructor(LendingPoolAddressesProvider provider) public {
+    _provider = provider;
   }
 
-  /** 
+  /**
     @dev Fallback function, don't accept any ETH
     **/
   receive() external payable {
@@ -40,10 +40,10 @@ contract WalletBalanceProvider {
     Returns the balance of the token for user. Avoids possible errors:
       - return 0 on non-contract address
     **/
-  function balanceOf(address _user, address _token) public view returns (uint256) {
+  function balanceOf(address user, address token) public view returns (uint256) {
     // check if token is actually a contract
-    if (_token.isContract()) {
-      return IERC20(_token).balanceOf(_user);
+    if (token.isContract()) {
+      return IERC20(token).balanceOf(user);
     } else {
       return 0;
     }
@@ -51,24 +51,24 @@ contract WalletBalanceProvider {
 
   /**
    * @notice Fetches, for a list of _users and _tokens (ETH included with mock address), the balances
-   * @param _users The list of users
-   * @param _tokens The list of tokens
+   * @param users The list of users
+   * @param tokens The list of tokens
    * @return And array with the concatenation of, for each user, his/her balances
    **/
-  function batchBalanceOf(address[] memory _users, address[] memory _tokens)
-    public
+  function batchBalanceOf(address[] calldata users, address[] calldata tokens)
+    external
     view
     returns (uint256[] memory)
   {
-    uint256[] memory balances = new uint256[](_users.length * _tokens.length);
+    uint256[] memory balances = new uint256[](users.length * tokens.length);
 
-    for (uint256 i = 0; i < _users.length; i++) {
-      for (uint256 j = 0; j < _tokens.length; j++) {
-        uint256 _offset = i * _tokens.length;
-        if (!_tokens[j].isContract()) {
+    for (uint256 i = 0; i < users.length; i++) {
+      for (uint256 j = 0; j < tokens.length; j++) {
+        uint256 _offset = i * tokens.length;
+        if (!tokens[j].isContract()) {
           revert('INVALID_TOKEN');
         } else {
-          balances[_offset + j] = balanceOf(_users[i], _tokens[j]);
+          balances[_offset + j] = balanceOf(users[i], tokens[j]);
         }
       }
     }
@@ -79,12 +79,12 @@ contract WalletBalanceProvider {
   /**
     @dev provides balances of user wallet for all reserves available on the pool
     */
-  function getUserWalletBalances(address _user)
-    public
+  function getUserWalletBalances(address user)
+    external
     view
     returns (address[] memory, uint256[] memory)
   {
-    LendingPool pool = LendingPool(payable(provider.getLendingPool()));
+    ILendingPool pool = ILendingPool(_provider.getLendingPool());
 
     address[] memory reserves = pool.getReserves();
 
@@ -97,7 +97,7 @@ contract WalletBalanceProvider {
         balances[j] = 0;
         continue;
       }
-        balances[j] = balanceOf(_user, reserves[j]);
+      balances[j] = balanceOf(user, reserves[j]);
     }
 
     return (reserves, balances);

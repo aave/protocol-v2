@@ -4,17 +4,14 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-
 import {ReserveLogic} from './ReserveLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
-import {WadRayMath} from './WadRayMath.sol';
-import {PercentageMath} from './PercentageMath.sol';
+import {WadRayMath} from '../math/WadRayMath.sol';
+import {PercentageMath} from '../math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
-import {ReserveConfiguration} from './ReserveConfiguration.sol';
-import {UserConfiguration} from './UserConfiguration.sol';
-import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {IFeeProvider} from '../interfaces/IFeeProvider.sol';
-import '@nomiclabs/buidler/console.sol';
+import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../configuration/UserConfiguration.sol';
+import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title ReserveLogic library
@@ -36,12 +33,14 @@ library ValidationLogic {
    * @param _amount the amount to be deposited
    */
   function validateDeposit(ReserveLogic.ReserveData storage _reserve, uint256 _amount)
-    external
+    internal
     view
   {
     (bool isActive, bool isFreezed, , ) = _reserve.configuration.getFlags();
 
     require(_amount > 0, 'Amount must be greater than 0');
+    require(isActive, 'Action requires an active reserve');
+    require(!isFreezed, 'Action requires an unfreezed reserve');
   }
 
   /**
@@ -222,7 +221,6 @@ library ValidationLogic {
    * @param _stableBorrowBalance the borrow balance of the user
    * @param _variableBorrowBalance the borrow balance of the user
    * @param _actualPaybackAmount the actual amount being repaid
-   * @param _msgValue the value passed to the repay() function
    */
   function validateRepay(
     ReserveLogic.ReserveData storage _reserve,
@@ -232,8 +230,7 @@ library ValidationLogic {
     address _onBehalfOf,
     uint256 _stableBorrowBalance,
     uint256 _variableBorrowBalance,
-    uint256 _actualPaybackAmount,
-    uint256 _msgValue
+    uint256 _actualPaybackAmount
   ) external view {
     bool isActive = _reserve.configuration.getActive();
 

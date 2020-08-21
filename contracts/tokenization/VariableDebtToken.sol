@@ -1,12 +1,11 @@
-pragma solidity ^0.6.0;
+// SPDX-License-Identifier: agpl-3.0
+pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/GSN/Context.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/utils/Address.sol';
+import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
-import {WadRayMath} from '../libraries/WadRayMath.sol';
-import '@nomiclabs/buidler/console.sol';
+import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
 
 /**
@@ -18,54 +17,53 @@ import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using SafeMath for uint256;
   using WadRayMath for uint256;
-  using Address for address;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
 
-  mapping(address => uint256) private userIndexes;
+  mapping(address => uint256) private _userIndexes;
 
   /**
    * @dev emitted when new variable debt is minted
-   * @param _user the user receiving the debt
-   * @param _amount the amount of debt being minted
-   * @param _previousBalance the previous balance of the user
-   * @param _currentBalance the current balance of the user
-   * @param _balanceIncrease the debt accumulated since the last action
-   * @param _index the index of the user
+   * @param user the user receiving the debt
+   * @param amount the amount of debt being minted
+   * @param previousBalance the previous balance of the user
+   * @param currentBalance the current balance of the user
+   * @param balanceIncrease the debt accumulated since the last action
+   * @param index the index of the user
    **/
-  event mintDebt(
-    address _user,
-    uint256 _amount,
-    uint256 _previousBalance,
-    uint256 _currentBalance,
-    uint256 _balanceIncrease,
-    uint256 _index
+  event MintDebt(
+    address user,
+    uint256 amount,
+    uint256 previousBalance,
+    uint256 currentBalance,
+    uint256 balanceIncrease,
+    uint256 index
   );
 
   /**
    * @dev emitted when variable debt is burnt
-   * @param _user the user which debt has been burned
-   * @param _amount the amount of debt being burned
-   * @param _previousBalance the previous balance of the user
-   * @param _currentBalance the current balance of the user
-   * @param _balanceIncrease the debt accumulated since the last action
-   * @param _index the index of the user
+   * @param user the user which debt has been burned
+   * @param amount the amount of debt being burned
+   * @param previousBalance the previous balance of the user
+   * @param currentBalance the current balance of the user
+   * @param balanceIncrease the debt accumulated since the last action
+   * @param index the index of the user
    **/
-  event burnDebt(
-    address _user,
-    uint256 _amount,
-    uint256 _previousBalance,
-    uint256 _currentBalance,
-    uint256 _balanceIncrease,
-    uint256 _index
+  event BurnDebt(
+    address user,
+    uint256 amount,
+    uint256 previousBalance,
+    uint256 currentBalance,
+    uint256 balanceIncrease,
+    uint256 index
   );
 
   constructor(
-    address _pool,
-    address _underlyingAsset,
-    string memory _name,
-    string memory _symbol
-  ) public DebtTokenBase(_pool, _underlyingAsset, _name, _symbol) {}
+    address pool,
+    address underlyingAsset,
+    string memory name,
+    string memory symbol
+  ) public DebtTokenBase(pool, underlyingAsset, name, symbol) {}
 
   /**
    * @dev gets the revision of the stable debt token implementation
@@ -79,16 +77,17 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @dev calculates the accumulated debt balance of the user
    * @return the debt balance of the user
    **/
-  function balanceOf(address _user) public virtual override view returns (uint256) {
-    if (balances[_user] == 0) {
+  function balanceOf(address user) public virtual override view returns (uint256) {
+    uint256 userBalance = _balances[user];
+    if (userBalance == 0) {
       return 0;
     }
 
     return
-      balances[_user]
+      userBalance
         .wadToRay()
-        .rayMul(pool.getReserveNormalizedVariableDebt(underlyingAssetAddress))
-        .rayDiv(userIndexes[_user])
+        .rayMul(_pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress))
+        .rayDiv(_userIndexes[user])
         .rayToWad();
   }
 
@@ -97,98 +96,55 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the user index
    **/
 
-  function getUserIndex(address _user) public virtual override view returns (uint256) {
-    return userIndexes[_user];
+  function getUserIndex(address user) external virtual override view returns (uint256) {
+    return _userIndexes[user];
   }
 
   /**
    * @dev mints new variable debt
-   * @param _user the user receiving the debt
-   * @param _amount the amount of debt being minted
+   * @param user the user receiving the debt
+   * @param amount the amount of debt being minted
    **/
-  function mint(address _user, uint256 _amount) public override onlyLendingPool {
+  function mint(address user, uint256 amount) external override onlyLendingPool {
     (
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(_user);
+    ) = _calculateBalanceIncrease(user);
 
-    _mint(_user, _amount.add(balanceIncrease));
+    _mint(user, amount.add(balanceIncrease));
 
-    userIndexes[_user] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
+    uint256 newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
+    _userIndexes[user] = newUserIndex;
 
-    emit mintDebt(
-      _user,
-      _amount,
-      previousBalance,
-      currentBalance,
-      balanceIncrease,
-      userIndexes[_user]
-    );
+    emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
 
   /**
    * @dev burns user variable debt
-   * @param _user the user which debt is burnt
-   * @param _amount the amount of debt being burned
+   * @param user the user which debt is burnt
+   * @param amount the amount of debt being burned
    **/
-  function burn(address _user, uint256 _amount) public override onlyLendingPool {
+  function burn(address user, uint256 amount) external override onlyLendingPool {
     (
       uint256 previousBalance,
       uint256 currentBalance,
       uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(_user);
+    ) = _calculateBalanceIncrease(user);
 
-    if (balanceIncrease > _amount) {
-      _mint(_user, balanceIncrease.sub(_amount));
+    if (balanceIncrease > amount) {
+      _mint(user, balanceIncrease.sub(amount));
     } else {
-      _burn(_user, _amount.sub(balanceIncrease));
+      _burn(user, amount.sub(balanceIncrease));
     }
 
-    //if user repaid everything
-    if (currentBalance == _amount) {
-      userIndexes[_user] = 0;
-    } else {
-      userIndexes[_user] = pool.getReserveNormalizedVariableDebt(underlyingAssetAddress);
+    uint256 newUserIndex = 0;
+    //if user not repaid everything
+    if (currentBalance != amount) {
+      newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
     }
+    _userIndexes[user] = newUserIndex;
 
-    emit burnDebt(
-      _user,
-      _amount,
-      previousBalance,
-      currentBalance,
-      balanceIncrease,
-      userIndexes[_user]
-    );
-  }
-
-  /**
-   * @dev calculates the increase in balance since the last user interaction
-   * @param _user the address of the user for which the interest is being accumulated
-   * @return the previous principal balance, the new principal balance, the balance increase
-   * and the new user index
-   **/
-  function _calculateBalanceIncrease(address _user)
-    internal
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    uint256 previousPrincipalBalance = balances[_user];
-
-    if (previousPrincipalBalance == 0) {
-      return (0, 0, 0);
-    }
-
-    //calculate the accrued interest since the last accumulation
-    uint256 balanceIncrease = balanceOf(_user).sub(previousPrincipalBalance);
-
-    return (
-      previousPrincipalBalance,
-      previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease
-    );
+    emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
 }

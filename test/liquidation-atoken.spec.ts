@@ -9,7 +9,6 @@ import {calcExpectedVariableDebtTokenBalance} from './helpers/utils/calculations
 import {getUserData, getReserveData} from './helpers/utils/helpers';
 
 const chai = require('chai');
-chai.use(require('chai-bignumber')());
 const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => {
@@ -101,7 +100,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('LIQUIDATION - Tries to liquidate a different collateral than the borrower collateral', async () => {
-    const {pool, dai, weth, users} = testEnv;
+    const {pool, dai, users} = testEnv;
     const borrower = users[1];
 
     await expect(
@@ -236,9 +235,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //approve protocol to access borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
-      value: amountETHtoDeposit,
-    });
+    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);

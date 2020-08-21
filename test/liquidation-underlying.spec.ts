@@ -9,37 +9,8 @@ import {calcExpectedStableDebtTokenBalance} from './helpers/utils/calculations';
 import {getUserData} from './helpers/utils/helpers';
 
 const chai = require('chai');
-chai.use(require('chai-bignumber')());
 
 const {expect} = chai;
-
-const almostEqual: any = function (this: any, expected: any, actual: any): any {
-  this.assert(
-    expected.plus(new BigNumber(1)).eq(actual) ||
-      expected.plus(new BigNumber(2)).eq(actual) ||
-      actual.plus(new BigNumber(1)).eq(expected) ||
-      actual.plus(new BigNumber(2)).eq(expected) ||
-      expected.eq(actual),
-    'expected #{act} to be almost equal #{exp}',
-    'expected #{act} to be different from #{exp}',
-    expected.toString(),
-    actual.toString()
-  );
-};
-
-chai.use(function (chai: any, utils: any) {
-  chai.Assertion.overwriteMethod('almostEqual', function (original: any) {
-    return function (this: any, value: any) {
-      if (utils.flag(this, 'bignumber')) {
-        var expected = new BigNumber(value);
-        var actual = new BigNumber(this._obj);
-        almostEqual.apply(this, [expected, actual]);
-      } else {
-        original.apply(this, arguments);
-      }
-    };
-  });
-});
 
 makeSuite('LendingPool liquidation - liquidator receiving the underlying asset', (testEnv) => {
   const {
@@ -73,9 +44,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //approve protocol to access the borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
-      value: amountETHtoDeposit,
-    });
+    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
 
     //user 2 borrows
 
@@ -177,7 +146,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     const stableDebtBeforeTx = calcExpectedStableDebtTokenBalance(
       userReserveDataBefore,
-      txTimestamp.plus(2)
+      txTimestamp
     );
 
     expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
@@ -241,9 +210,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //approve protocol to access the borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0', {
-      value: amountETHtoDeposit,
-    });
+    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
 
     //borrower borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);

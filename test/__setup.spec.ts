@@ -4,41 +4,25 @@ import {
   deployLendingPoolAddressesProvider,
   deployMintableErc20,
   deployLendingPoolAddressesProviderRegistry,
-  deployFeeProvider,
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
   getLendingPoolConfiguratorProxy,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
-  deployDefaultReserveInterestRateStrategy,
   deployLendingPoolLiquidationManager,
-  deployTokenDistributor,
-  deployInitializableAdminUpgradeabilityProxy,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  getFeeProvider,
   getLendingPool,
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
   getEthersSigners,
   registerContractInJsonDb,
-  deployStableDebtToken,
-  deployVariableDebtToken,
-  deployGenericAToken,
   getPairsTokenAggregator,
   initReserves,
 } from '../helpers/contracts-helpers';
-import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {Signer} from 'ethers';
-import {
-  TokenContractId,
-  eContractid,
-  tEthereumAddress,
-  iMultiPoolsAssets,
-  AavePools,
-  IReserveParams,
-} from '../helpers/types';
+import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
 import {MintableErc20} from '../types/MintableErc20';
 import {
   MOCK_USD_PRICE_IN_WEI,
@@ -47,11 +31,7 @@ import {
   MOCK_CHAINLINK_AGGREGATORS_PRICES,
   LENDING_RATE_ORACLE_RATES_COMMON,
   getReservesConfigByPool,
-  getFeeDistributionParamsCommon,
-  ZERO_ADDRESS,
 } from '../helpers/constants';
-import {LendingPool} from '../types/LendingPool';
-import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {initializeMakeSuite} from './helpers/make-suite';
 
 import {
@@ -105,11 +85,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(
     await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 0)
   );
-
-  const feeProviderImpl = await deployFeeProvider();
-  await waitForTx(await addressesProvider.setFeeProviderImpl(feeProviderImpl.address));
-  const feeProviderProxy = await getFeeProvider(await addressesProvider.getFeeProvider());
-  await insertContractAddressInDb(eContractid.FeeProvider, feeProviderProxy.address);
 
   const lendingPoolImpl = await deployLendingPool();
 
@@ -250,29 +225,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(
     await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
   );
-
-  const {receivers, percentages} = getFeeDistributionParamsCommon(lendingPoolManager);
-
-  const tokenDistributorImpl = await deployTokenDistributor();
-  const tokenDistributorProxy = await deployInitializableAdminUpgradeabilityProxy();
-  const implementationParams = tokenDistributorImpl.interface.encodeFunctionData('initialize', [
-    ZERO_ADDRESS,
-    tokensAddressesWithoutUsd.LEND,
-    '0x0000000000000000000000000000000000000000', // TODO: finish removal
-    receivers,
-    percentages,
-    Object.values(tokensAddressesWithoutUsd),
-  ]);
-  await waitForTx(
-    await tokenDistributorProxy['initialize(address,address,bytes)'](
-      tokenDistributorImpl.address,
-      await secondaryWallet.getAddress(),
-      implementationParams
-    )
-  );
-  await waitForTx(await addressesProvider.setTokenDistributor(tokenDistributorProxy.address));
-
-  await insertContractAddressInDb(eContractid.TokenDistributor, tokenDistributorProxy.address);
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);

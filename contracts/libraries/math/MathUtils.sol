@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import './WadRayMath.sol';
+import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {WadRayMath} from './WadRayMath.sol';
 
 library MathUtils {
   using SafeMath for uint256;
@@ -34,7 +34,7 @@ library MathUtils {
    * @dev function to calculate the interest using a compounded interest rate formula.
    * To avoid expensive exponentiation, the calculation is performed using a binomial approximation:
    *
-   *  (1+x)^n = 1+n*x+[n/2*(n-1)]*x^2+[n/6*(n-1)*(n-2)*x^3...  
+   *  (1+x)^n = 1+n*x+[n/2*(n-1)]*x^2+[n/6*(n-1)*(n-2)*x^3...
    *
    * The approximation slightly underpays liquidity providers, with the advantage of great gas cost reductions.
    * The whitepaper contains reference to the approximation and a table showing the margin of error per different time periods.
@@ -48,30 +48,25 @@ library MathUtils {
     view
     returns (uint256)
   {
-
     //solium-disable-next-line
     uint256 exp = block.timestamp.sub(uint256(_lastUpdateTimestamp));
 
-    if(exp == 0){
+    if (exp == 0) {
       return WadRayMath.ray();
     }
 
-     uint256 expMinusOne = exp.sub(1);
+    uint256 expMinusOne = exp.sub(1);
 
-     uint256 expMinusTwo = exp > 2 ? exp.sub(2) : 0;
+    uint256 expMinusTwo = exp > 2 ? exp.sub(2) : 0;
 
     uint256 ratePerSecond = _rate.div(31536000);
-     
-     uint basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
-     uint basePowerThree = basePowerTwo.rayMul(ratePerSecond);
 
+    uint256 basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
+    uint256 basePowerThree = basePowerTwo.rayMul(ratePerSecond);
 
-    
     uint256 secondTerm = exp.mul(expMinusOne).mul(basePowerTwo).div(2);
     uint256 thirdTerm = exp.mul(expMinusOne).mul(expMinusTwo).mul(basePowerThree).div(6);
-    
 
     return WadRayMath.ray().add(ratePerSecond.mul(exp)).add(secondTerm).add(thirdTerm);
-
   }
 }

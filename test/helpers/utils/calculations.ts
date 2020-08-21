@@ -657,6 +657,9 @@ export const calcExpectedUserDataAfterRepay = (
       expectedUserData.stableBorrowRate = expectedUserData.stableRateLastUpdated = new BigNumber(
         '0'
       );
+    } else {
+      expectedUserData.stableBorrowRate = userDataBeforeAction.stableBorrowRate;
+      expectedUserData.stableRateLastUpdated = txTimestamp;
     }
   } else {
     expectedUserData.currentStableDebt = stableBorrowBalance;
