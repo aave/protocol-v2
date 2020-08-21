@@ -1,39 +1,38 @@
 import BigNumber from 'bignumber.js';
 
 import {
-  calcExpectedReserveDataAfterDeposit,
-  calcExpectedReserveDataAfterWithdraw,
-  calcExpectedUserDataAfterDeposit,
-  calcExpectedUserDataAfterWithdraw,
   calcExpectedReserveDataAfterBorrow,
-  calcExpectedUserDataAfterBorrow,
+  calcExpectedReserveDataAfterDeposit,
   calcExpectedReserveDataAfterRepay,
+  calcExpectedReserveDataAfterStableRateRebalance,
+  calcExpectedReserveDataAfterSwapRateMode,
+  calcExpectedReserveDataAfterWithdraw,
+  calcExpectedUserDataAfterBorrow,
+  calcExpectedUserDataAfterDeposit,
   calcExpectedUserDataAfterRepay,
   calcExpectedUserDataAfterSetUseAsCollateral,
-  calcExpectedUserDataAfterSwapRateMode,
-  calcExpectedReserveDataAfterSwapRateMode,
-  calcExpectedReserveDataAfterStableRateRebalance,
   calcExpectedUserDataAfterStableRateRebalance,
+  calcExpectedUserDataAfterSwapRateMode,
+  calcExpectedUserDataAfterWithdraw,
   calcExpectedUsersDataAfterRedirectInterest,
 } from './utils/calculations';
 import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/helpers';
 
 import {
-  getMintableErc20,
   convertToCurrencyDecimals,
   getAToken,
+  getMintableErc20,
 } from '../../helpers/contracts-helpers';
-import {ONE_YEAR, MAX_UINT_AMOUNT} from '../../helpers/constants';
-import {TestEnv, SignerWithAddress} from './make-suite';
+import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
+import {SignerWithAddress, TestEnv} from './make-suite';
 import {BRE, increaseTime, timeLatest} from '../../helpers/misc-utils';
 
 import chai from 'chai';
 import {ReserveData, UserReserveData} from './utils/interfaces';
 import {waitForTx} from '../__setup.spec';
 import {ContractReceipt} from 'ethers';
-import {ethers} from 'ethers';
 import {AToken} from '../../types/AToken';
-import {tEthereumAddress, RateMode} from '../../helpers/types';
+import {RateMode, tEthereumAddress} from '../../helpers/types';
 
 const {expect} = chai;
 
@@ -155,8 +154,7 @@ export const deposit = async (
   );
 
   if (sendValue) {
-    const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
-    txOptions.value = valueToSend;
+    txOptions.value = await convertToCurrencyDecimals(reserve, sendValue);
   }
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
