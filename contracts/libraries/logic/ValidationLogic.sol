@@ -217,16 +217,16 @@ library ValidationLogic {
    * @param reserve the reserve state from which the user is repaying
    * @param amountSent the amount sent for the repayment. Can be an actual value or uint(-1)
    * @param onBehalfOf the address of the user msg.sender is repaying for
-   * @param stableBorrowBalance the borrow balance of the user
-   * @param variableBorrowBalance the borrow balance of the user
+   * @param stableDebt the borrow balance of the user
+   * @param variableDebt the borrow balance of the user
    */
   function validateRepay(
     ReserveLogic.ReserveData storage reserve,
     uint256 amountSent,
     ReserveLogic.InterestRateMode rateMode,
     address onBehalfOf,
-    uint256 stableBorrowBalance,
-    uint256 variableBorrowBalance
+    uint256 stableDebt,
+    uint256 variableDebt
   ) external view {
     bool isActive = reserve.configuration.getActive();
 
@@ -235,9 +235,9 @@ library ValidationLogic {
     require(amountSent > 0, 'Amount must be greater than 0');
 
     require(
-      (stableBorrowBalance > 0 &&
+      (stableDebt > 0 &&
         ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
-        (variableBorrowBalance > 0 &&
+        (variableDebt > 0 &&
           ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
       '16'
     );

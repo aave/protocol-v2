@@ -239,12 +239,14 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   ) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
+    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
+
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
     
     //default to max amount
     uint256 paybackAmount = rateMode == ReserveLogic.InterestRateMode.STABLE
-      ? IERC20(reserve.stableDebtTokenAddress).balanceOf(_onBehalfOf)
-      : IERC20(reserve.variableDebtTokenAddress).balanceOf(_onBehalfOf);
+      ? stableDebt
+      : variableDebt;
 
     if (amount != UINT_MAX_VALUE && amount < paybackAmount) {
       paybackAmount = amount;
