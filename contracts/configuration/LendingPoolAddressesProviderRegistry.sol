@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {
+  ILendingPoolAddressesProviderRegistry
+} from '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
 
 /**
  * @title LendingPoolAddressesProviderRegistry contract
@@ -16,16 +18,16 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev returns if an addressesProvider is registered or not
-   * @param _provider the addresses provider
+   * @param provider the addresses provider
    * @return true if the addressesProvider is registered, false otherwise
    **/
-  function isAddressesProviderRegistered(address _provider)
+  function isAddressesProviderRegistered(address provider)
     external
     override
     view
     returns (uint256)
   {
-    return addressesProviders[_provider];
+    return addressesProviders[provider];
   }
 
   /**
@@ -48,35 +50,35 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev adds a lending pool to the list of registered lending pools
-   * @param _provider the pool address to be registered
+   * @param provider the pool address to be registered
    **/
-  function registerAddressesProvider(address _provider, uint256 _id) public override onlyOwner {
-    addressesProviders[_provider] = _id;
-    addToAddressesProvidersListInternal(_provider);
-    emit AddressesProviderRegistered(_provider);
+  function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
+    addressesProviders[provider] = id;
+    _addToAddressesProvidersList(provider);
+    emit AddressesProviderRegistered(provider);
   }
 
   /**
    * @dev removes a lending pool from the list of registered lending pools
-   * @param _provider the pool address to be unregistered
+   * @param provider the pool address to be unregistered
    **/
-  function unregisterAddressesProvider(address _provider) public override onlyOwner {
-    require(addressesProviders[_provider] > 0, 'Provider is not registered');
-    addressesProviders[_provider] = 0;
-    emit AddressesProviderUnregistered(_provider);
+  function unregisterAddressesProvider(address provider) external override onlyOwner {
+    require(addressesProviders[provider] > 0, 'Provider is not registered');
+    addressesProviders[provider] = 0;
+    emit AddressesProviderUnregistered(provider);
   }
 
   /**
    * @dev adds to the list of the addresses providers, if it wasn't already added before
-   * @param _provider the pool address to be added
+   * @param provider the pool address to be added
    **/
-  function addToAddressesProvidersListInternal(address _provider) internal {
+  function _addToAddressesProvidersList(address provider) internal {
     for (uint256 i = 0; i < addressesProvidersList.length; i++) {
-      if (addressesProvidersList[i] == _provider) {
+      if (addressesProvidersList[i] == provider) {
         return;
       }
     }
 
-    addressesProvidersList.push(_provider);
+    addressesProvidersList.push(provider);
   }
 }

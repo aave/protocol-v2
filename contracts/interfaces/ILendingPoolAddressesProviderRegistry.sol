@@ -13,9 +13,9 @@ interface ILendingPoolAddressesProviderRegistry {
 
   function getAddressesProvidersList() external view returns (address[] memory);
 
-  function isAddressesProviderRegistered(address _provider) external view returns (uint256);
+  function isAddressesProviderRegistered(address provider) external view returns (uint256);
 
-  function registerAddressesProvider(address _provider, uint256 _id) external;
+  function registerAddressesProvider(address provider, uint256 id) external;
 
-  function unregisterAddressesProvider(address _provider) external;
+  function unregisterAddressesProvider(address provider) external;
 }

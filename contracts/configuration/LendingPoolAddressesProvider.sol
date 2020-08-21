@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {
+  InitializableAdminUpgradeabilityProxy
+} from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
 
-import '../interfaces/ILendingPoolAddressesProvider.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title LendingPoolAddressesProvider contract
@@ -41,7 +43,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param pool the new lending pool implementation
    **/
   function setLendingPoolImpl(address pool) external override onlyOwner {
-    updateImplInternal(LENDING_POOL, pool);
+    _updateImplementation(LENDING_POOL, pool);
     emit LendingPoolUpdated(pool);
   }
 
@@ -58,7 +60,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param configurator the new lending pool configurator implementation
    **/
   function setLendingPoolConfiguratorImpl(address configurator) external override onlyOwner {
-    updateImplInternal(LENDING_POOL_CONFIGURATOR, configurator);
+    _updateImplementation(LENDING_POOL_CONFIGURATOR, configurator);
     emit LendingPoolConfiguratorUpdated(configurator);
   }
 
@@ -119,7 +121,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param id the id of the contract to be updated
    * @param newAddress the address of the new implementation
    **/
-  function updateImplInternal(bytes32 id, address newAddress) internal {
+  function _updateImplementation(bytes32 id, address newAddress) internal {
     address payable proxyAddress = payable(_addresses[id]);
 
     InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(

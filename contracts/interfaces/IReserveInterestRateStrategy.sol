@@ -19,11 +19,11 @@ interface IReserveInterestRateStrategy {
    *
    */
   function calculateInterestRates(
-    address _reserve,
-    uint256 _utilizationRate,
-    uint256 _totalBorrowsStable,
-    uint256 _totalBorrowsVariable,
-    uint256 _averageStableBorrowRate
+    address reserve,
+    uint256 utilizationRate,
+    uint256 totalBorrowsStable,
+    uint256 totalBorrowsVariable,
+    uint256 averageStableBorrowRate
   )
     external
     view
