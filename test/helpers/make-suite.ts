@@ -20,9 +20,11 @@ import {LendingPoolConfigurator} from '../../types/LendingPoolConfigurator';
 import chai from 'chai';
 // @ts-ignore
 import bignumberChai from 'chai-bignumber';
+import {almostEqual} from './almost-equal';
 import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
 chai.use(bignumberChai());
+chai.use(almostEqual());
 
 export interface SignerWithAddress {
   signer: Signer;
@@ -95,7 +97,6 @@ export async function initializeMakeSuite() {
   const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
     (aToken) => aToken.symbol === 'aDAI'
   )?.tokenAddress;
-  
 
   const aEthAddress = (await testEnv.helpersContract.getAllATokens()).find(
     (aToken) => aToken.symbol === 'aETH'
@@ -112,7 +113,7 @@ export async function initializeMakeSuite() {
     console.log(`atoken-modifiers.spec: aTokens not correctly initialized`);
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress || !lendAddress || ! wethAddress) {
+  if (!daiAddress || !usdcAddress || !lendAddress || !wethAddress) {
     console.log(`atoken-modifiers.spec: USDC or DAI not correctly initialized`);
     process.exit(1);
   }

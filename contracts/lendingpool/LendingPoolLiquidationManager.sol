@@ -9,7 +9,7 @@ import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {IAToken} from '../interfaces/IAToken.sol';
+import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
