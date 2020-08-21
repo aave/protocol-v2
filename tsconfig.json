@@ -8,7 +8,7 @@
     "resolveJsonModule": true,
     "downlevelIteration": true
   },
-  "include": ["./**/*"],
+  "include": ["./**/*", "config/.ts"],
   "files": [
     "./buidler.config.ts",
     "node_modules/@nomiclabs/buidler-ethers/src/type-extensions.d.ts",
