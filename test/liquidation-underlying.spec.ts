@@ -9,37 +9,8 @@ import {calcExpectedStableDebtTokenBalance} from './helpers/utils/calculations';
 import {getUserData} from './helpers/utils/helpers';
 
 const chai = require('chai');
-chai.use(require('chai-bignumber')());
 
 const {expect} = chai;
-
-const almostEqual: any = function (this: any, expected: any, actual: any, message: string): any {
-  this.assert(
-    expected.plus(new BigNumber(1)).eq(actual) ||
-      expected.plus(new BigNumber(2)).eq(actual) ||
-      actual.plus(new BigNumber(1)).eq(expected) ||
-      actual.plus(new BigNumber(2)).eq(expected) ||
-      expected.eq(actual),
-    `${message} expected #{act} to be almost equal #{exp}`,
-    `${message} expected #{act} to be different from #{exp}`,
-    expected.toString(),
-    actual.toString()
-  );
-};
-
-chai.use(function (chai: any, utils: any) {
-  chai.Assertion.overwriteMethod('almostEqual', function (original: any) {
-    return function (this: any, value: any, message: string) {
-      if (utils.flag(this, 'bignumber')) {
-        var expected = new BigNumber(value);
-        var actual = new BigNumber(this._obj);
-        almostEqual.apply(this, [expected, actual, message]);
-      } else {
-        original.apply(this, arguments);
-      }
-    };
-  });
-});
 
 makeSuite('LendingPool liquidation - liquidator receiving the underlying asset', (testEnv) => {
   const {
