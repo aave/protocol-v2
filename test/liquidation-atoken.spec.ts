@@ -9,7 +9,6 @@ import {calcExpectedVariableDebtTokenBalance} from './helpers/utils/calculations
 import {getUserData, getReserveData} from './helpers/utils/helpers';
 
 const chai = require('chai');
-chai.use(require('chai-bignumber')());
 const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => {

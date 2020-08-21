@@ -9,7 +9,7 @@ import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {IAToken} from '../interfaces/IAToken.sol';
+import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
