@@ -12,22 +12,22 @@ library MathUtils {
 
   /**
    * @dev function to calculate the interest using a linear interest rate formula
-   * @param _rate the interest rate, in ray
-   * @param _lastUpdateTimestamp the timestamp of the last update of the interest
+   * @param rate the interest rate, in ray
+   * @param lastUpdateTimestamp the timestamp of the last update of the interest
    * @return the interest rate linearly accumulated during the timeDelta, in ray
    **/
 
-  function calculateLinearInterest(uint256 _rate, uint40 _lastUpdateTimestamp)
+  function calculateLinearInterest(uint256 rate, uint40 lastUpdateTimestamp)
     internal
     view
     returns (uint256)
   {
     //solium-disable-next-line
-    uint256 timeDifference = block.timestamp.sub(uint256(_lastUpdateTimestamp));
+    uint256 timeDifference = block.timestamp.sub(uint256(lastUpdateTimestamp));
 
     uint256 timeDelta = timeDifference.wadToRay().rayDiv(SECONDS_PER_YEAR.wadToRay());
 
-    return _rate.rayMul(timeDelta).add(WadRayMath.ray());
+    return rate.rayMul(timeDelta).add(WadRayMath.ray());
   }
 
   /**
@@ -39,17 +39,17 @@ library MathUtils {
    * The approximation slightly underpays liquidity providers, with the advantage of great gas cost reductions.
    * The whitepaper contains reference to the approximation and a table showing the margin of error per different time periods.
    *
-   * @param _rate the interest rate, in ray
-   * @param _lastUpdateTimestamp the timestamp of the last update of the interest
+   * @param rate the interest rate, in ray
+   * @param lastUpdateTimestamp the timestamp of the last update of the interest
    * @return the interest rate compounded during the timeDelta, in ray
    **/
-  function calculateCompoundedInterest(uint256 _rate, uint40 _lastUpdateTimestamp)
+  function calculateCompoundedInterest(uint256 rate, uint40 lastUpdateTimestamp)
     internal
     view
     returns (uint256)
   {
     //solium-disable-next-line
-    uint256 exp = block.timestamp.sub(uint256(_lastUpdateTimestamp));
+    uint256 exp = block.timestamp.sub(uint256(lastUpdateTimestamp));
 
     if (exp == 0) {
       return WadRayMath.ray();
@@ -59,7 +59,7 @@ library MathUtils {
 
     uint256 expMinusTwo = exp > 2 ? exp.sub(2) : 0;
 
-    uint256 ratePerSecond = _rate.div(31536000);
+    uint256 ratePerSecond = rate.div(31536000);
 
     uint256 basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
     uint256 basePowerThree = basePowerTwo.rayMul(ratePerSecond);

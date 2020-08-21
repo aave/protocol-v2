@@ -12,35 +12,35 @@ import {ReserveLogic} from '../logic/ReserveLogic.sol';
 library Helpers {
   /**
    * @dev fetches the user current stable and variable debt balances
-   * @param _user the user
-   * @param _reserve the reserve object
+   * @param user the user
+   * @param reserve the reserve object
    * @return the stable and variable debt balance
    **/
-  function getUserCurrentDebt(address _user, ReserveLogic.ReserveData storage _reserve)
+  function getUserCurrentDebt(address user, ReserveLogic.ReserveData storage reserve)
     internal
     view
     returns (uint256, uint256)
   {
     return (
-      DebtTokenBase(_reserve.stableDebtTokenAddress).balanceOf(_user),
-      DebtTokenBase(_reserve.variableDebtTokenAddress).balanceOf(_user)
+      DebtTokenBase(reserve.stableDebtTokenAddress).balanceOf(user),
+      DebtTokenBase(reserve.variableDebtTokenAddress).balanceOf(user)
     );
   }
 
   /**
    * @dev fetches the user principal stable and variable debt balances
-   * @param _user the user
-   * @param _reserve the reserve object
+   * @param user the user
+   * @param reserve the reserve object
    * @return the stable and variable debt balance
    **/
-  function getUserPrincipalDebt(address _user, ReserveLogic.ReserveData storage _reserve)
+  function getUserPrincipalDebt(address user, ReserveLogic.ReserveData storage reserve)
     internal
     view
     returns (uint256, uint256)
   {
     return (
-      DebtTokenBase(_reserve.stableDebtTokenAddress).principalBalanceOf(_user),
-      DebtTokenBase(_reserve.variableDebtTokenAddress).principalBalanceOf(_user)
+      DebtTokenBase(reserve.stableDebtTokenAddress).principalBalanceOf(user),
+      DebtTokenBase(reserve.variableDebtTokenAddress).principalBalanceOf(user)
     );
   }
 }

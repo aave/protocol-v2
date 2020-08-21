@@ -149,7 +149,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       );
     }
 
-    currentLiquidityRate = getOverallBorrowRateInternal(
+    currentLiquidityRate = _getOverallBorrowRate(
       totalBorrowsStable,
       totalBorrowsVariable,
       currentVariableBorrowRate,
@@ -170,7 +170,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
    * @param currentAverageStableBorrowRate the weighted average of all the stable rate borrows
    * @return the weighted averaged borrow rate
    **/
-  function getOverallBorrowRateInternal(
+  function _getOverallBorrowRate(
     uint256 totalBorrowsStable,
     uint256 totalBorrowsVariable,
     uint256 currentVariableBorrowRate,
