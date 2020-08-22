@@ -9,18 +9,15 @@ import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
 
 /**
- * @title interface IVariableDebtToken
+ * @title contract VariableDebtToken
+ * @notice Implements a variable debt token to track the user positions
  * @author Aave
- * @notice defines the basic interface for a variable debt token.
- * @dev does not inherit from IERC20 to save in contract size
  **/
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using SafeMath for uint256;
   using WadRayMath for uint256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
-
-  mapping(address => uint256) private _userIndexes;
 
   constructor(
     address pool,
@@ -42,7 +39,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the debt balance of the user
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
-    uint256 userBalance = _balances[user];
+    uint256 userBalance = _usersData[user].balance;
+    uint256 index = _usersData[user].dataField;
     if (userBalance == 0) {
       return 0;
     }
@@ -51,7 +49,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       userBalance
         .wadToRay()
         .rayMul(_pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress))
-        .rayDiv(_userIndexes[user])
+        .rayDiv(index)
         .rayToWad();
   }
 
@@ -61,7 +59,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    **/
 
   function getUserIndex(address user) external virtual override view returns (uint256) {
-    return _userIndexes[user];
+    return _usersData[user].dataField;
   }
 
   /**
@@ -79,7 +77,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _mint(user, amount.add(balanceIncrease));
 
     uint256 newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
-    _userIndexes[user] = newUserIndex;
+    require(newUserIndex < (1 << 128), "Debt token: Index overflow");
+    _usersData[user].dataField = uint128(newUserIndex);
 
     emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
@@ -106,8 +105,9 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     //if user not repaid everything
     if (currentBalance != amount) {
       newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
+      require(newUserIndex < (1 << 128), "Debt token: Index overflow");
     }
-    _userIndexes[user] = newUserIndex;
+    _usersData[user].dataField = uint128(newUserIndex);
 
     emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
