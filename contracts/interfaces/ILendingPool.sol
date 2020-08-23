@@ -90,14 +90,14 @@ interface ILendingPool {
    * @param target the address of the flashLoanReceiver
    * @param reserve the address of the reserve
    * @param amount the amount requested
-   * @param totalFee the total fee on the amount
+   * @param totalPremium the total fee on the amount
    * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
     address indexed reserve,
     uint256 amount,
-    uint256 totalFee,
+    uint256 totalPremium,
     uint16 referralCode
   );
   /**

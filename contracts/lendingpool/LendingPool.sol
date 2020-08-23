@@ -41,7 +41,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   //main configuration parameters
   uint256 public constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
-  uint256 public constant FLASHLOAN_FEE_TOTAL = 9;
+  uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
 
   ILendingPoolAddressesProvider internal addressesProvider;
 
@@ -438,9 +438,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   }
 
   struct FlashLoanLocalVars{
-    uint256 amountFee;
-    uint256 amountPlusFee;
-    uint256 amountPlusFeeInETH;
+    uint256 premium;
+    uint256 amountPlusPremium;
+    uint256 amountPlusPremiumInETH;
     IFlashLoanReceiver receiver;
     address aTokenAddress;
     address oracle;
@@ -467,9 +467,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     vars.aTokenAddress = reserve.aTokenAddress;
 
     //calculate amount fee
-    vars.amountFee = amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
+    vars.premium = amount.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
 
-    require(vars.amountFee > 0, 'The requested amount is too small for a FlashLoan.');
+    require(vars.premium > 0, 'The requested amount is too small for a FlashLoan.');
 
     //get the FlashLoanReceiver instance
     vars.receiver = IFlashLoanReceiver(receiverAddress);
@@ -478,52 +478,53 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     IAToken(vars.aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
 
     //execute action of the receiver
-    vars.receiver.executeOperation(asset, amount, vars.amountFee, params);
+    vars.receiver.executeOperation(asset, amount, vars.premium, params);
 
     //compounding the cumulated interest
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    vars.amountPlusFee = amount.add(vars.amountFee);
+    vars.amountPlusPremium = amount.add(vars.premium);
 
     //transfer from the receiver the amount plus the fee
-    try IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusFee) {
+    try IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium) {
       //if the transfer succeeded, the executor has repaid the flashloans.
       //the fee is compounded into the reserve
-      reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.amountFee);
+      reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
       //refresh interest rates
-      reserve.updateInterestRates(asset, vars.amountFee, 0);
-      emit FlashLoan(receiverAddress, asset, amount, vars.amountFee, referralCode);
+      reserve.updateInterestRates(asset, vars.premium, 0);
+      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
     }
     catch(bytes memory reason){
 
       //if the transfer didn't succeed, the executor either didn't return the funds, or didn't approve the transfer.
       //we check if the caller has enough collateral to open a variable rate loan. If it does, then debt is mint to msg.sender
       vars.oracle = addressesProvider.getPriceOracle();
-      vars.amountPlusFeeInETH = IPriceOracleGetter(vars.oracle)
+      vars.amountPlusPremiumInETH = IPriceOracleGetter(vars.oracle)
       .getAssetPrice(asset)
-      .mul(vars.amountPlusFee)
+      .mul(vars.amountPlusPremium)
       .div(10**reserve.configuration.getDecimals()); //price is in ether
 
       ValidationLogic.validateBorrow(
-      reserve,
-      asset,
-      vars.amountPlusFee,
-      vars.amountPlusFeeInETH,
-      uint256(ReserveLogic.InterestRateMode.VARIABLE),
-      MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
-      _reserves,
-      _usersConfig[msg.sender],
-      reservesList,
-      vars.oracle
+        reserve,
+        asset,
+        vars.amountPlusPremium,
+        vars.amountPlusPremiumInETH,
+        uint256(ReserveLogic.InterestRateMode.VARIABLE),
+        MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
+        _reserves,
+        _usersConfig[msg.sender],
+        reservesList,
+        vars.oracle
       );
 
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, vars.amountPlusFee);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, vars.amountPlusPremium);
       //refresh interest rates
-      reserve.updateInterestRates(asset, vars.amountFee, 0);
+      reserve.updateInterestRates(asset, vars.premium, 0);
+      
       emit Borrow(
         asset,
         msg.sender,
-        vars.amountPlusFee,
+        vars.amountPlusPremium,
         uint256(ReserveLogic.InterestRateMode.VARIABLE),
         reserve.currentVariableBorrowRate,
         referralCode
