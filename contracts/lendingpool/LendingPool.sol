@@ -87,7 +87,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     address asset,
     uint256 amount,
     uint16 referralCode
-  ) external override nonReentrant {
+  ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -118,7 +118,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve
    * @param amount the underlying amount to be redeemed
    **/
-  function withdraw(address asset, uint256 amount) external override nonReentrant {
+  function withdraw(address asset, uint256 amount) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     IAToken aToken = IAToken(reserve.aTokenAddress);
@@ -169,7 +169,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode
-  ) external override nonReentrant {
+  ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
     UserConfiguration.Map storage userConfig = _usersConfig[msg.sender];
 
@@ -236,7 +236,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     uint256 amount,
     uint256 _rateMode,
     address _onBehalfOf
-  ) external override nonReentrant {
+  ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
@@ -288,7 +288,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve on which the user borrowed
    * @param _rateMode the rate mode that the user wants to swap
    **/
-  function swapBorrowRateMode(address asset, uint256 _rateMode) external override nonReentrant {
+  function swapBorrowRateMode(address asset, uint256 _rateMode) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -336,7 +336,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve
    * @param _user the address of the user to be rebalanced
    **/
-  function rebalanceStableBorrowRate(address asset, address _user) external override nonReentrant {
+  function rebalanceStableBorrowRate(address asset, address _user) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     IStableDebtToken stableDebtToken = IStableDebtToken(reserve.stableDebtTokenAddress);
@@ -421,7 +421,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     address _user,
     uint256 _purchaseAmount,
     bool _receiveAToken
-  ) external override nonReentrant {
+  ) external override {
     address liquidationManager = addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -458,7 +458,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     address asset,
     uint256 amount,
     bytes calldata params
-  ) external override nonReentrant {
+  ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     address aTokenAddress = reserve.aTokenAddress;
