@@ -7,15 +7,14 @@ import {
   EXCESS_UTILIZATION_RATE,
   ZERO_ADDRESS,
 } from '../../../helpers/constants';
-import {IReserveParams, iAavePoolAssets, RateMode} from '../../../helpers/types';
+import { IReserveParams, iAavePoolAssets, RateMode } from '../../../helpers/types';
 import './math';
-import {ReserveData, UserReserveData} from './interfaces';
+import { ReserveData, UserReserveData } from './interfaces';
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
 interface Configuration {
   reservesParams: iAavePoolAssets<IReserveParams>;
-  ethereumAddress: string;
 }
 
 export const configuration: Configuration = <Configuration>{};
@@ -66,17 +65,7 @@ export const calcExpectedUserDataAfterDeposit = (
   }
 
   expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
-
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    // console.log("** ETH CASE ****")
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-      .minus(txCost)
-      .minus(amountDeposited);
-  } else {
-    // console.log("** TOKEN CASE ****")
-    // console.log(userDataBeforeAction.walletBalance.toString())
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(amountDeposited);
-  }
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(amountDeposited);
 
   expectedUserData.principalATokenBalance = expectedUserData.currentATokenBalance = calcExpectedATokenBalance(
     reserveDataBeforeAction,
@@ -171,14 +160,7 @@ export const calcExpectedUserDataAfterWithdraw = (
   }
 
   expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
-
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-      .minus(txCost)
-      .plus(amountWithdrawn);
-  } else {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountWithdrawn);
-  }
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountWithdrawn);
 
   expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
 
@@ -600,13 +582,7 @@ export const calcExpectedUserDataAfterBorrow = (
     userDataBeforeAction.redirectionAddressRedirectedBalance;
   expectedUserData.currentATokenUserIndex = userDataBeforeAction.currentATokenUserIndex;
 
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-      .minus(txCost)
-      .plus(amountBorrowed);
-  } else {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountBorrowed);
-  }
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountBorrowed);
 
   return expectedUserData;
 };
@@ -657,8 +633,7 @@ export const calcExpectedUserDataAfterRepay = (
       expectedUserData.stableBorrowRate = expectedUserData.stableRateLastUpdated = new BigNumber(
         '0'
       );
-    }
-    else{
+    } else {
       expectedUserData.stableBorrowRate = userDataBeforeAction.stableBorrowRate;
       expectedUserData.stableRateLastUpdated = txTimestamp;
     }
@@ -697,14 +672,7 @@ export const calcExpectedUserDataAfterRepay = (
   expectedUserData.currentATokenUserIndex = userDataBeforeAction.currentATokenUserIndex;
 
   if (user === onBehalfOf) {
-    //if user repaid for himself, update the wallet balances
-    if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-      expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-        .minus(txCost)
-        .minus(totalRepaid);
-    } else {
-      expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(totalRepaid);
-    }
+    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(totalRepaid);
   } else {
     //wallet balance didn't change
     expectedUserData.walletBalance = userDataBeforeAction.walletBalance;
@@ -719,13 +687,9 @@ export const calcExpectedUserDataAfterSetUseAsCollateral = (
   userDataBeforeAction: UserReserveData,
   txCost: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   expectedUserData.usageAsCollateralEnabled = useAsCollateral;
-
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(txCost);
-  }
 
   return expectedUserData;
 };
@@ -829,7 +793,7 @@ export const calcExpectedUserDataAfterSwapRateMode = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   const variableBorrowBalance = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
@@ -892,9 +856,6 @@ export const calcExpectedUserDataAfterSwapRateMode = (
 
   expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
 
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(txCost);
-  }
   return expectedUserData;
 };
 
@@ -976,7 +937,7 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   expectedUserData.principalVariableDebt = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
@@ -997,12 +958,6 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
   );
 
   expectedUserData.stableBorrowRate = reserveDataBeforeAction.stableBorrowRate;
-
-  expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
-
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(txCost);
-  }
 
   expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
 
@@ -1037,8 +992,8 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData[] => {
-  const expectedFromData = {...fromDataBeforeAction};
-  const expectedToData = {...toDataBeforeAction};
+  const expectedFromData = { ...fromDataBeforeAction };
+  const expectedToData = { ...toDataBeforeAction };
 
   expectedFromData.currentStableDebt = calcExpectedStableDebtTokenBalance(
     fromDataBeforeAction,
@@ -1068,12 +1023,6 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
     toDataBeforeAction,
     txTimestamp
   );
-
-  if (isFromExecutingTx) {
-    if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-      expectedFromData.walletBalance = fromDataBeforeAction.walletBalance.minus(txCost);
-    }
-  }
 
   expectedToData.redirectedBalance = toDataBeforeAction.redirectedBalance.plus(
     expectedFromData.currentATokenBalance
@@ -1215,7 +1164,7 @@ export const calcExpectedVariableDebtTokenBalance = (
 ) => {
   const debt = calcExpectedReserveNormalizedDebt(reserveDataBeforeAction, currentTimestamp);
 
-  const {principalVariableDebt, variableBorrowIndex} = userDataBeforeAction;
+  const { principalVariableDebt, variableBorrowIndex } = userDataBeforeAction;
 
   if (variableBorrowIndex.eq(0)) {
     return principalVariableDebt;
@@ -1228,7 +1177,7 @@ export const calcExpectedStableDebtTokenBalance = (
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const {principalStableDebt, stableBorrowRate, stableRateLastUpdated} = userDataBeforeAction;
+  const { principalStableDebt, stableBorrowRate, stableRateLastUpdated } = userDataBeforeAction;
 
   if (
     stableBorrowRate.eq(0) ||
@@ -1301,7 +1250,7 @@ const calcExpectedInterestRates = (
   totalBorrowsVariable: BigNumber,
   averageStableBorrowRate: BigNumber
 ): BigNumber[] => {
-  const {reservesParams} = configuration;
+  const { reservesParams } = configuration;
 
   const reserveIndex = Object.keys(reservesParams).findIndex((value) => value === reserveSymbol);
   const [, reserveConfiguration] = (Object.entries(reservesParams) as [string, IReserveParams][])[
@@ -1391,7 +1340,7 @@ const calcExpectedReserveNormalizedIncome = (
   reserveData: ReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const {liquidityRate, liquidityIndex, lastUpdateTimestamp} = reserveData;
+  const { liquidityRate, liquidityIndex, lastUpdateTimestamp } = reserveData;
 
   //if utilization rate is 0, nothing to compound
   if (liquidityRate.eq('0')) {
@@ -1413,7 +1362,7 @@ const calcExpectedReserveNormalizedDebt = (
   reserveData: ReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const {variableBorrowRate, variableBorrowIndex, lastUpdateTimestamp} = reserveData;
+  const { variableBorrowRate, variableBorrowIndex, lastUpdateTimestamp } = reserveData;
 
   //if utilization rate is 0, nothing to compound
   if (variableBorrowRate.eq('0')) {
