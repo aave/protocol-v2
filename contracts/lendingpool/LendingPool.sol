@@ -108,7 +108,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     //transfer to the aToken contract
     IERC20(asset).safeTransferFrom(msg.sender, address(aToken), amount);
 
-    //solium-disable-next-line
     emit Deposit(asset, msg.sender, amount, referralCode);
   }
 
@@ -152,7 +151,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     aToken.burn(msg.sender, msg.sender, amountToWithdraw);
 
-    //solium-disable-next-line
     emit Withdraw(asset, msg.sender, amount);
   }
 
@@ -320,9 +318,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     emit Swap(
       asset,
-      msg.sender,
-      //solium-disable-next-line
-      block.timestamp
+      msg.sender
     );
   }
 
@@ -441,6 +437,15 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     }
   }
 
+  struct FlashLoanLocalVars{
+    uint256 amountFee;
+    uint256 amountPlusFee;
+    uint256 amountPlusFeeInETH;
+    IFlashLoanReceiver receiver;
+    address aTokenAddress;
+    address oracle;
+  }
+
   /**
    * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
@@ -453,40 +458,77 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address receiverAddress,
     address asset,
     uint256 amount,
-    bytes calldata params
+    bytes calldata params,
+    uint16 referralCode
   ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    FlashLoanLocalVars memory vars;
 
-    address aTokenAddress = reserve.aTokenAddress;
+    vars.aTokenAddress = reserve.aTokenAddress;
 
     //calculate amount fee
-    uint256 amountFee = amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
+    vars.amountFee = amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
 
-    require(amountFee > 0, 'The requested amount is too small for a FlashLoan.');
+    require(vars.amountFee > 0, 'The requested amount is too small for a FlashLoan.');
 
     //get the FlashLoanReceiver instance
-    IFlashLoanReceiver receiver = IFlashLoanReceiver(receiverAddress);
+    vars.receiver = IFlashLoanReceiver(receiverAddress);
 
     //transfer funds to the receiver
-    IAToken(aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
+    IAToken(vars.aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
 
     //execute action of the receiver
-    receiver.executeOperation(asset, amount, amountFee, params);
+    vars.receiver.executeOperation(asset, amount, vars.amountFee, params);
 
-    //transfer from the receiver the amount plus the fee
-    IERC20(asset).safeTransferFrom(receiverAddress, aTokenAddress, amount.add(amountFee));
-
-       //compounding the cumulated interest
+    //compounding the cumulated interest
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    //compounding the received fee into the reserve
-    reserve.cumulateToLiquidityIndex(IERC20(aTokenAddress).totalSupply(), amountFee);
+    vars.amountPlusFee = amount.add(vars.amountFee);
 
-    //refresh interest rates
-    reserve.updateInterestRates(asset, amountFee, 0);
+    //transfer from the receiver the amount plus the fee
+    try IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusFee) {
+      //if the transfer succeeded, the executor has repaid the flashloans.
+      //the fee is compounded into the reserve
+      reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.amountFee);
+      //refresh interest rates
+      reserve.updateInterestRates(asset, vars.amountFee, 0);
+      emit FlashLoan(receiverAddress, asset, amount, vars.amountFee, referralCode);
+    }
+    catch(bytes memory reason){
 
-    //solium-disable-next-line
-    emit FlashLoan(receiverAddress, asset, amount, amountFee);
+      //if the transfer didn't succeed, the executor either didn't return the funds, or didn't approve the transfer.
+      //we check if the caller has enough collateral to open a variable rate loan. If it does, then debt is mint to msg.sender
+      vars.oracle = addressesProvider.getPriceOracle();
+      vars.amountPlusFeeInETH = IPriceOracleGetter(vars.oracle)
+      .getAssetPrice(asset)
+      .mul(vars.amountPlusFee)
+      .div(10**reserve.configuration.getDecimals()); //price is in ether
+
+      ValidationLogic.validateBorrow(
+      reserve,
+      asset,
+      vars.amountPlusFee,
+      vars.amountPlusFeeInETH,
+      uint256(ReserveLogic.InterestRateMode.VARIABLE),
+      MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
+      _reserves,
+      _usersConfig[msg.sender],
+      reservesList,
+      vars.oracle
+      );
+
+      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, vars.amountPlusFee);
+      //refresh interest rates
+      reserve.updateInterestRates(asset, vars.amountFee, 0);
+      emit Borrow(
+        asset,
+        msg.sender,
+        vars.amountPlusFee,
+        uint256(ReserveLogic.InterestRateMode.VARIABLE),
+        reserve.currentVariableBorrowRate,
+        referralCode
+      );
+    }
   }
 
   /**

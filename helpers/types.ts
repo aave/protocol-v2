@@ -63,6 +63,7 @@ export enum ProtocolErrors {
   INVALID_HF = 'Invalid health factor',
   USER_DID_NOT_BORROW_SPECIFIED = 'User did not borrow the specified currency',
   THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED = 'The collateral chosen cannot be liquidated',
+  COLLATERAL_BALANCE_IS_0 = 'The collateral balance is 0'
 }
 
 export type tEthereumAddress = string;

@@ -62,10 +62,6 @@ library ValidationLogic {
   ) external view {
     require(amount > 0, 'Amount must be greater than 0');
 
-    uint256 currentAvailableLiquidity = IERC20(reserveAddress).balanceOf(address(aTokenAddress));
-
-    require(currentAvailableLiquidity >= amount, '4');
-
     require(amount <= userBalance, 'User cannot withdraw more than the available balance');
 
     require(
@@ -149,11 +145,6 @@ library ValidationLogic {
         uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
       'Invalid interest rate mode selected'
     );
-
-    //check that the amount is available in the reserve
-    vars.availableLiquidity = IERC20(reserveAddress).balanceOf(address(reserve.aTokenAddress));
-
-    require(vars.availableLiquidity >= amount, '7');
 
     (
       vars.userCollateralBalanceETH,

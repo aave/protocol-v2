@@ -63,7 +63,7 @@ interface ILendingPool {
    * @param reserve the address of the reserve
    * @param user the address of the user executing the swap
    **/
-  event Swap(address indexed reserve, address indexed user, uint256 timestamp);
+  event Swap(address indexed reserve, address indexed user);
 
   /**
    * @dev emitted when a user enables a reserve as collateral
@@ -91,12 +91,14 @@ interface ILendingPool {
    * @param reserve the address of the reserve
    * @param amount the amount requested
    * @param totalFee the total fee on the amount
+   * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
     address indexed reserve,
     uint256 amount,
-    uint256 totalFee
+    uint256 totalFee,
+    uint16 referralCode
   );
   /**
    * @dev these events are not emitted directly by the LendingPool
@@ -105,21 +107,6 @@ interface ILendingPool {
    * This allows to have the events in the generated ABI for LendingPool.
    **/
 
-  /**
-   * @dev emitted when a borrow fee is liquidated
-   * @param collateral the address of the collateral being liquidated
-   * @param reserve the address of the reserve
-   * @param user the address of the user being liquidated
-   * @param feeLiquidated the total fee liquidated
-   * @param liquidatedCollateralForFee the amount of collateral received by the protocol in exchange for the fee
-   **/
-  event OriginationFeeLiquidated(
-    address indexed collateral,
-    address indexed reserve,
-    address indexed user,
-    uint256 feeLiquidated,
-    uint256 liquidatedCollateralForFee
-  );
   /**
    * @dev emitted when a borrower is liquidated
    * @param collateral the address of the collateral being liquidated
@@ -238,12 +225,15 @@ interface ILendingPool {
    * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
    * @param reserve the address of the principal reserve
    * @param amount the amount requested for this flashloan
+   * @param params a bytes array to be sent to the flashloan executor
+   * @param referralCode the referral code of the caller
    **/
   function flashLoan(
     address receiver,
     address reserve,
     uint256 amount,
-    bytes calldata params
+    bytes calldata params,
+    uint16 referralCode
   ) external;
 
   /**
