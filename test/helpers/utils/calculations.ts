@@ -1421,31 +1421,3 @@ const calcExpectedVariableBorrowIndex = (reserveData: ReserveData, timestamp: Bi
 
   return cumulatedInterest.rayMul(reserveData.variableBorrowIndex);
 };
-
-export const calculateHealthFactorFromBalances = (
-  collateralBalanceETH: BigNumber,
-  borrowBalanceETH: BigNumber,
-  currentLiquidationThreshold: BigNumber
-): BigNumber => {
-  if (borrowBalanceETH.eq(0)) {
-    return strToBN('-1'); // invalid number
-  }
-  return collateralBalanceETH.multipliedBy(currentLiquidationThreshold).div(borrowBalanceETH);
-};
-
-const calculateAvailableBorrowsETH = (
-  collateralBalanceETH: BigNumber,
-  borrowBalanceETH: BigNumber,
-  currentLtv: BigNumber
-): BigNumber => {
-  if (currentLtv.eq(0)) {
-    return strToBN('0');
-  }
-  let availableBorrowsETH = collateralBalanceETH.multipliedBy(currentLtv);
-  if (availableBorrowsETH.lt(borrowBalanceETH)) {
-    return strToBN('0');
-  }
-  availableBorrowsETH = availableBorrowsETH.minus(borrowBalanceETH);
-  const borrowFee = availableBorrowsETH.multipliedBy(0.0025);
-  return availableBorrowsETH.minus(borrowFee);
-};
