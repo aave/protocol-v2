@@ -459,16 +459,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     address aTokenAddress = reserve.aTokenAddress;
 
-    //check that the reserve has enough available liquidity
-    uint256 availableLiquidityBefore = IERC20(asset).balanceOf(aTokenAddress);
-
     //calculate amount fee
     uint256 amountFee = amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
 
-    require(
-      availableLiquidityBefore >= amount,
-      'There is not enough liquidity available to borrow'
-    );
     require(amountFee > 0, 'The requested amount is too small for a FlashLoan.');
 
     //get the FlashLoanReceiver instance
@@ -480,20 +473,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     //execute action of the receiver
     receiver.executeOperation(asset, aTokenAddress, amount, amountFee, params);
 
-    //check that the actual balance of the core contract includes the returned amount
-    uint256 availableLiquidityAfter = IERC20(asset).balanceOf(aTokenAddress);
-
-    require(
-      availableLiquidityAfter == availableLiquidityBefore.add(amountFee),
-      'The actual balance of the protocol is inconsistent'
-    );
+    //transfer from the receiver the amount plus the fee
+    IERC20(asset).safeTransferFrom(receiver, aTokenAddress, amount.add(amountFee));
 
        //compounding the cumulated interest
     reserve.updateCumulativeIndexesAndTimestamp();
-
-    uint256 totalLiquidityBefore = availableLiquidityBefore
-      .add(IERC20(reserve.variableDebtTokenAddress).totalSupply())
-      .add(IERC20(reserve.stableDebtTokenAddress).totalSupply());
 
     //compounding the received fee into the reserve
     reserve.cumulateToLiquidityIndex(totalLiquidityBefore, amountFee);
