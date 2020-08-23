@@ -3,7 +3,6 @@ pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {
   VersionedInitializable
@@ -31,7 +30,7 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
  * @author Aave
  **/
 
-contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
+contract LendingPool is VersionedInitializable, ILendingPool {
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using ReserveLogic for ReserveLogic.ReserveData;
@@ -384,7 +383,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   function setUserUseReserveAsCollateral(address asset, bool _useAsCollateral)
     external
     override
-    nonReentrant
   {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
