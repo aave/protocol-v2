@@ -48,25 +48,26 @@ library ReserveLogic {
 
   // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
   struct ReserveData {
-    //the liquidity index. Expressed in ray
-    uint256 lastLiquidityIndex;
-    //the current supply rate. Expressed in ray
-    uint256 currentLiquidityRate;
-    //the current variable borrow rate. Expressed in ray
-    uint256 currentVariableBorrowRate;
-    //the current stable borrow rate. Expressed in ray
-    uint256 currentStableBorrowRate;
-    //variable borrow index. Expressed in ray
-    uint256 lastVariableBorrowIndex;
     //stores the reserve configuration
     ReserveConfiguration.Map configuration;
     address aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
     address interestRateStrategyAddress;
+    //the liquidity index. Expressed in ray
+    uint128 lastLiquidityIndex;
+    //the current supply rate. Expressed in ray
+    uint128 currentLiquidityRate;
+    //the current variable borrow rate. Expressed in ray
+    uint128 currentVariableBorrowRate;
+    //the current stable borrow rate. Expressed in ray
+    uint128 currentStableBorrowRate;
+    //variable borrow index. Expressed in ray
+    uint128 lastVariableBorrowIndex;
     uint40 lastUpdateTimestamp;
     //the index of the reserve in the list of the active reserves
     uint8 index;
+   
   }
 
   /**
@@ -130,8 +131,10 @@ library ReserveLogic {
         currentLiquidityRate,
         lastUpdateTimestamp
       );
+      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.lastLiquidityIndex);
+      require(index < (1 << 128), "ReserveLogic: Liquidity index overflow");
 
-      reserve.lastLiquidityIndex = cumulatedLiquidityInterest.rayMul(reserve.lastLiquidityIndex);
+      reserve.lastLiquidityIndex = uint128(index);
 
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
@@ -140,9 +143,11 @@ library ReserveLogic {
           reserve.currentVariableBorrowRate,
           lastUpdateTimestamp
         );
-        reserve.lastVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(
+        index = cumulatedVariableBorrowInterest.rayMul(
           reserve.lastVariableBorrowIndex
         );
+        require(index < (1 << 128), "ReserveLogic: Variable borrow index overflow");
+        reserve.lastVariableBorrowIndex = uint128(index);
       }
     }
 
@@ -164,11 +169,14 @@ library ReserveLogic {
   ) internal {
     uint256 amountToLiquidityRatio = amount.wadToRay().rayDiv(totalLiquidity.wadToRay());
 
-    uint256 cumulatedLiquidity = amountToLiquidityRatio.add(WadRayMath.ray());
+    uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
-    reserve.lastLiquidityIndex = cumulatedLiquidity.rayMul(
+    result = result.rayMul(
       reserve.lastLiquidityIndex
     );
+    require(result < (1 << 128), "ReserveLogic: Liquidity index overflow");
+
+    reserve.lastLiquidityIndex = uint128(result);
   }
 
   /**
@@ -187,11 +195,11 @@ library ReserveLogic {
     require(reserve.aTokenAddress == address(0), 'Reserve has already been initialized');
     if (reserve.lastLiquidityIndex == 0) {
       //if the reserve has not been initialized yet
-      reserve.lastLiquidityIndex = WadRayMath.ray();
+      reserve.lastLiquidityIndex = uint128(WadRayMath.ray());
     }
 
     if (reserve.lastVariableBorrowIndex == 0) {
-      reserve.lastVariableBorrowIndex = WadRayMath.ray();
+      reserve.lastVariableBorrowIndex = uint128(WadRayMath.ray());
     }
 
     reserve.aTokenAddress = aTokenAddress;
@@ -238,10 +246,13 @@ library ReserveLogic {
       IERC20(reserve.variableDebtTokenAddress).totalSupply(),
       vars.currentAvgStableRate
     );
+    require(vars.newLiquidityRate < (1 << 128), "ReserveLogic: Liquidity rate overflow");
+    require(vars.newStableRate < (1 << 128), "ReserveLogic: Stable borrow rate overflow");
+    require(vars.newVariableRate < (1 << 128), "ReserveLogic: Variable borrow rate overflow");
 
-    reserve.currentLiquidityRate = vars.newLiquidityRate;
-    reserve.currentStableBorrowRate = vars.newStableRate;
-    reserve.currentVariableBorrowRate = vars.newVariableRate;
+    reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
+    reserve.currentStableBorrowRate = uint128(vars.newStableRate);
+    reserve.currentVariableBorrowRate = uint128(vars.newVariableRate);
 
     emit ReserveDataUpdated(
       reserveAddress,
