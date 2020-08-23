@@ -471,16 +471,16 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     IAToken(aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
 
     //execute action of the receiver
-    receiver.executeOperation(asset, aTokenAddress, amount, amountFee, params);
+    receiver.executeOperation(asset, amount, amountFee, params);
 
     //transfer from the receiver the amount plus the fee
-    IERC20(asset).safeTransferFrom(receiver, aTokenAddress, amount.add(amountFee));
+    IERC20(asset).safeTransferFrom(receiverAddress, aTokenAddress, amount.add(amountFee));
 
        //compounding the cumulated interest
     reserve.updateCumulativeIndexesAndTimestamp();
 
     //compounding the received fee into the reserve
-    reserve.cumulateToLiquidityIndex(totalLiquidityBefore, amountFee);
+    reserve.cumulateToLiquidityIndex(IERC20(aTokenAddress).totalSupply(), amountFee);
 
     //refresh interest rates
     reserve.updateInterestRates(asset, amountFee, 0);

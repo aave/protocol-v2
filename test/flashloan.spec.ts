@@ -11,9 +11,8 @@ const {expect} = require('chai');
 makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
   const {
-    INCONSISTENT_PROTOCOL_BALANCE,
+    TRANSFER_AMOUNT_EXCEEDS_BALANCE,
     TOO_SMALL_FLASH_LOAN,
-    NOT_ENOUGH_LIQUIDITY_TO_BORROW,
   } = ProtocolErrors;
 
   before(async () => {
@@ -99,7 +98,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         ethers.utils.parseEther('0.8'),
         '0x10'
       )
-    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_BALANCE);
+    ).to.be.revertedWith(TRANSFER_AMOUNT_EXCEEDS_BALANCE);
   });
 
   it('tries to take a very small flashloan, which would result in 0 fees (revert expected)', async () => {
@@ -125,8 +124,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         '1004415000000000000', //slightly higher than the available liquidity
         '0x10'
       ),
-      NOT_ENOUGH_LIQUIDITY_TO_BORROW
-    ).to.be.revertedWith(NOT_ENOUGH_LIQUIDITY_TO_BORROW);
+      TRANSFER_AMOUNT_EXCEEDS_BALANCE
+    ).to.be.revertedWith(TRANSFER_AMOUNT_EXCEEDS_BALANCE);
   });
 
   it('tries to take a flashloan using a non contract address as receiver (revert expected)', async () => {
@@ -194,7 +193,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         ethers.utils.parseEther('500'),
         '0x10'
       ),
-      INCONSISTENT_PROTOCOL_BALANCE
-    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_BALANCE);
+      TRANSFER_AMOUNT_EXCEEDS_BALANCE
+    ).to.be.revertedWith(TRANSFER_AMOUNT_EXCEEDS_BALANCE);
   });
 });
