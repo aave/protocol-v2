@@ -241,7 +241,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(_onBehalfOf, reserve);
 
     ReserveLogic.InterestRateMode rateMode = ReserveLogic.InterestRateMode(_rateMode);
-
+    
     //default to max amount
     uint256 paybackAmount = rateMode == ReserveLogic.InterestRateMode.STABLE
       ? stableDebt
@@ -253,13 +253,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     ValidationLogic.validateRepay(
       reserve,
-      asset,
       amount,
       rateMode,
       _onBehalfOf,
       stableDebt,
-      variableDebt,
-      paybackAmount
+      variableDebt
     );
 
     reserve.updateCumulativeIndexesAndTimestamp();
@@ -490,7 +488,18 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       'The actual balance of the protocol is inconsistent'
     );
 
-    reserve.updateStateOnFlashLoan(asset, availableLiquidityBefore, amountFee);
+       //compounding the cumulated interest
+    reserve.updateCumulativeIndexesAndTimestamp();
+
+    uint256 totalLiquidityBefore = availableLiquidityBefore
+      .add(IERC20(reserve.variableDebtTokenAddress).totalSupply())
+      .add(IERC20(reserve.stableDebtTokenAddress).totalSupply());
+
+    //compounding the received fee into the reserve
+    reserve.cumulateToLiquidityIndex(totalLiquidityBefore, amountFee);
+
+    //refresh interest rates
+    reserve.updateInterestRates(asset, amountFee, 0);
 
     //solium-disable-next-line
     emit FlashLoan(receiverAddress, asset, amount, amountFee);
@@ -578,8 +587,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       reserve.currentVariableBorrowRate,
       reserve.currentStableBorrowRate,
       IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate(),
-      reserve.lastLiquidityCumulativeIndex,
-      reserve.lastVariableBorrowCumulativeIndex,
+      reserve.lastLiquidityIndex,
+      reserve.lastVariableBorrowIndex,
       reserve.lastUpdateTimestamp
     );
   }

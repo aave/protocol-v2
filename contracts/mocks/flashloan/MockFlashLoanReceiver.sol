@@ -51,7 +51,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     token.mint(_fee);
 
     //returning amount + fee to the destination
-    transferFundsBackInternal(_reserve, _destination, _amount.add(_fee));
+    _transferFundsBack(_reserve, _destination, _amount.add(_fee));
 
     emit ExecutedWithSuccess(_reserve, _amount, _fee);
   }

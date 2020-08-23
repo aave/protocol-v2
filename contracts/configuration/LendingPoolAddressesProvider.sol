@@ -43,7 +43,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param pool the new lending pool implementation
    **/
   function setLendingPoolImpl(address pool) external override onlyOwner {
-    _updateImplementation(LENDING_POOL, pool);
+    _updateImpl(LENDING_POOL, pool);
     emit LendingPoolUpdated(pool);
   }
 
@@ -60,7 +60,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param configurator the new lending pool configurator implementation
    **/
   function setLendingPoolConfiguratorImpl(address configurator) external override onlyOwner {
-    _updateImplementation(LENDING_POOL_CONFIGURATOR, configurator);
+    _updateImpl(LENDING_POOL_CONFIGURATOR, configurator);
     emit LendingPoolConfiguratorUpdated(configurator);
   }
 
@@ -121,7 +121,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param id the id of the contract to be updated
    * @param newAddress the address of the new implementation
    **/
-  function _updateImplementation(bytes32 id, address newAddress) internal {
+  function _updateImpl(bytes32 id, address newAddress) internal {
     address payable proxyAddress = payable(_addresses[id]);
 
     InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(

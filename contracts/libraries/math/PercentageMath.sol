@@ -19,23 +19,23 @@ library PercentageMath {
 
   /**
    * @dev executes a percentage multiplication
-   * @param _value the value of which the percentage needs to be calculated
-   * @param _percentage the percentage of the value to be calculated
-   * @return the _percentage of _value
+   * @param value the value of which the percentage needs to be calculated
+   * @param percentage the percentage of the value to be calculated
+   * @return the percentage of value
    **/
-  function percentMul(uint256 _value, uint256 _percentage) internal pure returns (uint256) {
-    return HALF_PERCENT.add(_value.mul(_percentage)).div(PERCENTAGE_FACTOR);
+  function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256) {
+    return HALF_PERCENT.add(value.mul(percentage)).div(PERCENTAGE_FACTOR);
   }
 
   /**
    * @dev executes a percentage division
-   * @param _value the value of which the percentage needs to be calculated
-   * @param _percentage the percentage of the value to be calculated
-   * @return the _value divided the _percentage
+   * @param value the value of which the percentage needs to be calculated
+   * @param percentage the percentage of the value to be calculated
+   * @return the value divided the percentage
    **/
-  function percentDiv(uint256 _value, uint256 _percentage) internal pure returns (uint256) {
-    uint256 halfPercentage = _percentage / 2;
+  function percentDiv(uint256 value, uint256 percentage) internal pure returns (uint256) {
+    uint256 halfPercentage = percentage / 2;
 
-    return halfPercentage.add(_value.mul(PERCENTAGE_FACTOR)).div(_percentage);
+    return halfPercentage.add(value.mul(PERCENTAGE_FACTOR)).div(percentage);
   }
 }
