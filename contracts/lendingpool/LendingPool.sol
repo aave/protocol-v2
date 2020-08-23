@@ -487,7 +487,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     //transfer from the receiver the amount plus the fee
     try IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium) {
-      //if the transfer succeeded, the executor has repaid the flashloans.
+      //if the transfer succeeded, the executor has repaid the flashloan.
       //the fee is compounded into the reserve
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
       //refresh interest rates
@@ -518,8 +518,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       );
 
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, vars.amountPlusPremium);
-      //refresh interest rates
-      reserve.updateInterestRates(asset, vars.premium, 0);
+      //refresh interest rate, substracting from the available liquidity the flashloan amount
+      reserve.updateInterestRates(asset, 0, amount);
       
       emit Borrow(
         asset,
