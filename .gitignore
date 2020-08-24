@@ -1,7 +1,6 @@
 #Buidler files
 cache
 artifacts
-types
 node_modules
 dist/
 build/
