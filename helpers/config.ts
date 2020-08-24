@@ -1,9 +1,10 @@
 import {IConfig} from 'config';
+import {IAaveConfiguration, IUniswapConfiguration} from './types';
 
-let config: IConfig;
+let config: IAaveConfiguration | IUniswapConfiguration;
 
 // This function swaps NODE_ENV during the 'config' library load, to load custom config files, then keeps NODE_ENV like before.
-export const loadConfig = () => {
+export const loadConfig = (): IAaveConfiguration | IUniswapConfiguration => {
   if (config) {
     return config;
   }

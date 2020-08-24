@@ -5,7 +5,7 @@ import {usePlugin} from '@nomiclabs/buidler/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
-import {loadConfig} from './config/loadConfig';
+import {loadConfig} from './helpers/config';
 
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');

@@ -11,6 +11,9 @@ import {
 } from './types';
 import BigNumber from 'bignumber.js';
 import {getParamPerPool} from './contracts-helpers';
+import {loadConfig} from './config';
+
+const config = loadConfig();
 
 export const TEST_SNAPSHOT_ID = '0x1';
 
@@ -31,10 +34,12 @@ export const MAX_UINT_AMOUNT =
 // ----------------
 // PROTOCOL GLOBAL PARAMS
 // ----------------
-export const OPTIMAL_UTILIZATION_RATE = new BigNumber(0.8).times(RAY);
-export const EXCESS_UTILIZATION_RATE = new BigNumber(0.2).times(RAY);
+export const OPTIMAL_UTILIZATION_RATE = config.ProtocolGlobalParams.OptimalUtilizationRate;
+export const EXCESS_UTILIZATION_RATE = config.ProtocolGlobalParams.ExcessUtilizationRate;
 export const ONE_YEAR = '31536000';
-export const APPROVAL_AMOUNT_LENDING_POOL = '1000000000000000000000000000';
+export const APPROVAL_AMOUNT_LENDING_POOL =
+  config.ProtocolGlobalParams.TokenDistributorPercentageBase;
+
 export const TOKEN_DISTRIBUTOR_PERCENTAGE_BASE = '10000';
 export const MOCK_USD_PRICE_IN_WEI = '5848466240000000';
 export const USD_ADDRESS = '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96';
