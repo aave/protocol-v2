@@ -69,23 +69,23 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
    * @dev accessors
    */
 
-  function getVariableRateSlope1() external view returns (uint256) {
+  function variableRateSlope1() external view returns (uint256) {
     return _variableRateSlope1;
   }
 
-  function getVariableRateSlope2() external view returns (uint256) {
+  function variableRateSlope2() external view returns (uint256) {
     return _variableRateSlope2;
   }
 
-  function getStableRateSlope1() external view returns (uint256) {
+  function stableRateSlope1() external view returns (uint256) {
     return _stableRateSlope1;
   }
 
-  function getStableRateSlope2() external view returns (uint256) {
+  function stableRateSlope2() external view returns (uint256) {
     return _stableRateSlope2;
   }
 
-  function getBaseVariableBorrowRate() external override view returns (uint256) {
+  function baseVariableBorrowRate() external override view returns (uint256) {
     return _baseVariableBorrowRate;
   }
 
@@ -121,7 +121,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 currentStableBorrowRate = 0;
     uint256 currentLiquidityRate = 0;
 
-    uint256 utilizationRate = (totalBorrows == 0 && availableLiquidity == 0)
+    uint256 utilizationRate = totalBorrows == 0
       ? 0
       : totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
 
@@ -157,9 +157,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     )
       .rayMul(utilizationRate);
 
-    return (currentLiquidityRate,
-      currentStableBorrowRate,
-      currentVariableBorrowRate);
+    return (currentLiquidityRate, currentStableBorrowRate, currentVariableBorrowRate);
   }
 
   /**
