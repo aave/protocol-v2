@@ -2,7 +2,7 @@ import rawBRE from '@nomiclabs/buidler';
 import {MockContract} from 'ethereum-waffle';
 import {
   deployLendingPoolAddressesProvider,
-  deployMintableErc20,
+  deployMintableERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
   deployLendingPool,
@@ -23,7 +23,7 @@ import {
 } from '../helpers/contracts-helpers';
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
-import {MintableErc20} from '../types/MintableErc20';
+import {MintableERC20} from '../MintableErc20';
 import {
   MOCK_USD_PRICE_IN_WEI,
   ALL_ASSETS_INITIAL_PRICES,
@@ -43,7 +43,7 @@ import {waitForTx} from '../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../helpers/init-helpers';
 
 const deployAllMockTokens = async (deployer: Signer) => {
-  const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
+  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
@@ -61,7 +61,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
       decimals = 18;
     }
 
-    tokens[tokenSymbol] = await deployMintableErc20([
+    tokens[tokenSymbol] = await deployMintableERC20([
       tokenSymbol,
       tokenSymbol,
       configData ? configData.reserveDecimals : 18,

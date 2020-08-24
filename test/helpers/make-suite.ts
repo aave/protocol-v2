@@ -13,7 +13,7 @@ import {
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
 import {AaveProtocolTestHelpers} from '../../types/AaveProtocolTestHelpers';
-import {MintableErc20} from '../../types/MintableErc20';
+import {MintableErc20} from '../../MintableErc20';
 import {AToken} from '../../types/AToken';
 import {LendingPoolConfigurator} from '../../types/LendingPoolConfigurator';
 

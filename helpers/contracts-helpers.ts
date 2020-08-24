@@ -10,7 +10,6 @@ import {
   iParamsPerNetwork,
   iParamsPerPool,
   TokenContractId,
-  MockTokenMap,
   iMultiPoolsAssets,
   IReserveParams,
 } from './types';
@@ -40,6 +39,8 @@ import {getReservesConfigByPool} from './constants';
 import {verifyContract} from './etherscan-verification';
 import {FeeProvider} from '../types/FeeProvider';
 import {TokenDistributor} from '../types/TokenDistributor';
+
+export type MockTokenMap = {[symbol: string]: MintableErc20};
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -340,7 +341,7 @@ export const deployAaveProtocolTestHelpers = async (
 };
 
 export const deployMintableErc20 = async ([name, symbol, decimals]: [string, string, number]) =>
-  await deployContract<MintableErc20>(eContractid.MintableERC20, [name, symbol, decimals]);
+  await deployContract<MintableErc20>(eContractid.MintableErc20, [name, symbol, decimals]);
 
 export const deployDefaultReserveInterestRateStrategy = async ([
   addressesProvider,
@@ -460,9 +461,9 @@ export const getAToken = async (address?: tEthereumAddress) => {
 
 export const getMintableErc20 = async (address: tEthereumAddress) => {
   return await getContract<MintableErc20>(
-    eContractid.MintableERC20,
+    eContractid.MintableErc20,
     address ||
-      (await getDb().get(`${eContractid.MintableERC20}.${BRE.network.name}`).value()).address
+      (await getDb().get(`${eContractid.MintableErc20}.${BRE.network.name}`).value()).address
   );
 };
 
@@ -610,7 +611,7 @@ export const deployAllMockTokens = async (verify?: boolean) => {
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
 
     if (verify) {
-      await verifyContract(eContractid.MintableERC20, tokens[tokenSymbol].address, []);
+      await verifyContract(eContractid.MintableErc20, tokens[tokenSymbol].address, []);
     }
   }
   return tokens;
@@ -623,7 +624,7 @@ export const getMockedTokens = async () => {
       const accumulator = await acc;
       const address = db.get(`${tokenSymbol.toUpperCase()}.${BRE.network.name}`).value().address;
       accumulator[tokenSymbol] = await getContract<MintableErc20>(
-        eContractid.MintableERC20,
+        eContractid.MintableErc20,
         address
       );
       return Promise.resolve(acc);

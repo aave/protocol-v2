@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
 import {MockContract} from 'ethereum-waffle';
-import {MintableErc20} from '../types/MintableErc20';
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -17,7 +16,7 @@ export enum AavePools {
 export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
-  MintableERC20 = 'MintableERC20',
+  MintableErc20 = 'MintableErc20',
   LendingPoolAddressesProviderRegistry = 'LendingPoolAddressesProviderRegistry',
   LendingPoolParametersProvider = 'LendingPoolParametersProvider',
   LendingPoolConfigurator = 'LendingPoolConfigurator',
@@ -229,5 +228,3 @@ export enum RateMode {
 export interface ObjectString {
   [key: string]: string;
 }
-
-export type MockTokenMap = {[symbol: string]: MockContract | MintableErc20};

@@ -1,5 +1,6 @@
-import {MockTokenMap, tEthereumAddress} from './types';
+import {tEthereumAddress} from './types';
 import {MockAggregator} from '../types/MockAggregator';
+import {MockTokenMap} from './contracts-helpers';
 
 export const getAllTokenAddresses = (mockTokens: MockTokenMap) =>
   Object.entries(mockTokens).reduce(
