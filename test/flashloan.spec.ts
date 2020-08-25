@@ -1,13 +1,17 @@
-import { TestEnv, makeSuite } from './helpers/make-suite';
-import { APPROVAL_AMOUNT_LENDING_POOL, oneRay } from '../helpers/constants';
-import { convertToCurrencyDecimals, getMockFlashLoanReceiver, getContract } from '../helpers/contracts-helpers';
-import { ethers } from 'ethers';
-import { MockFlashLoanReceiver } from '../types/MockFlashLoanReceiver';
-import { ProtocolErrors, eContractid } from '../helpers/types';
+import {TestEnv, makeSuite} from './helpers/make-suite';
+import {APPROVAL_AMOUNT_LENDING_POOL, oneRay} from '../helpers/constants';
+import {
+  convertToCurrencyDecimals,
+  getMockFlashLoanReceiver,
+  getContract,
+} from '../helpers/contracts-helpers';
+import {ethers} from 'ethers';
+import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
+import {ProtocolErrors, eContractid} from '../helpers/types';
 import BigNumber from 'bignumber.js';
-import { VariableDebtToken } from '../types/VariableDebtToken';
+import {VariableDebtToken} from '../types/VariableDebtToken';
 
-const { expect } = require('chai');
+const {expect} = require('chai');
 
 makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
@@ -22,7 +26,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Deposits ETH into the reserve', async () => {
-    const { pool, weth } = testEnv;
+    const {pool, weth} = testEnv;
     const amountToDeposit = ethers.utils.parseEther('1');
 
     await weth.mint(amountToDeposit);
@@ -33,12 +37,13 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Takes ETH flashloan, returns the funds correctly', async () => {
-    const { pool, deployer, weth } = testEnv;
+    const {pool, deployer, weth} = testEnv;
 
     await pool.flashLoan(
       _mockFlashLoanReceiver.address,
       weth.address,
       ethers.utils.parseEther('0.8'),
+      2,
       '0x10',
       '0'
     );
@@ -60,13 +65,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Takes an ETH flashloan as big as the available liquidity', async () => {
-    const { pool, weth } = testEnv;
+    const {pool, weth} = testEnv;
 
     const reserveDataBefore = await pool.getReserveData(weth.address);
     const txResult = await pool.flashLoan(
       _mockFlashLoanReceiver.address,
       weth.address,
       '1000720000000000000',
+      2,
       '0x10',
       '0'
     );
@@ -86,7 +92,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Takes WETH flashloan, does not return the funds. Caller does not have any collateral (revert expected)', async () => {
-    const { pool, weth, users } = testEnv;
+    const {pool, weth, users} = testEnv;
     const caller = users[1];
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
@@ -97,6 +103,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           weth.address,
           ethers.utils.parseEther('0.8'),
+          2,
           '0x10',
           '0'
         )
@@ -104,7 +111,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes WETH flashloan, does not return the funds. A loan for caller is created', async () => {
-    const { dai, pool, weth, users } = testEnv;
+    const {dai, pool, weth, users} = testEnv;
 
     const caller = users[1];
 
@@ -124,12 +131,16 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         weth.address,
         ethers.utils.parseEther('0.8'),
+        2,
         '0x10',
         '0'
       );
     const {variableDebtTokenAddress} = await pool.getReserveTokensAddresses(weth.address);
 
-    const wethDebtToken = await getContract<VariableDebtToken>(eContractid.VariableDebtToken, variableDebtTokenAddress);
+    const wethDebtToken = await getContract<VariableDebtToken>(
+      eContractid.VariableDebtToken,
+      variableDebtTokenAddress
+    );
 
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
@@ -137,13 +148,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('tries to take a very small flashloan, which would result in 0 fees (revert expected)', async () => {
-    const { pool, weth } = testEnv;
+    const {pool, weth} = testEnv;
 
     await expect(
       pool.flashLoan(
         _mockFlashLoanReceiver.address,
         weth.address,
         '1', //1 wei loan
+        2,
         '0x10',
         '0'
       )
@@ -151,13 +163,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {
-    const { pool, weth } = testEnv;
+    const {pool, weth} = testEnv;
 
     await expect(
       pool.flashLoan(
         _mockFlashLoanReceiver.address,
         weth.address,
         '1004415000000000000', //slightly higher than the available liquidity
+        2,
         '0x10',
         '0'
       ),
@@ -166,14 +179,15 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('tries to take a flashloan using a non contract address as receiver (revert expected)', async () => {
-    const { pool, deployer, weth } = testEnv;
+    const {pool, deployer, weth} = testEnv;
 
-    await expect(pool.flashLoan(deployer.address, weth.address, '1000000000000000000', '0x10', '0'))
-      .to.be.reverted;
+    await expect(
+      pool.flashLoan(deployer.address, weth.address, '1000000000000000000', 2, '0x10', '0')
+    ).to.be.reverted;
   });
 
   it('Deposits USDC into the reserve', async () => {
-    const { usdc, pool } = testEnv;
+    const {usdc, pool} = testEnv;
 
     await usdc.mint(await convertToCurrencyDecimals(usdc.address, '1000'));
 
@@ -185,7 +199,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Takes out a 500 USDC flashloan, returns the funds correctly', async () => {
-    const { usdc, pool, deployer: depositor } = testEnv;
+    const {usdc, pool, deployer: depositor} = testEnv;
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(false);
 
@@ -195,6 +209,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       _mockFlashLoanReceiver.address,
       usdc.address,
       flashloanAmount,
+      2,
       '0x10',
       '0'
     );
@@ -210,7 +225,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiquidityIndex = reserveData.liquidityIndex.toString();
     const currentUserBalance = userData.currentATokenBalance.toString();
 
-    const expectedLiquidity = await convertToCurrencyDecimals(usdc.address,'1000.450');
+    const expectedLiquidity = await convertToCurrencyDecimals(usdc.address, '1000.450');
 
     expect(totalLiquidity).to.be.equal(expectedLiquidity, 'Invalid total liquidity');
     expect(currentLiqudityRate).to.be.equal('0', 'Invalid liquidity rate');
@@ -222,7 +237,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Takes out a 500 USDC flashloan, does not return the funds. Caller does not have any collateral (revert expected)', async () => {
-    const { usdc, pool, users } = testEnv;
+    const {usdc, pool, users} = testEnv;
     const caller = users[2];
 
     const flashloanAmount = await convertToCurrencyDecimals(usdc.address, '500');
@@ -232,18 +247,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(caller.signer)
-        .flashLoan(
-          _mockFlashLoanReceiver.address,
-          usdc.address,
-          flashloanAmount,
-          '0x10',
-          '0'
-        )
+        .flashLoan(_mockFlashLoanReceiver.address, usdc.address, flashloanAmount, 2, '0x10', '0')
     ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
   });
 
   it('Caller deposits 5 ETH as collateral, Takes a USDC flashloan, does not return the funds. A loan for caller is created', async () => {
-    const { usdc, pool, weth, users } = testEnv;
+    const {usdc, pool, weth, users} = testEnv;
 
     const caller = users[2];
 
@@ -256,21 +265,18 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await pool.connect(caller.signer).deposit(weth.address, amountToDeposit, '0');
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
-    
+
     const flashloanAmount = await convertToCurrencyDecimals(usdc.address, '500');
 
     await pool
       .connect(caller.signer)
-      .flashLoan(
-        _mockFlashLoanReceiver.address,
-        usdc.address,
-        flashloanAmount,
-        '0x10',
-        '0'
-      );
+      .flashLoan(_mockFlashLoanReceiver.address, usdc.address, flashloanAmount, 2, '0x10', '0');
     const {variableDebtTokenAddress} = await pool.getReserveTokensAddresses(usdc.address);
 
-    const usdcDebtToken = await getContract<VariableDebtToken>(eContractid.VariableDebtToken, variableDebtTokenAddress);
+    const usdcDebtToken = await getContract<VariableDebtToken>(
+      eContractid.VariableDebtToken,
+      variableDebtTokenAddress
+    );
 
     const callerDebt = await usdcDebtToken.balanceOf(caller.address);
 
