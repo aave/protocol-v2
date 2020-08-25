@@ -92,22 +92,21 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     ValidationLogic.validateDeposit(reserve, amount);
 
-    IAToken aToken = IAToken(reserve.aTokenAddress);
-
-    bool isFirstDeposit = aToken.balanceOf(msg.sender) == 0;
+    address aToken = reserve.aTokenAddress;
 
     reserve.updateCumulativeIndexesAndTimestamp();
-    reserve.updateInterestRates(asset, amount, 0);
+    reserve.updateInterestRates(asset, aToken, amount, 0);
 
+    bool isFirstDeposit = IAToken(aToken).balanceOf(msg.sender) == 0;
     if (isFirstDeposit) {
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, true);
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
-    aToken.mint(msg.sender, amount);
+    IAToken(aToken).mint(msg.sender, amount);
 
     //transfer to the aToken contract
-    IERC20(asset).safeTransferFrom(msg.sender, address(aToken), amount);
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     //solium-disable-next-line
     emit Deposit(asset, msg.sender, amount, referralCode);
@@ -121,9 +120,9 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   function withdraw(address asset, uint256 amount) external override nonReentrant {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
-    IAToken aToken = IAToken(reserve.aTokenAddress);
+    address aToken = reserve.aTokenAddress;
 
-    uint256 userBalance = aToken.balanceOf(msg.sender);
+    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
 
     uint256 amountToWithdraw = amount;
 
@@ -134,7 +133,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     ValidationLogic.validateWithdraw(
       asset,
-      address(aToken),
+      aToken,
       amountToWithdraw,
       userBalance,
       _reserves,
@@ -145,13 +144,13 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    reserve.updateInterestRates(asset, 0, amountToWithdraw);
+    reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
     if (amountToWithdraw == userBalance) {
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, false);
     }
 
-    aToken.burn(msg.sender, msg.sender, amountToWithdraw);
+    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw);
 
     //solium-disable-next-line
     emit Withdraw(asset, msg.sender, amount);
@@ -202,14 +201,16 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, amount);
     }
 
-    reserve.updateInterestRates(asset, 0, amount);
+    address aToken = reserve.aTokenAddress;
+    reserve.updateInterestRates(asset, aToken, 0, amount);
 
-    if (!userConfig.isBorrowing(reserve.index)) {
-      userConfig.setBorrowing(reserve.index, true);
+    uint256 reserveIndex = reserve.index;
+    if (!userConfig.isBorrowing(reserveIndex)) {
+      userConfig.setBorrowing(reserveIndex, true);
     }
 
     //if we reached this point, we can transfer
-    IAToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, amount);
+    IAToken(aToken).transferUnderlyingTo(msg.sender, amount);
 
     emit Borrow(
       asset,
@@ -270,13 +271,14 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       IVariableDebtToken(reserve.variableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
     }
 
-    reserve.updateInterestRates(asset, paybackAmount, 0);
+    address aToken = reserve.aTokenAddress;
+    reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.index, false);
     }
 
-    IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, paybackAmount);
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
 
     emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
   }
@@ -317,7 +319,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       );
     }
 
-    reserve.updateInterestRates(asset, 0, 0);
+    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
 
     emit Swap(
       asset,
@@ -367,7 +369,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     stableDebtToken.burn(user, stableBorrowBalance);
     stableDebtToken.mint(user, stableBorrowBalance, reserve.currentStableBorrowRate);
 
-    reserve.updateInterestRates(asset, 0, 0);
+    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
 
     emit RebalanceStableBorrowRate(asset, user);
 
@@ -501,7 +503,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     reserve.cumulateToLiquidityIndex(totalLiquidityBefore, amountFee);
 
     //refresh interest rates
-    reserve.updateInterestRates(asset, amountFee, 0);
+    reserve.updateInterestRates(asset, aTokenAddress, amountFee, 0);
 
     //solium-disable-next-line
     emit FlashLoan(receiverAddress, asset, amount, amountFee);

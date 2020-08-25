@@ -136,7 +136,9 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       );
     }
 
-    vars.userCollateralBalance = IERC20(collateralReserve.aTokenAddress).balanceOf(user);
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
+
+    vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
@@ -192,8 +194,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
 
-    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
-
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!receiveAToken) {
       uint256 currentAvailableCollateral = IERC20(collateral).balanceOf(
@@ -209,7 +209,12 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     //update the principal reserve
     principalReserve.updateCumulativeIndexesAndTimestamp();
-    principalReserve.updateInterestRates(principal, vars.actualAmountToLiquidate, 0);
+    principalReserve.updateInterestRates(
+      principal,
+      principalReserve.aTokenAddress,
+      vars.actualAmountToLiquidate,
+      0
+    );
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
@@ -235,7 +240,12 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
       //updating collateral reserve
       collateralReserve.updateCumulativeIndexesAndTimestamp();
-      collateralReserve.updateInterestRates(collateral, 0, vars.maxCollateralToLiquidate);
+      collateralReserve.updateInterestRates(
+        collateral,
+        address(vars.collateralAtoken),
+        0,
+        vars.maxCollateralToLiquidate
+      );
 
       //burn the equivalent amount of atoken
       vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate);
