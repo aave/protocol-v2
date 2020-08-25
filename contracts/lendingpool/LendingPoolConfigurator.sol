@@ -25,6 +25,10 @@ contract LendingPoolConfigurator is VersionedInitializable {
   using SafeMath for uint256;
   using ReserveConfiguration for ReserveConfiguration.Map;
 
+  //require error messages
+  string private constant CALLER_NOT_LENDING_POOL_MANAGER = '1'; // 'The caller must be a lending pool manager'
+  string private constant RESERVE_LIQUIDITY_NOT_0 = '2'; // 'The liquidity of the reserve needs to be 0'
+
   /**
    * @dev emitted when a reserve is initialized.
    * @param asset the address of the reserve
@@ -178,7 +182,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   modifier onlyLendingPoolManager {
     require(
       addressesProvider.getLendingPoolManager() == msg.sender,
-      'The caller must be a lending pool manager'
+      CALLER_NOT_LENDING_POOL_MANAGER
     );
     _;
   }
@@ -425,7 +429,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     ) = pool.getReserveData(asset);
     require(
       availableLiquidity == 0 && totalBorrowsStable == 0 && totalBorrowsVariable == 0,
-      'The liquidity of the reserve needs to be 0'
+      RESERVE_LIQUIDITY_NOT_0
     );
 
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
