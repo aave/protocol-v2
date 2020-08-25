@@ -18,12 +18,21 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
   event ExecutedWithFail(address _reserve, uint256 _amount, uint256 _fee);
   event ExecutedWithSuccess(address _reserve, uint256 _amount, uint256 _fee);
 
-  bool failExecution = false;
+  bool _failExecution;
+  uint256 _amountToApprove;
 
   constructor(ILendingPoolAddressesProvider provider) public FlashLoanReceiverBase(provider) {}
 
-  function setFailExecutionTransfer(bool _fail) public {
-    failExecution = _fail;
+  function setFailExecutionTransfer(bool fail) public {
+    _failExecution = fail;
+  }
+
+  function setAmountToApprove(uint256 amountToApprove) public {
+    _amountToApprove = amountToApprove;
+  }
+
+  function amountToApprove() public view returns (uint256) {
+    return _amountToApprove;
   }
 
   function executeOperation(
@@ -36,12 +45,11 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     MintableERC20 token = MintableERC20(reserve);
 
     //check the contract has the specified balance
-    require(
-      amount <= IERC20(reserve).balanceOf(address(this)),
-      'Invalid balance for the contract'
-    );
+    require(amount <= IERC20(reserve).balanceOf(address(this)), 'Invalid balance for the contract');
 
-    if (failExecution) {
+    uint256 amountToReturn = (_amountToApprove != 0) ? _amountToApprove : amount.add(fee);
+
+    if (_failExecution) {
       emit ExecutedWithFail(reserve, amount, fee);
       return;
     }
@@ -51,7 +59,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
     token.mint(fee);
 
-    IERC20(reserve).approve(_addressesProvider.getLendingPool(), amount.add(fee));
+    IERC20(reserve).approve(_addressesProvider.getLendingPool(), amountToReturn);
 
     emit ExecutedWithSuccess(reserve, amount, fee);
   }
