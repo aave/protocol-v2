@@ -4,41 +4,15 @@
 import {Contract, Signer} from 'ethers';
 import {Provider} from '@ethersproject/providers';
 
-import {DebtTokenBase} from './DebtTokenBase';
+import {IaToken} from './IaToken';
 
-export class DebtTokenBaseFactory {
-  static connect(address: string, signerOrProvider: Signer | Provider): DebtTokenBase {
-    return new Contract(address, _abi, signerOrProvider) as DebtTokenBase;
+export class IaTokenFactory {
+  static connect(address: string, signerOrProvider: Signer | Provider): IaToken {
+    return new Contract(address, _abi, signerOrProvider) as IaToken;
   }
 }
 
 const _abi = [
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'pool',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: 'underlyingAssetAddress',
-        type: 'address',
-      },
-      {
-        internalType: 'string',
-        name: 'name',
-        type: 'string',
-      },
-      {
-        internalType: 'string',
-        name: 'symbol',
-        type: 'string',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'constructor',
-  },
   {
     anonymous: false,
     inputs: [
@@ -93,6 +67,19 @@ const _abi = [
     inputs: [
       {
         internalType: 'address',
+        name: '_to',
+        type: 'address',
+      },
+    ],
+    name: 'allowInterestRedirectionTo',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
         name: 'owner',
         type: 'address',
       },
@@ -141,7 +128,7 @@ const _abi = [
     inputs: [
       {
         internalType: 'address',
-        name: 'user',
+        name: 'account',
         type: 'address',
       },
     ],
@@ -157,97 +144,42 @@ const _abi = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'decimals',
-    outputs: [
-      {
-        internalType: 'uint8',
-        name: '',
-        type: 'uint8',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
     inputs: [
       {
         internalType: 'address',
-        name: 'spender',
+        name: '_user',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: '_underlyingTarget',
         type: 'address',
       },
       {
         internalType: 'uint256',
-        name: 'subtractedValue',
+        name: '_amount',
         type: 'uint256',
       },
     ],
-    name: 'decreaseAllowance',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'spender',
-        type: 'address',
-      },
-      {
-        internalType: 'uint256',
-        name: 'addedValue',
-        type: 'uint256',
-      },
-    ],
-    name: 'increaseAllowance',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: '',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'uint8',
-        name: 'decimals',
-        type: 'uint8',
-      },
-      {
-        internalType: 'string',
-        name: 'name',
-        type: 'string',
-      },
-      {
-        internalType: 'string',
-        name: 'symbol',
-        type: 'string',
-      },
-    ],
-    name: 'initialize',
+    name: 'burn',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'name',
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_user',
+        type: 'address',
+      },
+    ],
+    name: 'getInterestRedirectionAddress',
     outputs: [
       {
-        internalType: 'string',
+        internalType: 'address',
         name: '',
-        type: 'string',
+        type: 'address',
       },
     ],
     stateMutability: 'view',
@@ -257,7 +189,87 @@ const _abi = [
     inputs: [
       {
         internalType: 'address',
-        name: 'user',
+        name: '_user',
+        type: 'address',
+      },
+    ],
+    name: 'getRedirectedBalance',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_user',
+        type: 'address',
+      },
+    ],
+    name: 'getUserIndex',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_user',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'isTransferAllowed',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: '',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_user',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'mint',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_user',
         type: 'address',
       },
     ],
@@ -273,16 +285,34 @@ const _abi = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'symbol',
-    outputs: [
+    inputs: [
       {
-        internalType: 'string',
-        name: '',
-        type: 'string',
+        internalType: 'address',
+        name: '_to',
+        type: 'address',
       },
     ],
-    stateMutability: 'view',
+    name: 'redirectInterestStream',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_from',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: '_to',
+        type: 'address',
+      },
+    ],
+    name: 'redirectInterestStreamOf',
+    outputs: [],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
   {
@@ -352,16 +382,50 @@ const _abi = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'underlyingAssetAddress',
-    outputs: [
+    inputs: [
       {
         internalType: 'address',
-        name: '',
+        name: '_from',
         type: 'address',
       },
+      {
+        internalType: 'address',
+        name: '_to',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_value',
+        type: 'uint256',
+      },
     ],
-    stateMutability: 'view',
+    name: 'transferOnLiquidation',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: '_target',
+        type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: '_amount',
+        type: 'uint256',
+      },
+    ],
+    name: 'transferUnderlyingTo',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'nonpayable',
     type: 'function',
   },
 ];

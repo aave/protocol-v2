@@ -11,6 +11,7 @@ interface ATokenInterface extends ethers.utils.Interface {
   functions: {
     'ATOKEN_REVISION()': FunctionFragment;
     'UINT_MAX_VALUE()': FunctionFragment;
+    'UNDERLYING_ASSET_ADDRESS()': FunctionFragment;
     'allowInterestRedirectionTo(address)': FunctionFragment;
     'allowance(address,address)': FunctionFragment;
     'approve(address,uint256)': FunctionFragment;
@@ -35,11 +36,11 @@ interface ATokenInterface extends ethers.utils.Interface {
     'transferFrom(address,address,uint256)': FunctionFragment;
     'transferOnLiquidation(address,address,uint256)': FunctionFragment;
     'transferUnderlyingTo(address,uint256)': FunctionFragment;
-    'underlyingAssetAddress()': FunctionFragment;
   };
 
   encodeFunctionData(functionFragment: 'ATOKEN_REVISION', values?: undefined): string;
   encodeFunctionData(functionFragment: 'UINT_MAX_VALUE', values?: undefined): string;
+  encodeFunctionData(functionFragment: 'UNDERLYING_ASSET_ADDRESS', values?: undefined): string;
   encodeFunctionData(functionFragment: 'allowInterestRedirectionTo', values: [string]): string;
   encodeFunctionData(functionFragment: 'allowance', values: [string, string]): string;
   encodeFunctionData(functionFragment: 'approve', values: [string, BigNumberish]): string;
@@ -79,10 +80,10 @@ interface ATokenInterface extends ethers.utils.Interface {
     functionFragment: 'transferUnderlyingTo',
     values: [string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: 'underlyingAssetAddress', values?: undefined): string;
 
   decodeFunctionResult(functionFragment: 'ATOKEN_REVISION', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'UINT_MAX_VALUE', data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: 'UNDERLYING_ASSET_ADDRESS', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'allowInterestRedirectionTo', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'allowance', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'approve', data: BytesLike): Result;
@@ -107,7 +108,6 @@ interface ATokenInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: 'transferFrom', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'transferOnLiquidation', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'transferUnderlyingTo', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'underlyingAssetAddress', data: BytesLike): Result;
 
   events: {
     'Approval(address,address,uint256)': EventFragment;
@@ -168,10 +168,22 @@ export class AToken extends Contract {
       0: BigNumber;
     }>;
 
-    allowInterestRedirectionTo(_to: string, overrides?: Overrides): Promise<ContractTransaction>;
+    UNDERLYING_ASSET_ADDRESS(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: string;
+    }>;
+
+    'UNDERLYING_ASSET_ADDRESS()'(
+      overrides?: CallOverrides
+    ): Promise<{
+      0: string;
+    }>;
+
+    allowInterestRedirectionTo(to: string, overrides?: Overrides): Promise<ContractTransaction>;
 
     'allowInterestRedirectionTo(address)'(
-      _to: string,
+      to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -204,30 +216,30 @@ export class AToken extends Contract {
     ): Promise<ContractTransaction>;
 
     balanceOf(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'balanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     burn(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'burn(address,address,uint256)'(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -256,42 +268,42 @@ export class AToken extends Contract {
     ): Promise<ContractTransaction>;
 
     getInterestRedirectionAddress(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string;
     }>;
 
     'getInterestRedirectionAddress(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string;
     }>;
 
     getRedirectedBalance(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'getRedirectedBalance(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     getUserIndex(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'getUserIndex(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
@@ -310,40 +322,40 @@ export class AToken extends Contract {
     ): Promise<ContractTransaction>;
 
     initialize(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'initialize(uint8,string,string)'(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     isTransferAllowed(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<{
       0: boolean;
     }>;
 
     'isTransferAllowed(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<{
       0: boolean;
     }>;
 
-    mint(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+    mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -360,35 +372,35 @@ export class AToken extends Contract {
     }>;
 
     principalBalanceOf(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'principalBalanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
-    redirectInterestStream(_to: string, overrides?: Overrides): Promise<ContractTransaction>;
+    redirectInterestStream(to: string, overrides?: Overrides): Promise<ContractTransaction>;
 
     'redirectInterestStream(address)'(
-      _to: string,
+      to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     redirectInterestStreamOf(
-      _from: string,
-      _to: string,
+      from: string,
+      to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'redirectInterestStreamOf(address,address)'(
-      _from: string,
-      _to: string,
+      from: string,
+      to: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -443,42 +455,30 @@ export class AToken extends Contract {
     ): Promise<ContractTransaction>;
 
     transferOnLiquidation(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'transferOnLiquidation(address,address,uint256)'(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     transferUnderlyingTo(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'transferUnderlyingTo(address,uint256)'(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
-
-    underlyingAssetAddress(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
-    'underlyingAssetAddress()'(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
   };
 
   ATOKEN_REVISION(overrides?: CallOverrides): Promise<BigNumber>;
@@ -489,10 +489,14 @@ export class AToken extends Contract {
 
   'UINT_MAX_VALUE()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-  allowInterestRedirectionTo(_to: string, overrides?: Overrides): Promise<ContractTransaction>;
+  UNDERLYING_ASSET_ADDRESS(overrides?: CallOverrides): Promise<string>;
+
+  'UNDERLYING_ASSET_ADDRESS()'(overrides?: CallOverrides): Promise<string>;
+
+  allowInterestRedirectionTo(to: string, overrides?: Overrides): Promise<ContractTransaction>;
 
   'allowInterestRedirectionTo(address)'(
-    _to: string,
+    to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -516,21 +520,21 @@ export class AToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  balanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  balanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   burn(
-    _user: string,
-    _underlyingTarget: string,
-    _amount: BigNumberish,
+    user: string,
+    underlyingTarget: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'burn(address,address,uint256)'(
-    _user: string,
-    _underlyingTarget: string,
-    _amount: BigNumberish,
+    user: string,
+    underlyingTarget: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -550,20 +554,20 @@ export class AToken extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  getInterestRedirectionAddress(_user: string, overrides?: CallOverrides): Promise<string>;
+  getInterestRedirectionAddress(user: string, overrides?: CallOverrides): Promise<string>;
 
   'getInterestRedirectionAddress(address)'(
-    _user: string,
+    user: string,
     overrides?: CallOverrides
   ): Promise<string>;
 
-  getRedirectedBalance(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  getRedirectedBalance(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'getRedirectedBalance(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'getRedirectedBalance(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  getUserIndex(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  getUserIndex(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'getUserIndex(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   increaseAllowance(
     spender: string,
@@ -578,36 +582,36 @@ export class AToken extends Contract {
   ): Promise<ContractTransaction>;
 
   initialize(
-    _underlyingAssetDecimals: BigNumberish,
-    _tokenName: string,
-    _tokenSymbol: string,
+    underlyingAssetDecimals: BigNumberish,
+    tokenName: string,
+    tokenSymbol: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'initialize(uint8,string,string)'(
-    _underlyingAssetDecimals: BigNumberish,
-    _tokenName: string,
-    _tokenSymbol: string,
+    underlyingAssetDecimals: BigNumberish,
+    tokenName: string,
+    tokenSymbol: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   isTransferAllowed(
-    _user: string,
-    _amount: BigNumberish,
+    user: string,
+    amount: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
   'isTransferAllowed(address,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
+    user: string,
+    amount: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  mint(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+  mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
   'mint(address,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
+    user: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -615,26 +619,26 @@ export class AToken extends Contract {
 
   'name()'(overrides?: CallOverrides): Promise<string>;
 
-  principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  redirectInterestStream(_to: string, overrides?: Overrides): Promise<ContractTransaction>;
+  redirectInterestStream(to: string, overrides?: Overrides): Promise<ContractTransaction>;
 
   'redirectInterestStream(address)'(
-    _to: string,
+    to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   redirectInterestStreamOf(
-    _from: string,
-    _to: string,
+    from: string,
+    to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'redirectInterestStreamOf(address,address)'(
-    _from: string,
-    _to: string,
+    from: string,
+    to: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -673,34 +677,30 @@ export class AToken extends Contract {
   ): Promise<ContractTransaction>;
 
   transferOnLiquidation(
-    _from: string,
-    _to: string,
-    _value: BigNumberish,
+    from: string,
+    to: string,
+    value: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'transferOnLiquidation(address,address,uint256)'(
-    _from: string,
-    _to: string,
-    _value: BigNumberish,
+    from: string,
+    to: string,
+    value: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   transferUnderlyingTo(
-    _target: string,
-    _amount: BigNumberish,
+    target: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'transferUnderlyingTo(address,uint256)'(
-    _target: string,
-    _amount: BigNumberish,
+    target: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
-
-  underlyingAssetAddress(overrides?: CallOverrides): Promise<string>;
-
-  'underlyingAssetAddress()'(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     ATOKEN_REVISION(overrides?: CallOverrides): Promise<BigNumber>;
@@ -711,9 +711,13 @@ export class AToken extends Contract {
 
     'UINT_MAX_VALUE()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    allowInterestRedirectionTo(_to: string, overrides?: CallOverrides): Promise<void>;
+    UNDERLYING_ASSET_ADDRESS(overrides?: CallOverrides): Promise<string>;
 
-    'allowInterestRedirectionTo(address)'(_to: string, overrides?: CallOverrides): Promise<void>;
+    'UNDERLYING_ASSET_ADDRESS()'(overrides?: CallOverrides): Promise<string>;
+
+    allowInterestRedirectionTo(to: string, overrides?: CallOverrides): Promise<void>;
+
+    'allowInterestRedirectionTo(address)'(to: string, overrides?: CallOverrides): Promise<void>;
 
     allowance(owner: string, spender: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -731,21 +735,21 @@ export class AToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    balanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'burn(address,address,uint256)'(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -765,20 +769,20 @@ export class AToken extends Contract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    getInterestRedirectionAddress(_user: string, overrides?: CallOverrides): Promise<string>;
+    getInterestRedirectionAddress(user: string, overrides?: CallOverrides): Promise<string>;
 
     'getInterestRedirectionAddress(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<string>;
 
-    getRedirectedBalance(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getRedirectedBalance(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getRedirectedBalance(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getRedirectedBalance(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserIndex(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserIndex(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserIndex(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,
@@ -793,36 +797,36 @@ export class AToken extends Contract {
     ): Promise<boolean>;
 
     initialize(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'initialize(uint8,string,string)'(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     isTransferAllowed(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     'isTransferAllowed(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    mint(_user: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    mint(user: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -830,19 +834,19 @@ export class AToken extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<string>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    redirectInterestStream(_to: string, overrides?: CallOverrides): Promise<void>;
+    redirectInterestStream(to: string, overrides?: CallOverrides): Promise<void>;
 
-    'redirectInterestStream(address)'(_to: string, overrides?: CallOverrides): Promise<void>;
+    'redirectInterestStream(address)'(to: string, overrides?: CallOverrides): Promise<void>;
 
-    redirectInterestStreamOf(_from: string, _to: string, overrides?: CallOverrides): Promise<void>;
+    redirectInterestStreamOf(from: string, to: string, overrides?: CallOverrides): Promise<void>;
 
     'redirectInterestStreamOf(address,address)'(
-      _from: string,
-      _to: string,
+      from: string,
+      to: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -877,80 +881,71 @@ export class AToken extends Contract {
     ): Promise<boolean>;
 
     transferOnLiquidation(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'transferOnLiquidation(address,address,uint256)'(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     transferUnderlyingTo(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     'transferUnderlyingTo(address,uint256)'(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    underlyingAssetAddress(overrides?: CallOverrides): Promise<string>;
-
-    'underlyingAssetAddress()'(overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
     Approval(owner: string | null, spender: string | null, value: null): EventFilter;
 
     BalanceTransfer(
-      _from: string | null,
-      _to: string | null,
-      _value: null,
-      _fromBalanceIncrease: null,
-      _toBalanceIncrease: null,
-      _fromIndex: null,
-      _toIndex: null
+      from: string | null,
+      to: string | null,
+      value: null,
+      fromBalanceIncrease: null,
+      toBalanceIncrease: null,
+      fromIndex: null,
+      toIndex: null
     ): EventFilter;
 
     Burn(
-      _from: string | null,
-      _target: string | null,
-      _value: null,
-      _fromBalanceIncrease: null,
-      _fromIndex: null
+      from: string | null,
+      target: string | null,
+      value: null,
+      fromBalanceIncrease: null,
+      fromIndex: null
     ): EventFilter;
 
-    InterestRedirectionAllowanceChanged(_from: string | null, _to: string | null): EventFilter;
+    InterestRedirectionAllowanceChanged(from: string | null, to: string | null): EventFilter;
 
     InterestStreamRedirected(
-      _from: string | null,
-      _to: string | null,
-      _redirectedBalance: null,
-      _fromBalanceIncrease: null,
-      _fromIndex: null
+      from: string | null,
+      to: string | null,
+      redirectedBalance: null,
+      fromBalanceIncrease: null,
+      fromIndex: null
     ): EventFilter;
 
-    Mint(
-      _from: string | null,
-      _value: null,
-      _fromBalanceIncrease: null,
-      _fromIndex: null
-    ): EventFilter;
+    Mint(from: string | null, value: null, fromBalanceIncrease: null, fromIndex: null): EventFilter;
 
     RedirectedBalanceUpdated(
-      _targetAddress: string | null,
-      _targetBalanceIncrease: null,
-      _targetIndex: null,
-      _redirectedBalanceAdded: null,
-      _redirectedBalanceRemoved: null
+      targetAddress: string | null,
+      targetBalanceIncrease: null,
+      targetIndex: null,
+      redirectedBalanceAdded: null,
+      redirectedBalanceRemoved: null
     ): EventFilter;
 
     Transfer(from: string | null, to: string | null, value: null): EventFilter;
@@ -965,9 +960,13 @@ export class AToken extends Contract {
 
     'UINT_MAX_VALUE()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    allowInterestRedirectionTo(_to: string, overrides?: Overrides): Promise<BigNumber>;
+    UNDERLYING_ASSET_ADDRESS(overrides?: CallOverrides): Promise<BigNumber>;
 
-    'allowInterestRedirectionTo(address)'(_to: string, overrides?: Overrides): Promise<BigNumber>;
+    'UNDERLYING_ASSET_ADDRESS()'(overrides?: CallOverrides): Promise<BigNumber>;
+
+    allowInterestRedirectionTo(to: string, overrides?: Overrides): Promise<BigNumber>;
+
+    'allowInterestRedirectionTo(address)'(to: string, overrides?: Overrides): Promise<BigNumber>;
 
     allowance(owner: string, spender: string, overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -985,21 +984,21 @@ export class AToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    balanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'burn(address,address,uint256)'(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1019,20 +1018,20 @@ export class AToken extends Contract {
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    getInterestRedirectionAddress(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getInterestRedirectionAddress(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     'getInterestRedirectionAddress(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getRedirectedBalance(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getRedirectedBalance(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getRedirectedBalance(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getRedirectedBalance(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserIndex(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserIndex(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserIndex(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,
@@ -1047,36 +1046,36 @@ export class AToken extends Contract {
     ): Promise<BigNumber>;
 
     initialize(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'initialize(uint8,string,string)'(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     isTransferAllowed(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     'isTransferAllowed(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    mint(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1084,19 +1083,19 @@ export class AToken extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    redirectInterestStream(_to: string, overrides?: Overrides): Promise<BigNumber>;
+    redirectInterestStream(to: string, overrides?: Overrides): Promise<BigNumber>;
 
-    'redirectInterestStream(address)'(_to: string, overrides?: Overrides): Promise<BigNumber>;
+    'redirectInterestStream(address)'(to: string, overrides?: Overrides): Promise<BigNumber>;
 
-    redirectInterestStreamOf(_from: string, _to: string, overrides?: Overrides): Promise<BigNumber>;
+    redirectInterestStreamOf(from: string, to: string, overrides?: Overrides): Promise<BigNumber>;
 
     'redirectInterestStreamOf(address,address)'(
-      _from: string,
-      _to: string,
+      from: string,
+      to: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -1131,34 +1130,30 @@ export class AToken extends Contract {
     ): Promise<BigNumber>;
 
     transferOnLiquidation(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'transferOnLiquidation(address,address,uint256)'(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     transferUnderlyingTo(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'transferUnderlyingTo(address,uint256)'(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
-
-    underlyingAssetAddress(overrides?: CallOverrides): Promise<BigNumber>;
-
-    'underlyingAssetAddress()'(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -1170,10 +1165,14 @@ export class AToken extends Contract {
 
     'UINT_MAX_VALUE()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    allowInterestRedirectionTo(_to: string, overrides?: Overrides): Promise<PopulatedTransaction>;
+    UNDERLYING_ASSET_ADDRESS(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    'UNDERLYING_ASSET_ADDRESS()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    allowInterestRedirectionTo(to: string, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'allowInterestRedirectionTo(address)'(
-      _to: string,
+      to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1201,21 +1200,21 @@ export class AToken extends Contract {
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    balanceOf(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    balanceOf(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     burn(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'burn(address,address,uint256)'(
-      _user: string,
-      _underlyingTarget: string,
-      _amount: BigNumberish,
+      user: string,
+      underlyingTarget: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1236,28 +1235,25 @@ export class AToken extends Contract {
     ): Promise<PopulatedTransaction>;
 
     getInterestRedirectionAddress(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     'getInterestRedirectionAddress(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getRedirectedBalance(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getRedirectedBalance(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getRedirectedBalance(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getUserIndex(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getUserIndex(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    'getUserIndex(address)'(
-      _user: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     increaseAllowance(
       spender: string,
@@ -1272,40 +1268,36 @@ export class AToken extends Contract {
     ): Promise<PopulatedTransaction>;
 
     initialize(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'initialize(uint8,string,string)'(
-      _underlyingAssetDecimals: BigNumberish,
-      _tokenName: string,
-      _tokenSymbol: string,
+      underlyingAssetDecimals: BigNumberish,
+      tokenName: string,
+      tokenSymbol: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     isTransferAllowed(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     'isTransferAllowed(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    mint(
-      _user: string,
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1313,29 +1305,29 @@ export class AToken extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'principalBalanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    redirectInterestStream(_to: string, overrides?: Overrides): Promise<PopulatedTransaction>;
+    redirectInterestStream(to: string, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'redirectInterestStream(address)'(
-      _to: string,
+      to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     redirectInterestStreamOf(
-      _from: string,
-      _to: string,
+      from: string,
+      to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'redirectInterestStreamOf(address,address)'(
-      _from: string,
-      _to: string,
+      from: string,
+      to: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -1374,33 +1366,29 @@ export class AToken extends Contract {
     ): Promise<PopulatedTransaction>;
 
     transferOnLiquidation(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'transferOnLiquidation(address,address,uint256)'(
-      _from: string,
-      _to: string,
-      _value: BigNumberish,
+      from: string,
+      to: string,
+      value: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     transferUnderlyingTo(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'transferUnderlyingTo(address,uint256)'(
-      _target: string,
-      _amount: BigNumberish,
+      target: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
-
-    underlyingAssetAddress(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    'underlyingAssetAddress()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

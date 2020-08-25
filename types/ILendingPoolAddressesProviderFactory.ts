@@ -18,19 +18,6 @@ export class ILendingPoolAddressesProviderFactory {
 const _abi = [
   {
     inputs: [],
-    name: 'getFeeProvider',
-    outputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [],
     name: 'getLendingPool',
     outputs: [
       {
@@ -108,32 +95,6 @@ const _abi = [
     type: 'function',
   },
   {
-    inputs: [],
-    name: 'getTokenDistributor',
-    outputs: [
-      {
-        internalType: 'address',
-        name: '',
-        type: 'address',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'feeProvider',
-        type: 'address',
-      },
-    ],
-    name: 'setFeeProviderImpl',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
     inputs: [
       {
         internalType: 'address',
@@ -207,19 +168,6 @@ const _abi = [
       },
     ],
     name: 'setPriceOracle',
-    outputs: [],
-    stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'tokenDistributor',
-        type: 'address',
-      },
-    ],
-    name: 'setTokenDistributor',
     outputs: [],
     stateMutability: 'nonpayable',
     type: 'function',

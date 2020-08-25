@@ -36,174 +36,172 @@ library ReserveConfiguration {
 
   /**
    * @dev sets the Loan to Value of the reserve
-   * @param _self the reserve configuration
-   * @param _ltv the new ltv
+   * @param self the reserve configuration
+   * @param ltv the new ltv
    **/
-  function setLtv(ReserveConfiguration.Map memory _self, uint256 _ltv) internal {
-    _self.data = (_self.data & LTV_MASK) | _ltv;
+  function setLtv(ReserveConfiguration.Map memory self, uint256 ltv) internal pure {
+    self.data = (self.data & LTV_MASK) | ltv;
   }
 
   /**
    * @dev gets the Loan to Value of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the loan to value
    **/
-  function getLtv(ReserveConfiguration.Map storage _self) internal view returns (uint256) {
-    return _self.data & ~LTV_MASK;
+  function getLtv(ReserveConfiguration.Map storage self) internal view returns (uint256) {
+    return self.data & ~LTV_MASK;
   }
 
   /**
    * @dev sets the liquidation threshold of the reserve
-   * @param _self the reserve configuration
-   * @param _threshold the new liquidation threshold
+   * @param self the reserve configuration
+   * @param threshold the new liquidation threshold
    **/
-  function setLiquidationThreshold(ReserveConfiguration.Map memory _self, uint256 _threshold)
+  function setLiquidationThreshold(ReserveConfiguration.Map memory self, uint256 threshold)
     internal
+    pure
   {
-    _self.data = (_self.data & LIQUIDATION_THRESHOLD_MASK) | (_threshold << 16);
+    self.data = (self.data & LIQUIDATION_THRESHOLD_MASK) | (threshold << 16);
   }
 
   /**
    * @dev gets the Loan to Value of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the liquidation threshold
    **/
-  function getLiquidationThreshold(ReserveConfiguration.Map storage _self)
+  function getLiquidationThreshold(ReserveConfiguration.Map storage self)
     internal
     view
     returns (uint256)
   {
-    return (_self.data & ~LIQUIDATION_THRESHOLD_MASK) >> 16;
+    return (self.data & ~LIQUIDATION_THRESHOLD_MASK) >> 16;
   }
 
   /**
    * @dev sets the liquidation bonus of the reserve
-   * @param _self the reserve configuration
-   * @param _bonus the new liquidation bonus
+   * @param self the reserve configuration
+   * @param bonus the new liquidation bonus
    **/
-  function setLiquidationBonus(ReserveConfiguration.Map memory _self, uint256 _bonus) internal {
-    _self.data = (_self.data & LIQUIDATION_BONUS_MASK) | (_bonus << 32);
+  function setLiquidationBonus(ReserveConfiguration.Map memory self, uint256 bonus) internal pure {
+    self.data = (self.data & LIQUIDATION_BONUS_MASK) | (bonus << 32);
   }
 
   /**
    * @dev gets the liquidation bonus of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the liquidation bonus
    **/
-  function getLiquidationBonus(ReserveConfiguration.Map storage _self)
+  function getLiquidationBonus(ReserveConfiguration.Map storage self)
     internal
     view
     returns (uint256)
   {
-    return (_self.data & ~LIQUIDATION_BONUS_MASK) >> 32;
+    return (self.data & ~LIQUIDATION_BONUS_MASK) >> 32;
   }
 
   /**
    * @dev sets the decimals of the underlying asset of the reserve
-   * @param _self the reserve configuration
-   * @param _decimals the decimals
+   * @param self the reserve configuration
+   * @param decimals the decimals
    **/
-  function setDecimals(ReserveConfiguration.Map memory _self, uint256 _decimals) internal {
-    _self.data = (_self.data & DECIMALS_MASK) | (_decimals << 48);
+  function setDecimals(ReserveConfiguration.Map memory self, uint256 decimals) internal pure {
+    self.data = (self.data & DECIMALS_MASK) | (decimals << 48);
   }
 
   /**
    * @dev gets the decimals of the underlying asset of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the decimals of the asset
    **/
-  function getDecimals(ReserveConfiguration.Map storage _self) internal view returns (uint256) {
-    return (_self.data & ~DECIMALS_MASK) >> 48;
+  function getDecimals(ReserveConfiguration.Map storage self) internal view returns (uint256) {
+    return (self.data & ~DECIMALS_MASK) >> 48;
   }
 
   /**
    * @dev sets the active state of the reserve
-   * @param _self the reserve configuration
-   * @param _active the active state
+   * @param self the reserve configuration
+   * @param active the active state
    **/
-  function setActive(ReserveConfiguration.Map memory _self, bool _active) internal {
-    _self.data = (_self.data & ACTIVE_MASK) | (uint256(_active ? 1 : 0) << 56);
+  function setActive(ReserveConfiguration.Map memory self, bool active) internal {
+    self.data = (self.data & ACTIVE_MASK) | (uint256(active ? 1 : 0) << 56);
   }
 
   /**
    * @dev gets the active state of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the active state
    **/
-  function getActive(ReserveConfiguration.Map storage _self) internal view returns (bool) {
-    return ((_self.data & ~ACTIVE_MASK) >> 56) != 0;
+  function getActive(ReserveConfiguration.Map storage self) internal view returns (bool) {
+    return ((self.data & ~ACTIVE_MASK) >> 56) != 0;
   }
 
   /**
    * @dev sets the frozen state of the reserve
-   * @param _self the reserve configuration
-   * @param _frozen the frozen state
+   * @param self the reserve configuration
+   * @param frozen the frozen state
    **/
-  function setFrozen(ReserveConfiguration.Map memory _self, bool _frozen) internal {
-    _self.data = (_self.data & FROZEN_MASK) | (uint256(_frozen ? 1 : 0) << 57);
+  function setFrozen(ReserveConfiguration.Map memory self, bool frozen) internal pure {
+    self.data = (self.data & FROZEN_MASK) | (uint256(frozen ? 1 : 0) << 57);
   }
 
   /**
    * @dev gets the frozen state of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the frozen state
    **/
-  function getFrozen(ReserveConfiguration.Map storage _self) internal view returns (bool) {
-    return ((_self.data & ~FROZEN_MASK) >> 57) != 0;
+  function getFrozen(ReserveConfiguration.Map storage self) internal view returns (bool) {
+    return ((self.data & ~FROZEN_MASK) >> 57) != 0;
   }
 
   /**
    * @dev enables or disables borrowing on the reserve
-   * @param _self the reserve configuration
-   * @param _enabled true if the borrowing needs to be enabled, false otherwise
+   * @param self the reserve configuration
+   * @param enabled true if the borrowing needs to be enabled, false otherwise
    **/
-  function setBorrowingEnabled(ReserveConfiguration.Map memory _self, bool _enabled) internal {
-    _self.data = (_self.data & BORROWING_MASK) | (uint256(_enabled ? 1 : 0) << 58);
+  function setBorrowingEnabled(ReserveConfiguration.Map memory self, bool enabled) internal pure {
+    self.data = (self.data & BORROWING_MASK) | (uint256(enabled ? 1 : 0) << 58);
   }
 
   /**
    * @dev gets the borrowing state of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the borrowing state
    **/
-  function getBorrowingEnabled(ReserveConfiguration.Map storage _self)
-    internal
-    view
-    returns (bool)
-  {
-    return ((_self.data & ~BORROWING_MASK) >> 58) != 0;
+  function getBorrowingEnabled(ReserveConfiguration.Map storage self) internal view returns (bool) {
+    return ((self.data & ~BORROWING_MASK) >> 58) != 0;
   }
 
   /**
    * @dev enables or disables stable rate borrowing on the reserve
-   * @param _self the reserve configuration
-   * @param _enabled true if the stable rate borrowing needs to be enabled, false otherwise
+   * @param self the reserve configuration
+   * @param enabled true if the stable rate borrowing needs to be enabled, false otherwise
    **/
-  function setStableRateBorrowingEnabled(ReserveConfiguration.Map memory _self, bool _enabled)
+  function setStableRateBorrowingEnabled(ReserveConfiguration.Map memory self, bool enabled)
     internal
+    pure
   {
-    _self.data = (_self.data & STABLE_BORROWING_MASK) | (uint256(_enabled ? 1 : 0) << 59);
+    self.data = (self.data & STABLE_BORROWING_MASK) | (uint256(enabled ? 1 : 0) << 59);
   }
 
   /**
    * @dev gets the stable rate borrowing state of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the stable rate borrowing state
    **/
-  function getStableRateBorrowingEnabled(ReserveConfiguration.Map storage _self)
+  function getStableRateBorrowingEnabled(ReserveConfiguration.Map storage self)
     internal
     view
     returns (bool)
   {
-    return ((_self.data & ~STABLE_BORROWING_MASK) >> 59) != 0;
+    return ((self.data & ~STABLE_BORROWING_MASK) >> 59) != 0;
   }
 
   /**
    * @dev gets the configuration flags of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the state flags representing active, freezed, borrowing enabled, stableRateBorrowing enabled
    **/
-  function getFlags(ReserveConfiguration.Map storage _self)
+  function getFlags(ReserveConfiguration.Map storage self)
     internal
     view
     returns (
@@ -213,7 +211,7 @@ library ReserveConfiguration {
       bool
     )
   {
-    uint256 dataLocal = _self.data;
+    uint256 dataLocal = self.data;
 
     return (
       (dataLocal & ~ACTIVE_MASK) >> 56 != 0,
@@ -225,10 +223,10 @@ library ReserveConfiguration {
 
   /**
    * @dev gets the configuration paramters of the reserve
-   * @param _self the reserve configuration
+   * @param self the reserve configuration
    * @return the state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
    **/
-  function getParams(ReserveConfiguration.Map storage _self)
+  function getParams(ReserveConfiguration.Map storage self)
     internal
     view
     returns (
@@ -238,7 +236,7 @@ library ReserveConfiguration {
       uint256
     )
   {
-    uint256 dataLocal = _self.data;
+    uint256 dataLocal = self.data;
 
     return (
       dataLocal & ~LTV_MASK,

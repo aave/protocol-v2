@@ -9,25 +9,20 @@ import {FunctionFragment, EventFragment, Result} from '@ethersproject/abi';
 
 interface ILendingPoolAddressesProviderInterface extends ethers.utils.Interface {
   functions: {
-    'getFeeProvider()': FunctionFragment;
     'getLendingPool()': FunctionFragment;
     'getLendingPoolConfigurator()': FunctionFragment;
     'getLendingPoolLiquidationManager()': FunctionFragment;
     'getLendingPoolManager()': FunctionFragment;
     'getLendingRateOracle()': FunctionFragment;
     'getPriceOracle()': FunctionFragment;
-    'getTokenDistributor()': FunctionFragment;
-    'setFeeProviderImpl(address)': FunctionFragment;
     'setLendingPoolConfiguratorImpl(address)': FunctionFragment;
     'setLendingPoolImpl(address)': FunctionFragment;
     'setLendingPoolLiquidationManager(address)': FunctionFragment;
     'setLendingPoolManager(address)': FunctionFragment;
     'setLendingRateOracle(address)': FunctionFragment;
     'setPriceOracle(address)': FunctionFragment;
-    'setTokenDistributor(address)': FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: 'getFeeProvider', values?: undefined): string;
   encodeFunctionData(functionFragment: 'getLendingPool', values?: undefined): string;
   encodeFunctionData(functionFragment: 'getLendingPoolConfigurator', values?: undefined): string;
   encodeFunctionData(
@@ -37,8 +32,6 @@ interface ILendingPoolAddressesProviderInterface extends ethers.utils.Interface 
   encodeFunctionData(functionFragment: 'getLendingPoolManager', values?: undefined): string;
   encodeFunctionData(functionFragment: 'getLendingRateOracle', values?: undefined): string;
   encodeFunctionData(functionFragment: 'getPriceOracle', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'getTokenDistributor', values?: undefined): string;
-  encodeFunctionData(functionFragment: 'setFeeProviderImpl', values: [string]): string;
   encodeFunctionData(functionFragment: 'setLendingPoolConfiguratorImpl', values: [string]): string;
   encodeFunctionData(functionFragment: 'setLendingPoolImpl', values: [string]): string;
   encodeFunctionData(
@@ -48,9 +41,7 @@ interface ILendingPoolAddressesProviderInterface extends ethers.utils.Interface 
   encodeFunctionData(functionFragment: 'setLendingPoolManager', values: [string]): string;
   encodeFunctionData(functionFragment: 'setLendingRateOracle', values: [string]): string;
   encodeFunctionData(functionFragment: 'setPriceOracle', values: [string]): string;
-  encodeFunctionData(functionFragment: 'setTokenDistributor', values: [string]): string;
 
-  decodeFunctionResult(functionFragment: 'getFeeProvider', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getLendingPool', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getLendingPoolConfigurator', data: BytesLike): Result;
   decodeFunctionResult(
@@ -60,8 +51,6 @@ interface ILendingPoolAddressesProviderInterface extends ethers.utils.Interface 
   decodeFunctionResult(functionFragment: 'getLendingPoolManager', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getLendingRateOracle', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'getPriceOracle', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'getTokenDistributor', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'setFeeProviderImpl', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'setLendingPoolConfiguratorImpl', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'setLendingPoolImpl', data: BytesLike): Result;
   decodeFunctionResult(
@@ -71,7 +60,6 @@ interface ILendingPoolAddressesProviderInterface extends ethers.utils.Interface 
   decodeFunctionResult(functionFragment: 'setLendingPoolManager', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'setLendingRateOracle', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'setPriceOracle', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'setTokenDistributor', data: BytesLike): Result;
 
   events: {};
 }
@@ -90,18 +78,6 @@ export class ILendingPoolAddressesProvider extends Contract {
   interface: ILendingPoolAddressesProviderInterface;
 
   functions: {
-    getFeeProvider(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
-    'getFeeProvider()'(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
     getLendingPool(
       overrides?: CallOverrides
     ): Promise<{
@@ -174,25 +150,6 @@ export class ILendingPoolAddressesProvider extends Contract {
       0: string;
     }>;
 
-    getTokenDistributor(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
-    'getTokenDistributor()'(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
-    setFeeProviderImpl(feeProvider: string, overrides?: Overrides): Promise<ContractTransaction>;
-
-    'setFeeProviderImpl(address)'(
-      feeProvider: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
     setLendingPoolConfiguratorImpl(
       configurator: string,
       overrides?: Overrides
@@ -246,21 +203,7 @@ export class ILendingPoolAddressesProvider extends Contract {
       priceOracle: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
-
-    setTokenDistributor(
-      tokenDistributor: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
-
-    'setTokenDistributor(address)'(
-      tokenDistributor: string,
-      overrides?: Overrides
-    ): Promise<ContractTransaction>;
   };
-
-  getFeeProvider(overrides?: CallOverrides): Promise<string>;
-
-  'getFeeProvider()'(overrides?: CallOverrides): Promise<string>;
 
   getLendingPool(overrides?: CallOverrides): Promise<string>;
 
@@ -285,17 +228,6 @@ export class ILendingPoolAddressesProvider extends Contract {
   getPriceOracle(overrides?: CallOverrides): Promise<string>;
 
   'getPriceOracle()'(overrides?: CallOverrides): Promise<string>;
-
-  getTokenDistributor(overrides?: CallOverrides): Promise<string>;
-
-  'getTokenDistributor()'(overrides?: CallOverrides): Promise<string>;
-
-  setFeeProviderImpl(feeProvider: string, overrides?: Overrides): Promise<ContractTransaction>;
-
-  'setFeeProviderImpl(address)'(
-    feeProvider: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
 
   setLendingPoolConfiguratorImpl(
     configurator: string,
@@ -348,21 +280,7 @@ export class ILendingPoolAddressesProvider extends Contract {
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  setTokenDistributor(
-    tokenDistributor: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
-  'setTokenDistributor(address)'(
-    tokenDistributor: string,
-    overrides?: Overrides
-  ): Promise<ContractTransaction>;
-
   callStatic: {
-    getFeeProvider(overrides?: CallOverrides): Promise<string>;
-
-    'getFeeProvider()'(overrides?: CallOverrides): Promise<string>;
-
     getLendingPool(overrides?: CallOverrides): Promise<string>;
 
     'getLendingPool()'(overrides?: CallOverrides): Promise<string>;
@@ -386,14 +304,6 @@ export class ILendingPoolAddressesProvider extends Contract {
     getPriceOracle(overrides?: CallOverrides): Promise<string>;
 
     'getPriceOracle()'(overrides?: CallOverrides): Promise<string>;
-
-    getTokenDistributor(overrides?: CallOverrides): Promise<string>;
-
-    'getTokenDistributor()'(overrides?: CallOverrides): Promise<string>;
-
-    setFeeProviderImpl(feeProvider: string, overrides?: CallOverrides): Promise<void>;
-
-    'setFeeProviderImpl(address)'(feeProvider: string, overrides?: CallOverrides): Promise<void>;
 
     setLendingPoolConfiguratorImpl(configurator: string, overrides?: CallOverrides): Promise<void>;
 
@@ -430,22 +340,11 @@ export class ILendingPoolAddressesProvider extends Contract {
     setPriceOracle(priceOracle: string, overrides?: CallOverrides): Promise<void>;
 
     'setPriceOracle(address)'(priceOracle: string, overrides?: CallOverrides): Promise<void>;
-
-    setTokenDistributor(tokenDistributor: string, overrides?: CallOverrides): Promise<void>;
-
-    'setTokenDistributor(address)'(
-      tokenDistributor: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
   };
 
   filters: {};
 
   estimateGas: {
-    getFeeProvider(overrides?: CallOverrides): Promise<BigNumber>;
-
-    'getFeeProvider()'(overrides?: CallOverrides): Promise<BigNumber>;
-
     getLendingPool(overrides?: CallOverrides): Promise<BigNumber>;
 
     'getLendingPool()'(overrides?: CallOverrides): Promise<BigNumber>;
@@ -469,14 +368,6 @@ export class ILendingPoolAddressesProvider extends Contract {
     getPriceOracle(overrides?: CallOverrides): Promise<BigNumber>;
 
     'getPriceOracle()'(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getTokenDistributor(overrides?: CallOverrides): Promise<BigNumber>;
-
-    'getTokenDistributor()'(overrides?: CallOverrides): Promise<BigNumber>;
-
-    setFeeProviderImpl(feeProvider: string, overrides?: Overrides): Promise<BigNumber>;
-
-    'setFeeProviderImpl(address)'(feeProvider: string, overrides?: Overrides): Promise<BigNumber>;
 
     setLendingPoolConfiguratorImpl(configurator: string, overrides?: Overrides): Promise<BigNumber>;
 
@@ -513,20 +404,9 @@ export class ILendingPoolAddressesProvider extends Contract {
     setPriceOracle(priceOracle: string, overrides?: Overrides): Promise<BigNumber>;
 
     'setPriceOracle(address)'(priceOracle: string, overrides?: Overrides): Promise<BigNumber>;
-
-    setTokenDistributor(tokenDistributor: string, overrides?: Overrides): Promise<BigNumber>;
-
-    'setTokenDistributor(address)'(
-      tokenDistributor: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    getFeeProvider(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    'getFeeProvider()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     getLendingPool(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getLendingPool()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -550,17 +430,6 @@ export class ILendingPoolAddressesProvider extends Contract {
     getPriceOracle(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getPriceOracle()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getTokenDistributor(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    'getTokenDistributor()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    setFeeProviderImpl(feeProvider: string, overrides?: Overrides): Promise<PopulatedTransaction>;
-
-    'setFeeProviderImpl(address)'(
-      feeProvider: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
 
     setLendingPoolConfiguratorImpl(
       configurator: string,
@@ -613,16 +482,6 @@ export class ILendingPoolAddressesProvider extends Contract {
 
     'setPriceOracle(address)'(
       priceOracle: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    setTokenDistributor(
-      tokenDistributor: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
-
-    'setTokenDistributor(address)'(
-      tokenDistributor: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };

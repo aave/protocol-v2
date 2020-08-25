@@ -23,7 +23,6 @@ library ReserveLogic {
 
   /**
    * @dev Emitted when the state of a reserve is updated
-   * @dev NOTE: This event replaces the Deprecated ReserveUpdated() event, which didn't emit the average stable borrow rate
    * @param reserve the address of the reserve
    * @param liquidityRate the new liquidity rate
    * @param stableBorrowRate the new stable borrow rate
@@ -50,7 +49,7 @@ library ReserveLogic {
   // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
   struct ReserveData {
     //the liquidity index. Expressed in ray
-    uint256 lastLiquidityCumulativeIndex;
+    uint256 lastLiquidityIndex;
     //the current supply rate. Expressed in ray
     uint256 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
@@ -58,7 +57,7 @@ library ReserveLogic {
     //the current stable borrow rate. Expressed in ray
     uint256 currentStableBorrowRate;
     //variable borrow index. Expressed in ray
-    uint256 lastVariableBorrowCumulativeIndex;
+    uint256 lastVariableBorrowIndex;
     //stores the reserve configuration
     ReserveConfiguration.Map configuration;
     address aTokenAddress;
@@ -74,21 +73,21 @@ library ReserveLogic {
    * @dev returns the ongoing normalized income for the reserve.
    * a value of 1e27 means there is no income. As time passes, the income is accrued.
    * A value of 2*1e27 means for each unit of assset two units of income have been accrued.
-   * @param _reserve the reserve object
+   * @param reserve the reserve object
    * @return the normalized income. expressed in ray
    **/
-  function getNormalizedIncome(ReserveData storage _reserve) internal view returns (uint256) {
-    uint40 timestamp = _reserve.lastUpdateTimestamp;
+  function getNormalizedIncome(ReserveData storage reserve) internal view returns (uint256) {
+    uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return _reserve.lastLiquidityCumulativeIndex;
+      return reserve.lastLiquidityIndex;
     }
 
     uint256 cumulated = MathUtils
-      .calculateLinearInterest(_reserve.currentLiquidityRate, timestamp)
-      .rayMul(_reserve.lastLiquidityCumulativeIndex);
+      .calculateLinearInterest(reserve.currentLiquidityRate, timestamp)
+      .rayMul(reserve.lastLiquidityIndex);
 
     return cumulated;
   }
@@ -97,21 +96,21 @@ library ReserveLogic {
    * @dev returns the ongoing normalized variable debt for the reserve.
    * a value of 1e27 means there is no debt. As time passes, the income is accrued.
    * A value of 2*1e27 means that the debt of the reserve is double the initial amount.
-   * @param _reserve the reserve object
+   * @param reserve the reserve object
    * @return the normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(ReserveData storage _reserve) internal view returns (uint256) {
-    uint40 timestamp = _reserve.lastUpdateTimestamp;
+  function getNormalizedDebt(ReserveData storage reserve) internal view returns (uint256) {
+    uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return _reserve.lastVariableBorrowCumulativeIndex;
+      return reserve.lastVariableBorrowIndex;
     }
 
     uint256 cumulated = MathUtils
-      .calculateCompoundedInterest(_reserve.currentVariableBorrowRate, timestamp)
-      .rayMul(_reserve.lastVariableBorrowCumulativeIndex);
+      .calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp)
+      .rayMul(reserve.lastVariableBorrowIndex);
 
     return cumulated;
   }
@@ -119,153 +118,124 @@ library ReserveLogic {
   /**
    * @dev Updates the liquidity cumulative index Ci and variable borrow cumulative index Bvc. Refer to the whitepaper for
    * a formal specification.
-   * @param _self the reserve object
+   * @param reserve the reserve object
    **/
-  function updateCumulativeIndexesAndTimestamp(ReserveData storage _self) internal {
+  function updateCumulativeIndexesAndTimestamp(ReserveData storage reserve) internal {
     //only cumulating if there is any income being produced
     if (
-      IERC20(_self.variableDebtTokenAddress).totalSupply() > 0 ||
-      IERC20(_self.stableDebtTokenAddress).totalSupply() > 0
+      IERC20(reserve.variableDebtTokenAddress).totalSupply() > 0 ||
+      IERC20(reserve.stableDebtTokenAddress).totalSupply() > 0
     ) {
       uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(
-        _self.currentLiquidityRate,
-        _self.lastUpdateTimestamp
+        reserve.currentLiquidityRate,
+        reserve.lastUpdateTimestamp
       );
 
-      _self.lastLiquidityCumulativeIndex = cumulatedLiquidityInterest.rayMul(
-        _self.lastLiquidityCumulativeIndex
-      );
+      reserve.lastLiquidityIndex = cumulatedLiquidityInterest.rayMul(reserve.lastLiquidityIndex);
 
       uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
-        _self.currentVariableBorrowRate,
-        _self.lastUpdateTimestamp
+        reserve.currentVariableBorrowRate,
+        reserve.lastUpdateTimestamp
       );
-      _self.lastVariableBorrowCumulativeIndex = cumulatedVariableBorrowInterest.rayMul(
-        _self.lastVariableBorrowCumulativeIndex
+      reserve.lastVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(
+        reserve.lastVariableBorrowIndex
       );
     }
 
     //solium-disable-next-line
-    _self.lastUpdateTimestamp = uint40(block.timestamp);
+    reserve.lastUpdateTimestamp = uint40(block.timestamp);
   }
 
   /**
    * @dev accumulates a predefined amount of asset to the reserve as a fixed, one time income. Used for example to accumulate
    * the flashloan fee to the reserve, and spread it through the depositors.
-   * @param _self the reserve object
-   * @param _totalLiquidity the total liquidity available in the reserve
-   * @param _amount the amount to accomulate
+   * @param reserve the reserve object
+   * @param totalLiquidity the total liquidity available in the reserve
+   * @param amount the amount to accomulate
    **/
   function cumulateToLiquidityIndex(
-    ReserveData storage _self,
-    uint256 _totalLiquidity,
-    uint256 _amount
+    ReserveData storage reserve,
+    uint256 totalLiquidity,
+    uint256 amount
   ) internal {
-    uint256 amountToLiquidityRatio = _amount.wadToRay().rayDiv(_totalLiquidity.wadToRay());
+    uint256 amountToLiquidityRatio = amount.wadToRay().rayDiv(totalLiquidity.wadToRay());
 
     uint256 cumulatedLiquidity = amountToLiquidityRatio.add(WadRayMath.ray());
 
-    _self.lastLiquidityCumulativeIndex = cumulatedLiquidity.rayMul(
-      _self.lastLiquidityCumulativeIndex
-    );
+    reserve.lastLiquidityIndex = cumulatedLiquidity.rayMul(reserve.lastLiquidityIndex);
   }
 
   /**
    * @dev initializes a reserve
-   * @param _self the reserve object
-   * @param _aTokenAddress the address of the overlying atoken contract
-   * @param _interestRateStrategyAddress the address of the interest rate strategy contract
+   * @param reserve the reserve object
+   * @param aTokenAddress the address of the overlying atoken contract
+   * @param interestRateStrategyAddress the address of the interest rate strategy contract
    **/
   function init(
-    ReserveData storage _self,
-    address _aTokenAddress,
-    address _stableDebtAddress,
-    address _variableDebtAddress,
-    address _interestRateStrategyAddress
+    ReserveData storage reserve,
+    address aTokenAddress,
+    address stableDebtTokenAddress,
+    address variableDebtTokenAddress,
+    address interestRateStrategyAddress
   ) external {
-    require(_self.aTokenAddress == address(0), 'Reserve has already been initialized');
-    if (_self.lastLiquidityCumulativeIndex == 0) {
+    require(reserve.aTokenAddress == address(0), 'Reserve has already been initialized');
+    if (reserve.lastLiquidityIndex == 0) {
       //if the reserve has not been initialized yet
-      _self.lastLiquidityCumulativeIndex = WadRayMath.ray();
+      reserve.lastLiquidityIndex = WadRayMath.ray();
     }
 
-    if (_self.lastVariableBorrowCumulativeIndex == 0) {
-      _self.lastVariableBorrowCumulativeIndex = WadRayMath.ray();
+    if (reserve.lastVariableBorrowIndex == 0) {
+      reserve.lastVariableBorrowIndex = WadRayMath.ray();
     }
 
-    _self.aTokenAddress = _aTokenAddress;
-    _self.stableDebtTokenAddress = _stableDebtAddress;
-    _self.variableDebtTokenAddress = _variableDebtAddress;
-    _self.interestRateStrategyAddress = _interestRateStrategyAddress;
-  }
-
-  /**
-   * @dev updates the state of the core as a result of a flashloan action
-   * @param _reserve the address of the reserve in which the flashloan is happening
-   * @param _income the income of the protocol as a result of the action
-   **/
-  function updateStateOnFlashLoan(
-    ReserveData storage _reserve,
-    address _reserveAddress,
-    uint256 _availableLiquidityBefore,
-    uint256 _income
-  ) external {
-    //compounding the cumulated interest
-    _reserve.updateCumulativeIndexesAndTimestamp();
-
-    uint256 totalLiquidityBefore = _availableLiquidityBefore
-      .add(IERC20(_reserve.variableDebtTokenAddress).totalSupply())
-      .add(IERC20(_reserve.stableDebtTokenAddress).totalSupply());
-
-    //compounding the received fee into the reserve
-    _reserve.cumulateToLiquidityIndex(totalLiquidityBefore, _income);
-
-    //refresh interest rates
-    updateInterestRates(_reserve, _reserveAddress, _income, 0);
+    reserve.aTokenAddress = aTokenAddress;
+    reserve.stableDebtTokenAddress = stableDebtTokenAddress;
+    reserve.variableDebtTokenAddress = variableDebtTokenAddress;
+    reserve.interestRateStrategyAddress = interestRateStrategyAddress;
   }
 
   /**
    * @dev Updates the reserve current stable borrow rate Rf, the current variable borrow rate Rv and the current liquidity rate Rl.
    * Also updates the lastUpdateTimestamp value. Please refer to the whitepaper for further information.
-   * @param _reserve the address of the reserve to be updated
-   * @param _liquidityAdded the amount of liquidity added to the protocol (deposit or repay) in the previous action
-   * @param _liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
+   * @param reserve the address of the reserve to be updated
+   * @param liquidityAdded the amount of liquidity added to the protocol (deposit or repay) in the previous action
+   * @param liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
    **/
   function updateInterestRates(
-    ReserveData storage _reserve,
-    address _reserveAddress,
-    uint256 _liquidityAdded,
-    uint256 _liquidityTaken
+    ReserveData storage reserve,
+    address reserveAddress,
+    uint256 liquidityAdded,
+    uint256 liquidityTaken
   ) internal {
-    uint256 currentAvgStableRate = IStableDebtToken(_reserve.stableDebtTokenAddress)
+    uint256 currentAvgStableRate = IStableDebtToken(reserve.stableDebtTokenAddress)
       .getAverageStableRate();
 
-    uint256 balance = IERC20(_reserveAddress).balanceOf(_reserve.aTokenAddress);
+    uint256 balance = IERC20(reserveAddress).balanceOf(reserve.aTokenAddress);
 
     (
       uint256 newLiquidityRate,
       uint256 newStableRate,
       uint256 newVariableRate
-    ) = IReserveInterestRateStrategy(_reserve.interestRateStrategyAddress).calculateInterestRates(
-      _reserveAddress,
-      balance.add(_liquidityAdded).sub(_liquidityTaken),
-      IERC20(_reserve.stableDebtTokenAddress).totalSupply(),
-      IERC20(_reserve.variableDebtTokenAddress).totalSupply(),
+    ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
+      reserveAddress,
+      balance.add(liquidityAdded).sub(liquidityTaken),
+      IERC20(reserve.stableDebtTokenAddress).totalSupply(),
+      IERC20(reserve.variableDebtTokenAddress).totalSupply(),
       currentAvgStableRate
     );
 
-    _reserve.currentLiquidityRate = newLiquidityRate;
-    _reserve.currentStableBorrowRate = newStableRate;
-    _reserve.currentVariableBorrowRate = newVariableRate;
+    reserve.currentLiquidityRate = newLiquidityRate;
+    reserve.currentStableBorrowRate = newStableRate;
+    reserve.currentVariableBorrowRate = newVariableRate;
 
     emit ReserveDataUpdated(
-      _reserveAddress,
+      reserveAddress,
       newLiquidityRate,
       newStableRate,
       currentAvgStableRate,
       newVariableRate,
-      _reserve.lastLiquidityCumulativeIndex,
-      _reserve.lastVariableBorrowCumulativeIndex
+      reserve.lastLiquidityIndex,
+      reserve.lastVariableBorrowIndex
     );
   }
 }

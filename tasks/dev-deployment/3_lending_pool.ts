@@ -12,7 +12,7 @@ import {waitForTx} from '../../helpers/misc-utils';
 
 task('deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({verify}, localBRE) => {
+  .setAction(async ({verify, config}, localBRE) => {
     await localBRE.run('set-bre');
 
     const addressesProvider = await getLendingPoolAddressesProvider();

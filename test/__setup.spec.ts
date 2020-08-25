@@ -2,7 +2,7 @@ import rawBRE from '@nomiclabs/buidler';
 import {MockContract} from 'ethereum-waffle';
 import {
   deployLendingPoolAddressesProvider,
-  deployMintableERC20,
+  deployMintableErc20 as deployMintableERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
   deployLendingPool,
@@ -23,15 +23,8 @@ import {
 } from '../helpers/contracts-helpers';
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
-import {MintableERC20} from '../MintableErc20';
-import {
-  MOCK_USD_PRICE_IN_WEI,
-  ALL_ASSETS_INITIAL_PRICES,
-  USD_ADDRESS,
-  MOCK_CHAINLINK_AGGREGATORS_PRICES,
-  LENDING_RATE_ORACLE_RATES_COMMON,
-  getReservesConfigByPool,
-} from '../helpers/constants';
+import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
+import {getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
 
 import {
@@ -41,6 +34,13 @@ import {
 } from '../helpers/oracles-helpers';
 import {waitForTx} from '../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../helpers/init-helpers';
+import {AaveConfig} from '../config/aave';
+
+const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
+const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
+const USD_ADDRESS = AaveConfig.ProtocolGlobalParams.UsdAddress;
+const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.ChainlinkAggregatorPrices;
+const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableERC20} = {};

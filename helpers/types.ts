@@ -2,7 +2,11 @@ import BigNumber from 'bignumber.js';
 import {MockContract} from 'ethereum-waffle';
 import {ILendingPoolAddressesProviderRegistry} from '../types/ILendingPoolAddressesProviderRegistry';
 import {ChainlinkProxyPriceProvider} from '../types/ChainlinkProxyPriceProvider';
-import {IConfig} from 'config';
+import {DefaultReserveInterestRateStrategyFactory} from '../types';
+
+export interface SymbolMap<T> {
+  [symbol: string]: T;
+}
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -254,17 +258,14 @@ export interface IProtocolGlobalConfig {
 }
 
 export interface IMocksConfig {
-  ChainlinkAggregatorPrices: any;
-  AllAssetsInitialPrices: any;
+  ChainlinkAggregatorPrices: iAssetBase<string>;
+  AllAssetsInitialPrices: iAssetBase<string>;
 }
 
 export interface ILendingRateOracleRatesCommon {
   [token: string]: ILendingRate;
 }
 
-export interface IReserveConfig {
-  [token: string]: IReserveParams;
-}
 export interface ILendingRate {
   borrowRate: string;
 }
@@ -276,27 +277,21 @@ export interface ICommonConfiguration {
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress>;
-  LendingRateOracleRatesCommon: ILendingRateOracleRatesCommon;
+  LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
 }
 
-export interface IAaveConfiguration extends ICommonConfiguration {
-  ReservesConfig: IReserveConfig;
-}
+export interface IAaveConfiguration extends ICommonConfiguration {}
 
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
 export interface IUniswapConfiguration extends ICommonConfiguration {
-  ReservesConfig: IReserveConfig;
   UniAssetsAddresses: iParamsPerNetwork<ITokenAddress>;
-  ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
 }
-
-export interface IAaveConfig extends IConfig, IAaveConfiguration {}
-export interface IUniswapConfig extends IConfig, IUniswapConfiguration {}

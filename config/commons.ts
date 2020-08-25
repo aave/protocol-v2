@@ -1,5 +1,5 @@
-import {oneEther, MOCK_USD_PRICE_IN_WEI, oneRay, RAY} from '../helpers/constants';
 import BigNumber from 'bignumber.js';
+import {oneEther, oneRay, RAY} from '../helpers/constants';
 import {ICommonConfiguration, EthereumNetwork} from '../helpers/types';
 
 const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
@@ -20,7 +20,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   SNX: oneEther.multipliedBy('0.00442616').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
   WETH: oneEther.toFixed(),
-  USD: MOCK_USD_PRICE_IN_WEI,
+  USD: '5848466240000000',
   UNI_DAI_ETH: oneEther.multipliedBy('2.1').toFixed(),
   UNI_USDC_ETH: oneEther.multipliedBy('2.1').toFixed(),
   UNI_SETH_ETH: oneEther.multipliedBy('2.1').toFixed(),
@@ -32,7 +32,10 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 // PROTOCOL GLOBAL PARAMS
 // ----------------
 
-export const CommonPoolConfiguration = {
+export const CommonsConfig = {
+  ConfigName: 'Commons',
+  ProviderId: 0,
+  ReserveSymbols: [],
   ProtocolGlobalParams: {
     OptimalUtilizationRate: new BigNumber(0.8).times(RAY),
     ExcessUtilizationRate: new BigNumber(0.2).times(RAY),
@@ -219,12 +222,3 @@ export const CommonPoolConfiguration = {
     },
   },
 };
-
-const CommonsConfig: ICommonConfiguration = {
-  ConfigName: 'Commons',
-  ProviderId: 0,
-  ReserveSymbols: [],
-  ...CommonPoolConfiguration,
-};
-
-export default CommonsConfig;

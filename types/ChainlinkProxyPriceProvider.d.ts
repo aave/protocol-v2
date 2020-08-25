@@ -66,28 +66,28 @@ export class ChainlinkProxyPriceProvider extends Contract {
 
   functions: {
     getAssetPrice(
-      _asset: string,
+      asset: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'getAssetPrice(address)'(
-      _asset: string,
+      asset: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     getAssetsPrices(
-      _assets: string[],
+      assets: string[],
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber[];
     }>;
 
     'getAssetsPrices(address[])'(
-      _assets: string[],
+      assets: string[],
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber[];
@@ -106,14 +106,14 @@ export class ChainlinkProxyPriceProvider extends Contract {
     }>;
 
     getSourceOfAsset(
-      _asset: string,
+      asset: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string;
     }>;
 
     'getSourceOfAsset(address)'(
-      _asset: string,
+      asset: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string;
@@ -136,21 +136,21 @@ export class ChainlinkProxyPriceProvider extends Contract {
     'renounceOwnership()'(overrides?: Overrides): Promise<ContractTransaction>;
 
     setAssetSources(
-      _assets: string[],
-      _sources: string[],
+      assets: string[],
+      sources: string[],
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'setAssetSources(address[],address[])'(
-      _assets: string[],
-      _sources: string[],
+      assets: string[],
+      sources: string[],
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
-    setFallbackOracle(_fallbackOracle: string, overrides?: Overrides): Promise<ContractTransaction>;
+    setFallbackOracle(fallbackOracle: string, overrides?: Overrides): Promise<ContractTransaction>;
 
     'setFallbackOracle(address)'(
-      _fallbackOracle: string,
+      fallbackOracle: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -162,21 +162,21 @@ export class ChainlinkProxyPriceProvider extends Contract {
     ): Promise<ContractTransaction>;
   };
 
-  getAssetPrice(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+  getAssetPrice(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'getAssetPrice(address)'(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'getAssetPrice(address)'(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  getAssetsPrices(_assets: string[], overrides?: CallOverrides): Promise<BigNumber[]>;
+  getAssetsPrices(assets: string[], overrides?: CallOverrides): Promise<BigNumber[]>;
 
-  'getAssetsPrices(address[])'(_assets: string[], overrides?: CallOverrides): Promise<BigNumber[]>;
+  'getAssetsPrices(address[])'(assets: string[], overrides?: CallOverrides): Promise<BigNumber[]>;
 
   getFallbackOracle(overrides?: CallOverrides): Promise<string>;
 
   'getFallbackOracle()'(overrides?: CallOverrides): Promise<string>;
 
-  getSourceOfAsset(_asset: string, overrides?: CallOverrides): Promise<string>;
+  getSourceOfAsset(asset: string, overrides?: CallOverrides): Promise<string>;
 
-  'getSourceOfAsset(address)'(_asset: string, overrides?: CallOverrides): Promise<string>;
+  'getSourceOfAsset(address)'(asset: string, overrides?: CallOverrides): Promise<string>;
 
   owner(overrides?: CallOverrides): Promise<string>;
 
@@ -187,21 +187,21 @@ export class ChainlinkProxyPriceProvider extends Contract {
   'renounceOwnership()'(overrides?: Overrides): Promise<ContractTransaction>;
 
   setAssetSources(
-    _assets: string[],
-    _sources: string[],
+    assets: string[],
+    sources: string[],
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'setAssetSources(address[],address[])'(
-    _assets: string[],
-    _sources: string[],
+    assets: string[],
+    sources: string[],
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  setFallbackOracle(_fallbackOracle: string, overrides?: Overrides): Promise<ContractTransaction>;
+  setFallbackOracle(fallbackOracle: string, overrides?: Overrides): Promise<ContractTransaction>;
 
   'setFallbackOracle(address)'(
-    _fallbackOracle: string,
+    fallbackOracle: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -213,24 +213,21 @@ export class ChainlinkProxyPriceProvider extends Contract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    getAssetPrice(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getAssetPrice(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getAssetPrice(address)'(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getAssetPrice(address)'(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getAssetsPrices(_assets: string[], overrides?: CallOverrides): Promise<BigNumber[]>;
+    getAssetsPrices(assets: string[], overrides?: CallOverrides): Promise<BigNumber[]>;
 
-    'getAssetsPrices(address[])'(
-      _assets: string[],
-      overrides?: CallOverrides
-    ): Promise<BigNumber[]>;
+    'getAssetsPrices(address[])'(assets: string[], overrides?: CallOverrides): Promise<BigNumber[]>;
 
     getFallbackOracle(overrides?: CallOverrides): Promise<string>;
 
     'getFallbackOracle()'(overrides?: CallOverrides): Promise<string>;
 
-    getSourceOfAsset(_asset: string, overrides?: CallOverrides): Promise<string>;
+    getSourceOfAsset(asset: string, overrides?: CallOverrides): Promise<string>;
 
-    'getSourceOfAsset(address)'(_asset: string, overrides?: CallOverrides): Promise<string>;
+    'getSourceOfAsset(address)'(asset: string, overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
 
@@ -240,21 +237,17 @@ export class ChainlinkProxyPriceProvider extends Contract {
 
     'renounceOwnership()'(overrides?: CallOverrides): Promise<void>;
 
-    setAssetSources(
-      _assets: string[],
-      _sources: string[],
-      overrides?: CallOverrides
-    ): Promise<void>;
+    setAssetSources(assets: string[], sources: string[], overrides?: CallOverrides): Promise<void>;
 
     'setAssetSources(address[],address[])'(
-      _assets: string[],
-      _sources: string[],
+      assets: string[],
+      sources: string[],
       overrides?: CallOverrides
     ): Promise<void>;
 
-    setFallbackOracle(_fallbackOracle: string, overrides?: CallOverrides): Promise<void>;
+    setFallbackOracle(fallbackOracle: string, overrides?: CallOverrides): Promise<void>;
 
-    'setFallbackOracle(address)'(_fallbackOracle: string, overrides?: CallOverrides): Promise<void>;
+    'setFallbackOracle(address)'(fallbackOracle: string, overrides?: CallOverrides): Promise<void>;
 
     transferOwnership(newOwner: string, overrides?: CallOverrides): Promise<void>;
 
@@ -270,21 +263,21 @@ export class ChainlinkProxyPriceProvider extends Contract {
   };
 
   estimateGas: {
-    getAssetPrice(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getAssetPrice(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getAssetPrice(address)'(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getAssetPrice(address)'(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getAssetsPrices(_assets: string[], overrides?: CallOverrides): Promise<BigNumber>;
+    getAssetsPrices(assets: string[], overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getAssetsPrices(address[])'(_assets: string[], overrides?: CallOverrides): Promise<BigNumber>;
+    'getAssetsPrices(address[])'(assets: string[], overrides?: CallOverrides): Promise<BigNumber>;
 
     getFallbackOracle(overrides?: CallOverrides): Promise<BigNumber>;
 
     'getFallbackOracle()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getSourceOfAsset(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getSourceOfAsset(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getSourceOfAsset(address)'(_asset: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getSourceOfAsset(address)'(asset: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     owner(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -294,24 +287,17 @@ export class ChainlinkProxyPriceProvider extends Contract {
 
     'renounceOwnership()'(overrides?: Overrides): Promise<BigNumber>;
 
-    setAssetSources(
-      _assets: string[],
-      _sources: string[],
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    setAssetSources(assets: string[], sources: string[], overrides?: Overrides): Promise<BigNumber>;
 
     'setAssetSources(address[],address[])'(
-      _assets: string[],
-      _sources: string[],
+      assets: string[],
+      sources: string[],
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    setFallbackOracle(_fallbackOracle: string, overrides?: Overrides): Promise<BigNumber>;
+    setFallbackOracle(fallbackOracle: string, overrides?: Overrides): Promise<BigNumber>;
 
-    'setFallbackOracle(address)'(
-      _fallbackOracle: string,
-      overrides?: Overrides
-    ): Promise<BigNumber>;
+    'setFallbackOracle(address)'(fallbackOracle: string, overrides?: Overrides): Promise<BigNumber>;
 
     transferOwnership(newOwner: string, overrides?: Overrides): Promise<BigNumber>;
 
@@ -319,17 +305,17 @@ export class ChainlinkProxyPriceProvider extends Contract {
   };
 
   populateTransaction: {
-    getAssetPrice(_asset: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getAssetPrice(asset: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getAssetPrice(address)'(
-      _asset: string,
+      asset: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getAssetsPrices(_assets: string[], overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getAssetsPrices(assets: string[], overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getAssetsPrices(address[])'(
-      _assets: string[],
+      assets: string[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -337,10 +323,10 @@ export class ChainlinkProxyPriceProvider extends Contract {
 
     'getFallbackOracle()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getSourceOfAsset(_asset: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getSourceOfAsset(asset: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getSourceOfAsset(address)'(
-      _asset: string,
+      asset: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -353,24 +339,21 @@ export class ChainlinkProxyPriceProvider extends Contract {
     'renounceOwnership()'(overrides?: Overrides): Promise<PopulatedTransaction>;
 
     setAssetSources(
-      _assets: string[],
-      _sources: string[],
+      assets: string[],
+      sources: string[],
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'setAssetSources(address[],address[])'(
-      _assets: string[],
-      _sources: string[],
+      assets: string[],
+      sources: string[],
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    setFallbackOracle(
-      _fallbackOracle: string,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    setFallbackOracle(fallbackOracle: string, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'setFallbackOracle(address)'(
-      _fallbackOracle: string,
+      fallbackOracle: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

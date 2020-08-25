@@ -84,15 +84,15 @@ interface StableDebtTokenInterface extends ethers.utils.Interface {
 
   events: {
     'Approval(address,address,uint256)': EventFragment;
+    'BurnDebt(address,uint256,uint256,uint256,uint256)': EventFragment;
+    'MintDebt(address,uint256,uint256,uint256,uint256,uint256)': EventFragment;
     'Transfer(address,address,uint256)': EventFragment;
-    'burnDebt(address,uint256,uint256,uint256,uint256)': EventFragment;
-    'mintDebt(address,uint256,uint256,uint256,uint256,uint256)': EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: 'Approval'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'BurnDebt'): EventFragment;
+  getEvent(nameOrSignatureOrTopic: 'MintDebt'): EventFragment;
   getEvent(nameOrSignatureOrTopic: 'Transfer'): EventFragment;
-  getEvent(nameOrSignatureOrTopic: 'burnDebt'): EventFragment;
-  getEvent(nameOrSignatureOrTopic: 'mintDebt'): EventFragment;
 }
 
 export class StableDebtToken extends Contract {
@@ -139,13 +139,13 @@ export class StableDebtToken extends Contract {
 
     approve(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -163,11 +163,11 @@ export class StableDebtToken extends Contract {
       0: BigNumber;
     }>;
 
-    burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -208,28 +208,28 @@ export class StableDebtToken extends Contract {
     }>;
 
     getUserLastUpdated(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: number;
     }>;
 
     'getUserLastUpdated(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: number;
     }>;
 
     getUserStableRate(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'getUserStableRate(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
@@ -248,30 +248,30 @@ export class StableDebtToken extends Contract {
     ): Promise<ContractTransaction>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -288,14 +288,14 @@ export class StableDebtToken extends Contract {
     }>;
 
     principalBalanceOf(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'principalBalanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
@@ -327,27 +327,27 @@ export class StableDebtToken extends Contract {
 
     transfer(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -378,13 +378,13 @@ export class StableDebtToken extends Contract {
 
   approve(
     spender: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'approve(address,uint256)'(
     spender: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -392,11 +392,11 @@ export class StableDebtToken extends Contract {
 
   'balanceOf(address)'(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+  burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
   'burn(address,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
+    user: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -420,13 +420,13 @@ export class StableDebtToken extends Contract {
 
   'getAverageStableRate()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<number>;
+  getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<number>;
 
-  'getUserLastUpdated(address)'(_user: string, overrides?: CallOverrides): Promise<number>;
+  'getUserLastUpdated(address)'(user: string, overrides?: CallOverrides): Promise<number>;
 
-  getUserStableRate(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  getUserStableRate(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'getUserStableRate(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'getUserStableRate(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   increaseAllowance(
     spender: string,
@@ -441,30 +441,30 @@ export class StableDebtToken extends Contract {
   ): Promise<ContractTransaction>;
 
   initialize(
-    _decimals: BigNumberish,
-    _name: string,
-    _symbol: string,
+    decimals: BigNumberish,
+    name: string,
+    symbol: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'initialize(uint8,string,string)'(
-    _decimals: BigNumberish,
-    _name: string,
-    _symbol: string,
+    decimals: BigNumberish,
+    name: string,
+    symbol: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   mint(
-    _user: string,
-    _amount: BigNumberish,
-    _rate: BigNumberish,
+    user: string,
+    amount: BigNumberish,
+    rate: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'mint(address,uint256,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
-    _rate: BigNumberish,
+    user: string,
+    amount: BigNumberish,
+    rate: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -472,9 +472,9 @@ export class StableDebtToken extends Contract {
 
   'name()'(overrides?: CallOverrides): Promise<string>;
 
-  principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
@@ -486,27 +486,27 @@ export class StableDebtToken extends Contract {
 
   transfer(
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'transfer(address,uint256)'(
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   transferFrom(
     sender: string,
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'transferFrom(address,address,uint256)'(
     sender: string,
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -527,11 +527,11 @@ export class StableDebtToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    approve(spender: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+    approve(spender: string, amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -539,11 +539,11 @@ export class StableDebtToken extends Contract {
 
     'balanceOf(address)'(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    burn(_user: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    burn(user: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -567,13 +567,13 @@ export class StableDebtToken extends Contract {
 
     'getAverageStableRate()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<number>;
+    getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<number>;
 
-    'getUserLastUpdated(address)'(_user: string, overrides?: CallOverrides): Promise<number>;
+    'getUserLastUpdated(address)'(user: string, overrides?: CallOverrides): Promise<number>;
 
-    getUserStableRate(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserStableRate(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserStableRate(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserStableRate(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,
@@ -588,30 +588,30 @@ export class StableDebtToken extends Contract {
     ): Promise<boolean>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -619,9 +619,9 @@ export class StableDebtToken extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<string>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
@@ -631,25 +631,25 @@ export class StableDebtToken extends Contract {
 
     'totalSupply()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transfer(recipient: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+    transfer(recipient: string, amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -661,24 +661,24 @@ export class StableDebtToken extends Contract {
   filters: {
     Approval(owner: string | null, spender: string | null, value: null): EventFilter;
 
+    BurnDebt(
+      user: null,
+      amount: null,
+      previousBalance: null,
+      currentBalance: null,
+      balanceIncrease: null
+    ): EventFilter;
+
+    MintDebt(
+      user: null,
+      amount: null,
+      previousBalance: null,
+      currentBalance: null,
+      balanceIncrease: null,
+      newRate: null
+    ): EventFilter;
+
     Transfer(from: string | null, to: string | null, value: null): EventFilter;
-
-    burnDebt(
-      _user: null,
-      _amount: null,
-      _previousBalance: null,
-      _currentBalance: null,
-      _balanceIncrease: null
-    ): EventFilter;
-
-    mintDebt(
-      _user: null,
-      _amount: null,
-      _previousBalance: null,
-      _currentBalance: null,
-      _balanceIncrease: null,
-      _newRate: null
-    ): EventFilter;
   };
 
   estimateGas: {
@@ -694,11 +694,11 @@ export class StableDebtToken extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    approve(spender: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    approve(spender: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -706,11 +706,11 @@ export class StableDebtToken extends Contract {
 
     'balanceOf(address)'(account: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -734,13 +734,13 @@ export class StableDebtToken extends Contract {
 
     'getAverageStableRate()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserLastUpdated(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserLastUpdated(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserStableRate(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserStableRate(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserStableRate(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserStableRate(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     increaseAllowance(
       spender: string,
@@ -755,30 +755,30 @@ export class StableDebtToken extends Contract {
     ): Promise<BigNumber>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -786,9 +786,9 @@ export class StableDebtToken extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -798,25 +798,25 @@ export class StableDebtToken extends Contract {
 
     'totalSupply()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transfer(recipient: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    transfer(recipient: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -844,13 +844,13 @@ export class StableDebtToken extends Contract {
 
     approve(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -858,15 +858,11 @@ export class StableDebtToken extends Contract {
 
     'balanceOf(address)'(account: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    burn(
-      _user: string,
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -890,17 +886,17 @@ export class StableDebtToken extends Contract {
 
     'getAverageStableRate()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getUserLastUpdated(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getUserStableRate(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getUserStableRate(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getUserStableRate(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -917,30 +913,30 @@ export class StableDebtToken extends Contract {
     ): Promise<PopulatedTransaction>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -948,10 +944,10 @@ export class StableDebtToken extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'principalBalanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -965,27 +961,27 @@ export class StableDebtToken extends Contract {
 
     transfer(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

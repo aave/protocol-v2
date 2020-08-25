@@ -164,10 +164,10 @@ contract LendingPoolConfigurator is VersionedInitializable {
   /**
    * @dev emitted when the implementation of a variable debt token is upgraded
    * @param asset the address of the reserve
-   * @param _proxy the variable debt token proxy address
-   * @param _implementation the new aToken implementation
+   * @param proxy the variable debt token proxy address
+   * @param implementation the new aToken implementation
    **/
-  event VariableDebtTokenUpgraded(address asset, address _proxy, address _implementation);
+  event VariableDebtTokenUpgraded(address asset, address proxy, address implementation);
 
   ILendingPoolAddressesProvider internal addressesProvider;
   ILendingPool internal pool;

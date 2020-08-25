@@ -1,7 +1,6 @@
 import {task} from '@nomiclabs/buidler/config';
 import {
   getLendingPoolAddressesProvider,
-  getMockedTokens,
   initReserves,
   deployLendingPoolLiquidationManager,
   deployTokenDistributor,
@@ -12,12 +11,10 @@ import {
   deployAaveProtocolTestHelpers,
   getLendingPool,
   getLendingPoolConfiguratorProxy,
+  getAllMockedTokens,
 } from '../../helpers/contracts-helpers';
-import {
-  getReservesConfigByPool,
-  getFeeDistributionParamsCommon,
-  ZERO_ADDRESS,
-} from '../../helpers/constants';
+import {getReservesConfigByPool, getFeeDistributionParamsCommon} from '../../helpers/configuration';
+import {ZERO_ADDRESS} from '../../helpers/constants';
 
 import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
@@ -29,7 +26,7 @@ task('initialize-lending-pool', 'Initialize lending pool configuration.')
   .setAction(async ({verify}, localBRE) => {
     await localBRE.run('set-bre');
 
-    const mockTokens = await getMockedTokens();
+    const mockTokens = await getAllMockedTokens();
     const lendingPoolProxy = await getLendingPool();
     const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy();
     const [lendingPoolManager, secondaryWallet] = await Promise.all(

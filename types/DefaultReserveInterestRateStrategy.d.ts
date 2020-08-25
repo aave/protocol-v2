@@ -97,32 +97,26 @@ export class DefaultReserveInterestRateStrategy extends Contract {
     }>;
 
     calculateInterestRates(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<{
-      currentLiquidityRate: BigNumber;
-      currentStableBorrowRate: BigNumber;
-      currentVariableBorrowRate: BigNumber;
       0: BigNumber;
       1: BigNumber;
       2: BigNumber;
     }>;
 
     'calculateInterestRates(address,uint256,uint256,uint256,uint256)'(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<{
-      currentLiquidityRate: BigNumber;
-      currentStableBorrowRate: BigNumber;
-      currentVariableBorrowRate: BigNumber;
       0: BigNumber;
       1: BigNumber;
       2: BigNumber;
@@ -202,32 +196,26 @@ export class DefaultReserveInterestRateStrategy extends Contract {
   'addressesProvider()'(overrides?: CallOverrides): Promise<string>;
 
   calculateInterestRates(
-    _reserve: string,
-    _availableLiquidity: BigNumberish,
-    _totalBorrowsStable: BigNumberish,
-    _totalBorrowsVariable: BigNumberish,
-    _averageStableBorrowRate: BigNumberish,
+    reserve: string,
+    availableLiquidity: BigNumberish,
+    totalBorrowsStable: BigNumberish,
+    totalBorrowsVariable: BigNumberish,
+    averageStableBorrowRate: BigNumberish,
     overrides?: CallOverrides
   ): Promise<{
-    currentLiquidityRate: BigNumber;
-    currentStableBorrowRate: BigNumber;
-    currentVariableBorrowRate: BigNumber;
     0: BigNumber;
     1: BigNumber;
     2: BigNumber;
   }>;
 
   'calculateInterestRates(address,uint256,uint256,uint256,uint256)'(
-    _reserve: string,
-    _availableLiquidity: BigNumberish,
-    _totalBorrowsStable: BigNumberish,
-    _totalBorrowsVariable: BigNumberish,
-    _averageStableBorrowRate: BigNumberish,
+    reserve: string,
+    availableLiquidity: BigNumberish,
+    totalBorrowsStable: BigNumberish,
+    totalBorrowsVariable: BigNumberish,
+    averageStableBorrowRate: BigNumberish,
     overrides?: CallOverrides
   ): Promise<{
-    currentLiquidityRate: BigNumber;
-    currentStableBorrowRate: BigNumber;
-    currentVariableBorrowRate: BigNumber;
     0: BigNumber;
     1: BigNumber;
     2: BigNumber;
@@ -267,32 +255,26 @@ export class DefaultReserveInterestRateStrategy extends Contract {
     'addressesProvider()'(overrides?: CallOverrides): Promise<string>;
 
     calculateInterestRates(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<{
-      currentLiquidityRate: BigNumber;
-      currentStableBorrowRate: BigNumber;
-      currentVariableBorrowRate: BigNumber;
       0: BigNumber;
       1: BigNumber;
       2: BigNumber;
     }>;
 
     'calculateInterestRates(address,uint256,uint256,uint256,uint256)'(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<{
-      currentLiquidityRate: BigNumber;
-      currentStableBorrowRate: BigNumber;
-      currentVariableBorrowRate: BigNumber;
       0: BigNumber;
       1: BigNumber;
       2: BigNumber;
@@ -335,20 +317,20 @@ export class DefaultReserveInterestRateStrategy extends Contract {
     'addressesProvider()'(overrides?: CallOverrides): Promise<BigNumber>;
 
     calculateInterestRates(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     'calculateInterestRates(address,uint256,uint256,uint256,uint256)'(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -387,20 +369,20 @@ export class DefaultReserveInterestRateStrategy extends Contract {
     'addressesProvider()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     calculateInterestRates(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     'calculateInterestRates(address,uint256,uint256,uint256,uint256)'(
-      _reserve: string,
-      _availableLiquidity: BigNumberish,
-      _totalBorrowsStable: BigNumberish,
-      _totalBorrowsVariable: BigNumberish,
-      _averageStableBorrowRate: BigNumberish,
+      reserve: string,
+      availableLiquidity: BigNumberish,
+      totalBorrowsStable: BigNumberish,
+      totalBorrowsVariable: BigNumberish,
+      averageStableBorrowRate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

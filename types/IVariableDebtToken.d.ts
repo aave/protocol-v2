@@ -39,75 +39,75 @@ export class IVariableDebtToken extends Contract {
   interface: IVariableDebtTokenInterface;
 
   functions: {
-    burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     getUserIndex(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'getUserIndex(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
-    mint(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+    mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
 
-  burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+  burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
   'burn(address,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
+    user: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  getUserIndex(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  getUserIndex(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'getUserIndex(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  mint(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+  mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
   'mint(address,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
+    user: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    burn(_user: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    burn(user: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
-    getUserIndex(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserIndex(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserIndex(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    mint(_user: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    mint(user: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -115,56 +115,45 @@ export class IVariableDebtToken extends Contract {
   filters: {};
 
   estimateGas: {
-    burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    getUserIndex(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserIndex(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserIndex(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    mint(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    burn(
-      _user: string,
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    getUserIndex(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getUserIndex(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    'getUserIndex(address)'(
-      _user: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    'getUserIndex(address)'(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    mint(
-      _user: string,
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    mint(user: string, amount: BigNumberish, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'mint(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };

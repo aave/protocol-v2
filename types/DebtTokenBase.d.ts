@@ -102,25 +102,25 @@ export class DebtTokenBase extends Contract {
 
     approve(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     balanceOf(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'balanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
@@ -163,16 +163,16 @@ export class DebtTokenBase extends Contract {
     ): Promise<ContractTransaction>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -189,14 +189,14 @@ export class DebtTokenBase extends Contract {
     }>;
 
     principalBalanceOf(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'principalBalanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
@@ -228,27 +228,27 @@ export class DebtTokenBase extends Contract {
 
     transfer(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -275,19 +275,19 @@ export class DebtTokenBase extends Contract {
 
   approve(
     spender: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'approve(address,uint256)'(
     spender: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  balanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  balanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   decimals(overrides?: CallOverrides): Promise<number>;
 
@@ -318,16 +318,16 @@ export class DebtTokenBase extends Contract {
   ): Promise<ContractTransaction>;
 
   initialize(
-    _decimals: BigNumberish,
-    _name: string,
-    _symbol: string,
+    decimals: BigNumberish,
+    name: string,
+    symbol: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'initialize(uint8,string,string)'(
-    _decimals: BigNumberish,
-    _name: string,
-    _symbol: string,
+    decimals: BigNumberish,
+    name: string,
+    symbol: string,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -335,9 +335,9 @@ export class DebtTokenBase extends Contract {
 
   'name()'(overrides?: CallOverrides): Promise<string>;
 
-  principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
@@ -349,27 +349,27 @@ export class DebtTokenBase extends Contract {
 
   transfer(
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'transfer(address,uint256)'(
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   transferFrom(
     sender: string,
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'transferFrom(address,address,uint256)'(
     sender: string,
     recipient: string,
-    _amount: BigNumberish,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -386,17 +386,17 @@ export class DebtTokenBase extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    approve(spender: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+    approve(spender: string, amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    balanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<number>;
 
@@ -427,16 +427,16 @@ export class DebtTokenBase extends Contract {
     ): Promise<boolean>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -444,9 +444,9 @@ export class DebtTokenBase extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<string>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
@@ -456,25 +456,25 @@ export class DebtTokenBase extends Contract {
 
     'totalSupply()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transfer(recipient: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+    transfer(recipient: string, amount: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -498,17 +498,17 @@ export class DebtTokenBase extends Contract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    approve(spender: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    approve(spender: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
-    balanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     decimals(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -539,16 +539,16 @@ export class DebtTokenBase extends Contract {
     ): Promise<BigNumber>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -556,9 +556,9 @@ export class DebtTokenBase extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'principalBalanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'principalBalanceOf(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -568,25 +568,25 @@ export class DebtTokenBase extends Contract {
 
     'totalSupply()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    transfer(recipient: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    transfer(recipient: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -610,19 +610,19 @@ export class DebtTokenBase extends Contract {
 
     approve(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'approve(address,uint256)'(
       spender: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
-    balanceOf(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    balanceOf(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    'balanceOf(address)'(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    'balanceOf(address)'(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     decimals(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -653,16 +653,16 @@ export class DebtTokenBase extends Contract {
     ): Promise<PopulatedTransaction>;
 
     initialize(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'initialize(uint8,string,string)'(
-      _decimals: BigNumberish,
-      _name: string,
-      _symbol: string,
+      decimals: BigNumberish,
+      name: string,
+      symbol: string,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -670,10 +670,10 @@ export class DebtTokenBase extends Contract {
 
     'name()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    principalBalanceOf(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    principalBalanceOf(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'principalBalanceOf(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -687,27 +687,27 @@ export class DebtTokenBase extends Contract {
 
     transfer(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'transfer(address,uint256)'(
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     transferFrom(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'transferFrom(address,address,uint256)'(
       sender: string,
       recipient: string,
-      _amount: BigNumberish,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 

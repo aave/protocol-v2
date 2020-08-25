@@ -1,5 +1,5 @@
 import {Contract, Signer, utils, ethers} from 'ethers';
-
+import {CommonsConfig} from '../config/commons';
 import {getDb, BRE} from './misc-utils';
 import {
   tEthereumAddress,
@@ -12,7 +12,9 @@ import {
   TokenContractId,
   iMultiPoolsAssets,
   IReserveParams,
+  ICommonConfiguration,
 } from './types';
+
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {MintableErc20} from '../types/MintableErc20';
 import {LendingPoolAddressesProviderRegistry} from '../types/LendingPoolAddressesProviderRegistry';
@@ -35,10 +37,16 @@ import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 import {MockContract} from 'ethereum-waffle';
-import {getReservesConfigByPool} from './constants';
+import {getReservesConfigByPool} from './configuration';
 import {verifyContract} from './etherscan-verification';
 import {FeeProvider} from '../types/FeeProvider';
 import {TokenDistributor} from '../types/TokenDistributor';
+
+import {cpuUsage} from 'process';
+
+const {
+  ProtocolGlobalParams: {UsdAddress},
+} = CommonsConfig;
 
 export type MockTokenMap = {[symbol: string]: MintableErc20};
 
@@ -617,7 +625,47 @@ export const deployAllMockTokens = async (verify?: boolean) => {
   return tokens;
 };
 
-export const getMockedTokens = async () => {
+export const deployMockTokens = async (config: ICommonConfiguration, verify?: boolean) => {
+  const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
+  const defaultDecimals = 18;
+
+  const configData = config.ReservesConfig;
+
+  for (const tokenSymbol of Object.keys(config.ReserveSymbols)) {
+    tokens[tokenSymbol] = await deployMintableErc20([
+      tokenSymbol,
+      tokenSymbol,
+      Number(configData[tokenSymbol as keyof iMultiPoolsAssets<IReserveParams>].reserveDecimals) ||
+        defaultDecimals,
+    ]);
+    await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
+
+    if (verify) {
+      await verifyContract(eContractid.MintableErc20, tokens[tokenSymbol].address, []);
+    }
+  }
+  return tokens;
+};
+
+export const getMockedTokens = async (config: ICommonConfiguration) => {
+  const tokenSymbols = config.ReserveSymbols;
+  const db = getDb();
+  const tokens: MockTokenMap = await tokenSymbols.reduce<Promise<MockTokenMap>>(
+    async (acc, tokenSymbol) => {
+      const accumulator = await acc;
+      const address = db.get(`${tokenSymbol.toUpperCase()}.${BRE.network.name}`).value().address;
+      accumulator[tokenSymbol] = await getContract<MintableErc20>(
+        eContractid.MintableErc20,
+        address
+      );
+      return Promise.resolve(acc);
+    },
+    Promise.resolve({})
+  );
+  return tokens;
+};
+
+export const getAllMockedTokens = async () => {
   const db = getDb();
   const tokens: MockTokenMap = await Object.keys(TokenContractId).reduce<Promise<MockTokenMap>>(
     async (acc, tokenSymbol) => {
@@ -653,7 +701,7 @@ export const getPairsTokenAggregator = (
       ][])[aggregatorAddressIndex];
       return [tokenAddress, aggregatorAddress];
     }
-  });
+  }) as [string, string][];
 
   const mappedPairs = pairs.map(([asset]) => asset);
   const mappedAggregators = pairs.map(([, source]) => source);

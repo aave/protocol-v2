@@ -1,13 +1,15 @@
-import {IAaveConfiguration} from '../helpers/types';
 import BigNumber from 'bignumber.js';
 import {oneRay} from '../helpers/constants';
-import {CommonPoolConfiguration} from './default';
+import {IAaveConfiguration} from '../helpers/types';
+
+import {CommonsConfig} from './commons';
 
 // ----------------
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-const AaveConfig: IAaveConfiguration = {
+export const AaveConfig: IAaveConfiguration = {
+  ...CommonsConfig,
   ConfigName: 'Aave',
   ProviderId: 1,
   ReserveSymbols: [
@@ -29,7 +31,6 @@ const AaveConfig: IAaveConfiguration = {
     'SNX',
     'BUSD',
   ],
-  ...CommonPoolConfiguration,
   ReservesConfig: {
     DAI: {
       baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),

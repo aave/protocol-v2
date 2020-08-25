@@ -1,14 +1,15 @@
-import {EthereumNetwork, IUniswapConfiguration} from '../helpers/types';
 import BigNumber from 'bignumber.js';
+import {EthereumNetwork, IUniswapConfiguration} from '../helpers/types';
 import {oneRay} from '../helpers/constants';
 
-import {CommonPoolConfiguration} from './default';
+import {CommonsConfig} from './commons';
 
 // ----------------
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-const UniswapConfig: IUniswapConfiguration = {
+export const UniswapConfig: IUniswapConfiguration = {
+  ...CommonsConfig,
   ConfigName: 'Uniswap',
   ProviderId: 2,
   ReserveSymbols: [
@@ -23,7 +24,6 @@ const UniswapConfig: IUniswapConfiguration = {
     'UNI_MKR_ETH',
     'UNI_LEND_ETH',
   ],
-  ...CommonPoolConfiguration,
   ReservesConfig: {
     WETH: {
       baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
@@ -209,5 +209,3 @@ const UniswapConfig: IUniswapConfiguration = {
     },
   },
 };
-
-export default UniswapConfig;

@@ -29,54 +29,51 @@ library ValidationLogic {
 
   /**
    * @dev validates a deposit.
-   * @param _reserve the reserve state on which the user is depositing
-   * @param _amount the amount to be deposited
+   * @param reserve the reserve state on which the user is depositing
+   * @param amount the amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage _reserve, uint256 _amount)
-    internal
-    view
-  {
-    (bool isActive, bool isFreezed, , ) = _reserve.configuration.getFlags();
+  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) internal view {
+    (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
 
-    require(_amount > 0, 'Amount must be greater than 0');
+    require(amount > 0, 'Amount must be greater than 0');
     require(isActive, 'Action requires an active reserve');
     require(!isFreezed, 'Action requires an unfreezed reserve');
   }
 
   /**
    * @dev validates a withdraw action.
-   * @param _reserveAddress the address of the reserve
-   * @param _aTokenAddress the address of the aToken for the reserve
-   * @param _amount the amount to be withdrawn
-   * @param _userBalance the balance of the user
+   * @param reserveAddress the address of the reserve
+   * @param aTokenAddress the address of the aToken for the reserve
+   * @param amount the amount to be withdrawn
+   * @param userBalance the balance of the user
    */
   function validateWithdraw(
-    address _reserveAddress,
-    address _aTokenAddress,
-    uint256 _amount,
-    uint256 _userBalance,
-    mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    UserConfiguration.Map storage _userConfig,
-    address[] calldata _reserves,
-    address _oracle
+    address reserveAddress,
+    address aTokenAddress,
+    uint256 amount,
+    uint256 userBalance,
+    mapping(address => ReserveLogic.ReserveData) storage reservesData,
+    UserConfiguration.Map storage userConfig,
+    address[] calldata reserves,
+    address oracle
   ) external view {
-    require(_amount > 0, 'Amount must be greater than 0');
+    require(amount > 0, 'Amount must be greater than 0');
 
-    uint256 currentAvailableLiquidity = IERC20(_reserveAddress).balanceOf(address(_aTokenAddress));
+    uint256 currentAvailableLiquidity = IERC20(reserveAddress).balanceOf(address(aTokenAddress));
 
-    require(currentAvailableLiquidity >= _amount, '4');
+    require(currentAvailableLiquidity >= amount, '4');
 
-    require(_amount <= _userBalance, 'User cannot withdraw more than the available balance');
+    require(amount <= userBalance, 'User cannot withdraw more than the available balance');
 
     require(
       GenericLogic.balanceDecreaseAllowed(
-        _reserveAddress,
+        reserveAddress,
         msg.sender,
-        _userBalance,
-        _reservesData,
-        _userConfig,
-        _reserves,
-        _oracle
+        userBalance,
+        reservesData,
+        userConfig,
+        reserves,
+        oracle
       ),
       'Transfer cannot be allowed.'
     );
@@ -105,29 +102,29 @@ library ValidationLogic {
 
   /**
    * @dev validates a borrow.
-   * @param _reserve the reserve state from which the user is borrowing
-   * @param _reserveAddress the address of the reserve
-   * @param _amount the amount to be borrowed
-   * @param _amountInETH the amount to be borrowed, in ETH
-   * @param _interestRateMode the interest rate mode at which the user is borrowing
-   * @param _maxStableLoanPercent the max amount of the liquidity that can be borrowed at stable rate, in percentage
-   * @param _reservesData the state of all the reserves
-   * @param _userConfig the state of the user for the specific reserve
-   * @param _reserves the addresses of all the active reserves
-   * @param _oracle the price oracle
+   * @param reserve the reserve state from which the user is borrowing
+   * @param reserveAddress the address of the reserve
+   * @param amount the amount to be borrowed
+   * @param amountInETH the amount to be borrowed, in ETH
+   * @param interestRateMode the interest rate mode at which the user is borrowing
+   * @param maxStableLoanPercent the max amount of the liquidity that can be borrowed at stable rate, in percentage
+   * @param reservesData the state of all the reserves
+   * @param userConfig the state of the user for the specific reserve
+   * @param reserves the addresses of all the active reserves
+   * @param oracle the price oracle
    */
 
   function validateBorrow(
-    ReserveLogic.ReserveData storage _reserve,
-    address _reserveAddress,
-    uint256 _amount,
-    uint256 _amountInETH,
-    uint256 _interestRateMode,
-    uint256 _maxStableLoanPercent,
-    mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    UserConfiguration.Map storage _userConfig,
-    address[] calldata _reserves,
-    address _oracle
+    ReserveLogic.ReserveData storage reserve,
+    address reserveAddress,
+    uint256 amount,
+    uint256 amountInETH,
+    uint256 interestRateMode,
+    uint256 maxStableLoanPercent,
+    mapping(address => ReserveLogic.ReserveData) storage reservesData,
+    UserConfiguration.Map storage userConfig,
+    address[] calldata reserves,
+    address oracle
   ) external view {
     ValidateBorrowLocalVars memory vars;
 
@@ -136,7 +133,7 @@ library ValidationLogic {
       vars.isFreezed,
       vars.borrowingEnabled,
       vars.stableRateBorrowingEnabled
-    ) = _reserve.configuration.getFlags();
+    ) = reserve.configuration.getFlags();
 
     require(vars.isActive, 'Action requires an active reserve');
     require(!vars.isFreezed, 'Action requires an unfreezed reserve');
@@ -145,15 +142,15 @@ library ValidationLogic {
 
     //validate interest rate mode
     require(
-      uint256(ReserveLogic.InterestRateMode.VARIABLE) == _interestRateMode ||
-        uint256(ReserveLogic.InterestRateMode.STABLE) == _interestRateMode,
+      uint256(ReserveLogic.InterestRateMode.VARIABLE) == interestRateMode ||
+        uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
       'Invalid interest rate mode selected'
     );
 
     //check that the amount is available in the reserve
-    vars.availableLiquidity = IERC20(_reserveAddress).balanceOf(address(_reserve.aTokenAddress));
+    vars.availableLiquidity = IERC20(reserveAddress).balanceOf(address(reserve.aTokenAddress));
 
-    require(vars.availableLiquidity >= _amount, '7');
+    require(vars.availableLiquidity >= amount, '7');
 
     (
       vars.userCollateralBalanceETH,
@@ -163,10 +160,10 @@ library ValidationLogic {
       vars.healthFactor
     ) = GenericLogic.calculateUserAccountData(
       msg.sender,
-      _reservesData,
-      _userConfig,
-      _reserves,
-      _oracle
+      reservesData,
+      userConfig,
+      reserves,
+      oracle
     );
 
     require(vars.userCollateralBalanceETH > 0, 'The collateral balance is 0');
@@ -174,7 +171,7 @@ library ValidationLogic {
     require(vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD, '8');
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(_amountInETH).percentDiv(
+    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(amountInETH).percentDiv(
       vars.currentLtv
     ); //LTV is calculated in percentage
 
@@ -198,88 +195,84 @@ library ValidationLogic {
       require(vars.stableRateBorrowingEnabled, '11');
 
       require(
-        !_userConfig.isUsingAsCollateral(_reserve.index) ||
-          _reserve.configuration.getLtv() == 0 ||
-          _amount > IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
+        !userConfig.isUsingAsCollateral(reserve.index) ||
+          reserve.configuration.getLtv() == 0 ||
+          amount > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
       );
 
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity
-      uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(_maxStableLoanPercent);
+      uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(maxStableLoanPercent);
 
-      require(_amount <= maxLoanSizeStable, '13');
+      require(amount <= maxLoanSizeStable, '13');
     }
   }
 
   /**
    * @dev validates a repay.
-   * @param _reserve the reserve state from which the user is repaying
-   * @param _reserveAddress the address of the reserve
-   * @param _amountSent the amount sent for the repayment. Can be an actual value or uint(-1)
-   * @param _onBehalfOf the address of the user msg.sender is repaying for
-   * @param _stableBorrowBalance the borrow balance of the user
-   * @param _variableBorrowBalance the borrow balance of the user
-   * @param _actualPaybackAmount the actual amount being repaid
+   * @param reserve the reserve state from which the user is repaying
+   * @param amountSent the amount sent for the repayment. Can be an actual value or uint(-1)
+   * @param onBehalfOf the address of the user msg.sender is repaying for
+   * @param stableDebt the borrow balance of the user
+   * @param variableDebt the borrow balance of the user
    */
   function validateRepay(
-    ReserveLogic.ReserveData storage _reserve,
-    address _reserveAddress,
-    uint256 _amountSent,
-    ReserveLogic.InterestRateMode _rateMode,
-    address _onBehalfOf,
-    uint256 _stableBorrowBalance,
-    uint256 _variableBorrowBalance,
-    uint256 _actualPaybackAmount
+    ReserveLogic.ReserveData storage reserve,
+    uint256 amountSent,
+    ReserveLogic.InterestRateMode rateMode,
+    address onBehalfOf,
+    uint256 stableDebt,
+    uint256 variableDebt
   ) external view {
-    bool isActive = _reserve.configuration.getActive();
+    bool isActive = reserve.configuration.getActive();
 
     require(isActive, 'Action requires an active reserve');
 
-    require(_amountSent > 0, 'Amount must be greater than 0');
+    require(amountSent > 0, 'Amount must be greater than 0');
 
     require(
-      (_stableBorrowBalance > 0 &&
-        ReserveLogic.InterestRateMode(_rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
-        (_variableBorrowBalance > 0 &&
-          ReserveLogic.InterestRateMode(_rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
+      (stableDebt > 0 &&
+        ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
+        (variableDebt > 0 &&
+          ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
       '16'
     );
 
     require(
-      _amountSent != uint256(-1) || msg.sender == _onBehalfOf,
+      amountSent != uint256(-1) || msg.sender == onBehalfOf,
       'To repay on behalf of an user an explicit amount to repay is needed'
     );
   }
 
   /**
    * @dev validates a swap of borrow rate mode.
-   * @param _reserve the reserve state on which the user is swapping the rate
-   * @param _userConfig the user reserves configuration
-   * @param _stableBorrowBalance the stable borrow balance of the user
-   * @param _variableBorrowBalance the stable borrow balance of the user
-   * @param _currentRateMode the rate mode of the borrow
+   * @param reserve the reserve state on which the user is swapping the rate
+   * @param userConfig the user reserves configuration
+   * @param stableBorrowBalance the stable borrow balance of the user
+   * @param variableBorrowBalance the stable borrow balance of the user
+   * @param currentRateMode the rate mode of the borrow
    */
   function validateSwapRateMode(
-    ReserveLogic.ReserveData storage _reserve,
-    UserConfiguration.Map storage _userConfig,
-    uint256 _stableBorrowBalance,
-    uint256 _variableBorrowBalance,
-    ReserveLogic.InterestRateMode _currentRateMode
+    ReserveLogic.ReserveData storage reserve,
+    UserConfiguration.Map storage userConfig,
+    uint256 stableBorrowBalance,
+    uint256 variableBorrowBalance,
+    ReserveLogic.InterestRateMode currentRateMode
   ) external view {
-    (bool isActive, bool isFreezed, , bool stableRateEnabled) = _reserve.configuration.getFlags();
+    (bool isActive, bool isFreezed, , bool stableRateEnabled) = reserve.configuration.getFlags();
 
     require(isActive, 'Action requires an active reserve');
     require(!isFreezed, 'Action requires an unfreezed reserve');
 
-    if (_currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
+    if (currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
       require(
-        _stableBorrowBalance > 0,
+        stableBorrowBalance > 0,
         'User does not have a stable rate loan in progress on this reserve'
       );
-    } else if (_currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
+    } else if (currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
       require(
-        _variableBorrowBalance > 0,
+        variableBorrowBalance > 0,
         'User does not have a variable rate loan in progress on this reserve'
       );
       /**
@@ -292,10 +285,10 @@ library ValidationLogic {
       require(stableRateEnabled, '11');
 
       require(
-        !_userConfig.isUsingAsCollateral(_reserve.index) ||
-          _reserve.configuration.getLtv() == 0 ||
-          _stableBorrowBalance.add(_variableBorrowBalance) >
-          IERC20(_reserve.aTokenAddress).balanceOf(msg.sender),
+        !userConfig.isUsingAsCollateral(reserve.index) ||
+          reserve.configuration.getLtv() == 0 ||
+          stableBorrowBalance.add(variableBorrowBalance) >
+          IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
         '12'
       );
     } else {
@@ -305,34 +298,34 @@ library ValidationLogic {
 
   /**
    * @dev validates the choice of a user of setting (or not) an asset as collateral
-   * @param _reserve the state of the reserve that the user is enabling or disabling as collateral
-   * @param _reserveAddress the address of the reserve
-   * @param _reservesData the data of all the reserves
-   * @param _userConfig the state of the user for the specific reserve
-   * @param _reserves the addresses of all the active reserves
-   * @param _oracle the price oracle
+   * @param reserve the state of the reserve that the user is enabling or disabling as collateral
+   * @param reserveAddress the address of the reserve
+   * @param reservesData the data of all the reserves
+   * @param userConfig the state of the user for the specific reserve
+   * @param reserves the addresses of all the active reserves
+   * @param oracle the price oracle
    */
   function validateSetUseReserveAsCollateral(
-    ReserveLogic.ReserveData storage _reserve,
-    address _reserveAddress,
-    mapping(address => ReserveLogic.ReserveData) storage _reservesData,
-    UserConfiguration.Map storage _userConfig,
-    address[] calldata _reserves,
-    address _oracle
+    ReserveLogic.ReserveData storage reserve,
+    address reserveAddress,
+    mapping(address => ReserveLogic.ReserveData) storage reservesData,
+    UserConfiguration.Map storage userConfig,
+    address[] calldata reserves,
+    address oracle
   ) external view {
-    uint256 underlyingBalance = IERC20(_reserve.aTokenAddress).balanceOf(msg.sender);
+    uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
 
     require(underlyingBalance > 0, '22');
 
     require(
       GenericLogic.balanceDecreaseAllowed(
-        _reserveAddress,
+        reserveAddress,
         msg.sender,
         underlyingBalance,
-        _reservesData,
-        _userConfig,
-        _reserves,
-        _oracle
+        reservesData,
+        userConfig,
+        reserves,
+        oracle
       ),
       'User deposit is already being used as collateral'
     );

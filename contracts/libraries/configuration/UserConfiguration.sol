@@ -20,94 +20,94 @@ library UserConfiguration {
   }
 
   /**
-   * @dev sets if the user is borrowing the reserve identified by _reserveIndex
-   * @param _self the configuration object
-   * @param _reserveIndex the index of the reserve in the bitmap
-   * @param _borrowing true if the user is borrowing the reserve, false otherwise
+   * @dev sets if the user is borrowing the reserve identified by reserveIndex
+   * @param self the configuration object
+   * @param reserveIndex the index of the reserve in the bitmap
+   * @param borrowing true if the user is borrowing the reserve, false otherwise
    **/
   function setBorrowing(
-    UserConfiguration.Map storage _self,
-    uint256 _reserveIndex,
-    bool _borrowing
+    UserConfiguration.Map storage self,
+    uint256 reserveIndex,
+    bool borrowing
   ) internal {
-    _self.data =
-      (_self.data & ~(1 << (_reserveIndex * 2))) |
-      (uint256(_borrowing ? 1 : 0) << (_reserveIndex * 2));
+    self.data =
+      (self.data & ~(1 << (reserveIndex * 2))) |
+      (uint256(borrowing ? 1 : 0) << (reserveIndex * 2));
   }
 
   /**
-   * @dev sets if the user is using as collateral the reserve identified by _reserveIndex
-   * @param _self the configuration object
-   * @param _reserveIndex the index of the reserve in the bitmap
+   * @dev sets if the user is using as collateral the reserve identified by reserveIndex
+   * @param self the configuration object
+   * @param reserveIndex the index of the reserve in the bitmap
    * @param _usingAsCollateral true if the user is usin the reserve as collateral, false otherwise
    **/
   function setUsingAsCollateral(
-    UserConfiguration.Map storage _self,
-    uint256 _reserveIndex,
+    UserConfiguration.Map storage self,
+    uint256 reserveIndex,
     bool _usingAsCollateral
   ) internal {
-    _self.data =
-      (_self.data & ~(1 << (_reserveIndex * 2 + 1))) |
-      (uint256(_usingAsCollateral ? 1 : 0) << (_reserveIndex * 2 + 1));
+    self.data =
+      (self.data & ~(1 << (reserveIndex * 2 + 1))) |
+      (uint256(_usingAsCollateral ? 1 : 0) << (reserveIndex * 2 + 1));
   }
 
   /**
    * @dev used to validate if a user has been using the reserve for borrowing or as collateral
-   * @param _self the configuration object
-   * @param _reserveIndex the index of the reserve in the bitmap
+   * @param self the configuration object
+   * @param reserveIndex the index of the reserve in the bitmap
    * @return true if the user has been using a reserve for borrowing or as collateral, false otherwise
    **/
-  function isUsingAsCollateralOrBorrowing(UserConfiguration.Map memory _self, uint256 _reserveIndex)
+  function isUsingAsCollateralOrBorrowing(UserConfiguration.Map memory self, uint256 reserveIndex)
     internal
-    view
+    pure
     returns (bool)
   {
-    return (_self.data >> (_reserveIndex * 2)) & 3 != 0;
+    return (self.data >> (reserveIndex * 2)) & 3 != 0;
   }
 
   /**
    * @dev used to validate if a user has been using the reserve for borrowing
-   * @param _self the configuration object
-   * @param _reserveIndex the index of the reserve in the bitmap
+   * @param self the configuration object
+   * @param reserveIndex the index of the reserve in the bitmap
    * @return true if the user has been using a reserve for borrowing, false otherwise
    **/
-  function isBorrowing(UserConfiguration.Map memory _self, uint256 _reserveIndex)
+  function isBorrowing(UserConfiguration.Map memory self, uint256 reserveIndex)
     internal
-    view
+    pure
     returns (bool)
   {
-    return (_self.data >> (_reserveIndex * 2)) & 1 != 0;
+    return (self.data >> (reserveIndex * 2)) & 1 != 0;
   }
 
   /**
    * @dev used to validate if a user has been using the reserve as collateral
-   * @param _self the configuration object
-   * @param _reserveIndex the index of the reserve in the bitmap
+   * @param self the configuration object
+   * @param reserveIndex the index of the reserve in the bitmap
    * @return true if the user has been using a reserve as collateral, false otherwise
    **/
-  function isUsingAsCollateral(UserConfiguration.Map memory _self, uint256 _reserveIndex)
+  function isUsingAsCollateral(UserConfiguration.Map memory self, uint256 reserveIndex)
     internal
-    view
+    pure
     returns (bool)
   {
-    return (_self.data >> (_reserveIndex * 2 + 1)) & 1 != 0;
+    return (self.data >> (reserveIndex * 2 + 1)) & 1 != 0;
   }
 
   /**
    * @dev used to validate if a user has been borrowing from any reserve
-   * @param _self the configuration object
+   * @param self the configuration object
    * @return true if the user has been borrowing any reserve, false otherwise
    **/
-  function isBorrowingAny(UserConfiguration.Map memory _self) internal view returns (bool) {
-    return _self.data & BORROWING_MASK != 0;
+  function isBorrowingAny(UserConfiguration.Map memory self) internal pure returns (bool) {
+    return self.data & BORROWING_MASK != 0;
   }
 
   /**
    * @dev used to validate if a user has not been using any reserve
-   * @param _self the configuration object
+   * @param self the configuration object
    * @return true if the user has been borrowing any reserve, false otherwise
    **/
-  function isEmpty(UserConfiguration.Map memory _self) internal view returns (bool) {
-    return _self.data == 0;
+  function isEmpty(UserConfiguration.Map memory self) internal pure returns (bool) {
+    return self.data == 0;
   }
 }

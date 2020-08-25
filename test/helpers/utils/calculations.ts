@@ -15,7 +15,6 @@ export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
 interface Configuration {
   reservesParams: iAavePoolAssets<IReserveParams>;
-  ethereumAddress: string;
 }
 
 export const configuration: Configuration = <Configuration>{};
@@ -66,17 +65,7 @@ export const calcExpectedUserDataAfterDeposit = (
   }
 
   expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
-
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    // console.log("** ETH CASE ****")
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-      .minus(txCost)
-      .minus(amountDeposited);
-  } else {
-    // console.log("** TOKEN CASE ****")
-    // console.log(userDataBeforeAction.walletBalance.toString())
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(amountDeposited);
-  }
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(amountDeposited);
 
   expectedUserData.principalATokenBalance = expectedUserData.currentATokenBalance = calcExpectedATokenBalance(
     reserveDataBeforeAction,
@@ -171,14 +160,7 @@ export const calcExpectedUserDataAfterWithdraw = (
   }
 
   expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
-
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-      .minus(txCost)
-      .plus(amountWithdrawn);
-  } else {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountWithdrawn);
-  }
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountWithdrawn);
 
   expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
 
@@ -600,13 +582,7 @@ export const calcExpectedUserDataAfterBorrow = (
     userDataBeforeAction.redirectionAddressRedirectedBalance;
   expectedUserData.currentATokenUserIndex = userDataBeforeAction.currentATokenUserIndex;
 
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-      .minus(txCost)
-      .plus(amountBorrowed);
-  } else {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountBorrowed);
-  }
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountBorrowed);
 
   return expectedUserData;
 };
@@ -696,14 +672,7 @@ export const calcExpectedUserDataAfterRepay = (
   expectedUserData.currentATokenUserIndex = userDataBeforeAction.currentATokenUserIndex;
 
   if (user === onBehalfOf) {
-    //if user repaid for himself, update the wallet balances
-    if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-      expectedUserData.walletBalance = userDataBeforeAction.walletBalance
-        .minus(txCost)
-        .minus(totalRepaid);
-    } else {
-      expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(totalRepaid);
-    }
+    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(totalRepaid);
   } else {
     //wallet balance didn't change
     expectedUserData.walletBalance = userDataBeforeAction.walletBalance;
@@ -721,10 +690,6 @@ export const calcExpectedUserDataAfterSetUseAsCollateral = (
   const expectedUserData = {...userDataBeforeAction};
 
   expectedUserData.usageAsCollateralEnabled = useAsCollateral;
-
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(txCost);
-  }
 
   return expectedUserData;
 };
@@ -891,9 +856,6 @@ export const calcExpectedUserDataAfterSwapRateMode = (
 
   expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
 
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(txCost);
-  }
   return expectedUserData;
 };
 
@@ -999,12 +961,6 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
 
   expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
 
-  if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-    expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(txCost);
-  }
-
-  expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
-
   expectedUserData.currentATokenBalance = calcExpectedATokenBalance(
     reserveDataBeforeAction,
     userDataBeforeAction,
@@ -1067,12 +1023,6 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
     toDataBeforeAction,
     txTimestamp
   );
-
-  if (isFromExecutingTx) {
-    if (reserveDataBeforeAction.address === configuration.ethereumAddress) {
-      expectedFromData.walletBalance = fromDataBeforeAction.walletBalance.minus(txCost);
-    }
-  }
 
   expectedToData.redirectedBalance = toDataBeforeAction.redirectedBalance.plus(
     expectedFromData.currentATokenBalance
@@ -1470,32 +1420,4 @@ const calcExpectedVariableBorrowIndex = (reserveData: ReserveData, timestamp: Bi
   );
 
   return cumulatedInterest.rayMul(reserveData.variableBorrowIndex);
-};
-
-export const calculateHealthFactorFromBalances = (
-  collateralBalanceETH: BigNumber,
-  borrowBalanceETH: BigNumber,
-  currentLiquidationThreshold: BigNumber
-): BigNumber => {
-  if (borrowBalanceETH.eq(0)) {
-    return strToBN('-1'); // invalid number
-  }
-  return collateralBalanceETH.multipliedBy(currentLiquidationThreshold).div(borrowBalanceETH);
-};
-
-const calculateAvailableBorrowsETH = (
-  collateralBalanceETH: BigNumber,
-  borrowBalanceETH: BigNumber,
-  currentLtv: BigNumber
-): BigNumber => {
-  if (currentLtv.eq(0)) {
-    return strToBN('0');
-  }
-  let availableBorrowsETH = collateralBalanceETH.multipliedBy(currentLtv);
-  if (availableBorrowsETH.lt(borrowBalanceETH)) {
-    return strToBN('0');
-  }
-  availableBorrowsETH = availableBorrowsETH.minus(borrowBalanceETH);
-  const borrowFee = availableBorrowsETH.multipliedBy(0.0025);
-  return availableBorrowsETH.minus(borrowFee);
 };

@@ -48,11 +48,11 @@ export class IStableDebtToken extends Contract {
   interface: IStableDebtTokenInterface;
 
   functions: {
-    burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
@@ -69,53 +69,53 @@ export class IStableDebtToken extends Contract {
     }>;
 
     getUserLastUpdated(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: number;
     }>;
 
     'getUserLastUpdated(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: number;
     }>;
 
     getUserStableRate(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'getUserStableRate(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<ContractTransaction>;
   };
 
-  burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
+  burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<ContractTransaction>;
 
   'burn(address,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
+    user: string,
+    amount: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
@@ -123,34 +123,34 @@ export class IStableDebtToken extends Contract {
 
   'getAverageStableRate()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-  getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<number>;
+  getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<number>;
 
-  'getUserLastUpdated(address)'(_user: string, overrides?: CallOverrides): Promise<number>;
+  'getUserLastUpdated(address)'(user: string, overrides?: CallOverrides): Promise<number>;
 
-  getUserStableRate(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  getUserStableRate(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  'getUserStableRate(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+  'getUserStableRate(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   mint(
-    _user: string,
-    _amount: BigNumberish,
-    _rate: BigNumberish,
+    user: string,
+    amount: BigNumberish,
+    rate: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'mint(address,uint256,uint256)'(
-    _user: string,
-    _amount: BigNumberish,
-    _rate: BigNumberish,
+    user: string,
+    amount: BigNumberish,
+    rate: BigNumberish,
     overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   callStatic: {
-    burn(_user: string, _amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    burn(user: string, amount: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -158,25 +158,25 @@ export class IStableDebtToken extends Contract {
 
     'getAverageStableRate()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<number>;
+    getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<number>;
 
-    'getUserLastUpdated(address)'(_user: string, overrides?: CallOverrides): Promise<number>;
+    'getUserLastUpdated(address)'(user: string, overrides?: CallOverrides): Promise<number>;
 
-    getUserStableRate(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserStableRate(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserStableRate(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserStableRate(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -184,11 +184,11 @@ export class IStableDebtToken extends Contract {
   filters: {};
 
   estimateGas: {
-    burn(_user: string, _amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<BigNumber>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
@@ -196,39 +196,35 @@ export class IStableDebtToken extends Contract {
 
     'getAverageStableRate()'(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserLastUpdated(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserLastUpdated(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    getUserStableRate(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserStableRate(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserStableRate(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserStableRate(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    burn(
-      _user: string,
-      _amount: BigNumberish,
-      overrides?: Overrides
-    ): Promise<PopulatedTransaction>;
+    burn(user: string, amount: BigNumberish, overrides?: Overrides): Promise<PopulatedTransaction>;
 
     'burn(address,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
+      user: string,
+      amount: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
@@ -236,31 +232,31 @@ export class IStableDebtToken extends Contract {
 
     'getAverageStableRate()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    getUserLastUpdated(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getUserLastUpdated(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getUserLastUpdated(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getUserStableRate(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getUserStableRate(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getUserStableRate(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     mint(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'mint(address,uint256,uint256)'(
-      _user: string,
-      _amount: BigNumberish,
-      _rate: BigNumberish,
+      user: string,
+      amount: BigNumberish,
+      rate: BigNumberish,
       overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };

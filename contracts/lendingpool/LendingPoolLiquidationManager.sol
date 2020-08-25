@@ -283,8 +283,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
    * @return principalAmountNeeded the purchase amount
    **/
   function calculateAvailableCollateralToLiquidate(
-    ReserveLogic.ReserveData storage _collateralReserve,
-    ReserveLogic.ReserveData storage _principalReserve,
+    ReserveLogic.ReserveData storage collateralReserve,
+    ReserveLogic.ReserveData storage principalReserve,
     address collateralAddress,
     address principalAddress,
     uint256 purchaseAmount,
@@ -300,10 +300,10 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     vars.collateralPrice = oracle.getAssetPrice(collateralAddress);
     vars.principalCurrencyPrice = oracle.getAssetPrice(principalAddress);
 
-    (, , vars.liquidationBonus, vars.collateralDecimals) = _collateralReserve
+    (, , vars.liquidationBonus, vars.collateralDecimals) = collateralReserve
       .configuration
       .getParams();
-    vars.principalDecimals = _principalReserve.configuration.getDecimals();
+    vars.principalDecimals = principalReserve.configuration.getDecimals();
 
     //this is the maximum possible amount of the selected collateral that can be liquidated, given the
     //max amount of principal currency that is available for liquidation.

@@ -2,36 +2,25 @@
 /* tslint:disable */
 
 import {ethers, EventFilter, Signer, BigNumber, BigNumberish, PopulatedTransaction} from 'ethers';
-import {
-  Contract,
-  ContractTransaction,
-  PayableOverrides,
-  CallOverrides,
-} from '@ethersproject/contracts';
+import {Contract, ContractTransaction, Overrides, CallOverrides} from '@ethersproject/contracts';
 import {BytesLike} from '@ethersproject/bytes';
 import {Listener, Provider} from '@ethersproject/providers';
 import {FunctionFragment, EventFragment, Result} from '@ethersproject/abi';
 
 interface LendingPoolLiquidationManagerInterface extends ethers.utils.Interface {
   functions: {
-    'addressesProvider()': FunctionFragment;
     'liquidationCall(address,address,address,uint256,bool)': FunctionFragment;
-    'reservesList(uint256)': FunctionFragment;
   };
 
-  encodeFunctionData(functionFragment: 'addressesProvider', values?: undefined): string;
   encodeFunctionData(
     functionFragment: 'liquidationCall',
     values: [string, string, string, BigNumberish, boolean]
   ): string;
-  encodeFunctionData(functionFragment: 'reservesList', values: [BigNumberish]): string;
 
-  decodeFunctionResult(functionFragment: 'addressesProvider', data: BytesLike): Result;
   decodeFunctionResult(functionFragment: 'liquidationCall', data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: 'reservesList', data: BytesLike): Result;
 
   events: {
-    'LiquidationCall(address,address,address,uint256,uint256,address,bool,uint256)': EventFragment;
+    'LiquidationCall(address,address,address,uint256,uint256,address,bool)': EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: 'LiquidationCall'): EventFragment;
@@ -51,88 +40,50 @@ export class LendingPoolLiquidationManager extends Contract {
   interface: LendingPoolLiquidationManagerInterface;
 
   functions: {
-    addressesProvider(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
-    'addressesProvider()'(
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
     liquidationCall(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
-      overrides?: PayableOverrides
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
 
     'liquidationCall(address,address,address,uint256,bool)'(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
-      overrides?: PayableOverrides
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
+      overrides?: Overrides
     ): Promise<ContractTransaction>;
-
-    reservesList(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
-
-    'reservesList(uint256)'(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<{
-      0: string;
-    }>;
   };
 
-  addressesProvider(overrides?: CallOverrides): Promise<string>;
-
-  'addressesProvider()'(overrides?: CallOverrides): Promise<string>;
-
   liquidationCall(
-    _collateral: string,
-    _reserve: string,
-    _user: string,
-    _purchaseAmount: BigNumberish,
-    _receiveAToken: boolean,
-    overrides?: PayableOverrides
+    collateral: string,
+    principal: string,
+    user: string,
+    purchaseAmount: BigNumberish,
+    receiveAToken: boolean,
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
   'liquidationCall(address,address,address,uint256,bool)'(
-    _collateral: string,
-    _reserve: string,
-    _user: string,
-    _purchaseAmount: BigNumberish,
-    _receiveAToken: boolean,
-    overrides?: PayableOverrides
+    collateral: string,
+    principal: string,
+    user: string,
+    purchaseAmount: BigNumberish,
+    receiveAToken: boolean,
+    overrides?: Overrides
   ): Promise<ContractTransaction>;
 
-  reservesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  'reservesList(uint256)'(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
   callStatic: {
-    addressesProvider(overrides?: CallOverrides): Promise<string>;
-
-    'addressesProvider()'(overrides?: CallOverrides): Promise<string>;
-
     liquidationCall(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
@@ -140,91 +91,67 @@ export class LendingPoolLiquidationManager extends Contract {
     }>;
 
     'liquidationCall(address,address,address,uint256,bool)'(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
       1: string;
     }>;
-
-    reservesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    'reservesList(uint256)'(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
   };
 
   filters: {
     LiquidationCall(
-      _collateral: string | null,
-      _reserve: string | null,
-      _user: string | null,
-      _purchaseAmount: null,
-      _liquidatedCollateralAmount: null,
-      _liquidator: null,
-      _receiveAToken: null,
-      _timestamp: null
+      collateral: string | null,
+      principal: string | null,
+      user: string | null,
+      purchaseAmount: null,
+      liquidatedCollateralAmount: null,
+      liquidator: null,
+      receiveAToken: null
     ): EventFilter;
   };
 
   estimateGas: {
-    addressesProvider(overrides?: CallOverrides): Promise<BigNumber>;
-
-    'addressesProvider()'(overrides?: CallOverrides): Promise<BigNumber>;
-
     liquidationCall(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
-      overrides?: PayableOverrides
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
+      overrides?: Overrides
     ): Promise<BigNumber>;
 
     'liquidationCall(address,address,address,uint256,bool)'(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
-      overrides?: PayableOverrides
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
+      overrides?: Overrides
     ): Promise<BigNumber>;
-
-    reservesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
-
-    'reservesList(uint256)'(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    addressesProvider(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    'addressesProvider()'(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     liquidationCall(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
-      overrides?: PayableOverrides
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
 
     'liquidationCall(address,address,address,uint256,bool)'(
-      _collateral: string,
-      _reserve: string,
-      _user: string,
-      _purchaseAmount: BigNumberish,
-      _receiveAToken: boolean,
-      overrides?: PayableOverrides
-    ): Promise<PopulatedTransaction>;
-
-    reservesList(arg0: BigNumberish, overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    'reservesList(uint256)'(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+      collateral: string,
+      principal: string,
+      user: string,
+      purchaseAmount: BigNumberish,
+      receiveAToken: boolean,
+      overrides?: Overrides
     ): Promise<PopulatedTransaction>;
   };
 }

@@ -40,39 +40,39 @@ export class WalletBalanceProvider extends Contract {
 
   functions: {
     balanceOf(
-      _user: string,
-      _token: string,
+      user: string,
+      token: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     'balanceOf(address,address)'(
-      _user: string,
-      _token: string,
+      user: string,
+      token: string,
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber;
     }>;
 
     batchBalanceOf(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber[];
     }>;
 
     'batchBalanceOf(address[],address[])'(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<{
       0: BigNumber[];
     }>;
 
     getUserWalletBalances(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string[];
@@ -80,7 +80,7 @@ export class WalletBalanceProvider extends Contract {
     }>;
 
     'getUserWalletBalances(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string[];
@@ -88,28 +88,28 @@ export class WalletBalanceProvider extends Contract {
     }>;
   };
 
-  balanceOf(_user: string, _token: string, overrides?: CallOverrides): Promise<BigNumber>;
+  balanceOf(user: string, token: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   'balanceOf(address,address)'(
-    _user: string,
-    _token: string,
+    user: string,
+    token: string,
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
   batchBalanceOf(
-    _users: string[],
-    _tokens: string[],
+    users: string[],
+    tokens: string[],
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
   'batchBalanceOf(address[],address[])'(
-    _users: string[],
-    _tokens: string[],
+    users: string[],
+    tokens: string[],
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
 
   getUserWalletBalances(
-    _user: string,
+    user: string,
     overrides?: CallOverrides
   ): Promise<{
     0: string[];
@@ -117,7 +117,7 @@ export class WalletBalanceProvider extends Contract {
   }>;
 
   'getUserWalletBalances(address)'(
-    _user: string,
+    user: string,
     overrides?: CallOverrides
   ): Promise<{
     0: string[];
@@ -125,28 +125,28 @@ export class WalletBalanceProvider extends Contract {
   }>;
 
   callStatic: {
-    balanceOf(_user: string, _token: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(user: string, token: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     'balanceOf(address,address)'(
-      _user: string,
-      _token: string,
+      user: string,
+      token: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     batchBalanceOf(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
     'batchBalanceOf(address[],address[])'(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
 
     getUserWalletBalances(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string[];
@@ -154,7 +154,7 @@ export class WalletBalanceProvider extends Contract {
     }>;
 
     'getUserWalletBalances(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<{
       0: string[];
@@ -165,60 +165,60 @@ export class WalletBalanceProvider extends Contract {
   filters: {};
 
   estimateGas: {
-    balanceOf(_user: string, _token: string, overrides?: CallOverrides): Promise<BigNumber>;
+    balanceOf(user: string, token: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     'balanceOf(address,address)'(
-      _user: string,
-      _token: string,
+      user: string,
+      token: string,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     batchBalanceOf(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     'batchBalanceOf(address[],address[])'(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getUserWalletBalances(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    getUserWalletBalances(user: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    'getUserWalletBalances(address)'(_user: string, overrides?: CallOverrides): Promise<BigNumber>;
+    'getUserWalletBalances(address)'(user: string, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
     balanceOf(
-      _user: string,
-      _token: string,
+      user: string,
+      token: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     'balanceOf(address,address)'(
-      _user: string,
-      _token: string,
+      user: string,
+      token: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     batchBalanceOf(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     'batchBalanceOf(address[],address[])'(
-      _users: string[],
-      _tokens: string[],
+      users: string[],
+      tokens: string[],
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    getUserWalletBalances(_user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    getUserWalletBalances(user: string, overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     'getUserWalletBalances(address)'(
-      _user: string,
+      user: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

@@ -5,7 +5,6 @@ import {usePlugin} from '@nomiclabs/buidler/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
-import {loadConfig} from './helpers/config';
 
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');
@@ -13,9 +12,6 @@ usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
-
-const config = loadConfig();
-const configName = config.get('ConfigName');
 
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = 10;
@@ -51,8 +47,6 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
     },
   };
 };
-
-console.log(`💾 Loaded "${configName}" pool configuration .\n`);
 
 const buidlerConfig: any = {
   solc: {

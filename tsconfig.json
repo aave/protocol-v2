@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "esNext",
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
@@ -8,7 +8,7 @@
     "resolveJsonModule": true,
     "downlevelIteration": true
   },
-  "include": ["./**/*", "config/.ts"],
+  "include": ["./**/*"],
   "files": [
     "./buidler.config.ts",
     "node_modules/@nomiclabs/buidler-ethers/src/type-extensions.d.ts",
