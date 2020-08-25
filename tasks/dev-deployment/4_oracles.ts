@@ -17,12 +17,14 @@ import {
 import {ICommonConfiguration, iAssetBase, TokenContractId} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 import {getAllAggregatorsAddresses, getAllTokenAddresses} from '../../helpers/mock-helpers';
+import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
 
 task('deploy-oracles', 'Deploy oracles for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
-  .addParam('poolConfig', 'Pool config')
-  .setAction(async ({verify, poolConfig}, localBRE) => {
+  .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
+  .setAction(async ({verify, pool}, localBRE) => {
     await localBRE.run('set-bre');
+    const poolConfig = loadPoolConfig(pool);
     const {
       Mocks: {ChainlinkAggregatorPrices, AllAssetsInitialPrices},
       ProtocolGlobalParams: {UsdAddress, MockUsdPriceInWei},
@@ -35,6 +37,7 @@ task('deploy-oracles', 'Deploy oracles for dev enviroment')
     } as iAssetBase<string>;
     const mockTokens = await getAllMockedTokens();
     const mockTokensAddress = Object.keys(mockTokens).reduce<iAssetBase<string>>((prev, curr) => {
+      prev[curr as keyof iAssetBase<string>] = mockTokens[curr].address;
       return prev;
     }, defaultTokenList);
     const addressesProvider = await getLendingPoolAddressesProvider();

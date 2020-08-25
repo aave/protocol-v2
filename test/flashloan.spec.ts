@@ -1,10 +1,14 @@
 import {TestEnv, makeSuite} from './helpers/make-suite';
-import {APPROVAL_AMOUNT_LENDING_POOL, oneRay} from '../helpers/constants';
+import {oneRay} from '../helpers/constants';
 import {convertToCurrencyDecimals, getMockFlashLoanReceiver} from '../helpers/contracts-helpers';
 import {ethers} from 'ethers';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {ProtocolErrors} from '../helpers/types';
 import BigNumber from 'bignumber.js';
+import {CommonsConfig} from '../config/commons';
+
+const APPROVAL_AMOUNT_LENDING_POOL =
+  CommonsConfig.ProtocolGlobalParams.ApprovalAmountLendingPoolCore;
 
 const {expect} = require('chai');
 

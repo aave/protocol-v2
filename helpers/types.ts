@@ -1,8 +1,4 @@
 import BigNumber from 'bignumber.js';
-import {MockContract} from 'ethereum-waffle';
-import {ILendingPoolAddressesProviderRegistry} from '../types/ILendingPoolAddressesProviderRegistry';
-import {ChainlinkProxyPriceProvider} from '../types/ChainlinkProxyPriceProvider';
-import {DefaultReserveInterestRateStrategyFactory} from '../types';
 
 export interface SymbolMap<T> {
   [symbol: string]: T;
@@ -23,7 +19,7 @@ export enum AavePools {
 export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
-  MintableErc20 = 'MintableErc20',
+  MintableERC20 = 'MintableERC20',
   LendingPoolAddressesProviderRegistry = 'LendingPoolAddressesProviderRegistry',
   LendingPoolParametersProvider = 'LendingPoolParametersProvider',
   LendingPoolConfigurator = 'LendingPoolConfigurator',
@@ -283,15 +279,19 @@ export interface ICommonConfiguration {
   ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
-  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
 }
 
-export interface IAaveConfiguration extends ICommonConfiguration {}
+export interface IAaveConfiguration extends ICommonConfiguration {
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+}
 
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
 export interface IUniswapConfiguration extends ICommonConfiguration {
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   UniAssetsAddresses: iParamsPerNetwork<ITokenAddress>;
 }
+
+export type PoolConfiguration = IAaveConfiguration | IUniswapConfiguration;

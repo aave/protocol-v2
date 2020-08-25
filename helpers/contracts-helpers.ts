@@ -13,10 +13,11 @@ import {
   iMultiPoolsAssets,
   IReserveParams,
   ICommonConfiguration,
+  PoolConfiguration,
 } from './types';
 
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
-import {MintableErc20} from '../types/MintableErc20';
+import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
 import {LendingPoolAddressesProviderRegistry} from '../types/LendingPoolAddressesProviderRegistry';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {readArtifact} from '@nomiclabs/buidler/plugins';
@@ -39,8 +40,6 @@ import {VariableDebtToken} from '../types/VariableDebtToken';
 import {MockContract} from 'ethereum-waffle';
 import {getReservesConfigByPool} from './configuration';
 import {verifyContract} from './etherscan-verification';
-import {FeeProvider} from '../types/FeeProvider';
-import {TokenDistributor} from '../types/TokenDistributor';
 
 import {cpuUsage} from 'process';
 
@@ -48,7 +47,7 @@ const {
   ProtocolGlobalParams: {UsdAddress},
 } = CommonsConfig;
 
-export type MockTokenMap = {[symbol: string]: MintableErc20};
+export type MockTokenMap = {[symbol: string]: MintableERC20};
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -127,15 +126,6 @@ export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolea
   );
   if (verify) {
     await verifyContract(eContractid.LendingPoolAddressesProviderRegistry, instance.address, []);
-  }
-  return instance;
-};
-
-export const deployFeeProvider = async (verify?: boolean) => {
-  const instance = await deployContract<FeeProvider>(eContractid.FeeProvider, []);
-
-  if (verify) {
-    await verifyContract(eContractid.FeeProvider, instance.address, []);
   }
   return instance;
 };
@@ -283,14 +273,6 @@ export const deployLendingPoolLiquidationManager = async (verify?: boolean) => {
   return (await liquidationManager.deployed()) as LendingPoolLiquidationManager;
 };
 
-export const deployTokenDistributor = async (verify?: boolean) => {
-  const instance = await deployContract<TokenDistributor>(eContractid.TokenDistributor, []);
-  if (verify) {
-    await verifyContract(eContractid.TokenDistributor, instance.address, []);
-  }
-  return instance;
-};
-
 export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) => {
   const instance = await deployContract<InitializableAdminUpgradeabilityProxy>(
     eContractid.InitializableAdminUpgradeabilityProxy,
@@ -348,8 +330,8 @@ export const deployAaveProtocolTestHelpers = async (
   return instance;
 };
 
-export const deployMintableErc20 = async ([name, symbol, decimals]: [string, string, number]) =>
-  await deployContract<MintableErc20>(eContractid.MintableErc20, [name, symbol, decimals]);
+export const deployMintableERC20 = async ([name, symbol, decimals]: [string, string, number]) =>
+  await deployContract<MintableERC20>(eContractid.MintableERC20, [name, symbol, decimals]);
 
 export const deployDefaultReserveInterestRateStrategy = async ([
   addressesProvider,
@@ -467,11 +449,11 @@ export const getAToken = async (address?: tEthereumAddress) => {
   );
 };
 
-export const getMintableErc20 = async (address: tEthereumAddress) => {
-  return await getContract<MintableErc20>(
-    eContractid.MintableErc20,
+export const getMintableERC20 = async (address: tEthereumAddress) => {
+  return await getContract<MintableERC20>(
+    eContractid.MintableERC20,
     address ||
-      (await getDb().get(`${eContractid.MintableErc20}.${BRE.network.name}`).value()).address
+      (await getDb().get(`${eContractid.MintableERC20}.${BRE.network.name}`).value()).address
   );
 };
 
@@ -491,12 +473,6 @@ export const getAaveProtocolTestHelpers = async (address?: tEthereumAddress) => 
         .address
   );
 };
-
-export const getFeeProvider = async (address?: tEthereumAddress) =>
-  await getContract<FeeProvider>(
-    eContractid.FeeProvider,
-    address || (await getDb().get(`${eContractid.FeeProvider}.${BRE.network.name}`).value()).address
-  );
 
 export const getInterestRateStrategy = async (address?: tEthereumAddress) => {
   return await getContract<DefaultReserveInterestRateStrategy>(
@@ -593,7 +569,7 @@ export const convertToCurrencyUnits = async (tokenAddress: string, amount: strin
 };
 
 export const deployAllMockTokens = async (verify?: boolean) => {
-  const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
+  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
@@ -611,7 +587,7 @@ export const deployAllMockTokens = async (verify?: boolean) => {
       decimals = 18;
     }
 
-    tokens[tokenSymbol] = await deployMintableErc20([
+    tokens[tokenSymbol] = await deployMintableERC20([
       tokenSymbol,
       tokenSymbol,
       configData ? configData.reserveDecimals : 18,
@@ -619,20 +595,20 @@ export const deployAllMockTokens = async (verify?: boolean) => {
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
 
     if (verify) {
-      await verifyContract(eContractid.MintableErc20, tokens[tokenSymbol].address, []);
+      await verifyContract(eContractid.MintableERC20, tokens[tokenSymbol].address, []);
     }
   }
   return tokens;
 };
 
-export const deployMockTokens = async (config: ICommonConfiguration, verify?: boolean) => {
-  const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
+export const deployMockTokens = async (config: PoolConfiguration, verify?: boolean) => {
+  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
   const defaultDecimals = 18;
 
   const configData = config.ReservesConfig;
 
   for (const tokenSymbol of Object.keys(config.ReserveSymbols)) {
-    tokens[tokenSymbol] = await deployMintableErc20([
+    tokens[tokenSymbol] = await deployMintableERC20([
       tokenSymbol,
       tokenSymbol,
       Number(configData[tokenSymbol as keyof iMultiPoolsAssets<IReserveParams>].reserveDecimals) ||
@@ -641,21 +617,21 @@ export const deployMockTokens = async (config: ICommonConfiguration, verify?: bo
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
 
     if (verify) {
-      await verifyContract(eContractid.MintableErc20, tokens[tokenSymbol].address, []);
+      await verifyContract(eContractid.MintableERC20, tokens[tokenSymbol].address, []);
     }
   }
   return tokens;
 };
 
-export const getMockedTokens = async (config: ICommonConfiguration) => {
+export const getMockedTokens = async (config: PoolConfiguration) => {
   const tokenSymbols = config.ReserveSymbols;
   const db = getDb();
   const tokens: MockTokenMap = await tokenSymbols.reduce<Promise<MockTokenMap>>(
     async (acc, tokenSymbol) => {
       const accumulator = await acc;
       const address = db.get(`${tokenSymbol.toUpperCase()}.${BRE.network.name}`).value().address;
-      accumulator[tokenSymbol] = await getContract<MintableErc20>(
-        eContractid.MintableErc20,
+      accumulator[tokenSymbol] = await getContract<MintableERC20>(
+        eContractid.MintableERC20,
         address
       );
       return Promise.resolve(acc);
@@ -671,8 +647,8 @@ export const getAllMockedTokens = async () => {
     async (acc, tokenSymbol) => {
       const accumulator = await acc;
       const address = db.get(`${tokenSymbol.toUpperCase()}.${BRE.network.name}`).value().address;
-      accumulator[tokenSymbol] = await getContract<MintableErc20>(
-        eContractid.MintableErc20,
+      accumulator[tokenSymbol] = await getContract<MintableERC20>(
+        eContractid.MintableERC20,
         address
       );
       return Promise.resolve(acc);

@@ -2,11 +2,7 @@ import {task} from '@nomiclabs/buidler/config';
 import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
-  deployFeeProvider,
-  getFeeProvider,
-  insertContractAddressInDb,
 } from '../../helpers/contracts-helpers';
-import {eContractid} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 
 task(
@@ -26,10 +22,4 @@ task(
     await waitForTx(
       await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 0)
     );
-
-    const feeProviderImpl = await deployFeeProvider(verify);
-    await waitForTx(await addressesProvider.setFeeProviderImpl(feeProviderImpl.address));
-
-    const feeProviderProxy = await getFeeProvider(await addressesProvider.getFeeProvider());
-    await insertContractAddressInDb(eContractid.FeeProvider, feeProviderProxy.address);
   });

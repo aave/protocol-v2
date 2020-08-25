@@ -1,6 +1,6 @@
 import {task} from '@nomiclabs/buidler/config';
 import {checkVerification} from '../../helpers/etherscan-verification';
-import {AaveConfig as poolConfig} from '../../config/aave';
+import {ConfigNames} from '../../helpers/configuration';
 
 task('aave:dev', 'Deploy development enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
@@ -24,7 +24,7 @@ task('aave:dev', 'Deploy development enviroment')
     await localBRE.run('deploy-lending-pool', {verify});
 
     console.log('4. Deploy oracles');
-    await localBRE.run('deploy-oracles', {verify, poolConfig});
+    await localBRE.run('deploy-oracles', {verify, pool: ConfigNames.Aave});
 
     console.log('5. Initialize lending pool');
     await localBRE.run('initialize-lending-pool', {verify});

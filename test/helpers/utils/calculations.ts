@@ -1,15 +1,12 @@
 import BigNumber from 'bignumber.js';
-import {
-  ONE_YEAR,
-  RAY,
-  MAX_UINT_AMOUNT,
-  OPTIMAL_UTILIZATION_RATE,
-  EXCESS_UTILIZATION_RATE,
-  ZERO_ADDRESS,
-} from '../../../helpers/constants';
+import {ONE_YEAR, RAY, MAX_UINT_AMOUNT, ZERO_ADDRESS} from '../../../helpers/constants';
 import {IReserveParams, iAavePoolAssets, RateMode} from '../../../helpers/types';
 import './math';
 import {ReserveData, UserReserveData} from './interfaces';
+import {CommonsConfig} from '../../../config/commons';
+
+const OPTIMAL_UTILIZATION_RATE = CommonsConfig.ProtocolGlobalParams.OptimalUtilizationRate;
+const EXCESS_UTILIZATION_RATE = CommonsConfig.ProtocolGlobalParams.ExcessUtilizationRate;
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 

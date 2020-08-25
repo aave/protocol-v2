@@ -13,6 +13,7 @@ usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
 
+const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = 10;
 const HARDFORK = 'istanbul';
@@ -25,12 +26,15 @@ const MNEMONICS: {[network: string]: string} = {
   [eEthereumNetwork.main]: '',
 };
 
-['misc', 'migrations', 'dev-deployment'].forEach((folder) => {
-  const tasksPath = path.join(__dirname, 'tasks', folder);
-  fs.readdirSync(tasksPath)
-    .filter((pth) => pth.includes('.ts'))
-    .forEach((task) => require(`${tasksPath}/${task}`));
-});
+// Prevent to load scripts before compilation and typechain
+if (!SKIP_LOAD) {
+  ['misc', 'migrations', 'dev-deployment'].forEach((folder) => {
+    const tasksPath = path.join(__dirname, 'tasks', folder);
+    fs.readdirSync(tasksPath)
+      .filter((pth) => pth.includes('.ts'))
+      .forEach((task) => require(`${tasksPath}/${task}`));
+  });
+}
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {

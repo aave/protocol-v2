@@ -1,12 +1,16 @@
 import BigNumber from 'bignumber.js';
 
 import {BRE} from '../helpers/misc-utils';
-import {APPROVAL_AMOUNT_LENDING_POOL, oneEther} from '../helpers/constants';
+import {oneEther} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
 import {ProtocolErrors, RateMode} from '../helpers/types';
 import {calcExpectedStableDebtTokenBalance} from './helpers/utils/calculations';
 import {getUserData} from './helpers/utils/helpers';
+import {CommonsConfig} from '../config/commons';
+
+const APPROVAL_AMOUNT_LENDING_POOL =
+  CommonsConfig.ProtocolGlobalParams.ApprovalAmountLendingPoolCore;
 
 const chai = require('chai');
 

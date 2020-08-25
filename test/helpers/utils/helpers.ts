@@ -3,7 +3,7 @@ import {ReserveData, UserReserveData} from './interfaces';
 import {
   getLendingRateOracle,
   getIErc20Detailed,
-  getMintableErc20,
+  getMintableERC20,
   getAToken,
 } from '../../../helpers/contracts-helpers';
 import {ZERO_ADDRESS} from '../../../helpers/constants';
@@ -76,7 +76,7 @@ export const getUserData = async (
     interestRedirectionAddress,
   ] = aTokenData;
 
-  const token = await getMintableErc20(reserve);
+  const token = await getMintableERC20(reserve);
   const walletBalance = new BigNumber((await token.balanceOf(user)).toString());
 
   return {
@@ -100,7 +100,7 @@ export const getUserData = async (
 };
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
-  const token = await getMintableErc20(
+  const token = await getMintableERC20(
     (await getDb().get(`${symbol}.${BRE.network.name}`).value()).address
   );
 

@@ -2,6 +2,7 @@ import {
   AavePools,
   iMultiPoolsAssets,
   IReserveParams,
+  PoolConfiguration,
   tEthereumAddress,
   iBasicDistributionParams,
 } from './types';
@@ -10,39 +11,22 @@ import {AaveConfig} from '../config/aave';
 import {UniswapConfig} from '../config/uniswap';
 import {ZERO_ADDRESS} from './constants';
 
-export const TEST_SNAPSHOT_ID = '0x1';
+export enum ConfigNames {
+  Commons = 'Commons',
+  Aave = 'Aave',
+  Uniswap = 'Uniswap',
+}
 
-// ----------------
-// COMMON PROTOCOL PARAMS ACROSS POOLS AND NETWORKS
-// ----------------
-
-export const ALL_AAVE_RESERVES_SYMBOLS = [
-  [
-    'ETH',
-    'DAI',
-    'LEND',
-    'TUSD',
-    'BAT',
-    'USDC',
-    'USDT',
-    'SUSD',
-    'ZRX',
-    'MKR',
-    'WBTC',
-    'LINK',
-    'KNC',
-    'MANA',
-    'REP',
-    'SNX',
-    'BUSD',
-    'UNI_DAI_ETH',
-    'UNI_USDC_ETH',
-    'UNI_SETH_ETH',
-    'UNI_LINK_ETH',
-    'UNI_MKR_ETH',
-    'UNI_LEND_ETH',
-  ],
-];
+export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
+  switch (configName) {
+    case ConfigNames.Aave:
+      return AaveConfig;
+    case ConfigNames.Uniswap:
+      return UniswapConfig;
+    default:
+      throw new Error(`Unsupported pool configuration: ${Object.values(ConfigNames)}`);
+  }
+};
 
 // ----------------
 // PROTOCOL PARAMS PER POOL

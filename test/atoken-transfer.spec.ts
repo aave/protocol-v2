@@ -1,14 +1,14 @@
-import {
-  APPROVAL_AMOUNT_LENDING_POOL,
-  AAVE_REFERRAL,
-  MAX_UINT_AMOUNT,
-  ZERO_ADDRESS,
-} from '../helpers/constants';
+import {MAX_UINT_AMOUNT, ZERO_ADDRESS} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {expect} from 'chai';
 import {ethers} from 'ethers';
 import {RateMode, ProtocolErrors} from '../helpers/types';
 import {makeSuite, TestEnv} from './helpers/make-suite';
+import {CommonsConfig} from '../config/commons';
+
+const APPROVAL_AMOUNT_LENDING_POOL =
+  CommonsConfig.ProtocolGlobalParams.ApprovalAmountLendingPoolCore;
+const AAVE_REFERRAL = CommonsConfig.ProtocolGlobalParams.AaveReferral;
 
 makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   const {
@@ -96,10 +96,8 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
 
     await weth.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    
-    await pool
-      .connect(users[0].signer)
-      .deposit(weth.address, ethers.utils.parseEther('1.0'), '0');
+
+    await pool.connect(users[0].signer).deposit(weth.address, ethers.utils.parseEther('1.0'), '0');
     await expect(
       pool
         .connect(users[1].signer)
@@ -134,11 +132,11 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
   it('User 1 repays the borrow, transfers aDAI back to user 0', async () => {
     const {users, pool, aDai, dai, weth} = testEnv;
- 
+
     await weth.connect(users[1].signer).mint(await convertToCurrencyDecimals(weth.address, '2'));
 
     await weth.connect(users[1].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
- 
+
     await pool
       .connect(users[1].signer)
       .repay(weth.address, MAX_UINT_AMOUNT, RateMode.Stable, users[1].address);

@@ -2,7 +2,7 @@ import rawBRE from '@nomiclabs/buidler';
 import {MockContract} from 'ethereum-waffle';
 import {
   deployLendingPoolAddressesProvider,
-  deployMintableErc20 as deployMintableERC20,
+  deployMintableERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
   deployLendingPool,

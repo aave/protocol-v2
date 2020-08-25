@@ -4,7 +4,7 @@ import {configuration as calculationsConfiguration} from './helpers/utils/calcul
 import fs from 'fs';
 import BigNumber from 'bignumber.js';
 import {makeSuite} from './helpers/make-suite';
-import {getReservesConfigByPool} from '../helpers/constants';
+import {getReservesConfigByPool} from '../helpers/configuration';
 import {AavePools, iAavePoolAssets, IReserveParams} from '../helpers/types';
 import {executeStory} from './helpers/scenario-engine';
 

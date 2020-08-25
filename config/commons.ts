@@ -32,7 +32,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 // PROTOCOL GLOBAL PARAMS
 // ----------------
 
-export const CommonsConfig = {
+export const CommonsConfig: ICommonConfiguration = {
   ConfigName: 'Commons',
   ProviderId: 0,
   ReserveSymbols: [],
