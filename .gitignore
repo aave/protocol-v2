@@ -6,7 +6,7 @@ dist/
 build/
 .vscode
 .idea
-types/
+types
 
 coverage
 .coverage_artifacts
