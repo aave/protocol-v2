@@ -16,6 +16,9 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   mapping(address => uint256) addressesProviders;
   address[] addressesProvidersList;
 
+  //require error messages
+  string private constant PROVIDER_NOT_REGISTERED = '1'; // 'Provider is not registered'
+
   /**
    * @dev returns if an addressesProvider is registered or not
    * @param provider the addresses provider
@@ -63,7 +66,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be unregistered
    **/
   function unregisterAddressesProvider(address provider) external override onlyOwner {
-    require(addressesProviders[provider] > 0, 'Provider is not registered');
+    require(addressesProviders[provider] > 0, PROVIDER_NOT_REGISTERED);
     addressesProviders[provider] = 0;
     emit AddressesProviderUnregistered(provider);
   }
