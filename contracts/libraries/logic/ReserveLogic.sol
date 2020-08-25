@@ -21,6 +21,9 @@ library ReserveLogic {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
+  //require error messages
+  string private constant RESERVE_ALREADY_INITIALIZED = '1'; // 'Reserve has already been initialized'
+
   /**
    * @dev Emitted when the state of a reserve is updated
    * @param reserve the address of the reserve
@@ -180,7 +183,7 @@ library ReserveLogic {
     address variableDebtTokenAddress,
     address interestRateStrategyAddress
   ) external {
-    require(reserve.aTokenAddress == address(0), 'Reserve has already been initialized');
+    require(reserve.aTokenAddress == address(0), RESERVE_ALREADY_INITIALIZED);
     if (reserve.lastLiquidityIndex == 0) {
       //if the reserve has not been initialized yet
       reserve.lastLiquidityIndex = WadRayMath.ray();

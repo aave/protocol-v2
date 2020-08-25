@@ -27,20 +27,39 @@ library ValidationLogic {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
+  //require error messages
+  string private constant AMOUNT_NOT_GREATER_THAN_0 = '1'; // 'Amount must be greater than 0'
+  string private constant NO_ACTIVE_RESERVE = '2'; // 'Action requires an active reserve'
+  string private constant NO_UNFREEZED_RESERVE = '3'; // 'Action requires an unfreezed reserve'
+  string private constant CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH = '4'; // 'The current liquidity is not enough'
+  string private constant NOT_ENOUGH_AVAILABLE_USER_BALANCE = '5'; // 'User cannot withdraw more than the available balance'
+  string private constant TRANSFER_NOT_ALLOWED = '6'; // 'Transfer cannot be allowed.'
+  string private constant BORROWING_NOT_ENABLED = '7'; // 'Borrowing is not enabled'
+  string private constant INVALID_INTERESTRATE_MODE_SELECTED = '8'; // 'Invalid interest rate mode selected'
+  string private constant COLLATERAL_BALANCE_IS_0 = '9'; // 'The collateral balance is 0'
+  string private constant HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD = '10'; // 'Health factor is lesser than the liquidation threshold'
+  string private constant COLLATERAL_CANNOT_COVER_NEW_BORROW = '11'; // 'There is not enough collateral to cover a new borrow'
+  string private constant STABLE_BORROWING_NOT_ENABLED = '12'; // stable borrowing not enabled
+  string private constant CALLATERAL_SAME_AS_BORROWING_CURRENCY = '13'; // collateral is (mostly) the same currency that is being borrowed
+  string private constant AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE = '14'; // 'The requested amount is greater than the max loan size in stable rate mode
+  string private constant NO_DEBT_OF_SELECTED_TYPE = '15'; // 'for repayment of stable debt, the user needs to have stable debt, otherwise, he needs to have variable debt'
+  string private constant NO_EPLICIT_AMOUNT_TO_REPAY_ON_BEHALF = '16'; // 'To repay on behalf of an user an explicit amount to repay is needed'
+  string private constant NO_STABLE_RATE_LOAN_IN_RESERVE = '17'; // 'User does not have a stable rate loan in progress on this reserve'
+  string private constant NO_VARIABLE_RATE_LOAN_IN_RESERVE = '18'; // 'User does not have a variable rate loan in progress on this reserve'
+  string private constant UNDERLYING_BALANCE_NOT_GREATER_THAN_0 = '19'; // 'The underlying balance needs to be greater than 0'
+  string private constant DEPOSIT_ALREADY_IN_USE = '20'; // 'User deposit is already being used as collateral'
+
   /**
    * @dev validates a deposit.
    * @param reserve the reserve state on which the user is depositing
    * @param amount the amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount)
-    internal
-    view
-  {
+  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) internal view {
     (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
 
-    require(amount > 0, 'Amount must be greater than 0');
-    require(isActive, 'Action requires an active reserve');
-    require(!isFreezed, 'Action requires an unfreezed reserve');
+    require(amount > 0, AMOUNT_NOT_GREATER_THAN_0);
+    require(isActive, NO_ACTIVE_RESERVE);
+    require(!isFreezed, NO_UNFREEZED_RESERVE);
   }
 
   /**
@@ -60,13 +79,13 @@ library ValidationLogic {
     address[] calldata reserves,
     address oracle
   ) external view {
-    require(amount > 0, 'Amount must be greater than 0');
+    require(amount > 0, AMOUNT_NOT_GREATER_THAN_0);
 
     uint256 currentAvailableLiquidity = IERC20(reserveAddress).balanceOf(address(aTokenAddress));
 
-    require(currentAvailableLiquidity >= amount, '4');
+    require(currentAvailableLiquidity >= amount, CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
 
-    require(amount <= userBalance, 'User cannot withdraw more than the available balance');
+    require(amount <= userBalance, NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
     require(
       GenericLogic.balanceDecreaseAllowed(
@@ -78,7 +97,7 @@ library ValidationLogic {
         reserves,
         oracle
       ),
-      'Transfer cannot be allowed.'
+      TRANSFER_NOT_ALLOWED
     );
   }
 
@@ -138,22 +157,22 @@ library ValidationLogic {
       vars.stableRateBorrowingEnabled
     ) = reserve.configuration.getFlags();
 
-    require(vars.isActive, 'Action requires an active reserve');
-    require(!vars.isFreezed, 'Action requires an unfreezed reserve');
+    require(vars.isActive, NO_ACTIVE_RESERVE);
+    require(!vars.isFreezed, NO_UNFREEZED_RESERVE);
 
-    require(vars.borrowingEnabled, '5');
+    require(vars.borrowingEnabled, BORROWING_NOT_ENABLED);
 
     //validate interest rate mode
     require(
       uint256(ReserveLogic.InterestRateMode.VARIABLE) == interestRateMode ||
         uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
-      'Invalid interest rate mode selected'
+      INVALID_INTERESTRATE_MODE_SELECTED
     );
 
     //check that the amount is available in the reserve
     vars.availableLiquidity = IERC20(reserveAddress).balanceOf(address(reserve.aTokenAddress));
 
-    require(vars.availableLiquidity >= amount, '7');
+    require(vars.availableLiquidity >= amount, CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
 
     (
       vars.userCollateralBalanceETH,
@@ -169,9 +188,12 @@ library ValidationLogic {
       oracle
     );
 
-    require(vars.userCollateralBalanceETH > 0, 'The collateral balance is 0');
+    require(vars.userCollateralBalanceETH > 0, COLLATERAL_BALANCE_IS_0);
 
-    require(vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD, '8');
+    require(
+      vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
+      HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
+    );
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
     vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(amountInETH).percentDiv(
@@ -180,7 +202,7 @@ library ValidationLogic {
 
     require(
       vars.amountOfCollateralNeededETH <= vars.userCollateralBalanceETH,
-      'There is not enough collateral to cover a new borrow'
+      COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
 
     /**
@@ -195,20 +217,20 @@ library ValidationLogic {
     if (vars.rateMode == ReserveLogic.InterestRateMode.STABLE) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
-      require(vars.stableRateBorrowingEnabled, '11');
+      require(vars.stableRateBorrowingEnabled, STABLE_BORROWING_NOT_ENABLED);
 
       require(
         !userConfig.isUsingAsCollateral(reserve.index) ||
           reserve.configuration.getLtv() == 0 ||
           amount > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
-        '12'
+        CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity
       uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(maxStableLoanPercent);
 
-      require(amount <= maxLoanSizeStable, '13');
+      require(amount <= maxLoanSizeStable, AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE);
     }
   }
 
@@ -230,21 +252,21 @@ library ValidationLogic {
   ) external view {
     bool isActive = reserve.configuration.getActive();
 
-    require(isActive, 'Action requires an active reserve');
+    require(isActive, NO_ACTIVE_RESERVE);
 
-    require(amountSent > 0, 'Amount must be greater than 0');
+    require(amountSent > 0, AMOUNT_NOT_GREATER_THAN_0);
 
     require(
       (stableDebt > 0 &&
         ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
         (variableDebt > 0 &&
           ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
-      '16'
+      NO_DEBT_OF_SELECTED_TYPE
     );
 
     require(
       amountSent != uint256(-1) || msg.sender == onBehalfOf,
-      'To repay on behalf of an user an explicit amount to repay is needed'
+      NO_EPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
     );
   }
 
@@ -265,19 +287,13 @@ library ValidationLogic {
   ) external view {
     (bool isActive, bool isFreezed, , bool stableRateEnabled) = reserve.configuration.getFlags();
 
-    require(isActive, 'Action requires an active reserve');
-    require(!isFreezed, 'Action requires an unfreezed reserve');
+    require(isActive, NO_ACTIVE_RESERVE);
+    require(!isFreezed, NO_UNFREEZED_RESERVE);
 
     if (currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
-      require(
-        stableBorrowBalance > 0,
-        'User does not have a stable rate loan in progress on this reserve'
-      );
+      require(stableBorrowBalance > 0, NO_STABLE_RATE_LOAN_IN_RESERVE);
     } else if (currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
-      require(
-        variableBorrowBalance > 0,
-        'User does not have a variable rate loan in progress on this reserve'
-      );
+      require(variableBorrowBalance > 0, NO_VARIABLE_RATE_LOAN_IN_RESERVE);
       /**
        * user wants to swap to stable, before swapping we need to ensure that
        * 1. stable borrow rate is enabled on the reserve
@@ -285,17 +301,17 @@ library ValidationLogic {
        * more collateral than he is borrowing, artificially lowering
        * the interest rate, borrowing at variable, and switching to stable
        **/
-      require(stableRateEnabled, '11');
+      require(stableRateEnabled, STABLE_BORROWING_NOT_ENABLED);
 
       require(
         !userConfig.isUsingAsCollateral(reserve.index) ||
           reserve.configuration.getLtv() == 0 ||
           stableBorrowBalance.add(variableBorrowBalance) >
           IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
-        '12'
+        CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
-      revert('Invalid interest rate mode selected');
+      revert(INVALID_INTERESTRATE_MODE_SELECTED);
     }
   }
 
@@ -318,7 +334,7 @@ library ValidationLogic {
   ) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
 
-    require(underlyingBalance > 0, '22');
+    require(underlyingBalance > 0, UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
     require(
       GenericLogic.balanceDecreaseAllowed(
@@ -330,7 +346,7 @@ library ValidationLogic {
         reserves,
         oracle
       ),
-      'User deposit is already being used as collateral'
+      DEPOSIT_ALREADY_IN_USE
     );
   }
 }
