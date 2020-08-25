@@ -126,18 +126,18 @@ library ReserveLogic {
       IERC20(reserve.variableDebtTokenAddress).totalSupply() > 0 ||
       IERC20(reserve.stableDebtTokenAddress).totalSupply() > 0
     ) {
+      uint40 lastUpdateTimestamp = reserve.lastUpdateTimestamp;
+
       uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(
         reserve.currentLiquidityRate,
-        reserve.lastUpdateTimestamp
+        lastUpdateTimestamp
       );
 
-      reserve.lastLiquidityIndex = cumulatedLiquidityInterest.rayMul(
-        reserve.lastLiquidityIndex
-      );
+      reserve.lastLiquidityIndex = cumulatedLiquidityInterest.rayMul(reserve.lastLiquidityIndex);
 
       uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
         reserve.currentVariableBorrowRate,
-        reserve.lastUpdateTimestamp
+        lastUpdateTimestamp
       );
       reserve.lastVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(
         reserve.lastVariableBorrowIndex
@@ -164,9 +164,7 @@ library ReserveLogic {
 
     uint256 cumulatedLiquidity = amountToLiquidityRatio.add(WadRayMath.ray());
 
-    reserve.lastLiquidityIndex = cumulatedLiquidity.rayMul(
-      reserve.lastLiquidityIndex
-    );
+    reserve.lastLiquidityIndex = cumulatedLiquidity.rayMul(reserve.lastLiquidityIndex);
   }
 
   /**
@@ -208,13 +206,12 @@ library ReserveLogic {
   function updateInterestRates(
     ReserveData storage reserve,
     address reserveAddress,
+    address aTokenAddress,
     uint256 liquidityAdded,
     uint256 liquidityTaken
   ) internal {
     uint256 currentAvgStableRate = IStableDebtToken(reserve.stableDebtTokenAddress)
       .getAverageStableRate();
-
-    uint256 balance = IERC20(reserveAddress).balanceOf(reserve.aTokenAddress);
 
     (
       uint256 newLiquidityRate,
@@ -222,7 +219,7 @@ library ReserveLogic {
       uint256 newVariableRate
     ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
       reserveAddress,
-      balance.add(liquidityAdded).sub(liquidityTaken),
+      IERC20(reserveAddress).balanceOf(aTokenAddress).add(liquidityAdded).sub(liquidityTaken),
       IERC20(reserve.stableDebtTokenAddress).totalSupply(),
       IERC20(reserve.variableDebtTokenAddress).totalSupply(),
       currentAvgStableRate
