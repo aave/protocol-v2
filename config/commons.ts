@@ -118,12 +118,18 @@ export const CommonsConfig: ICommonConfiguration = {
   // COMMON PROTOCOL ADDRESSES ACROSS POOLS
   // ----------------
 
-  ProviderRegistry: {
-    [EthereumNetwork.kovan]: '0xcd9Dae41Cc8b7433c045D3D7C4C555315EF0DDDE',
-    [EthereumNetwork.ropsten]: '0x84D3638AF869cA413702192E5AB9481C083A216a',
-    [EthereumNetwork.main]: '0xd09F34960C37dA3a8602F0847CE5ac8f7B393d99',
+  // If lendingPoolManagerAddress is set, will take priority over lendingPoolManagerAddressIndex
+  LendingPoolManagerAddress: {
+    [EthereumNetwork.kovan]: undefined,
+    [EthereumNetwork.ropsten]: undefined,
+    [EthereumNetwork.main]: undefined,
   },
-
+  LendingPoolManagerAddressIndex: 0,
+  ProviderRegistry: {
+    [EthereumNetwork.kovan]: '',
+    [EthereumNetwork.ropsten]: '',
+    [EthereumNetwork.main]: '',
+  },
   LendingRateOracle: {
     [EthereumNetwork.kovan]: '0xdcde9bb6a49e37fa433990832ab541ae2d4feb4a',
     [EthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',

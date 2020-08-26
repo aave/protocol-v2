@@ -783,3 +783,15 @@ export const initReserves = async (
     }
   }
 };
+
+export const getLendingPoolAddressesProviderRegistry = async (address?: tEthereumAddress) => {
+  return await getContract<LendingPoolAddressesProviderRegistry>(
+    eContractid.LendingPoolAddressesProviderRegistry,
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${BRE.network.name}`)
+          .value()
+      ).address
+  );
+};

@@ -279,6 +279,8 @@ export interface ICommonConfiguration {
   ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
+  LendingPoolManagerAddress: iParamsPerNetwork<tEthereumAddress | undefined>;
+  LendingPoolManagerAddressIndex: number;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
