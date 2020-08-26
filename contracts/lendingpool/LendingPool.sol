@@ -238,6 +238,16 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     uint256 rateMode,
     address onBehalfOf
   ) external override nonReentrant {
+    _executeRepay(asset, msg.sender, amount, rateMode, onBehalfOf);
+  }
+
+  function _executeRepay(
+    address asset,
+    address user,
+    uint256 amount,
+    uint256 rateMode,
+    address onBehalfOf
+  ) internal {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -278,9 +288,9 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
       _usersConfig[onBehalfOf].setBorrowing(reserve.index, false);
     }
 
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
+    IERC20(asset).safeTransferFrom(user, aToken, paybackAmount);
 
-    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+    emit Repay(asset, onBehalfOf, user, paybackAmount);
   }
 
   /**
@@ -507,6 +517,115 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     //solium-disable-next-line
     emit FlashLoan(receiverAddress, asset, amount, amountFee);
+  }
+
+  /**
+   * @dev flashes collateral, by both a flash liquidator or the user owning it.
+   * @param collateralAsset The address of the collateral asset.
+   * @param debtAsset The address of the debt asset.
+   * @param collateralAmount Collateral amount to flash.
+   * @param user Address of the user owning the collateral.
+   * @param receiverAddress Address of the contract receiving the collateral.
+   * @param debtMode Numeric variable, managing how to operate with the debt side.
+   *        1 -> With final repayment, to do it on the stable debt.
+   *        2 -> With final repayment, to do it on the variable debt.
+   *        3 -> On movement of the debt to the liquidator, to move the stable debt
+   *        4 -> On movement of the debt to the liquidator, to move the variable debt
+   * @param receiveAToken "true" to send aToken to the receiver contract, "false" to send underlying tokens.
+   * @param referralCode Integrators are assigned a referral code and can potentially receive rewards.
+   **/
+  function flashCollateral(
+    address collateralAsset,
+    address debtAsset,
+    uint256 collateralAmount,
+    address user,
+    address receiverAddress,
+    uint256 debtMode,
+    bool receiveAToken,
+    uint16 referralCode
+  ) external override {
+    require(debtMode > 0, 'INVALID_DEBT_FLAG');
+
+    ReserveLogic.ReserveData storage collateralReserve = _reserves[collateralAsset];
+    ReserveLogic.ReserveData storage debtReserve = _reserves[debtAsset];
+
+    address collateralAToken = collateralReserve.aTokenAddress;
+    uint256 availableCollateral = IERC20(collateralAToken).balanceOf(user);
+
+    require(collateralAmount <= availableCollateral, 'NOT_ENOUGH_BALANCE');
+
+    address oracle = addressesProvider.getPriceOracle();
+    (, , , , healthFactor) = GenericLogic.calculateUserAccountData(
+      user,
+      _reserves,
+      _usersConfig[user],
+      _reservesList,
+      oracle
+    );
+
+    if (healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD && msg.sender != user) {
+      revert('INVALID_FLASH_COLLATERAL_BY_NON_OWNER');
+    }
+
+    uint256 amountToFlash = (msg.sender == user || healthFactor < 0.98 ether) // TODO: better constant
+      ? collateralAmount
+      : collateralAmount.div(2); // TODO: better constant
+
+    // If liquidator reclaims the aToken, he receives the equivalent atoken amount,
+    // otherwise receives the underlying asset
+    if (receiveAToken) {
+      IAToken(collateralAToken).transferOnLiquidation(user, receiverAddress, amountToFlash);
+    } else {
+      collateralReserve.updateCumulativeIndexesAndTimestamp();
+      collateralReserve.updateInterestRates(collateral, aTokenAddress, 0, collateralAmount);
+
+      // Burn of aToken and send the underlying to the receiver
+      IAToken(aTokenAddress).burn(user, receiver, collateralAmount);
+    }
+
+    // Notifies the receiver to proceed, sending the underlying or the aToken amount already transferred
+    IFlashLoanReceiver(receiverAddress).executeOperation(
+      collateralAsset,
+      aTokenAddress,
+      (!receiveAToken) ? collateralAmount : 0,
+      receiverAToken ? aTokenAmount : 0,
+      params
+    );
+
+    // Calculation of the minimum amount of the debt asset to be received
+    uint256 debtAmountNeeded = oracle
+      .getAssetPrice(collateralAsset)
+      .mul(collateralAmount)
+      .mul(10**debtReserve.configuration.getDecimals())
+      .div(oracle.getAssetPrice(debtAsset).mul(10**collateralReserve.configuration.getDecimals()))
+      .percentDiv(collateralReserve.configuration.getLiquidationBonus());
+
+    // Or the debt is transferred to the msg.sender, or funds are transferred from the receiver to repay the debt
+    if (debtMode > 2) {
+      (uint256 userStableDebt, uint256 userVariableDebt) = Helpers.getUserCurrentDebt(
+        user,
+        debtReserve
+      );
+
+      uint256 debtToTransfer;
+      if (debtMode.div(3) == 1) {
+        // stable
+        debtToTransfer = (userStableDebt > debtAmountNeeded) ? debtAmountNeeded : userStableDebt;
+        IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(user, debtToTransfer);
+      } else if (debtMode.div(3) == 2) {
+        // variable
+        debtToTransfer = (userVariableDebt > debtAmountNeeded)
+          ? debtAmountNeeded
+          : userVariableDebt;
+        IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(user, debtToTransfer);
+      }
+      _executeBorrow(
+        BorrowLocalVars(debtAsset, msg.sender, debtToTransfer, debt, false, referralCode)
+      );
+    } else {
+      IERC20(debtAsset).transferFrom(receiverAddress, address(this), debtAmountNeeded);
+      _executeRepay(asset, msg.sender, amount, debtMode, user);
+    }
   }
 
   /**
