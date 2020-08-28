@@ -220,7 +220,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(vars.user, vars.amount);
     }
 
-    reserve.updateInterestRates(vars.asset, 0, vars.amount);
+    reserve.updateInterestRates(vars.asset, 0, (vars.releaseUnderlying) ? vars.amount : 0);
 
     if (!userConfig.isBorrowing(reserve.index)) {
       userConfig.setBorrowing(reserve.index, true);
@@ -453,7 +453,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amountPlusPremiumInETH;
     uint256 receiverBalance;
     uint256 receiverAllowance;
-    uint256 balanceToPull;
+    uint256 availableBalance;
     uint256 assetPrice;
     IFlashLoanReceiver receiver;
     address aTokenAddress;
@@ -484,13 +484,14 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     vars.aTokenAddress = reserve.aTokenAddress;
 
-    //calculate amount fee
     vars.premium = amount.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
 
     require(vars.premium > 0, 'The requested amount is too small for a FlashLoan.');
 
-    //get the FlashLoanReceiver instance
     vars.receiver = IFlashLoanReceiver(receiverAddress);
+
+    // Update of the indexes until the current moment
+    reserve.updateCumulativeIndexesAndTimestamp();
 
     //transfer funds to the receiver
     IAToken(vars.aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
@@ -498,58 +499,61 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     //execute action of the receiver
     vars.receiver.executeOperation(asset, amount, vars.premium, params);
 
-    //compounding the cumulated interest
-    reserve.updateCumulativeIndexesAndTimestamp();
-
     vars.amountPlusPremium = amount.add(vars.premium);
 
-    //transfer from the receiver the amount plus the fee
-    try IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium)  {
-      //if the transfer succeeded, the executor has repaid the flashloan.
-      //the fee is compounded into the reserve
+    if (debtType == 0) { // To not fetch balance/allowance if no debt needs to be opened
+      IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
-      //refresh interest rates
       reserve.updateInterestRates(asset, vars.premium, 0);
-      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
-    } catch (bytes memory reason) {
-      if (debtType == 1 || debtType == 2) {
-        // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
-        // We will try to pull all the available funds from the receiver and create a debt position with the rest owed
-        // if it has collateral enough
-
-        vars.receiverBalance = IERC20(asset).balanceOf(receiverAddress);
-        vars.receiverAllowance = IERC20(asset).allowance(receiverAddress, address(this));
-        vars.balanceToPull = (vars.receiverBalance > vars.receiverAllowance)
-          ? vars.receiverAllowance
-          : vars.receiverBalance;
-
-        if (vars.balanceToPull > 0) {
-          IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.balanceToPull);
-          reserve.cumulateToLiquidityIndex(
-            IERC20(vars.aTokenAddress).totalSupply(),
-            (vars.balanceToPull > vars.premium) ? vars.premium : vars.balanceToPull
-          );
-          reserve.updateInterestRates(
-            asset,
-            (vars.balanceToPull > vars.premium) ? vars.premium : vars.balanceToPull,
-            0
-          );
-        }
-
-        _executeBorrow(
-          BorrowLocalVars(
-            asset,
-            msg.sender,
-            vars.amountPlusPremium.sub(vars.balanceToPull),
-            debtType,
-            false,
-            referralCode
-          )
-        );
+    } else {
+      vars.receiverBalance = IERC20(asset).balanceOf(receiverAddress);
+      vars.receiverAllowance = IERC20(asset).allowance(receiverAddress, address(this));
+      if (vars.receiverBalance >= vars.amountPlusPremium && vars.receiverAllowance >= vars.amountPlusPremium) {
+        IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
+        reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
+        reserve.updateInterestRates(asset, vars.premium, 0);
       } else {
-        revert(string(reason));
+        if (debtType == 1 || debtType == 2) {
+          // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
+          // We will try to pull all the available funds from the receiver and create a debt position with the rest owed
+          // if it has collateral enough
+          vars.availableBalance = (vars.receiverBalance > vars.receiverAllowance)
+            ? vars.receiverAllowance
+            : vars.receiverBalance;
+
+          if (vars.availableBalance > 0) {
+            // If not enough premium, include as premium all the funds available to pull
+            if (vars.availableBalance < vars.premium) {
+              vars.premium = vars.availableBalance;
+            }
+            IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.availableBalance);
+            reserve.cumulateToLiquidityIndex(
+              IERC20(vars.aTokenAddress).totalSupply(),
+              vars.premium
+            );
+            reserve.updateInterestRates(
+              asset,
+              vars.premium,
+              0
+            );
+          }
+
+          _executeBorrow(
+            BorrowLocalVars(
+              asset,
+              msg.sender,
+              vars.amountPlusPremium.sub(vars.availableBalance),
+              debtType,
+              false,
+              referralCode
+            )
+          );
+        } else {
+          revert("INSUFFICIENT_FUNDS_TO_PULL");
+        }
       }
     }
+    emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
   }
 
   /**

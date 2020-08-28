@@ -301,7 +301,6 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await _mockFlashLoanReceiver.setFailExecutionTransfer(false);
 
     await _mockFlashLoanReceiver.setAmountToApprove(flashloanAmount.div(2));
-    console.log((await _mockFlashLoanReceiver.amountToApprove()).toString());
 
     await pool
       .connect(caller.signer)
