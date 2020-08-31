@@ -10,16 +10,17 @@ import {
 import {eContractid} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 
-task('deploy-lending-pool', 'Deploy lending pool for dev enviroment')
+task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     await localBRE.run('set-bre');
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 
+    // Deploy lending pool
     const lendingPoolImpl = await deployLendingPool(verify);
 
-    // Set lending pool impl to Address Provider
+    // Set lending pool impl to address provider
     await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
     const address = await addressesProvider.getLendingPool();
@@ -27,6 +28,7 @@ task('deploy-lending-pool', 'Deploy lending pool for dev enviroment')
 
     await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
+    // Deploy lending pool configurator
     const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator(verify);
 
     // Set lending pool conf impl to Address Provider
@@ -37,6 +39,7 @@ task('deploy-lending-pool', 'Deploy lending pool for dev enviroment')
     const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
       await addressesProvider.getLendingPoolConfigurator()
     );
+
     await insertContractAddressInDb(
       eContractid.LendingPoolConfigurator,
       lendingPoolConfiguratorProxy.address

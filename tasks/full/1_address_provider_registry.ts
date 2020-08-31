@@ -3,7 +3,6 @@ import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
   getParamPerNetwork,
-  getLendingPoolAddressesProvider,
   getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-helpers';
 import {waitForTx} from '../../helpers/misc-utils';

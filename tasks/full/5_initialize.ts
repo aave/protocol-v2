@@ -4,56 +4,51 @@ import {
   initReserves,
   deployLendingPoolLiquidationManager,
   insertContractAddressInDb,
-  deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
   getLendingPool,
   getLendingPoolConfiguratorProxy,
-  getAllMockedTokens,
+  getParamPerNetwork,
 } from '../../helpers/contracts-helpers';
-import {getReservesConfigByPool} from '../../helpers/configuration';
+import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
 
-import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
-import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
+import {AavePools, eContractid, eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
+import {waitForTx} from '../../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../../helpers/init-helpers';
-import {getAllTokenAddresses} from '../../helpers/mock-helpers';
 
-task('initialize-lending-pool', 'Initialize lending pool configuration.')
+task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({verify}, localBRE) => {
+  .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
+  .setAction(async ({verify, pool}, localBRE) => {
     await localBRE.run('set-bre');
+    const network = <eEthereumNetwork>localBRE.network.name;
+    const poolConfig = loadPoolConfig(pool);
+    const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
 
-    const mockTokens = await getAllMockedTokens();
+    const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
     const lendingPoolProxy = await getLendingPool();
     const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy();
-    const allTokenAddresses = getAllTokenAddresses(mockTokens);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 
-    const protoPoolReservesAddresses = <{[symbol: string]: tEthereumAddress}>(
-      filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI'))
-    );
-
-    const reservesParams = getReservesConfigByPool(AavePools.proto);
-
-    console.log('Initialize configuration');
     await initReserves(
-      reservesParams,
-      protoPoolReservesAddresses,
+      ReservesConfig,
+      reserveAssets,
       addressesProvider,
       lendingPoolProxy,
       lendingPoolConfiguratorProxy,
-      AavePools.proto
+      AavePools.proto,
+      verify
     );
     await enableReservesToBorrow(
-      reservesParams,
-      protoPoolReservesAddresses,
+      ReservesConfig,
+      reserveAssets,
       lendingPoolProxy,
       lendingPoolConfiguratorProxy
     );
     await enableReservesAsCollateral(
-      reservesParams,
-      protoPoolReservesAddresses,
+      ReservesConfig,
+      reserveAssets,
       lendingPoolProxy,
       lendingPoolConfiguratorProxy
     );
@@ -61,15 +56,6 @@ task('initialize-lending-pool', 'Initialize lending pool configuration.')
     const liquidationManager = await deployLendingPoolLiquidationManager(verify);
     await waitForTx(
       await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
-    );
-
-    const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(
-      addressesProvider.address,
-      verify
-    );
-    await insertContractAddressInDb(
-      eContractid.MockFlashLoanReceiver,
-      mockFlashLoanReceiver.address
     );
 
     await deployWalletBalancerProvider(addressesProvider.address, verify);

@@ -18,7 +18,7 @@ import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../../helpers/init-helpers';
 import {getAllTokenAddresses} from '../../helpers/mock-helpers';
 
-task('initialize-lending-pool', 'Initialize lending pool configuration.')
+task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     await localBRE.run('set-bre');
@@ -36,14 +36,14 @@ task('initialize-lending-pool', 'Initialize lending pool configuration.')
 
     const reservesParams = getReservesConfigByPool(AavePools.proto);
 
-    console.log('Initialize configuration');
     await initReserves(
       reservesParams,
       protoPoolReservesAddresses,
       addressesProvider,
       lendingPoolProxy,
       lendingPoolConfiguratorProxy,
-      AavePools.proto
+      AavePools.proto,
+      verify
     );
     await enableReservesToBorrow(
       reservesParams,

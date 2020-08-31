@@ -333,72 +333,89 @@ export const deployAaveProtocolTestHelpers = async (
 export const deployMintableERC20 = async ([name, symbol, decimals]: [string, string, number]) =>
   await deployContract<MintableERC20>(eContractid.MintableERC20, [name, symbol, decimals]);
 
-export const deployDefaultReserveInterestRateStrategy = async ([
-  addressesProvider,
-  baseVariableBorrowRate,
-  variableSlope1,
-  variableSlope2,
-  stableSlope1,
-  stableSlope2,
-]: [tEthereumAddress, string, string, string, string, string]) =>
-  await deployContract<DefaultReserveInterestRateStrategy>(
-    eContractid.DefaultReserveInterestRateStrategy,
-    [
-      addressesProvider,
-      baseVariableBorrowRate,
-      variableSlope1,
-      variableSlope2,
-      stableSlope1,
-      stableSlope2,
-    ]
-  );
+export const deployDefaultReserveInterestRateStrategy = async (
+  [
+    addressesProvider,
+    baseVariableBorrowRate,
+    variableSlope1,
+    variableSlope2,
+    stableSlope1,
+    stableSlope2,
+  ]: [tEthereumAddress, string, string, string, string, string],
+  verify: boolean
+) => {
+  const id = eContractid.DefaultReserveInterestRateStrategy;
+  const args = [
+    addressesProvider,
+    baseVariableBorrowRate,
+    variableSlope1,
+    variableSlope2,
+    stableSlope1,
+    stableSlope2,
+  ];
+  const instance = await deployContract<DefaultReserveInterestRateStrategy>(id, args);
 
-export const deployStableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
-  const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
-    poolAddress,
-    underlyingAsset,
-    name,
-    symbol,
-  ]);
-
-  return token;
+  if (verify) {
+    await verifyContract(id, instance.address, args);
+  }
+  return instance;
 };
 
-export const deployVariableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
-  const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
-    poolAddress,
-    underlyingAsset,
-    name,
-    symbol,
-  ]);
+export const deployStableDebtToken = async (
+  [name, symbol, underlyingAsset, poolAddress]: [
+    string,
+    string,
+    tEthereumAddress,
+    tEthereumAddress
+  ],
+  verify: boolean
+) => {
+  const id = eContractid.StableDebtToken;
+  const args = [poolAddress, underlyingAsset, name, symbol];
+  const instance = await deployContract<StableDebtToken>(id, args);
 
-  return token;
+  if (verify) {
+    await verifyContract(id, instance.address, args);
+  }
+  return instance;
 };
 
-export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, name, symbol]: [
-  tEthereumAddress,
-  tEthereumAddress,
-  string,
-  string
-]) => {
-  const token = await deployContract<AToken>(eContractid.AToken, [
-    poolAddress,
-    underlyingAssetAddress,
-    name,
-    symbol,
-  ]);
+export const deployVariableDebtToken = async (
+  [name, symbol, underlyingAsset, poolAddress]: [
+    string,
+    string,
+    tEthereumAddress,
+    tEthereumAddress
+  ],
+  verify: boolean
+) => {
+  const id = eContractid.VariableDebtToken;
+  const args = [poolAddress, underlyingAsset, name, symbol];
+  const instance = await deployContract<VariableDebtToken>(id, args);
 
-  return token;
+  if (verify) {
+    await verifyContract(id, instance.address, args);
+  }
+  return instance;
+};
+
+export const deployGenericAToken = async (
+  [poolAddress, underlyingAssetAddress, name, symbol]: [
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string
+  ],
+  verify: boolean
+) => {
+  const id = eContractid.AToken;
+  const args = [poolAddress, underlyingAssetAddress, name, symbol];
+  const instance = await deployContract<AToken>(id, args);
+
+  if (verify) {
+    await verifyContract(id, instance.address, args);
+  }
+  return instance;
 };
 
 export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) => {
@@ -664,10 +681,10 @@ export const getPairsTokenAggregator = (
   },
   aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
 ): [string[], string[]] => {
-  const {ETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
+  const {ETH, USD, WETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
 
   const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
-    if (tokenSymbol !== 'ETH') {
+    if (tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH') {
       const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
         (value) => value === tokenSymbol
       );
@@ -691,7 +708,8 @@ export const initReserves = async (
   lendingPoolAddressesProvider: LendingPoolAddressesProvider,
   lendingPool: LendingPool,
   lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools
+  aavePool: AavePools,
+  verify: boolean
 ) => {
   if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
     console.log(`Invalid Aave pool ${aavePool}`);
@@ -732,35 +750,47 @@ export const initReserves = async (
           stableRateSlope2,
         },
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy([
-        lendingPoolAddressesProvider.address,
-        baseVariableBorrowRate,
-        variableRateSlope1,
-        variableRateSlope2,
-        stableRateSlope1,
-        stableRateSlope2,
-      ]);
+      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
+        [
+          lendingPoolAddressesProvider.address,
+          baseVariableBorrowRate,
+          variableRateSlope1,
+          variableRateSlope2,
+          stableRateSlope1,
+          stableRateSlope2,
+        ],
+        verify
+      );
 
-      const stableDebtToken = await deployStableDebtToken([
-        `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        tokenAddress,
-        lendingPool.address,
-      ]);
+      const stableDebtToken = await deployStableDebtToken(
+        [
+          `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          tokenAddress,
+          lendingPool.address,
+        ],
+        verify
+      );
 
-      const variableDebtToken = await deployVariableDebtToken([
-        `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        tokenAddress,
-        lendingPool.address,
-      ]);
+      const variableDebtToken = await deployVariableDebtToken(
+        [
+          `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          tokenAddress,
+          lendingPool.address,
+        ],
+        verify
+      );
 
-      const aToken = await deployGenericAToken([
-        lendingPool.address,
-        tokenAddress,
-        `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-      ]);
+      const aToken = await deployGenericAToken(
+        [
+          lendingPool.address,
+          tokenAddress,
+          `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        ],
+        verify
+      );
 
       if (process.env.POOL === AavePools.secondary) {
         if (assetSymbol.search('UNI') === -1) {

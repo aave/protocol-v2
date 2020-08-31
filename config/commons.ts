@@ -126,9 +126,9 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingPoolManagerAddressIndex: 0,
   ProviderRegistry: {
-    [EthereumNetwork.kovan]: '',
-    [EthereumNetwork.ropsten]: '',
-    [EthereumNetwork.main]: '',
+    [EthereumNetwork.kovan]: undefined,
+    [EthereumNetwork.ropsten]: undefined,
+    [EthereumNetwork.main]: undefined,
   },
   LendingRateOracle: {
     [EthereumNetwork.kovan]: '0xdcde9bb6a49e37fa433990832ab541ae2d4feb4a',
@@ -227,4 +227,10 @@ export const CommonsConfig: ICommonConfiguration = {
       UNI_MKR_ETH: '0xEe40a5E8F3732bE6ECDb5A90e23D0b7bF0D4a73c',
     },
   },
+  ReserveAssets: {
+    [EthereumNetwork.main]: {},
+    [EthereumNetwork.kovan]: {},
+    [EthereumNetwork.ropsten]: {},
+  },
+  ReservesConfig: {},
 };

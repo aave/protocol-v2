@@ -6,7 +6,7 @@ import {
 import {waitForTx} from '../../helpers/misc-utils';
 
 task(
-  'deploy-address-provider',
+  'dev:deploy-address-provider',
   'Deploy address provider, registry and fee provider for dev enviroment'
 )
   .addOptionalParam('verify', 'Verify contracts at Etherscan')

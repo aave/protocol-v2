@@ -5,11 +5,8 @@ import {ConfigNames} from '../../helpers/configuration';
 task('aave:full', 'Deploy development enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
-    await localBRE.run('set-bre');
-    // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
-    if (verify) {
-      checkVerification();
-    }
+    const POOL_NAME = ConfigNames.Aave;
+
     await localBRE.run('set-bre');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
@@ -20,19 +17,16 @@ task('aave:full', 'Deploy development enviroment')
     console.log('Migration started\n');
 
     console.log('1. Deploy address provider');
-    await localBRE.run('full:deploy-address-provider', {verify, pool: ConfigNames.Aave});
+    await localBRE.run('full:deploy-address-provider', {verify, pool: POOL_NAME});
 
-    /*
-      console.log('3. Deploy lending pool');
-      await localBRE.run('deploy-lending-pool', {verify});
+    console.log('2. Deploy lending pool');
+    await localBRE.run('full:deploy-lending-pool', {verify});
 
-      console.log('4. Deploy oracles');
-      await localBRE.run('deploy-oracles', {verify, pool: ConfigNames.Aave});
+    console.log('3. Deploy oracles');
+    await localBRE.run('full:deploy-oracles', {verify, pool: POOL_NAME});
 
-      console.log('5. Initialize lending pool');
-      await localBRE.run('initialize-lending-pool', {verify});
+    console.log('4. Initialize lending pool');
+    await localBRE.run('full:initialize-lending-pool', {verify, pool: POOL_NAME});
 
-      // console.log('\nFinished migration');
-    */
-    console.log('TODO: Pending to migrate');
+    console.log('\nFinished migrations');
   });

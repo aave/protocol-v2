@@ -19,7 +19,7 @@ import {waitForTx} from '../../helpers/misc-utils';
 import {getAllAggregatorsAddresses, getAllTokenAddresses} from '../../helpers/mock-helpers';
 import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
 
-task('deploy-oracles', 'Deploy oracles for dev enviroment')
+task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({verify, pool}, localBRE) => {

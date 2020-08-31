@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import {MockTokenMap} from './contracts-helpers';
 
 export interface SymbolMap<T> {
   [symbol: string]: T;
@@ -77,6 +78,9 @@ export type tBigNumberTokenBigUnits = BigNumber;
 export type tStringTokenSmallUnits = string; // 1 wei, or 1 basic unit of USDC, or 1 basic unit of DAI
 export type tBigNumberTokenSmallUnits = BigNumber;
 
+export interface iAssetCommon<T> {
+  [key: string]: T;
+}
 export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
@@ -112,7 +116,6 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iAavePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'WETH'
   | 'DAI'
   | 'TUSD'
   | 'USDC'
@@ -151,7 +154,7 @@ export type iAaveSecondPoolAssets<T> = Pick<
   | 'UNI_LINK_ETH'
 >;
 
-export type iMultiPoolsAssets<T> = iAavePoolAssets<T> | iAaveSecondPoolAssets<T>;
+export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T> | iAaveSecondPoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
 
@@ -272,7 +275,7 @@ export interface ICommonConfiguration {
   ReserveSymbols: string[];
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;
-  ProviderRegistry: iParamsPerNetwork<tEthereumAddress>;
+  ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
@@ -281,19 +284,20 @@ export interface ICommonConfiguration {
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
   LendingPoolManagerAddress: iParamsPerNetwork<tEthereumAddress | undefined>;
   LendingPoolManagerAddressIndex: number;
+  ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
-  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+  ReservesConfig: iAavePoolAssets<IReserveParams>;
+}
+
+export interface IUniswapConfiguration extends ICommonConfiguration {
+  ReservesConfig: iAaveSecondPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
-}
-
-export interface IUniswapConfiguration extends ICommonConfiguration {
-  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
-  UniAssetsAddresses: iParamsPerNetwork<ITokenAddress>;
 }
 
 export type PoolConfiguration = IAaveConfiguration | IUniswapConfiguration;
