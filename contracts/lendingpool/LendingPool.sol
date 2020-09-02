@@ -188,7 +188,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     ReserveLogic.ReserveData storage reserve = _reserves[vars.asset];
     UserConfiguration.Map storage userConfig = _usersConfig[vars.user];
 
-    address oracle = addressesProvider.getPriceOracle();
+    address oracle = _addressesProvider.getPriceOracle();
     uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
       10**reserve.configuration.getDecimals()
     );
@@ -202,7 +202,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
       _reserves,
       _usersConfig[vars.user],
-      reservesList,
+      _reservesList,
       oracle
     );
 
@@ -220,7 +220,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     }
 
     address aToken = reserve.aTokenAddress;
-    reserve.updateInterestRates(asset, aToken, 0, amount);
+    reserve.updateInterestRates(vars.asset, aToken, 0, vars.amount);
 
     uint256 reserveIndex = reserve.index;
     if (!userConfig.isBorrowing(reserveIndex)) {
@@ -308,7 +308,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve on which the user borrowed
    * @param rateMode the rate mode that the user wants to swap
    **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override nonReentrant {
+  function swapBorrowRateMode(address asset, uint256 rateMode) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -516,14 +516,14 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     if (debtType == 0) { // To not fetch balance/allowance if no debt needs to be opened
       IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
-      reserve.updateInterestRates(asset, vars.premium, 0);
+      reserve.updateInterestRates(asset, vars.aTokenAddress, vars.premium, 0);
     } else {
       vars.receiverBalance = IERC20(asset).balanceOf(receiverAddress);
       vars.receiverAllowance = IERC20(asset).allowance(receiverAddress, address(this));
       if (vars.receiverBalance >= vars.amountPlusPremium && vars.receiverAllowance >= vars.amountPlusPremium) {
         IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
         reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
-        reserve.updateInterestRates(asset, vars.premium, 0);
+        reserve.updateInterestRates(asset, vars.aTokenAddress, vars.premium, 0);
       } else {
         if (debtType == 1 || debtType == 2) {
           // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
@@ -545,6 +545,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
             );
             reserve.updateInterestRates(
               asset,
+              vars.aTokenAddress,
               vars.premium,
               0
             );
