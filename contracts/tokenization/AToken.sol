@@ -40,7 +40,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   }
 
   modifier whenTransferAllowed(address from, uint256 amount) {
-    require(isTransferAllowed(from, amount), Errors.TRANSFER_CANNOT_BE_ALLOWED);
+    require(isTransferAllowed(from, amount), Errors.TRANSFER_NOT_ALLOWED);
     _;
   }
 

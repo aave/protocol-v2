@@ -76,30 +76,39 @@ export enum ProtocolErrors {
 
   // require error messages - aToken
   CALLER_MUST_BE_LENDING_POOL = '27', // 'The caller of this function must be a lending pool'
-  TRANSFER_CANNOT_BE_ALLOWED = '28', // 'Transfer cannot be allowed.'
-  NOT_ALLOWED_TO_REDIRECT_INTEREST = '29', // 'Caller is not allowed to redirect the interest of the user'
-  CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
-  TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
-  INTEREST_ALREADY_REDIRECTED = '32', // 'Interest is already redirected to the user'
-  NO_VALID_BALANCE_FOR_REDIRECT_INT_STREAM = '33', // 'Interest stream can only be redirected if there is a valid balance'
+  NOT_ALLOWED_TO_REDIRECT_INTEREST = '28', // 'Caller is not allowed to redirect the interest of the user'
+  CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '29', // 'User cannot give allowance to himself'
+  TRANSFER_AMOUNT_NOT_GT_0 = '30', // 'Transferred amount needs to be greater than zero'
+  INTEREST_ALREADY_REDIRECTED = '31', // 'Interest is already redirected to the user'
+  NO_VALID_BALANCE_FOR_REDIRECT_INT_STREAM = '32', // 'Interest stream can only be redirected if there is a valid balance'
+
+  // require error messages - ReserveLogic
+  RESERVE_ALREADY_INITIALIZED = '33', // 'Reserve has already been initialized'
+
+  //require error messages - LendingPoolConfiguration
+  CALLER_NOT_LENDING_POOL_MANAGER = '34', // 'The caller must be a lending pool manager'
+  RESERVE_LIQUIDITY_NOT_0 = '35', // 'The liquidity of the reserve needs to be 0'
+
+  //require error messages - LendingPoolAddressesProviderRegistry
+  PROVIDER_NOT_REGISTERED = '36', // 'Provider is not registered'
 
   // old
 
   INVALID_CONFIGURATOR_CALLER_MSG = 'The caller must be a lending pool configurator contract',
   INVALID_POOL_CALLER_MSG = 'The caller must be a lending pool contract',
-  // INVALID_POOL_CALLER_MSG_1 = 'The caller of this function must be a lending pool', => CALLER_MUST_BE_LENDING_POOL
-  INVALID_POOL_MANAGER_CALLER_MSG = 'The caller must be a lending pool manager',
+  // INVALID_POOL_CALLER_MSG_1 = 'The caller of this function must be a lending pool', => 27
+  // INVALID_POOL_MANAGER_CALLER_MSG = 'The caller must be a lending pool manager', => 34
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
   INVALID_TO_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
   INVALID_OWNER_REVERT_MSG = 'Ownable: caller is not the owner',
   INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER = 'Invalid redirected balance before transfer',
   INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER = 'Invalid redirected balance after transfer',
   INVALID_REDIRECTION_ADDRESS = 'Invalid redirection address',
-  TRANSFERRED_AMOUNT_GT_ZERO = 'Transferred amount needs to be greater than zero',
-  ZERO_COLLATERAL = 'The collateral balance is 0',
-  INCONSISTENT_PROTOCOL_BALANCE = 'The actual balance of the protocol is inconsistent',
-  TOO_SMALL_FLASH_LOAN = 'The requested amount is too small for a FlashLoan.',
-  // NOT_ENOUGH_LIQUIDITY_TO_BORROW = 'There is not enough liquidity available to borrow',
+  // TRANSFERRED_AMOUNT_GT_ZERO = 'Transferred amount needs to be greater than zero', => 30
+  // ZERO_COLLATERAL = 'The collateral balance is 0',
+  // INCONSISTENT_PROTOCOL_BALANCE = 'The actual balance of the protocol is inconsistent', => 26
+  // TOO_SMALL_FLASH_LOAN = 'The requested amount is too small for a FlashLoan.', => 25
+  // NOT_ENOUGH_LIQUIDITY_TO_BORROW = 'There is not enough liquidity available to borrow', => 24
   HF_IS_NOT_BELLOW_THRESHOLD = 'Health factor is not below the threshold',
   INVALID_HF = 'Invalid health factor',
   USER_DID_NOT_BORROW_SPECIFIED = 'User did not borrow the specified currency',
@@ -109,7 +118,7 @@ export enum ProtocolErrors {
 export enum OLD_ProtocolErrors {
   INVALID_CONFIGURATOR_CALLER_MSG = 'The caller must be a lending pool configurator contract',
   INVALID_POOL_CALLER_MSG = 'The caller must be a lending pool contract',
-  // INVALID_POOL_CALLER_MSG_1 = 'The caller of this function must be a lending pool', => CALLER_MUST_BE_LENDING_POOL
+  INVALID_POOL_CALLER_MSG_1 = 'The caller of this function must be a lending pool',
   INVALID_POOL_MANAGER_CALLER_MSG = 'The caller must be a lending pool manager',
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
   INVALID_TO_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',

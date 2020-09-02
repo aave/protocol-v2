@@ -39,10 +39,19 @@ library Errors {
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '27'; // 'The caller of this function must be a lending pool'
-  string public constant TRANSFER_CANNOT_BE_ALLOWED = '28'; // 'Transfer cannot be allowed.'
-  string public constant NOT_ALLOWED_TO_REDIRECT_INTEREST = '29'; // 'Caller is not allowed to redirect the interest of the user'
-  string public constant CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
-  string public constant TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
-  string public constant INTEREST_ALREADY_REDIRECTED = '32'; // 'Interest is already redirected to the user'
-  string public constant NO_VALID_BALANCE_FOR_REDIRECT_INT_STREAM = '33'; // 'Interest stream can only be redirected if there is a valid balance'
+  string public constant NOT_ALLOWED_TO_REDIRECT_INTEREST = '28'; // 'Caller is not allowed to redirect the interest of the user'
+  string public constant CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '29'; // 'User cannot give allowance to himself'
+  string public constant TRANSFER_AMOUNT_NOT_GT_0 = '30'; // 'Transferred amount needs to be greater than zero'
+  string public constant INTEREST_ALREADY_REDIRECTED = '31'; // 'Interest is already redirected to the user'
+  string public constant NO_VALID_BALANCE_FOR_REDIRECT_INT_STREAM = '32'; // 'Interest stream can only be redirected if there is a valid balance'
+
+  // require error messages - ReserveLogic
+  string public constant RESERVE_ALREADY_INITIALIZED = '33'; // 'Reserve has already been initialized'
+
+  //require error messages - LendingPoolConfiguration
+  string public constant CALLER_NOT_LENDING_POOL_MANAGER = '34'; // 'The caller must be a lending pool manager'
+  string public constant RESERVE_LIQUIDITY_NOT_0 = '35'; // 'The liquidity of the reserve needs to be 0'
+
+  //require error messages - LendingPoolAddressesProviderRegistry
+  string public constant PROVIDER_NOT_REGISTERED = '36'; // 'Provider is not registered'
 }

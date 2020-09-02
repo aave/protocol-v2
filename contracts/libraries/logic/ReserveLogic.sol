@@ -10,6 +10,7 @@ import {IStableDebtToken} from '../../tokenization/interfaces/IStableDebtToken.s
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
+import {Errors} from '../helpers/Errors.sol';
 
 /**
  * @title ReserveLogic library
@@ -20,9 +21,6 @@ library ReserveLogic {
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
-
-  //require error messages
-  string private constant RESERVE_ALREADY_INITIALIZED = '1'; // 'Reserve has already been initialized'
 
   /**
    * @dev Emitted when the state of a reserve is updated
@@ -183,7 +181,7 @@ library ReserveLogic {
     address variableDebtTokenAddress,
     address interestRateStrategyAddress
   ) external {
-    require(reserve.aTokenAddress == address(0), RESERVE_ALREADY_INITIALIZED);
+    require(reserve.aTokenAddress == address(0), Errors.RESERVE_ALREADY_INITIALIZED);
     if (reserve.lastLiquidityIndex == 0) {
       //if the reserve has not been initialized yet
       reserve.lastLiquidityIndex = WadRayMath.ray();
