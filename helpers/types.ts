@@ -92,6 +92,13 @@ export enum ProtocolErrors {
   //require error messages - LendingPoolAddressesProviderRegistry
   PROVIDER_NOT_REGISTERED = '36', // 'Provider is not registered'
 
+  //return error messages - LendingPoolLiquidationManager
+  HEALTH_FACTOR_NOT_BELLOW_THRESHOLD = '37', // 'Health factor is not below the threshold'
+  COLLATERAL_CANNOT_BE_LIQUIDATED = '38', // 'The collateral chosen cannot be liquidated'
+  SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '39', // 'User did not borrow the specified currency'
+  NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '40', // "There isn't enough liquidity available to liquidate"
+  NO_ERRORS = '41', // 'No errors'
+
   // old
 
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
@@ -100,10 +107,7 @@ export enum ProtocolErrors {
   INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER = 'Invalid redirected balance before transfer',
   INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER = 'Invalid redirected balance after transfer',
   INVALID_REDIRECTION_ADDRESS = 'Invalid redirection address',
-  HF_IS_NOT_BELLOW_THRESHOLD = 'Health factor is not below the threshold',
   INVALID_HF = 'Invalid health factor',
-  USER_DID_NOT_BORROW_SPECIFIED = 'User did not borrow the specified currency',
-  THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED = 'The collateral chosen cannot be liquidated',
 }
 
 export type tEthereumAddress = string;
