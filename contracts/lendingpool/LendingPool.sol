@@ -11,6 +11,7 @@ import {
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
@@ -43,14 +44,6 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
   uint256 public constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
   uint256 public constant FLASHLOAN_FEE_TOTAL = 9;
-
-  //require error messages
-  string private constant NOT_ENOUGH_STABLE_BORROW_BALANCE = '1'; // 'User does not have any stable rate loan for this reserve'
-  string private constant INTERESTRATE_REBALANCE_CONDITIONS_NOT_MET = '2'; // 'Interest rate rebalance conditions were not met'
-  string private constant LIQUIDATION_CALL_FAILED = '3'; // 'Liquidation call failed'
-  string private constant NOT_ENOUGH_LIQUIDITY_TO_BORROW = '4'; // 'There is not enough liquidity available to borrow'
-  string private constant REQUESTED_AMOUNT_TO_SMALL = '5'; // 'The requested amount is too small for a FlashLoan.'
-  string private constant INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '6'; // 'The actual balance of the protocol is inconsistent'
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 

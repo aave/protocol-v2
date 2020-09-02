@@ -12,6 +12,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title ReserveLogic library
@@ -26,28 +27,6 @@ library ValidationLogic {
   using SafeERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
-
-  //require error messages
-  string private constant AMOUNT_NOT_GREATER_THAN_0 = '1'; // 'Amount must be greater than 0'
-  string private constant NO_ACTIVE_RESERVE = '2'; // 'Action requires an active reserve'
-  string private constant NO_UNFREEZED_RESERVE = '3'; // 'Action requires an unfreezed reserve'
-  string private constant CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH = '4'; // 'The current liquidity is not enough'
-  string private constant NOT_ENOUGH_AVAILABLE_USER_BALANCE = '5'; // 'User cannot withdraw more than the available balance'
-  string private constant TRANSFER_NOT_ALLOWED = '6'; // 'Transfer cannot be allowed.'
-  string private constant BORROWING_NOT_ENABLED = '7'; // 'Borrowing is not enabled'
-  string private constant INVALID_INTERESTRATE_MODE_SELECTED = '8'; // 'Invalid interest rate mode selected'
-  string private constant COLLATERAL_BALANCE_IS_0 = '9'; // 'The collateral balance is 0'
-  string private constant HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD = '10'; // 'Health factor is lesser than the liquidation threshold'
-  string private constant COLLATERAL_CANNOT_COVER_NEW_BORROW = '11'; // 'There is not enough collateral to cover a new borrow'
-  string private constant STABLE_BORROWING_NOT_ENABLED = '12'; // stable borrowing not enabled
-  string private constant CALLATERAL_SAME_AS_BORROWING_CURRENCY = '13'; // collateral is (mostly) the same currency that is being borrowed
-  string private constant AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE = '14'; // 'The requested amount is greater than the max loan size in stable rate mode
-  string private constant NO_DEBT_OF_SELECTED_TYPE = '15'; // 'for repayment of stable debt, the user needs to have stable debt, otherwise, he needs to have variable debt'
-  string private constant NO_EPLICIT_AMOUNT_TO_REPAY_ON_BEHALF = '16'; // 'To repay on behalf of an user an explicit amount to repay is needed'
-  string private constant NO_STABLE_RATE_LOAN_IN_RESERVE = '17'; // 'User does not have a stable rate loan in progress on this reserve'
-  string private constant NO_VARIABLE_RATE_LOAN_IN_RESERVE = '18'; // 'User does not have a variable rate loan in progress on this reserve'
-  string private constant UNDERLYING_BALANCE_NOT_GREATER_THAN_0 = '19'; // 'The underlying balance needs to be greater than 0'
-  string private constant DEPOSIT_ALREADY_IN_USE = '20'; // 'User deposit is already being used as collateral'
 
   /**
    * @dev validates a deposit.
