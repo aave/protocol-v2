@@ -134,7 +134,9 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
     }
 
-    vars.userCollateralBalance = IERC20(collateralReserve.aTokenAddress).balanceOf(user);
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
+
+    vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
@@ -190,8 +192,6 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
 
-    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
-
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!receiveAToken) {
       uint256 currentAvailableCollateral = IERC20(collateral).balanceOf(
@@ -207,7 +207,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     //update the principal reserve
     principalReserve.updateCumulativeIndexesAndTimestamp();
-    principalReserve.updateInterestRates(principal, vars.actualAmountToLiquidate, 0);
+    principalReserve.updateInterestRates(
+      principal,
+      principalReserve.aTokenAddress,
+      vars.actualAmountToLiquidate,
+      0
+    );
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
@@ -233,7 +238,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
       //updating collateral reserve
       collateralReserve.updateCumulativeIndexesAndTimestamp();
-      collateralReserve.updateInterestRates(collateral, 0, vars.maxCollateralToLiquidate);
+      collateralReserve.updateInterestRates(
+        collateral,
+        address(vars.collateralAtoken),
+        0,
+        vars.maxCollateralToLiquidate
+      );
 
       //burn the equivalent amount of atoken
       vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate);
@@ -281,8 +291,8 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
    * @return principalAmountNeeded the purchase amount
    **/
   function calculateAvailableCollateralToLiquidate(
-    ReserveLogic.ReserveData storage _collateralReserve,
-    ReserveLogic.ReserveData storage _principalReserve,
+    ReserveLogic.ReserveData storage collateralReserve,
+    ReserveLogic.ReserveData storage principalReserve,
     address collateralAddress,
     address principalAddress,
     uint256 purchaseAmount,
@@ -298,10 +308,10 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     vars.collateralPrice = oracle.getAssetPrice(collateralAddress);
     vars.principalCurrencyPrice = oracle.getAssetPrice(principalAddress);
 
-    (, , vars.liquidationBonus, vars.collateralDecimals) = _collateralReserve
+    (, , vars.liquidationBonus, vars.collateralDecimals) = collateralReserve
       .configuration
       .getParams();
-    vars.principalDecimals = _principalReserve.configuration.getDecimals();
+    vars.principalDecimals = principalReserve.configuration.getDecimals();
 
     //this is the maximum possible amount of the selected collateral that can be liquidated, given the
     //max amount of principal currency that is available for liquidation.
