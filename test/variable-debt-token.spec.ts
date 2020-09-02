@@ -5,7 +5,7 @@ import {getContract} from '../helpers/contracts-helpers';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 
 makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
-  const {INVALID_POOL_CALLER_MSG_1} = ProtocolErrors;
+  const {CALLER_MUST_BE_LENDING_POOL} = ProtocolErrors;
 
   it('Tries to invoke mint not being the LendingPool', async () => {
     const {deployer, pool, dai} = testEnv;
@@ -19,7 +19,7 @@ makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
     );
 
     await expect(variableDebtContract.mint(deployer.address, '1')).to.be.revertedWith(
-      INVALID_POOL_CALLER_MSG_1
+      CALLER_MUST_BE_LENDING_POOL
     );
   });
 
@@ -35,7 +35,7 @@ makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
     );
 
     await expect(variableDebtContract.burn(deployer.address, '1')).to.be.revertedWith(
-      INVALID_POOL_CALLER_MSG_1
+      CALLER_MUST_BE_LENDING_POOL
     );
   });
 });

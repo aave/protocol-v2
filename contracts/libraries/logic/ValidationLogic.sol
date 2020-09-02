@@ -12,7 +12,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
-import {Errors} from '../libraries/helpers/Errors.sol';
+import {Errors} from '../helpers/Errors.sol';
 
 /**
  * @title ReserveLogic library
@@ -36,9 +36,9 @@ library ValidationLogic {
   function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) internal view {
     (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
 
-    require(amount > 0, AMOUNT_NOT_GREATER_THAN_0);
-    require(isActive, NO_ACTIVE_RESERVE);
-    require(!isFreezed, NO_UNFREEZED_RESERVE);
+    require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
+    require(isActive, Errors.NO_ACTIVE_RESERVE);
+    require(!isFreezed, Errors.NO_UNFREEZED_RESERVE);
   }
 
   /**
@@ -58,13 +58,13 @@ library ValidationLogic {
     address[] calldata reserves,
     address oracle
   ) external view {
-    require(amount > 0, AMOUNT_NOT_GREATER_THAN_0);
+    require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
 
     uint256 currentAvailableLiquidity = IERC20(reserveAddress).balanceOf(address(aTokenAddress));
 
-    require(currentAvailableLiquidity >= amount, CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
+    require(currentAvailableLiquidity >= amount, Errors.CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
 
-    require(amount <= userBalance, NOT_ENOUGH_AVAILABLE_USER_BALANCE);
+    require(amount <= userBalance, Errors.NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
     require(
       GenericLogic.balanceDecreaseAllowed(
@@ -76,7 +76,7 @@ library ValidationLogic {
         reserves,
         oracle
       ),
-      TRANSFER_NOT_ALLOWED
+      Errors.TRANSFER_NOT_ALLOWED
     );
   }
 
@@ -136,22 +136,22 @@ library ValidationLogic {
       vars.stableRateBorrowingEnabled
     ) = reserve.configuration.getFlags();
 
-    require(vars.isActive, NO_ACTIVE_RESERVE);
-    require(!vars.isFreezed, NO_UNFREEZED_RESERVE);
+    require(vars.isActive, Errors.NO_ACTIVE_RESERVE);
+    require(!vars.isFreezed, Errors.NO_UNFREEZED_RESERVE);
 
-    require(vars.borrowingEnabled, BORROWING_NOT_ENABLED);
+    require(vars.borrowingEnabled, Errors.BORROWING_NOT_ENABLED);
 
     //validate interest rate mode
     require(
       uint256(ReserveLogic.InterestRateMode.VARIABLE) == interestRateMode ||
         uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
-      INVALID_INTERESTRATE_MODE_SELECTED
+      Errors.INVALID_INTERESTRATE_MODE_SELECTED
     );
 
     //check that the amount is available in the reserve
     vars.availableLiquidity = IERC20(reserveAddress).balanceOf(address(reserve.aTokenAddress));
 
-    require(vars.availableLiquidity >= amount, CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
+    require(vars.availableLiquidity >= amount, Errors.CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
 
     (
       vars.userCollateralBalanceETH,
@@ -167,11 +167,11 @@ library ValidationLogic {
       oracle
     );
 
-    require(vars.userCollateralBalanceETH > 0, COLLATERAL_BALANCE_IS_0);
+    require(vars.userCollateralBalanceETH > 0, Errors.COLLATERAL_BALANCE_IS_0);
 
     require(
       vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
-      HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
+      Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
@@ -181,7 +181,7 @@ library ValidationLogic {
 
     require(
       vars.amountOfCollateralNeededETH <= vars.userCollateralBalanceETH,
-      COLLATERAL_CANNOT_COVER_NEW_BORROW
+      Errors.COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
 
     /**
@@ -196,20 +196,20 @@ library ValidationLogic {
     if (vars.rateMode == ReserveLogic.InterestRateMode.STABLE) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
-      require(vars.stableRateBorrowingEnabled, STABLE_BORROWING_NOT_ENABLED);
+      require(vars.stableRateBorrowingEnabled, Errors.STABLE_BORROWING_NOT_ENABLED);
 
       require(
         !userConfig.isUsingAsCollateral(reserve.index) ||
           reserve.configuration.getLtv() == 0 ||
           amount > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
-        CALLATERAL_SAME_AS_BORROWING_CURRENCY
+        Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity
       uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(maxStableLoanPercent);
 
-      require(amount <= maxLoanSizeStable, AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE);
+      require(amount <= maxLoanSizeStable, Errors.AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE);
     }
   }
 
@@ -231,21 +231,21 @@ library ValidationLogic {
   ) external view {
     bool isActive = reserve.configuration.getActive();
 
-    require(isActive, NO_ACTIVE_RESERVE);
+    require(isActive, Errors.NO_ACTIVE_RESERVE);
 
-    require(amountSent > 0, AMOUNT_NOT_GREATER_THAN_0);
+    require(amountSent > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
 
     require(
       (stableDebt > 0 &&
         ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
         (variableDebt > 0 &&
           ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
-      NO_DEBT_OF_SELECTED_TYPE
+      Errors.NO_DEBT_OF_SELECTED_TYPE
     );
 
     require(
       amountSent != uint256(-1) || msg.sender == onBehalfOf,
-      NO_EPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
+      Errors.NO_EPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
     );
   }
 
@@ -266,13 +266,13 @@ library ValidationLogic {
   ) external view {
     (bool isActive, bool isFreezed, , bool stableRateEnabled) = reserve.configuration.getFlags();
 
-    require(isActive, NO_ACTIVE_RESERVE);
-    require(!isFreezed, NO_UNFREEZED_RESERVE);
+    require(isActive, Errors.NO_ACTIVE_RESERVE);
+    require(!isFreezed, Errors.NO_UNFREEZED_RESERVE);
 
     if (currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
-      require(stableBorrowBalance > 0, NO_STABLE_RATE_LOAN_IN_RESERVE);
+      require(stableBorrowBalance > 0, Errors.NO_STABLE_RATE_LOAN_IN_RESERVE);
     } else if (currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
-      require(variableBorrowBalance > 0, NO_VARIABLE_RATE_LOAN_IN_RESERVE);
+      require(variableBorrowBalance > 0, Errors.NO_VARIABLE_RATE_LOAN_IN_RESERVE);
       /**
        * user wants to swap to stable, before swapping we need to ensure that
        * 1. stable borrow rate is enabled on the reserve
@@ -280,17 +280,17 @@ library ValidationLogic {
        * more collateral than he is borrowing, artificially lowering
        * the interest rate, borrowing at variable, and switching to stable
        **/
-      require(stableRateEnabled, STABLE_BORROWING_NOT_ENABLED);
+      require(stableRateEnabled, Errors.STABLE_BORROWING_NOT_ENABLED);
 
       require(
         !userConfig.isUsingAsCollateral(reserve.index) ||
           reserve.configuration.getLtv() == 0 ||
           stableBorrowBalance.add(variableBorrowBalance) >
           IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
-        CALLATERAL_SAME_AS_BORROWING_CURRENCY
+        Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
-      revert(INVALID_INTERESTRATE_MODE_SELECTED);
+      revert(Errors.INVALID_INTERESTRATE_MODE_SELECTED);
     }
   }
 
@@ -313,7 +313,7 @@ library ValidationLogic {
   ) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
 
-    require(underlyingBalance > 0, UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
+    require(underlyingBalance > 0, Errors.UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
     require(
       GenericLogic.balanceDecreaseAllowed(
@@ -325,7 +325,7 @@ library ValidationLogic {
         reserves,
         oracle
       ),
-      DEPOSIT_ALREADY_IN_USE
+      Errors.DEPOSIT_ALREADY_IN_USE
     );
   }
 }

@@ -345,7 +345,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     uint256 stableBorrowBalance = IERC20(address(stableDebtToken)).balanceOf(user);
 
     // user must be borrowing on asset at a stable rate
-    require(stableBorrowBalance > 0, NOT_ENOUGH_STABLE_BORROW_BALANCE);
+    require(stableBorrowBalance > 0, Errors.NOT_ENOUGH_STABLE_BORROW_BALANCE);
 
     uint256 rebalanceDownRateThreshold = reserve.currentStableBorrowRate.rayMul(
       WadRayMath.ray().add(REBALANCE_DOWN_RATE_DELTA)
@@ -360,7 +360,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     require(
       userStableRate < reserve.currentLiquidityRate || userStableRate > rebalanceDownRateThreshold,
-      INTERESTRATE_REBALANCE_CONDITIONS_NOT_MET
+      Errors.INTERESTRATE_REBALANCE_CONDITIONS_NOT_MET
     );
 
     //burn old debt tokens, mint new ones
@@ -436,7 +436,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
         receiveAToken
       )
     );
-    require(success, LIQUIDATION_CALL_FAILED);
+    require(success, Errors.LIQUIDATION_CALL_FAILED);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
@@ -470,8 +470,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     //calculate amount fee
     uint256 amountFee = amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
 
-    require(availableLiquidityBefore >= amount, NOT_ENOUGH_LIQUIDITY_TO_BORROW);
-    require(amountFee > 0, REQUESTED_AMOUNT_TO_SMALL);
+    require(availableLiquidityBefore >= amount, Errors.NOT_ENOUGH_LIQUIDITY_TO_BORROW);
+    require(amountFee > 0, Errors.REQUESTED_AMOUNT_TO_SMALL);
 
     //get the FlashLoanReceiver instance
     IFlashLoanReceiver receiver = IFlashLoanReceiver(receiverAddress);
@@ -487,7 +487,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     require(
       availableLiquidityAfter == availableLiquidityBefore.add(amountFee),
-      INCONSISTENT_PROTOCOL_ACTUAL_BALANCE
+      Errors.INCONSISTENT_PROTOCOL_ACTUAL_BALANCE
     );
 
     //compounding the cumulated interest

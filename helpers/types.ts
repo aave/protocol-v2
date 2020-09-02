@@ -82,6 +82,28 @@ export enum ProtocolErrors {
   TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
   INTEREST_ALREADY_REDIRECTED = '32', // 'Interest is already redirected to the user'
   NO_VALID_BALANCE_FOR_REDIRECT_INT_STREAM = '33', // 'Interest stream can only be redirected if there is a valid balance'
+
+  // old
+
+  INVALID_CONFIGURATOR_CALLER_MSG = 'The caller must be a lending pool configurator contract',
+  INVALID_POOL_CALLER_MSG = 'The caller must be a lending pool contract',
+  // INVALID_POOL_CALLER_MSG_1 = 'The caller of this function must be a lending pool', => CALLER_MUST_BE_LENDING_POOL
+  INVALID_POOL_MANAGER_CALLER_MSG = 'The caller must be a lending pool manager',
+  INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
+  INVALID_TO_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
+  INVALID_OWNER_REVERT_MSG = 'Ownable: caller is not the owner',
+  INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER = 'Invalid redirected balance before transfer',
+  INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER = 'Invalid redirected balance after transfer',
+  INVALID_REDIRECTION_ADDRESS = 'Invalid redirection address',
+  TRANSFERRED_AMOUNT_GT_ZERO = 'Transferred amount needs to be greater than zero',
+  ZERO_COLLATERAL = 'The collateral balance is 0',
+  INCONSISTENT_PROTOCOL_BALANCE = 'The actual balance of the protocol is inconsistent',
+  TOO_SMALL_FLASH_LOAN = 'The requested amount is too small for a FlashLoan.',
+  // NOT_ENOUGH_LIQUIDITY_TO_BORROW = 'There is not enough liquidity available to borrow',
+  HF_IS_NOT_BELLOW_THRESHOLD = 'Health factor is not below the threshold',
+  INVALID_HF = 'Invalid health factor',
+  USER_DID_NOT_BORROW_SPECIFIED = 'User did not borrow the specified currency',
+  THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED = 'The collateral chosen cannot be liquidated',
 }
 
 export enum OLD_ProtocolErrors {
