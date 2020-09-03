@@ -324,4 +324,14 @@ library ValidationLogic {
       'User deposit is already being used as collateral'
     );
   }
+
+  /**
+  * @dev validates a flashloan action
+  * @param mode the flashloan mode (NONE = classic flashloan, STABLE = open a stable rate loan, VARIABLE = open a variable rate loan)
+  * @param premium the premium paid on the flashloan
+  **/
+  function validateFlashloan(ReserveLogic.InterestRateMode mode, uint256 premium) internal pure {
+    require(premium > 0, 'The requested amount is too small for a FlashLoan.');
+    require(mode <= ReserveLogic.InterestRateMode.VARIABLE, 'Invalid flashloan mode selected');
+  }
 }
