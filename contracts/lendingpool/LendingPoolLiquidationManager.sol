@@ -19,6 +19,7 @@ import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
@@ -130,7 +131,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     if (vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
         uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        'Health factor is not below the threshold'
+        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
       );
     }
 
@@ -146,7 +147,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     if (!vars.isCollateralEnabled) {
       return (
         uint256(LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
-        'The collateral chosen cannot be liquidated'
+        Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
       );
     }
 
@@ -159,7 +160,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
       return (
         uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
-        'User did not borrow the specified currency'
+        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
       );
     }
 
@@ -200,7 +201,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
           uint256(LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
-          "There isn't enough liquidity available to liquidate"
+          Errors.NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
         );
       }
     }
@@ -266,7 +267,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       receiveAToken
     );
 
-    return (uint256(LiquidationErrors.NO_ERROR), 'No errors');
+    return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   struct AvailableCollateralToLiquidateLocalVars {

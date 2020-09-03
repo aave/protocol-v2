@@ -4,6 +4,7 @@ pragma solidity ^0.6.8;
 import {ERC20} from './ERC20.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {
   VersionedInitializable
@@ -34,12 +35,12 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   uint256 public constant ATOKEN_REVISION = 0x1;
 
   modifier onlyLendingPool {
-    require(msg.sender == address(_pool), 'The caller of this function must be a lending pool');
+    require(msg.sender == address(_pool), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
   modifier whenTransferAllowed(address from, uint256 amount) {
-    require(isTransferAllowed(from, amount), 'Transfer cannot be allowed.');
+    require(isTransferAllowed(from, amount), Errors.TRANSFER_NOT_ALLOWED);
     _;
   }
 
@@ -100,7 +101,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   function redirectInterestStreamOf(address from, address to) external override {
     require(
       msg.sender == _interestRedirectionAllowances[from],
-      'Caller is not allowed to redirect the interest of the user'
+      Errors.INTEREST_REDIRECTION_NOT_ALLOWED
     );
     _redirectInterestStream(from, to);
   }
@@ -112,7 +113,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * the allowance.
    **/
   function allowInterestRedirectionTo(address to) external override {
-    require(to != msg.sender, 'User cannot give allowance to himself');
+    require(to != msg.sender, Errors.CANNOT_GIVE_ALLOWANCE_TO_HIMSELF);
     _interestRedirectionAllowances[msg.sender] = to;
     emit InterestRedirectionAllowanceChanged(msg.sender, to);
   }
@@ -434,15 +435,12 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     address to,
     uint256 value
   ) internal {
-    require(value > 0, 'Transferred amount needs to be greater than zero');
+    require(value > 0, Errors.TRANSFER_AMOUNT_NOT_GT_0);
 
     //cumulate the balance of the sender
-    (
-      ,
-      uint256 fromBalance,
-      uint256 fromBalanceIncrease,
-      uint256 fromIndex
-    ) = _cumulateBalance(from);
+    (, uint256 fromBalance, uint256 fromBalanceIncrease, uint256 fromIndex) = _cumulateBalance(
+      from
+    );
 
     //cumulate the balance of the receiver
     (, , uint256 toBalanceIncrease, uint256 toIndex) = _cumulateBalance(to);
@@ -486,7 +484,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   function _redirectInterestStream(address from, address to) internal {
     address currentRedirectionAddress = _interestRedirectionAddresses[from];
 
-    require(to != currentRedirectionAddress, 'Interest is already redirected to the user');
+    require(to != currentRedirectionAddress, Errors.INTEREST_ALREADY_REDIRECTED);
 
     //accumulates the accrued interest to the principal
     (
@@ -496,7 +494,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       uint256 fromIndex
     ) = _cumulateBalance(from);
 
-    require(fromBalance > 0, 'Interest stream can only be redirected if there is a valid balance');
+    require(fromBalance > 0, Errors.NO_VALID_BALANCE_FOR_REDIRECTION);
 
     //if the user is already redirecting the interest to someone, before changing
     //the redirection address we substract the redirected balance of the previous

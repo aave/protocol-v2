@@ -16,9 +16,9 @@ const {expect} = require('chai');
 makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
   const {
-    TRANSFER_AMOUNT_EXCEEDS_BALANCE,
-    TOO_SMALL_FLASH_LOAN,
     COLLATERAL_BALANCE_IS_0,
+    REQUESTED_AMOUNT_TOO_SMALL,
+    TRANSFER_AMOUNT_EXCEEDS_BALANCE
   } = ProtocolErrors;
 
   before(async () => {
@@ -103,7 +103,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           weth.address,
           ethers.utils.parseEther('0.8'),
-          2,
+          0,
           '0x10',
           '0'
         )
@@ -159,7 +159,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         '0x10',
         '0'
       )
-    ).to.be.revertedWith(TOO_SMALL_FLASH_LOAN);
+    ).to.be.revertedWith(REQUESTED_AMOUNT_TOO_SMALL);
   });
 
   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {
