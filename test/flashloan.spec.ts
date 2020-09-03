@@ -10,6 +10,7 @@ import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {ProtocolErrors, eContractid} from '../helpers/types';
 import BigNumber from 'bignumber.js';
 import {VariableDebtToken} from '../types/VariableDebtToken';
+import {StableDebtToken} from '../types/StableDebtToken';
 
 const {expect} = require('chai');
 
@@ -256,7 +257,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     expect(currentUserBalance.toString()).to.be.equal(expectedLiquidity, 'Invalid user balance');
   });
 
-  it('Takes out a 500 USDC flashloan with mode = 0, does not return the funds. Caller does not have any collateral (revert expected)', async () => {
+  it('Takes out a 500 USDC flashloan with mode = 0, does not return the funds. (revert expected)', async () => {
     const {usdc, pool, users} = testEnv;
     const caller = users[2];
 
@@ -271,7 +272,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
   });
 
-  it('Caller deposits 5 ETH as collateral, Takes a USDC flashloan, does not return the funds. A loan for caller is created', async () => {
+  it('Caller deposits 5 WETH as collateral, Takes a USDC flashloan with mode = 2, does not return the funds. A loan for caller is created', async () => {
     const {usdc, pool, weth, users} = testEnv;
 
     const caller = users[2];
@@ -303,7 +304,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     expect(callerDebt.toString()).to.be.equal('500450000', 'Invalid user debt');
   });
 
-  it('Caller deposits 1000 DAI as collateral, Takes WETH flashloan, does not return the funds and selects revert as result', async () => {
+  it('Caller deposits 1000 DAI as collateral, Takes a WETH flashloan with mode = 0, does not approve the transfer of the funds', async () => {
     const {dai, pool, weth, users} = testEnv;
 
     const caller = users[3];
@@ -326,5 +327,31 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         .connect(caller.signer)
         .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 0, '0x10', '0')
     ).to.be.revertedWith('ERC20: transfer amount exceeds allowance');
+  });
+
+  it('Caller takes a WETH flashloan with mode = 1', async () => {
+    const {dai, pool, weth, users} = testEnv;
+
+    const caller = users[3];
+
+    const flashAmount = ethers.utils.parseEther('0.8');
+
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
+
+    await pool
+        .connect(caller.signer)
+        .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0');
+
+    const {stableDebtTokenAddress} = await pool.getReserveTokensAddresses(weth.address);
+
+    const wethDebtToken = await getContract<StableDebtToken>(
+      eContractid.VariableDebtToken,
+      stableDebtTokenAddress
+    );
+
+    const callerDebt = await wethDebtToken.balanceOf(caller.address);
+
+    expect(callerDebt.toString()).to.be.equal('800720000000000000', 'Invalid user debt');
+  
   });
 });
