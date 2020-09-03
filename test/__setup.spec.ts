@@ -35,6 +35,7 @@ import {
 import {waitForTx} from '../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../helpers/init-helpers';
 import {AaveConfig} from '../config/aave';
+import {MockFlashLoanReceiverFactory} from '../types';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -206,7 +207,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     addressesProvider,
     lendingPoolProxy,
     lendingPoolConfiguratorProxy,
-    AavePools.proto
+    AavePools.proto,
+    false
   );
   await enableReservesToBorrow(
     reservesParams,
