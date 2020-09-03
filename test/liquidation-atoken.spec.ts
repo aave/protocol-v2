@@ -13,7 +13,7 @@ const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => {
   const {
-    HEALTH_FACTOR_NOT_BELLOW_THRESHOLD,
+    HEALTH_FACTOR_NOT_BELOW_THRESHOLD,
     INVALID_HF,
     SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER,
     COLLATERAL_CANNOT_BE_LIQUIDATED,
@@ -71,7 +71,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //someone tries to liquidate user 2
     await expect(
       pool.liquidationCall(weth.address, dai.address, borrower.address, 1, true)
-    ).to.be.revertedWith(HEALTH_FACTOR_NOT_BELLOW_THRESHOLD);
+    ).to.be.revertedWith(HEALTH_FACTOR_NOT_BELOW_THRESHOLD);
   });
 
   it('LIQUIDATION - Drop the health factor below 1', async () => {

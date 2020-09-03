@@ -133,7 +133,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
         uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        Errors.HEALTH_FACTOR_NOT_BELLOW_THRESHOLD
+        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
       );
     }
 
