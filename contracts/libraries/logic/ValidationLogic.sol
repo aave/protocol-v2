@@ -145,7 +145,7 @@ library ValidationLogic {
     require(
       uint256(ReserveLogic.InterestRateMode.VARIABLE) == interestRateMode ||
         uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
-      Errors.INVALID_INTERESTRATE_MODE_SELECTED
+      Errors.INVALID_INTEREST_RATE_MODE_SELECTED
     );
 
     //check that the amount is available in the reserve
@@ -245,7 +245,7 @@ library ValidationLogic {
 
     require(
       amountSent != uint256(-1) || msg.sender == onBehalfOf,
-      Errors.NO_EPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
+      Errors.NO_EXPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
     );
   }
 
@@ -290,7 +290,7 @@ library ValidationLogic {
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
-      revert(Errors.INVALID_INTERESTRATE_MODE_SELECTED);
+      revert(Errors.INVALID_INTEREST_RATE_MODE_SELECTED);
     }
   }
 

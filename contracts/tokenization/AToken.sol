@@ -101,7 +101,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   function redirectInterestStreamOf(address from, address to) external override {
     require(
       msg.sender == _interestRedirectionAllowances[from],
-      Errors.NOT_ALLOWED_TO_REDIRECT_INTEREST
+      Errors.INTEREST_REDIRECTION_NOT_ALLOWED
     );
     _redirectInterestStream(from, to);
   }
@@ -494,7 +494,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       uint256 fromIndex
     ) = _cumulateBalance(from);
 
-    require(fromBalance > 0, Errors.NO_VALID_BALANCE_FOR_REDIRECT_INT_STREAM);
+    require(fromBalance > 0, Errors.NO_VALID_BALANCE_FOR_REDIRECTION);
 
     //if the user is already redirecting the interest to someone, before changing
     //the redirection address we substract the redirected balance of the previous

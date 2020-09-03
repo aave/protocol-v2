@@ -12,7 +12,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
   const {
     INCONSISTENT_PROTOCOL_ACTUAL_BALANCE,
-    REQUESTED_AMOUNT_TO_SMALL,
+    REQUESTED_AMOUNT_TOO_SMALL,
     NOT_ENOUGH_LIQUIDITY_TO_BORROW,
   } = ProtocolErrors;
 
@@ -112,7 +112,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         '1', //1 wei loan
         '0x10'
       )
-    ).to.be.revertedWith(REQUESTED_AMOUNT_TO_SMALL);
+    ).to.be.revertedWith(REQUESTED_AMOUNT_TOO_SMALL);
   });
 
   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {

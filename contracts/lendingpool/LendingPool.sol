@@ -56,7 +56,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
   modifier onlyLendingPoolConfigurator {
-    require(_addressesProvider.getLendingPoolConfigurator() == msg.sender, '30');
+    require(
+      _addressesProvider.getLendingPoolConfigurator() == msg.sender,
+      Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
+    );
     _;
   }
 
@@ -360,7 +363,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
     require(
       userStableRate < reserve.currentLiquidityRate || userStableRate > rebalanceDownRateThreshold,
-      Errors.INTERESTRATE_REBALANCE_CONDITIONS_NOT_MET
+      Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
     );
 
     //burn old debt tokens, mint new ones
@@ -471,7 +474,7 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     uint256 amountFee = amount.mul(FLASHLOAN_FEE_TOTAL).div(10000);
 
     require(availableLiquidityBefore >= amount, Errors.NOT_ENOUGH_LIQUIDITY_TO_BORROW);
-    require(amountFee > 0, Errors.REQUESTED_AMOUNT_TO_SMALL);
+    require(amountFee > 0, Errors.REQUESTED_AMOUNT_TOO_SMALL);
 
     //get the FlashLoanReceiver instance
     IFlashLoanReceiver receiver = IFlashLoanReceiver(receiverAddress);
