@@ -99,6 +99,7 @@ export enum ProtocolErrors {
   SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '40', // 'User did not borrow the specified currency'
   NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '41', // "There isn't enough liquidity available to liquidate"
   NO_ERRORS = '42', // 'No errors'
+  INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
 
   // old
 

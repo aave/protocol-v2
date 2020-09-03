@@ -435,9 +435,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     vars.premium = amount.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
 
-    ReserveLogic.InterestRateMode debtMode = ReserveLogic.InterestRateMode(mode);
 
-    ValidationLogic.validateFlashloan(debtMode, vars.premium);
+    ValidationLogic.validateFlashloan(mode, vars.premium);
+
+    ReserveLogic.InterestRateMode debtMode = ReserveLogic.InterestRateMode(mode);
 
     vars.receiver = IFlashLoanReceiver(receiverAddress);
 

@@ -18,7 +18,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   const {
     COLLATERAL_BALANCE_IS_0,
     REQUESTED_AMOUNT_TOO_SMALL,
-    TRANSFER_AMOUNT_EXCEEDS_BALANCE
+    TRANSFER_AMOUNT_EXCEEDS_BALANCE,
+    INVALID_FLASHLOAN_MODE
   } = ProtocolErrors;
 
   before(async () => {
@@ -108,6 +109,25 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           '0'
         )
     ).to.be.revertedWith(TRANSFER_AMOUNT_EXCEEDS_BALANCE);
+  });
+
+  it('Takes a WETH flashloan with an invalid mode. (revert expected)', async () => {
+    const {pool, weth, users} = testEnv;
+    const caller = users[1];
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
+
+    await expect(
+      pool
+        .connect(caller.signer)
+        .flashLoan(
+          _mockFlashLoanReceiver.address,
+          weth.address,
+          ethers.utils.parseEther('0.8'),
+          4,
+          '0x10',
+          '0'
+        )
+    ).to.be.revertedWith(INVALID_FLASHLOAN_MODE);
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes WETH flashloan with mode = 2, does not return the funds. A variable loan for caller is created', async () => {
