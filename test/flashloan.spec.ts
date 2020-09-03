@@ -11,8 +11,8 @@ const {expect} = require('chai');
 makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
   const {
-    INCONSISTENT_PROTOCOL_BALANCE,
-    TOO_SMALL_FLASH_LOAN,
+    INCONSISTENT_PROTOCOL_ACTUAL_BALANCE,
+    REQUESTED_AMOUNT_TOO_SMALL,
     NOT_ENOUGH_LIQUIDITY_TO_BORROW,
   } = ProtocolErrors;
 
@@ -62,7 +62,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const reserveDataBefore = await pool.getReserveData(weth.address);
 
-    console.log("Total liquidity is ", reserveDataBefore.availableLiquidity.toString());
+    console.log('Total liquidity is ', reserveDataBefore.availableLiquidity.toString());
 
     const txResult = await pool.flashLoan(
       _mockFlashLoanReceiver.address,
@@ -99,7 +99,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         ethers.utils.parseEther('0.8'),
         '0x10'
       )
-    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_BALANCE);
+    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_ACTUAL_BALANCE);
   });
 
   it('tries to take a very small flashloan, which would result in 0 fees (revert expected)', async () => {
@@ -112,7 +112,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         '1', //1 wei loan
         '0x10'
       )
-    ).to.be.revertedWith(TOO_SMALL_FLASH_LOAN);
+    ).to.be.revertedWith(REQUESTED_AMOUNT_TOO_SMALL);
   });
 
   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {
@@ -194,7 +194,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         ethers.utils.parseEther('500'),
         '0x10'
       ),
-      INCONSISTENT_PROTOCOL_BALANCE
-    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_BALANCE);
+      INCONSISTENT_PROTOCOL_ACTUAL_BALANCE
+    ).to.be.revertedWith(INCONSISTENT_PROTOCOL_ACTUAL_BALANCE);
   });
 });
