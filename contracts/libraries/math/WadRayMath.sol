@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
+import {Errors} from '../helpers/Errors.sol';
+
 /**
  * @title WadRayMath library
  * @author Aave
@@ -60,11 +62,11 @@ library WadRayMath {
     
     uint256 result = a*b;
     
-    require(result/a == b, "WadRayMath: Multiplication overflow");
+    require(result/a == b, Errors.MULTIPLICATION_OVERFLOW);
     
     result+=halfWAD;
     
-    require(result >= halfWAD, "WadRayMath: Addition overflow");
+    require(result >= halfWAD, Errors.ADDITION_OVERFLOW);
 
     return result/WAD;
   }
@@ -76,17 +78,17 @@ library WadRayMath {
    * @return the result of a/b, in wad
    **/
   function wadDiv(uint256 a, uint256 b) internal pure returns (uint256) {
-    require(b != 0, "WadRayMath: Division by 0");
+    require(b != 0, Errors.DIVISION_BY_ZERO);
 
     uint256 halfB = b / 2;
 
     uint256 result = a*WAD;
 
-    require(result/WAD == a, "WadRayMath: Multiplication overflow");
+    require(result/WAD == a, Errors.MULTIPLICATION_OVERFLOW);
 
     result += halfB;
 
-    require(result >= halfB, "WadRayMath: Addition overflow");
+    require(result >= halfB, Errors.ADDITION_OVERFLOW);
 
     return result/b;
   }
@@ -104,11 +106,11 @@ library WadRayMath {
     
     uint256 result = a*b;
     
-    require(result/a == b, "WadRayMath: Multiplication overflow");
+    require(result/a == b, Errors.MULTIPLICATION_OVERFLOW);
     
     result+=halfRAY;
     
-    require(result >= halfRAY, "WadRayMath: Addition overflow");
+    require(result >= halfRAY, Errors.ADDITION_OVERFLOW);
 
     return result/RAY;
   }
@@ -120,17 +122,17 @@ library WadRayMath {
    * @return the result of a/b, in ray
    **/
   function rayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
-    require(b != 0, "WadRayMath: Division by 0");
+    require(b != 0, Errors.DIVISION_BY_ZERO);
 
     uint256 halfB = b / 2;
 
     uint256 result = a*RAY;
 
-    require(result/RAY == a, "WadRayMath: Multiplication overflow");
+    require(result/RAY == a, Errors.MULTIPLICATION_OVERFLOW);
 
     result += halfB;
 
-    require(result >= halfB, "WadRayMath: Addition overflow");
+    require(result >= halfB, Errors.ADDITION_OVERFLOW);
 
     return result/b;
 
@@ -144,7 +146,7 @@ library WadRayMath {
   function rayToWad(uint256 a) internal pure returns (uint256) {
     uint256 halfRatio = WAD_RAY_RATIO / 2;
     uint256 result = halfRatio+a;
-    require(result >= halfRatio, "WadRayMath: Addition overflow");
+    require(result >= halfRatio, Errors.ADDITION_OVERFLOW);
 
     return result/WAD_RAY_RATIO;
   }
@@ -156,7 +158,7 @@ library WadRayMath {
    **/
   function wadToRay(uint256 a) internal pure returns (uint256) {
     uint256 result = a*WAD_RAY_RATIO;
-    require(result/WAD_RAY_RATIO == a, "WadRayMath: Multiplication overflow");
+    require(result/WAD_RAY_RATIO == a, Errors.MULTIPLICATION_OVERFLOW);
     return result;
   }
 }

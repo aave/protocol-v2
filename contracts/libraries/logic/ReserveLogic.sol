@@ -133,7 +133,7 @@ library ReserveLogic {
         lastUpdateTimestamp
       );
       uint256 index = cumulatedLiquidityInterest.rayMul(reserve.lastLiquidityIndex);
-      require(index < (1 << 128), "ReserveLogic: Liquidity index overflow");
+      require(index < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
 
       reserve.lastLiquidityIndex = uint128(index);
 
@@ -147,7 +147,7 @@ library ReserveLogic {
         index = cumulatedVariableBorrowInterest.rayMul(
           reserve.lastVariableBorrowIndex
         );
-        require(index < (1 << 128), "ReserveLogic: Variable borrow index overflow");
+        require(index < (1 << 128),  Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
         reserve.lastVariableBorrowIndex = uint128(index);
       }
     }
@@ -175,7 +175,7 @@ library ReserveLogic {
     result = result.rayMul(
       reserve.lastLiquidityIndex
     );
-    require(result < (1 << 128), "ReserveLogic: Liquidity index overflow");
+    require(result < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
 
     reserve.lastLiquidityIndex = uint128(result);
   }

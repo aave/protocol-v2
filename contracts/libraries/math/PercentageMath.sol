@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
+
+import {Errors} from '../helpers/Errors.sol';
+
 /**
  * @title PercentageMath library
  * @author Aave
@@ -27,11 +30,11 @@ library PercentageMath {
     
     uint256 result = value*percentage;
     
-    require(result/value == percentage, "PercentageMath: Multiplication overflow");
+    require(result/value == percentage, Errors.MULTIPLICATION_OVERFLOW);
     
     result+=HALF_PERCENT;
     
-    require(result >= HALF_PERCENT, "PercentageMath: Addition overflow");
+    require(result >= HALF_PERCENT, Errors.ADDITION_OVERFLOW);
 
     return result/PERCENTAGE_FACTOR;
   }
@@ -43,16 +46,16 @@ library PercentageMath {
    * @return the value divided the percentage
    **/
   function percentDiv(uint256 value, uint256 percentage) internal pure returns (uint256) {
-    require(percentage != 0, "PercentageMath: Division by 0");
+    require(percentage != 0, Errors.DIVISION_BY_ZERO);
     uint256 halfPercentage = percentage / 2;
  
     uint256 result = value*PERCENTAGE_FACTOR;
 
-    require(result/PERCENTAGE_FACTOR == value, "PercentageMath: Multiplication overflow");
+    require(result/PERCENTAGE_FACTOR == value, Errors.MULTIPLICATION_OVERFLOW);
 
     result += halfPercentage;
 
-    require(result >= halfPercentage, "PercentageMath: Addition overflow");
+    require(result >= halfPercentage, Errors.ADDITION_OVERFLOW);
 
     return result/percentage;
   }
