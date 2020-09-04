@@ -28,7 +28,14 @@ abstract contract DebtTokenBase is IERC20Detailed, VersionedInitializable {
   address internal immutable _underlyingAssetAddress;
 
   ILendingPool internal immutable _pool;
-  mapping(address => uint256) internal _balances;
+
+  struct UserData{
+    uint128 balance;
+    //this field will store the user index for the variable debt token, and the user stable rate for the stable debt token
+    uint128 dataField; 
+  }
+
+  mapping(address => UserData) internal _usersData;
 
   /**
    * @dev only lending pool can call functions marked by this modifier
@@ -97,7 +104,7 @@ abstract contract DebtTokenBase is IERC20Detailed, VersionedInitializable {
    * @return the debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address user) public view returns (uint256) {
-    return _balances[user];
+    return _usersData[user].balance;
   }
 
   /**
@@ -107,7 +114,9 @@ abstract contract DebtTokenBase is IERC20Detailed, VersionedInitializable {
    **/
   function _mint(address user, uint256 amount) internal {
     _totalSupply = _totalSupply.add(amount);
-    _balances[user] = _balances[user].add(amount);
+    uint256 result = amount.add(_usersData[user].balance);
+    require(result < (1 << 128), "Debt token: balance overflow");
+    _usersData[user].balance = uint128(result);
   }
 
   /**
@@ -117,7 +126,9 @@ abstract contract DebtTokenBase is IERC20Detailed, VersionedInitializable {
    **/
   function _burn(address user, uint256 amount) internal {
     _totalSupply = _totalSupply.sub(amount);
-    _balances[user] = _balances[user].sub(amount);
+    uint256 result = uint256(_usersData[user].balance).sub(amount);
+    require(result < (1 << 128), "Debt token: balance overflow");
+    _usersData[user].balance = uint128(result);
   }
 
   /**
@@ -177,7 +188,7 @@ abstract contract DebtTokenBase is IERC20Detailed, VersionedInitializable {
       uint256
     )
   {
-    uint256 previousPrincipalBalance = _balances[user];
+    uint256 previousPrincipalBalance = _usersData[user].balance;
 
     if (previousPrincipalBalance == 0) {
       return (0, 0, 0);

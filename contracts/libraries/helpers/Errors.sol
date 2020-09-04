@@ -37,6 +37,7 @@ library Errors {
   string public constant REQUESTED_AMOUNT_TOO_SMALL = '25'; // 'The requested amount is too small for a FlashLoan.'
   string public constant INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26'; // 'The actual balance of the protocol is inconsistent'
   string public constant CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The actual balance of the protocol is inconsistent'
+  string public constant INVALID_FLASHLOAN_MODE = '43'; //Invalid flashloan mode selected
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
@@ -48,6 +49,11 @@ library Errors {
 
   // require error messages - ReserveLogic
   string public constant RESERVE_ALREADY_INITIALIZED = '34'; // 'Reserve has already been initialized'
+  string public constant LIQUIDITY_INDEX_OVERFLOW = '47'; //  Liquidity index overflows uint128
+  string public constant VARIABLE_BORROW_INDEX_OVERFLOW = '48'; //  Variable borrow index overflows uint128
+  string public constant LIQUIDITY_RATE_OVERFLOW = '49'; //  Liquidity rate overflows uint128
+  string public constant VARIABLE_BORROW_RATE_OVERFLOW = '50'; //  Variable borrow rate overflows uint128
+  string public constant STABLE_BORROW_RATE_OVERFLOW = '51'; //  Stable borrow rate overflows uint128
 
   //require error messages - LendingPoolConfiguration
   string public constant CALLER_NOT_LENDING_POOL_MANAGER = '35'; // 'The caller must be a lending pool manager'
@@ -62,5 +68,9 @@ library Errors {
   string public constant SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '40'; // 'User did not borrow the specified currency'
   string public constant NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '41'; // "There isn't enough liquidity available to liquidate"
   string public constant NO_ERRORS = '42'; // 'No errors'
-  string public constant INVALID_FLASHLOAN_MODE = '43'; //Invalid flashloan mode selected
+
+  //require error messages - Math libraries
+  string public constant MULTIPLICATION_OVERFLOW = '44'; 
+  string public constant ADDITION_OVERFLOW = '45'; 
+  string public constant DIVISION_BY_ZERO = '46';
 }

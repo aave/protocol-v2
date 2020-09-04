@@ -301,8 +301,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     // user must be borrowing on asset at a stable rate
     require(stableBorrowBalance > 0, Errors.NOT_ENOUGH_STABLE_BORROW_BALANCE);
 
-    uint256 rebalanceDownRateThreshold = reserve.currentStableBorrowRate.rayMul(
-      WadRayMath.ray().add(REBALANCE_DOWN_RATE_DELTA)
+    uint256 rebalanceDownRateThreshold = WadRayMath.ray().add(REBALANCE_DOWN_RATE_DELTA).rayMul(
+      reserve.currentStableBorrowRate
     );
 
     //1. user stable borrow rate is below the current liquidity rate. The loan needs to be rebalanced,
