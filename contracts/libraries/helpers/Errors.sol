@@ -62,4 +62,5 @@ library Errors {
   string public constant SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '40'; // 'User did not borrow the specified currency'
   string public constant NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '41'; // "There isn't enough liquidity available to liquidate"
   string public constant NO_ERRORS = '42'; // 'No errors'
+  string public constant INVALID_FLASHLOAN_MODE = '43'; //Invalid flashloan mode selected
 }

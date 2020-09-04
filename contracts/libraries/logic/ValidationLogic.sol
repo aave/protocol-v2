@@ -60,10 +60,6 @@ library ValidationLogic {
   ) external view {
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
 
-    uint256 currentAvailableLiquidity = IERC20(reserveAddress).balanceOf(address(aTokenAddress));
-
-    require(currentAvailableLiquidity >= amount, Errors.CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
-
     require(amount <= userBalance, Errors.NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
     require(
@@ -147,11 +143,6 @@ library ValidationLogic {
         uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
       Errors.INVALID_INTEREST_RATE_MODE_SELECTED
     );
-
-    //check that the amount is available in the reserve
-    vars.availableLiquidity = IERC20(reserveAddress).balanceOf(address(reserve.aTokenAddress));
-
-    require(vars.availableLiquidity >= amount, Errors.CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH);
 
     (
       vars.userCollateralBalanceETH,
@@ -327,5 +318,15 @@ library ValidationLogic {
       ),
       Errors.DEPOSIT_ALREADY_IN_USE
     );
+  }
+
+  /**
+  * @dev validates a flashloan action
+  * @param mode the flashloan mode (0 = classic flashloan, 1 = open a stable rate loan, 2 = open a variable rate loan)
+  * @param premium the premium paid on the flashloan
+  **/
+  function validateFlashloan(uint256 mode, uint256 premium) internal pure {
+    require(premium > 0, Errors.REQUESTED_AMOUNT_TOO_SMALL);
+    require(mode <= uint256(ReserveLogic.InterestRateMode.VARIABLE), Errors.INVALID_FLASHLOAN_MODE);
   }
 }

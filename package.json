@@ -13,6 +13,7 @@
     "types-gen": "typechain --target ethers-v5 --outDir ./types './artifacts/*.json'",
     "test": "buidler test",
     "test-scenarios": "buidler test test/__setup.spec.ts test/scenario.spec.ts",
+    "test-flash": "buidler test test/__setup.spec.ts test/flashloan.spec.ts",
     "dev:coverage": "buidler coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
