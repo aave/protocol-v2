@@ -19,6 +19,7 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
 
   address internal immutable UNDERLYING_ASSET;
   ILendingPool internal immutable POOL;
+  mapping(address => uint256) internal _usersData;
 
   /**
    * @dev Only lending pool can call functions marked by this modifier

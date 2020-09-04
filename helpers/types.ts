@@ -99,6 +99,7 @@ export enum ProtocolErrors {
   SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '40', // 'User did not borrow the specified currency'
   NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '41', // "There isn't enough liquidity available to liquidate"
   NO_ERRORS = '42', // 'No errors'
+  INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
 
   // old
 
@@ -109,6 +110,8 @@ export enum ProtocolErrors {
   INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER = 'Invalid redirected balance after transfer',
   INVALID_REDIRECTION_ADDRESS = 'Invalid redirection address',
   INVALID_HF = 'Invalid health factor',
+  TRANSFER_AMOUNT_EXCEEDS_BALANCE = 'ERC20: transfer amount exceeds balance',
+  SAFEERC20_LOWLEVEL_CALL = 'SafeERC20: low-level call failed'
 }
 
 export type tEthereumAddress = string;
