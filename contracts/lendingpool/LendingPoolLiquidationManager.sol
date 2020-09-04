@@ -3,8 +3,6 @@ pragma solidity ^0.6.8;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -21,13 +19,14 @@ import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
  * @author Aave
  * @notice Implements the liquidation function.
  **/
-contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializable {
+contract LendingPoolLiquidationManager is VersionedInitializable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -132,11 +131,13 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
         uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        'Health factor is not below the threshold'
+        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
       );
     }
 
-    vars.userCollateralBalance = IERC20(collateralReserve.aTokenAddress).balanceOf(user);
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
+
+    vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
@@ -146,7 +147,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (!vars.isCollateralEnabled) {
       return (
         uint256(LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
-        'The collateral chosen cannot be liquidated'
+        Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
       );
     }
 
@@ -159,7 +160,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
       return (
         uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
-        'User did not borrow the specified currency'
+        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
       );
     }
 
@@ -192,8 +193,6 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
 
-    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
-
     //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
     if (!receiveAToken) {
       uint256 currentAvailableCollateral = IERC20(collateral).balanceOf(
@@ -202,14 +201,19 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
           uint256(LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
-          "There isn't enough liquidity available to liquidate"
+          Errors.NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
         );
       }
     }
 
     //update the principal reserve
     principalReserve.updateCumulativeIndexesAndTimestamp();
-    principalReserve.updateInterestRates(principal, vars.actualAmountToLiquidate, 0);
+    principalReserve.updateInterestRates(
+      principal,
+      principalReserve.aTokenAddress,
+      vars.actualAmountToLiquidate,
+      0
+    );
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
@@ -235,7 +239,12 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
       //updating collateral reserve
       collateralReserve.updateCumulativeIndexesAndTimestamp();
-      collateralReserve.updateInterestRates(collateral, 0, vars.maxCollateralToLiquidate);
+      collateralReserve.updateInterestRates(
+        collateral,
+        address(vars.collateralAtoken),
+        0,
+        vars.maxCollateralToLiquidate
+      );
 
       //burn the equivalent amount of atoken
       vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate);
@@ -258,7 +267,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       receiveAToken
     );
 
-    return (uint256(LiquidationErrors.NO_ERROR), 'No errors');
+    return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   struct AvailableCollateralToLiquidateLocalVars {
@@ -283,8 +292,8 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
    * @return principalAmountNeeded the purchase amount
    **/
   function calculateAvailableCollateralToLiquidate(
-    ReserveLogic.ReserveData storage _collateralReserve,
-    ReserveLogic.ReserveData storage _principalReserve,
+    ReserveLogic.ReserveData storage collateralReserve,
+    ReserveLogic.ReserveData storage principalReserve,
     address collateralAddress,
     address principalAddress,
     uint256 purchaseAmount,
@@ -300,10 +309,10 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     vars.collateralPrice = oracle.getAssetPrice(collateralAddress);
     vars.principalCurrencyPrice = oracle.getAssetPrice(principalAddress);
 
-    (, , vars.liquidationBonus, vars.collateralDecimals) = _collateralReserve
+    (, , vars.liquidationBonus, vars.collateralDecimals) = collateralReserve
       .configuration
       .getParams();
-    vars.principalDecimals = _principalReserve.configuration.getDecimals();
+    vars.principalDecimals = principalReserve.configuration.getDecimals();
 
     //this is the maximum possible amount of the selected collateral that can be liquidated, given the
     //max amount of principal currency that is available for liquidation.

@@ -9,6 +9,7 @@ import {
   VersionedInitializable
 } from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {IERC20Detailed} from '../../interfaces/IERC20Detailed.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
 
 /**
  * @title contract DebtTokenBase
@@ -40,7 +41,7 @@ abstract contract DebtTokenBase is IERC20Detailed, VersionedInitializable {
    * @dev only lending pool can call functions marked by this modifier
    **/
   modifier onlyLendingPool {
-    require(msg.sender == address(_pool), 'The caller of this function must be a lending pool');
+    require(msg.sender == address(_pool), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 

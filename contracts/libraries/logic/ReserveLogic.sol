@@ -10,6 +10,7 @@ import {IStableDebtToken} from '../../tokenization/interfaces/IStableDebtToken.s
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
+import {Errors} from '../helpers/Errors.sol';
 
 /**
  * @title ReserveLogic library
@@ -192,7 +193,7 @@ library ReserveLogic {
     address variableDebtTokenAddress,
     address interestRateStrategyAddress
   ) external {
-    require(reserve.aTokenAddress == address(0), 'Reserve has already been initialized');
+    require(reserve.aTokenAddress == address(0), Errors.RESERVE_ALREADY_INITIALIZED);
     if (reserve.lastLiquidityIndex == 0) {
       //if the reserve has not been initialized yet
       reserve.lastLiquidityIndex = uint128(WadRayMath.ray());
@@ -226,6 +227,7 @@ library ReserveLogic {
   function updateInterestRates(
     ReserveData storage reserve,
     address reserveAddress,
+    address aTokenAddress,
     uint256 liquidityAdded,
     uint256 liquidityTaken
   ) internal {
@@ -233,7 +235,7 @@ library ReserveLogic {
 
     vars.stableDebtTokenAddress = reserve.stableDebtTokenAddress;
     vars.currentAvgStableRate = IStableDebtToken(vars.stableDebtTokenAddress).getAverageStableRate();
-    vars.availableLiquidity = IERC20(reserveAddress).balanceOf(reserve.aTokenAddress);
+    vars.availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress);
 
     (
       vars.newLiquidityRate,

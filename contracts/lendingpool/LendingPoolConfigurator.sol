@@ -13,6 +13,7 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -164,10 +165,10 @@ contract LendingPoolConfigurator is VersionedInitializable {
   /**
    * @dev emitted when the implementation of a variable debt token is upgraded
    * @param asset the address of the reserve
-   * @param _proxy the variable debt token proxy address
-   * @param _implementation the new aToken implementation
+   * @param proxy the variable debt token proxy address
+   * @param implementation the new aToken implementation
    **/
-  event VariableDebtTokenUpgraded(address asset, address _proxy, address _implementation);
+  event VariableDebtTokenUpgraded(address asset, address proxy, address implementation);
 
   ILendingPoolAddressesProvider internal addressesProvider;
   ILendingPool internal pool;
@@ -178,7 +179,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   modifier onlyLendingPoolManager {
     require(
       addressesProvider.getLendingPoolManager() == msg.sender,
-      'The caller must be a lending pool manager'
+      Errors.CALLER_NOT_LENDING_POOL_MANAGER
     );
     _;
   }
@@ -211,10 +212,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     uint8 underlyingAssetDecimals,
     address interestRateStrategyAddress
   ) public onlyLendingPoolManager {
-    address aTokenProxyAddress = _initTokenWithProxy(
-      aTokenImpl,
-      underlyingAssetDecimals
-    );
+    address aTokenProxyAddress = _initTokenWithProxy(aTokenImpl, underlyingAssetDecimals);
 
     address stableDebtTokenProxyAddress = _initTokenWithProxy(
       stableDebtTokenImpl,
@@ -280,6 +278,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     emit StableDebtTokenUpgraded(asset, stableDebtToken, implementation);
   }
+
   /**
    * @dev updates the variable debt token implementation for the asset
    * @param asset the address of the reserve to be updated
@@ -349,12 +348,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     pool.setConfiguration(asset, currentConfig.data);
 
-    emit ReserveEnabledAsCollateral(
-      asset,
-      ltv,
-      liquidationThreshold,
-      liquidationBonus
-    );
+    emit ReserveEnabledAsCollateral(asset, ltv, liquidationThreshold, liquidationBonus);
   }
 
   /**
@@ -432,7 +426,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     ) = pool.getReserveData(asset);
     require(
       availableLiquidity == 0 && totalBorrowsStable == 0 && totalBorrowsVariable == 0,
-      'The liquidity of the reserve needs to be 0'
+      Errors.RESERVE_LIQUIDITY_NOT_0
     );
 
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
@@ -553,10 +547,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param implementation the address of the implementation
    * @param decimals the decimals of the token
    **/
-  function _initTokenWithProxy(
-    address implementation,
-    uint8 decimals
-  ) internal returns (address) {
+  function _initTokenWithProxy(address implementation, uint8 decimals) internal returns (address) {
     InitializableAdminUpgradeabilityProxy proxy = new InitializableAdminUpgradeabilityProxy();
 
     bytes memory params = abi.encodeWithSignature(

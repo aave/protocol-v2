@@ -13,12 +13,7 @@ const chai = require('chai');
 const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving the underlying asset', (testEnv) => {
-  const {
-    HF_IS_NOT_BELLOW_THRESHOLD,
-    INVALID_HF,
-    USER_DID_NOT_BORROW_SPECIFIED,
-    THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
-  } = ProtocolErrors;
+  const {INVALID_HF} = ProtocolErrors;
 
   it('LIQUIDATION - Deposits WETH, borrows DAI', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
@@ -67,7 +62,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
       '8000',
-      'Invalid liquidation threshold'
+      INVALID_HF
     );
   });
 
@@ -86,7 +81,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(
       oneEther.toFixed(0),
-      'Invalid health factor'
+      INVALID_HF
     );
   });
 
