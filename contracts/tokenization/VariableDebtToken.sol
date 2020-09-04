@@ -15,7 +15,6 @@ import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
  * @dev does not inherit from IERC20 to save in contract size
  **/
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
-  using SafeMath for uint256;
   using WadRayMath for uint256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
@@ -42,7 +41,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the debt balance of the user
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
-    uint256 userBalance = _balances[user];
+    uint256 userBalance = principalBalanceOf(user);
     if (userBalance == 0) {
       return 0;
     }
@@ -50,7 +49,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     return
       userBalance
         .wadToRay()
-        .rayMul(_pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress))
+        .rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET))
         .rayDiv(_userIndexes[user])
         .rayToWad();
   }
@@ -78,7 +77,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     _mint(user, amount.add(balanceIncrease));
 
-    uint256 newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
+    uint256 newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
     _userIndexes[user] = newUserIndex;
 
     emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
@@ -105,7 +104,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 newUserIndex = 0;
     //if user not repaid everything
     if (currentBalance != amount) {
-      newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
+      newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
     }
     _userIndexes[user] = newUserIndex;
 

@@ -20,7 +20,6 @@ import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
  *
  **/
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
-  using SafeMath for uint256;
   using WadRayMath for uint256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
@@ -78,7 +77,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the accumulated debt of the user
    **/
   function balanceOf(address account) public virtual override view returns (uint256) {
-    uint256 accountBalance = _balances[account];
+    uint256 accountBalance = principalBalanceOf(account);
     if (accountBalance == 0) {
       return 0;
     }
@@ -120,7 +119,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    vars.supplyBeforeMint = _totalSupply.add(balanceIncrease);
+    vars.supplyBeforeMint = totalSupply().add(balanceIncrease);
     vars.supplyAfterMint = vars.supplyBeforeMint.add(amount);
 
     vars.amountInRay = amount.wadToRay();
@@ -167,7 +166,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    uint256 supplyBeforeBurn = _totalSupply.add(balanceIncrease);
+    uint256 supplyBeforeBurn = totalSupply().add(balanceIncrease);
     uint256 supplyAfterBurn = supplyBeforeBurn.sub(amount);
 
     if (supplyAfterBurn == 0) {

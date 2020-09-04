@@ -3,7 +3,6 @@ pragma solidity ^0.6.8;
 
 import {VariableDebtToken} from '../../tokenization/VariableDebtToken.sol';
 import {LendingPool} from '../../lendingpool/LendingPool.sol';
-import '@nomiclabs/buidler/console.sol';
 
 contract MockVariableDebtToken is VariableDebtToken {
   constructor(
