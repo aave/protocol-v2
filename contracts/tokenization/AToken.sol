@@ -26,9 +26,10 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
   address public immutable UNDERLYING_ASSET_ADDRESS;
 
-  mapping(address => uint256) private _userIndexes;
   mapping(address => address) private _interestRedirectionAddresses;
   mapping(address => uint256) private _redirectedBalances;
+  mapping(address => uint256) private _redirectionIndexes;
+
   mapping(address => address) private _interestRedirectionAllowances;
 
   LendingPool private immutable _pool;
@@ -420,7 +421,6 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       balance
         .wadToRay()
         .rayMul(_pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS))
-        .rayDiv(_userIndexes[user])
         .rayToWad();
   }
 
