@@ -5,11 +5,12 @@ import {ERC20} from './ERC20.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
-import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-import {IAToken, IERC20} from './interfaces/IAToken.sol';
+import {IAToken} from './interfaces/IAToken.sol';
+import {IERC20} from '../interfaces/IERC20.sol';
+import {SafeERC20} from "../misc/SafeERC20.sol";
 
 /**
  * @title Aave ERC20 AToken
@@ -49,7 +50,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     address underlyingAssetAddress,
     string memory tokenName,
     string memory tokenSymbol
-  ) public ERC20(tokenName, tokenSymbol) {
+  ) public ERC20(tokenName, tokenSymbol, 18) {
     _pool = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
   }
@@ -63,9 +64,9 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     string calldata tokenName,
     string calldata tokenSymbol
   ) external virtual initializer {
-    _name = tokenName;
-    _symbol = tokenSymbol;
-    _setupDecimals(underlyingAssetDecimals);
+    _setName(tokenName);
+    _setSymbol(tokenSymbol);
+    _setDecimals(underlyingAssetDecimals);
   }
 
   /**

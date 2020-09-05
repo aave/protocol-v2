@@ -20,7 +20,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     COLLATERAL_BALANCE_IS_0,
     REQUESTED_AMOUNT_TOO_SMALL,
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
-    INVALID_FLASHLOAN_MODE
+    INVALID_FLASHLOAN_MODE,
+    SAFEERC20_LOWLEVEL_CALL
   } = ProtocolErrors;
 
   before(async () => {
@@ -196,7 +197,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         '0'
       ),
       TRANSFER_AMOUNT_EXCEEDS_BALANCE
-    ).to.be.revertedWith(TRANSFER_AMOUNT_EXCEEDS_BALANCE);
+    ).to.be.revertedWith(SAFEERC20_LOWLEVEL_CALL);
   });
 
   it('tries to take a flashloan using a non contract address as receiver (revert expected)', async () => {

@@ -110,7 +110,8 @@ export enum ProtocolErrors {
   INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER = 'Invalid redirected balance after transfer',
   INVALID_REDIRECTION_ADDRESS = 'Invalid redirection address',
   INVALID_HF = 'Invalid health factor',
-  TRANSFER_AMOUNT_EXCEEDS_BALANCE = 'ERC20: transfer amount exceeds balance'
+  TRANSFER_AMOUNT_EXCEEDS_BALANCE = 'ERC20: transfer amount exceeds balance',
+  SAFEERC20_LOWLEVEL_CALL = 'SafeERC20: low-level call failed'
 }
 
 export type tEthereumAddress = string;

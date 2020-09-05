@@ -14,7 +14,6 @@ import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
  * @author Aave
  **/
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
-  using SafeMath for uint256;
   using WadRayMath for uint256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
@@ -39,8 +38,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the debt balance of the user
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
-    uint256 userBalance = _usersData[user].balance;
-    uint256 index = _usersData[user].dataField;
+    uint256 userBalance = principalBalanceOf(user);
+    uint256 index = _usersData[user];
     if (userBalance == 0) {
       return 0;
     }
@@ -48,7 +47,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     return
       userBalance
         .wadToRay()
-        .rayMul(_pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress))
+        .rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET))
         .rayDiv(index)
         .rayToWad();
   }
@@ -59,7 +58,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    **/
 
   function getUserIndex(address user) external virtual override view returns (uint256) {
-    return _usersData[user].dataField;
+    return _usersData[user];
   }
 
   /**
@@ -76,9 +75,9 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     _mint(user, amount.add(balanceIncrease));
 
-    uint256 newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
+    uint256 newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
     require(newUserIndex < (1 << 128), "Debt token: Index overflow");
-    _usersData[user].dataField = uint128(newUserIndex);
+    _usersData[user] = newUserIndex;
 
     emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
@@ -104,10 +103,10 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 newUserIndex = 0;
     //if user not repaid everything
     if (currentBalance != amount) {
-      newUserIndex = _pool.getReserveNormalizedVariableDebt(_underlyingAssetAddress);
+      newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
       require(newUserIndex < (1 << 128), "Debt token: Index overflow");
     }
-    _usersData[user].dataField = uint128(newUserIndex);
+    _usersData[user] = newUserIndex;
 
     emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }

@@ -5,196 +5,120 @@ import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {
-  VersionedInitializable
-} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-import {IERC20Detailed} from '../../interfaces/IERC20Detailed.sol';
+import {VersionedInitializable} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {ERC20} from '../ERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
 /**
- * @title contract DebtTokenBase
+ * @title DebtTokenBase
+ * @notice Base contract for different types of debt tokens, like StableDebtToken or VariableDebtToken
  * @author Aave
- * @notice base contract for StableDebtToken and VariableDebtToken
  */
 
-abstract contract DebtTokenBase is IERC20Detailed, VersionedInitializable {
-  using SafeMath for uint256;
+abstract contract DebtTokenBase is ERC20, VersionedInitializable {
 
-  uint256 internal _totalSupply;
-
-  string internal _name;
-  string internal _symbol;
-  uint8 internal _decimals;
-  address internal immutable _underlyingAssetAddress;
-
-  ILendingPool internal immutable _pool;
-
-  struct UserData{
-    uint128 balance;
-    //this field will store the user index for the variable debt token, and the user stable rate for the stable debt token
-    uint128 dataField; 
-  }
-
-  mapping(address => UserData) internal _usersData;
+  address internal immutable UNDERLYING_ASSET;
+  ILendingPool internal immutable POOL;
+  mapping(address => uint256) internal _usersData;
 
   /**
-   * @dev only lending pool can call functions marked by this modifier
+   * @dev Only lending pool can call functions marked by this modifier
    **/
   modifier onlyLendingPool {
-    require(msg.sender == address(_pool), Errors.CALLER_MUST_BE_LENDING_POOL);
+    require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
+  /** 
+   * @dev The metadata of the token will be set on the proxy, that the reason of
+   * passing "NULL" and 0 as metadata
+   */
   constructor(
     address pool,
     address underlyingAssetAddress,
     string memory name,
-    string memory symbol
-  ) public {
-    _pool = ILendingPool(pool);
-    _underlyingAssetAddress = underlyingAssetAddress;
-    _name = name;
-    _symbol = symbol;
+    string memory symbol  
+  ) public ERC20(name, symbol, 18) {
+    POOL = ILendingPool(pool);
+    UNDERLYING_ASSET = underlyingAssetAddress;
   }
 
   /**
-   * @dev initializes the debt token.
-   * @param name the name of the token
-   * @param symbol the symbol of the token
-   * @param decimals the decimals of the token
+   * @dev Initializes the debt token.
+   * @param name The name of the token
+   * @param symbol The symbol of the token
+   * @param decimals The decimals of the token
    */
   function initialize(
     uint8 decimals,
     string memory name,
     string memory symbol
   ) public initializer {
-    _name = name;
-    _symbol = symbol;
-    _decimals = decimals;
-  }
-
-  function name() public override view returns (string memory) {
-    return _name;
-  }
-
-  function symbol() public override view returns (string memory) {
-    return _symbol;
-  }
-
-  function decimals() public override view returns (uint8) {
-    return _decimals;
-  }
-
-  function totalSupply() public override view returns (uint256) {
-    return _totalSupply;
+    _setName(name);
+    _setSymbol(symbol);
+    _setDecimals(decimals);
   }
 
   function underlyingAssetAddress() public view returns (address) {
-    return _underlyingAssetAddress;
+    return UNDERLYING_ASSET;
   }
 
   /**
-   * @dev calculates the accumulated debt balance of the user
-   * @return the debt balance of the user
-   **/
-  function balanceOf(address user) public virtual override view returns (uint256);
-
-  /**
-   * @dev returns the principal debt balance of the user from
-   * @return the debt balance of the user since the last burn/mint action
+   * @dev Returns the principal debt balance of the user from
+   * @return The debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address user) public view returns (uint256) {
-    return _usersData[user].balance;
+    return super.balanceOf(user);
   }
 
   /**
-   * @dev basic accounting for the mint action
-   * @dev _user the target user of the minting action
-   * @dev _amount the amount to mint
-   **/
-  function _mint(address user, uint256 amount) internal {
-    _totalSupply = _totalSupply.add(amount);
-    uint256 result = amount.add(_usersData[user].balance);
-    require(result < (1 << 128), "Debt token: balance overflow");
-    _usersData[user].balance = uint128(result);
-  }
-
-  /**
-   * @dev basic accounting for the burn action
-   * @dev _user the target user of the burning action
-   * @dev _amount the amount to burn
-   **/
-  function _burn(address user, uint256 amount) internal {
-    _totalSupply = _totalSupply.sub(amount);
-    uint256 result = uint256(_usersData[user].balance).sub(amount);
-    require(result < (1 << 128), "Debt token: balance overflow");
-    _usersData[user].balance = uint128(result);
-  }
-
-  /**
-   * @dev being non transferrable, the debt token does not implement any of the
+   * @dev Being non transferrable, the debt token does not implement any of the
    * standard ERC20 functions for transfer and allowance.
    **/
-  function transfer(address recipient, uint256 amount) external virtual override returns (bool) {
+  function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+    recipient; amount;
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
-  function allowance(address owner, address spender)
-    external
-    virtual
-    override
-    view
-    returns (uint256)
-  {
+  function allowance(address owner, address spender) public virtual override view returns (uint256) {
+    owner; spender;
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  function approve(address spender, uint256 amount) external virtual override returns (bool) {
+  function approve(address spender, uint256 amount) public virtual override returns (bool) {
+    spender; amount;
     revert('APPROVAL_NOT_SUPPORTED');
   }
 
-  function transferFrom(
-    address sender,
-    address recipient,
-    uint256 amount
-  ) external virtual override returns (bool) {
+  function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
+    sender; recipient; amount;
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
-  function increaseAllowance(address spender, uint256 addedValue) external virtual returns (bool) {
+  function increaseAllowance(address spender, uint256 addedValue) public virtual override returns (bool) {
+    spender; addedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  function decreaseAllowance(address spender, uint256 subtractedValue)
-    external
-    virtual
-    returns (bool)
-  {
+  function decreaseAllowance(address spender, uint256 subtractedValue) public virtual override returns (bool) {
+    spender; subtractedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
   /**
-   * @dev calculates the increase in balance since the last user interaction
-   * @param user the address of the user for which the interest is being accumulated
-   * @return the previous principal balance, the new principal balance, the balance increase
+   * @dev Calculates the increase in balance since the last user interaction
+   * @param user The address of the user for which the interest is being accumulated
+   * @return The previous principal balance, the new principal balance, the balance increase
    * and the new user index
    **/
-  function _calculateBalanceIncrease(address user)
-    internal
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    uint256 previousPrincipalBalance = _usersData[user].balance;
+  function _calculateBalanceIncrease(address user) internal view returns (uint256, uint256, uint256) {
+    uint256 previousPrincipalBalance = principalBalanceOf(user);
 
     if (previousPrincipalBalance == 0) {
       return (0, 0, 0);
     }
 
-    //calculate the accrued interest since the last accumulation
+    // Calculation of the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(user).sub(previousPrincipalBalance);
 
     return (
