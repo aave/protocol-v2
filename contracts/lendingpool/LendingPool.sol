@@ -20,6 +20,7 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
@@ -499,11 +500,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     fromReserveAToken.burn(msg.sender, receiverAddress, amountToSwap);
     // Notifies the receiver to proceed, sending as param the underlying already transferred
-    IFlashLoanReceiver(receiverAddress).executeOperation(
+    ISwapAdapter(receiverAddress).executeOperation(
       fromAsset,
-      //      toAsset,
+      toAsset,
       amountToSwap,
-      0,
+      address(this),
       params
     );
 
