@@ -174,7 +174,7 @@
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2",
+      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -414,7 +414,7 @@
   },
   "AaveProtocolTestHelpers": {
     "buidlerevm": {
-      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10"
+      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
     },
     "localhost": {
       "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10"
@@ -488,6 +488,11 @@
     "localhost": {
       "address": "0xA8083d78B6ABC328b4d3B714F76F384eCC7147e1",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    }
+  },
+  "MockSwapAdapter": {
+    "buidlerevm": {
+      "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
     }
   }
 }

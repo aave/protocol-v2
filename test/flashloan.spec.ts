@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 import {TestEnv, makeSuite} from './helpers/make-suite';
 import {APPROVAL_AMOUNT_LENDING_POOL, oneRay} from '../helpers/constants';
 import {
@@ -8,7 +10,6 @@ import {
 import {ethers} from 'ethers';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {ProtocolErrors, eContractid} from '../helpers/types';
-import BigNumber from 'bignumber.js';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 import {StableDebtToken} from '../types/StableDebtToken';
 
@@ -21,14 +22,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     REQUESTED_AMOUNT_TOO_SMALL,
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
     INVALID_FLASHLOAN_MODE,
-    SAFEERC20_LOWLEVEL_CALL
+    SAFEERC20_LOWLEVEL_CALL,
   } = ProtocolErrors;
 
   before(async () => {
     _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
   });
 
-  it('Deposits ETH into the reserve', async () => {
+  it('Deposits WETH into the reserve', async () => {
     const {pool, weth} = testEnv;
     const amountToDeposit = ethers.utils.parseEther('1');
 
@@ -340,8 +341,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
     await pool
-        .connect(caller.signer)
-        .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0');
+      .connect(caller.signer)
+      .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0');
 
     const {stableDebtTokenAddress} = await pool.getReserveTokensAddresses(weth.address);
 
@@ -353,6 +354,5 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
     expect(callerDebt.toString()).to.be.equal('800720000000000000', 'Invalid user debt');
-  
   });
 });

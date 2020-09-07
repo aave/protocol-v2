@@ -23,6 +23,7 @@ import {
   deployStableDebtToken,
   deployVariableDebtToken,
   deployGenericAToken,
+  deployMockSwapAdapter,
 } from '../helpers/contracts-helpers';
 import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {ContractTransaction, Signer} from 'ethers';
@@ -502,6 +503,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);
+
+  const mockMockSwapAdapter = await deployMockSwapAdapter(addressesProvider.address);
+  await insertContractAddressInDb(eContractid.MockSwapAdapter, mockMockSwapAdapter.address);
 
   await deployWalletBalancerProvider(addressesProvider.address);
 
