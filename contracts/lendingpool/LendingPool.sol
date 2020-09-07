@@ -491,7 +491,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     // get user position
     uint256 userBalance = fromReserveAToken.balanceOf(msg.sender);
-    require(userBalance >= amountToSwap, 'not enough collateral');
     if (userBalance == amountToSwap) {
       _usersConfig[msg.sender].setUsingAsCollateral(fromReserve.index, false);
     }
@@ -523,7 +522,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _addressesProvider.getPriceOracle()
     );
 
-    require(healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD, 'low hf');
+    require(
+      healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
+      Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
+    );
   }
 
   /**
