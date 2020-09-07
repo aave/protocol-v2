@@ -46,7 +46,7 @@ library Errors {
   string public constant TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
   string public constant INTEREST_ALREADY_REDIRECTED = '32'; // 'Interest is already redirected to the user'
   string public constant NO_VALID_BALANCE_FOR_REDIRECTION = '33'; // 'Interest stream can only be redirected if there is a valid balance'
-
+  string public constant INVALID_ATOKEN_BALANCE = '52'; // burn balannce not valid
   // require error messages - ReserveLogic
   string public constant RESERVE_ALREADY_INITIALIZED = '34'; // 'Reserve has already been initialized'
   string public constant LIQUIDITY_INDEX_OVERFLOW = '47'; //  Liquidity index overflows uint128

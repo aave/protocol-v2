@@ -27,8 +27,10 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   address public immutable UNDERLYING_ASSET_ADDRESS;
 
   mapping(address => address) private _interestRedirectionAddresses;
+  mapping(address => uint256) private _interestRedirectionIndexes;
+
   mapping(address => uint256) private _redirectedBalances;
-  mapping(address => uint256) private _redirectionIndexes;
+  mapping(address => uint256) private _redirectedBalanceIndexes;
 
   mapping(address => address) private _interestRedirectionAllowances;
 
@@ -38,11 +40,6 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
   modifier onlyLendingPool {
     require(msg.sender == address(_pool), Errors.CALLER_MUST_BE_LENDING_POOL);
-    _;
-  }
-
-  modifier whenTransferAllowed(address from, uint256 amount) {
-    require(isTransferAllowed(from, amount), Errors.TRANSFER_NOT_ALLOWED);
     _;
   }
 
@@ -72,14 +69,35 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
   /**
    * @notice ERC20 implementation internal function backing transfer() and transferFrom()
-   * @dev validates the transfer before allowing it. NOTE: This is not standard ERC20 behavior
    **/
   function _transfer(
     address from,
     address to,
-    uint256 amount
-  ) internal override whenTransferAllowed(from, amount) {
-    _executeTransfer(from, to, amount);
+    uint256 amount,
+    bool validate
+  ) internal  {
+    if(validate){
+      require(isTransferAllowed(from, amount), Errors.TRANSFER_NOT_ALLOWED);
+    }
+
+    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+
+    uint256 scaledAmount = amount.rayDiv(index);
+
+    super._transfer(from, to, scaledAmount);
+
+    //if the sender is redirecting his interest towards someone else,
+    //adds to the redirected balance the accrued interest and removes the amount
+    //being transferred
+    _updateRedirectedBalanceOfRedirectionAddress(from, from, 0, scaledAmount, index);
+
+    //if the receiver is redirecting his interest towards someone else,
+    //adds to the redirected balance the accrued interest and the amount
+    //being transferred
+    _updateRedirectedBalanceOfRedirectionAddress(to, to, scaledAmount, 0, index);
+
+    emit BalanceTransfer(from, to, amount, index);
+
   }
 
   /**
@@ -127,37 +145,35 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    **/
   function burn(
     address user,
-    address underlyingTarget,
+    address receiverOfUnderlying,
     uint256 amount
   ) external override onlyLendingPool {
-    //cumulates the balance of the user
-    (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(user);
+
+    uint256 currentBalance = balanceOf(user);
+
+    require(currentBalance <= amount, Errors.INVALID_ATOKEN_BALANCE);
+
+    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+
+    uint256 scaledAmount = amount.rayDiv(index);
+
+    _burn(user, scaledAmount);
+
+
+    if(amount == currentBalance){
+      _resetDataOnZeroBalance(user);
+    }
 
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest,
     //and removing the amount to redeem
-    _updateRedirectedBalanceOfRedirectionAddress(user, balanceIncrease, amount);
-
-    if (balanceIncrease > amount) {
-      _mint(user, balanceIncrease.sub(amount));
-    } else {
-      _burn(user, amount.sub(balanceIncrease));
-    }
-
-    uint256 userIndex = 0;
-
-    //reset the user data if the remaining balance is 0
-    if (currentBalance.sub(amount) == 0) {
-      _resetDataOnZeroBalance(user);
-    } else {
-      //updates the user index
-      userIndex = _userIndexes[user] = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
-    }
+    _updateRedirectedBalanceOfRedirectionAddress(user, user, scaledAmount, 0, index);
 
     //transfers the underlying to the target
-    ERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(underlyingTarget, amount);
+    ERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
-    emit Burn(msg.sender, underlyingTarget, amount, balanceIncrease, userIndex);
+
+    emit Burn(msg.sender, receiverOfUnderlying, amount, index);
   }
 
   /**
@@ -167,21 +183,20 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param amount the amount of tokens to mint
    */
   function mint(address user, uint256 amount) external override onlyLendingPool {
-    //cumulates the balance of the user
-    (, , uint256 balanceIncrease) = _calculateBalanceIncrease(user);
 
-    //updates the user index
-    uint256 index = _userIndexes[user] = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+
+    uint256 scaledAmount = amount.rayDiv(index);
+
+    //mint an equivalent amount of tokens to cover the new deposit
+    _mint(user,scaledAmount);
 
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest
     //and the amount deposited
-    _updateRedirectedBalanceOfRedirectionAddress(user, balanceIncrease.add(amount), 0);
+    _updateRedirectedBalanceOfRedirectionAddress(user, user, amount, 0, index);
 
-    //mint an equivalent amount of tokens to cover the new deposit
-    _mint(user, amount.add(balanceIncrease));
-
-    emit Mint(user, amount, balanceIncrease, index);
+    emit Mint(user, amount, index);
   }
 
   /**
@@ -198,7 +213,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   ) external override onlyLendingPool {
     //being a normal transfer, the Transfer() and BalanceTransfer() are emitted
     //so no need to emit a specific event here
-    _executeTransfer(from, to, value);
+    _transfer(from, to, value, false);
   }
 
   /**
@@ -208,42 +223,26 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return the total balance of the user
    **/
   function balanceOf(address user) public override(ERC20, IERC20) view returns (uint256) {
-    //current principal balance of the user
-    uint256 currentPrincipalBalance = super.balanceOf(user);
+    //current scaled balance of the user
+    uint256 currentScaledBalance = super.balanceOf(user);
+    
     //balance redirected by other users to user for interest rate accrual
     uint256 redirectedBalance = _redirectedBalances[user];
 
-    if (currentPrincipalBalance == 0 && redirectedBalance == 0) {
+    if (currentScaledBalance == 0 && redirectedBalance == 0) {
       return 0;
     }
-    //if the user is not redirecting the interest to anybody, accrues
-    //the interest for himself
 
-    if (_interestRedirectionAddresses[user] == address(0)) {
-      //accruing for himself means that both the principal balance and
-      //the redirected balance partecipate in the interest
-      return
-        _calculateCumulatedBalance(user, currentPrincipalBalance.add(redirectedBalance)).sub(
-          redirectedBalance
-        );
-    } else {
-      //if the user redirected the interest, then only the redirected
-      //balance generates interest. In that case, the interest generated
-      //by the redirected balance is added to the current principal balance.
-      return
-        currentPrincipalBalance.add(
-          _calculateCumulatedBalance(user, redirectedBalance).sub(redirectedBalance)
-        );
-    }
+    return _calculateCumulatedBalance(user, currentScaledBalance, redirectedBalance);
   }
 
   /**
-   * @dev returns the principal balance of the user. The principal balance is the last
-   * updated stored balance, which does not consider the perpetually accruing interest.
+   * @dev returns the scaled balance of the user. The scaled balance is the sum of all the
+   * updated stored balance divided the reserve index at the moment of the update
    * @param user the address of the user
-   * @return the principal balance of the user
+   * @return the scaled balance of the user
    **/
-  function principalBalanceOf(address user) external override view returns (uint256) {
+  function scaledBalanceOf(address user) external override view returns (uint256) {
     return super.balanceOf(user);
   }
 
@@ -254,14 +253,14 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return the current total supply
    **/
   function totalSupply() public override(ERC20, IERC20) view returns (uint256) {
-    uint256 currentSupplyPrincipal = super.totalSupply();
+    uint256 currentSupplyScaled = super.totalSupply();
 
-    if (currentSupplyPrincipal == 0) {
+    if (currentSupplyScaled == 0) {
       return 0;
     }
 
     return
-      currentSupplyPrincipal
+      currentSupplyScaled
         .wadToRay()
         .rayMul(_pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS))
         .rayToWad();
@@ -275,15 +274,6 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    **/
   function isTransferAllowed(address user, uint256 amount) public override view returns (bool) {
     return _pool.balanceDecreaseAllowed(UNDERLYING_ASSET_ADDRESS, user, amount);
-  }
-
-  /**
-   * @dev returns the last index of the user, used to calculate the balance of the user
-   * @param user address of the user
-   * @return the last user index
-   **/
-  function getUserIndex(address user) external override view returns (uint256) {
-    return _userIndexes[user];
   }
 
   /**
@@ -305,73 +295,20 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     return _redirectedBalances[user];
   }
 
-  /**
-   * @dev calculates the increase in balance since the last user action
-   * @param user the address of the user
-   * @return the last user principal balance, the current balance and the balance increase
-   **/
-  function _calculateBalanceIncrease(address user)
-    internal
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    uint256 currentBalance = balanceOf(user);
-    uint256 balanceIncrease = 0;
-    uint256 previousBalance = 0;
-
-    if (currentBalance != 0) {
-      previousBalance = super.balanceOf(user);
-      //calculate the accrued interest since the last accumulation
-      balanceIncrease = currentBalance.sub(previousBalance);
-    }
-
-    return (previousBalance, currentBalance, balanceIncrease);
-  }
-
-  /**
-   * @dev accumulates the accrued interest of the user to the principal balance
-   * @param user the address of the user for which the interest is being accumulated
-   * @return the previous principal balance, the new principal balance, the balance increase
-   * and the new user index
-   **/
-  function _cumulateBalance(address user)
-    internal
-    returns (
-      uint256,
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(user);
-
-    _mint(user, balanceIncrease);
-
-    //updates the user index
-    uint256 index = _userIndexes[user] = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
-
-    return (previousBalance, currentBalance, balanceIncrease, index);
-  }
 
   /**
    * @dev updates the redirected balance of the user. If the user is not redirecting his
    * interest, nothing is executed.
    * @param user the address of the user for which the interest is being accumulated
-   * @param balanceToAdd the amount to add to the redirected balance
-   * @param balanceToRemove the amount to remove from the redirected balance
+   * @param scaledBalanceToAdd the amount to add to the redirected balance
+   * @param scaledBalanceToRemove the amount to remove from the redirected balance
    **/
   function _updateRedirectedBalanceOfRedirectionAddress(
+    address origin,
     address user,
-    uint256 balanceToAdd,
-    uint256 balanceToRemove
+    uint256 scaledBalanceToAdd,
+    uint256 scaledBalanceToRemove,
+    uint256 index
   ) internal {
     address redirectionAddress = _interestRedirectionAddresses[user];
     //if there isn't any redirection, nothing to be done
@@ -379,101 +316,72 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       return;
     }
 
-    //compound balances of the redirected address
-    (, , uint256 balanceIncrease, uint256 index) = _cumulateBalance(redirectionAddress);
+    //updating the interest redirection index of the user
+    _interestRedirectionIndexes[user] = index;
+
 
     //updating the redirected balance
     _redirectedBalances[redirectionAddress] = _redirectedBalances[redirectionAddress]
-      .add(balanceToAdd)
-      .sub(balanceToRemove);
+      .add(scaledBalanceToAdd)
+      .sub(scaledBalanceToRemove);
+
+    //updating the redirected balance index of the redirection target
+    _redirectedBalanceIndexes[redirectionAddress] = index;
+
 
     //if the interest of redirectionAddress is also being redirected, we need to update
     //the redirected balance of the redirection target by adding the balance increase
     address targetOfRedirectionAddress = _interestRedirectionAddresses[redirectionAddress];
 
-    // if the redirection address is also redirecting the interest, we accumulate his balance
-    // and update his chain of redirection
-    if (targetOfRedirectionAddress != address(0)) {
-      _updateRedirectedBalanceOfRedirectionAddress(redirectionAddress, balanceIncrease, 0);
+    
+    // if the redirection address is also redirecting the interest, we update his index to 
+    // accumulate the interest until now
+    // note: if the next address of redirection is the same as the one who originated the update,
+    // it means a loop of redirection has been formed: in this case, we break the recursion as no
+    // further updates are needed
+    if (targetOfRedirectionAddress != address(0) && targetOfRedirectionAddress != origin) {
+      _updateRedirectedBalanceOfRedirectionAddress(origin, redirectionAddress, 0, 0, index);
     }
 
     emit RedirectedBalanceUpdated(
       redirectionAddress,
-      balanceIncrease,
-      index,
-      balanceToAdd,
-      balanceToRemove
+      scaledBalanceToAdd,
+      scaledBalanceToRemove,
+      index
     );
   }
 
   /**
    * @dev calculate the interest accrued by user on a specific balance
    * @param user the address of the user for which the interest is being accumulated
-   * @param balance the balance on which the interest is calculated
+   * @param scaledBalance the balance on which the interest is calculated
+   * @param redirectedBalance the balance redirected to the user
    * @return the interest rate accrued
    **/
-  function _calculateCumulatedBalance(address user, uint256 balance)
+  function _calculateCumulatedBalance(address user, uint256 scaledBalance, uint256 redirectedBalance)
     internal
     view
     returns (uint256)
   {
-    return
-      balance
-        .wadToRay()
-        .rayMul(_pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS))
-        .rayToWad();
-  }
+    uint256 scaledRedirectedBalance = redirectedBalance.wadToRay().rayDiv(_interestRedirectionIndexes[user]).rayToWad();
 
-  /**
-   * @dev executes the transfer of aTokens, invoked by both _transfer() and
-   *      transferOnLiquidation()
-   * @param from the address from which transfer the aTokens
-   * @param to the destination address
-   * @param value the amount to transfer
-   **/
-  function _executeTransfer(
-    address from,
-    address to,
-    uint256 value
-  ) internal {
-    require(value > 0, Errors.TRANSFER_AMOUNT_NOT_GT_0);
+    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
-    //cumulate the balance of the sender
-    (, uint256 fromBalance, uint256 fromBalanceIncrease, uint256 fromIndex) = _cumulateBalance(
-      from
-    );
+    if(_interestRedirectionAddresses[user] == address(0)){
+      //if the user is not redirecting the interest, his balance is the result of
+      //the interest accrued by his current scaled balance and the interest accrued by his
+      //scaled redirected balance
 
-    //cumulate the balance of the receiver
-    (, , uint256 toBalanceIncrease, uint256 toIndex) = _cumulateBalance(to);
-
-    //if the sender is redirecting his interest towards someone else,
-    //adds to the redirected balance the accrued interest and removes the amount
-    //being transferred
-    _updateRedirectedBalanceOfRedirectionAddress(from, fromBalanceIncrease, value);
-
-    //if the receiver is redirecting his interest towards someone else,
-    //adds to the redirected balance the accrued interest and the amount
-    //being transferred
-    _updateRedirectedBalanceOfRedirectionAddress(to, toBalanceIncrease.add(value), 0);
-
-    //performs the transfer
-    super._transfer(from, to, value);
-
-    bool fromIndexReset = false;
-    //reset the user data if the remaining balance is 0
-    if (fromBalance.sub(value) == 0 && from != to) {
-      fromIndexReset = _resetDataOnZeroBalance(from);
+      return scaledBalance.add(scaledRedirectedBalance).rayMul(index).sub(scaledRedirectedBalance);
     }
 
-    emit BalanceTransfer(
-      from,
-      to,
-      value,
-      fromBalanceIncrease,
-      toBalanceIncrease,
-      fromIndexReset ? 0 : fromIndex,
-      toIndex
-    );
+    //if the user is redirecting, his balance only increases by the balance he is being redirected
+    uint256 lastRedirectedBalance = scaledBalance.rayDiv(_interestRedirectionIndexes[user]);
+
+    return
+      lastRedirectedBalance.add(
+        scaledRedirectedBalance.rayMul(index)
+      ).sub(scaledRedirectedBalance);
   }
 
   /**
@@ -483,42 +391,42 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param to the destination address
    **/
   function _redirectInterestStream(address from, address to) internal {
+    
     address currentRedirectionAddress = _interestRedirectionAddresses[from];
 
     require(to != currentRedirectionAddress, Errors.INTEREST_ALREADY_REDIRECTED);
 
-    //accumulates the accrued interest to the principal
-    (
-      uint256 previousPrincipalBalance,
-      uint256 fromBalance,
-      uint256 balanceIncrease,
-      uint256 fromIndex
-    ) = _cumulateBalance(from);
+    uint256 fromBalance = balanceOf(from);
 
     require(fromBalance > 0, Errors.NO_VALID_BALANCE_FOR_REDIRECTION);
+
+    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+
+    uint256 scaledBalance = fromBalance.rayDiv(index);
 
     //if the user is already redirecting the interest to someone, before changing
     //the redirection address we substract the redirected balance of the previous
     //recipient
     if (currentRedirectionAddress != address(0)) {
-      _updateRedirectedBalanceOfRedirectionAddress(from, 0, previousPrincipalBalance);
+      _updateRedirectedBalanceOfRedirectionAddress(from, from, 0, scaledBalance, index);
     }
 
     //if the user is redirecting the interest back to himself,
     //we simply set to 0 the interest redirection address
     if (to == from) {
       _interestRedirectionAddresses[from] = address(0);
-      emit InterestStreamRedirected(from, address(0), fromBalance, balanceIncrease, fromIndex);
+      emit InterestStreamRedirected(from, address(0), scaledBalance, index);
       return;
     }
 
     //first set the redirection address to the new recipient
     _interestRedirectionAddresses[from] = to;
+    _interestRedirectionIndexes[from] = index;
 
     //adds the user balance to the redirected balance of the destination
-    _updateRedirectedBalanceOfRedirectionAddress(from, fromBalance, 0);
+    _updateRedirectedBalanceOfRedirectionAddress(from, from, fromBalance, 0, index);
 
-    emit InterestStreamRedirected(from, to, fromBalance, balanceIncrease, fromIndex);
+    emit InterestStreamRedirected(from, to, fromBalance, index);
   }
 
   /**
@@ -532,15 +440,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     _interestRedirectionAddresses[user] = address(0);
 
     //emits a InterestStreamRedirected event to notify that the redirection has been reset
-    emit InterestStreamRedirected(user, address(0), 0, 0, 0);
-
-    //if the redirected balance is also 0, we clear up the user index
-    if (_redirectedBalances[user] == 0) {
-      _userIndexes[user] = 0;
-      return true;
-    } else {
-      return false;
-    }
+    emit InterestStreamRedirected(user, address(0), 0, 0);
   }
 
   /**

@@ -8,44 +8,35 @@ interface IAToken is IERC20 {
    * @dev emitted after aTokens are burned
    * @param from the address performing the redeem
    * @param value the amount to be redeemed
-   * @param fromBalanceIncrease the cumulated balance since the last update of the user
-   * @param fromIndex the last index of the user
+   * @param index the last index of the reserve
    **/
   event Burn(
     address indexed from,
     address indexed target,
     uint256 value,
-    uint256 fromBalanceIncrease,
-    uint256 fromIndex
+    uint256 index
   );
 
   /**
    * @dev emitted after the mint action
    * @param from the address performing the mint
    * @param value the amount to be minted
-   * @param fromBalanceIncrease the cumulated balance since the last update of the user
-   * @param fromIndex the last index of the user
+   * @param index the last index of the reserve
    **/
-  event Mint(address indexed from, uint256 value, uint256 fromBalanceIncrease, uint256 fromIndex);
+  event Mint(address indexed from, uint256 value, uint256 index);
 
   /**
    * @dev emitted during the transfer action
    * @param from the address from which the tokens are being transferred
    * @param to the adress of the destination
    * @param value the amount to be minted
-   * @param fromBalanceIncrease the cumulated balance since the last update of the user
-   * @param toBalanceIncrease the cumulated balance since the last update of the destination
-   * @param fromIndex the last index of the user
-   * @param toIndex the last index of the liquidator
+   * @param index the last index of the reserve
    **/
   event BalanceTransfer(
     address indexed from,
     address indexed to,
     uint256 value,
-    uint256 fromBalanceIncrease,
-    uint256 toBalanceIncrease,
-    uint256 fromIndex,
-    uint256 toIndex
+    uint256 index
   );
 
   /**
@@ -53,31 +44,28 @@ interface IAToken is IERC20 {
    * by an user is redirected to another user
    * @param from the address from which the interest is being redirected
    * @param to the adress of the destination
-   * @param fromBalanceIncrease the cumulated balance since the last update of the user
-   * @param fromIndex the last index of the user
+   * @param redirectedBalance the scaled balance being redirected
+   * @param index the last index of the reserve
    **/
   event InterestStreamRedirected(
     address indexed from,
     address indexed to,
     uint256 redirectedBalance,
-    uint256 fromBalanceIncrease,
-    uint256 fromIndex
+    uint256 index
   );
 
   /**
    * @dev emitted when the redirected balance of an user is being updated
    * @param targetAddress the address of which the balance is being updated
-   * @param targetBalanceIncrease the cumulated balance since the last update of the target
-   * @param targetIndex the last index of the user
    * @param redirectedBalanceAdded the redirected balance being added
    * @param redirectedBalanceRemoved the redirected balance being removed
+   * @param index the last index of the reserve
    **/
   event RedirectedBalanceUpdated(
     address indexed targetAddress,
-    uint256 targetBalanceIncrease,
-    uint256 targetIndex,
     uint256 redirectedBalanceAdded,
-    uint256 redirectedBalanceRemoved
+    uint256 redirectedBalanceRemoved,
+    uint256 index
   );
 
   event InterestRedirectionAllowanceChanged(address indexed from, address indexed to);
@@ -146,7 +134,7 @@ interface IAToken is IERC20 {
    * @param user the address of the user
    * @return the principal balance of the user
    **/
-  function principalBalanceOf(address user) external view returns (uint256);
+  function scaledBalanceOf(address user) external view returns (uint256);
 
   /**
    * @dev Used to validate transfers before actually executing them.
@@ -155,13 +143,6 @@ interface IAToken is IERC20 {
    * @return true if the user can transfer amount, false otherwise
    **/
   function isTransferAllowed(address user, uint256 amount) external view returns (bool);
-
-  /**
-   * @dev returns the last index of the user, used to calculate the balance of the user
-   * @param user address of the user
-   * @return the last user index
-   **/
-  function getUserIndex(address user) external view returns (uint256);
 
   /**
    * @dev returns the address to which the interest is redirected
