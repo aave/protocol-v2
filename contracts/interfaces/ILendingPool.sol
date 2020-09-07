@@ -237,6 +237,14 @@ interface ILendingPool {
     uint16 referralCode
   ) external;
 
+  function collateralSwap(
+    address receiverAddress,
+    address fromAsset,
+    address toAsset,
+    uint256 amountToSwap,
+    bytes calldata params
+  ) external;
+
   /**
    * @dev accessory functions to fetch data from the core contract
    **/

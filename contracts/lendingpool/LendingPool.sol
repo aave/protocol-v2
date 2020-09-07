@@ -450,15 +450,13 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     vars.amountPlusPremium = amount.add(vars.premium);
 
     if (debtMode == ReserveLogic.InterestRateMode.NONE) {
-      
       IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
-      
+
       reserve.updateCumulativeIndexesAndTimestamp();
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
       reserve.updateInterestRates(asset, vars.aTokenAddress, vars.premium, 0);
-      
-      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
 
+      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
     } else {
       // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
       _executeBorrow(
@@ -473,6 +471,56 @@ contract LendingPool is VersionedInitializable, ILendingPool {
         )
       );
     }
+  }
+
+  function collateralSwap(
+    address receiverAddress,
+    address fromAsset,
+    address toAsset,
+    uint256 amountToSwap,
+    bytes calldata params
+  ) external override {
+    ReserveLogic.ReserveData storage fromReserve = _reserves[fromAsset];
+    ReserveLogic.ReserveData storage toReserve = _reserves[toAsset];
+    IAToken fromReserveAToken = IAToken(fromReserve.aTokenAddress);
+    IAToken toReserveAToken = IAToken(toReserve.aTokenAddress);
+
+    fromReserve.updateCumulativeIndexesAndTimestamp();
+    toReserve.updateCumulativeIndexesAndTimestamp();
+
+    // get user position
+    uint256 userBalance = fromReserveAToken.balanceOf(msg.sender);
+    require(userBalance >= amountToSwap, 'not enough collateral');
+    if (userBalance == amountToSwap) {
+      _usersConfig[msg.sender].setUsingAsCollateral(fromReserve.index, false);
+    }
+
+    fromReserve.updateInterestRates(fromAsset, address(fromReserveAToken), 0, amountToSwap);
+
+    fromReserveAToken.burn(msg.sender, receiverAddress, amountToSwap);
+    // Notifies the receiver to proceed, sending as param the underlying already transferred
+    IFlashLoanReceiver(receiverAddress).executeOperation(
+      fromAsset,
+      //      toAsset,
+      amountToSwap,
+      0,
+      params
+    );
+
+    uint256 amountToReceive = IERC20(toAsset).balanceOf(receiverAddress);
+    IERC20(toAsset).transferFrom(receiverAddress, address(toReserveAToken), amountToReceive);
+    toReserveAToken.mint(msg.sender, amountToReceive);
+    toReserve.updateInterestRates(toAsset, address(toReserveAToken), amountToReceive, 0);
+
+    (, , , , uint256 healthFactor) = GenericLogic.calculateUserAccountData(
+      msg.sender,
+      _reserves,
+      _usersConfig[msg.sender],
+      _reservesList,
+      _addressesProvider.getPriceOracle()
+    );
+
+    require(healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD, 'low hf');
   }
 
   /**
@@ -728,12 +776,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       oracle
     );
 
-
     uint256 reserveIndex = reserve.index;
     if (!userConfig.isBorrowing(reserveIndex)) {
       userConfig.setBorrowing(reserveIndex, true);
     }
-
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
@@ -754,13 +800,17 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(vars.user, vars.amount);
     }
 
-    reserve.updateInterestRates(vars.asset, vars.aTokenAddress, 0, vars.releaseUnderlying ?  vars.amount : 0);
-  
-    if(vars.releaseUnderlying){
-        IAToken(vars.aTokenAddress).transferUnderlyingTo(msg.sender, vars.amount);
+    reserve.updateInterestRates(
+      vars.asset,
+      vars.aTokenAddress,
+      0,
+      vars.releaseUnderlying ? vars.amount : 0
+    );
+
+    if (vars.releaseUnderlying) {
+      IAToken(vars.aTokenAddress).transferUnderlyingTo(msg.sender, vars.amount);
     }
-  
-  
+
     emit Borrow(
       vars.asset,
       msg.sender,
