@@ -509,9 +509,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     );
 
     uint256 amountToReceive = IERC20(toAsset).balanceOf(receiverAddress);
-    IERC20(toAsset).transferFrom(receiverAddress, address(toReserveAToken), amountToReceive);
-    toReserveAToken.mint(msg.sender, amountToReceive);
-    toReserve.updateInterestRates(toAsset, address(toReserveAToken), amountToReceive, 0);
+    if (amountToReceive != 0) {
+      IERC20(toAsset).transferFrom(receiverAddress, address(toReserveAToken), amountToReceive);
+      toReserveAToken.mint(msg.sender, amountToReceive);
+      toReserve.updateInterestRates(toAsset, address(toReserveAToken), amountToReceive, 0);
+    }
 
     (, , , , uint256 healthFactor) = GenericLogic.calculateUserAccountData(
       msg.sender,
