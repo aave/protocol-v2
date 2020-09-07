@@ -108,4 +108,18 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
       'was received incorrect amount if reserve funds'
     );
   });
+
+  it('User tries to drop HF below one', async () => {
+    const {pool, weth, dai} = testEnv;
+    const amountToSwap = ethers.utils.parseEther('0.3');
+
+    const amountToReturn = ethers.utils.parseEther('0.5');
+    await _mockSwapAdapter.setAmountToReturn(amountToReturn);
+
+    await pool.borrow(weth.address, ethers.utils.parseEther('0.4'), 1, 0);
+
+    await expect(
+      pool.collateralSwap(_mockSwapAdapter.address, weth.address, dai.address, amountToSwap, '0x10')
+    ).to.be.revertedWith(HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD);
+  });
 });
