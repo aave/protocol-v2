@@ -247,7 +247,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     );
   });
 
-  it('User tries to repay with his collateral a currency he havent borrow', async () => {
+  it('Revert expected. User 3 tries to repay with his collateral a currency he havent borrow', async () => {
     const {pool, weth, dai, users, mockSwapAdapter} = testEnv;
     const user = users[2];
 
@@ -267,7 +267,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     ).to.be.revertedWith('revert CURRRENCY_NOT_BORROWED');
   });
 
-  it('User tries to repay with his collateral all his variable debt and part of the stable', async () => {
+  it('User 3 tries to repay with his collateral all his variable debt and part of the stable', async () => {
     const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
     const user = users[2];
 
@@ -402,8 +402,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     );
   });
 
-  // WIP
-  it('User tries to repay a bigger amount that what can be swapped of a particular collateral, repaying only the maximum allowed by that collateral', async () => {
+  it('User 4 tries to repay a bigger amount that what can be swapped of a particular collateral, repaying only the maximum allowed by that collateral', async () => {
     const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;
     const user = users[3];
 
@@ -435,13 +434,8 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
       testEnv
     );
 
-    console.log('BEFORE');
-    console.log(wethUserDataBefore.currentATokenBalance.toString());
-    console.log(daiUserDataBefore.currentVariableDebt.toString());
-    console.log(daiUserDataBefore.currentStableDebt.toString());
-
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
-    const txReceipt = await waitForTx(
+    await waitForTx(
       await pool
         .connect(user.signer)
         .repayWithCollateral(
@@ -463,9 +457,39 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     const {userData: daiUserDataAfter} = await getContractsData(dai.address, user.address, testEnv);
 
-    console.log('AFTER');
-    console.log(wethUserDataAfter.currentATokenBalance.toString());
-    console.log(daiUserDataAfter.currentVariableDebt.toString());
-    console.log(daiUserDataAfter.currentStableDebt.toString());
+    const collateralPrice = await oracle.getAssetPrice(weth.address);
+    const principalPrice = await oracle.getAssetPrice(dai.address);
+
+    const collateralConfig = await pool.getReserveConfigurationData(weth.address);
+
+    const collateralDecimals = collateralConfig.decimals.toString();
+    const principalDecimals = (
+      await pool.getReserveConfigurationData(dai.address)
+    ).decimals.toString();
+    const collateralLiquidationBonus = collateralConfig.liquidationBonus.toString();
+
+    const expectedDebtCovered = new BigNumber(collateralPrice.toString())
+      .times(new BigNumber(wethUserDataBefore.currentATokenBalance.toString()))
+      .times(new BigNumber(10).pow(principalDecimals))
+      .div(
+        new BigNumber(principalPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
+      )
+      .div(new BigNumber(collateralLiquidationBonus).div(10000).toString())
+      .decimalPlaces(0, BigNumber.ROUND_DOWN);
+
+    const expectedVariableDebtIncrease = calcExpectedVariableDebtTokenBalance(
+      daiReserveDataBefore,
+      daiUserDataBefore,
+      new BigNumber(repayWithCollateralTimestamp)
+    ).minus(daiUserDataBefore.currentVariableDebt);
+
+    expect(daiUserDataAfter.currentVariableDebt).to.be.bignumber.equal(
+      new BigNumber(daiUserDataBefore.currentVariableDebt)
+        .minus(expectedDebtCovered.toString())
+        .plus(expectedVariableDebtIncrease),
+      'INVALID_VARIABLE_DEBT_POSITION'
+    );
+
+    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(0);
   });
 });
