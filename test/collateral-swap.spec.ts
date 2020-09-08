@@ -4,6 +4,9 @@ import {getMockSwapAdapter} from '../helpers/contracts-helpers';
 import {ProtocolErrors} from '../helpers/types';
 import {ethers} from 'ethers';
 import {APPROVAL_AMOUNT_LENDING_POOL} from '../helpers/constants';
+import {getContractsData, getTxCostAndTimestamp} from './helpers/actions';
+import {calcExpectedATokenBalance} from './helpers/utils/calculations';
+import {waitForTx} from './__setup.spec';
 
 const {expect} = require('chai');
 
@@ -54,13 +57,6 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
         '0x10'
       )
     ).to.be.revertedWith('SafeMath: subtraction overflow');
-    await weth.mint(ethers.utils.parseEther('0.1'));
-    await pool.repay(
-      weth.address,
-      ethers.utils.parseEther('0.2'),
-      1,
-      await pool.signer.getAddress()
-    );
   });
 
   it('User tries to swap correct amount', async () => {
@@ -71,19 +67,30 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
     const amountToReturn = ethers.utils.parseEther('0.5');
     await _mockSwapAdapter.setAmountToReturn(amountToReturn);
 
+    const {
+      reserveData: wethReserveDataBefore,
+      userData: wethUserDataBefore,
+    } = await getContractsData(weth.address, userAddress, testEnv);
+
+    const {reserveData: daiReserveDataBefore, userData: daiUserDataBefore} = await getContractsData(
+      dai.address,
+      userAddress,
+      testEnv
+    );
+
     const reserveBalanceWETHBefore = await weth.balanceOf(aEth.address);
     const reserveBalanceDAIBefore = await dai.balanceOf(aDai.address);
 
-    const userATokenBalanceWETHBefore = await aEth.balanceOf(userAddress);
-    const userATokenBalanceDAIBefore = await aDai.balanceOf(userAddress);
-
-    await pool.collateralSwap(
-      _mockSwapAdapter.address,
-      weth.address,
-      dai.address,
-      amountToSwap,
-      '0x10'
+    const txReceipt = await waitForTx(
+      await pool.collateralSwap(
+        _mockSwapAdapter.address,
+        weth.address,
+        dai.address,
+        amountToSwap,
+        '0x10'
+      )
     );
+    const {txTimestamp} = await getTxCostAndTimestamp(txReceipt);
     const userATokenBalanceWETHAfter = await aEth.balanceOf(userAddress);
     const userATokenBalanceDAIAfter = await aDai.balanceOf(userAddress);
 
@@ -91,11 +98,15 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
     const reserveBalanceDAIAfter = await dai.balanceOf(aDai.address);
 
     expect(userATokenBalanceWETHAfter.toString()).to.be.equal(
-      userATokenBalanceWETHBefore.sub(amountToSwap).toString(),
+      calcExpectedATokenBalance(wethReserveDataBefore, wethUserDataBefore, txTimestamp)
+        .minus(amountToSwap.toString())
+        .toString(),
       'was burned incorrect amount of user funds'
     );
     expect(userATokenBalanceDAIAfter.toString()).to.be.equal(
-      userATokenBalanceDAIBefore.add(amountToReturn).toString(),
+      calcExpectedATokenBalance(daiReserveDataBefore, daiUserDataBefore, txTimestamp)
+        .plus(amountToReturn.toString())
+        .toString(),
       'was minted incorrect amount of user funds'
     );
 
@@ -116,7 +127,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
     const amountToReturn = ethers.utils.parseEther('0.5');
     await _mockSwapAdapter.setAmountToReturn(amountToReturn);
 
-    await pool.borrow(weth.address, ethers.utils.parseEther('0.4'), 1, 0);
+    await pool.borrow(weth.address, ethers.utils.parseEther('0.3'), 1, 0);
 
     await expect(
       pool.collateralSwap(_mockSwapAdapter.address, weth.address, dai.address, amountToSwap, '0x10')

@@ -1076,7 +1076,7 @@ const calcExpectedATokenUserIndex = (
   return calcExpectedReserveNormalizedIncome(reserveDataBeforeAction, currentTimestamp);
 };
 
-const calcExpectedATokenBalance = (
+export const calcExpectedATokenBalance = (
   reserveDataBeforeAction: ReserveData,
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber
