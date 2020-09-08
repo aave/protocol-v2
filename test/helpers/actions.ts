@@ -845,7 +845,7 @@ const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
   return {txCost, txTimestamp};
 };
 
-const getContractsData = async (reserve: string, user: string, testEnv: TestEnv) => {
+export const getContractsData = async (reserve: string, user: string, testEnv: TestEnv) => {
   const {pool} = testEnv;
   const reserveData = await getReserveData(pool, reserve);
   const userData = await getUserData(pool, reserve, user);

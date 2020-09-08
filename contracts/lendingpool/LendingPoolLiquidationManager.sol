@@ -21,7 +21,7 @@ import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
-import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
@@ -393,12 +393,14 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate);
 
+    address principalAToken = debtReserve.aTokenAddress;
+
     // Notifies the receiver to proceed, sending as param the underlying already transferred
-    IFlashLoanReceiver(receiver).executeOperation(
+    ISwapAdapter(receiver).executeOperation(
       collateral,
-      address(vars.collateralAtoken),
+      principal,
       vars.maxCollateralToLiquidate,
-      0,
+      address(this),
       params
     );
 
@@ -406,11 +408,11 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     debtReserve.updateCumulativeIndexesAndTimestamp();
     debtReserve.updateInterestRates(
       principal,
-      debtReserve.aTokenAddress,
+      principalAToken,
       vars.actualAmountToLiquidate,
       0
     );
-    IERC20(principal).transferFrom(receiver, debtReserve.aTokenAddress, vars.actualAmountToLiquidate);
+    IERC20(principal).transferFrom(receiver, principalAToken, vars.actualAmountToLiquidate);
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
