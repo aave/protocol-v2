@@ -11,6 +11,8 @@ import {
 import {IAToken} from './interfaces/IAToken.sol';
 import {IERC20} from '../interfaces/IERC20.sol';
 import {SafeERC20} from "../misc/SafeERC20.sol";
+import "@nomiclabs/buidler/console.sol";
+
 
 /**
  * @title Aave ERC20 AToken
@@ -118,7 +120,9 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
     uint256 currentBalance = balanceOf(user);
 
-    require(currentBalance <= amount, Errors.INVALID_ATOKEN_BALANCE);
+    console.log("Amount is %s, balance is %s", amount, currentBalance);
+
+    require(amount <= currentBalance, Errors.INVALID_ATOKEN_BALANCE);
 
     uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
@@ -239,6 +243,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   function getUserInterestRedirectionIndex(address user) external override view returns (uint256) {
     return _interestRedirectionIndexes[user];
   }
+
 
   /**
    * @dev calculates the total supply of the specific aToken
