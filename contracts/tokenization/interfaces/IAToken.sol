@@ -152,6 +152,13 @@ interface IAToken is IERC20 {
   function getInterestRedirectionAddress(address user) external view returns (address);
 
   /**
+   * @dev returns the index of the user at the moment of redirection
+   * @param user address of the user
+   * @return interest redirection index
+   **/
+  function getUserInterestRedirectionIndex(address user) external view returns (uint256);
+
+  /**
    * @dev returns the redirected balance of the user. The redirected balance is the balance
    * redirected by other accounts to the user, that is accrueing interest for him.
    * @param user address of the user

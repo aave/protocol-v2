@@ -69,22 +69,22 @@ export const getUserData = async (
   ]);
 
   const [
-    userIndex,
     redirectedBalance,
-    principalATokenBalance,
+    scaledATokenBalance,
     redirectionAddressRedirectedBalance,
     interestRedirectionAddress,
+    interestRedirectionIndex,
   ] = aTokenData;
 
   const token = await getMintableErc20(reserve);
   const walletBalance = new BigNumber((await token.balanceOf(user)).toString());
 
   return {
-    principalATokenBalance: new BigNumber(principalATokenBalance),
+    scaledATokenBalance: new BigNumber(scaledATokenBalance),
     interestRedirectionAddress,
+    interestRedirectionIndex,
     redirectionAddressRedirectedBalance: new BigNumber(redirectionAddressRedirectedBalance),
     redirectedBalance: new BigNumber(redirectedBalance),
-    currentATokenUserIndex: new BigNumber(userIndex),
     currentATokenBalance: new BigNumber(userData.currentATokenBalance.toString()),
     currentStableDebt: new BigNumber(userData.currentStableDebt.toString()),
     currentVariableDebt: new BigNumber(userData.currentVariableDebt.toString()),
@@ -115,15 +115,15 @@ const getATokenUserData = async (reserve: string, user: string, pool: LendingPoo
 
   const aToken = await getAToken(aTokenAddress);
   const [
-    userIndex,
     interestRedirectionAddress,
     redirectedBalance,
-    principalTokenBalance,
+    scaledATokenBalance,
+    interestRedirectionIndex
   ] = await Promise.all([
-    aToken.getUserIndex(user),
     aToken.getInterestRedirectionAddress(user),
     aToken.getRedirectedBalance(user),
-    aToken.principalBalanceOf(user),
+    aToken.scaledBalanceOf(user),
+    aToken.getUserInterestRedirectionIndex(user)
   ]);
 
   const redirectionAddressRedirectedBalance =
@@ -132,10 +132,10 @@ const getATokenUserData = async (reserve: string, user: string, pool: LendingPoo
       : new BigNumber('0');
 
   return [
-    userIndex.toString(),
     redirectedBalance.toString(),
-    principalTokenBalance.toString(),
+    scaledATokenBalance.toString(),
     redirectionAddressRedirectedBalance.toString(),
     interestRedirectionAddress,
+    interestRedirectionIndex
   ];
 };

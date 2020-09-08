@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js';
 
 export interface UserReserveData {
-  principalATokenBalance: BigNumber;
+  scaledATokenBalance: BigNumber;
   currentATokenBalance: BigNumber;
-  currentATokenUserIndex: BigNumber;
   interestRedirectionAddress: string;
+  interestRedirectionIndex: BigNumber;
   redirectionAddressRedirectedBalance: BigNumber;
   redirectedBalance: BigNumber;
   currentStableDebt: BigNumber;
