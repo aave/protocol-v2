@@ -120,7 +120,9 @@ export const calcExpectedUserDataAfterWithdraw = (
   }
 
   expectedUserData.scaledATokenBalance = calcExpectedScaledATokenBalance(reserveDataAfterAction, userDataBeforeAction, new BigNumber(0), new BigNumber(amountWithdrawn));
-  
+
+  console.log("Scaled balance is ", expectedUserData.scaledATokenBalance.toFixed());
+
   expectedUserData.currentATokenBalance = aTokenBalance.minus(
     amountWithdrawn
   );
@@ -161,8 +163,10 @@ export const calcExpectedUserDataAfterWithdraw = (
 
   if (expectedUserData.currentATokenBalance.eq(0) && expectedUserData.redirectedBalance.eq(0)) {
     expectedUserData.interestRedirectionAddress = ZERO_ADDRESS;
+    expectedUserData.interestRedirectionIndex = new BigNumber(0);
   } else {
     expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
+    expectedUserData.interestRedirectionIndex = userDataBeforeAction.interestRedirectionAddress == ZERO_ADDRESS ? new BigNumber(0) : reserveDataAfterAction.liquidityIndex;
   }
 
   expectedUserData.redirectionAddressRedirectedBalance = calcExpectedRedirectedBalance(
@@ -172,7 +176,7 @@ export const calcExpectedUserDataAfterWithdraw = (
     new BigNumber(0),
     new BigNumber(amountWithdrawn)
   );
-
+  
   return expectedUserData;
 };
 
@@ -564,9 +568,10 @@ export const calcExpectedUserDataAfterBorrow = (
     userDataBeforeAction,
     currentTimestamp
   );
-  expectedUserData.principalATokenBalance = userDataBeforeAction.principalATokenBalance;
+  expectedUserData.scaledATokenBalance = userDataBeforeAction.scaledATokenBalance;
   expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
   expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
+  expectedUserData.interestRedirectionIndex = userDataBeforeAction.interestRedirectionIndex;
   expectedUserData.redirectionAddressRedirectedBalance =
     userDataBeforeAction.redirectionAddressRedirectedBalance;
   expectedUserData.currentATokenUserIndex = userDataBeforeAction.currentATokenUserIndex;

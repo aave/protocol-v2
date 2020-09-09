@@ -444,10 +444,6 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
     uint256 scaledAmount = amount.rayDiv(index);
 
-    console.log("scaled balanceOf from: %s", scaledBalanceOf(from));
-    console.log("scaled balanceOf to: %s", scaledBalanceOf(to));
-    console.log("scaled amount: %s", scaledAmount);
-
     super._transfer(from, to, scaledAmount);
 
     //if the sender is redirecting his interest towards someone else,

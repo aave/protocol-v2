@@ -56,16 +56,19 @@ const almostEqualOrEqual = function (
       return;
     }
 
+
     this.assert(actual[key] != undefined, `Property ${key} is undefined in the actual data`);
     expect(expected[key] != undefined, `Property ${key} is undefined in the expected data`);
 
+    if (!expected[key] || !actual[key]) {
+      console.log('Found a undefined value for Key ', key, ' value ', expected[key], actual[key]);
+    }
+
     if (actual[key] instanceof BigNumber) {
-      if (!expected[key]) {
-        console.log('Key ', key, ' value ', expected[key], actual[key]);
-      }
+
       const actualValue = (<BigNumber>actual[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
       const expectedValue = (<BigNumber>expected[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
-
+  
       this.assert(
         actualValue.eq(expectedValue) ||
           actualValue.plus(1).eq(expectedValue) ||
