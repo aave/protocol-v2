@@ -12,32 +12,10 @@ import {timeLatest} from '../helpers/misc-utils';
 import {tEthereumAddress, ProtocolErrors} from '../helpers/types';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {formatUnits, formatEther} from 'ethers/lib/utils';
+import {expectRepayWithCollateralEvent} from './repay-with-collateral.spec'
 
 const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
-
-const expectRepayWithCollateralEvent = (
-  events: ethers.Event[],
-  pool: tEthereumAddress,
-  collateral: tEthereumAddress,
-  borrowing: tEthereumAddress,
-  user: tEthereumAddress
-) => {
-  if (!events || events.length < 14) {
-    expect(false, 'INVALID_EVENTS_LENGTH_ON_REPAY_COLLATERAL');
-  }
-
-  const repayWithCollateralEvent = events[13];
-
-  expect(repayWithCollateralEvent.address).to.be.equal(pool);
-  expect(`0x${repayWithCollateralEvent.topics[1].slice(26)}`.toLowerCase()).to.be.equal(
-    collateral.toLowerCase()
-  );
-  expect(`0x${repayWithCollateralEvent.topics[2].slice(26)}`).to.be.equal(borrowing.toLowerCase());
-  expect(`0x${repayWithCollateralEvent.topics[3].slice(26)}`.toLowerCase()).to.be.equal(
-    user.toLowerCase()
-  );
-};
 
 makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEnv) => {
   const {INVALID_HF} = ProtocolErrors;
@@ -359,7 +337,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
           mockSwapAdapter.address,
           '0x'
         )
-    ).to.be.revertedWith('revert CURRRENCY_NOT_BORROWED');
+    ).to.be.revertedWith('40');
 
     await oracle.setAssetPrice(usdc.address, usdcPrice);
   });
@@ -525,7 +503,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
           mockSwapAdapter.address,
           '0x'
         )
-    ).to.be.revertedWith('FAILED_REPAY_WITH_COLLATERAL');
+    ).to.be.revertedWith('53');
 
     // Resets DAI Price
     await oracle.setAssetPrice(dai.address, daiPrice);
@@ -559,7 +537,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
           mockSwapAdapter.address,
           '0x'
         )
-    ).to.be.revertedWith('HEALTH_FACTOR_ABOVE_THRESHOLD');
+    ).to.be.revertedWith('38');
   });
   it('User 5 liquidates User 2 DAI Variable loan using his WETH collateral, half the amount', async () => {
     const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;

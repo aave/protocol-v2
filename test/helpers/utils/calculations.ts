@@ -1408,8 +1408,8 @@ const calcExpectedLiquidityIndex = (reserveData: ReserveData, timestamp: BigNumb
 };
 
 const calcExpectedVariableBorrowIndex = (reserveData: ReserveData, timestamp: BigNumber) => {
-  //if utilization rate is 0, nothing to compound
-  if (reserveData.utilizationRate.eq('0')) {
+  //if totalBorrowsVariable is 0, nothing to compound
+  if (reserveData.totalBorrowsVariable.eq('0')) {
     return reserveData.variableBorrowIndex;
   }
 

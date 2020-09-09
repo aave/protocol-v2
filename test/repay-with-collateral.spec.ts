@@ -14,18 +14,18 @@ import {tEthereumAddress} from '../helpers/types';
 const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
 
-const expectRepayWithCollateralEvent = (
+export const expectRepayWithCollateralEvent = (
   events: ethers.Event[],
   pool: tEthereumAddress,
   collateral: tEthereumAddress,
   borrowing: tEthereumAddress,
   user: tEthereumAddress
 ) => {
-  if (!events || events.length < 14) {
+  if (!events || events.length < 16) {
     expect(false, 'INVALID_EVENTS_LENGTH_ON_REPAY_COLLATERAL');
   }
 
-  const repayWithCollateralEvent = events[13];
+  const repayWithCollateralEvent = events[15];
 
   expect(repayWithCollateralEvent.address).to.be.equal(pool);
   expect(`0x${repayWithCollateralEvent.topics[1].slice(26)}`.toLowerCase()).to.be.equal(
@@ -87,7 +87,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
           mockSwapAdapter.address,
           '0x'
         )
-    ).to.be.revertedWith("FAILED_REPAY_WITH_COLLATERAL")
+    ).to.be.revertedWith("53")
 
   });
 
@@ -294,7 +294,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
           mockSwapAdapter.address,
           '0x'
         )
-    ).to.be.revertedWith('revert CURRRENCY_NOT_BORROWED');
+    ).to.be.revertedWith('40');
   });
 
   it('User 3 tries to repay with his collateral all his variable debt and part of the stable', async () => {

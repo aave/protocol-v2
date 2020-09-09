@@ -3,8 +3,6 @@ pragma solidity ^0.6.8;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
-import {ReentrancyGuard} from '@openzeppelin/contracts/utils/ReentrancyGuard.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -22,13 +20,14 @@ import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
  * @author Aave
  * @notice Implements the liquidation function.
  **/
-contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializable {
+contract LendingPoolLiquidationManager is VersionedInitializable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -156,7 +155,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
         uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        'Health factor is not below the threshold'
+        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
       );
     }
 
@@ -172,7 +171,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (!vars.isCollateralEnabled) {
       return (
         uint256(LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
-        'The collateral chosen cannot be liquidated'
+        Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
       );
     }
 
@@ -185,7 +184,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
       return (
         uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
-        'User did not borrow the specified currency'
+        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
       );
     }
 
@@ -226,7 +225,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
           uint256(LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
-          "There isn't enough liquidity available to liquidate"
+          Errors.NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
         );
       }
     }
@@ -292,7 +291,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       receiveAToken
     );
 
-    return (uint256(LiquidationErrors.NO_ERROR), 'No errors');
+    return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -333,7 +332,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (msg.sender != user && vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
         uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        'HEALTH_FACTOR_ABOVE_THRESHOLD'
+        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
       );
     }
 
@@ -345,7 +344,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       if (!vars.isCollateralEnabled) {
         return (
           uint256(LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
-          'COLLATERAL_CANNOT_BE_LIQUIDATED'
+          Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
         );
       }
     }    
@@ -358,7 +357,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
     if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
       return (
         uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
-        'CURRRENCY_NOT_BORROWED'
+        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
       );
     }
 
@@ -458,7 +457,7 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
       vars.maxCollateralToLiquidate
     );
 
-    return (uint256(LiquidationErrors.NO_ERROR), 'SUCCESS');
+    return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   struct AvailableCollateralToLiquidateLocalVars {

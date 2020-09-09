@@ -11,27 +11,16 @@ import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
 
 /**
  * @title contract StableDebtToken
- *
- * @notice defines the interface for the stable debt token
- *
- * @dev it does not inherit from IERC20 to save in code size
- *
+ * @notice Implements a stable debt token to track the user positions
  * @author Aave
- *
  **/
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
-  using SafeMath for uint256;
   using WadRayMath for uint256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
-  struct UserData {
-    uint256 currentRate;
-    uint40 lastUpdateTimestamp;
-  }
 
-  uint256 private avgStableRate;
-
-  mapping(address => UserData) private _usersData;
+  uint256 private _avgStableRate;
+  mapping(address => uint40) _timestamps;
 
   constructor(
     address pool,
@@ -53,7 +42,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the average stable rate
    **/
   function getAverageStableRate() external virtual override view returns (uint256) {
-    return avgStableRate;
+    return _avgStableRate;
   }
 
   /**
@@ -61,7 +50,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the last update timestamp
    **/
   function getUserLastUpdated(address user) external virtual override view returns (uint40) {
-    return _usersData[user].lastUpdateTimestamp;
+    return _timestamps[user];
   }
 
   /**
@@ -70,7 +59,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the stable rate of user
    **/
   function getUserStableRate(address user) external virtual override view returns (uint256) {
-    return _usersData[user].currentRate;
+    return _usersData[user];
   }
 
   /**
@@ -78,16 +67,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the accumulated debt of the user
    **/
   function balanceOf(address account) public virtual override view returns (uint256) {
-    uint256 accountBalance = _balances[account];
+    uint256 accountBalance = principalBalanceOf(account);
+    uint256 stableRate = _usersData[account];
     if (accountBalance == 0) {
       return 0;
     }
-
-    UserData storage userData = _usersData[account];
-
     uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(
-      userData.currentRate,
-      userData.lastUpdateTimestamp
+      stableRate,
+      _timestamps[account]
     );
     return accountBalance.wadToRay().rayMul(cumulatedInterest).rayToWad();
   }
@@ -120,25 +107,25 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    vars.supplyBeforeMint = _totalSupply.add(balanceIncrease);
+    vars.supplyBeforeMint = totalSupply().add(balanceIncrease);
     vars.supplyAfterMint = vars.supplyBeforeMint.add(amount);
 
     vars.amountInRay = amount.wadToRay();
 
     //calculates the new stable rate for the user
     vars.newStableRate = _usersData[user]
-      .currentRate
       .rayMul(currentBalance.wadToRay())
       .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
 
-    _usersData[user].currentRate = vars.newStableRate;
+    require(vars.newStableRate < (1 << 128), "Debt token: stable rate overflow");
+    _usersData[user] = vars.newStableRate;
 
     //solium-disable-next-line
-    _usersData[user].lastUpdateTimestamp = uint40(block.timestamp);
+    _timestamps[user] = uint40(block.timestamp);
 
     //calculates the updated average stable rate
-    avgStableRate = avgStableRate
+    _avgStableRate = _avgStableRate
       .rayMul(vars.supplyBeforeMint.wadToRay())
       .add(rate.rayMul(vars.amountInRay))
       .rayDiv(vars.supplyAfterMint.wadToRay());
@@ -167,24 +154,24 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    uint256 supplyBeforeBurn = _totalSupply.add(balanceIncrease);
+    uint256 supplyBeforeBurn = totalSupply().add(balanceIncrease);
     uint256 supplyAfterBurn = supplyBeforeBurn.sub(amount);
 
     if (supplyAfterBurn == 0) {
-      avgStableRate = 0;
+      _avgStableRate = 0;
     } else {
-      avgStableRate = avgStableRate
+      _avgStableRate = _avgStableRate
         .rayMul(supplyBeforeBurn.wadToRay())
-        .sub(_usersData[user].currentRate.rayMul(amount.wadToRay()))
+        .sub(_usersData[user].rayMul(amount.wadToRay()))
         .rayDiv(supplyAfterBurn.wadToRay());
     }
 
     if (amount == currentBalance) {
-      _usersData[user].currentRate = 0;
-      _usersData[user].lastUpdateTimestamp = 0;
+      _usersData[user] = 0;
+      _timestamps[user] = 0;
     } else {
       //solium-disable-next-line
-      _usersData[user].lastUpdateTimestamp = uint40(block.timestamp);
+      _timestamps[user] = uint40(block.timestamp);
     }
 
     if (balanceIncrease > amount) {

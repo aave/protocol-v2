@@ -17,8 +17,10 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER,
     INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER,
     INVALID_REDIRECTION_ADDRESS,
-    ZERO_COLLATERAL,
-    TRANSFERRED_AMOUNT_GT_ZERO,
+    // ZERO_COLLATERAL,
+    TRANSFER_AMOUNT_NOT_GT_0,
+    COLLATERAL_BALANCE_IS_0,
+    TRANSFER_NOT_ALLOWED,
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
@@ -96,16 +98,14 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
 
     await weth.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    
-    await pool
-      .connect(users[0].signer)
-      .deposit(weth.address, ethers.utils.parseEther('1.0'), '0');
+
+    await pool.connect(users[0].signer).deposit(weth.address, ethers.utils.parseEther('1.0'), '0');
     await expect(
       pool
         .connect(users[1].signer)
         .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL),
-      ZERO_COLLATERAL
-    ).to.be.revertedWith(ZERO_COLLATERAL);
+      COLLATERAL_BALANCE_IS_0
+    ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
   });
 
   it('User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)', async () => {
@@ -120,25 +120,25 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
-      'Transfer cannot be allowed.'
-    ).to.be.revertedWith('Transfer cannot be allowed.');
+      TRANSFER_NOT_ALLOWED
+    ).to.be.revertedWith(TRANSFER_NOT_ALLOWED);
   });
 
   it('User 0 tries to transfer 0 balance (revert expected)', async () => {
     const {users, pool, aDai, dai, weth} = testEnv;
     await expect(
       aDai.connect(users[0].signer).transfer(users[1].address, '0'),
-      TRANSFERRED_AMOUNT_GT_ZERO
-    ).to.be.revertedWith(TRANSFERRED_AMOUNT_GT_ZERO);
+      TRANSFER_AMOUNT_NOT_GT_0
+    ).to.be.revertedWith(TRANSFER_AMOUNT_NOT_GT_0);
   });
 
   it('User 1 repays the borrow, transfers aDAI back to user 0', async () => {
     const {users, pool, aDai, dai, weth} = testEnv;
- 
+
     await weth.connect(users[1].signer).mint(await convertToCurrencyDecimals(weth.address, '2'));
 
     await weth.connect(users[1].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
- 
+
     await pool
       .connect(users[1].signer)
       .repay(weth.address, MAX_UINT_AMOUNT, RateMode.Stable, users[1].address);
