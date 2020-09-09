@@ -103,7 +103,13 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(users[1].signer)
-        .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL),
+        .borrow(
+          weth.address,
+          ethers.utils.parseEther('0.1'),
+          RateMode.Stable,
+          AAVE_REFERRAL,
+          users[1].address
+        ),
       COLLATERAL_BALANCE_IS_0
     ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
   });
@@ -116,7 +122,13 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
     await pool
       .connect(users[1].signer)
-      .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL);
+      .borrow(
+        weth.address,
+        ethers.utils.parseEther('0.1'),
+        RateMode.Stable,
+        AAVE_REFERRAL,
+        users[1].address
+      );
 
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),

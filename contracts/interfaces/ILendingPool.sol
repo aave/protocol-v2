@@ -28,6 +28,12 @@ interface ILendingPool {
    **/
   event Withdraw(address indexed reserve, address indexed user, uint256 amount);
 
+  event BorrowAllowanceDelegated(
+    address indexed fromUser,
+    address indexed toUser,
+    address indexed asset,
+    uint256 amount
+  );
   /**
    * @dev emitted on borrow
    * @param reserve the address of the reserve
@@ -39,7 +45,8 @@ interface ILendingPool {
    **/
   event Borrow(
     address indexed reserve,
-    address indexed user,
+    address user,
+    address indexed onBehalfOf,
     uint256 amount,
     uint256 borrowRateMode,
     uint256 borrowRate,
@@ -149,6 +156,18 @@ interface ILendingPool {
    **/
   function withdraw(address reserve, uint256 amount) external;
 
+  function delegateBorrowAllowance(
+    address user,
+    address asset,
+    uint256 amount
+  ) external;
+
+  function getBorrowAllowance(
+    address fromUser,
+    address toUser,
+    address asset
+  ) external view returns (uint256);
+
   /**
    * @dev Allows users to borrow a specific amount of the reserve currency, provided that the borrower
    * already deposited enough collateral.
@@ -160,7 +179,8 @@ interface ILendingPool {
     address reserve,
     uint256 amount,
     uint256 interestRateMode,
-    uint16 referralCode
+    uint16 referralCode,
+    address onBehalfOf
   ) external;
 
   /**

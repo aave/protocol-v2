@@ -48,7 +48,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
   mapping(address => ReserveLogic.ReserveData) internal _reserves;
   mapping(address => UserConfiguration.Map) internal _usersConfig;
-
+  mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
   address[] internal _reservesList;
 
   /**
@@ -157,6 +157,23 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     emit Withdraw(asset, msg.sender, amount);
   }
 
+  function getBorrowAllowance(
+    address fromUser,
+    address toUser,
+    address asset
+  ) external override view returns (uint256) {
+    return _borrowAllowance[fromUser][asset][toUser];
+  }
+
+  function delegateBorrowAllowance(
+    address user,
+    address asset,
+    uint256 amount
+  ) external override {
+    _borrowAllowance[msg.sender][asset][user] = amount;
+    emit BorrowAllowanceDelegated(msg.sender, user, asset, amount);
+  }
+
   /**
    * @dev Allows users to borrow a specific amount of the reserve currency, provided that the borrower
    * already deposited enough collateral.
@@ -169,12 +186,19 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address asset,
     uint256 amount,
     uint256 interestRateMode,
-    uint16 referralCode
+    uint16 referralCode,
+    address onBehalfOf
   ) external override {
+    if (onBehalfOf != msg.sender) {
+      _borrowAllowance[onBehalfOf][asset][msg.sender] = _borrowAllowance[onBehalfOf][asset][msg
+        .sender]
+        .sub(amount, Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
+    }
     _executeBorrow(
       ExecuteBorrowParams(
         asset,
         msg.sender,
+        onBehalfOf,
         amount,
         interestRateMode,
         _reserves[asset].aTokenAddress,
@@ -450,20 +474,19 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     vars.amountPlusPremium = amount.add(vars.premium);
 
     if (debtMode == ReserveLogic.InterestRateMode.NONE) {
-      
       IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
-      
+
       reserve.updateCumulativeIndexesAndTimestamp();
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
       reserve.updateInterestRates(asset, vars.aTokenAddress, vars.premium, 0);
-      
-      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
 
+      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
     } else {
       // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
       _executeBorrow(
         ExecuteBorrowParams(
           asset,
+          msg.sender,
           msg.sender,
           vars.amountPlusPremium.sub(vars.availableBalance),
           mode,
@@ -694,6 +717,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   struct ExecuteBorrowParams {
     address asset;
     address user;
+    address onBehalfOf;
     uint256 amount;
     uint256 interestRateMode;
     address aTokenAddress;
@@ -707,7 +731,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    **/
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
     ReserveLogic.ReserveData storage reserve = _reserves[vars.asset];
-    UserConfiguration.Map storage userConfig = _usersConfig[msg.sender];
+    UserConfiguration.Map storage userConfig = _usersConfig[vars.onBehalfOf];
 
     address oracle = _addressesProvider.getPriceOracle();
 
@@ -717,6 +741,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     ValidationLogic.validateBorrow(
       reserve,
+      vars.onBehalfOf,
       vars.asset,
       vars.amount,
       amountInETH,
@@ -728,12 +753,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       oracle
     );
 
-
     uint256 reserveIndex = reserve.index;
     if (!userConfig.isBorrowing(reserveIndex)) {
       userConfig.setBorrowing(reserveIndex, true);
     }
-
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
@@ -746,24 +769,29 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       currentStableRate = reserve.currentStableBorrowRate;
 
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(
-        vars.user,
+        vars.onBehalfOf,
         vars.amount,
         currentStableRate
       );
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(vars.user, vars.amount);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(vars.onBehalfOf, vars.amount);
     }
 
-    reserve.updateInterestRates(vars.asset, vars.aTokenAddress, 0, vars.releaseUnderlying ?  vars.amount : 0);
-  
-    if(vars.releaseUnderlying){
-        IAToken(vars.aTokenAddress).transferUnderlyingTo(msg.sender, vars.amount);
+    reserve.updateInterestRates(
+      vars.asset,
+      vars.aTokenAddress,
+      0,
+      vars.releaseUnderlying ? vars.amount : 0
+    );
+
+    if (vars.releaseUnderlying) {
+      IAToken(vars.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
     }
-  
-  
+
     emit Borrow(
       vars.asset,
-      msg.sender,
+      vars.user,
+      vars.onBehalfOf,
       vars.amount,
       vars.interestRateMode,
       ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE

@@ -12,6 +12,7 @@ import {
   redirectInterestStream,
   redirectInterestStreamOf,
   allowInterestRedirectionTo,
+  delegateBorrowAllowance,
 } from './actions';
 import {RateMode} from '../../helpers/types';
 
@@ -102,6 +103,18 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       }
       break;
 
+    case 'delegateBorrowAllowance':
+      {
+        const {amount, toUser: toUserIndex} = action.args;
+        const toUser = users[parseInt(toUserIndex, 10)].address;
+        if (!amount || amount === '') {
+          throw `Invalid amount to deposit into the ${reserve} reserve`;
+        }
+
+        await delegateBorrowAllowance(reserve, amount, user, toUser, testEnv);
+      }
+      break;
+
     case 'withdraw':
       {
         const {amount} = action.args;
@@ -115,13 +128,27 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       break;
     case 'borrow':
       {
-        const {amount, timeTravel} = action.args;
+        const {amount, timeTravel, onBehalfOf: onBehalfOfIndex} = action.args;
+
+        const onBehalfOf = onBehalfOfIndex
+          ? users[parseInt(onBehalfOfIndex)].address
+          : user.address;
 
         if (!amount || amount === '') {
           throw `Invalid amount to borrow from the ${reserve} reserve`;
         }
 
-        await borrow(reserve, amount, rateMode, user, timeTravel, expected, testEnv, revertMessage);
+        await borrow(
+          reserve,
+          amount,
+          rateMode,
+          user,
+          onBehalfOf,
+          timeTravel,
+          expected,
+          testEnv,
+          revertMessage
+        );
       }
       break;
 

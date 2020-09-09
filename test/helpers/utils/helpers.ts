@@ -61,7 +61,8 @@ export const getReserveData = async (
 export const getUserData = async (
   pool: LendingPool,
   reserve: string,
-  user: string
+  user: tEthereumAddress,
+  sender?: tEthereumAddress
 ): Promise<UserReserveData> => {
   const [userData, aTokenData] = await Promise.all([
     pool.getUserReserveData(reserve, user),
@@ -77,7 +78,7 @@ export const getUserData = async (
   ] = aTokenData;
 
   const token = await getMintableErc20(reserve);
-  const walletBalance = new BigNumber((await token.balanceOf(user)).toString());
+  const walletBalance = new BigNumber((await token.balanceOf(sender || user)).toString());
 
   return {
     principalATokenBalance: new BigNumber(principalATokenBalance),

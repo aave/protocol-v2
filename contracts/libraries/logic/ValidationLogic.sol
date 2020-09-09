@@ -100,6 +100,7 @@ library ValidationLogic {
   /**
    * @dev validates a borrow.
    * @param reserve the reserve state from which the user is borrowing
+   * @param userAddress the address of the user
    * @param reserveAddress the address of the reserve
    * @param amount the amount to be borrowed
    * @param amountInETH the amount to be borrowed, in ETH
@@ -113,6 +114,7 @@ library ValidationLogic {
 
   function validateBorrow(
     ReserveLogic.ReserveData storage reserve,
+    address userAddress,
     address reserveAddress,
     uint256 amount,
     uint256 amountInETH,
@@ -151,7 +153,7 @@ library ValidationLogic {
       vars.currentLiquidationThreshold,
       vars.healthFactor
     ) = GenericLogic.calculateUserAccountData(
-      msg.sender,
+      userAddress,
       reservesData,
       userConfig,
       reserves,
@@ -192,7 +194,7 @@ library ValidationLogic {
       require(
         !userConfig.isUsingAsCollateral(reserve.index) ||
           reserve.configuration.getLtv() == 0 ||
-          amount > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
+          amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
@@ -321,10 +323,10 @@ library ValidationLogic {
   }
 
   /**
-  * @dev validates a flashloan action
-  * @param mode the flashloan mode (0 = classic flashloan, 1 = open a stable rate loan, 2 = open a variable rate loan)
-  * @param premium the premium paid on the flashloan
-  **/
+   * @dev validates a flashloan action
+   * @param mode the flashloan mode (0 = classic flashloan, 1 = open a stable rate loan, 2 = open a variable rate loan)
+   * @param premium the premium paid on the flashloan
+   **/
   function validateFlashloan(uint256 mode, uint256 premium) internal pure {
     require(premium > 0, Errors.REQUESTED_AMOUNT_TOO_SMALL);
     require(mode <= uint256(ReserveLogic.InterestRateMode.VARIABLE), Errors.INVALID_FLASHLOAN_MODE);

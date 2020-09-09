@@ -955,6 +955,85 @@
           "expected": "success"
         }
       ]
+    },
+    {
+      "description": "User 0 deposits 1000 DAI, user 0 delegates borrowing of 1 WETH to user 4, user 4 borrows 1 WETH on behalf of user 0",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "DAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "DAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "DAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "delegateBorrowAllowance",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "0",
+            "toUser": "4"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "4",
+            "onBehalfOf": "0",
+            "borrowRateMode": "variable"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 delegates borrowing of 1 WETH to user 4, user 4 borrows 2 WETH on behalf of user 0, revert expected",
+      "actions": [
+        {
+          "name": "delegateBorrowAllowance",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "0",
+            "toUser": "4"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "WETH",
+            "amount": "2",
+            "user": "4",
+            "onBehalfOf": "0",
+            "borrowRateMode": "variable"
+          },
+          "expected": "revert",
+          "revertMessage": "52"
+        }
+      ]
     }
   ]
 }
