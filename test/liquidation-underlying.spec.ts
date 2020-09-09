@@ -19,6 +19,12 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     USER_DID_NOT_BORROW_SPECIFIED,
     THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
   } = ProtocolErrors;
+  before('Before LendingPool liquidation: set config', () => {
+    BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
+  });
+  after('After LendingPool liquidation: reset config', () => {
+    BigNumber.config({DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP});
+  });
 
   it('LIQUIDATION - Deposits WETH, borrows DAI', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
