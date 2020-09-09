@@ -32,7 +32,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
-    await pool.connect(depositor.signer).deposit(dai.address, amountDAItoDeposit, '0');
+    await pool
+      .connect(depositor.signer)
+      .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
 
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
@@ -43,7 +45,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     //user 2 deposits 1 WETH
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
+    await pool
+      .connect(borrower.signer)
+      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
 
     //user 2 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -224,7 +228,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //user 3 deposits 1000 USDC
     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
 
-    await pool.connect(depositor.signer).deposit(usdc.address, amountUSDCtoDeposit, '0');
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
     //user 4 deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
@@ -235,7 +241,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //approve protocol to access borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
+    await pool
+      .connect(borrower.signer)
+      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);

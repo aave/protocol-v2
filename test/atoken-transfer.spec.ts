@@ -33,7 +33,9 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
-    await pool.connect(users[0].signer).deposit(dai.address, amountDAItoDeposit, '0');
+    await pool
+      .connect(users[0].signer)
+      .deposit(dai.address, amountDAItoDeposit, users[0].address, '0');
 
     await aDai.connect(users[0].signer).transfer(users[1].address, amountDAItoDeposit);
 
@@ -94,12 +96,15 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
   it('User 0 deposits 1 WETH and user 1 tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)', async () => {
     const {users, pool, weth} = testEnv;
+    const userAddress = await pool.signer.getAddress();
 
     await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
 
     await weth.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(users[0].signer).deposit(weth.address, ethers.utils.parseEther('1.0'), '0');
+    await pool
+      .connect(users[0].signer)
+      .deposit(weth.address, ethers.utils.parseEther('1.0'), userAddress, '0');
     await expect(
       pool
         .connect(users[1].signer)

@@ -89,6 +89,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   function deposit(
     address asset,
     uint256 amount,
+    address onBehalfOf,
     uint16 referralCode
   ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
@@ -100,18 +101,18 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     reserve.updateCumulativeIndexesAndTimestamp();
     reserve.updateInterestRates(asset, aToken, amount, 0);
 
-    bool isFirstDeposit = IAToken(aToken).balanceOf(msg.sender) == 0;
+    bool isFirstDeposit = IAToken(aToken).balanceOf(onBehalfOf) == 0;
     if (isFirstDeposit) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, true);
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.index, true);
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
-    IAToken(aToken).mint(msg.sender, amount);
+    IAToken(aToken).mint(onBehalfOf, amount);
 
     //transfer to the aToken contract
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
-    emit Deposit(asset, msg.sender, amount, referralCode);
+    emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
 
   /**
@@ -450,15 +451,13 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     vars.amountPlusPremium = amount.add(vars.premium);
 
     if (debtMode == ReserveLogic.InterestRateMode.NONE) {
-      
       IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
-      
+
       reserve.updateCumulativeIndexesAndTimestamp();
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
       reserve.updateInterestRates(asset, vars.aTokenAddress, vars.premium, 0);
-      
-      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
 
+      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
     } else {
       // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
       _executeBorrow(
@@ -728,12 +727,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       oracle
     );
 
-
     uint256 reserveIndex = reserve.index;
     if (!userConfig.isBorrowing(reserveIndex)) {
       userConfig.setBorrowing(reserveIndex, true);
     }
-
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
@@ -754,13 +751,17 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(vars.user, vars.amount);
     }
 
-    reserve.updateInterestRates(vars.asset, vars.aTokenAddress, 0, vars.releaseUnderlying ?  vars.amount : 0);
-  
-    if(vars.releaseUnderlying){
-        IAToken(vars.aTokenAddress).transferUnderlyingTo(msg.sender, vars.amount);
+    reserve.updateInterestRates(
+      vars.asset,
+      vars.aTokenAddress,
+      0,
+      vars.releaseUnderlying ? vars.amount : 0
+    );
+
+    if (vars.releaseUnderlying) {
+      IAToken(vars.aTokenAddress).transferUnderlyingTo(msg.sender, vars.amount);
     }
-  
-  
+
     emit Borrow(
       vars.asset,
       msg.sender,
