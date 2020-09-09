@@ -404,6 +404,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   function _resetDataOnZeroBalance(address user) internal returns (bool) {
     //if the user has 0 principal balance, the interest stream redirection gets reset
     _interestRedirectionAddresses[user] = address(0);
+    _interestRedirectionIndexes[user] = 0;
 
     //emits a InterestStreamRedirected event to notify that the redirection has been reset
     emit InterestStreamRedirected(user, address(0), 0, 0);

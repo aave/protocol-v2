@@ -49,14 +49,13 @@ const almostEqualOrEqual = function (
       key === 'marketStableRate' ||
       key === 'symbol' ||
       key === 'aTokenAddress' ||
-      key === 'initialATokenExchangeRate' ||
       key === 'decimals'
     ) {
       // skipping consistency check on accessory data
       return;
     }
 
-
+    
     this.assert(actual[key] != undefined, `Property ${key} is undefined in the actual data`);
     expect(expected[key] != undefined, `Property ${key} is undefined in the expected data`);
 
@@ -682,7 +681,7 @@ export const redirectInterestStream = async (
     const {userData: toDataAfter} = await getContractsData(reserve, to, testEnv);
 
     const [expectedFromData, expectedToData] = calcExpectedUsersDataAfterRedirectInterest(
-      reserveDataBefore,
+      reserveDataBefore,      
       fromDataBefore,
       toDataBefore,
       user.address,
@@ -692,7 +691,10 @@ export const redirectInterestStream = async (
       txTimestamp
     );
 
+    console.log("Checking from data");
+
     expectEqual(fromDataAfter, expectedFromData);
+    console.log("Checking to data");
     expectEqual(toDataAfter, expectedToData);
 
     // truffleAssert.eventEmitted(txResult, 'InterestStreamRedirected', (ev: any) => {

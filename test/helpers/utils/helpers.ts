@@ -82,7 +82,7 @@ export const getUserData = async (
   return {
     scaledATokenBalance: new BigNumber(scaledATokenBalance),
     interestRedirectionAddress,
-    interestRedirectionIndex,
+    interestRedirectionIndex: new BigNumber(interestRedirectionIndex),
     redirectionAddressRedirectedBalance: new BigNumber(redirectionAddressRedirectedBalance),
     redirectedBalance: new BigNumber(redirectedBalance),
     currentATokenBalance: new BigNumber(userData.currentATokenBalance.toString()),
@@ -136,6 +136,6 @@ const getATokenUserData = async (reserve: string, user: string, pool: LendingPoo
     scaledATokenBalance.toString(),
     redirectionAddressRedirectedBalance.toString(),
     interestRedirectionAddress,
-    interestRedirectionIndex
+    interestRedirectionIndex.toString()
   ];
 };
