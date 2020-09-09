@@ -50,8 +50,8 @@ export const calcExpectedUserDataAfterDeposit = (
   expectedUserData.liquidityRate = reserveDataAfterAction.liquidityRate;
 
   expectedUserData.scaledATokenBalance = calcExpectedScaledATokenBalance(
-    reserveDataAfterAction,
     userDataBeforeAction,
+    reserveDataAfterAction.liquidityIndex,
     new BigNumber(amountDeposited),
     new BigNumber(0)
   );
@@ -89,8 +89,8 @@ export const calcExpectedUserDataAfterDeposit = (
   );
 
   expectedUserData.redirectionAddressRedirectedBalance = calcExpectedRedirectedBalance(
-    userDataBeforeAction,
     expectedUserData,
+    reserveDataAfterAction.liquidityIndex,
     userDataBeforeAction.redirectionAddressRedirectedBalance,
     new BigNumber(amountDeposited),
     new BigNumber(0)
@@ -121,8 +121,8 @@ export const calcExpectedUserDataAfterWithdraw = (
   }
 
   expectedUserData.scaledATokenBalance = calcExpectedScaledATokenBalance(
-    reserveDataAfterAction,
     userDataBeforeAction,
+    reserveDataAfterAction.liquidityIndex,
     new BigNumber(0),
     new BigNumber(amountWithdrawn)
   );
@@ -175,8 +175,8 @@ export const calcExpectedUserDataAfterWithdraw = (
   }
 
   expectedUserData.redirectionAddressRedirectedBalance = calcExpectedRedirectedBalance(
-    userDataBeforeAction,
     expectedUserData,
+    reserveDataAfterAction.liquidityIndex,
     userDataBeforeAction.redirectionAddressRedirectedBalance,
     new BigNumber(0),
     new BigNumber(amountWithdrawn)
@@ -900,6 +900,7 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
     expectedReserveData.totalBorrowsVariable,
     expectedReserveData.averageStableBorrowRate
   );
+
   expectedReserveData.liquidityRate = rates[0];
 
   expectedReserveData.stableBorrowRate = rates[1];
@@ -941,10 +942,6 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
 
   expectedUserData.principalVariableDebt = userDataBeforeAction.principalVariableDebt;
 
-  const debtAccrued = expectedUserData.currentStableDebt.minus(
-    userDataBeforeAction.principalStableDebt
-  );
-
   expectedUserData.stableBorrowRate = reserveDataBeforeAction.stableBorrowRate;
 
   expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
@@ -971,6 +968,8 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
   const expectedFromData = { ...fromDataBeforeAction };
   const expectedToData = { ...toDataBeforeAction };
 
+  const index = calcExpectedReserveNormalizedIncome(reserveDataBeforeAction, txTimestamp);
+
   expectedFromData.currentStableDebt = calcExpectedStableDebtTokenBalance(
     fromDataBeforeAction,
     txTimestamp
@@ -988,20 +987,17 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
   expectedFromData.stableBorrowRate = fromDataBeforeAction.stableBorrowRate;
   expectedToData.stableBorrowRate = toDataBeforeAction.stableBorrowRate;
 
-  expectedFromData.scaledATokenBalance = expectedFromData.currentATokenBalance = calcExpectedATokenBalance(
+  expectedFromData.scaledATokenBalance = fromDataBeforeAction.scaledATokenBalance;
+  
+  expectedFromData.currentATokenBalance = calcExpectedATokenBalance(
     reserveDataBeforeAction,
     fromDataBeforeAction,
     txTimestamp
   );
 
-  expectedToData.principalATokenBalance = expectedToData.currentATokenBalance = calcExpectedATokenBalance(
-    reserveDataBeforeAction,
-    toDataBeforeAction,
-    txTimestamp
-  );
 
   expectedToData.redirectedBalance = toDataBeforeAction.redirectedBalance.plus(
-    expectedFromData.currentATokenBalance
+    expectedFromData.currentATokenBalance.rayDiv(index)
   );
 
   if (fromAddress === toAddress) {
@@ -1013,10 +1009,11 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
     expectedToData.redirectionAddressRedirectedBalance = new BigNumber(0);
   } else {
     expectedFromData.interestRedirectionAddress = toAddress;
+    expectedFromData.interestRedirectionIndex = index;
 
     expectedFromData.redirectionAddressRedirectedBalance = calcExpectedRedirectedBalance(
-      toDataBeforeAction,
       expectedFromData,
+      index,
       toDataBeforeAction.redirectedBalance,
       expectedFromData.currentATokenBalance,
       new BigNumber(0)
@@ -1027,14 +1024,14 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
 };
 
 const calcExpectedScaledATokenBalance = (
-  reserveDataAfterAction: ReserveData,
   userDataBeforeAction: UserReserveData,
+  index: BigNumber,
   amountAdded: BigNumber,
   amountTaken: BigNumber
 ) => {
   return userDataBeforeAction.scaledATokenBalance
-    .plus(amountAdded.rayDiv(reserveDataAfterAction.liquidityIndex))
-    .minus(amountTaken.rayDiv(reserveDataAfterAction.liquidityIndex));
+    .plus(amountAdded.rayDiv(index))
+    .minus(amountTaken.rayDiv(index));
 };
 
 const calcExpectedATokenBalance = (
@@ -1065,14 +1062,14 @@ const calcExpectedATokenBalance = (
 };
 
 const calcExpectedRedirectedBalance = (
-  userDataBeforeAction: UserReserveData,
   expectedUserDataAfterAction: UserReserveData,
+  index: BigNumber,
   redirectedBalanceBefore: BigNumber,
   amountToAdd: BigNumber,
   amountToSubstract: BigNumber
 ): BigNumber => {
   return expectedUserDataAfterAction.interestRedirectionAddress !== ZERO_ADDRESS
-    ? redirectedBalanceBefore.plus(amountToAdd).minus(amountToSubstract)
+    ? redirectedBalanceBefore.plus(amountToAdd.rayDiv(index)).minus(amountToSubstract.rayDiv(index))
     : new BigNumber('0');
 };
 const calcExpectedAverageStableBorrowRate = (

@@ -201,7 +201,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     if (currentScaledBalance == 0 && redirectedBalance == 0) {
       return 0;
     }
-    uint256 scaledRedirectedBalance = redirectedBalance > 0 ?  redirectedBalance.rayDiv(_interestRedirectionIndexes[user]) : 0;
+    uint256 scaledRedirectedBalance = redirectedBalance > 0 ?  redirectedBalance.rayDiv(_redirectedBalanceIndexes[user]) : 0;
 
     uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
@@ -340,6 +340,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       _updateRedirectedBalanceOfRedirectionAddress(origin, redirectionAddress, 0, 0, index);
     }
 
+    console.log("Interest redirection completed");
+
     emit RedirectedBalanceUpdated(
       redirectionAddress,
       scaledBalanceToAdd,
@@ -453,6 +455,10 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //adds to the redirected balance the accrued interest and the amount
     //being transferred
     _updateRedirectedBalanceOfRedirectionAddress(to, to, scaledAmount, 0, index);
+
+    if(scaledBalanceOf(from) == 0){
+      _resetDataOnZeroBalance(from);
+    }
 
     emit BalanceTransfer(from, to, amount, index);
 
