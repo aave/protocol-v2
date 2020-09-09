@@ -13,15 +13,12 @@ const chai = require('chai');
 const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving the underlying asset', (testEnv) => {
-  const {
-    HF_IS_NOT_BELLOW_THRESHOLD,
-    INVALID_HF,
-    USER_DID_NOT_BORROW_SPECIFIED,
-    THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
-  } = ProtocolErrors;
+  const {INVALID_HF} = ProtocolErrors;
+
   before('Before LendingPool liquidation: set config', () => {
     BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
   });
+
   after('After LendingPool liquidation: reset config', () => {
     BigNumber.config({DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP});
   });
@@ -73,7 +70,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
       '8000',
-      'Invalid liquidation threshold'
+      INVALID_HF
     );
   });
 
@@ -92,7 +89,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(
       oneEther.toFixed(0),
-      'Invalid health factor'
+      INVALID_HF
     );
   });
 

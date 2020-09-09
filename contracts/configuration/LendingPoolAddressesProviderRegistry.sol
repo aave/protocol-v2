@@ -5,6 +5,7 @@ import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
 import {
   ILendingPoolAddressesProviderRegistry
 } from '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolAddressesProviderRegistry contract
@@ -63,7 +64,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be unregistered
    **/
   function unregisterAddressesProvider(address provider) external override onlyOwner {
-    require(addressesProviders[provider] > 0, 'Provider is not registered');
+    require(addressesProviders[provider] > 0, Errors.PROVIDER_NOT_REGISTERED);
     addressesProviders[provider] = 0;
     emit AddressesProviderUnregistered(provider);
   }

@@ -7,9 +7,9 @@ import {
   EXCESS_UTILIZATION_RATE,
   ZERO_ADDRESS,
 } from '../../../helpers/constants';
-import { IReserveParams, iAavePoolAssets, RateMode } from '../../../helpers/types';
+import {IReserveParams, iAavePoolAssets, RateMode} from '../../../helpers/types';
 import './math';
-import { ReserveData, UserReserveData } from './interfaces';
+import {ReserveData, UserReserveData} from './interfaces';
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
@@ -687,7 +687,7 @@ export const calcExpectedUserDataAfterSetUseAsCollateral = (
   userDataBeforeAction: UserReserveData,
   txCost: BigNumber
 ): UserReserveData => {
-  const expectedUserData = { ...userDataBeforeAction };
+  const expectedUserData = {...userDataBeforeAction};
 
   expectedUserData.usageAsCollateralEnabled = useAsCollateral;
 
@@ -793,7 +793,7 @@ export const calcExpectedUserDataAfterSwapRateMode = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = { ...userDataBeforeAction };
+  const expectedUserData = {...userDataBeforeAction};
 
   const variableBorrowBalance = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
@@ -937,7 +937,7 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = { ...userDataBeforeAction };
+  const expectedUserData = {...userDataBeforeAction};
 
   expectedUserData.principalVariableDebt = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
@@ -992,8 +992,8 @@ export const calcExpectedUsersDataAfterRedirectInterest = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData[] => {
-  const expectedFromData = { ...fromDataBeforeAction };
-  const expectedToData = { ...toDataBeforeAction };
+  const expectedFromData = {...fromDataBeforeAction};
+  const expectedToData = {...toDataBeforeAction};
 
   expectedFromData.currentStableDebt = calcExpectedStableDebtTokenBalance(
     fromDataBeforeAction,
@@ -1164,7 +1164,7 @@ export const calcExpectedVariableDebtTokenBalance = (
 ) => {
   const debt = calcExpectedReserveNormalizedDebt(reserveDataBeforeAction, currentTimestamp);
 
-  const { principalVariableDebt, variableBorrowIndex } = userDataBeforeAction;
+  const {principalVariableDebt, variableBorrowIndex} = userDataBeforeAction;
 
   if (variableBorrowIndex.eq(0)) {
     return principalVariableDebt;
@@ -1177,7 +1177,7 @@ export const calcExpectedStableDebtTokenBalance = (
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const { principalStableDebt, stableBorrowRate, stableRateLastUpdated } = userDataBeforeAction;
+  const {principalStableDebt, stableBorrowRate, stableRateLastUpdated} = userDataBeforeAction;
 
   if (
     stableBorrowRate.eq(0) ||
@@ -1250,7 +1250,7 @@ const calcExpectedInterestRates = (
   totalBorrowsVariable: BigNumber,
   averageStableBorrowRate: BigNumber
 ): BigNumber[] => {
-  const { reservesParams } = configuration;
+  const {reservesParams} = configuration;
 
   const reserveIndex = Object.keys(reservesParams).findIndex((value) => value === reserveSymbol);
   const [, reserveConfiguration] = (Object.entries(reservesParams) as [string, IReserveParams][])[
@@ -1340,7 +1340,7 @@ const calcExpectedReserveNormalizedIncome = (
   reserveData: ReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const { liquidityRate, liquidityIndex, lastUpdateTimestamp } = reserveData;
+  const {liquidityRate, liquidityIndex, lastUpdateTimestamp} = reserveData;
 
   //if utilization rate is 0, nothing to compound
   if (liquidityRate.eq('0')) {
@@ -1362,7 +1362,7 @@ const calcExpectedReserveNormalizedDebt = (
   reserveData: ReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const { variableBorrowRate, variableBorrowIndex, lastUpdateTimestamp } = reserveData;
+  const {variableBorrowRate, variableBorrowIndex, lastUpdateTimestamp} = reserveData;
 
   //if utilization rate is 0, nothing to compound
   if (variableBorrowRate.eq('0')) {
@@ -1408,8 +1408,8 @@ const calcExpectedLiquidityIndex = (reserveData: ReserveData, timestamp: BigNumb
 };
 
 const calcExpectedVariableBorrowIndex = (reserveData: ReserveData, timestamp: BigNumber) => {
-  //if utilization rate is 0, nothing to compound
-  if (reserveData.utilizationRate.eq('0')) {
+  //if totalBorrowsVariable is 0, nothing to compound
+  if (reserveData.totalBorrowsVariable.eq('0')) {
     return reserveData.variableBorrowIndex;
   }
 

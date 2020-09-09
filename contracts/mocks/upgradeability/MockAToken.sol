@@ -3,7 +3,6 @@ pragma solidity ^0.6.8;
 
 import {AToken} from '../../tokenization/AToken.sol';
 import {LendingPool} from '../../lendingpool/LendingPool.sol';
-import '@nomiclabs/buidler/console.sol';
 
 contract MockAToken is AToken {
   constructor(
@@ -22,8 +21,8 @@ contract MockAToken is AToken {
     string calldata _tokenName,
     string calldata _tokenSymbol
   ) external virtual override initializer {
-    _name = _tokenName;
-    _symbol = _tokenSymbol;
-    _setupDecimals(_underlyingAssetDecimals);
+    _setName(_tokenName);
+    _setSymbol(_tokenSymbol);
+    _setDecimals(_underlyingAssetDecimals);
   }
 }
