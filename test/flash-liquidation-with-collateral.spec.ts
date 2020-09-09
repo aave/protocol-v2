@@ -362,6 +362,106 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await oracle.setAssetPrice(usdc.address, usdcPrice);
   });
 
+  it('User 5 liquidates all the USDC loan of User 3 by swapping his WETH collateral', async () => {
+    const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
+    const user = users[2];
+    const liquidator = users[4];
+    // Sets USDC Price higher to decrease health factor below 1
+    const usdcPrice = await oracle.getAssetPrice(usdc.address);
+
+    await oracle.setAssetPrice(
+      usdc.address,
+      new BigNumber(usdcPrice.toString()).multipliedBy(1.35).toFixed(0)
+    );
+
+    const userGlobalData = await pool.getUserAccountData(user.address);
+
+    expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(oneEther, INVALID_HF);
+
+    const {userData: wethUserDataBefore} = await getContractsData(
+      weth.address,
+      user.address,
+      testEnv
+    );
+
+    const {
+      reserveData: usdcReserveDataBefore,
+      userData: usdcUserDataBefore,
+    } = await getContractsData(usdc.address, user.address, testEnv);
+
+    const amountToRepay = usdcReserveDataBefore.totalBorrowsVariable.toFixed(0);
+
+    await mockSwapAdapter.setAmountToReturn(amountToRepay);
+    await waitForTx(
+      await pool
+        .connect(liquidator.signer)
+        .repayWithCollateral(
+          weth.address,
+          usdc.address,
+          user.address,
+          amountToRepay,
+          mockSwapAdapter.address,
+          '0x'
+        )
+    );
+    const repayWithCollateralTimestamp = await timeLatest();
+
+    const {userData: wethUserDataAfter} = await getContractsData(
+      weth.address,
+      user.address,
+      testEnv
+    );
+
+    const {userData: usdcUserDataAfter} = await getContractsData(
+      usdc.address,
+      user.address,
+      testEnv
+    );
+
+    const collateralPrice = await oracle.getAssetPrice(weth.address);
+    const principalPrice = await oracle.getAssetPrice(usdc.address);
+
+    const collateralDecimals = (
+      await pool.getReserveConfigurationData(weth.address)
+    ).decimals.toString();
+    const principalDecimals = (
+      await pool.getReserveConfigurationData(usdc.address)
+    ).decimals.toString();
+
+    const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())
+      .times(new BigNumber(amountToRepay.toString()).times(105))
+      .times(new BigNumber(10).pow(collateralDecimals))
+      .div(
+        new BigNumber(collateralPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+      )
+      .div(100)
+      .decimalPlaces(0, BigNumber.ROUND_DOWN);
+
+    const expectedVariableDebtIncrease = calcExpectedVariableDebtTokenBalance(
+      usdcReserveDataBefore,
+      usdcUserDataBefore,
+      new BigNumber(repayWithCollateralTimestamp)
+    ).minus(usdcUserDataBefore.currentVariableDebt);
+
+    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
+      new BigNumber(usdcUserDataBefore.currentVariableDebt)
+        .minus(amountToRepay.toString())
+        .plus(expectedVariableDebtIncrease)
+        .toString(),
+      'INVALID_DEBT_POSITION'
+    );
+
+    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(
+      new BigNumber(wethUserDataBefore.currentATokenBalance).minus(
+        expectedCollateralLiquidated.toString()
+      ),
+      'INVALID_COLLATERAL_POSITION'
+    );
+
+    // Resets USDC Price
+    await oracle.setAssetPrice(usdc.address, usdcPrice);
+  });
+
   it('User 2 deposit WETH and borrows DAI at Variable', async () => {
     const {pool, weth, dai, users, oracle} = testEnv;
     const user = users[1];
@@ -387,6 +487,50 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     await pool.connect(user.signer).borrow(dai.address, amountDAIToBorrow, 2, 0);
   });
+
+  it('It is not possible to do reentrancy on repayWithCollateral()', async () => {
+    const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;
+    const user = users[1];
+    const liquidator = users[4];
+
+    // Sets DAI Price higher to decrease health factor below 1
+    const daiPrice = await oracle.getAssetPrice(dai.address);
+
+    await oracle.setAssetPrice(
+      dai.address,
+      new BigNumber(daiPrice.toString()).multipliedBy(1.4).toFixed(0)
+    );
+
+    const {reserveData: daiReserveDataBefore} = await getContractsData(
+      dai.address,
+      user.address,
+      testEnv
+    );
+
+    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.toString();
+
+    await waitForTx(await mockSwapAdapter.setTryReentrancy(true));
+
+    await mockSwapAdapter.setAmountToReturn(amountToRepay);
+    await expect(
+      pool
+        .connect(liquidator.signer)
+        .repayWithCollateral(
+          weth.address,
+          dai.address,
+          user.address,
+          amountToRepay,
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).to.be.revertedWith('FAILED_REPAY_WITH_COLLATERAL');
+
+    // Resets DAI Price
+    await oracle.setAssetPrice(dai.address, daiPrice);
+    // Resets mock
+    await waitForTx(await mockSwapAdapter.setTryReentrancy(false));
+  });
+
   it('User 5 tries to liquidate  User 2 DAI Variable loan using his WETH collateral, with good HF', async () => {
     const {pool, weth, dai, users, mockSwapAdapter} = testEnv;
     const user = users[1];
