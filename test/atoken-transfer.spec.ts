@@ -124,14 +124,6 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     ).to.be.revertedWith(TRANSFER_NOT_ALLOWED);
   });
 
-  it('User 0 tries to transfer 0 balance (revert expected)', async () => {
-    const {users, pool, aDai, dai, weth} = testEnv;
-    await expect(
-      aDai.connect(users[0].signer).transfer(users[1].address, '0'),
-      TRANSFER_AMOUNT_NOT_GT_0
-    ).to.be.revertedWith(TRANSFER_AMOUNT_NOT_GT_0);
-  });
-
   it('User 1 repays the borrow, transfers aDAI back to user 0', async () => {
     const {users, pool, aDai, dai, weth} = testEnv;
 

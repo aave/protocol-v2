@@ -229,7 +229,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param user the address of the user
    * @return the scaled balance of the user
    **/
-  function scaledBalanceOf(address user) external override view returns (uint256) {
+  function scaledBalanceOf(address user) public override view returns (uint256) {
     return super.balanceOf(user);
   }
 
@@ -444,6 +444,10 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
     uint256 scaledAmount = amount.rayDiv(index);
 
+    console.log("scaled balanceOf from: %s", scaledBalanceOf(from));
+    console.log("scaled balanceOf to: %s", scaledBalanceOf(to));
+    console.log("scaled amount: %s", scaledAmount);
+
     super._transfer(from, to, scaledAmount);
 
     //if the sender is redirecting his interest towards someone else,
@@ -460,6 +464,17 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
   }
 
+   /**
+   * @notice ERC20 implementation internal function backing transfer() and transferFrom()
+   **/
+  function _transfer(
+    address from,
+    address to,
+    uint256 amount
+    ) internal override {
+
+      _transfer(from, to, amount, true);
+  }
   /**
    * @dev aTokens should not receive ETH
    **/
