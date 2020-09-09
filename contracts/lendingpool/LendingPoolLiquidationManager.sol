@@ -37,12 +37,17 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
+  // IMPORTANT The storage layout of the LendingPool is reproduced here because this contract
+  // is gonna be used through DELEGATECALL
+
   LendingPoolAddressesProvider internal addressesProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;
 
   address[] internal reservesList;
+
+  bool internal _flashLiquidationLocked;
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 

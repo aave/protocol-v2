@@ -4,11 +4,13 @@ pragma solidity ^0.6.8;
 import {MintableERC20} from '../tokens/MintableERC20.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ISwapAdapter} from '../../interfaces/ISwapAdapter.sol';
+import {ILendingPool} from "../../interfaces/ILendingPool.sol";
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 contract MockSwapAdapter is ISwapAdapter {
 
-    uint256 amountToReturn;
+    uint256 internal _amountToReturn;
+    bool internal _tryReentrancy;
     ILendingPoolAddressesProvider public addressesProvider;
 
     event Swapped(address fromAsset, address toAsset, uint256 fromAmount, uint256 receivedAmount);
@@ -18,7 +20,11 @@ contract MockSwapAdapter is ISwapAdapter {
     }
 
     function setAmountToReturn(uint256 amount) public {
-        amountToReturn = amount;
+        _amountToReturn = amount;
+    }
+
+    function setTryReentrancy(bool tryReentrancy) public {
+        _tryReentrancy = tryReentrancy;
     }
 
     function executeOperation(
@@ -30,10 +36,21 @@ contract MockSwapAdapter is ISwapAdapter {
     ) external override {
         params;
         IERC20(assetToSwapFrom).transfer(address(1), amountToSwap); // We don't want to keep funds here
-        MintableERC20(assetToSwapTo).mint(amountToReturn);
-        IERC20(assetToSwapTo).approve(fundsDestination, amountToReturn);
+        MintableERC20(assetToSwapTo).mint(_amountToReturn);
+        IERC20(assetToSwapTo).approve(fundsDestination, _amountToReturn);
         
-        emit Swapped(assetToSwapFrom, assetToSwapTo, amountToSwap, amountToReturn);
+        if (_tryReentrancy) {
+            ILendingPool(fundsDestination).repayWithCollateral(
+                assetToSwapFrom,
+                assetToSwapTo,
+                address(1), // Doesn't matter, we just want to test the reentrancy
+                1 ether, // Same
+                address(1), // Same
+                "0x"
+            );
+        }
+
+        emit Swapped(assetToSwapFrom, assetToSwapTo, amountToSwap, _amountToReturn);
     }
 
     function burnAsset(IERC20 asset, uint256 amount) public {

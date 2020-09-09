@@ -67,11 +67,37 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     await pool.connect(user.signer).borrow(dai.address, amountToBorrow, 2, 0);
   });
 
+  it('It is not possible to do reentrancy on repayWithCollateral()', async () => {
+    const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;
+    const user = users[1];
+
+    const amountToRepay = parseEther('10');
+
+    await waitForTx(await mockSwapAdapter.setTryReentrancy(true))
+
+    await mockSwapAdapter.setAmountToReturn(amountToRepay);
+    await expect(
+      pool
+        .connect(user.signer)
+        .repayWithCollateral(
+          weth.address,
+          dai.address,
+          user.address,
+          amountToRepay,
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).to.be.revertedWith("FAILED_REPAY_WITH_COLLATERAL")
+
+  });
+
   it('User 2 tries to repay his DAI Variable loan using his WETH collateral. First half the amount, after that, the rest', async () => {
     const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;
     const user = users[1];
 
     const amountToRepay = parseEther('10');
+
+    await waitForTx(await mockSwapAdapter.setTryReentrancy(false))
 
     const {userData: wethUserDataBefore} = await getContractsData(
       weth.address,

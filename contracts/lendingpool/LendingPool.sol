@@ -51,6 +51,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
 
   address[] internal _reservesList;
 
+  bool internal _flashLiquidationLocked;
+
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
@@ -474,7 +476,10 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     uint256 principalAmount,
     address receiver,
     bytes calldata params
-  ) external override nonReentrant {
+  ) external override {
+    require(!_flashLiquidationLocked, "REENTRANCY_NOT_ALLOWED");
+    _flashLiquidationLocked = true;
+
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -496,6 +501,8 @@ contract LendingPool is ReentrancyGuard, VersionedInitializable, ILendingPool {
     if (returnCode != 0) {
       revert(string(abi.encodePacked(returnMessage)));
     }
+
+    _flashLiquidationLocked = false;
   }
 
   /**
