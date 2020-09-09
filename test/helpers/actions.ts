@@ -60,7 +60,7 @@ const almostEqualOrEqual = function (
     this.assert(actual[key] != undefined, `Property ${key} is undefined in the actual data`);
     expect(expected[key] != undefined, `Property ${key} is undefined in the expected data`);
 
-    if (!expected[key] || !actual[key]) {
+    if (expected[key] == null || !actual[key] == null) {
       console.log('Found a undefined value for Key ', key, ' value ', expected[key], actual[key]);
     }
 

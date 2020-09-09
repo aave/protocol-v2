@@ -120,8 +120,6 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
     uint256 currentBalance = balanceOf(user);
 
-    console.log("Amount is %s, balance is %s", amount, currentBalance);
-
     require(amount <= currentBalance, Errors.INVALID_ATOKEN_BALANCE);
 
     uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
