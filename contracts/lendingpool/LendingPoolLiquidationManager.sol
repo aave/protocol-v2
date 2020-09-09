@@ -398,6 +398,10 @@ contract LendingPoolLiquidationManager is ReentrancyGuard, VersionedInitializabl
 
     vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate);
 
+    if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
+      usersConfig[user].setUsingAsCollateral(collateralReserve.index, false);
+    }
+
     address principalAToken = debtReserve.aTokenAddress;
 
     // Notifies the receiver to proceed, sending as param the underlying already transferred

@@ -171,6 +171,8 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
         expectedCollateralLiquidated.toString()
       )
     );
+
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.true;
   });
 
   it('User 3 deposits WETH and borrows USDC at Variable', async () => {
@@ -271,6 +273,8 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
       ),
       'INVALID_COLLATERAL_POSITION'
     );
+
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.true;
   });
 
   it('Revert expected. User 3 tries to repay with his collateral a currency he havent borrow', async () => {
@@ -426,6 +430,8 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
       usdc.address,
       user.address
     );
+
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.true;
   });
 
   it('User 4 tries to repay a bigger amount that what can be swapped of a particular collateral, repaying only the maximum allowed by that collateral', async () => {
@@ -517,5 +523,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     );
 
     expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(0);
+
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
   });
 });
