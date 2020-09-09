@@ -2,7 +2,7 @@ const accounts = require(`./test-wallets.js`).accounts;
 
 module.exports = {
   client: require('ganache-cli'),
-  skipFiles: [],
+  skipFiles: ['./mocks', './interfaces'],
   mocha: {
     enableTimeouts: false,
   },

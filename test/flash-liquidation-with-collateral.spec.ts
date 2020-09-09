@@ -8,10 +8,11 @@ import {
 } from './helpers/utils/calculations';
 import {getContractsData} from './helpers/actions';
 import {waitForTx} from './__setup.spec';
-import {timeLatest} from '../helpers/misc-utils';
+import {timeLatest, BRE, increaseTime} from '../helpers/misc-utils';
 import {tEthereumAddress, ProtocolErrors} from '../helpers/types';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {formatUnits, formatEther} from 'ethers/lib/utils';
+import {buidlerArguments} from '@nomiclabs/buidler';
 
 const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
@@ -467,7 +468,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
   it('User 2 deposit WETH and borrows DAI at Variable', async () => {
     const {pool, weth, dai, users, oracle} = testEnv;
     const user = users[1];
-    const amountToDeposit = ethers.utils.parseEther('1');
+    const amountToDeposit = ethers.utils.parseEther('2');
 
     await weth.connect(user.signer).mint(amountToDeposit);
 
@@ -483,7 +484,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       dai.address,
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(daiPrice.toString())
-        .multipliedBy(0.95)
+        .multipliedBy(0.9)
         .toFixed(0)
     );
 
@@ -591,7 +592,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     );
 
     // First half
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.dividedBy(2).toString();
+    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.multipliedBy(0.6).toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -675,11 +676,12 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       testEnv
     );
 
+    await increaseTime(1000);
     // Repay the remaining DAI
     const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
-    await waitForTx(
+    const receipt = await waitForTx(
       await pool
         .connect(user.signer)
         .repayWithCollateral(
@@ -691,7 +693,8 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
           '0x'
         )
     );
-    const repayWithCollateralTimestamp = await timeLatest();
+    const repayWithCollateralTimestamp = (await BRE.ethers.provider.getBlock(receipt.blockNumber))
+      .timestamp;
 
     const {userData: wethUserDataAfter} = await getContractsData(
       weth.address,
@@ -733,11 +736,11 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
         .toString()
     );
 
-    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(
+    expect(
       new BigNumber(wethUserDataBefore.currentATokenBalance).minus(
         expectedCollateralLiquidated.toString()
       )
-    );
+    ).to.be.bignumber.equal(wethUserDataAfter.currentATokenBalance);
   });
 
   it('Liquidator tries to repay 4 user a bigger amount that what can be swapped of a particular collateral, repaying only the maximum allowed by that collateral', async () => {
