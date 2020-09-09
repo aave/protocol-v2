@@ -3,11 +3,6 @@ import BigNumber from 'bignumber.js';
 export interface UserReserveData {
   scaledATokenBalance: BigNumber;
   currentATokenBalance: BigNumber;
-  interestRedirectionAddress: string;
-  interestRedirectionIndex: BigNumber;
-  redirectionAddressScaledRedirectedBalance: BigNumber;
-  scaledRedirectedBalance: BigNumber;
-  redirectedBalanceIndex: BigNumber;
   currentStableDebt: BigNumber;
   currentVariableDebt: BigNumber;
   principalStableDebt: BigNumber;
