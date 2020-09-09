@@ -14,6 +14,7 @@
     "test": "buidler test",
     "test-scenarios": "buidler test test/__setup.spec.ts test/scenario.spec.ts",
     "test-repay-with-collateral": "buidler test test/__setup.spec.ts test/repay-with-collateral.spec.ts",
+    "test-liquidate-with-collateral": "buidler test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
     "dev:coverage": "buidler coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",

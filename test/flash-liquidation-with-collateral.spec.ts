@@ -11,6 +11,7 @@ import {waitForTx} from './__setup.spec';
 import {timeLatest} from '../helpers/misc-utils';
 import {tEthereumAddress, ProtocolErrors} from '../helpers/types';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
+import {formatUnits, formatEther} from 'ethers/lib/utils';
 
 const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
@@ -323,6 +324,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       ),
       'INVALID_COLLATERAL_POSITION'
     );
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.true;
 
     // Resets USDC Price
     await oracle.setAssetPrice(usdc.address, usdcPrice);
@@ -651,6 +653,8 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
         expectedCollateralLiquidated.toString()
       )
     );
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.true;
+
     // Resets DAI price
     await oracle.setAssetPrice(dai.address, daiPrice);
   });
@@ -736,14 +740,14 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     );
   });
 
-  it.skip('WIP Liquidator tries to repay 4 user a bigger amount that what can be swapped of a particular collateral, repaying only the maximum allowed by that collateral', async () => {
-    const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;
+  it('Liquidator tries to repay 4 user a bigger amount that what can be swapped of a particular collateral, repaying only the maximum allowed by that collateral', async () => {
+    const {pool, weth, dai, usdc, users, mockSwapAdapter, oracle} = testEnv;
     const user = users[3];
     const liquidator = users[5];
 
     const amountToDepositWeth = parseEther('0.1');
     const amountToDepositDAI = parseEther('500');
-    const amountToBorrowVariable = parseEther('80');
+    const amountToBorrowVariable = parseUnits('80', '6');
 
     await weth.connect(user.signer).mint(amountToDepositWeth);
     await dai.connect(user.signer).mint(amountToDepositDAI);
@@ -753,9 +757,9 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await pool.connect(user.signer).deposit(weth.address, amountToDepositWeth, '0');
     await pool.connect(user.signer).deposit(dai.address, amountToDepositDAI, '0');
 
-    await pool.connect(user.signer).borrow(dai.address, amountToBorrowVariable, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrowVariable, 2, 0);
 
-    const amountToRepay = parseEther('80');
+    const amountToRepay = amountToBorrowVariable;
 
     const {userData: wethUserDataBefore} = await getContractsData(
       weth.address,
@@ -763,26 +767,28 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       testEnv
     );
 
-    const {reserveData: daiReserveDataBefore, userData: daiUserDataBefore} = await getContractsData(
-      dai.address,
-      user.address,
-      testEnv
-    );
-    const wethPrice = await oracle.getAssetPrice(weth.address);
+    const {
+      reserveData: usdcReserveDataBefore,
+      userData: usdcUserDataBefore,
+    } = await getContractsData(usdc.address, user.address, testEnv);
+
     // Set HF below 1
+    const daiPrice = await oracle.getAssetPrice(dai.address);
     await oracle.setAssetPrice(
-      weth.address,
-      new BigNumber(wethPrice.toString()).multipliedBy(0.1).toFixed(0)
+      dai.address,
+      new BigNumber(daiPrice.toString()).multipliedBy(0.1).toFixed(0)
     );
     const userGlobalDataPrior = await pool.getUserAccountData(user.address);
     expect(userGlobalDataPrior.healthFactor.toString()).to.be.bignumber.lt(oneEther, INVALID_HF);
+
+    // Execute liquidation
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
       await pool
         .connect(liquidator.signer)
         .repayWithCollateral(
           weth.address,
-          dai.address,
+          usdc.address,
           user.address,
           amountToRepay,
           mockSwapAdapter.address,
@@ -797,16 +803,20 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       testEnv
     );
 
-    const {userData: daiUserDataAfter} = await getContractsData(dai.address, user.address, testEnv);
+    const {userData: usdcUserDataAfter} = await getContractsData(
+      usdc.address,
+      user.address,
+      testEnv
+    );
 
     const collateralPrice = await oracle.getAssetPrice(weth.address);
-    const principalPrice = await oracle.getAssetPrice(dai.address);
+    const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     const collateralConfig = await pool.getReserveConfigurationData(weth.address);
 
     const collateralDecimals = collateralConfig.decimals.toString();
     const principalDecimals = (
-      await pool.getReserveConfigurationData(dai.address)
+      await pool.getReserveConfigurationData(usdc.address)
     ).decimals.toString();
     const collateralLiquidationBonus = collateralConfig.liquidationBonus.toString();
 
@@ -820,20 +830,23 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       .decimalPlaces(0, BigNumber.ROUND_DOWN);
 
     const expectedVariableDebtIncrease = calcExpectedVariableDebtTokenBalance(
-      daiReserveDataBefore,
-      daiUserDataBefore,
+      usdcReserveDataBefore,
+      usdcUserDataBefore,
       new BigNumber(repayWithCollateralTimestamp)
-    ).minus(daiUserDataBefore.currentVariableDebt);
+    ).minus(usdcUserDataBefore.currentVariableDebt);
 
-    expect(daiUserDataAfter.currentVariableDebt).to.be.bignumber.equal(
-      new BigNumber(daiUserDataBefore.currentVariableDebt)
+    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.equal(
+      new BigNumber(usdcUserDataBefore.currentVariableDebt)
         .minus(expectedDebtCovered.toString())
         .plus(expectedVariableDebtIncrease),
       'INVALID_VARIABLE_DEBT_POSITION'
     );
 
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
+
     expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(0);
-    // Resets WETH Price
-    await oracle.setAssetPrice(weth.address, wethPrice);
+
+    // Resets DAI Price
+    await oracle.setAssetPrice(dai.address, daiPrice);
   });
 });
