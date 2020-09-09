@@ -31,7 +31,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   mapping(address => address) private _interestRedirectionAddresses;
   mapping(address => uint256) private _interestRedirectionIndexes;
 
-  mapping(address => uint256) private _redirectedBalances;
+  mapping(address => uint256) private _scaledRedirectedBalances;
   mapping(address => uint256) private _redirectedBalanceIndexes;
 
   mapping(address => address) private _interestRedirectionAllowances;
@@ -163,7 +163,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //if the user is redirecting his interest towards someone else,
     //we update the redirected balance of the redirection address by adding the accrued interest
     //and the amount deposited
-    _updateRedirectedBalanceOfRedirectionAddress(user, user, amount, 0, index);
+    _updateRedirectedBalanceOfRedirectionAddress(user, user, scaledAmount, 0, index);
 
     emit Mint(user, amount, index);
   }
@@ -192,16 +192,17 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return the total balance of the user
    **/
   function balanceOf(address user) public override(ERC20, IERC20) view returns (uint256) {
+  
     //current scaled balance of the user
     uint256 currentScaledBalance = super.balanceOf(user);
     
     //balance redirected by other users to user for interest rate accrual
-    uint256 redirectedBalance = _redirectedBalances[user];
+    uint256 scaledRedirectedBalance = _scaledRedirectedBalances[user];
 
-    if (currentScaledBalance == 0 && redirectedBalance == 0) {
+    if (currentScaledBalance == 0 && scaledRedirectedBalance == 0) {
       return 0;
     }
-    uint256 scaledRedirectedBalance = redirectedBalance > 0 ?  redirectedBalance.rayDiv(_redirectedBalanceIndexes[user]) : 0;
+    uint256 actualBalanceRedirectedToUser = scaledRedirectedBalance > 0 ?  scaledRedirectedBalance.rayMul(_redirectedBalanceIndexes[user]) : 0;
 
     uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
@@ -209,16 +210,16 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       //if the user is not redirecting the interest, his balance is the result of
       //the interest accrued by his current scaled balance and the interest accrued by his
       //scaled redirected balance
-      return currentScaledBalance.add(scaledRedirectedBalance).rayMul(index).sub(scaledRedirectedBalance);
+      return currentScaledBalance.add(scaledRedirectedBalance).rayMul(index).sub(actualBalanceRedirectedToUser);
     }
 
     //if the user is redirecting, his balance only increases by the balance he is being redirected to
-    uint256 lastRedirectedBalance = currentScaledBalance.rayDiv(_interestRedirectionIndexes[user]);
+    uint256 lastBalanceRedirectedByUser = currentScaledBalance.rayMul(_interestRedirectionIndexes[user]);
 
     return
-      lastRedirectedBalance.add(
+      lastBalanceRedirectedByUser.add(
         scaledRedirectedBalance.rayMul(index)
-      ).sub(scaledRedirectedBalance);
+      ).sub(actualBalanceRedirectedToUser);
   }
 
   /**
@@ -227,7 +228,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param user the address of the user
    * @return the scaled balance of the user
    **/
-  function scaledBalanceOf(address user) public override view returns (uint256) {
+  function scaledBalanceOf(address user) external override view returns (uint256) {
     return super.balanceOf(user);
   }
 
@@ -288,9 +289,21 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param user address of the user
    * @return the total redirected balance
    **/
-  function getRedirectedBalance(address user) external override view returns (uint256) {
-    return _redirectedBalances[user];
+  function getScaledRedirectedBalance(address user) external override view returns (uint256) {
+    return _scaledRedirectedBalances[user];
   }
+
+    /**
+   * @dev returns the index stored during the last action that affected the redirected balance.
+   * scaledRedirectedBalance * redirectedBalanceIndex allows to calculate the actual redirected balance
+   * which is needed to calculate the interest accrued
+   * @param user address of the user
+   * @return the total redirected balance
+   **/
+  function getRedirectedBalanceIndex(address user) external override view returns (uint256) {
+    return _redirectedBalanceIndexes[user];
+  }
+
 
 
   /**
@@ -313,12 +326,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       return;
     }
 
-    //updating the interest redirection index of the user
-    _interestRedirectionIndexes[user] = index;
-
-
     //updating the redirected balance
-    _redirectedBalances[redirectionAddress] = _redirectedBalances[redirectionAddress]
+    _scaledRedirectedBalances[redirectionAddress] = _scaledRedirectedBalances[redirectionAddress]
       .add(scaledBalanceToAdd)
       .sub(scaledBalanceToRemove);
 
@@ -362,6 +371,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
     require(to != currentRedirectionAddress, Errors.INTEREST_ALREADY_REDIRECTED);
 
+    uint256 scaledFromBalance = super.balanceOf(from);
+
     uint256 fromBalance = balanceOf(from);
 
     require(fromBalance > 0, Errors.NO_VALID_BALANCE_FOR_REDIRECTION);
@@ -374,7 +385,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //the redirection address we substract the redirected balance of the previous
     //recipient
     if (currentRedirectionAddress != address(0)) {
-      _updateRedirectedBalanceOfRedirectionAddress(from, from, 0, scaledBalance, index);
+      _updateRedirectedBalanceOfRedirectionAddress(from, from, 0, scaledFromBalance, index);
     }
 
     //if the user is redirecting the interest back to himself,
@@ -390,7 +401,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     _interestRedirectionIndexes[from] = index;
 
     //adds the user balance to the redirected balance of the destination
-    _updateRedirectedBalanceOfRedirectionAddress(from, from, fromBalance, 0, index);
+    _updateRedirectedBalanceOfRedirectionAddress(from, from, scaledBalance, 0, index);
 
     emit InterestStreamRedirected(from, to, fromBalance, index);
   }
@@ -457,7 +468,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //being transferred
     _updateRedirectedBalanceOfRedirectionAddress(to, to, scaledAmount, 0, index);
 
-    if(scaledBalanceOf(from) == 0){
+    if(super.balanceOf(from) == 0){
       _resetDataOnZeroBalance(from);
     }
 

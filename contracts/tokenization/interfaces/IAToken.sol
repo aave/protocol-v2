@@ -159,12 +159,20 @@ interface IAToken is IERC20 {
   function getUserInterestRedirectionIndex(address user) external view returns (uint256);
 
   /**
-   * @dev returns the redirected balance of the user. The redirected balance is the balance
-   * redirected by other accounts to the user, that is accrueing interest for him.
+   * @dev returns the scaled redirected balance of the user. The scaled redirected balance is the sum of all the redirected balances
+   * divided by the index at the moment of each specific redirection.
    * @param user address of the user
    * @return the total redirected balance
    **/
-  function getRedirectedBalance(address user) external view returns (uint256);
+  function getScaledRedirectedBalance(address user) external view returns (uint256);
+
+  /**
+   * @dev returns the redirected balance index. The redirected balance index is the 
+   * index at the moment the last scaled redirected balance has been performed, and allows to calculate the actual redirected balance
+   * @param user address of the user
+   * @return the redirected balance index
+   **/
+  function getRedirectedBalanceIndex(address user) external view returns (uint256);
 
   /**
    * @dev transfers the underlying asset to the target. Used by the lendingpool to transfer

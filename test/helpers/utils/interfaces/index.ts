@@ -5,8 +5,9 @@ export interface UserReserveData {
   currentATokenBalance: BigNumber;
   interestRedirectionAddress: string;
   interestRedirectionIndex: BigNumber;
-  redirectionAddressRedirectedBalance: BigNumber;
-  redirectedBalance: BigNumber;
+  redirectionAddressScaledRedirectedBalance: BigNumber;
+  scaledRedirectedBalance: BigNumber;
+  redirectedBalanceIndex: BigNumber;
   currentStableDebt: BigNumber;
   currentVariableDebt: BigNumber;
   principalStableDebt: BigNumber;
