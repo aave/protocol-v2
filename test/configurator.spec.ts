@@ -180,6 +180,23 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
+
+  it('Changes the reserve factor of the reserve', async () => {
+    const {configurator, pool, weth} = testEnv;
+    await configurator.setReserveFactor(weth.address, '1000');
+    const {reserveFactor} = await pool.getReserveConfigurationData(weth.address);
+    expect(reserveFactor.toString()).to.be.bignumber.equal('1000', 'Invalid reserve factor');
+  });
+
+  it('Check the onlyLendingPoolManager on setReserveFactor', async () => {
+    const {configurator, users, weth} = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).setReserveFactor(weth.address, '2000'),
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+  });
+
+
   it('Changes liquidation threshold of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.setLiquidationThreshold(weth.address, '75');
