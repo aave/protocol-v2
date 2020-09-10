@@ -500,6 +500,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       uint256 ltv,
       uint256 liquidationThreshold,
       uint256 liquidationBonus,
+      uint256 reserveFactor,
       address interestRateStrategyAddress,
       bool usageAsCollateralEnabled,
       bool borrowingEnabled,
@@ -515,6 +516,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       reserve.configuration.getLtv(),
       reserve.configuration.getLiquidationThreshold(),
       reserve.configuration.getLiquidationBonus(),
+      reserve.configuration.getReserveFactor(),
       reserve.interestRateStrategyAddress,
       reserve.configuration.getLtv() != 0,
       reserve.configuration.getBorrowingEnabled(),
@@ -872,13 +874,18 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
   function _mintToReserveTreasury(ReserveLogic.ReserveData storage reserve, address user, address debtTokenAddress) internal {
     
+    uint256 reserveFactor = reserve.configuration.getReserveFactor();
+    if(reserveFactor == 0) {
+      return;
+    }
+
     uint256 currentPrincipalBalance = DebtTokenBase(debtTokenAddress).principalBalanceOf(user);
     //calculating the interest accrued since the last borrow and minting the equivalent amount to the reserve factor
     if(currentPrincipalBalance > 0){
 
       uint256 balanceIncrease = IERC20(debtTokenAddress).balanceOf(user).sub(currentPrincipalBalance);
 
-      uint256 amountForReserveFactor = balanceIncrease.percentMul(reserve.configuration.getReserveFactor());
+      uint256 amountForReserveFactor = balanceIncrease.percentMul(reserveFactor);
 
       IAToken(reserve.aTokenAddress).mintToReserve(amountForReserveFactor);      
     }    

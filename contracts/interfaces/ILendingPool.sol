@@ -249,6 +249,7 @@ interface ILendingPool {
       uint256 ltv,
       uint256 liquidationThreshold,
       uint256 liquidationBonus,
+      uint256 reserveFactor,
       address interestRateStrategyAddress,
       bool usageAsCollateralEnabled,
       bool borrowingEnabled,

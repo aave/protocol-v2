@@ -571,7 +571,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
       payable(proxyAddress)
     );
 
-    (uint256 decimals, , , , , , , , , ) = pool.getReserveConfigurationData(asset);
+    (uint256 decimals, , , , , , , , , , ) = pool.getReserveConfigurationData(asset);
 
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',
