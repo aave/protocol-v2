@@ -182,4 +182,29 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease);
   }
+
+
+  /**
+   * @dev Calculates the increase in balance since the last user interaction
+   * @param user The address of the user for which the interest is being accumulated
+   * @return The previous principal balance, the new principal balance, the balance increase
+   * and the new user index
+   **/
+  function _calculateBalanceIncrease(address user) internal view returns (uint256, uint256, uint256) {
+    uint256 previousPrincipalBalance = principalBalanceOf(user);
+
+    if (previousPrincipalBalance == 0) {
+      return (0, 0, 0);
+    }
+
+    // Calculation of the accrued interest since the last accumulation
+    uint256 balanceIncrease = balanceOf(user).sub(previousPrincipalBalance);
+
+    return (
+      previousPrincipalBalance,
+      previousPrincipalBalance.add(balanceIncrease),
+      balanceIncrease
+    );
+  }
+
 }

@@ -38,27 +38,15 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the debt balance of the user
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
-    uint256 userBalance = principalBalanceOf(user);
-    uint256 index = _usersData[user];
-    if (userBalance == 0) {
+    uint256 scaledBalance = principalBalanceOf(user);
+    
+    if (scaledBalance == 0) {
       return 0;
     }
 
     return
-      userBalance
-        .wadToRay()
-        .rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET))
-        .rayDiv(index)
-        .rayToWad();
-  }
-
-  /**
-   * @dev returns the index of the last user action
-   * @return the user index
-   **/
-
-  function getUserIndex(address user) external virtual override view returns (uint256) {
-    return _usersData[user];
+      scaledBalance
+        .rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
   }
 
   /**
@@ -66,20 +54,12 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param user the user receiving the debt
    * @param amount the amount of debt being minted
    **/
-  function mint(address user, uint256 amount) external override onlyLendingPool {
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(user);
+  function mint(address user, uint256 amount) external override onlyLendingPool { 
+    
+    uint256 index = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
 
-    _mint(user, amount.add(balanceIncrease));
-
-    uint256 newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
-    require(newUserIndex < (1 << 128), "Debt token: Index overflow");
-    _usersData[user] = newUserIndex;
-
-    emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
+    _mint(user, amount.rayDiv(index));
+    emit MintDebt(user, amount, index);
   }
 
   /**
@@ -88,26 +68,10 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param amount the amount of debt being burned
    **/
   function burn(address user, uint256 amount) external override onlyLendingPool {
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(user);
 
-    if (balanceIncrease > amount) {
-      _mint(user, balanceIncrease.sub(amount));
-    } else {
-      _burn(user, amount.sub(balanceIncrease));
-    }
+    uint256 index = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
+    _burn(user, amount.rayDiv(index)); 
 
-    uint256 newUserIndex = 0;
-    //if user not repaid everything
-    if (currentBalance != amount) {
-      newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
-      require(newUserIndex < (1 << 128), "Debt token: Index overflow");
-    }
-    _usersData[user] = newUserIndex;
-
-    emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
+    emit BurnDebt(user, amount, index);
   }
 }
