@@ -17,7 +17,7 @@ const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
 
 makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEnv) => {
-  const {INVALID_HF} = ProtocolErrors;
+  const {INVALID_HF, COLLATERAL_CANNOT_BE_LIQUIDATED} = ProtocolErrors;
 
   it('User 1 provides some liquidity for others to borrow', async () => {
     const {pool, weth, dai, usdc} = testEnv;
@@ -827,5 +827,90 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     // Resets DAI Price
     await oracle.setAssetPrice(dai.address, daiPrice);
+  });
+
+  it('User 5 deposits WETH and DAI, then borrows USDC at Variable, then disables WETH as collateral', async () => {
+    const {pool, weth, dai, usdc, users} = testEnv;
+    const user = users[4];
+    const amountWETHToDeposit = parseEther('10');
+    const amountDAIToDeposit = parseEther('60');
+    const amountToBorrow = parseUnits('65', 6);
+
+    await weth.connect(user.signer).mint(amountWETHToDeposit);
+    await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, '0');
+
+    await dai.connect(user.signer).mint(amountDAIToDeposit);
+    await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, '0');
+
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+  });
+
+  it('Liquidator tries to liquidates User 5 USDC loan by swapping his WETH collateral, should revert due WETH collateral disabled', async () => {
+    const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
+    const user = users[4];
+    const liquidator = users[5];
+
+    const amountToRepay = parseUnits('65', 6);
+
+    // User 5 Disable WETH as collateral
+    await pool.connect(user.signer).setUserUseReserveAsCollateral(weth.address, false);
+
+    const {userData: wethUserDataBefore} = await getContractsData(
+      weth.address,
+      user.address,
+      testEnv
+    );
+
+    const {
+      reserveData: usdcReserveDataBefore,
+      userData: usdcUserDataBefore,
+    } = await getContractsData(usdc.address, user.address, testEnv);
+
+    expect(wethUserDataBefore.usageAsCollateralEnabled).to.be.false;
+
+    // Liquidator should NOT be able to liquidate himself with WETH, even if is disabled
+    await mockSwapAdapter.setAmountToReturn(amountToRepay);
+    await expect(
+      pool
+        .connect(liquidator.signer)
+        .repayWithCollateral(
+          weth.address,
+          usdc.address,
+          user.address,
+          amountToRepay,
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).to.be.revertedWith(COLLATERAL_CANNOT_BE_LIQUIDATED);
+    const repayWithCollateralTimestamp = await timeLatest();
+
+    const {userData: wethUserDataAfter} = await getContractsData(
+      weth.address,
+      user.address,
+      testEnv
+    );
+
+    const {userData: usdcUserDataAfter} = await getContractsData(
+      usdc.address,
+      user.address,
+      testEnv
+    );
+
+    const expectedVariableDebtIncrease = calcExpectedVariableDebtTokenBalance(
+      usdcReserveDataBefore,
+      usdcUserDataBefore,
+      new BigNumber(repayWithCollateralTimestamp)
+    ).minus(usdcUserDataBefore.currentVariableDebt);
+
+    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
+      new BigNumber(usdcUserDataBefore.currentVariableDebt)
+        .plus(expectedVariableDebtIncrease)
+        .toString(),
+      'INVALID_DEBT_POSITION'
+    );
+
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
   });
 });

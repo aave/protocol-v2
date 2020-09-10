@@ -10,6 +10,7 @@ import {getContractsData} from './helpers/actions';
 import {waitForTx} from './__setup.spec';
 import {timeLatest} from '../helpers/misc-utils';
 import {tEthereumAddress} from '../helpers/types';
+import {parse} from 'path';
 
 const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
@@ -522,6 +523,117 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     );
 
     expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(0);
+
+    expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
+  });
+
+  it('User 5 deposits WETH and DAI, then borrows USDC at Variable, then disables WETH as collateral', async () => {
+    const {pool, weth, dai, usdc, users} = testEnv;
+    const user = users[4];
+    const amountWETHToDeposit = parseEther('10');
+    const amountDAIToDeposit = parseEther('120');
+    const amountToBorrow = parseUnits('65', 6);
+
+    await weth.connect(user.signer).mint(amountWETHToDeposit);
+    await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, '0');
+
+    await dai.connect(user.signer).mint(amountDAIToDeposit);
+    await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, '0');
+
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+  });
+
+  it('User 5 tries to repay his USDC loan by swapping his WETH collateral, should not revert even with WETH collateral disabled', async () => {
+    const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
+    const user = users[4];
+
+    const amountToRepay = parseUnits('65', 6);
+
+    // Disable WETH as collateral
+    await pool.connect(user.signer).setUserUseReserveAsCollateral(weth.address, false);
+
+    const {userData: wethUserDataBefore} = await getContractsData(
+      weth.address,
+      user.address,
+      testEnv
+    );
+
+    const {
+      reserveData: usdcReserveDataBefore,
+      userData: usdcUserDataBefore,
+    } = await getContractsData(usdc.address, user.address, testEnv);
+
+    expect(wethUserDataBefore.usageAsCollateralEnabled).to.be.false;
+
+    // User 5 should be able to liquidate himself with WETH, even if is disabled
+    await mockSwapAdapter.setAmountToReturn(amountToRepay);
+    expect(
+      await pool
+        .connect(user.signer)
+        .repayWithCollateral(
+          weth.address,
+          usdc.address,
+          user.address,
+          amountToRepay,
+          mockSwapAdapter.address,
+          '0x'
+        )
+    );
+    const repayWithCollateralTimestamp = await timeLatest();
+
+    const {userData: wethUserDataAfter} = await getContractsData(
+      weth.address,
+      user.address,
+      testEnv
+    );
+
+    const {userData: usdcUserDataAfter} = await getContractsData(
+      usdc.address,
+      user.address,
+      testEnv
+    );
+
+    const collateralPrice = await oracle.getAssetPrice(weth.address);
+    const principalPrice = await oracle.getAssetPrice(usdc.address);
+
+    const collateralDecimals = (
+      await pool.getReserveConfigurationData(weth.address)
+    ).decimals.toString();
+    const principalDecimals = (
+      await pool.getReserveConfigurationData(usdc.address)
+    ).decimals.toString();
+
+    const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())
+      .times(new BigNumber(amountToRepay.toString()).times(105))
+      .times(new BigNumber(10).pow(collateralDecimals))
+      .div(
+        new BigNumber(collateralPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+      )
+      .div(100)
+      .decimalPlaces(0, BigNumber.ROUND_DOWN);
+
+    const expectedVariableDebtIncrease = calcExpectedVariableDebtTokenBalance(
+      usdcReserveDataBefore,
+      usdcUserDataBefore,
+      new BigNumber(repayWithCollateralTimestamp)
+    ).minus(usdcUserDataBefore.currentVariableDebt);
+
+    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
+      new BigNumber(usdcUserDataBefore.currentVariableDebt)
+        .minus(amountToRepay.toString())
+        .plus(expectedVariableDebtIncrease)
+        .toString(),
+      'INVALID_DEBT_POSITION'
+    );
+
+    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(
+      new BigNumber(wethUserDataBefore.currentATokenBalance).minus(
+        expectedCollateralLiquidated.toString()
+      ),
+      'INVALID_COLLATERAL_POSITION'
+    );
 
     expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
   });
