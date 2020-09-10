@@ -90,7 +90,7 @@ export const getUserData = async (
     currentVariableDebt: new BigNumber(userData.currentVariableDebt.toString()),
     principalStableDebt: new BigNumber(userData.principalStableDebt.toString()),
     principalVariableDebt: new BigNumber(userData.principalVariableDebt.toString()),
-    variableBorrowIndex: new BigNumber(userData.variableBorrowIndex.toString()),
+    scaledVariableDebt: new BigNumber(userData.scaledVariableDebt.toString()),
     stableBorrowRate: new BigNumber(userData.stableBorrowRate.toString()),
     liquidityRate: new BigNumber(userData.liquidityRate.toString()),
     usageAsCollateralEnabled: userData.usageAsCollateralEnabled,

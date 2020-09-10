@@ -39,7 +39,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the debt balance of the user
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
-    uint256 scaledBalance = principalBalanceOf(user);
+    uint256 scaledBalance = super.principalBalanceOf(user);
     
     if (scaledBalance == 0) {
       return 0;
@@ -83,5 +83,17 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    **/
   function principalBalanceOf(address user) public virtual override view returns (uint256) {
     return super.balanceOf(user).rayMul(_userIndexes[user]);
+  }
+
+  /**
+  * @dev Returns the principal debt balance of the user from
+  * @return The debt balance of the user since the last burn/mint action
+  **/
+  function scaledBalanceOf(address user) public virtual override view returns (uint256) {
+    return super.balanceOf(user);
+  }
+
+  function totalSupply() public virtual override view returns(uint256) {
+    return super.totalSupply().rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
   }
 }

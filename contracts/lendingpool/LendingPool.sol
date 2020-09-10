@@ -619,6 +619,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       uint256 currentVariableDebt,
       uint256 principalStableDebt,
       uint256 principalVariableDebt,
+      uint256 scaledVariableDebt,
       uint256 stableBorrowRate,
       uint256 liquidityRate,
       uint40 stableRateLastUpdated,
@@ -630,6 +631,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(user);
     (currentStableDebt, currentVariableDebt) = Helpers.getUserCurrentDebt(user, reserve);
     (principalStableDebt, principalVariableDebt) = Helpers.getUserPrincipalDebt(user, reserve);
+    scaledVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress).scaledBalanceOf(user);
     liquidityRate = reserve.currentLiquidityRate;
     stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(user);
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(

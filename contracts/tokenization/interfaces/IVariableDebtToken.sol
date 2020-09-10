@@ -46,4 +46,10 @@ interface IVariableDebtToken {
    **/
   function burn(address user, uint256 amount) external;
 
+  /**
+   * @dev returns the scaled balance of the variable debt token
+   * @param user the user 
+   **/
+  function scaledBalanceOf(address user) external view returns(uint256);
+
 }

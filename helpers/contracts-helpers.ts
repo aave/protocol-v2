@@ -31,6 +31,7 @@ import BigNumber from 'bignumber.js';
 import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
+import { ZERO_ADDRESS } from './constants';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -277,7 +278,8 @@ export const deployVariableDebtToken = async ([name, symbol, underlyingAsset, po
   return token;
 };
 
-export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, name, symbol]: [
+export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, reserveTreasuryAddress, name, symbol]: [
+  tEthereumAddress,
   tEthereumAddress,
   tEthereumAddress,
   string,
@@ -286,6 +288,7 @@ export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, 
   const token = await deployContract<AToken>(eContractid.AToken, [
     poolAddress,
     underlyingAssetAddress,
+    ZERO_ADDRESS,
     name,
     symbol,
   ]);

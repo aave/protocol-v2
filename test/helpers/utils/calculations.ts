@@ -1164,13 +1164,10 @@ export const calcExpectedVariableDebtTokenBalance = (
 ) => {
   const debt = calcExpectedReserveNormalizedDebt(reserveDataBeforeAction, currentTimestamp);
 
-  const { principalVariableDebt, variableBorrowIndex } = userDataBeforeAction;
+  const { scaledVariableDebt } = userDataBeforeAction;
 
-  if (variableBorrowIndex.eq(0)) {
-    return principalVariableDebt;
-  }
 
-  return principalVariableDebt.wadToRay().rayMul(debt).rayDiv(variableBorrowIndex).rayToWad();
+  return scaledVariableDebt.rayMul(debt);
 };
 
 export const calcExpectedStableDebtTokenBalance = (
