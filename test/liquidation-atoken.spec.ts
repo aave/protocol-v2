@@ -196,7 +196,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       daiReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );
@@ -217,6 +217,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const {users, pool, usdc, oracle, weth} = testEnv;
     const depositor = users[3];
     const borrower = users[4];
+
     //mints USDC to depositor
     await usdc
       .connect(depositor.signer)
@@ -254,7 +255,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       usdc.address,
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(usdcPrice.toString())
-        .multipliedBy(0.95)
+        .multipliedBy(0.9502)
         .toFixed(0)
     );
 
@@ -282,7 +283,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const ethReserveDataBefore = await pool.getReserveData(weth.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
-      .div(2)
+      .multipliedBy(0.5)
       .toFixed(0);
 
     await pool.liquidationCall(
@@ -336,7 +337,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       usdcReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );

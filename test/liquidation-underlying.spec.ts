@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 
-import {BRE} from '../helpers/misc-utils';
+import {BRE, increaseTime} from '../helpers/misc-utils';
 import {APPROVAL_AMOUNT_LENDING_POOL, oneEther} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
@@ -14,6 +14,14 @@ const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving the underlying asset', (testEnv) => {
   const {INVALID_HF} = ProtocolErrors;
+
+  before('Before LendingPool liquidation: set config', () => {
+    BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
+  });
+
+  after('After LendingPool liquidation: reset config', () => {
+    BigNumber.config({DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP});
+  });
 
   it('LIQUIDATION - Deposits WETH, borrows DAI', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
@@ -107,6 +115,8 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     const amountToLiquidate = userReserveDataBefore.currentStableDebt.div(2).toFixed(0);
 
+    await increaseTime(100);
+
     const tx = await pool
       .connect(liquidator.signer)
       .liquidationCall(weth.address, dai.address, borrower.address, amountToLiquidate, false);
@@ -154,7 +164,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       daiReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );
@@ -224,7 +234,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       usdc.address,
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(usdcPrice.toString())
-        .multipliedBy(0.95)
+        .multipliedBy(0.9502)
         .toFixed(0)
     );
 
@@ -252,10 +262,11 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const usdcReserveDataBefore = await pool.getReserveData(usdc.address);
     const ethReserveDataBefore = await pool.getReserveData(weth.address);
 
-    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
+    const amountToLiquidate = BRE.ethers.BigNumber.from(
+      userReserveDataBefore.currentStableDebt.toString()
+    )
       .div(2)
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toFixed(0);
+      .toString();
 
     await pool
       .connect(liquidator.signer)
@@ -300,7 +311,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       usdcReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );

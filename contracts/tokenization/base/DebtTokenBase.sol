@@ -5,7 +5,9 @@ import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {VersionedInitializable} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {
+  VersionedInitializable
+} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {ERC20} from '../ERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
@@ -16,7 +18,6 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
  */
 
 abstract contract DebtTokenBase is ERC20, VersionedInitializable {
-
   address internal immutable UNDERLYING_ASSET;
   ILendingPool internal immutable POOL;
   mapping(address => uint256) internal _usersData;
@@ -29,7 +30,7 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
     _;
   }
 
-  /** 
+  /**
    * @dev The metadata of the token will be set on the proxy, that the reason of
    * passing "NULL" and 0 as metadata
    */
@@ -37,7 +38,7 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
     address pool,
     address underlyingAssetAddress,
     string memory name,
-    string memory symbol  
+    string memory symbol
   ) public ERC20(name, symbol, 18) {
     POOL = ILendingPool(pool);
     UNDERLYING_ASSET = underlyingAssetAddress;
@@ -76,32 +77,59 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
    * standard ERC20 functions for transfer and allowance.
    **/
   function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-    recipient; amount;
+    recipient;
+    amount;
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
-  function allowance(address owner, address spender) public virtual override view returns (uint256) {
-    owner; spender;
+  function allowance(address owner, address spender)
+    public
+    virtual
+    override
+    view
+    returns (uint256)
+  {
+    owner;
+    spender;
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
   function approve(address spender, uint256 amount) public virtual override returns (bool) {
-    spender; amount;
+    spender;
+    amount;
     revert('APPROVAL_NOT_SUPPORTED');
   }
 
-  function transferFrom(address sender, address recipient, uint256 amount) public virtual override returns (bool) {
-    sender; recipient; amount;
+  function transferFrom(
+    address sender,
+    address recipient,
+    uint256 amount
+  ) public virtual override returns (bool) {
+    sender;
+    recipient;
+    amount;
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
-  function increaseAllowance(address spender, uint256 addedValue) public virtual override returns (bool) {
-    spender; addedValue;
+  function increaseAllowance(address spender, uint256 addedValue)
+    public
+    virtual
+    override
+    returns (bool)
+  {
+    spender;
+    addedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  function decreaseAllowance(address spender, uint256 subtractedValue) public virtual override returns (bool) {
-    spender; subtractedValue;
+  function decreaseAllowance(address spender, uint256 subtractedValue)
+    public
+    virtual
+    override
+    returns (bool)
+  {
+    spender;
+    subtractedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
@@ -111,7 +139,15 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
    * @return The previous principal balance, the new principal balance, the balance increase
    * and the new user index
    **/
-  function _calculateBalanceIncrease(address user) internal view returns (uint256, uint256, uint256) {
+  function _calculateBalanceIncrease(address user)
+    internal
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
     uint256 previousPrincipalBalance = principalBalanceOf(user);
 
     if (previousPrincipalBalance == 0) {
