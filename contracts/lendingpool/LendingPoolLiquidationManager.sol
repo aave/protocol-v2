@@ -361,14 +361,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
     }
 
-    if (msg.sender == user || vars.healthFactor < GenericLogic.HEALTH_FACTOR_CRITICAL_THRESHOLD) {
-      vars.maxPrincipalAmountToLiquidate = vars.userStableDebt.add(vars.userVariableDebt);
-    } else {
-      vars.maxPrincipalAmountToLiquidate = vars
-        .userStableDebt
-        .add(vars.userVariableDebt)
-        .percentMul(LIQUIDATION_CLOSE_FACTOR_PERCENT);
-    }
+    vars.maxPrincipalAmountToLiquidate = vars.userStableDebt.add(vars.userVariableDebt);
 
     vars.actualAmountToLiquidate = principalAmount > vars.maxPrincipalAmountToLiquidate
       ? vars.maxPrincipalAmountToLiquidate
