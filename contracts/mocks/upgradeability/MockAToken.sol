@@ -10,7 +10,7 @@ contract MockAToken is AToken {
     address _underlyingAssetAddress,
     string memory _tokenName,
     string memory _tokenSymbol
-  ) public AToken(_pool, _underlyingAssetAddress, _tokenName, _tokenSymbol) {}
+  ) public AToken(_pool, _underlyingAssetAddress,address(0), _tokenName, _tokenSymbol) {}
 
   function getRevision() internal override pure returns (uint256) {
     return 0x2;

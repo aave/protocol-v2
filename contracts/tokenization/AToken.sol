@@ -25,6 +25,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
   address public immutable UNDERLYING_ASSET_ADDRESS;
+  address public immutable RESERVE_TREASURY_ADDRESS;
 
   mapping(address => uint256) private _userIndexes;
   mapping(address => address) private _interestRedirectionAddresses;
@@ -48,11 +49,13 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   constructor(
     LendingPool pool,
     address underlyingAssetAddress,
+    address reserveTreasuryAddress,
     string memory tokenName,
     string memory tokenSymbol
   ) public ERC20(tokenName, tokenSymbol, 18) {
     _pool = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
+    RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
   }
 
   function getRevision() internal virtual override pure returns (uint256) {
@@ -181,6 +184,11 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     _mint(user, amount.add(balanceIncrease));
 
     emit Mint(user, amount, balanceIncrease, index);
+  }
+
+  function mintToReserve(uint256 amount) external override onlyLendingPool {
+      uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+      _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
   }
 
   /**

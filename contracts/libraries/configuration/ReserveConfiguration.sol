@@ -21,6 +21,7 @@ library ReserveConfiguration {
   uint256 constant FROZEN_MASK = 0xDFFFFFFFFFFFFFF;
   uint256 constant BORROWING_MASK = 0xBFFFFFFFFFFFFFF;
   uint256 constant STABLE_BORROWING_MASK = 0x7FFFFFFFFFFFFFF;
+  uint256 constant RESERVE_FACTOR_MASK = 0xFFFFFFFFFFFFFFFF;
 
   struct Map {
     //bit 0-15: LTV
@@ -31,9 +32,27 @@ library ReserveConfiguration {
     //bit 57: reserve is freezed
     //bit 58: borrowing is enabled
     //bit 59: stable rate borrowing enabled
+    //bit 64-79: reserve factor
     uint256 data;
   }
 
+  /**
+   * @dev sets the reserve factor of the reserve
+   * @param self the reserve configuration
+   * @param ltv the new ltv
+   **/
+  function setReserveFactor(ReserveConfiguration.Map memory self, uint256 ltv) internal pure {
+    self.data = (self.data & RESERVE_FACTOR_MASK) | ltv;
+  }
+
+  /**
+   * @dev gets the reserve factor of the reserve
+   * @param self the reserve configuration
+   * @return the reserve factor
+   **/
+  function getReserveFactor(ReserveConfiguration.Map storage self) internal view returns (uint256) {
+    return self.data & ~RESERVE_FACTOR_MASK;
+  }
   /**
    * @dev sets the Loan to Value of the reserve
    * @param self the reserve configuration

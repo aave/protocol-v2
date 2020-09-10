@@ -46,9 +46,4 @@ interface IVariableDebtToken {
    **/
   function burn(address user, uint256 amount) external;
 
-  /**
-   * @dev returns the last index of the user
-   * @return the index of the user
-   **/
-  function getUserIndex(address user) external view returns (uint256);
 }

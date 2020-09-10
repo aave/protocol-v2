@@ -305,7 +305,6 @@ interface ILendingPool {
       uint256 principalVariableDebt,
       uint256 stableBorrowRate,
       uint256 liquidityRate,
-      uint256 variableBorrowIndex,
       uint40 stableRateLastUpdated,
       bool usageAsCollateralEnabled
     );

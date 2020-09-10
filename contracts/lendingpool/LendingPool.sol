@@ -12,6 +12,7 @@ import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
+import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
@@ -19,12 +20,12 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
+import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-
 /**
  * @title LendingPool contract
  * @notice Implements the actions of the LendingPool, and exposes accessory methods to fetch the users and reserve data
@@ -34,6 +35,7 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
 contract LendingPool is VersionedInitializable, ILendingPool {
   using SafeMath for uint256;
   using WadRayMath for uint256;
+  using PercentageMath for uint256;
   using ReserveLogic for ReserveLogic.ReserveData;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
@@ -224,6 +226,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
+    address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE ? reserve.stableDebtTokenAddress : reserve.variableDebtTokenAddress;
+    _mintToReserveTreasury(reserve, onBehalfOf, debtTokenAddress);
+
     //burns an equivalent amount of debt tokens
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
@@ -264,6 +269,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     );
 
     reserve.updateCumulativeIndexesAndTimestamp();
+
+    address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE ? reserve.stableDebtTokenAddress : reserve.variableDebtTokenAddress;
+    _mintToReserveTreasury(reserve, msg.sender, debtTokenAddress);
+
 
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
@@ -320,6 +329,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     //burn old debt tokens, mint new ones
 
     reserve.updateCumulativeIndexesAndTimestamp();
+
+    _mintToReserveTreasury(reserve, user, address(stableDebtToken));
+
 
     stableDebtToken.burn(user, stableBorrowBalance);
     stableDebtToken.mint(user, stableBorrowBalance, reserve.currentStableBorrowRate);
@@ -609,7 +621,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       uint256 principalVariableDebt,
       uint256 stableBorrowRate,
       uint256 liquidityRate,
-      uint256 variableBorrowIndex,
       uint40 stableRateLastUpdated,
       bool usageAsCollateralEnabled
     )
@@ -625,7 +636,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       user
     );
     usageAsCollateralEnabled = _usersConfig[user].isUsingAsCollateral(reserve.index);
-    variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(user);
   }
 
   function getReserves() external override view returns (address[] memory) {
@@ -706,6 +716,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param vars Input struct for the borrowing action, in order to avoid STD errors
    **/
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
+    
     ReserveLogic.ReserveData storage reserve = _reserves[vars.asset];
     UserConfiguration.Map storage userConfig = _usersConfig[msg.sender];
 
@@ -730,12 +741,20 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
 
     uint256 reserveIndex = reserve.index;
+
     if (!userConfig.isBorrowing(reserveIndex)) {
       userConfig.setBorrowing(reserveIndex, true);
     }
 
+    address debtTokenAddress = ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE ? 
+        reserve.stableDebtTokenAddress 
+        : 
+        reserve.variableDebtTokenAddress;
+
 
     reserve.updateCumulativeIndexesAndTimestamp();
+
+    _mintToReserveTreasury(reserve, vars.user, debtTokenAddress);
 
     //caching the current stable borrow rate
     uint256 currentStableRate = 0;
@@ -745,13 +764,13 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     ) {
       currentStableRate = reserve.currentStableBorrowRate;
 
-      IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+      IStableDebtToken(debtTokenAddress).mint(
         vars.user,
         vars.amount,
         currentStableRate
       );
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(vars.user, vars.amount);
+      IVariableDebtToken(debtTokenAddress).mint(vars.user, vars.amount);
     }
 
     reserve.updateInterestRates(vars.asset, vars.aTokenAddress, 0, vars.releaseUnderlying ?  vars.amount : 0);
@@ -847,5 +866,20 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    **/
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
+  }
+
+  function _mintToReserveTreasury(ReserveLogic.ReserveData storage reserve, address user, address debtTokenAddress) internal {
+    
+    uint256 currentPrincipalBalance = DebtTokenBase(debtTokenAddress).principalBalanceOf(user);
+    //calculating the interest accrued since the last borrow and minting the equivalent amount to the reserve factor
+    if(currentPrincipalBalance > 0){
+
+      uint256 balanceIncrease = IERC20(debtTokenAddress).balanceOf(user).sub(currentPrincipalBalance);
+
+      uint256 amountForReserveFactor = balanceIncrease.percentMul(reserve.configuration.getReserveFactor());
+
+      IAToken(reserve.aTokenAddress).mintToReserve(amountForReserveFactor);      
+    }    
+
   }
 }

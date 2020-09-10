@@ -17,6 +17,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using WadRayMath for uint256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  mapping(address => uint256) _userIndexes;
 
   constructor(
     address pool,
@@ -59,6 +60,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 index = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
 
     _mint(user, amount.rayDiv(index));
+    _userIndexes[user] = index;
     emit MintDebt(user, amount, index);
   }
 
@@ -71,7 +73,15 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     uint256 index = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
     _burn(user, amount.rayDiv(index)); 
-
+    _userIndexes[user] = index;
     emit BurnDebt(user, amount, index);
+  }
+
+  /**
+   * @dev Returns the principal debt balance of the user from
+   * @return The debt balance of the user since the last burn/mint action
+   **/
+  function principalBalanceOf(address user) public virtual override view returns (uint256) {
+    return super.balanceOf(user).rayMul(_userIndexes[user]);
   }
 }

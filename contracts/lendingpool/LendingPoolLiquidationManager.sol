@@ -10,6 +10,7 @@ import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddresse
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
+import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
@@ -208,6 +209,9 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     //update the principal reserve
     principalReserve.updateCumulativeIndexesAndTimestamp();
+
+
+
     principalReserve.updateInterestRates(
       principal,
       principalReserve.aTokenAddress,
@@ -216,16 +220,29 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     );
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
-      IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
+
+      address tokenAddress = principalReserve.variableDebtTokenAddress;
+
+      _mintToReserveTreasury(principalReserve, user, tokenAddress);
+
+      IVariableDebtToken(tokenAddress).burn(
         user,
         vars.actualAmountToLiquidate
       );
     } else {
-      IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
+
+      address tokenAddress = principalReserve.variableDebtTokenAddress;
+
+      _mintToReserveTreasury(principalReserve, user, tokenAddress);
+
+      IVariableDebtToken(tokenAddress).burn(
         user,
         vars.userVariableDebt
       );
-      IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(
+
+      tokenAddress = principalReserve.stableDebtTokenAddress;
+
+      IStableDebtToken(tokenAddress).burn(
         user,
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
       );
@@ -336,5 +353,20 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       principalAmountNeeded = purchaseAmount;
     }
     return (collateralAmount, principalAmountNeeded);
+  }
+
+  function _mintToReserveTreasury(ReserveLogic.ReserveData storage reserve, address user, address debtTokenAddress) internal {
+    
+    uint256 currentPrincipalBalance = DebtTokenBase(debtTokenAddress).principalBalanceOf(user);
+    //calculating the interest accrued since the last borrow and minting the equivalent amount to the reserve factor
+    if(currentPrincipalBalance > 0){
+
+      uint256 balanceIncrease = IERC20(debtTokenAddress).balanceOf(user).sub(currentPrincipalBalance);
+
+      uint256 amountForReserveFactor = balanceIncrease.percentMul(reserve.configuration.getReserveFactor());
+
+      IAToken(reserve.aTokenAddress).mintToReserve(amountForReserveFactor);      
+    }    
+
   }
 }

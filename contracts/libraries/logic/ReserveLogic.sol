@@ -246,7 +246,8 @@ library ReserveLogic {
       vars.availableLiquidity.add(liquidityAdded).sub(liquidityTaken),
       IERC20(vars.stableDebtTokenAddress).totalSupply(),
       IERC20(reserve.variableDebtTokenAddress).totalSupply(),
-      vars.currentAvgStableRate
+      vars.currentAvgStableRate,
+      reserve.configuration.getReserveFactor()
     );
     require(vars.newLiquidityRate < (1 << 128), "ReserveLogic: Liquidity rate overflow");
     require(vars.newStableRate < (1 << 128), "ReserveLogic: Stable borrow rate overflow");

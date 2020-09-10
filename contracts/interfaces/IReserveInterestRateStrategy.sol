@@ -23,7 +23,8 @@ interface IReserveInterestRateStrategy {
     uint256 utilizationRate,
     uint256 totalBorrowsStable,
     uint256 totalBorrowsVariable,
-    uint256 averageStableBorrowRate
+    uint256 averageStableBorrowRate,
+    uint256 reserveFactor
   )
     external
     view

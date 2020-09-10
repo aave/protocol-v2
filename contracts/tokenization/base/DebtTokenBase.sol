@@ -67,7 +67,7 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
    * @dev Returns the principal debt balance of the user from
    * @return The debt balance of the user since the last burn/mint action
    **/
-  function principalBalanceOf(address user) public view returns (uint256) {
+  function principalBalanceOf(address user) public virtual view returns (uint256) {
     return super.balanceOf(user);
   }
 

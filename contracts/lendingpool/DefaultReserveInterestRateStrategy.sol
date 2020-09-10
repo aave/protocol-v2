@@ -49,6 +49,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   //slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _stableRateSlope2;
 
+ 
   constructor(
     LendingPoolAddressesProvider provider,
     uint256 baseVariableBorrowRate,
@@ -89,6 +90,15 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _baseVariableBorrowRate;
   }
 
+  struct CalcInterestRatesLocalVars {
+
+    uint256 totalBorrows;
+    uint256 currentVariableBorrowRate;
+    uint256 currentStableBorrowRate;
+    uint256 currentLiquidityRate;
+    uint256 utilizationRate;
+  }
+
   /**
    * @dev calculates the interest rates depending on the available liquidity and the total borrowed.
    * @param reserve the address of the reserve
@@ -96,6 +106,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
    * @param totalBorrowsStable the total borrowed from the reserve a stable rate
    * @param totalBorrowsVariable the total borrowed from the reserve at a variable rate
    * @param averageStableBorrowRate the weighted average of all the stable rate borrows
+   * @param reserveFactor the reserve portion of the interest to redirect to the reserve treasury
    * @return currentLiquidityRate the liquidity rate
    * @return currentStableBorrowRate stable borrow rate
    * @return currentVariableBorrowRate variable borrow rate
@@ -105,7 +116,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 availableLiquidity,
     uint256 totalBorrowsStable,
     uint256 totalBorrowsVariable,
-    uint256 averageStableBorrowRate
+    uint256 averageStableBorrowRate,
+    uint256 reserveFactor
   )
     external
     override
@@ -116,16 +128,19 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       uint256
     )
   {
-    uint256 totalBorrows = totalBorrowsStable.add(totalBorrowsVariable);
-    uint256 currentVariableBorrowRate = 0;
-    uint256 currentStableBorrowRate = 0;
-    uint256 currentLiquidityRate = 0;
 
-    uint256 utilizationRate = totalBorrows == 0
+    CalcInterestRatesLocalVars memory vars;
+
+    vars.totalBorrows = totalBorrowsStable.add(totalBorrowsVariable);
+    vars.currentVariableBorrowRate = 0;
+    vars.currentStableBorrowRate = 0;
+    vars.currentLiquidityRate = 0;
+
+    uint256 utilizationRate = vars.totalBorrows == 0
       ? 0
-      : totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
+      : vars.totalBorrows.rayDiv(availableLiquidity.add(vars.totalBorrows));
 
-    currentStableBorrowRate = ILendingRateOracle(addressesProvider.getLendingRateOracle())
+    vars.currentStableBorrowRate = ILendingRateOracle(addressesProvider.getLendingRateOracle())
       .getMarketBorrowRate(reserve);
 
     if (utilizationRate > OPTIMAL_UTILIZATION_RATE) {
@@ -133,31 +148,32 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
         EXCESS_UTILIZATION_RATE
       );
 
-      currentStableBorrowRate = currentStableBorrowRate.add(_stableRateSlope1).add(
+      vars.currentStableBorrowRate = vars.currentStableBorrowRate.add(_stableRateSlope1).add(
         _stableRateSlope2.rayMul(excessUtilizationRateRatio)
       );
 
-      currentVariableBorrowRate = _baseVariableBorrowRate.add(_variableRateSlope1).add(
+      vars.currentVariableBorrowRate = _baseVariableBorrowRate.add(_variableRateSlope1).add(
         _variableRateSlope2.rayMul(excessUtilizationRateRatio)
       );
     } else {
-      currentStableBorrowRate = currentStableBorrowRate.add(
+      vars.currentStableBorrowRate = vars.currentStableBorrowRate.add(
         _stableRateSlope1.rayMul(utilizationRate.rayDiv(OPTIMAL_UTILIZATION_RATE))
       );
-      currentVariableBorrowRate = _baseVariableBorrowRate.add(
+      vars.currentVariableBorrowRate = _baseVariableBorrowRate.add(
         utilizationRate.rayDiv(OPTIMAL_UTILIZATION_RATE).rayMul(_variableRateSlope1)
       );
     }
 
-    currentLiquidityRate = _getOverallBorrowRate(
+    vars.currentLiquidityRate = _getOverallBorrowRate(
       totalBorrowsStable,
       totalBorrowsVariable,
-      currentVariableBorrowRate,
+      vars.currentVariableBorrowRate,
       averageStableBorrowRate
     )
-      .rayMul(utilizationRate);
+      .rayMul(utilizationRate)
+      .rayMul(WadRayMath.ray().sub(reserveFactor));
 
-    return (currentLiquidityRate, currentStableBorrowRate, currentVariableBorrowRate);
+    return (vars.currentLiquidityRate, vars.currentStableBorrowRate, vars.currentVariableBorrowRate);
   }
 
   /**
