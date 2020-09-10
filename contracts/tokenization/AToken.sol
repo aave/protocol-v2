@@ -199,10 +199,6 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     return amount;
   }
 
-
-   /**
-   * @notice ERC20 implementation internal function backing transfer() and transferFrom()
-   **/
   function _transfer(
     address from,
     address to,
@@ -222,10 +218,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     emit BalanceTransfer(from, to, amount, index);
 
   }
-
-   /**
-   * @notice ERC20 implementation internal function backing transfer() and transferFrom()
-   **/
+  
   function _transfer(
     address from,
     address to,
