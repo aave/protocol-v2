@@ -10,7 +10,7 @@ import {
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {IAToken} from './interfaces/IAToken.sol';
 import {IERC20} from '../interfaces/IERC20.sol';
-import {SafeERC20} from "../misc/SafeERC20.sol";
+import {SafeERC20} from '../misc/SafeERC20.sol';
 
 /**
  * @title Aave ERC20 AToken

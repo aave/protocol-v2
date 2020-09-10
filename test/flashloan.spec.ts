@@ -21,7 +21,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     REQUESTED_AMOUNT_TOO_SMALL,
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
     INVALID_FLASHLOAN_MODE,
-    SAFEERC20_LOWLEVEL_CALL
+    SAFEERC20_LOWLEVEL_CALL,
   } = ProtocolErrors;
 
   before(async () => {
@@ -340,8 +340,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
     await pool
-        .connect(caller.signer)
-        .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0');
+      .connect(caller.signer)
+      .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0');
 
     const {stableDebtTokenAddress} = await pool.getReserveTokensAddresses(weth.address);
 
@@ -353,6 +353,5 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
     expect(callerDebt.toString()).to.be.equal('800720000000000000', 'Invalid user debt');
-  
   });
 });

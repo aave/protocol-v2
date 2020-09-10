@@ -32,6 +32,7 @@ export enum eContractid {
   LendingPoolLiquidationManager = 'LendingPoolLiquidationManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
+  MockSwapAdapter = 'MockSwapAdapter',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
@@ -111,7 +112,7 @@ export enum ProtocolErrors {
   INVALID_REDIRECTION_ADDRESS = 'Invalid redirection address',
   INVALID_HF = 'Invalid health factor',
   TRANSFER_AMOUNT_EXCEEDS_BALANCE = 'ERC20: transfer amount exceeds balance',
-  SAFEERC20_LOWLEVEL_CALL = 'SafeERC20: low-level call failed'
+  SAFEERC20_LOWLEVEL_CALL = 'SafeERC20: low-level call failed',
 }
 
 export type tEthereumAddress = string;
