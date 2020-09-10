@@ -119,6 +119,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
   event ReserveBaseLtvChanged(address asset, uint256 ltv);
 
   /**
+   * @dev emitted when a reserve factor is updated
+   * @param asset the address of the reserve
+   * @param factor the new reserve factor
+   **/
+  event ReserveFactorChanged(address asset, uint256 factor);
+
+  /**
    * @dev emitted when a reserve liquidation threshold is updated
    * @param asset the address of the reserve
    * @param threshold the new value for the liquidation threshold
@@ -467,7 +474,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev emitted when a reserve loan to value is updated
+   * @dev updates the ltv of a reserve
    * @param asset the address of the reserve
    * @param ltv the new value for the loan to value
    **/
@@ -480,6 +487,22 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     emit ReserveBaseLtvChanged(asset, ltv);
   }
+
+    /**
+   * @dev updates the reserve factor of a reserve
+   * @param asset the address of the reserve
+   * @param reserveFactor the new reserve factor of the reserve
+   **/
+  function setReserveFactor(address asset, uint256 reserveFactor) external onlyLendingPoolManager {
+    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setReserveFactor(reserveFactor);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit ReserveFactorChanged(asset, reserveFactor);
+  }
+
 
   /**
    * @dev updates the liquidation threshold of a reserve.
