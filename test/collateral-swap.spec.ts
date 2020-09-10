@@ -136,11 +136,15 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
   });
 
   it('Should set usage as collateral to false if no leftovers after swap', async () => {
-    const {pool, weth, dai, aEth} = testEnv;
+    const {pool, weth, dai, aEth, users} = testEnv;
     const userAddress = await pool.signer.getAddress();
 
+    // add more liquidity to allow user 0 to swap everything he has
+    await weth.connect(users[2].signer).mint(ethers.utils.parseEther('1'));
+    await pool.connect(users[2].signer).deposit(weth.address, ethers.utils.parseEther('1'), '0');
+
     // cleanup borrowings, to be abe to swap whole weth
-    const amountToRepay = ethers.utils.parseEther('0.2');
+    const amountToRepay = ethers.utils.parseEther('0.5');
     await weth.mint(amountToRepay);
     await pool.repay(weth.address, amountToRepay, '1', userAddress);
     const txTimestamp = (await timeLatest()).plus(100);
@@ -152,20 +156,18 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
     const amountToSwap = calcExpectedATokenBalance(
       wethReserveDataBefore,
       wethUserDataBefore,
-      txTimestamp
+      txTimestamp.plus('1')
     );
 
     await advanceBlock(txTimestamp.toNumber());
 
-    console.log('before', amountToSwap.toString());
     await pool.collateralSwap(
       _mockSwapAdapter.address,
       weth.address,
       dai.address,
-      '1'.toString(),
+      amountToSwap.toString(),
       '0x10'
     );
-    console.log('after', (await aEth.balanceOf(userAddress)).toString());
     const {userData: wethUserDataAfter} = await getContractsData(
       weth.address,
       userAddress,
