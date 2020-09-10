@@ -4,6 +4,7 @@ pragma solidity ^0.6.8;
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
+import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {ILendingRateOracle} from '../interfaces/ILendingRateOracle.sol';
 
@@ -17,7 +18,7 @@ import {ILendingRateOracle} from '../interfaces/ILendingRateOracle.sol';
 contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   using WadRayMath for uint256;
   using SafeMath for uint256;
-
+  using PercentageMath for uint256;
   /**
    * @dev this constant represents the utilization rate at which the pool aims to obtain most competitive borrow rates
    * expressed in ray
@@ -171,7 +172,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       averageStableBorrowRate
     )
       .rayMul(utilizationRate)
-      .rayMul(WadRayMath.ray().sub(reserveFactor));
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(reserveFactor));
 
     return (vars.currentLiquidityRate, vars.currentStableBorrowRate, vars.currentVariableBorrowRate);
   }
