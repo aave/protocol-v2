@@ -38,6 +38,8 @@ library Errors {
   string public constant INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26'; // 'The actual balance of the protocol is inconsistent'
   string public constant CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The actual balance of the protocol is inconsistent'
   string public constant INVALID_FLASHLOAN_MODE = '43'; //Invalid flashloan mode selected
+  string public constant REENTRANCY_NOT_ALLOWED = '52';
+  string public constant FAILED_REPAY_WITH_COLLATERAL = '53';
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
@@ -71,7 +73,7 @@ library Errors {
   string public constant NO_ERRORS = '42'; // 'No errors'
 
   //require error messages - Math libraries
-  string public constant MULTIPLICATION_OVERFLOW = '44'; 
-  string public constant ADDITION_OVERFLOW = '45'; 
+  string public constant MULTIPLICATION_OVERFLOW = '44';
+  string public constant ADDITION_OVERFLOW = '45';
   string public constant DIVISION_BY_ZERO = '46';
 }
