@@ -133,7 +133,8 @@ export const approve = async (reserveSymbol: string, user: SignerWithAddress, te
 export const deposit = async (
   reserveSymbol: string,
   amount: string,
-  user: SignerWithAddress,
+  sender: SignerWithAddress,
+  onBehalfOf: tEthereumAddress,
   sendValue: string,
   expectedResult: string,
   testEnv: TestEnv,
@@ -149,8 +150,9 @@ export const deposit = async (
 
   const {reserveData: reserveDataBefore, userData: userDataBefore} = await getContractsData(
     reserve,
-    user.address,
-    testEnv
+    onBehalfOf,
+    testEnv,
+    sender.address
   );
 
   if (sendValue) {
@@ -158,14 +160,16 @@ export const deposit = async (
   }
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await await pool.connect(user.signer).deposit(reserve, amountToDeposit, '0', txOptions)
+      await pool
+        .connect(sender.signer)
+        .deposit(reserve, amountToDeposit, onBehalfOf, '0', txOptions)
     );
 
     const {
       reserveData: reserveDataAfter,
       userData: userDataAfter,
       timestamp,
-    } = await getContractsData(reserve, user.address, testEnv);
+    } = await getContractsData(reserve, onBehalfOf, testEnv, sender.address);
 
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
@@ -198,7 +202,7 @@ export const deposit = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      pool.connect(user.signer).deposit(reserve, amountToDeposit, '0', txOptions),
+      pool.connect(sender.signer).deposit(reserve, amountToDeposit, onBehalfOf, '0', txOptions),
       revertMessage
     ).to.be.reverted;
   }
@@ -845,10 +849,15 @@ const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
   return {txCost, txTimestamp};
 };
 
-export const getContractsData = async (reserve: string, user: string, testEnv: TestEnv) => {
+export const getContractsData = async (
+  reserve: string,
+  user: string,
+  testEnv: TestEnv,
+  sender?: string
+) => {
   const {pool} = testEnv;
   const reserveData = await getReserveData(pool, reserve);
-  const userData = await getUserData(pool, reserve, user);
+  const userData = await getUserData(pool, reserve, user, sender || user);
   const timestamp = await timeLatest();
 
   return {

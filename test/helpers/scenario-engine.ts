@@ -92,13 +92,25 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'deposit':
       {
-        const {amount, sendValue} = action.args;
+        const {amount, sendValue, onBehalfOf: onBehalfOfIndex} = action.args;
+        const onBehalfOf = onBehalfOfIndex
+          ? users[parseInt(onBehalfOfIndex)].address
+          : user.address;
 
         if (!amount || amount === '') {
           throw `Invalid amount to deposit into the ${reserve} reserve`;
         }
 
-        await deposit(reserve, amount, user, sendValue, expected, testEnv, revertMessage);
+        await deposit(
+          reserve,
+          amount,
+          user,
+          onBehalfOf,
+          sendValue,
+          expected,
+          testEnv,
+          revertMessage
+        );
       }
       break;
 

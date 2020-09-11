@@ -20,17 +20,17 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
   const {INVALID_HF, COLLATERAL_CANNOT_BE_LIQUIDATED} = ProtocolErrors;
 
   it('User 1 provides some liquidity for others to borrow', async () => {
-    const {pool, weth, dai, usdc} = testEnv;
+    const {pool, weth, dai, usdc, deployer} = testEnv;
 
     await weth.mint(parseEther('200'));
     await weth.approve(pool.address, parseEther('200'));
-    await pool.deposit(weth.address, parseEther('200'), 0);
+    await pool.deposit(weth.address, parseEther('200'), deployer.address, 0);
     await dai.mint(parseEther('20000'));
     await dai.approve(pool.address, parseEther('20000'));
-    await pool.deposit(dai.address, parseEther('20000'), 0);
+    await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
     await usdc.mint(parseEther('20000'));
     await usdc.approve(pool.address, parseEther('20000'));
-    await pool.deposit(usdc.address, parseEther('20000'), 0);
+    await pool.deposit(usdc.address, parseEther('20000'), deployer.address, 0);
   });
 
   it('User 5 liquidate User 3 collateral, all his variable debt and part of the stable', async () => {
@@ -43,7 +43,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await weth.connect(user.signer).mint(amountToDeposit);
 
     await weth.connect(user.signer).approve(pool.address, amountToDeposit);
-    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
     const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
@@ -189,7 +189,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
     const userGlobalData = await pool.getUserAccountData(user.address);
 
@@ -450,7 +450,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
     const userGlobalData = await pool.getUserAccountData(user.address);
 
@@ -733,8 +733,8 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(user.signer).deposit(weth.address, amountToDepositWeth, '0');
-    await pool.connect(user.signer).deposit(dai.address, amountToDepositDAI, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDepositWeth, user.address, '0');
+    await pool.connect(user.signer).deposit(dai.address, amountToDepositDAI, user.address, '0');
 
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrowVariable, 2, 0);
 
@@ -838,11 +838,11 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     await weth.connect(user.signer).mint(amountWETHToDeposit);
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, user.address, '0');
 
     await dai.connect(user.signer).mint(amountDAIToDeposit);
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, '0');
+    await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, user.address, '0');
 
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
   });

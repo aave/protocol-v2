@@ -91,6 +91,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   function deposit(
     address asset,
     uint256 amount,
+    address onBehalfOf,
     uint16 referralCode
   ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
@@ -102,18 +103,18 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     reserve.updateCumulativeIndexesAndTimestamp();
     reserve.updateInterestRates(asset, aToken, amount, 0);
 
-    bool isFirstDeposit = IAToken(aToken).balanceOf(msg.sender) == 0;
+    bool isFirstDeposit = IAToken(aToken).balanceOf(onBehalfOf) == 0;
     if (isFirstDeposit) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, true);
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.index, true);
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
-    IAToken(aToken).mint(msg.sender, amount);
+    IAToken(aToken).mint(onBehalfOf, amount);
 
     //transfer to the aToken contract
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
-    emit Deposit(asset, msg.sender, amount, referralCode);
+    emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
 
   /**
