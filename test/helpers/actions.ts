@@ -871,7 +871,7 @@ const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
   return {txCost, txTimestamp};
 };
 
-const getContractsData = async (
+export const getContractsData = async (
   reserve: string,
   user: string,
   testEnv: TestEnv,

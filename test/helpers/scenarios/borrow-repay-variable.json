@@ -1031,7 +1031,7 @@
             "borrowRateMode": "variable"
           },
           "expected": "revert",
-          "revertMessage": "52"
+          "revertMessage": "54"
         }
       ]
     }
