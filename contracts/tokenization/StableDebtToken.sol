@@ -21,6 +21,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   uint256 private _avgStableRate;
   mapping(address => uint40) _timestamps;
+  uint40 _totalSupplyTimestamp;
 
   constructor(
     address pool,
@@ -122,7 +123,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _usersData[user] = vars.newStableRate;
 
     //solium-disable-next-line
-    _timestamps[user] = uint40(block.timestamp);
+    _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
+
 
     //calculates the updated average stable rate
     _avgStableRate = _avgStableRate
@@ -171,7 +173,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _timestamps[user] = 0;
     } else {
       //solium-disable-next-line
-      _timestamps[user] = uint40(block.timestamp);
+      _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
     }
 
     if (balanceIncrease > amount) {
