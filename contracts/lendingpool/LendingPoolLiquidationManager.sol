@@ -43,6 +43,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;
+  mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
 
   address[] internal reservesList;
 

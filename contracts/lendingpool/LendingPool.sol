@@ -49,6 +49,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   mapping(address => ReserveLogic.ReserveData) internal _reserves;
   mapping(address => UserConfiguration.Map) internal _usersConfig;
   mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
+
   address[] internal _reservesList;
 
   bool internal _flashLiquidationLocked;
