@@ -41,7 +41,7 @@ export const calcExpectedUserDataAfterDeposit = (
     txTimestamp
   );
 
-  expectedUserData.principalATokenBalance = userDataBeforeAction.principalStableDebt;
+  expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;
   expectedUserData.principalVariableDebt = userDataBeforeAction.principalVariableDebt;
   expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
   expectedUserData.stableBorrowRate = userDataBeforeAction.stableBorrowRate;
@@ -49,38 +49,26 @@ export const calcExpectedUserDataAfterDeposit = (
 
   expectedUserData.liquidityRate = reserveDataAfterAction.liquidityRate;
 
-  expectedUserData.currentATokenBalance = userDataBeforeAction.currentATokenBalance.plus(
-    amountDeposited
+  expectedUserData.scaledATokenBalance = calcExpectedScaledATokenBalance(
+    userDataBeforeAction,
+    reserveDataAfterAction.liquidityIndex,
+    new BigNumber(amountDeposited),
+    new BigNumber(0)
   );
-
-  if (userDataBeforeAction.currentATokenBalance.eq(0)) {
-    expectedUserData.usageAsCollateralEnabled = true;
-  } else {
-    //if the user is withdrawing everything, usageAsCollateralEnabled must be false
-    if (expectedUserData.currentATokenBalance.eq(0)) {
-      expectedUserData.usageAsCollateralEnabled = false;
-    } else {
-      expectedUserData.usageAsCollateralEnabled = userDataBeforeAction.usageAsCollateralEnabled;
-    }
-  }
-
-  expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
-  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(amountDeposited);
-
-  expectedUserData.principalATokenBalance = expectedUserData.currentATokenBalance = calcExpectedATokenBalance(
+  expectedUserData.currentATokenBalance = calcExpectedATokenBalance(
     reserveDataBeforeAction,
     userDataBeforeAction,
     txTimestamp
   ).plus(amountDeposited);
 
-  expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
-  expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
-  expectedUserData.currentATokenUserIndex = calcExpectedATokenUserIndex(
-    reserveDataBeforeAction,
-    expectedUserData.currentATokenBalance,
-    expectedUserData.redirectedBalance,
-    txTimestamp
-  );
+  if (userDataBeforeAction.currentATokenBalance.eq(0)) {
+    expectedUserData.usageAsCollateralEnabled = true;
+  } else {
+    expectedUserData.usageAsCollateralEnabled = userDataBeforeAction.usageAsCollateralEnabled;
+  }
+
+  expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(amountDeposited);
 
   expectedUserData.currentStableDebt = expectedUserData.principalStableDebt = calcExpectedStableDebtTokenBalance(
     userDataBeforeAction,
@@ -91,14 +79,6 @@ export const calcExpectedUserDataAfterDeposit = (
     reserveDataBeforeAction,
     userDataBeforeAction,
     txTimestamp
-  );
-
-  expectedUserData.redirectionAddressRedirectedBalance = calcExpectedRedirectedBalance(
-    userDataBeforeAction,
-    expectedUserData,
-    userDataBeforeAction.redirectionAddressRedirectedBalance,
-    new BigNumber(amountDeposited),
-    new BigNumber(0)
   );
 
   return expectedUserData;
@@ -125,23 +105,29 @@ export const calcExpectedUserDataAfterWithdraw = (
     amountWithdrawn = aTokenBalance.toFixed(0);
   }
 
-  expectedUserData.principalATokenBalance = expectedUserData.currentATokenBalance = aTokenBalance.minus(
-    amountWithdrawn
+  expectedUserData.scaledATokenBalance = calcExpectedScaledATokenBalance(
+    userDataBeforeAction,
+    reserveDataAfterAction.liquidityIndex,
+    new BigNumber(0),
+    new BigNumber(amountWithdrawn)
   );
 
-  expectedUserData.currentStableDebt = expectedUserData.principalStableDebt = calcExpectedStableDebtTokenBalance(
+  expectedUserData.currentATokenBalance = aTokenBalance.minus(amountWithdrawn);
+
+  expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;
+  expectedUserData.principalVariableDebt = userDataBeforeAction.principalVariableDebt;
+
+  expectedUserData.currentStableDebt = calcExpectedStableDebtTokenBalance(
     userDataBeforeAction,
     txTimestamp
   );
 
-  expectedUserData.currentVariableDebt = expectedUserData.principalStableDebt = calcExpectedVariableDebtTokenBalance(
+  expectedUserData.currentVariableDebt = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
     userDataBeforeAction,
     txTimestamp
   );
 
-  expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;
-  expectedUserData.principalVariableDebt = userDataBeforeAction.principalVariableDebt;
   expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
   expectedUserData.stableBorrowRate = userDataBeforeAction.stableBorrowRate;
   expectedUserData.stableRateLastUpdated = userDataBeforeAction.stableRateLastUpdated;
@@ -159,30 +145,7 @@ export const calcExpectedUserDataAfterWithdraw = (
     }
   }
 
-  expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
   expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountWithdrawn);
-
-  expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
-
-  if (expectedUserData.currentATokenBalance.eq(0) && expectedUserData.redirectedBalance.eq(0)) {
-    expectedUserData.interestRedirectionAddress = ZERO_ADDRESS;
-  } else {
-    expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
-  }
-  expectedUserData.currentATokenUserIndex = calcExpectedATokenUserIndex(
-    reserveDataBeforeAction,
-    expectedUserData.currentATokenBalance,
-    expectedUserData.redirectedBalance,
-    txTimestamp
-  );
-
-  expectedUserData.redirectionAddressRedirectedBalance = calcExpectedRedirectedBalance(
-    userDataBeforeAction,
-    expectedUserData,
-    userDataBeforeAction.redirectionAddressRedirectedBalance,
-    new BigNumber(0),
-    new BigNumber(amountWithdrawn)
-  );
 
   return expectedUserData;
 };
@@ -575,13 +538,8 @@ export const calcExpectedUserDataAfterBorrow = (
     userDataBeforeAction,
     currentTimestamp
   );
-  expectedUserData.principalATokenBalance = userDataBeforeAction.principalATokenBalance;
-  expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
-  expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
-  expectedUserData.redirectionAddressRedirectedBalance =
-    userDataBeforeAction.redirectionAddressRedirectedBalance;
-  expectedUserData.currentATokenUserIndex = userDataBeforeAction.currentATokenUserIndex;
-
+  expectedUserData.scaledATokenBalance = userDataBeforeAction.scaledATokenBalance;
+  
   expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountBorrowed);
 
   return expectedUserData;
@@ -664,13 +622,8 @@ export const calcExpectedUserDataAfterRepay = (
     userDataBeforeAction,
     txTimestamp
   );
-  expectedUserData.principalATokenBalance = userDataBeforeAction.principalATokenBalance;
-  expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
-  expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
-  expectedUserData.redirectionAddressRedirectedBalance =
-    userDataBeforeAction.redirectionAddressRedirectedBalance;
-  expectedUserData.currentATokenUserIndex = userDataBeforeAction.currentATokenUserIndex;
-
+  expectedUserData.scaledATokenBalance = userDataBeforeAction.scaledATokenBalance;
+ 
   if (user === onBehalfOf) {
     expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(totalRepaid);
   } else {
@@ -809,18 +762,6 @@ export const calcExpectedUserDataAfterSwapRateMode = (
     txTimestamp
   );
 
-  expectedUserData.principalATokenBalance = userDataBeforeAction.principalATokenBalance;
-  expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
-  expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
-  expectedUserData.redirectionAddressRedirectedBalance =
-    userDataBeforeAction.redirectionAddressRedirectedBalance;
-  expectedUserData.currentATokenUserIndex = calcExpectedATokenUserIndex(
-    reserveDataBeforeAction,
-    expectedUserData.currentATokenBalance,
-    expectedUserData.redirectedBalance,
-    txTimestamp
-  );
-
   if (rateMode === RateMode.Stable) {
     // swap to variable
     expectedUserData.currentStableDebt = expectedUserData.principalStableDebt = new BigNumber(0);
@@ -912,6 +853,7 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
     expectedReserveData.totalBorrowsVariable,
     expectedReserveData.averageStableBorrowRate
   );
+
   expectedReserveData.liquidityRate = rates[0];
 
   expectedReserveData.stableBorrowRate = rates[1];
@@ -953,10 +895,6 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
 
   expectedUserData.principalVariableDebt = userDataBeforeAction.principalVariableDebt;
 
-  const debtAccrued = expectedUserData.currentStableDebt.minus(
-    userDataBeforeAction.principalStableDebt
-  );
-
   expectedUserData.stableBorrowRate = reserveDataBeforeAction.stableBorrowRate;
 
   expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
@@ -966,114 +904,19 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
     userDataBeforeAction,
     txTimestamp
   );
-  expectedUserData.principalATokenBalance = userDataBeforeAction.principalATokenBalance;
-  expectedUserData.redirectedBalance = userDataBeforeAction.redirectedBalance;
-  expectedUserData.interestRedirectionAddress = userDataBeforeAction.interestRedirectionAddress;
-  expectedUserData.redirectionAddressRedirectedBalance =
-    userDataBeforeAction.redirectionAddressRedirectedBalance;
-
-  expectedUserData.currentATokenUserIndex = calcExpectedATokenUserIndex(
-    reserveDataBeforeAction,
-    expectedUserData.currentATokenBalance,
-    expectedUserData.redirectedBalance,
-    txTimestamp
-  );
 
   return expectedUserData;
 };
 
-export const calcExpectedUsersDataAfterRedirectInterest = (
-  reserveDataBeforeAction: ReserveData,
-  fromDataBeforeAction: UserReserveData,
-  toDataBeforeAction: UserReserveData,
-  fromAddress: string,
-  toAddress: string,
-  isFromExecutingTx: boolean,
-  txCost: BigNumber,
-  txTimestamp: BigNumber
-): UserReserveData[] => {
-  const expectedFromData = {...fromDataBeforeAction};
-  const expectedToData = {...toDataBeforeAction};
-
-  expectedFromData.currentStableDebt = calcExpectedStableDebtTokenBalance(
-    fromDataBeforeAction,
-    txTimestamp
-  );
-
-  expectedToData.currentVariableDebt = calcExpectedVariableDebtTokenBalance(
-    reserveDataBeforeAction,
-    toDataBeforeAction,
-    txTimestamp
-  );
-
-  expectedFromData.variableBorrowIndex = fromDataBeforeAction.variableBorrowIndex;
-  expectedToData.variableBorrowIndex = toDataBeforeAction.variableBorrowIndex;
-
-  expectedFromData.stableBorrowRate = fromDataBeforeAction.stableBorrowRate;
-  expectedToData.stableBorrowRate = toDataBeforeAction.stableBorrowRate;
-
-  expectedFromData.principalATokenBalance = expectedFromData.currentATokenBalance = calcExpectedATokenBalance(
-    reserveDataBeforeAction,
-    fromDataBeforeAction,
-    txTimestamp
-  );
-
-  expectedToData.principalATokenBalance = expectedToData.currentATokenBalance = calcExpectedATokenBalance(
-    reserveDataBeforeAction,
-    toDataBeforeAction,
-    txTimestamp
-  );
-
-  expectedToData.redirectedBalance = toDataBeforeAction.redirectedBalance.plus(
-    expectedFromData.currentATokenBalance
-  );
-
-  if (fromAddress === toAddress) {
-    expectedFromData.interestRedirectionAddress = ZERO_ADDRESS;
-    expectedFromData.redirectedBalance = new BigNumber(0);
-    expectedFromData.redirectionAddressRedirectedBalance = new BigNumber(0);
-    expectedToData.interestRedirectionAddress = ZERO_ADDRESS;
-    expectedToData.redirectedBalance = new BigNumber(0);
-    expectedToData.redirectionAddressRedirectedBalance = new BigNumber(0);
-  } else {
-    expectedFromData.interestRedirectionAddress = toAddress;
-
-    expectedFromData.redirectionAddressRedirectedBalance = calcExpectedRedirectedBalance(
-      toDataBeforeAction,
-      expectedFromData,
-      toDataBeforeAction.redirectedBalance,
-      expectedFromData.currentATokenBalance,
-      new BigNumber(0)
-    );
-  }
-
-  expectedFromData.currentATokenUserIndex = calcExpectedATokenUserIndex(
-    reserveDataBeforeAction,
-    expectedFromData.currentATokenBalance,
-    expectedFromData.redirectedBalance,
-    txTimestamp
-  );
-
-  expectedToData.currentATokenUserIndex = calcExpectedATokenUserIndex(
-    reserveDataBeforeAction,
-    expectedToData.currentATokenBalance,
-    expectedToData.redirectedBalance,
-    txTimestamp
-  );
-
-  return [expectedFromData, expectedToData];
-};
-
-const calcExpectedATokenUserIndex = (
-  reserveDataBeforeAction: ReserveData,
-  expectedUserBalanceAfterAction: BigNumber,
-  expectedUserRedirectedBalanceAterAction: BigNumber,
-  currentTimestamp: BigNumber
+const calcExpectedScaledATokenBalance = (
+  userDataBeforeAction: UserReserveData,
+  index: BigNumber,
+  amountAdded: BigNumber,
+  amountTaken: BigNumber
 ) => {
-  if (expectedUserBalanceAfterAction.eq(0) && expectedUserRedirectedBalanceAterAction.eq(0)) {
-    return new BigNumber(0);
-  }
-  return calcExpectedReserveNormalizedIncome(reserveDataBeforeAction, currentTimestamp);
+  return userDataBeforeAction.scaledATokenBalance
+    .plus(amountAdded.rayDiv(index))
+    .minus(amountTaken.rayDiv(index));
 };
 
 const calcExpectedATokenBalance = (
@@ -1081,51 +924,24 @@ const calcExpectedATokenBalance = (
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const income = calcExpectedReserveNormalizedIncome(reserveDataBeforeAction, currentTimestamp);
+  const index = calcExpectedReserveNormalizedIncome(reserveDataBeforeAction, currentTimestamp);
 
   const {
-    interestRedirectionAddress,
-    currentATokenUserIndex: userIndexBeforeAction,
-    redirectedBalance,
-    principalATokenBalance: principalBalanceBeforeAction,
+    scaledATokenBalance: scaledBalanceBeforeAction,
   } = userDataBeforeAction;
 
-  if (userIndexBeforeAction.eq(0)) {
-    return principalBalanceBeforeAction;
-  }
-  if (interestRedirectionAddress === ZERO_ADDRESS) {
-    return principalBalanceBeforeAction
-      .plus(redirectedBalance)
-      .wadToRay()
-      .rayMul(income)
-      .rayDiv(userIndexBeforeAction)
-      .rayToWad()
-      .minus(redirectedBalance);
-  } else {
-    return principalBalanceBeforeAction.plus(
-      redirectedBalance
-        .wadToRay()
-        .rayMul(income)
-        .rayDiv(userIndexBeforeAction)
-        .rayToWad()
-        .minus(redirectedBalance)
-    );
-  }
+  return scaledBalanceBeforeAction.rayMul(index);
 };
 
 const calcExpectedRedirectedBalance = (
-  userDataBeforeAction: UserReserveData,
   expectedUserDataAfterAction: UserReserveData,
+  index: BigNumber,
   redirectedBalanceBefore: BigNumber,
   amountToAdd: BigNumber,
   amountToSubstract: BigNumber
 ): BigNumber => {
-  const balanceIncrease = userDataBeforeAction.currentATokenBalance.minus(
-    userDataBeforeAction.principalATokenBalance
-  );
-
   return expectedUserDataAfterAction.interestRedirectionAddress !== ZERO_ADDRESS
-    ? redirectedBalanceBefore.plus(balanceIncrease).plus(amountToAdd).minus(amountToSubstract)
+    ? redirectedBalanceBefore.plus(amountToAdd.rayDiv(index)).minus(amountToSubstract.rayDiv(index))
     : new BigNumber('0');
 };
 const calcExpectedAverageStableBorrowRate = (
