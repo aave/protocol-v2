@@ -109,7 +109,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     }
 
     //minting AToken to user 1:1 with the specific exchange rate
-    IAToken(aToken).mint(onBehalfOf, amount);
+    IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     //transfer to the aToken contract
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
@@ -155,7 +155,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, false);
     }
 
-    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw);
+    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
 
     emit Withdraw(asset, msg.sender, amount);
   }
@@ -616,7 +616,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       reserve.currentVariableBorrowRate,
       reserve.currentStableBorrowRate,
       IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate(),
-      reserve.lastLiquidityIndex,
+      reserve.liquidityIndex,
       reserve.lastVariableBorrowIndex,
       reserve.lastUpdateTimestamp
     );

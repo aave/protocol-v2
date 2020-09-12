@@ -43,11 +43,13 @@ interface IAToken is IERC20 {
    * @dev burns the aTokens and sends the equivalent amount of underlying to the target.
    * only lending pools can call this function
    * @param amount the amount being burned
+   * @param index the liquidity index
    **/
   function burn(
     address user,
     address underlyingTarget,
-    uint256 amount
+    uint256 amount,
+    uint256 index
   ) external;
 
   /**
@@ -55,8 +57,9 @@ interface IAToken is IERC20 {
    * only lending pools can call this function
    * @param user the address receiving the minted tokens
    * @param amount the amount of tokens to mint
+   * @param index the liquidity index
    */
-  function mint(address user, uint256 amount) external;
+  function mint(address user, uint256 amount, uint256 index) external;
 
   /**
    * @dev transfers tokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken

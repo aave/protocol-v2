@@ -56,7 +56,7 @@ library ReserveLogic {
     address variableDebtTokenAddress;
     address interestRateStrategyAddress;
     //the liquidity index. Expressed in ray
-    uint128 lastLiquidityIndex;
+    uint128 liquidityIndex;
     //the current supply rate. Expressed in ray
     uint128 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
@@ -83,12 +83,12 @@ library ReserveLogic {
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.lastLiquidityIndex;
+      return reserve.liquidityIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateLinearInterest(reserve.currentLiquidityRate, timestamp)
-      .rayMul(reserve.lastLiquidityIndex);
+      .rayMul(reserve.liquidityIndex);
 
     return cumulated;
   }
@@ -131,10 +131,10 @@ library ReserveLogic {
         currentLiquidityRate,
         lastUpdateTimestamp
       );
-      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.lastLiquidityIndex);
+      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.liquidityIndex);
       require(index < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
 
-      reserve.lastLiquidityIndex = uint128(index);
+      reserve.liquidityIndex = uint128(index);
 
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
@@ -169,10 +169,10 @@ library ReserveLogic {
 
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
-    result = result.rayMul(reserve.lastLiquidityIndex);
+    result = result.rayMul(reserve.liquidityIndex);
     require(result < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
 
-    reserve.lastLiquidityIndex = uint128(result);
+    reserve.liquidityIndex = uint128(result);
   }
 
   /**
@@ -189,9 +189,9 @@ library ReserveLogic {
     address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), Errors.RESERVE_ALREADY_INITIALIZED);
-    if (reserve.lastLiquidityIndex == 0) {
+    if (reserve.liquidityIndex == 0) {
       //if the reserve has not been initialized yet
-      reserve.lastLiquidityIndex = uint128(WadRayMath.ray());
+      reserve.liquidityIndex = uint128(WadRayMath.ray());
     }
 
     if (reserve.lastVariableBorrowIndex == 0) {
@@ -259,7 +259,7 @@ library ReserveLogic {
       vars.newStableRate,
       vars.currentAvgStableRate,
       vars.newVariableRate,
-      reserve.lastLiquidityIndex,
+      reserve.liquidityIndex,
       reserve.lastVariableBorrowIndex
     );
   }

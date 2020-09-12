@@ -25,16 +25,15 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
   address public immutable UNDERLYING_ASSET_ADDRESS;
-
+  LendingPool public immutable POOL;
 
   mapping(address => uint256) private _scaledRedirectedBalances;
 
-  LendingPool private immutable _pool;
 
   uint256 public constant ATOKEN_REVISION = 0x1;
 
   modifier onlyLendingPool {
-    require(msg.sender == address(_pool), Errors.CALLER_MUST_BE_LENDING_POOL);
+    require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
@@ -44,7 +43,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     string memory tokenName,
     string memory tokenSymbol
   ) public ERC20(tokenName, tokenSymbol, 18) {
-    _pool = pool;
+    POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
   }
 
@@ -70,14 +69,13 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   function burn(
     address user,
     address receiverOfUnderlying,
-    uint256 amount
+    uint256 amount,
+    uint256 index
   ) external override onlyLendingPool {
 
     uint256 currentBalance = balanceOf(user);
 
     require(amount <= currentBalance, Errors.INVALID_ATOKEN_BALANCE);
-
-    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
     uint256 scaledAmount = amount.rayDiv(index);
 
@@ -96,9 +94,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param user the address receiving the minted tokens
    * @param amount the amount of tokens to mint
    */
-  function mint(address user, uint256 amount) external override onlyLendingPool {
+  function mint(address user, uint256 amount, uint256 index) external override onlyLendingPool {
 
-    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
     uint256 scaledAmount = amount.rayDiv(index);
  
@@ -132,11 +129,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return the total balance of the user
    **/
   function balanceOf(address user) public override(ERC20, IERC20) view returns (uint256) {
-  
 
-    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
-
-    return super.balanceOf(user).rayMul(index);
+    return super.balanceOf(user).rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
 
   }
 
@@ -165,9 +159,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
     return
       currentSupplyScaled
-        .wadToRay()
-        .rayMul(_pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS))
-        .rayToWad();
+        .rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
   }
 
   /**
@@ -177,7 +169,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return true if the user can transfer amount, false otherwise
    **/
   function isTransferAllowed(address user, uint256 amount) public override view returns (bool) {
-    return _pool.balanceDecreaseAllowed(UNDERLYING_ASSET_ADDRESS, user, amount);
+    return POOL.balanceDecreaseAllowed(UNDERLYING_ASSET_ADDRESS, user, amount);
   }
 
   /**
@@ -207,7 +199,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
       require(isTransferAllowed(from, amount), Errors.TRANSFER_NOT_ALLOWED);
     }
 
-    uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+    uint256 index = POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
     uint256 scaledAmount = amount.rayDiv(index);
 

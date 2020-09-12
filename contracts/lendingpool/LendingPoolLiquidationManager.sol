@@ -271,7 +271,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
 
       //burn the equivalent amount of atoken
-      vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate);
+      vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
     }
 
     //transfers the principal currency to the aToken
@@ -388,8 +388,10 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     if (vars.principalAmountNeeded < vars.actualAmountToLiquidate) {
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
+    //updating collateral reserve indexes
+    collateralReserve.updateCumulativeIndexesAndTimestamp();
 
-    vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate);
+    vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
 
     if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
       usersConfig[user].setUsingAsCollateral(collateralReserve.index, false);
@@ -425,7 +427,6 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     }
 
     //updating collateral reserve
-    collateralReserve.updateCumulativeIndexesAndTimestamp();
     collateralReserve.updateInterestRates(
       collateral,
       address(vars.collateralAtoken),
