@@ -108,7 +108,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.index, true);
     }
 
-    //minting AToken to user 1:1 with the specific exchange rate
     IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     //transfer to the aToken contract
