@@ -385,6 +385,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 purchaseAmount,
     bool receiveAToken
   ) external override {
+    ValidationLogic.validateLiquidation(_reserves[collateral], _reserves[asset]);
+    
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -443,6 +445,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   ) external override {
     require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
     _flashLiquidationLocked = true;
+
+    ValidationLogic.validateLiquidation(_reserves[collateral], _reserves[principal]);
 
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 

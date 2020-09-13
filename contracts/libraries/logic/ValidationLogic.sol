@@ -329,4 +329,20 @@ library ValidationLogic {
     require(premium > 0, Errors.REQUESTED_AMOUNT_TOO_SMALL);
     require(mode <= uint256(ReserveLogic.InterestRateMode.VARIABLE), Errors.INVALID_FLASHLOAN_MODE);
   }
+
+  /**
+   * @dev Validates configurations for liquidation actions, both liquidationCall() and repayWithCollateral()
+   * @param collateralReserve The reserve data of the collateral
+   * @param principalReserve The reserve data of the principal
+   **/
+  function validateLiquidation(
+    ReserveLogic.ReserveData storage collateralReserve,
+    ReserveLogic.ReserveData storage principalReserve
+  ) internal view {
+    require(
+        collateralReserve.configuration.getActive() && 
+        principalReserve.configuration.getActive(), 
+      Errors.NO_ACTIVE_RESERVE
+    );
+  }
 }

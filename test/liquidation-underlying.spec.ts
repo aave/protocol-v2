@@ -7,6 +7,7 @@ import {makeSuite} from './helpers/make-suite';
 import {ProtocolErrors, RateMode} from '../helpers/types';
 import {calcExpectedStableDebtTokenBalance} from './helpers/utils/calculations';
 import {getUserData} from './helpers/utils/helpers';
+import {parseEther} from 'ethers/lib/utils';
 
 const chai = require('chai');
 
@@ -21,6 +22,26 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
   after('After LendingPool liquidation: reset config', () => {
     BigNumber.config({DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP});
+  });
+
+  it("It's not possible to liquidate on a non-active collateral or a non active principal", async () => {
+    const {configurator, weth, pool, users, dai} = testEnv;
+    const user = users[1];
+    await configurator.deactivateReserve(weth.address);
+
+    await expect(
+      pool.liquidationCall(weth.address, dai.address, user.address, parseEther('1000'), false)
+    ).to.be.revertedWith('2');
+
+    await configurator.activateReserve(weth.address);
+
+    await configurator.deactivateReserve(dai.address);
+
+    await expect(
+      pool.liquidationCall(weth.address, dai.address, user.address, parseEther('1000'), false)
+    ).to.be.revertedWith('2');
+
+    await configurator.activateReserve(dai.address);
   });
 
   it('LIQUIDATION - Deposits WETH, borrows DAI', async () => {
