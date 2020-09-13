@@ -129,9 +129,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return the total balance of the user
    **/
   function balanceOf(address user) public override(ERC20, IERC20) view returns (uint256) {
-
     return super.balanceOf(user).rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
-
   }
 
   /**

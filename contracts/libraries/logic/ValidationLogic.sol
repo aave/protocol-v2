@@ -190,7 +190,7 @@ library ValidationLogic {
       require(vars.stableRateBorrowingEnabled, Errors.STABLE_BORROWING_NOT_ENABLED);
 
       require(
-        !userConfig.isUsingAsCollateral(reserve.index) ||
+        !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
           amount > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
@@ -274,7 +274,7 @@ library ValidationLogic {
       require(stableRateEnabled, Errors.STABLE_BORROWING_NOT_ENABLED);
 
       require(
-        !userConfig.isUsingAsCollateral(reserve.index) ||
+        !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
           stableBorrowBalance.add(variableBorrowBalance) >
           IERC20(reserve.aTokenAddress).balanceOf(msg.sender),

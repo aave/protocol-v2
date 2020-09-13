@@ -165,7 +165,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-      userConfig.isUsingAsCollateral(collateralReserve.index);
+      userConfig.isUsingAsCollateral(collateralReserve.id);
 
     //if collateral isn't enabled as collateral by user, it cannot be liquidated
     if (!vars.isCollateralEnabled) {
@@ -341,7 +341,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     if (msg.sender != user) {
       vars.isCollateralEnabled =
         collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-        userConfig.isUsingAsCollateral(collateralReserve.index);
+        userConfig.isUsingAsCollateral(collateralReserve.id);
 
       //if collateral isn't enabled as collateral by user, it cannot be liquidated
       if (!vars.isCollateralEnabled) {
@@ -394,7 +394,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
 
     if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
-      usersConfig[user].setUsingAsCollateral(collateralReserve.index, false);
+      usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
     }
 
     address principalAToken = debtReserve.aTokenAddress;

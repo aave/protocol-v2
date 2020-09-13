@@ -105,7 +105,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     bool isFirstDeposit = IAToken(aToken).balanceOf(onBehalfOf) == 0;
     if (isFirstDeposit) {
-      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.index, true);
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
     }
 
     IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
@@ -151,7 +151,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
     if (amountToWithdraw == userBalance) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, false);
+      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
     }
 
     IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
@@ -247,7 +247,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
-      _usersConfig[onBehalfOf].setBorrowing(reserve.index, false);
+      _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
     }
 
     IERC20(asset).safeTransferFrom(user, aToken, paybackAmount);
@@ -360,7 +360,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _addressesProvider.getPriceOracle()
     );
 
-    _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, useAsCollateral);
+    _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
     if (useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
@@ -616,7 +616,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       reserve.currentStableBorrowRate,
       IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate(),
       reserve.liquidityIndex,
-      reserve.lastVariableBorrowIndex,
+      reserve.variableBorrowIndex,
       reserve.lastUpdateTimestamp
     );
   }
@@ -682,7 +682,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(
       user
     );
-    usageAsCollateralEnabled = _usersConfig[user].isUsingAsCollateral(reserve.index);
+    usageAsCollateralEnabled = _usersConfig[user].isUsingAsCollateral(reserve.id);
     variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(user);
   }
 
@@ -786,7 +786,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       oracle
     );
 
-    uint256 reserveIndex = reserve.index;
+    uint256 reserveIndex = reserve.id;
     if (!userConfig.isBorrowing(reserveIndex)) {
       userConfig.setBorrowing(reserveIndex, true);
     }
@@ -843,7 +843,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
         reserveAlreadyAdded = true;
       }
     if (!reserveAlreadyAdded) {
-      _reserves[asset].index = uint8(_reservesList.length);
+      _reserves[asset].id = uint8(_reservesList.length);
       _reservesList.push(asset);
     }
   }
