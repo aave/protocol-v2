@@ -23,15 +23,12 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   using SafeERC20 for ERC20;
 
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
-
+  uint256 public constant ATOKEN_REVISION = 0x1;
   address public immutable UNDERLYING_ASSET_ADDRESS;
   address public immutable RESERVE_TREASURY_ADDRESS;
   LendingPool public immutable POOL;
 
-  mapping(address => uint256) private _scaledRedirectedBalances;
 
-
-  uint256 public constant ATOKEN_REVISION = 0x1;
 
   modifier onlyLendingPool {
     require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);

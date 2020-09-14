@@ -46,6 +46,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   uint256 public constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
   uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
+  uint256 public constant UINT_MAX_VALUE = uint256(-1);
+  uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
   ILendingPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
@@ -66,10 +68,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     );
     _;
   }
-
-  uint256 public constant UINT_MAX_VALUE = uint256(-1);
-
-  uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
   function getRevision() internal override pure returns (uint256) {
     return LENDINGPOOL_REVISION;
