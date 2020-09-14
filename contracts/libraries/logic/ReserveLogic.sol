@@ -7,6 +7,7 @@ import {MathUtils} from '../math/MathUtils.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {IStableDebtToken} from '../../tokenization/interfaces/IStableDebtToken.sol';
+import {IVariableDebtToken} from '../../tokenization/interfaces/IVariableDebtToken.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
@@ -244,7 +245,17 @@ library ReserveLogic {
 
   function _mintToTreasury(ReserveData storage reserve) internal {
     
-        
+    address stableDebtToken = reserve.stableDebtTokenAddress;
+    address variableDebtToken = reserve.variableDebtTokenAddress;
+
+    uint256 currentVariableDebt = IERC20(variableDebtToken).totalSupply();
+    uint256 currentStableDebt = IERC20(stableDebtToken).totalSupply();
+
+    uint256 principalStableDebt = IStableDebtToken(stableDebtToken).principalTotalSupply();
+    uint256 scaledVariableDebt = IVariableDebtToken(variableDebtToken).scaledTotalSupply();
+    
+    
+    
 
   }
 

@@ -89,6 +89,4 @@ interface IStableDebtToken {
    * @dev returns the principal total supply 
    **/
   function principalTotalSupply() external view returns (uint40);
-  
-
 }
