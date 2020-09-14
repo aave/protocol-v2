@@ -94,7 +94,7 @@ interface IAToken is IERC20 {
    * @dev transfer the amount of the underlying asset to the user
    * @param user address of the user
    * @param amount the amount to transfer
-   * @return the redirected balance index
+   * @return the amount transferred
    **/
 
   function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);

@@ -23,11 +23,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   using SafeERC20 for ERC20;
 
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
-
   address public immutable UNDERLYING_ASSET_ADDRESS;
   LendingPool public immutable POOL;
-
-  mapping(address => uint256) private _scaledRedirectedBalances;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping (address => uint256) public _nonces;
