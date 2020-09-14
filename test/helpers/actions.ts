@@ -295,7 +295,7 @@ export const delegateBorrowAllowance = async (
 
   const delegateAllowancePromise = pool
     .connect(user.signer)
-    .delegateBorrowAllowance(receiver, reserve, interestRateMode, amountToDelegate.toString());
+    .delegateBorrowAllowance(reserve, receiver, interestRateMode, amountToDelegate.toString());
   if (expectedResult === 'revert') {
     await expect(delegateAllowancePromise, revertMessage).to.be.reverted;
     return;

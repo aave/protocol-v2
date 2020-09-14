@@ -171,9 +171,16 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _borrowAllowance[_reserves[asset].getDebtTokenAddress(interestRateMode)][fromUser][toUser];
   }
 
+  /**
+   * @dev Sets allowance to borrow on a certain type of debt asset for a certain user address
+   * @param asset The underlying asset of the debt token
+   * @param user The user to give allowance to
+   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
+   * @param amount Allowance amount to borrow
+   **/
   function delegateBorrowAllowance(
-    address user,
     address asset,
+    address user,
     uint256 interestRateMode,
     uint256 amount
   ) external override {
