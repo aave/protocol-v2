@@ -4,9 +4,8 @@ import {
   getLendingRateOracle,
   getIErc20Detailed,
   getMintableErc20,
-  getAToken,
+  getAToken, getStableDebtToken, getVariableDebtToken
 } from '../../../helpers/contracts-helpers';
-import {ZERO_ADDRESS} from '../../../helpers/constants';
 import {tEthereumAddress} from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import {getDb, BRE} from '../../../helpers/misc-utils';
@@ -15,41 +14,51 @@ export const getReserveData = async (
   pool: LendingPool,
   reserve: tEthereumAddress
 ): Promise<ReserveData> => {
-  const data = await pool.getReserveData(reserve);
-  const tokenAddresses = await pool.getReserveTokensAddresses(reserve);
-  const rateOracle = await getLendingRateOracle();
+  const [reserveData, tokenAddresses, rateOracle, token] = await Promise.all([
+    pool.getReserveData(reserve),
+    pool.getReserveTokensAddresses(reserve),
+    getLendingRateOracle(),
+    getIErc20Detailed(reserve),
+  ]);
+
+  const stableDebtToken = await getStableDebtToken(tokenAddresses.stableDebtTokenAddress);
+  const variableDebtToken = await getVariableDebtToken(tokenAddresses.variableDebtTokenAddress);
+
+  const [principalStableDebt] = await stableDebtToken.getPrincipalSupplyAndAvgRate();
+
+  const scaledVariableDebt = await variableDebtToken.scaledTotalSupply();
 
   const rate = (await rateOracle.getMarketBorrowRate(reserve)).toString();
-
-  const token = await getIErc20Detailed(reserve);
   const symbol = await token.symbol();
   const decimals = new BigNumber(await token.decimals());
 
-  const totalLiquidity = new BigNumber(data.availableLiquidity.toString())
-    .plus(data.totalStableDebt.toString())
-    .plus(data.totalVariableDebt.toString());
+  const totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
+    .plus(reserveData.totalStableDebt.toString())
+    .plus(reserveData.totalVariableDebt.toString());
 
   const utilizationRate = new BigNumber(
     totalLiquidity.eq(0)
       ? 0
-      : new BigNumber(data.totalStableDebt.toString())
-          .plus(data.totalVariableDebt.toString())
+      : new BigNumber(reserveData.totalStableDebt.toString())
+          .plus(reserveData.totalVariableDebt.toString())
           .rayDiv(totalLiquidity)
   );
 
   return {
     totalLiquidity,
     utilizationRate,
-    availableLiquidity: new BigNumber(data.availableLiquidity.toString()),
-    totalStableDebt: new BigNumber(data.totalStableDebt.toString()),
-    totalVariableDebt: new BigNumber(data.totalVariableDebt.toString()),
-    liquidityRate: new BigNumber(data.liquidityRate.toString()),
-    variableBorrowRate: new BigNumber(data.variableBorrowRate.toString()),
-    stableBorrowRate: new BigNumber(data.stableBorrowRate.toString()),
-    averageStableBorrowRate: new BigNumber(data.averageStableBorrowRate.toString()),
-    liquidityIndex: new BigNumber(data.liquidityIndex.toString()),
-    variableBorrowIndex: new BigNumber(data.variableBorrowIndex.toString()),
-    lastUpdateTimestamp: new BigNumber(data.lastUpdateTimestamp),
+    availableLiquidity: new BigNumber(reserveData.availableLiquidity.toString()),
+    totalStableDebt: new BigNumber(reserveData.totalStableDebt.toString()),
+    totalVariableDebt: new BigNumber(reserveData.totalVariableDebt.toString()),
+    liquidityRate: new BigNumber(reserveData.liquidityRate.toString()),
+    variableBorrowRate: new BigNumber(reserveData.variableBorrowRate.toString()),
+    stableBorrowRate: new BigNumber(reserveData.stableBorrowRate.toString()),
+    averageStableBorrowRate: new BigNumber(reserveData.averageStableBorrowRate.toString()),
+    liquidityIndex: new BigNumber(reserveData.liquidityIndex.toString()),
+    variableBorrowIndex: new BigNumber(reserveData.variableBorrowIndex.toString()),
+    lastUpdateTimestamp: new BigNumber(reserveData.lastUpdateTimestamp),
+    principalStableDebt: new BigNumber(principalStableDebt.toString()),
+    scaledVariableDebt: new BigNumber(scaledVariableDebt.toString()),
     address: reserve,
     aTokenAddress: tokenAddresses.aTokenAddress,
     symbol,
@@ -69,7 +78,6 @@ export const getUserData = async (
     getATokenUserData(reserve, user, pool),
   ]);
 
-  
   const token = await getMintableErc20(reserve);
   const walletBalance = new BigNumber((await token.balanceOf(sender || user)).toString());
 
@@ -106,5 +114,4 @@ const getATokenUserData = async (reserve: string, user: string, pool: LendingPoo
 
   const scaledBalance = await aToken.scaledBalanceOf(user);
   return scaledBalance.toString();
-
 };

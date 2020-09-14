@@ -348,6 +348,21 @@ export const getAToken = async (address?: tEthereumAddress) => {
   );
 };
 
+export const getStableDebtToken = async (address?: tEthereumAddress) => {
+  return await getContract<AToken>(
+    eContractid.StableDebtToken,
+    address || (await getDb().get(`${eContractid.StableDebtToken}.${BRE.network.name}`).value()).address
+  );
+};
+
+export const getVariableDebtToken = async (address?: tEthereumAddress) => {
+  return await getContract<AToken>(
+    eContractid.VariableDebtToken,
+    address || (await getDb().get(`${eContractid.VariableDebtToken}.${BRE.network.name}`).value()).address
+  );
+};
+
+
 export const getMintableErc20 = async (address: tEthereumAddress) => {
   return await getContract<MintableErc20>(
     eContractid.MintableERC20,

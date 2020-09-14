@@ -219,23 +219,35 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return (super.totalSupply(), _avgStableRate);
   }
 
-  function totalSupply() public override view returns (uint256) {
-    uint256 principalSupply = super.totalSupply();
-    if (principalSupply == 0) {
-      return 0;
-    }
-    uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(
-      _avgStableRate,
-      _totalSupplyTimestamp
-    );
-    return principalSupply.rayMul(cumulatedInterest);
+  function getTotalSupplyAndAvgRate() public override view returns (uint256, uint256) {
+    uint256 avgRate = _avgStableRate;
+    return (_calcTotalSupply(avgRate), avgRate);
   }
 
+  function totalSupply() public override view returns (uint256) {
+    _calcTotalSupply(_avgStableRate);
+  }
+  
+  function getTotalSupplyLastUpdated() public override view returns(uint40) {
+    return _totalSupplyTimestamp;
+  }
   /**
    * @dev Returns the principal debt balance of the user from
    * @return The debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address user) external virtual override view returns (uint256) {
     return super.balanceOf(user);
+  }
+
+  function _calcTotalSupply(uint256 avgRate) internal view returns(uint256) {
+    uint256 principalSupply = super.totalSupply();
+    if (principalSupply == 0) {
+      return 0;
+    }
+    uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(
+      avgRate,
+      _totalSupplyTimestamp
+    );
+    return principalSupply.rayMul(cumulatedInterest);
   }
 }

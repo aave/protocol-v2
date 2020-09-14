@@ -31,7 +31,6 @@ library ReserveLogic {
    * @param reserve the address of the reserve
    * @param liquidityRate the new liquidity rate
    * @param stableBorrowRate the new stable borrow rate
-   * @param averageStableBorrowRate the new average stable borrow rate
    * @param variableBorrowRate the new variable borrow rate
    * @param liquidityIndex the new liquidity index
    * @param variableBorrowIndex the new variable borrow index
@@ -40,7 +39,6 @@ library ReserveLogic {
     address indexed reserve,
     uint256 liquidityRate,
     uint256 stableBorrowRate,
-    uint256 averageStableBorrowRate,
     uint256 variableBorrowRate,
     uint256 liquidityIndex,
     uint256 variableBorrowIndex
@@ -190,12 +188,13 @@ library ReserveLogic {
   }
 
   struct UpdateInterestRatesLocalVars {
-    uint256 currentAvgStableRate;
-    uint256 availableLiquidity;
     address stableDebtTokenAddress;
+    uint256 availableLiquidity;
+    uint256 totalStableDebt; 
     uint256 newLiquidityRate;
     uint256 newStableRate;
     uint256 newVariableRate;
+    uint256 avgStableRate;
   }
 
   /**
@@ -215,8 +214,10 @@ library ReserveLogic {
     UpdateInterestRatesLocalVars memory vars;
 
     vars.stableDebtTokenAddress = reserve.stableDebtTokenAddress;
-    vars.currentAvgStableRate = IStableDebtToken(vars.stableDebtTokenAddress)
-      .getAverageStableRate();
+
+    (vars.totalStableDebt, vars.avgStableRate) = IStableDebtToken(vars.stableDebtTokenAddress)
+      .getTotalSupplyAndAvgRate();
+
     vars.availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress);
 
     (
@@ -226,9 +227,9 @@ library ReserveLogic {
     ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
       reserveAddress,
       vars.availableLiquidity.add(liquidityAdded).sub(liquidityTaken),
-      IERC20(vars.stableDebtTokenAddress).totalSupply(),
+      vars.totalStableDebt,
       IERC20(reserve.variableDebtTokenAddress).totalSupply(),
-      vars.currentAvgStableRate,
+      vars.avgStableRate,
       reserve.configuration.getReserveFactor()
     );
     require(vars.newLiquidityRate < (1 << 128), 'ReserveLogic: Liquidity rate overflow');
@@ -243,7 +244,6 @@ library ReserveLogic {
       reserveAddress,
       vars.newLiquidityRate,
       vars.newStableRate,
-      vars.currentAvgStableRate,
       vars.newVariableRate,
       reserve.liquidityIndex,
       reserve.variableBorrowIndex
@@ -318,7 +318,7 @@ library ReserveLogic {
         currentLiquidityRate,
         lastUpdateTimestamp
       );
-      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.liquidityIndex);
+      uint256 index = cumulatedLiquidityInterest.rayMul(liquidityIndex);
       require(index < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
 
       reserve.liquidityIndex = uint128(index);
