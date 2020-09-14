@@ -99,6 +99,8 @@ export enum ProtocolErrors {
   NO_ERRORS = '42', // 'No errors'
   INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
 
+  IS_PAUSED = 'Pausable: paused',
+
   // old
 
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',

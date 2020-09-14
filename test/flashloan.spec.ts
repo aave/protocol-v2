@@ -22,6 +22,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
     INVALID_FLASHLOAN_MODE,
     SAFEERC20_LOWLEVEL_CALL,
+    IS_PAUSED,
   } = ProtocolErrors;
 
   before(async () => {
@@ -354,5 +355,27 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
     expect(callerDebt.toString()).to.be.equal('800720000000000000', 'Invalid user debt');
+  });
+
+  it('Caller tries to take a WETH flash loan but pool is paused', async () => {
+    const {dai, pool, weth, users, configurator} = testEnv;
+
+    const caller = users[3];
+
+    const flashAmount = ethers.utils.parseEther('0.8');
+
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
+
+    // Pause pool
+    await configurator.pausePool();
+
+    await expect(
+      pool
+        .connect(caller.signer)
+        .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0')
+    ).revertedWith(IS_PAUSED);
+
+    // Unpause pool
+    await configurator.unpausePool();
   });
 });

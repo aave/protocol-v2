@@ -9,7 +9,7 @@ import {
 import {getContractsData} from './helpers/actions';
 import {waitForTx} from './__setup.spec';
 import {timeLatest} from '../helpers/misc-utils';
-import {tEthereumAddress} from '../helpers/types';
+import {ProtocolErrors, tEthereumAddress} from '../helpers/types';
 import {parse} from 'path';
 
 const {expect} = require('chai');
@@ -39,6 +39,8 @@ export const expectRepayWithCollateralEvent = (
 };
 
 makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
+  const {IS_PAUSED} = ProtocolErrors;
+
   it('User 1 provides some liquidity for others to borrow', async () => {
     const {pool, weth, dai, usdc, deployer} = testEnv;
 
@@ -636,5 +638,52 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     );
 
     expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
+  });
+
+  it('User 6 deposits WETH and DAI, then borrows USDC at Variable', async () => {
+    const {pool, weth, dai, usdc, users} = testEnv;
+    const user = users[4];
+    const amountWETHToDeposit = parseEther('10');
+    const amountDAIToDeposit = parseEther('120');
+    const amountToBorrow = parseUnits('65', 6);
+
+    await weth.connect(user.signer).mint(amountWETHToDeposit);
+    await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, user.address, '0');
+
+    await dai.connect(user.signer).mint(amountDAIToDeposit);
+    await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, user.address, '0');
+
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+  });
+
+  it('User 6 tries to repay his USDC loan by swapping his WETH collateral, should not revert even with WETH collateral disabled', async () => {
+    const {pool, weth, usdc, users, mockSwapAdapter, oracle, configurator} = testEnv;
+    const user = users[5];
+
+    const amountToRepay = parseUnits('65', 6);
+
+    await mockSwapAdapter.setAmountToReturn(amountToRepay);
+
+    // Pause pool
+    await configurator.pausePool();
+
+    // Try to repay
+    await expect(
+      pool
+        .connect(user.signer)
+        .repayWithCollateral(
+          weth.address,
+          usdc.address,
+          user.address,
+          amountToRepay,
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).revertedWith(IS_PAUSED);
+
+    // Unpause pool
+    await configurator.unpausePool();
   });
 });

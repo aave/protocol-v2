@@ -17,6 +17,7 @@
     "test-liquidate-with-collateral": "buidler test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
     "test-transfers": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts",
     "test-flash": "buidler test test/__setup.spec.ts test/flashloan.spec.ts",
+    "test-liquidate": "buidler test test/__setup.spec.ts test/liquidation-atoken.spec.ts",
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
