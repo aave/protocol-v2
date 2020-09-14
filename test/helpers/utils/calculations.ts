@@ -30,12 +30,12 @@ export const calcExpectedUserDataAfterDeposit = (
 ): UserReserveData => {
   const expectedUserData = <UserReserveData>{};
 
-  expectedUserData.currentStableDebt = expectedUserData.principalStableDebt = calcExpectedStableDebtTokenBalance(
+  expectedUserData.currentStableDebt = calcExpectedStableDebtTokenBalance(
     userDataBeforeAction,
     txTimestamp
   );
 
-  expectedUserData.currentVariableDebt = expectedUserData.principalStableDebt = calcExpectedVariableDebtTokenBalance(
+  expectedUserData.currentVariableDebt = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
     userDataBeforeAction,
     txTimestamp
@@ -285,22 +285,23 @@ export const calcExpectedReserveDataAfterBorrow = (
 
   const amountBorrowedBN = new BigNumber(amountBorrowed);
 
-  const userStableDebt = calcExpectedStableDebtTokenBalance(userDataBeforeAction, txTimestamp);
-
-  const userVariableDebt = calcExpectedVariableDebtTokenBalance(
+  expectedReserveData.liquidityIndex = calcExpectedLiquidityIndex(
     reserveDataBeforeAction,
-    userDataBeforeAction,
+    txTimestamp
+  );
+  expectedReserveData.variableBorrowIndex = calcExpectedVariableBorrowIndex(
+    reserveDataBeforeAction,
     txTimestamp
   );
 
   if (borrowRateMode == RateMode.Stable) {
+
+    expectedReserveData.
     const debtAccrued = userStableDebt.minus(userDataBeforeAction.principalStableDebt);
 
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
 
-    expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt
-      .plus(amountBorrowedBN)
-      .plus(debtAccrued);
+
 
     expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
       reserveDataBeforeAction.averageStableBorrowRate,
@@ -346,15 +347,6 @@ export const calcExpectedReserveDataAfterBorrow = (
   expectedReserveData.stableBorrowRate = rates[1];
 
   expectedReserveData.variableBorrowRate = rates[2];
-
-  expectedReserveData.liquidityIndex = calcExpectedLiquidityIndex(
-    reserveDataBeforeAction,
-    txTimestamp
-  );
-  expectedReserveData.variableBorrowIndex = calcExpectedVariableBorrowIndex(
-    reserveDataBeforeAction,
-    txTimestamp
-  );
 
   expectedReserveData.lastUpdateTimestamp = txTimestamp;
 
