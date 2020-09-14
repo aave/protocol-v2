@@ -82,7 +82,19 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     return super.balanceOf(user);
   }
 
+  /**
+  * @dev Returns the total supply of the variable debt token. Represents the total debt accrued by the users
+  * @return the total supply
+  **/
   function totalSupply() public virtual override view returns(uint256) {
     return super.totalSupply().rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
+  }
+
+  /**
+  * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
+  * @return the scaled total supply
+  **/
+  function scaledTotalSupply() public virtual override view returns(uint256) {
+    return super.totalSupply();
   }
 }

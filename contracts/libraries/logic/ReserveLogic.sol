@@ -67,7 +67,7 @@ library ReserveLogic {
     address aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
-    
+    //address of the interest rate strategy
     address interestRateStrategyAddress;
 
     //the id of the reserve. Represents the position in the list of the active reserves
@@ -121,42 +121,13 @@ library ReserveLogic {
   }
 
   /**
-   * @dev Updates the liquidity cumulative index Ci and variable borrow cumulative index Bvc. Refer to the whitepaper for
-   * a formal specification.
+   * @dev Updates the state of the reserve by minting to the reserve treasury and calculate the new
+   * reserve indexes
    * @param reserve the reserve object
    **/
   function updateState(ReserveData storage reserve) internal {
-    
-    
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
-
-    //only cumulating if there is any income being produced
-    if (currentLiquidityRate > 0) {
-      uint40 lastUpdateTimestamp = reserve.lastUpdateTimestamp;
-      uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(
-        currentLiquidityRate,
-        lastUpdateTimestamp
-      );
-      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.liquidityIndex);
-      require(index < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
-
-      reserve.liquidityIndex = uint128(index);
-
-      //as the liquidity rate might come only from stable rate loans, we need to ensure
-      //that there is actual variable debt before accumulating
-      if (IERC20(reserve.variableDebtTokenAddress).totalSupply() > 0) {
-        uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
-          reserve.currentVariableBorrowRate,
-          lastUpdateTimestamp
-        );
-        index = cumulatedVariableBorrowInterest.rayMul(reserve.variableBorrowIndex);
-        require(index < (1 << 128), Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
-        reserve.variableBorrowIndex = uint128(index);
-      }
-    }
-
-    //solium-disable-next-line
-    reserve.lastUpdateTimestamp = uint40(block.timestamp);
+    _mintToTreasury(reserve);
+    _updateIndexes(reserve);
   }
 
   /**
@@ -269,5 +240,37 @@ library ReserveLogic {
       reserve.liquidityIndex,
       reserve.variableBorrowIndex
     );
+  }
+
+  function _updateIndexes(ReserveData storage reserve) internal {
+    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+
+    //only cumulating if there is any income being produced
+    if (currentLiquidityRate > 0) {
+      uint40 lastUpdateTimestamp = reserve.lastUpdateTimestamp;
+      uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(
+        currentLiquidityRate,
+        lastUpdateTimestamp
+      );
+      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.liquidityIndex);
+      require(index < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
+
+      reserve.liquidityIndex = uint128(index);
+
+      //as the liquidity rate might come only from stable rate loans, we need to ensure
+      //that there is actual variable debt before accumulating
+      if (IERC20(reserve.variableDebtTokenAddress).totalSupply() > 0) {
+        uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
+          reserve.currentVariableBorrowRate,
+          lastUpdateTimestamp
+        );
+        index = cumulatedVariableBorrowInterest.rayMul(reserve.variableBorrowIndex);
+        require(index < (1 << 128), Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
+        reserve.variableBorrowIndex = uint128(index);
+      }
+    }
+
+    //solium-disable-next-line
+    reserve.lastUpdateTimestamp = uint40(block.timestamp);
   }
 }
