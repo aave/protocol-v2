@@ -101,7 +101,6 @@ library ValidationLogic {
    * @dev validates a borrow.
    * @param reserve the reserve state from which the user is borrowing
    * @param userAddress the address of the user
-   * @param reserveAddress the address of the reserve
    * @param amount the amount to be borrowed
    * @param amountInETH the amount to be borrowed, in ETH
    * @param interestRateMode the interest rate mode at which the user is borrowing
@@ -115,7 +114,6 @@ library ValidationLogic {
   function validateBorrow(
     ReserveLogic.ReserveData storage reserve,
     address userAddress,
-    address reserveAddress,
     uint256 amount,
     uint256 amountInETH,
     uint256 interestRateMode,

@@ -803,7 +803,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     ValidationLogic.validateBorrow(
       reserve,
       vars.onBehalfOf,
-      vars.asset,
       vars.amount,
       amountInETH,
       vars.interestRateMode,
