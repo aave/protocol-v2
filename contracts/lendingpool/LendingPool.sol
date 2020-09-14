@@ -26,6 +26,7 @@ import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
+
 /**
  * @title LendingPool contract
  * @notice Implements the actions of the LendingPool, and exposes accessory methods to fetch the users and reserve data
@@ -238,14 +239,17 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE ? reserve.stableDebtTokenAddress : reserve.variableDebtTokenAddress;
+    address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE
+      ? reserve.stableDebtTokenAddress
+      : reserve.variableDebtTokenAddress;
+    
     _mintToReserveTreasury(reserve, onBehalfOf, debtTokenAddress);
 
     //burns an equivalent amount of debt tokens
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(onBehalfOf, paybackAmount, reserve.variableBorrowIndex);
     }
 
     address aToken = reserve.aTokenAddress;
@@ -282,9 +286,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE ? reserve.stableDebtTokenAddress : reserve.variableDebtTokenAddress;
+    address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE
+      ? reserve.stableDebtTokenAddress
+      : reserve.variableDebtTokenAddress;
+    
     _mintToReserveTreasury(reserve, msg.sender, debtTokenAddress);
-
 
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
@@ -343,7 +349,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     reserve.updateCumulativeIndexesAndTimestamp();
 
     _mintToReserveTreasury(reserve, user, address(stableDebtToken));
-
 
     stableDebtToken.burn(user, stableBorrowBalance);
     stableDebtToken.mint(user, stableBorrowBalance, reserve.currentStableBorrowRate);
@@ -779,7 +784,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param vars Input struct for the borrowing action, in order to avoid STD errors
    **/
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
-    
     ReserveLogic.ReserveData storage reserve = _reserves[vars.asset];
     UserConfiguration.Map storage userConfig = _usersConfig[msg.sender];
 
@@ -807,15 +811,14 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       userConfig.setBorrowing(reserveId, true);
     }
 
-    address debtTokenAddress = ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE ? 
-        reserve.stableDebtTokenAddress 
-        : 
-        reserve.variableDebtTokenAddress;
-
-
-    reserve.updateCumulativeIndexesAndTimestamp();
+    address debtTokenAddress = ReserveLogic.InterestRateMode(vars.interestRateMode) ==
+      ReserveLogic.InterestRateMode.STABLE
+      ? reserve.stableDebtTokenAddress
+      : reserve.variableDebtTokenAddress;
 
     _mintToReserveTreasury(reserve, vars.user, debtTokenAddress);
+
+    reserve.updateCumulativeIndexesAndTimestamp();
 
     //caching the current stable borrow rate
     uint256 currentStableRate = 0;
@@ -825,13 +828,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     ) {
       currentStableRate = reserve.currentStableBorrowRate;
 
-      IStableDebtToken(debtTokenAddress).mint(
-        vars.user,
-        vars.amount,
-        currentStableRate
-      );
+      IStableDebtToken(debtTokenAddress).mint(vars.user, vars.amount, currentStableRate);
     } else {
-      IVariableDebtToken(debtTokenAddress).mint(vars.user, vars.amount);
+      IVariableDebtToken(debtTokenAddress).mint(vars.user, vars.amount, reserve.variableBorrowIndex);
     }
 
     reserve.updateInterestRates(
@@ -933,23 +932,26 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     return _addressesProvider;
   }
 
-  function _mintToReserveTreasury(ReserveLogic.ReserveData storage reserve, address user, address debtTokenAddress) internal {
-    
+  function _mintToReserveTreasury(
+    ReserveLogic.ReserveData storage reserve,
+    address user,
+    address debtTokenAddress
+  ) internal {
     uint256 reserveFactor = reserve.configuration.getReserveFactor();
-    if(reserveFactor == 0) {
+    if (reserveFactor == 0) {
       return;
     }
 
     uint256 currentPrincipalBalance = DebtTokenBase(debtTokenAddress).principalBalanceOf(user);
     //calculating the interest accrued since the last borrow and minting the equivalent amount to the reserve factor
-    if(currentPrincipalBalance > 0){
-
-      uint256 balanceIncrease = IERC20(debtTokenAddress).balanceOf(user).sub(currentPrincipalBalance);
+    if (currentPrincipalBalance > 0) {
+      uint256 balanceIncrease = IERC20(debtTokenAddress).balanceOf(user).sub(
+        currentPrincipalBalance
+      );
 
       uint256 amountForReserveFactor = balanceIncrease.percentMul(reserveFactor);
 
-      IAToken(reserve.aTokenAddress).mintToReserve(amountForReserveFactor);      
-    }    
-
+      IAToken(reserve.aTokenAddress).mintToReserve(amountForReserveFactor);
+    }
   }
 }

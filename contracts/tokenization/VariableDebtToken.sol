@@ -54,23 +54,21 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @dev mints new variable debt
    * @param user the user receiving the debt
    * @param amount the amount of debt being minted
+   * @param index the variable debt index of the reserve
    **/
-  function mint(address user, uint256 amount) external override onlyLendingPool { 
-    
-    uint256 index = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
+  function mint(address user, uint256 amount, uint256 index) external override onlyLendingPool { 
 
     _mint(user, amount.rayDiv(index));
+  
     emit MintDebt(user, amount, index);
   }
 
   /**
    * @dev burns user variable debt
    * @param user the user which debt is burnt
-   * @param amount the amount of debt being burned
+   * @param index the variable debt index of the reserve
    **/
-  function burn(address user, uint256 amount) external override onlyLendingPool {
-
-    uint256 index = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
+  function burn(address user, uint256 amount, uint256 index) external override onlyLendingPool {
     _burn(user, amount.rayDiv(index)); 
     _userIndexes[user] = index;
     emit BurnDebt(user, amount, index);

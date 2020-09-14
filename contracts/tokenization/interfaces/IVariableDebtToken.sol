@@ -36,15 +36,17 @@ interface IVariableDebtToken {
    * @dev mints new variable debt
    * @param user the user receiving the debt
    * @param amount the amount of debt being minted
+   * @param index the variable debt index of the reserve
    **/
-  function mint(address user, uint256 amount) external;
+  function mint(address user, uint256 amount, uint256 index) external;
 
   /**
    * @dev burns user variable debt
    * @param user the user which debt is burnt
    * @param amount the amount of debt being burned
+   * @param index the variable debt index of the reserve
    **/
-  function burn(address user, uint256 amount) external;
+  function burn(address user, uint256 amount, uint256 index) external;
 
   /**
    * @dev returns the scaled balance of the variable debt token
