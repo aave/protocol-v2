@@ -130,14 +130,14 @@ interface ILendingPool {
     bool receiveAToken
   );
   /**
-   * @dev Emitted when the pause is triggered by `account`.
+   * @dev Emitted when the pause is triggered.
    */
-  event Paused(address account);
+  event Paused();
 
   /**
-   * @dev Emitted when the pause is lifted by `account`.
+   * @dev Emitted when the pause is lifted.
    */
-  event Unpaused(address account);
+  event Unpaused();
 
   /**
    * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)

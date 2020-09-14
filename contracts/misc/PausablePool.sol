@@ -1,7 +1,5 @@
 pragma solidity ^0.6.0;
 
-import {Context} from './Context.sol';
-
 /**
  * @dev Contract module which allows children to implement an emergency stop
  * mechanism that can be triggered by an authorized account.
@@ -11,16 +9,16 @@ import {Context} from './Context.sol';
  * the functions of your contract. Note that they will not be pausable by
  * simply including this module, only once the modifiers are put in place.
  */
-contract PausablePool is Context {
+contract PausablePool {
   /**
    * @dev Emitted when the pause is triggered by `account`.
    */
-  event Paused(address account);
+  event Paused();
 
   /**
    * @dev Emitted when the pause is lifted by `account`.
    */
-  event Unpaused(address account);
+  event Unpaused();
 
   bool private _paused;
 
@@ -71,7 +69,7 @@ contract PausablePool is Context {
    */
   function _pause() internal virtual whenNotPaused {
     _paused = true;
-    emit Paused(_msgSender());
+    emit Paused();
   }
 
   /**
@@ -83,6 +81,6 @@ contract PausablePool is Context {
    */
   function _unpause() internal virtual whenPaused {
     _paused = false;
-    emit Unpaused(_msgSender());
+    emit Unpaused();
   }
 }
