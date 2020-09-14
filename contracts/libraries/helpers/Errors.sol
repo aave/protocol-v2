@@ -43,11 +43,8 @@ library Errors {
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
-  string public constant INTEREST_REDIRECTION_NOT_ALLOWED = '29'; // 'Caller is not allowed to redirect the interest of the user'
   string public constant CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
   string public constant TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
-  string public constant INTEREST_ALREADY_REDIRECTED = '32'; // 'Interest is already redirected to the user'
-  string public constant NO_VALID_BALANCE_FOR_REDIRECTION = '33'; // 'Interest stream can only be redirected if there is a valid balance'
   string public constant INVALID_ATOKEN_BALANCE = '52'; // balance on burning is invalid
   
    // require error messages - ReserveLogic
