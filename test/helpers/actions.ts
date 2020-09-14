@@ -281,6 +281,7 @@ export const withdraw = async (
 export const delegateBorrowAllowance = async (
   reserveSymbol: string,
   amount: string,
+  interestRateMode: string,
   user: SignerWithAddress,
   receiver: tEthereumAddress,
   testEnv: TestEnv
@@ -292,11 +293,9 @@ export const delegateBorrowAllowance = async (
 
   await pool
     .connect(user.signer)
-    .delegateBorrowAllowance(receiver, reserve, amountToDelegate.toString());
+    .delegateBorrowAllowance(receiver, reserve, interestRateMode, amountToDelegate.toString());
   expect(
-    (
-      await pool['getBorrowAllowance(address,address,address)'](user.address, receiver, reserve)
-    ).toString()
+    (await pool.getBorrowAllowance(user.address, receiver, reserve, interestRateMode)).toString()
   ).to.be.equal(amountToDelegate.toString(), 'borrowAllowance are set incorrectly');
 };
 

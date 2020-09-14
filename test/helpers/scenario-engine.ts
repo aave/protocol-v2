@@ -63,7 +63,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
   if (borrowRateMode) {
     if (borrowRateMode === 'none') {
-      RateMode.None;
+      rateMode = RateMode.None;
     } else if (borrowRateMode === 'stable') {
       rateMode = RateMode.Stable;
     } else if (borrowRateMode === 'variable') {
@@ -111,7 +111,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
           throw `Invalid amount to deposit into the ${reserve} reserve`;
         }
 
-        await delegateBorrowAllowance(reserve, amount, user, toUser, testEnv);
+        await delegateBorrowAllowance(reserve, amount, rateMode, user, toUser, testEnv);
       }
       break;
 

@@ -48,6 +48,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
   mapping(address => ReserveLogic.ReserveData) internal _reserves;
   mapping(address => UserConfiguration.Map) internal _usersConfig;
+  // debt token address => user who gives allowance => user who receives allowance => amount
   mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
 
   address[] internal _reservesList;
@@ -163,18 +164,28 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   function getBorrowAllowance(
     address fromUser,
     address toUser,
-    address asset
+    address asset,
+    uint256 interestRateMode
   ) external override view returns (uint256) {
-    return _borrowAllowance[fromUser][asset][toUser];
+    address debtToken = ReserveLogic.InterestRateMode.STABLE ==
+      ReserveLogic.InterestRateMode(interestRateMode)
+      ? _reserves[asset].stableDebtTokenAddress
+      : _reserves[asset].variableDebtTokenAddress;
+    return _borrowAllowance[debtToken][fromUser][toUser];
   }
 
   function delegateBorrowAllowance(
     address user,
     address asset,
+    uint256 interestRateMode,
     uint256 amount
   ) external override {
-    _borrowAllowance[msg.sender][asset][user] = amount;
-    emit BorrowAllowanceDelegated(msg.sender, user, asset, amount);
+    address debtToken = ReserveLogic.InterestRateMode.STABLE ==
+      ReserveLogic.InterestRateMode(interestRateMode)
+      ? _reserves[asset].stableDebtTokenAddress
+      : _reserves[asset].variableDebtTokenAddress;
+    _borrowAllowance[debtToken][msg.sender][user] = amount;
+    emit BorrowAllowanceDelegated(asset, msg.sender, user, interestRateMode, amount);
   }
 
   /**
@@ -192,10 +203,19 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint16 referralCode,
     address onBehalfOf
   ) external override {
+    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+
     if (onBehalfOf != msg.sender) {
-      _borrowAllowance[onBehalfOf][asset][msg.sender] = _borrowAllowance[onBehalfOf][asset][msg
-        .sender]
-        .sub(amount, Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
+      address debtToken = ReserveLogic.InterestRateMode.STABLE ==
+        ReserveLogic.InterestRateMode(interestRateMode)
+        ? reserve.stableDebtTokenAddress
+        : reserve.variableDebtTokenAddress;
+
+      _borrowAllowance[debtToken][onBehalfOf][msg
+        .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
+        amount,
+        Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH
+      );
     }
     _executeBorrow(
       ExecuteBorrowParams(
@@ -204,7 +224,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
         onBehalfOf,
         amount,
         interestRateMode,
-        _reserves[asset].aTokenAddress,
+        reserve.aTokenAddress,
         referralCode,
         true
       )

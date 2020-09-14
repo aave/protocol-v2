@@ -29,9 +29,10 @@ interface ILendingPool {
   event Withdraw(address indexed reserve, address indexed user, uint256 amount);
 
   event BorrowAllowanceDelegated(
+    address indexed asset,
     address indexed fromUser,
     address indexed toUser,
-    address indexed asset,
+    uint256 interestRateMode,
     uint256 amount
   );
   /**
@@ -159,13 +160,15 @@ interface ILendingPool {
   function delegateBorrowAllowance(
     address user,
     address asset,
+    uint256 interestRateMode,
     uint256 amount
   ) external;
 
   function getBorrowAllowance(
     address fromUser,
     address toUser,
-    address asset
+    address asset,
+    uint256 interestRateMode
   ) external view returns (uint256);
 
   /**
