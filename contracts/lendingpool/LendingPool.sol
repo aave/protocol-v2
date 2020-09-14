@@ -103,7 +103,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     address aToken = reserve.aTokenAddress;
 
-    reserve.updateCumulativeIndexesAndTimestamp();
+    reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
 
     bool isFirstDeposit = IAToken(aToken).balanceOf(onBehalfOf) == 0;
@@ -149,7 +149,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _addressesProvider.getPriceOracle()
     );
 
-    reserve.updateCumulativeIndexesAndTimestamp();
+    reserve.updateState();
 
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
@@ -237,7 +237,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       variableDebt
     );
 
-    reserve.updateCumulativeIndexesAndTimestamp();
+    reserve.updateState();
 
     address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE
       ? reserve.stableDebtTokenAddress
@@ -284,7 +284,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       interestRateMode
     );
 
-    reserve.updateCumulativeIndexesAndTimestamp();
+    reserve.updateState();
 
     address debtTokenAddress = interestRateMode == ReserveLogic.InterestRateMode.STABLE
       ? reserve.stableDebtTokenAddress
@@ -346,7 +346,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     //burn old debt tokens, mint new ones
 
-    reserve.updateCumulativeIndexesAndTimestamp();
+    reserve.updateState();
 
     _mintToReserveTreasury(reserve, user, address(stableDebtToken));
 
@@ -529,7 +529,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     if (debtMode == ReserveLogic.InterestRateMode.NONE) {
       IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
 
-      reserve.updateCumulativeIndexesAndTimestamp();
+      reserve.updateState();
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
       reserve.updateInterestRates(asset, vars.aTokenAddress, vars.premium, 0);
 
@@ -818,7 +818,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     _mintToReserveTreasury(reserve, vars.user, debtTokenAddress);
 
-    reserve.updateCumulativeIndexesAndTimestamp();
+    reserve.updateState();
 
     //caching the current stable borrow rate
     uint256 currentStableRate = 0;
@@ -930,28 +930,5 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    **/
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
-  }
-
-  function _mintToReserveTreasury(
-    ReserveLogic.ReserveData storage reserve,
-    address user,
-    address debtTokenAddress
-  ) internal {
-    uint256 reserveFactor = reserve.configuration.getReserveFactor();
-    if (reserveFactor == 0) {
-      return;
-    }
-
-    uint256 currentPrincipalBalance = DebtTokenBase(debtTokenAddress).principalBalanceOf(user);
-    //calculating the interest accrued since the last borrow and minting the equivalent amount to the reserve factor
-    if (currentPrincipalBalance > 0) {
-      uint256 balanceIncrease = IERC20(debtTokenAddress).balanceOf(user).sub(
-        currentPrincipalBalance
-      );
-
-      uint256 amountForReserveFactor = balanceIncrease.percentMul(reserveFactor);
-
-      IAToken(reserve.aTokenAddress).mintToReserve(amountForReserveFactor);
-    }
   }
 }

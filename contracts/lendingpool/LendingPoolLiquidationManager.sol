@@ -232,7 +232,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     }
 
     //update the principal reserve
-    principalReserve.updateCumulativeIndexesAndTimestamp();
+    principalReserve.updateState();
 
 
 
@@ -279,7 +279,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       //otherwise receives the underlying asset
 
       //updating collateral reserve
-      collateralReserve.updateCumulativeIndexesAndTimestamp();
+      collateralReserve.updateState();
       collateralReserve.updateInterestRates(
         collateral,
         address(vars.collateralAtoken),
@@ -406,7 +406,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
     //updating collateral reserve indexes
-    collateralReserve.updateCumulativeIndexesAndTimestamp();
+    collateralReserve.updateState();
 
     vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
 
@@ -426,7 +426,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     );
 
     //updating debt reserve
-    debtReserve.updateCumulativeIndexesAndTimestamp();
+    debtReserve.updateState();
     debtReserve.updateInterestRates(principal, principalAToken, vars.actualAmountToLiquidate, 0);
     IERC20(principal).transferFrom(receiver, principalAToken, vars.actualAmountToLiquidate);
 

@@ -125,7 +125,9 @@ library ReserveLogic {
    * a formal specification.
    * @param reserve the reserve object
    **/
-  function updateCumulativeIndexesAndTimestamp(ReserveData storage reserve) internal {
+  function updateState(ReserveData storage reserve) internal {
+    
+    
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     //only cumulating if there is any income being produced
