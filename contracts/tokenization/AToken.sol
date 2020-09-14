@@ -160,7 +160,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @return true if the user can transfer amount, false otherwise
    **/
   function isTransferAllowed(address user, uint256 amount) public override view returns (bool) {
-    return !POOL.paused() && POOL.balanceDecreaseAllowed(UNDERLYING_ASSET_ADDRESS, user, amount);
+    return POOL.balanceDecreaseAllowed(UNDERLYING_ASSET_ADDRESS, user, amount);
   }
 
   /**

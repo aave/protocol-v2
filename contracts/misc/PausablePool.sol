@@ -1,4 +1,6 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.8;
+
+// import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @dev Contract module which allows children to implement an emergency stop
@@ -44,6 +46,7 @@ contract PausablePool {
    * - The contract must not be paused.
    */
   modifier whenNotPaused() {
+    // require(!_paused, Errors.IS_PAUSED);
     require(!_paused, '54');
     _;
   }
@@ -56,6 +59,7 @@ contract PausablePool {
    * - The contract must be paused.
    */
   modifier whenPaused() {
+    // require(_paused, Errors.NOT_PAUSED);
     require(_paused, '55');
     _;
   }

@@ -888,6 +888,9 @@ contract LendingPool is VersionedInitializable, PausablePool, ILendingPool {
     address user,
     uint256 amount
   ) external override view returns (bool) {
+    if (PausablePool.paused()) {
+      return false;
+    }
     return
       GenericLogic.balanceDecreaseAllowed(
         asset,
@@ -926,12 +929,5 @@ contract LendingPool is VersionedInitializable, PausablePool, ILendingPool {
    */
   function unpause() external override onlyLendingPoolConfigurator {
     PausablePool._unpause();
-  }
-
-  /**
-   * @dev retrieve pause status
-   */
-  function paused() public override(PausablePool, ILendingPool) view returns (bool) {
-    return PausablePool.paused();
   }
 }
