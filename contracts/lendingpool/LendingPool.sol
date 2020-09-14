@@ -52,6 +52,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
   address[] internal _reservesList;
 
+  bool internal _flashLiquidationLocked;
+
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
@@ -90,6 +92,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   function deposit(
     address asset,
     uint256 amount,
+    address onBehalfOf,
     uint16 referralCode
   ) external override {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
@@ -101,18 +104,17 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     reserve.updateCumulativeIndexesAndTimestamp();
     reserve.updateInterestRates(asset, aToken, amount, 0);
 
-    bool isFirstDeposit = IAToken(aToken).balanceOf(msg.sender) == 0;
+    bool isFirstDeposit = IAToken(aToken).balanceOf(onBehalfOf) == 0;
     if (isFirstDeposit) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, true);
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.index, true);
     }
 
-    //minting AToken to user 1:1 with the specific exchange rate
-    IAToken(aToken).mint(msg.sender, amount);
+    IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     //transfer to the aToken contract
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
-    emit Deposit(asset, msg.sender, amount, referralCode);
+    emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
 
   /**
@@ -153,7 +155,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.index, false);
     }
 
-    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw);
+    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
 
     emit Withdraw(asset, msg.sender, amount);
   }
@@ -199,6 +201,16 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 rateMode,
     address onBehalfOf
   ) external override {
+    _executeRepay(asset, msg.sender, amount, rateMode, onBehalfOf);
+  }
+
+  function _executeRepay(
+    address asset,
+    address user,
+    uint256 amount,
+    uint256 rateMode,
+    address onBehalfOf
+  ) internal {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -239,9 +251,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _usersConfig[onBehalfOf].setBorrowing(reserve.index, false);
     }
 
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
+    IERC20(asset).safeTransferFrom(user, aToken, paybackAmount);
 
-    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+    emit Repay(asset, onBehalfOf, user, paybackAmount);
   }
 
   /**
@@ -411,7 +423,55 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   }
 
   /**
-   * @dev allows smart contracts to access the liquidity of the pool within one transaction,
+   * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
+   * - Both the owner of the position and other liquidators can execute it
+   * - The owner can repay with his collateral at any point, no matter the health factor
+   * - Other liquidators can only use this function below 1 HF. To liquidate 50% of the debt > HF 0.98 or the whole below
+   * @param collateral The address of the collateral asset
+   * @param principal The address of the owed asset
+   * @param user Address of the borrower
+   * @param principalAmount Amount of the debt to repay. type(uint256).max to repay the maximum possible
+   * @param receiver Address of the contract receiving the collateral to swap
+   * @param params Variadic bytes param to pass with extra information to the receiver
+   **/
+  function repayWithCollateral(
+    address collateral,
+    address principal,
+    address user,
+    uint256 principalAmount,
+    address receiver,
+    bytes calldata params
+  ) external override {
+    require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
+    _flashLiquidationLocked = true;
+
+    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+
+    //solium-disable-next-line
+    (bool success, bytes memory result) = liquidationManager.delegatecall(
+      abi.encodeWithSignature(
+        'repayWithCollateral(address,address,address,uint256,address,bytes)',
+        collateral,
+        principal,
+        user,
+        principalAmount,
+        receiver,
+        params
+      )
+    );
+    require(success, Errors.FAILED_REPAY_WITH_COLLATERAL);
+
+    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
+
+    if (returnCode != 0) {
+      revert(string(abi.encodePacked(returnMessage)));
+    }
+
+    _flashLiquidationLocked = false;
+  }
+
+  /**
+   * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
    * that must be kept into consideration. For further details please visit https://developers.aave.com
    * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
@@ -497,7 +557,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     fromReserve.updateInterestRates(fromAsset, address(fromReserveAToken), 0, amountToSwap);
 
-    fromReserveAToken.burn(msg.sender, receiverAddress, amountToSwap);
+    fromReserveAToken.burn(msg.sender, receiverAddress, amountToSwap, fromReserve.liquidityIndex);
     // Notifies the receiver to proceed, sending as param the underlying already transferred
     ISwapAdapter(receiverAddress).executeOperation(
       fromAsset,
@@ -510,7 +570,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amountToReceive = IERC20(toAsset).balanceOf(receiverAddress);
     if (amountToReceive != 0) {
       IERC20(toAsset).transferFrom(receiverAddress, address(toReserveAToken), amountToReceive);
-      toReserveAToken.mint(msg.sender, amountToReceive);
+      toReserveAToken.mint(msg.sender, amountToReceive, toReserve.liquidityIndex);
       toReserve.updateInterestRates(toAsset, address(toReserveAToken), amountToReceive, 0);
     }
 
@@ -610,7 +670,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       reserve.currentVariableBorrowRate,
       reserve.currentStableBorrowRate,
       IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate(),
-      reserve.lastLiquidityIndex,
+      reserve.liquidityIndex,
       reserve.lastVariableBorrowIndex,
       reserve.lastUpdateTimestamp
     );

@@ -35,7 +35,7 @@ import {MockSwapAdapter} from '../types/MockSwapAdapter';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
-  if (currentNetwork !== 'buidlerevm' && currentNetwork !== 'soliditycoverage') {
+  if (currentNetwork !== 'buidlerevm' && !currentNetwork.includes('coverage')) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
     console.log(`tx: ${contractInstance.deployTransaction.hash}`);

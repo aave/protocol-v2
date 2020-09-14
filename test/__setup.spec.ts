@@ -504,8 +504,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);
 
-  const mockMockSwapAdapter = await deployMockSwapAdapter(addressesProvider.address);
-  await insertContractAddressInDb(eContractid.MockSwapAdapter, mockMockSwapAdapter.address);
+  const mockSwapAdapter = await deployMockSwapAdapter(addressesProvider.address);
+  await insertContractAddressInDb(eContractid.MockSwapAdapter, mockSwapAdapter.address);
 
   await deployWalletBalancerProvider(addressesProvider.address);
 

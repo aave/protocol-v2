@@ -2483,7 +2483,7 @@ gas used: 6117750
   28) AToken: interest rate redirection negative test cases
        User 0 tries to redirect the interest to user 2 twice (revert expected):
 
-      AssertionError: expected '3000000004839170420641' to be almost equal or equal '3000002810040899373373' for property redirectionAddressRedirectedBalance
+      AssertionError: expected '3000000004839170420641' to be almost equal or equal '3000002810040899373373' for property redirectionAddressScaledRedirectedBalance
       + expected - actual
 
       -3000000004839170420641
@@ -2550,7 +2550,7 @@ gas used: 6117750
   32) AToken: interest rate redirection
        User 0 deposits 1000 DAI, redirects interest to user 2, user 1 borrows 100 DAI. After one year, user 0 redirects interest back to himself, user 1 borrows another 100 DAI and after another year repays the whole amount. Users 0 and User 2 withdraw:
 
-      AssertionError: expected '1020673496610825275870' to be almost equal or equal '1020673496616475023834' for property redirectionAddressRedirectedBalance
+      AssertionError: expected '1020673496610825275870' to be almost equal or equal '1020673496616475023834' for property redirectionAddressScaledRedirectedBalance
       + expected - actual
 
       -1020673496610825275870

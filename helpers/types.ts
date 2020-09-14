@@ -32,6 +32,7 @@ export enum eContractid {
   LendingPoolLiquidationManager = 'LendingPoolLiquidationManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
+  MockSwapAdapter = 'MockSwapAdapter',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
@@ -40,8 +41,7 @@ export enum eContractid {
   AaveProtocolTestHelpers = 'AaveProtocolTestHelpers',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
-  VariableDebtToken = 'VariableDebtToken',
-  MockSwapAdapter = 'MockSwapAdapter',
+  VariableDebtToken = 'VariableDebtToken'
 }
 
 export enum ProtocolErrors {

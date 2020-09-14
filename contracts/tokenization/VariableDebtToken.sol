@@ -76,7 +76,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _mint(user, amount.add(balanceIncrease));
 
     uint256 newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
-    require(newUserIndex < (1 << 128), "Debt token: Index overflow");
+    require(newUserIndex < (1 << 128), 'Debt token: Index overflow');
     _usersData[user] = newUserIndex;
 
     emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
@@ -104,7 +104,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     //if user not repaid everything
     if (currentBalance != amount) {
       newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
-      require(newUserIndex < (1 << 128), "Debt token: Index overflow");
+      require(newUserIndex < (1 << 128), 'Debt token: Index overflow');
     }
     _usersData[user] = newUserIndex;
 

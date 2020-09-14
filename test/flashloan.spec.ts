@@ -31,13 +31,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
   it('Deposits WETH into the reserve', async () => {
     const {pool, weth} = testEnv;
+    const userAddress = await pool.signer.getAddress();
     const amountToDeposit = ethers.utils.parseEther('1');
 
     await weth.mint(amountToDeposit);
 
     await weth.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.deposit(weth.address, amountToDeposit, '0');
+    await pool.deposit(weth.address, amountToDeposit, userAddress, '0');
   });
 
   it('Takes WETH flashloan with mode = 0, returns the funds correctly', async () => {
@@ -144,7 +145,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const amountToDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
-    await pool.connect(caller.signer).deposit(dai.address, amountToDeposit, '0');
+    await pool.connect(caller.signer).deposit(dai.address, amountToDeposit, caller.address, '0');
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
@@ -211,6 +212,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
   it('Deposits USDC into the reserve', async () => {
     const {usdc, pool} = testEnv;
+    const userAddress = await pool.signer.getAddress();
 
     await usdc.mint(await convertToCurrencyDecimals(usdc.address, '1000'));
 
@@ -218,7 +220,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const amountToDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
 
-    await pool.deposit(usdc.address, amountToDeposit, '0');
+    await pool.deposit(usdc.address, amountToDeposit, userAddress, '0');
   });
 
   it('Takes out a 500 USDC flashloan, returns the funds correctly', async () => {
@@ -285,7 +287,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const amountToDeposit = await convertToCurrencyDecimals(weth.address, '5');
 
-    await pool.connect(caller.signer).deposit(weth.address, amountToDeposit, '0');
+    await pool.connect(caller.signer).deposit(weth.address, amountToDeposit, caller.address, '0');
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
@@ -308,7 +310,6 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
   it('Caller deposits 1000 DAI as collateral, Takes a WETH flashloan with mode = 0, does not approve the transfer of the funds', async () => {
     const {dai, pool, weth, users} = testEnv;
-
     const caller = users[3];
 
     await dai.connect(caller.signer).mint(await convertToCurrencyDecimals(dai.address, '1000'));
@@ -317,7 +318,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const amountToDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
-    await pool.connect(caller.signer).deposit(dai.address, amountToDeposit, '0');
+    await pool.connect(caller.signer).deposit(dai.address, amountToDeposit, caller.address, '0');
 
     const flashAmount = ethers.utils.parseEther('0.8');
 

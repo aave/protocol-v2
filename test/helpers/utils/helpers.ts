@@ -61,30 +61,20 @@ export const getReserveData = async (
 export const getUserData = async (
   pool: LendingPool,
   reserve: string,
-  user: string
+  user: tEthereumAddress,
+  sender?: tEthereumAddress
 ): Promise<UserReserveData> => {
-  const [userData, aTokenData] = await Promise.all([
+  const [userData, scaledATokenBalance] = await Promise.all([
     pool.getUserReserveData(reserve, user),
     getATokenUserData(reserve, user, pool),
   ]);
 
-  const [
-    userIndex,
-    redirectedBalance,
-    principalATokenBalance,
-    redirectionAddressRedirectedBalance,
-    interestRedirectionAddress,
-  ] = aTokenData;
-
+  
   const token = await getMintableErc20(reserve);
-  const walletBalance = new BigNumber((await token.balanceOf(user)).toString());
+  const walletBalance = new BigNumber((await token.balanceOf(sender || user)).toString());
 
   return {
-    principalATokenBalance: new BigNumber(principalATokenBalance),
-    interestRedirectionAddress,
-    redirectionAddressRedirectedBalance: new BigNumber(redirectionAddressRedirectedBalance),
-    redirectedBalance: new BigNumber(redirectedBalance),
-    currentATokenUserIndex: new BigNumber(userIndex),
+    scaledATokenBalance: new BigNumber(scaledATokenBalance),
     currentATokenBalance: new BigNumber(userData.currentATokenBalance.toString()),
     currentStableDebt: new BigNumber(userData.currentStableDebt.toString()),
     currentVariableDebt: new BigNumber(userData.currentVariableDebt.toString()),
@@ -114,28 +104,8 @@ const getATokenUserData = async (reserve: string, user: string, pool: LendingPoo
   const aTokenAddress: string = (await pool.getReserveTokensAddresses(reserve)).aTokenAddress;
 
   const aToken = await getAToken(aTokenAddress);
-  const [
-    userIndex,
-    interestRedirectionAddress,
-    redirectedBalance,
-    principalTokenBalance,
-  ] = await Promise.all([
-    aToken.getUserIndex(user),
-    aToken.getInterestRedirectionAddress(user),
-    aToken.getRedirectedBalance(user),
-    aToken.principalBalanceOf(user),
-  ]);
 
-  const redirectionAddressRedirectedBalance =
-    interestRedirectionAddress !== ZERO_ADDRESS
-      ? new BigNumber((await aToken.getRedirectedBalance(interestRedirectionAddress)).toString())
-      : new BigNumber('0');
+  const scaledBalance = await aToken.scaledBalanceOf(user);
+  return scaledBalance.toString();
 
-  return [
-    userIndex.toString(),
-    redirectedBalance.toString(),
-    principalTokenBalance.toString(),
-    redirectionAddressRedirectedBalance.toString(),
-    interestRedirectionAddress,
-  ];
 };

@@ -27,7 +27,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
       const connectedWETH = weth.connect(signer);
       await connectedWETH.mint(amountToDeposit);
       await connectedWETH.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-      await pool.connect(signer).deposit(weth.address, amountToDeposit, '0');
+      await pool.connect(signer).deposit(weth.address, amountToDeposit, await signer.getAddress(), '0',);
     }
   });
   it('User tries to swap more then he can', async () => {
@@ -40,7 +40,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
         ethers.utils.parseEther('1.1'),
         '0x10'
       )
-    ).to.be.revertedWith('ERC20: burn amount exceeds balance');
+    ).to.be.revertedWith('52');
   });
 
   it('User tries to swap more then available on the reserve', async () => {
@@ -141,7 +141,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
 
     // add more liquidity to allow user 0 to swap everything he has
     await weth.connect(users[2].signer).mint(ethers.utils.parseEther('1'));
-    await pool.connect(users[2].signer).deposit(weth.address, ethers.utils.parseEther('1'), '0');
+    await pool.connect(users[2].signer).deposit(weth.address, ethers.utils.parseEther('1'), users[2].address, '0');
 
     // cleanup borrowings, to be abe to swap whole weth
     const amountToRepay = ethers.utils.parseEther('0.5');
