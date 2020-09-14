@@ -104,8 +104,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
    * @dev calculates the interest rates depending on the available liquidity and the total borrowed.
    * @param reserve the address of the reserve
    * @param availableLiquidity the liquidity available in the reserve
-   * @param totalBorrowsStable the total borrowed from the reserve a stable rate
-   * @param totalBorrowsVariable the total borrowed from the reserve at a variable rate
+   * @param totalStableDebt the total borrowed from the reserve a stable rate
+   * @param totalVariableDebt the total borrowed from the reserve at a variable rate
    * @param averageStableBorrowRate the weighted average of all the stable rate borrows
    * @param reserveFactor the reserve portion of the interest to redirect to the reserve treasury
    * @return currentLiquidityRate the liquidity rate
@@ -115,8 +115,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   function calculateInterestRates(
     address reserve,
     uint256 availableLiquidity,
-    uint256 totalBorrowsStable,
-    uint256 totalBorrowsVariable,
+    uint256 totalStableDebt,
+    uint256 totalVariableDebt,
     uint256 averageStableBorrowRate,
     uint256 reserveFactor
   )
@@ -132,7 +132,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
     CalcInterestRatesLocalVars memory vars;
 
-    vars.totalBorrows = totalBorrowsStable.add(totalBorrowsVariable);
+    vars.totalBorrows = totalStableDebt.add(totalVariableDebt);
     vars.currentVariableBorrowRate = 0;
     vars.currentStableBorrowRate = 0;
     vars.currentLiquidityRate = 0;
@@ -166,8 +166,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     }
 
     vars.currentLiquidityRate = _getOverallBorrowRate(
-      totalBorrowsStable,
-      totalBorrowsVariable,
+      totalStableDebt,
+      totalVariableDebt,
       vars.currentVariableBorrowRate,
       averageStableBorrowRate
     )
@@ -179,27 +179,27 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
   /**
    * @dev calculates the overall borrow rate as the weighted average between the total variable borrows and total stable borrows.
-   * @param totalBorrowsStable the total borrowed from the reserve a stable rate
-   * @param totalBorrowsVariable the total borrowed from the reserve at a variable rate
+   * @param totalStableDebt the total borrowed from the reserve a stable rate
+   * @param totalVariableDebt the total borrowed from the reserve at a variable rate
    * @param currentVariableBorrowRate the current variable borrow rate
    * @param currentAverageStableBorrowRate the weighted average of all the stable rate borrows
    * @return the weighted averaged borrow rate
    **/
   function _getOverallBorrowRate(
-    uint256 totalBorrowsStable,
-    uint256 totalBorrowsVariable,
+    uint256 totalStableDebt,
+    uint256 totalVariableDebt,
     uint256 currentVariableBorrowRate,
     uint256 currentAverageStableBorrowRate
   ) internal pure returns (uint256) {
-    uint256 totalBorrows = totalBorrowsStable.add(totalBorrowsVariable);
+    uint256 totalBorrows = totalStableDebt.add(totalVariableDebt);
 
     if (totalBorrows == 0) return 0;
 
-    uint256 weightedVariableRate = totalBorrowsVariable.wadToRay().rayMul(
+    uint256 weightedVariableRate = totalVariableDebt.wadToRay().rayMul(
       currentVariableBorrowRate
     );
 
-    uint256 weightedStableRate = totalBorrowsStable.wadToRay().rayMul(
+    uint256 weightedStableRate = totalStableDebt.wadToRay().rayMul(
       currentAverageStableBorrowRate
     );
 

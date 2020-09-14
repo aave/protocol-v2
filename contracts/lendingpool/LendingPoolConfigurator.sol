@@ -421,8 +421,8 @@ contract LendingPoolConfigurator is VersionedInitializable {
   function deactivateReserve(address asset) external onlyLendingPoolManager {
     (
       uint256 availableLiquidity,
-      uint256 totalBorrowsStable,
-      uint256 totalBorrowsVariable,
+      uint256 totalStableDebt,
+      uint256 totalVariableDebt,
       ,
       ,
       ,
@@ -432,7 +432,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     ) = pool.getReserveData(asset);
     require(
-      availableLiquidity == 0 && totalBorrowsStable == 0 && totalBorrowsVariable == 0,
+      availableLiquidity == 0 && totalStableDebt == 0 && totalVariableDebt == 0,
       Errors.RESERVE_LIQUIDITY_NOT_0
     );
 

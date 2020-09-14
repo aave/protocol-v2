@@ -587,8 +587,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     view
     returns (
       uint256 availableLiquidity,
-      uint256 totalBorrowsStable,
-      uint256 totalBorrowsVariable,
+      uint256 totalStableDebt,
+      uint256 totalVariableDebt,
       uint256 liquidityRate,
       uint256 variableBorrowRate,
       uint256 stableBorrowRate,

@@ -26,14 +26,14 @@ export const getReserveData = async (
   const decimals = new BigNumber(await token.decimals());
 
   const totalLiquidity = new BigNumber(data.availableLiquidity.toString())
-    .plus(data.totalBorrowsStable.toString())
-    .plus(data.totalBorrowsVariable.toString());
+    .plus(data.totalStableDebt.toString())
+    .plus(data.totalVariableDebt.toString());
 
   const utilizationRate = new BigNumber(
     totalLiquidity.eq(0)
       ? 0
-      : new BigNumber(data.totalBorrowsStable.toString())
-          .plus(data.totalBorrowsVariable.toString())
+      : new BigNumber(data.totalStableDebt.toString())
+          .plus(data.totalVariableDebt.toString())
           .rayDiv(totalLiquidity)
   );
 
@@ -41,8 +41,8 @@ export const getReserveData = async (
     totalLiquidity,
     utilizationRate,
     availableLiquidity: new BigNumber(data.availableLiquidity.toString()),
-    totalBorrowsStable: new BigNumber(data.totalBorrowsStable.toString()),
-    totalBorrowsVariable: new BigNumber(data.totalBorrowsVariable.toString()),
+    totalStableDebt: new BigNumber(data.totalStableDebt.toString()),
+    totalVariableDebt: new BigNumber(data.totalVariableDebt.toString()),
     liquidityRate: new BigNumber(data.liquidityRate.toString()),
     variableBorrowRate: new BigNumber(data.variableBorrowRate.toString()),
     stableBorrowRate: new BigNumber(data.stableBorrowRate.toString()),

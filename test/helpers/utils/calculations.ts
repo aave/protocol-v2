@@ -166,21 +166,21 @@ export const calcExpectedReserveDataAfterDeposit = (
     reserveDataBeforeAction.availableLiquidity
   ).plus(amountDeposited);
 
-  expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable;
-  expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
+  expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt;
+  expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt;
   expectedReserveData.averageStableBorrowRate = reserveDataBeforeAction.averageStableBorrowRate;
 
   expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.totalLiquidity
   );
   const rates = calcExpectedInterestRates(
     reserveDataBeforeAction.symbol,
     reserveDataBeforeAction.marketStableRate,
     expectedReserveData.utilizationRate,
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.averageStableBorrowRate
   );
   expectedReserveData.liquidityRate = rates[0];
@@ -225,21 +225,21 @@ export const calcExpectedReserveDataAfterWithdraw = (
     reserveDataBeforeAction.availableLiquidity
   ).minus(amountWithdrawn);
 
-  expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable;
-  expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
+  expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt;
+  expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt;
   expectedReserveData.averageStableBorrowRate = reserveDataBeforeAction.averageStableBorrowRate;
 
   expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.totalLiquidity
   );
   const rates = calcExpectedInterestRates(
     reserveDataBeforeAction.symbol,
     reserveDataBeforeAction.marketStableRate,
     expectedReserveData.utilizationRate,
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.averageStableBorrowRate
   );
   expectedReserveData.liquidityRate = rates[0];
@@ -286,17 +286,17 @@ export const calcExpectedReserveDataAfterBorrow = (
 
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
 
-    expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable
+    expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt
       .plus(amountBorrowedBN)
       .plus(debtAccrued);
 
     expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
       reserveDataBeforeAction.averageStableBorrowRate,
-      reserveDataBeforeAction.totalBorrowsStable.plus(debtAccrued),
+      reserveDataBeforeAction.totalStableDebt.plus(debtAccrued),
       amountBorrowedBN,
       reserveDataBeforeAction.stableBorrowRate
     );
-    expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
+    expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt;
   } else {
     const variableDebtBefore = userDataBeforeAction.scaledVariableDebt.rayMul(
       reserveDataBeforeAction.variableBorrowIndex
@@ -304,10 +304,10 @@ export const calcExpectedReserveDataAfterBorrow = (
 
     const debtAccrued = userVariableDebt.minus(variableDebtBefore);
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
-    expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable
+    expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt
       .plus(amountBorrowedBN)
       .plus(debtAccrued);
-    expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable;
+    expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt;
     expectedReserveData.averageStableBorrowRate = reserveDataBeforeAction.averageStableBorrowRate;
   }
 
@@ -316,8 +316,8 @@ export const calcExpectedReserveDataAfterBorrow = (
   );
 
   expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.totalLiquidity
   );
 
@@ -325,8 +325,8 @@ export const calcExpectedReserveDataAfterBorrow = (
     reserveDataBeforeAction.symbol,
     reserveDataBeforeAction.marketStableRate,
     expectedReserveData.utilizationRate,
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.averageStableBorrowRate
   );
   expectedReserveData.liquidityRate = rates[0];
@@ -385,17 +385,17 @@ export const calcExpectedReserveDataAfterRepay = (
 
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
 
-    expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable
+    expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt
       .minus(amountRepaidBN)
       .plus(debtAccrued);
 
     expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
       reserveDataBeforeAction.averageStableBorrowRate,
-      reserveDataBeforeAction.totalBorrowsStable.plus(debtAccrued),
+      reserveDataBeforeAction.totalStableDebt.plus(debtAccrued),
       amountRepaidBN.negated(),
       userDataBeforeAction.stableBorrowRate
     );
-    expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
+    expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt;
   } else {
     const variableDebtBefore = userDataBeforeAction.scaledVariableDebt.rayMul(
       reserveDataBeforeAction.variableBorrowIndex
@@ -405,11 +405,11 @@ export const calcExpectedReserveDataAfterRepay = (
 
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
 
-    expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable
+    expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt
       .plus(debtAccrued)
       .minus(amountRepaidBN);
 
-    expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable;
+    expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt;
     expectedReserveData.averageStableBorrowRate = reserveDataBeforeAction.averageStableBorrowRate;
   }
 
@@ -422,8 +422,8 @@ export const calcExpectedReserveDataAfterRepay = (
   );
 
   expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.totalLiquidity
   );
 
@@ -431,8 +431,8 @@ export const calcExpectedReserveDataAfterRepay = (
     reserveDataBeforeAction.symbol,
     reserveDataBeforeAction.marketStableRate,
     expectedReserveData.utilizationRate,
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.averageStableBorrowRate
   );
   expectedReserveData.liquidityRate = rates[0];
@@ -677,16 +677,16 @@ export const calcExpectedReserveDataAfterSwapRateMode = (
 
     expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
       reserveDataBeforeAction.averageStableBorrowRate,
-      reserveDataBeforeAction.totalBorrowsStable.plus(debtAccrued),
+      reserveDataBeforeAction.totalStableDebt.plus(debtAccrued),
       stableDebt.negated(),
       userDataBeforeAction.stableBorrowRate
     );
 
-    expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable.plus(
+    expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt.plus(
       stableDebt
     );
 
-    expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable.minus(
+    expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt.minus(
       userDataBeforeAction.principalStableDebt
     );
   } else {
@@ -695,23 +695,23 @@ export const calcExpectedReserveDataAfterSwapRateMode = (
 
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
     
-    expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
+    expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt;
     
 
-    expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable.plus(
+    expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt.plus(
       variableDebt
     );
     expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
       reserveDataBeforeAction.averageStableBorrowRate,
-      reserveDataBeforeAction.totalBorrowsStable,
+      reserveDataBeforeAction.totalStableDebt,
       variableDebt,
       reserveDataBeforeAction.stableBorrowRate
     );
   }
 
   expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.totalLiquidity
   );
 
@@ -719,8 +719,8 @@ export const calcExpectedReserveDataAfterSwapRateMode = (
     reserveDataBeforeAction.symbol,
     reserveDataBeforeAction.marketStableRate,
     expectedReserveData.utilizationRate,
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.averageStableBorrowRate
   );
   expectedReserveData.liquidityRate = rates[0];
@@ -824,7 +824,7 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
 
   const avgRateBefore = calcExpectedAverageStableBorrowRate(
     reserveDataBeforeAction.averageStableBorrowRate,
-    reserveDataBeforeAction.totalBorrowsStable.plus(debtAccrued),
+    reserveDataBeforeAction.totalStableDebt.plus(debtAccrued),
     stableBorrowBalance.negated(),
     userDataBeforeAction.stableBorrowRate
   );
@@ -832,19 +832,19 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
 
   expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
     avgRateBefore,
-    reserveDataBeforeAction.totalBorrowsStable.minus(userDataBeforeAction.principalStableDebt),
+    reserveDataBeforeAction.totalStableDebt.minus(userDataBeforeAction.principalStableDebt),
     stableBorrowBalance,
     reserveDataBeforeAction.stableBorrowRate
   );
 
-  expectedReserveData.totalBorrowsVariable = reserveDataBeforeAction.totalBorrowsVariable;
-  expectedReserveData.totalBorrowsStable = reserveDataBeforeAction.totalBorrowsStable.plus(
+  expectedReserveData.totalVariableDebt = reserveDataBeforeAction.totalVariableDebt;
+  expectedReserveData.totalStableDebt = reserveDataBeforeAction.totalStableDebt.plus(
     debtAccrued
   );
 
   expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.totalLiquidity
   );
 
@@ -852,8 +852,8 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
     reserveDataBeforeAction.symbol,
     reserveDataBeforeAction.marketStableRate,
     expectedReserveData.utilizationRate,
-    expectedReserveData.totalBorrowsStable,
-    expectedReserveData.totalBorrowsVariable,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
     expectedReserveData.averageStableBorrowRate
   );
 
@@ -936,13 +936,13 @@ const calcExpectedATokenBalance = (
 
 const calcExpectedAverageStableBorrowRate = (
   avgStableRateBefore: BigNumber,
-  totalBorrowsStableBefore: BigNumber,
+  totalStableDebtBefore: BigNumber,
   amountChanged: string | BigNumber,
   rate: BigNumber
 ) => {
-  const weightedTotalBorrows = avgStableRateBefore.multipliedBy(totalBorrowsStableBefore);
+  const weightedTotalBorrows = avgStableRateBefore.multipliedBy(totalStableDebtBefore);
   const weightedAmountBorrowed = rate.multipliedBy(amountChanged);
-  const totalBorrowedStable = totalBorrowsStableBefore.plus(new BigNumber(amountChanged));
+  const totalBorrowedStable = totalStableDebtBefore.plus(new BigNumber(amountChanged));
 
   if (totalBorrowedStable.eq(0)) return new BigNumber('0');
 
@@ -1048,8 +1048,8 @@ const calcExpectedInterestRates = (
   reserveSymbol: string,
   marketStableRate: BigNumber,
   utilizationRate: BigNumber,
-  totalBorrowsStable: BigNumber,
-  totalBorrowsVariable: BigNumber,
+  totalStableDebt: BigNumber,
+  totalVariableDebt: BigNumber,
   averageStableBorrowRate: BigNumber
 ): BigNumber[] => {
   const {reservesParams} = configuration;
@@ -1093,8 +1093,8 @@ const calcExpectedInterestRates = (
   }
 
   const expectedOverallRate = calcExpectedOverallBorrowRate(
-    totalBorrowsStable,
-    totalBorrowsVariable,
+    totalStableDebt,
+    totalVariableDebt,
     variableBorrowRate,
     averageStableBorrowRate
   );
@@ -1104,18 +1104,18 @@ const calcExpectedInterestRates = (
 };
 
 const calcExpectedOverallBorrowRate = (
-  totalBorrowsStable: BigNumber,
-  totalBorrowsVariable: BigNumber,
+  totalStableDebt: BigNumber,
+  totalVariableDebt: BigNumber,
   currentVariableBorrowRate: BigNumber,
   currentAverageStableBorrowRate: BigNumber
 ): BigNumber => {
-  const totalBorrows = totalBorrowsStable.plus(totalBorrowsVariable);
+  const totalBorrows = totalStableDebt.plus(totalVariableDebt);
 
   if (totalBorrows.eq(0)) return strToBN('0');
 
-  const weightedVariableRate = totalBorrowsVariable.wadToRay().rayMul(currentVariableBorrowRate);
+  const weightedVariableRate = totalVariableDebt.wadToRay().rayMul(currentVariableBorrowRate);
 
-  const weightedStableRate = totalBorrowsStable.wadToRay().rayMul(currentAverageStableBorrowRate);
+  const weightedStableRate = totalStableDebt.wadToRay().rayMul(currentAverageStableBorrowRate);
 
   const overallBorrowRate = weightedVariableRate
     .plus(weightedStableRate)
@@ -1125,15 +1125,15 @@ const calcExpectedOverallBorrowRate = (
 };
 
 const calcExpectedUtilizationRate = (
-  totalBorrowsStable: BigNumber,
-  totalBorrowsVariable: BigNumber,
+  totalStableDebt: BigNumber,
+  totalVariableDebt: BigNumber,
   totalLiquidity: BigNumber
 ): BigNumber => {
-  if (totalBorrowsStable.eq('0') && totalBorrowsVariable.eq('0')) {
+  if (totalStableDebt.eq('0') && totalVariableDebt.eq('0')) {
     return strToBN('0');
   }
 
-  const utilization = totalBorrowsStable.plus(totalBorrowsVariable).rayDiv(totalLiquidity);
+  const utilization = totalStableDebt.plus(totalVariableDebt).rayDiv(totalLiquidity);
 
   return utilization;
 };
@@ -1210,8 +1210,8 @@ const calcExpectedLiquidityIndex = (reserveData: ReserveData, timestamp: BigNumb
 };
 
 const calcExpectedVariableBorrowIndex = (reserveData: ReserveData, timestamp: BigNumber) => {
-  //if totalBorrowsVariable is 0, nothing to compound
-  if (reserveData.totalBorrowsVariable.eq('0')) {
+  //if totalVariableDebt is 0, nothing to compound
+  if (reserveData.totalVariableDebt.eq('0')) {
     return reserveData.variableBorrowIndex;
   }
 

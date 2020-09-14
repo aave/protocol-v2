@@ -21,8 +21,8 @@ interface IReserveInterestRateStrategy {
   function calculateInterestRates(
     address reserve,
     uint256 utilizationRate,
-    uint256 totalBorrowsStable,
-    uint256 totalBorrowsVariable,
+    uint256 totalStableDebt,
+    uint256 totalVariableDebt,
     uint256 averageStableBorrowRate,
     uint256 reserveFactor
   )

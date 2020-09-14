@@ -60,8 +60,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
     const totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
-      .plus(reserveData.totalBorrowsStable.toString())
-      .plus(reserveData.totalBorrowsVariable.toString());
+      .plus(reserveData.totalStableDebt.toString())
+      .plus(reserveData.totalVariableDebt.toString());
 
     expect(totalLiquidity.toString()).to.be.equal('1000720000000000000');
     expect(currentLiquidityRate.toString()).to.be.equal('0');
@@ -87,8 +87,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
     const totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
-      .plus(reserveData.totalBorrowsStable.toString())
-      .plus(reserveData.totalBorrowsVariable.toString());
+      .plus(reserveData.totalStableDebt.toString())
+      .plus(reserveData.totalVariableDebt.toString());
 
     expect(totalLiquidity.toString()).to.be.equal('1001620648000000000');
     expect(currentLiqudityRate.toString()).to.be.equal('0');
@@ -242,8 +242,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const userData = await pool.getUserReserveData(usdc.address, depositor.address);
 
     const totalLiquidity = reserveData.availableLiquidity
-      .add(reserveData.totalBorrowsStable)
-      .add(reserveData.totalBorrowsVariable)
+      .add(reserveData.totalStableDebt)
+      .add(reserveData.totalVariableDebt)
       .toString();
     const currentLiqudityRate = reserveData.liquidityRate.toString();
     const currentLiquidityIndex = reserveData.liquidityIndex.toString();

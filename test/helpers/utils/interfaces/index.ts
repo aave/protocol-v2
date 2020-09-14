@@ -21,8 +21,8 @@ export interface ReserveData {
   decimals: BigNumber;
   totalLiquidity: BigNumber;
   availableLiquidity: BigNumber;
-  totalBorrowsStable: BigNumber;
-  totalBorrowsVariable: BigNumber;
+  totalStableDebt: BigNumber;
+  totalVariableDebt: BigNumber;
   averageStableBorrowRate: BigNumber;
   variableBorrowRate: BigNumber;
   stableBorrowRate: BigNumber;
