@@ -86,7 +86,14 @@ interface IStableDebtToken {
   function getUserLastUpdated(address user) external view returns (uint40);
 
   /**
-   * @dev returns the principal total supply 
+   * @dev returns the principal total supply and the average stable rate
    **/
-  function principalTotalSupply() external view returns (uint40);
+  function getPrincipalSupplyAndAvgRate() external view returns (uint256, uint256);
+
+    /**
+   * @dev Returns the principal debt balance of the user 
+   * @return The debt balance of the user since the last burn/mint action
+   **/
+  function principalBalanceOf(address user) external view returns (uint256);
+
 }

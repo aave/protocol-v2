@@ -39,7 +39,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the debt balance of the user
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
-    uint256 scaledBalance = super.principalBalanceOf(user);
+    uint256 scaledBalance = super.balanceOf(user);
     
     if (scaledBalance == 0) {
       return 0;

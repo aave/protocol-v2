@@ -6,7 +6,6 @@ export interface UserReserveData {
   currentStableDebt: BigNumber;
   currentVariableDebt: BigNumber;
   principalStableDebt: BigNumber;
-  principalVariableDebt: BigNumber;
   scaledVariableDebt: BigNumber;
   liquidityRate: BigNumber;
   stableBorrowRate: BigNumber;

@@ -68,7 +68,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the accumulated debt of the user
    **/
   function balanceOf(address account) public virtual override view returns (uint256) {
-    uint256 accountBalance = principalBalanceOf(account);
+    uint256 accountBalance = super.balanceOf(account);
     uint256 stableRate = _usersData[account];
     if (accountBalance == 0) {
       return 0;
@@ -124,7 +124,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     //solium-disable-next-line
     _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
-
 
     //calculates the updated average stable rate
     _avgStableRate = _avgStableRate
@@ -185,15 +184,22 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease);
   }
 
-
   /**
    * @dev Calculates the increase in balance since the last user interaction
    * @param user The address of the user for which the interest is being accumulated
    * @return The previous principal balance, the new principal balance, the balance increase
    * and the new user index
    **/
-  function _calculateBalanceIncrease(address user) internal view returns (uint256, uint256, uint256) {
-    uint256 previousPrincipalBalance = principalBalanceOf(user);
+  function _calculateBalanceIncrease(address user)
+    internal
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    uint256 previousPrincipalBalance = super.balanceOf(user);
 
     if (previousPrincipalBalance == 0) {
       return (0, 0, 0);
@@ -209,11 +215,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     );
   }
 
-  function principalTotalSupply() public override view returns(uint256) {
-    return super.totalSupply();
+  function getPrincipalSupplyAndAvgRate() public override view returns (uint256, uint256) {
+    return (super.totalSupply(), _avgStableRate);
   }
-  
-  function totalSupply() public override view returns(uint256) {
+
+  function totalSupply() public override view returns (uint256) {
     uint256 principalSupply = super.totalSupply();
     if (principalSupply == 0) {
       return 0;
@@ -225,4 +231,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return principalSupply.rayMul(cumulatedInterest);
   }
 
+  /**
+   * @dev Returns the principal debt balance of the user from
+   * @return The debt balance of the user since the last burn/mint action
+   **/
+  function principalBalanceOf(address user) external virtual override view returns (uint256) {
+    return super.balanceOf(user);
+  }
 }

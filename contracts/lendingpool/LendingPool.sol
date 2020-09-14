@@ -49,10 +49,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
-  ILendingPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
-
   mapping(address => ReserveLogic.ReserveData) internal _reserves;
   mapping(address => UserConfiguration.Map) internal _usersConfig;
+  ILendingPoolAddressesProvider internal _addressesProvider;
 
   address[] internal _reservesList;
 
@@ -63,7 +62,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    **/
   modifier onlyLendingPoolConfigurator {
     require(
-      ADDRESSES_PROVIDER.getLendingPoolConfigurator() == msg.sender,
+      _addressesProvider.getLendingPoolConfigurator() == msg.sender,
       Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
     _;
@@ -79,7 +78,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param provider the address of the LendingPoolAddressesProvider registry
    **/
   function initialize(ILendingPoolAddressesProvider provider) public initializer {
-    ADDRESSES_PROVIDER = provider;
+    _addressesProvider = provider;
   }
 
   /**
@@ -144,7 +143,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _reserves,
       _usersConfig[msg.sender],
       _reservesList,
-      ADDRESSES_PROVIDER.getPriceOracle()
+      _addressesProvider.getPriceOracle()
     );
 
     reserve.updateState();
@@ -271,10 +270,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableDebt);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableDebt, reserve.variableBorrowIndex);
     } else {
       //do the opposite
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(msg.sender, variableDebt);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(msg.sender, variableDebt, reserve.variableBorrowIndex);
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(
         msg.sender,
         variableDebt,
@@ -348,7 +347,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _reserves,
       _usersConfig[msg.sender],
       _reservesList,
-      ADDRESSES_PROVIDER.getPriceOracle()
+      _addressesProvider.getPriceOracle()
     );
 
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
@@ -376,7 +375,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 purchaseAmount,
     bool receiveAToken
   ) external override {
-    address liquidationManager = ADDRESSES_PROVIDER.getLendingPoolLiquidationManager();
+    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
     (bool success, bytes memory result) = liquidationManager.delegatecall(
@@ -435,7 +434,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
     _flashLiquidationLocked = true;
 
-    address liquidationManager = ADDRESSES_PROVIDER.getLendingPoolLiquidationManager();
+    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
     (bool success, bytes memory result) = liquidationManager.delegatecall(
@@ -638,7 +637,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _reserves,
       _usersConfig[user],
       _reservesList,
-      ADDRESSES_PROVIDER.getPriceOracle()
+      _addressesProvider.getPriceOracle()
     );
 
     availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
@@ -657,7 +656,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       uint256 currentStableDebt,
       uint256 currentVariableDebt,
       uint256 principalStableDebt,
-      uint256 variableBorrowIndex,
       uint256 scaledVariableDebt,
       uint256 stableBorrowRate,
       uint256 liquidityRate,
@@ -669,7 +667,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
 
     currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(user);
     (currentStableDebt, currentVariableDebt) = Helpers.getUserCurrentDebt(user, reserve);
-    (principalStableDebt, principalVariableDebt) = Helpers.getUserPrincipalDebt(user, reserve);
+    principalStableDebt = IStableDebtToken(reserve.stableDebtTokenAddress).principalBalanceOf(user);
     scaledVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress).scaledBalanceOf(user);
     liquidityRate = reserve.currentLiquidityRate;
     stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(user);
@@ -677,7 +675,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       user
     );
     usageAsCollateralEnabled = _usersConfig[user].isUsingAsCollateral(reserve.id);
-    variableBorrowIndex = IVariableDebtToken(reserve.variableDebtTokenAddress).getUserIndex(user);
   }
 
   function getReserves() external override view returns (address[] memory) {
@@ -784,7 +781,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
         _reserves,
         _usersConfig[user],
         _reservesList,
-        ADDRESSES_PROVIDER.getPriceOracle()
+        _addressesProvider.getPriceOracle()
       );
   }
 
@@ -799,7 +796,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @dev returns the addresses provider
    **/
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
-    return ADDRESSES_PROVIDER;
+    return _addressesProvider;
   }
 
   // internal functions
@@ -822,7 +819,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     ReserveLogic.ReserveData storage reserve = _reserves[vars.asset];
     UserConfiguration.Map storage userConfig = _usersConfig[msg.sender];
 
-    address oracle = ADDRESSES_PROVIDER.getPriceOracle();
+    address oracle = _addressesProvider.getPriceOracle();
 
     uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
       10**reserve.configuration.getDecimals()

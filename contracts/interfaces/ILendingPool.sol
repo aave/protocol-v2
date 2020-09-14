@@ -326,7 +326,6 @@ interface ILendingPool {
       uint256 currentStableDebt,
       uint256 currentVariableDebt,
       uint256 principalStableDebt,
-      uint256 principalVariableDebt,
       uint256 scaledVariableDebt,
       uint256 stableBorrowRate,
       uint256 liquidityRate,

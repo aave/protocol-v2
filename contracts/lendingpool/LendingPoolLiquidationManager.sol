@@ -234,8 +234,6 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     //update the principal reserve
     principalReserve.updateState();
 
-
-
     principalReserve.updateInterestRates(
       principal,
       principalReserve.aTokenAddress,
@@ -244,29 +242,19 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     );
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
-
-      address tokenAddress = principalReserve.variableDebtTokenAddress;
-
-      _mintToReserveTreasury(principalReserve, user, tokenAddress);
-
-      IVariableDebtToken(tokenAddress).burn(
+      IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate
+        vars.actualAmountToLiquidate,
+        principalReserve.variableBorrowIndex
       );
     } else {
-
-      address tokenAddress = principalReserve.variableDebtTokenAddress;
-
-      _mintToReserveTreasury(principalReserve, user, tokenAddress);
-
-      IVariableDebtToken(tokenAddress).burn(
+      IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
         user,
-        vars.userVariableDebt
+        vars.userVariableDebt,
+        principalReserve.variableBorrowIndex
       );
 
-      tokenAddress = principalReserve.stableDebtTokenAddress;
-
-      IStableDebtToken(tokenAddress).burn(
+      IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(
         user,
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
       );
@@ -288,7 +276,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
 
       //burn the equivalent amount of atoken
-      vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
+      vars.collateralAtoken.burn(
+        user,
+        msg.sender,
+        vars.maxCollateralToLiquidate,
+        collateralReserve.liquidityIndex
+      );
     }
 
     //transfers the principal currency to the aToken
@@ -408,7 +401,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     //updating collateral reserve indexes
     collateralReserve.updateState();
 
-    vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
+    vars.collateralAtoken.burn(
+      user,
+      receiver,
+      vars.maxCollateralToLiquidate,
+      collateralReserve.liquidityIndex
+    );
 
     if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
       usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
@@ -433,10 +431,15 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate
+        vars.actualAmountToLiquidate,
+        debtReserve.variableBorrowIndex
       );
     } else {
-      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(user, vars.userVariableDebt);
+      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
+        user,
+        vars.userVariableDebt,
+        debtReserve.variableBorrowIndex
+      );
       IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(
         user,
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
@@ -529,20 +532,5 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       principalAmountNeeded = purchaseAmount;
     }
     return (collateralAmount, principalAmountNeeded);
-  }
-
-  function _mintToReserveTreasury(ReserveLogic.ReserveData storage reserve, address user, address debtTokenAddress) internal {
-    
-    uint256 currentPrincipalBalance = DebtTokenBase(debtTokenAddress).principalBalanceOf(user);
-    //calculating the interest accrued since the last borrow and minting the equivalent amount to the reserve factor
-    if(currentPrincipalBalance > 0){
-
-      uint256 balanceIncrease = IERC20(debtTokenAddress).balanceOf(user).sub(currentPrincipalBalance);
-
-      uint256 amountForReserveFactor = balanceIncrease.percentMul(reserve.configuration.getReserveFactor());
-
-      IAToken(reserve.aTokenAddress).mintToReserve(amountForReserveFactor);      
-    }    
-
   }
 }

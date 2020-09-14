@@ -62,12 +62,11 @@ interface IAToken is IERC20 {
   function mint(address user, uint256 amount, uint256 index) external;
 
   /**
-   * @dev mints aTokens to reserve, based on the reserveFactor value
-   * only lending pools can call this function
-   * @param amount the amount of tokens to mint
-   */
-  function mintToReserve(uint256 amount) external;
-
+   * @dev mints aTokens to the reserve treasury
+   * @param amount the amount to mint
+   * @param index the liquidity index of the reserve
+   **/
+  function mintToTreasury(uint256 amount, uint256 index) external;
 
   /**
    * @dev transfers tokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
@@ -104,6 +103,7 @@ interface IAToken is IERC20 {
    * @param amount the amount to transfer
    * @return the amount transferred
    **/
-
   function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
+
+
 }

@@ -105,8 +105,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     emit Mint(user, amount, index);
   }
 
-  function mintToReserve(uint256 amount) external override onlyLendingPool {
-      uint256 index = _pool.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+  function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
       _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
   }
 

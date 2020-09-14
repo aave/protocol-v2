@@ -6,11 +6,13 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {MathUtils} from '../math/MathUtils.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {IAToken} from '../../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../../tokenization/interfaces/IVariableDebtToken.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
+import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
 
 /**
@@ -21,6 +23,7 @@ import {Errors} from '../helpers/Errors.sol';
 library ReserveLogic {
   using SafeMath for uint256;
   using WadRayMath for uint256;
+  using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
   /**
@@ -63,14 +66,12 @@ library ReserveLogic {
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
     uint40 lastUpdateTimestamp;
-   
     //tokens addresses
     address aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
     //address of the interest rate strategy
     address interestRateStrategyAddress;
-
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
   }
@@ -127,8 +128,14 @@ library ReserveLogic {
    * @param reserve the reserve object
    **/
   function updateState(ReserveData storage reserve) internal {
-    _mintToTreasury(reserve);
-    _updateIndexes(reserve);
+    address stableDebtToken = reserve.stableDebtTokenAddress;
+    address variableDebtToken = reserve.variableDebtTokenAddress;
+    uint256 variableBorrowIndex = reserve.variableBorrowIndex;
+    uint256 liquidityIndex = reserve.liquidityIndex;
+    uint40 timestamp = reserve.lastUpdateTimestamp;
+
+    _mintToTreasury(reserve, stableDebtToken, variableDebtToken, liquidityIndex,  variableBorrowIndex, timestamp);
+    _updateIndexes(reserve, variableDebtToken, liquidityIndex, variableBorrowIndex, timestamp);
   }
 
   /**
@@ -243,28 +250,70 @@ library ReserveLogic {
     );
   }
 
-  function _mintToTreasury(ReserveData storage reserve) internal {
-    
-    address stableDebtToken = reserve.stableDebtTokenAddress;
-    address variableDebtToken = reserve.variableDebtTokenAddress;
+  struct MintToTreasuryLocalVars {
+    uint256 currentTotalDebt;
+    uint256 principalStableDebt;
+    uint256 avgStableRate;
+    uint256 scaledVariableDebt;
+    uint256 cumulatedStableInterest;
+    uint256 variableDebtOnLastUpdate;
+    uint256 stableDebtOnLastUpdate;
+    uint256 totalInterestAccrued;
+    uint256 amountToMint;
+    uint256 reserveFactor;
+  }
 
-    uint256 currentVariableDebt = IERC20(variableDebtToken).totalSupply();
-    uint256 currentStableDebt = IERC20(stableDebtToken).totalSupply();
+  function _mintToTreasury(
+    ReserveData storage reserve,
+    address stableDebtToken,
+    address variableDebtToken,
+    uint256 liquidityIndex,
+    uint256 variableBorrowIndex,
+    uint40 lastUpdateTimestamp
+  ) internal {
+   
+    MintToTreasuryLocalVars memory vars;
 
-    uint256 principalStableDebt = IStableDebtToken(stableDebtToken).principalTotalSupply();
-    uint256 scaledVariableDebt = IVariableDebtToken(variableDebtToken).scaledTotalSupply();
-    
-    
-    
+    vars.reserveFactor = reserve.configuration.getReserveFactor();
+
+    if(vars.reserveFactor == 0){
+      return;
+    }
+
+    vars.currentTotalDebt = IERC20(variableDebtToken).totalSupply().add(IERC20(stableDebtToken).totalSupply());
+
+    (vars.principalStableDebt, vars.avgStableRate) = IStableDebtToken(stableDebtToken)
+      .getPrincipalSupplyAndAvgRate();
+
+    vars.scaledVariableDebt = IVariableDebtToken(variableDebtToken).scaledTotalSupply();
+
+    vars.cumulatedStableInterest = MathUtils.calculateCompoundedInterest(
+      vars.avgStableRate,
+      lastUpdateTimestamp
+    );
+
+    vars.variableDebtOnLastUpdate = vars.scaledVariableDebt.rayMul(variableBorrowIndex);
+    vars.stableDebtOnLastUpdate = vars.principalStableDebt.rayMul(vars.cumulatedStableInterest);
+
+    vars.totalInterestAccrued =vars.currentTotalDebt.sub(vars.variableDebtOnLastUpdate.add(vars.stableDebtOnLastUpdate));
+
+    vars.amountToMint = vars.totalInterestAccrued.percentMul(vars.reserveFactor);
+
+    IAToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, liquidityIndex);      
 
   }
 
-  function _updateIndexes(ReserveData storage reserve) internal {
+  function _updateIndexes(
+    ReserveData storage reserve,
+    address variableDebtToken,
+    uint256 liquidityIndex,
+    uint256 variableBorrowIndex,
+    uint40 lastUpdateTimestamp
+  ) internal {
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     //only cumulating if there is any income being produced
     if (currentLiquidityRate > 0) {
-      uint40 lastUpdateTimestamp = reserve.lastUpdateTimestamp;
       uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(
         currentLiquidityRate,
         lastUpdateTimestamp
@@ -276,12 +325,12 @@ library ReserveLogic {
 
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
-      if (IERC20(reserve.variableDebtTokenAddress).totalSupply() > 0) {
+      if (IERC20(variableDebtToken).totalSupply() > 0) {
         uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
           reserve.currentVariableBorrowRate,
           lastUpdateTimestamp
         );
-        index = cumulatedVariableBorrowInterest.rayMul(reserve.variableBorrowIndex);
+        index = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
         require(index < (1 << 128), Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
         reserve.variableBorrowIndex = uint128(index);
       }
