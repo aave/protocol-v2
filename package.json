@@ -18,6 +18,7 @@
     "test-transfers": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts",
     "test-flash": "buidler test test/__setup.spec.ts test/flashloan.spec.ts",
     "test-liquidate": "buidler test test/__setup.spec.ts test/liquidation-atoken.spec.ts",
+    "test-pausable": "buidler test test/__setup.spec.ts test/pausable-functions.spec.ts",
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
