@@ -119,7 +119,7 @@ library ReserveLogic {
   /**
    * @dev returns an address of the debt token used for particular interest rate mode on asset.
    * @param reserve the reserve object
-   * @param interest rate mode - STABLE or VARIABLE from ReserveLogic.InterestRateMode enum
+   * @param interestRateMode - STABLE or VARIABLE from ReserveLogic.InterestRateMode enum
    * @return an address of the corresponding debt token from reserve configuration
    **/
   function getDebtTokenAddress(ReserveLogic.ReserveData storage reserve, uint256 interestRateMode)
