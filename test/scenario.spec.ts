@@ -8,8 +8,6 @@ import {getReservesConfigByPool} from '../helpers/configuration';
 import {AavePools, iAavePoolAssets, IReserveParams} from '../helpers/types';
 import {executeStory} from './helpers/scenario-engine';
 
-BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
-
 const scenarioFolder = './test/helpers/scenarios/';
 
 const selectedScenarios: string[] = [];
@@ -21,11 +19,18 @@ fs.readdirSync(scenarioFolder).forEach((file) => {
 
   makeSuite(scenario.title, async (testEnv) => {
     before('Initializing configuration', async () => {
+      // Sets BigNumber for this suite, instead of globally
+      BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
+
       actionsConfiguration.skipIntegrityCheck = false; //set this to true to execute solidity-coverage
 
       calculationsConfiguration.reservesParams = <iAavePoolAssets<IReserveParams>>(
         getReservesConfigByPool(AavePools.proto)
       );
+    });
+    after('Reset', () => {
+      // Reset BigNumber
+      BigNumber.config({DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP});
     });
 
     for (const story of scenario.stories) {

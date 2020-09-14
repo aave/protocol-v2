@@ -13,6 +13,7 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -178,7 +179,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   modifier onlyLendingPoolManager {
     require(
       addressesProvider.getLendingPoolManager() == msg.sender,
-      'The caller must be a lending pool manager'
+      Errors.CALLER_NOT_LENDING_POOL_MANAGER
     );
     _;
   }
@@ -425,7 +426,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     ) = pool.getReserveData(asset);
     require(
       availableLiquidity == 0 && totalBorrowsStable == 0 && totalBorrowsVariable == 0,
-      'The liquidity of the reserve needs to be 0'
+      Errors.RESERVE_LIQUIDITY_NOT_0
     );
 
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);

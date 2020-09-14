@@ -13,46 +13,54 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
+  ILendingPoolAddressesProvider internal _provider;
+
   event ExecutedWithFail(address _reserve, uint256 _amount, uint256 _fee);
   event ExecutedWithSuccess(address _reserve, uint256 _amount, uint256 _fee);
 
-  bool failExecution = false;
+  bool _failExecution;
+  uint256 _amountToApprove;
 
-  constructor(ILendingPoolAddressesProvider _provider) public FlashLoanReceiverBase(_provider) {}
+  constructor(ILendingPoolAddressesProvider provider) public FlashLoanReceiverBase(provider) {}
 
-  function setFailExecutionTransfer(bool _fail) public {
-    failExecution = _fail;
+  function setFailExecutionTransfer(bool fail) public {
+    _failExecution = fail;
+  }
+
+  function setAmountToApprove(uint256 amountToApprove) public {
+    _amountToApprove = amountToApprove;
+  }
+
+  function amountToApprove() public view returns (uint256) {
+    return _amountToApprove;
   }
 
   function executeOperation(
-    address _reserve,
-    address _destination,
-    uint256 _amount,
-    uint256 _fee,
-    bytes memory _params
+    address reserve,
+    uint256 amount,
+    uint256 fee,
+    bytes memory params
   ) public override {
     //mint to this contract the specific amount
-    MintableERC20 token = MintableERC20(_reserve);
+    MintableERC20 token = MintableERC20(reserve);
 
     //check the contract has the specified balance
-    require(
-      _amount <= IERC20(_reserve).balanceOf(address(this)),
-      'Invalid balance for the contract'
-    );
+    require(amount <= IERC20(reserve).balanceOf(address(this)), 'Invalid balance for the contract');
 
-    if (failExecution) {
-      emit ExecutedWithFail(_reserve, _amount, _fee);
+    uint256 amountToReturn = (_amountToApprove != 0) ? _amountToApprove : amount.add(fee);
+
+    if (_failExecution) {
+      emit ExecutedWithFail(reserve, amount, fee);
       return;
     }
 
     //execution does not fail - mint tokens and return them to the _destination
     //note: if the reserve is eth, the mock contract must receive at least _fee ETH before calling executeOperation
 
-    token.mint(_fee);
+    token.mint(fee);
 
-    //returning amount + fee to the destination
-    _transferFundsBack(_reserve, _destination, _amount.add(_fee));
+    IERC20(reserve).approve(_addressesProvider.getLendingPool(), amountToReturn);
 
-    emit ExecutedWithSuccess(_reserve, _amount, _fee);
+    emit ExecutedWithSuccess(reserve, amount, fee);
   }
 }

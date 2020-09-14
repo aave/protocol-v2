@@ -206,7 +206,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "0",
             "user": "1"
           },
@@ -227,6 +226,40 @@
           },
           "expected": "revert",
           "revertMessage": "Amount must be greater than 0"
+        }
+      ]
+    },
+    {
+      "description": "User 1 deposits 100 DAI on behalf of user 2, user 2 tries to borrow 0.1 WETH",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "DAI",
+            "amount": "100",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "DAI",
+            "amount": "100",
+            "user": "1",
+            "onBehalfOf": "2"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "WETH",
+            "amount": "0.1",
+            "borrowRateMode": "variable",
+            "user": "2"
+          },
+          "expected": "success"
         }
       ]
     }

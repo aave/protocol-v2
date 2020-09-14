@@ -9,9 +9,6 @@ import {
   setUseAsCollateral,
   swapBorrowRateMode,
   rebalanceStableBorrowRate,
-  redirectInterestStream,
-  redirectInterestStreamOf,
-  allowInterestRedirectionTo,
 } from './actions';
 import {RateMode} from '../../helpers/types';
 
@@ -92,13 +89,25 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'deposit':
       {
-        const {amount, sendValue} = action.args;
+        const {amount, sendValue, onBehalfOf: onBehalfOfIndex} = action.args;
+        const onBehalfOf = onBehalfOfIndex
+          ? users[parseInt(onBehalfOfIndex)].address
+          : user.address;
 
         if (!amount || amount === '') {
           throw `Invalid amount to deposit into the ${reserve} reserve`;
         }
 
-        await deposit(reserve, amount, user, sendValue, expected, testEnv, revertMessage);
+        await deposit(
+          reserve,
+          amount,
+          user,
+          onBehalfOf,
+          sendValue,
+          expected,
+          testEnv,
+          revertMessage
+        );
       }
       break;
 
@@ -186,70 +195,6 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       }
       break;
 
-    case 'redirectInterestStream':
-      {
-        const {to: toIndex} = action.args;
-
-        if (!toIndex || toIndex === '') {
-          throw `A target must be selected when trying to redirect the interest`;
-        }
-        const toUser = users[parseInt(toIndex)];
-
-        await redirectInterestStream(
-          reserve,
-          user,
-          toUser.address,
-          expected,
-          testEnv,
-          revertMessage
-        );
-      }
-      break;
-
-    case 'redirectInterestStreamOf':
-      {
-        const {from: fromIndex, to: toIndex} = action.args;
-
-        if (!fromIndex || fromIndex === '') {
-          throw `A from address must be specified when trying to redirect the interest`;
-        }
-        if (!toIndex || toIndex === '') {
-          throw `A target must be selected when trying to redirect the interest`;
-        }
-        const toUser = users[parseInt(toIndex)];
-        const fromUser = users[parseInt(fromIndex)];
-
-        await redirectInterestStreamOf(
-          reserve,
-          user,
-          fromUser.address,
-          toUser.address,
-          expected,
-          testEnv,
-          revertMessage
-        );
-      }
-      break;
-
-    case 'allowInterestRedirectionTo':
-      {
-        const {to: toIndex} = action.args;
-
-        if (!toIndex || toIndex === '') {
-          throw `A target must be selected when trying to redirect the interest`;
-        }
-        const toUser = users[parseInt(toIndex)];
-
-        await allowInterestRedirectionTo(
-          reserve,
-          user,
-          toUser.address,
-          expected,
-          testEnv,
-          revertMessage
-        );
-      }
-      break;
     default:
       throw `Invalid action requested: ${name}`;
   }

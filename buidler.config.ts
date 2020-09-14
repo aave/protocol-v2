@@ -71,6 +71,9 @@ const buidlerConfig: any = {
     timeout: 0,
   },
   networks: {
+    coverage: {
+      url: 'http://localhost:8555',
+    },
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),

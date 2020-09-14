@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
+import {Errors} from '../helpers/Errors.sol';
 
 /**
  * @title WadRayMath library
@@ -10,8 +10,6 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
  **/
 
 library WadRayMath {
-  using SafeMath for uint256;
-
   uint256 internal constant WAD = 1e18;
   uint256 internal constant halfWAD = WAD / 2;
 
@@ -56,7 +54,19 @@ library WadRayMath {
    * @return the result of a*b, in wad
    **/
   function wadMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    return halfWAD.add(a.mul(b)).div(WAD);
+    if (a == 0) {
+      return 0;
+    }
+
+    uint256 result = a * b;
+
+    require(result / a == b, Errors.MULTIPLICATION_OVERFLOW);
+
+    result += halfWAD;
+
+    require(result >= halfWAD, Errors.ADDITION_OVERFLOW);
+
+    return result / WAD;
   }
 
   /**
@@ -66,9 +76,19 @@ library WadRayMath {
    * @return the result of a/b, in wad
    **/
   function wadDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+    require(b != 0, Errors.DIVISION_BY_ZERO);
+
     uint256 halfB = b / 2;
 
-    return halfB.add(a.mul(WAD)).div(b);
+    uint256 result = a * WAD;
+
+    require(result / WAD == a, Errors.MULTIPLICATION_OVERFLOW);
+
+    result += halfB;
+
+    require(result >= halfB, Errors.ADDITION_OVERFLOW);
+
+    return result / b;
   }
 
   /**
@@ -78,7 +98,19 @@ library WadRayMath {
    * @return the result of a*b, in ray
    **/
   function rayMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    return halfRAY.add(a.mul(b)).div(RAY);
+    if (a == 0) {
+      return 0;
+    }
+
+    uint256 result = a * b;
+
+    require(result / a == b, Errors.MULTIPLICATION_OVERFLOW);
+
+    result += halfRAY;
+
+    require(result >= halfRAY, Errors.ADDITION_OVERFLOW);
+
+    return result / RAY;
   }
 
   /**
@@ -88,9 +120,19 @@ library WadRayMath {
    * @return the result of a/b, in ray
    **/
   function rayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+    require(b != 0, Errors.DIVISION_BY_ZERO);
+
     uint256 halfB = b / 2;
 
-    return halfB.add(a.mul(RAY)).div(b);
+    uint256 result = a * RAY;
+
+    require(result / RAY == a, Errors.MULTIPLICATION_OVERFLOW);
+
+    result += halfB;
+
+    require(result >= halfB, Errors.ADDITION_OVERFLOW);
+
+    return result / b;
   }
 
   /**
@@ -100,8 +142,10 @@ library WadRayMath {
    **/
   function rayToWad(uint256 a) internal pure returns (uint256) {
     uint256 halfRatio = WAD_RAY_RATIO / 2;
+    uint256 result = halfRatio + a;
+    require(result >= halfRatio, Errors.ADDITION_OVERFLOW);
 
-    return halfRatio.add(a).div(WAD_RAY_RATIO);
+    return result / WAD_RAY_RATIO;
   }
 
   /**
@@ -110,6 +154,8 @@ library WadRayMath {
    * @return a converted in ray
    **/
   function wadToRay(uint256 a) internal pure returns (uint256) {
-    return a.mul(WAD_RAY_RATIO);
+    uint256 result = a * WAD_RAY_RATIO;
+    require(result / WAD_RAY_RATIO == a, Errors.MULTIPLICATION_OVERFLOW);
+    return result;
   }
 }

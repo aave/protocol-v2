@@ -10,7 +10,7 @@ const APPROVAL_AMOUNT_LENDING_POOL =
 const {expect} = require('chai');
 
 makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
-  const {INVALID_POOL_MANAGER_CALLER_MSG} = ProtocolErrors;
+  const {CALLER_NOT_LENDING_POOL_MANAGER, RESERVE_LIQUIDITY_NOT_0} = ProtocolErrors;
 
   it('Deactivates the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
@@ -31,16 +31,16 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).deactivateReserve(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Check the onlyLendingPoolManager on activateReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).activateReserve(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Freezes the ETH reserve', async () => {
@@ -62,16 +62,16 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).freezeReserve(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Check the onlyLendingPoolManager on unfreezeReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).unfreezeReserve(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Deactivates the ETH reserve for borrowing', async () => {
@@ -94,16 +94,16 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).disableBorrowingOnReserve(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Check the onlyLendingPoolManager on enableBorrowingOnReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).enableBorrowingOnReserve(weth.address, true),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Deactivates the ETH reserve as collateral', async () => {
@@ -125,8 +125,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).disableReserveAsCollateral(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Check the onlyLendingPoolManager on enableReserveAsCollateral ', async () => {
@@ -135,8 +135,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       configurator
         .connect(users[2].signer)
         .enableReserveAsCollateral(weth.address, '75', '80', '105'),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Disable stable borrow rate on the ETH reserve', async () => {
@@ -157,16 +157,16 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).disableReserveStableRate(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Check the onlyLendingPoolManager on enableReserveStableRate', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).enableReserveStableRate(weth.address),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Changes LTV of the reserve', async () => {
@@ -180,8 +180,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLtv(weth.address, '75'),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Changes liquidation threshold of the reserve', async () => {
@@ -198,8 +198,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLiquidationThreshold(weth.address, '80'),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Changes liquidation bonus of the reserve', async () => {
@@ -216,29 +216,29 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Check the onlyLendingPoolManager on setReserveDecimals', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setReserveDecimals(weth.address, '80'),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
-      INVALID_POOL_MANAGER_CALLER_MSG
-    ).to.be.revertedWith(INVALID_POOL_MANAGER_CALLER_MSG);
+      CALLER_NOT_LENDING_POOL_MANAGER
+    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
   });
 
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
     const {dai, pool, configurator} = testEnv;
-
+    const userAddress = await pool.signer.getAddress();
     await dai.mint(await convertToCurrencyDecimals(dai.address, '1000'));
 
     //approve protocol to access depositor wallet
@@ -246,11 +246,11 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
     //user 1 deposits 1000 DAI
-    await pool.deposit(dai.address, amountDAItoDeposit, '0');
+    await pool.deposit(dai.address, amountDAItoDeposit, userAddress, '0');
 
     await expect(
       configurator.deactivateReserve(dai.address),
-      'The liquidity of the reserve needs to be 0'
-    ).to.be.revertedWith('The liquidity of the reserve needs to be 0');
+      RESERVE_LIQUIDITY_NOT_0
+    ).to.be.revertedWith(RESERVE_LIQUIDITY_NOT_0);
   });
 });

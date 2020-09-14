@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 
-import {BRE} from '../helpers/misc-utils';
+import {BRE, increaseTime} from '../helpers/misc-utils';
 import {oneEther} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
@@ -17,12 +17,15 @@ const chai = require('chai');
 const {expect} = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving the underlying asset', (testEnv) => {
-  const {
-    HF_IS_NOT_BELLOW_THRESHOLD,
-    INVALID_HF,
-    USER_DID_NOT_BORROW_SPECIFIED,
-    THE_COLLATERAL_CHOSEN_CANNOT_BE_LIQUIDATED,
-  } = ProtocolErrors;
+  const {INVALID_HF} = ProtocolErrors;
+
+  before('Before LendingPool liquidation: set config', () => {
+    BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
+  });
+
+  after('After LendingPool liquidation: reset config', () => {
+    BigNumber.config({DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP});
+  });
 
   it('LIQUIDATION - Deposits WETH, borrows DAI', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
@@ -38,7 +41,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
-    await pool.connect(depositor.signer).deposit(dai.address, amountDAItoDeposit, '0');
+    await pool
+      .connect(depositor.signer)
+      .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
     //user 2 deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
@@ -48,7 +53,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //approve protocol to access the borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
+    await pool
+      .connect(borrower.signer)
+      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
 
     //user 2 borrows
 
@@ -71,7 +78,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
       '8000',
-      'Invalid liquidation threshold'
+      INVALID_HF
     );
   });
 
@@ -90,7 +97,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(
       oneEther.toFixed(0),
-      'Invalid health factor'
+      INVALID_HF
     );
   });
 
@@ -111,6 +118,8 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const userReserveDataBefore = await getUserData(pool, dai.address, borrower.address);
 
     const amountToLiquidate = userReserveDataBefore.currentStableDebt.div(2).toFixed(0);
+
+    await increaseTime(100);
 
     const tx = await pool
       .connect(liquidator.signer)
@@ -159,7 +168,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       daiReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );
@@ -203,7 +212,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //depositor deposits 1000 USDC
     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
 
-    await pool.connect(depositor.signer).deposit(usdc.address, amountUSDCtoDeposit, '0');
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
     //borrower deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
@@ -214,7 +225,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //approve protocol to access the borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
+    await pool
+      .connect(borrower.signer)
+      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
 
     //borrower borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -225,7 +238,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       usdc.address,
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(usdcPrice.toString())
-        .multipliedBy(0.95)
+        .multipliedBy(0.9502)
         .toFixed(0)
     );
 
@@ -253,10 +266,11 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const usdcReserveDataBefore = await pool.getReserveData(usdc.address);
     const ethReserveDataBefore = await pool.getReserveData(weth.address);
 
-    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
+    const amountToLiquidate = BRE.ethers.BigNumber.from(
+      userReserveDataBefore.currentStableDebt.toString()
+    )
       .div(2)
-      .decimalPlaces(0, BigNumber.ROUND_DOWN)
-      .toFixed(0);
+      .toString();
 
     await pool
       .connect(liquidator.signer)
@@ -301,7 +315,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       usdcReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );
@@ -343,7 +357,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //borrower deposits 1000 LEND
     const amountLENDtoDeposit = await convertToCurrencyDecimals(lend.address, '1000');
 
-    await pool.connect(borrower.signer).deposit(lend.address, amountLENDtoDeposit, '0');
+    await pool
+      .connect(borrower.signer)
+      .deposit(lend.address, amountLENDtoDeposit, borrower.address, '0');
     const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
     //drops HF below 1

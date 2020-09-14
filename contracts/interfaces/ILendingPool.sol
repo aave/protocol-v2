@@ -15,7 +15,8 @@ interface ILendingPool {
    **/
   event Deposit(
     address indexed reserve,
-    address indexed user,
+    address user,
+    address indexed onBehalfOf,
     uint256 amount,
     uint16 indexed referral
   );
@@ -63,7 +64,7 @@ interface ILendingPool {
    * @param reserve the address of the reserve
    * @param user the address of the user executing the swap
    **/
-  event Swap(address indexed reserve, address indexed user, uint256 timestamp);
+  event Swap(address indexed reserve, address indexed user);
 
   /**
    * @dev emitted when a user enables a reserve as collateral
@@ -90,13 +91,15 @@ interface ILendingPool {
    * @param target the address of the flashLoanReceiver
    * @param reserve the address of the reserve
    * @param amount the amount requested
-   * @param totalFee the total fee on the amount
+   * @param totalPremium the total fee on the amount
+   * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
     address indexed reserve,
     uint256 amount,
-    uint256 totalFee
+    uint256 totalPremium,
+    uint16 referralCode
   );
   /**
    * @dev these events are not emitted directly by the LendingPool
@@ -105,21 +108,6 @@ interface ILendingPool {
    * This allows to have the events in the generated ABI for LendingPool.
    **/
 
-  /**
-   * @dev emitted when a borrow fee is liquidated
-   * @param collateral the address of the collateral being liquidated
-   * @param reserve the address of the reserve
-   * @param user the address of the user being liquidated
-   * @param feeLiquidated the total fee liquidated
-   * @param liquidatedCollateralForFee the amount of collateral received by the protocol in exchange for the fee
-   **/
-  event OriginationFeeLiquidated(
-    address indexed collateral,
-    address indexed reserve,
-    address indexed user,
-    uint256 feeLiquidated,
-    uint256 liquidatedCollateralForFee
-  );
   /**
    * @dev emitted when a borrower is liquidated
    * @param collateral the address of the collateral being liquidated
@@ -152,6 +140,7 @@ interface ILendingPool {
   function deposit(
     address reserve,
     uint256 amount,
+    address onBehalfOf,
     uint16 referralCode
   ) external;
 
@@ -232,18 +221,43 @@ interface ILendingPool {
   ) external;
 
   /**
+   * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
+   * - Both the owner of the position and other liquidators can execute it
+   * - The owner can repay with his collateral at any point, no matter the health factor
+   * - Other liquidators can only use this function below 1 HF. To liquidate 50% of the debt > HF 0.98 or the whole below
+   * @param collateral The address of the collateral asset
+   * @param principal The address of the owed asset
+   * @param user Address of the borrower
+   * @param principalAmount Amount of the debt to repay. type(uint256).max to repay the maximum possible
+   * @param receiver Address of the contract receiving the collateral to swap
+   * @param params Variadic bytes param to pass with extra information to the receiver
+   **/
+  function repayWithCollateral(
+    address collateral,
+    address principal,
+    address user,
+    uint256 principalAmount,
+    address receiver,
+    bytes calldata params
+  ) external;
+
+  /**
    * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
    * that must be kept into consideration. For further details please visit https://developers.aave.com
    * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
    * @param reserve the address of the principal reserve
    * @param amount the amount requested for this flashloan
+   * @param params a bytes array to be sent to the flashloan executor
+   * @param referralCode the referral code of the caller
    **/
   function flashLoan(
     address receiver,
     address reserve,
     uint256 amount,
-    bytes calldata params
+    uint256 debtType,
+    bytes calldata params,
+    uint16 referralCode
   ) external;
 
   /**
