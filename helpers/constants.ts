@@ -8,11 +8,15 @@ import {
   IReserveParams,
   tEthereumAddress,
   iBasicDistributionParams,
+  eEthereumNetwork,
 } from './types';
 import BigNumber from 'bignumber.js';
-import {getParamPerPool} from './contracts-helpers';
+import {getParamPerPool, getParamPerNetwork} from './contracts-helpers';
 
 export const TEST_SNAPSHOT_ID = '0x1';
+
+export const BUIDLEREVM_CHAINID = 31337;
+export const COVERAGE_CHAINID = 1337;
 
 // ----------------
 // MATH
@@ -531,3 +535,18 @@ export const getFeeDistributionParamsCommon = (
     percentages,
   };
 };
+
+export const getATokenDomainSeparatorPerNetwork = (
+  network: eEthereumNetwork
+): tEthereumAddress =>
+  getParamPerNetwork<tEthereumAddress>(
+    {
+      [eEthereumNetwork.coverage]: "0x95b73a72c6ecf4ccbbba5178800023260bad8e75cdccdb8e4827a2977a37c820",
+      [eEthereumNetwork.buidlerevm]:
+        "0x76cbbf8aa4b11a7c207dd79ccf8c394f59475301598c9a083f8258b4fafcfa86",
+      [eEthereumNetwork.kovan]: "",
+      [eEthereumNetwork.ropsten]: "",
+      [eEthereumNetwork.main]: "",
+    },
+    network
+  );
