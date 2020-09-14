@@ -211,7 +211,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   * @param owner the owner of the funds
   * @param spender the spender
   * @param value the amount
-  * @param deadline the deadline timestamp, 0 for no deadline
+  * @param deadline the deadline timestamp, type(uint256).max for max deadline
   * @param v signature param
   * @param s signature param
   * @param r signature param
