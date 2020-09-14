@@ -76,4 +76,14 @@ library Errors {
   string public constant MULTIPLICATION_OVERFLOW = '44';
   string public constant ADDITION_OVERFLOW = '45';
   string public constant DIVISION_BY_ZERO = '46';
+
+  enum LiquidationErrors {
+    NO_ERROR,
+    NO_COLLATERAL_AVAILABLE,
+    COLLATERAL_CANNOT_BE_LIQUIDATED,
+    CURRRENCY_NOT_BORROWED,
+    HEALTH_FACTOR_ABOVE_THRESHOLD,
+    NOT_ENOUGH_LIQUIDITY,
+    NO_ACTIVE_RESERVE
+  }
 }
