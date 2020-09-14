@@ -24,8 +24,21 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
 
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
   address public immutable UNDERLYING_ASSET_ADDRESS;
-  uint256 public constant ATOKEN_REVISION = 0x1;
   LendingPool public immutable POOL;
+
+  /// @dev owner => next valid nonce to submit with permit()
+  mapping(address => uint256) public _nonces;
+
+  uint256 public constant ATOKEN_REVISION = 0x1;
+
+  bytes32 public DOMAIN_SEPARATOR;
+  bytes public constant EIP712_REVISION = bytes('1');
+  bytes32 internal constant EIP712_DOMAIN = keccak256(
+    'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+  );
+  bytes32 public constant PERMIT_TYPEHASH = keccak256(
+    'Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)'
+  );
 
   modifier onlyLendingPool {
     require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
@@ -51,6 +64,23 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     string calldata tokenName,
     string calldata tokenSymbol
   ) external virtual initializer {
+    uint256 chainId;
+
+    //solium-disable-next-line
+    assembly {
+      chainId := chainid()
+    }
+
+    DOMAIN_SEPARATOR = keccak256(
+      abi.encode(
+        EIP712_DOMAIN,
+        keccak256(bytes(tokenName)),
+        keccak256(EIP712_REVISION),
+        chainId,
+        address(this)
+      )
+    );
+
     _setName(tokenName);
     _setSymbol(tokenSymbol);
     _setDecimals(underlyingAssetDecimals);
@@ -178,6 +208,41 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   {
     ERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(target, amount);
     return amount;
+  }
+
+  /**
+   * @dev implements the permit function as for https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
+   * @param owner the owner of the funds
+   * @param spender the spender
+   * @param value the amount
+   * @param deadline the deadline timestamp, type(uint256).max for max deadline
+   * @param v signature param
+   * @param s signature param
+   * @param r signature param
+   */
+  function permit(
+    address owner,
+    address spender,
+    uint256 value,
+    uint256 deadline,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  ) external {
+    require(owner != address(0), 'INVALID_OWNER');
+    //solium-disable-next-line
+    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    uint256 currentValidNonce = _nonces[owner];
+    bytes32 digest = keccak256(
+      abi.encodePacked(
+        '\x19\x01',
+        DOMAIN_SEPARATOR,
+        keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
+      )
+    );
+    require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+    _nonces[owner] = currentValidNonce.add(1);
+    _approve(owner, spender, value);
   }
 
   function _transfer(

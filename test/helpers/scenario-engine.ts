@@ -8,7 +8,8 @@ import {
   repay,
   setUseAsCollateral,
   swapBorrowRateMode,
-  rebalanceStableBorrowRate
+  rebalanceStableBorrowRate,
+  delegateBorrowAllowance,
 } from './actions';
 import {RateMode} from '../../helpers/types';
 
@@ -59,7 +60,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
   if (borrowRateMode) {
     if (borrowRateMode === 'none') {
-      RateMode.None;
+      rateMode = RateMode.None;
     } else if (borrowRateMode === 'stable') {
       rateMode = RateMode.Stable;
     } else if (borrowRateMode === 'variable') {
@@ -111,6 +112,27 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       }
       break;
 
+    case 'delegateBorrowAllowance':
+      {
+        const {amount, toUser: toUserIndex} = action.args;
+        const toUser = users[parseInt(toUserIndex, 10)].address;
+        if (!amount || amount === '') {
+          throw `Invalid amount to deposit into the ${reserve} reserve`;
+        }
+
+        await delegateBorrowAllowance(
+          reserve,
+          amount,
+          rateMode,
+          user,
+          toUser,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
+
     case 'withdraw':
       {
         const {amount} = action.args;
@@ -124,13 +146,27 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       break;
     case 'borrow':
       {
-        const {amount, timeTravel} = action.args;
+        const {amount, timeTravel, onBehalfOf: onBehalfOfIndex} = action.args;
+
+        const onBehalfOf = onBehalfOfIndex
+          ? users[parseInt(onBehalfOfIndex)].address
+          : user.address;
 
         if (!amount || amount === '') {
           throw `Invalid amount to borrow from the ${reserve} reserve`;
         }
 
-        await borrow(reserve, amount, rateMode, user, timeTravel, expected, testEnv, revertMessage);
+        await borrow(
+          reserve,
+          amount,
+          rateMode,
+          user,
+          onBehalfOf,
+          timeTravel,
+          expected,
+          testEnv,
+          revertMessage
+        );
       }
       break;
 
@@ -194,7 +230,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
         await rebalanceStableBorrowRate(reserve, user, target, expected, testEnv, revertMessage);
       }
       break;
-   
+
     default:
       throw `Invalid action requested: ${name}`;
   }

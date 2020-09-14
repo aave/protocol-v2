@@ -62,14 +62,11 @@ library ReserveLogic {
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
     uint40 lastUpdateTimestamp;
-   
     //tokens addresses
     address aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
-    
     address interestRateStrategyAddress;
-
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
   }
@@ -118,6 +115,28 @@ library ReserveLogic {
       .rayMul(reserve.variableBorrowIndex);
 
     return cumulated;
+  }
+
+  /**
+   * @dev returns an address of the debt token used for particular interest rate mode on asset.
+   * @param reserve the reserve object
+   * @param interestRateMode - STABLE or VARIABLE from ReserveLogic.InterestRateMode enum
+   * @return an address of the corresponding debt token from reserve configuration
+   **/
+  function getDebtTokenAddress(ReserveLogic.ReserveData storage reserve, uint256 interestRateMode)
+    internal
+    view
+    returns (address)
+  {
+    require(
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode) ||
+        ReserveLogic.InterestRateMode.VARIABLE == ReserveLogic.InterestRateMode(interestRateMode),
+      Errors.INVALID_INTEREST_RATE_MODE_SELECTED
+    );
+    return
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode)
+        ? reserve.stableDebtTokenAddress
+        : reserve.variableDebtTokenAddress;
   }
 
   /**

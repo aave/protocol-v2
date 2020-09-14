@@ -219,7 +219,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     await pool
       .connect(borrower.signer)
-      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Stable, '0');
+      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Stable, '0', borrower.address);
 
     // Drops HF below 1
     await oracle.setAssetPrice(
@@ -264,7 +264,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
     await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
 
     const amountToRepay = parseUnits('65', 6);
 
@@ -306,7 +306,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
     await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
 
     // Pause pool
     await configurator.pausePool();

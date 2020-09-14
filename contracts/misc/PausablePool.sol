@@ -1,5 +1,7 @@
 pragma solidity ^0.6.8;
 
+// Comments made with // are due current max code size at LendingPool
+
 // import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
