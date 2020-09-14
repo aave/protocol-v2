@@ -388,5 +388,5 @@ interface ILendingPool {
 
   function unpause() external;
 
-  function isPaused() external view returns (bool);
+  function paused() external view returns (bool);
 }

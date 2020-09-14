@@ -918,20 +918,20 @@ contract LendingPool is VersionedInitializable, PausablePool, ILendingPool {
    * @dev pause all the Lending Pool actions
    */
   function pause() external override onlyLendingPoolConfigurator {
-    _pause();
+    PausablePool._pause();
   }
 
   /**
    * @dev unpause all the Lending Pool actions
    */
   function unpause() external override onlyLendingPoolConfigurator {
-    _unpause();
+    PausablePool._unpause();
   }
 
   /**
    * @dev retrieve pause status
    */
-  function isPaused() public override view returns (bool) {
+  function paused() public override(PausablePool, ILendingPool) view returns (bool) {
     return PausablePool.paused();
   }
 }
