@@ -5,6 +5,7 @@ export enum eEthereumNetwork {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
+  coverage = 'coverage'
 }
 
 export enum AavePools {
@@ -245,6 +246,8 @@ export interface IMarketRates {
 }
 
 export interface iParamsPerNetwork<T> {
+  [eEthereumNetwork.coverage]: T;
+  [eEthereumNetwork.buidlerevm]: T;
   [eEthereumNetwork.kovan]: T;
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
