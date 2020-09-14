@@ -21,6 +21,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   uint256 private _avgStableRate;
   mapping(address => uint40) _timestamps;
+  uint40 _totalSupplyTimestamp;
 
   constructor(
     address pool,
@@ -76,7 +77,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       stableRate,
       _timestamps[account]
     );
-    return accountBalance.wadToRay().rayMul(cumulatedInterest).rayToWad();
+    return accountBalance.rayMul(cumulatedInterest);
   }
 
   struct MintLocalVars {
@@ -122,7 +123,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _usersData[user] = vars.newStableRate;
 
     //solium-disable-next-line
-    _timestamps[user] = uint40(block.timestamp);
+    _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
 
 
     //calculates the updated average stable rate
@@ -172,7 +173,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _timestamps[user] = 0;
     } else {
       //solium-disable-next-line
-      _timestamps[user] = uint40(block.timestamp);
+      _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
     }
 
     if (balanceIncrease > amount) {
@@ -206,6 +207,22 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       previousPrincipalBalance.add(balanceIncrease),
       balanceIncrease
     );
+  }
+
+  function principalTotalSupply() public override view returns(uint256) {
+    return super.totalSupply();
+  }
+  
+  function totalSupply() public override view returns(uint256) {
+    uint256 principalSupply = super.totalSupply();
+    if (principalSupply == 0) {
+      return 0;
+    }
+    uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(
+      _avgStableRate,
+      _totalSupplyTimestamp
+    );
+    return principalSupply.rayMul(cumulatedInterest);
   }
 
 }

@@ -242,6 +242,12 @@ library ReserveLogic {
     );
   }
 
+  function _mintToTreasury(ReserveData storage reserve) internal {
+
+        
+
+  }
+
   function _updateIndexes(ReserveData storage reserve) internal {
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
