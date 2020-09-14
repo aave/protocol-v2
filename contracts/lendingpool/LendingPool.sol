@@ -4,7 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -25,6 +24,7 @@ import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import {PausablePool} from '../misc/PausablePool.sol';
 
 /**
  * @title LendingPool contract
@@ -32,7 +32,7 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
  * @author Aave
  **/
 
-contract LendingPool is VersionedInitializable, Pausable, ILendingPool {
+contract LendingPool is VersionedInitializable, PausablePool, ILendingPool {
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using ReserveLogic for ReserveLogic.ReserveData;
@@ -929,9 +929,9 @@ contract LendingPool is VersionedInitializable, Pausable, ILendingPool {
   }
 
   /**
-   * @dev Returns true if the contract is paused, and false otherwise.
+   * @dev retrieve pause status
    */
   function isPaused() public override view returns (bool) {
-    return Pausable.paused();
+    return PausablePool.paused();
   }
 }
