@@ -190,6 +190,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param amount the amount to be borrowed
    * @param interestRateMode the interest rate mode at which the user wants to borrow. Can be 0 (STABLE) or 1 (VARIABLE)
    * @param referralCode a referral code for integrators
+   * @param onBehalfOf address of the user who will receive the debt
    **/
   function borrow(
     address asset,
