@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -31,7 +32,7 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
  * @author Aave
  **/
 
-contract LendingPool is VersionedInitializable, ILendingPool {
+contract LendingPool is VersionedInitializable, Pausable, ILendingPool {
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using ReserveLogic for ReserveLogic.ReserveData;
@@ -93,7 +94,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
-  ) external override {
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -121,7 +122,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve
    * @param amount the underlying amount to be redeemed
    **/
-  function withdraw(address asset, uint256 amount) external override {
+  function withdraw(address asset, uint256 amount) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
@@ -172,7 +173,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode
-  ) external override {
+  ) external override whenNotPaused {
     _executeBorrow(
       ExecuteBorrowParams(
         asset,
@@ -199,7 +200,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external override {
+  ) external override whenNotPaused {
     _executeRepay(asset, msg.sender, amount, rateMode, onBehalfOf);
   }
 
@@ -260,7 +261,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve on which the user borrowed
    * @param rateMode the rate mode that the user wants to swap
    **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override {
+  function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -303,7 +304,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve
    * @param user the address of the user to be rebalanced
    **/
-  function rebalanceStableBorrowRate(address asset, address user) external override {
+  function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     IStableDebtToken stableDebtToken = IStableDebtToken(reserve.stableDebtTokenAddress);
@@ -348,7 +349,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param asset the address of the reserve
    * @param useAsCollateral true if the user wants to user the deposit as collateral, false otherwise.
    **/
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
+  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
+    external
+    override
+    whenNotPaused
+  {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
@@ -384,7 +389,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address user,
     uint256 purchaseAmount,
     bool receiveAToken
-  ) external override {
+  ) external override whenNotPaused {
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -440,7 +445,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 principalAmount,
     address receiver,
     bytes calldata params
-  ) external override {
+  ) external override whenNotPaused {
     require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
     _flashLiquidationLocked = true;
 
@@ -487,7 +492,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 mode,
     bytes calldata params,
     uint16 referralCode
-  ) external override {
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
     FlashLoanLocalVars memory vars;
 
@@ -706,7 +711,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external override onlyLendingPoolConfigurator {
+  ) external override onlyLendingPoolConfigurator whenNotPaused {
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
@@ -726,6 +731,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     external
     override
     onlyLendingPoolConfigurator
+    whenNotPaused
   {
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
@@ -907,5 +913,26 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    **/
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
+  }
+
+  /**
+   * @dev pause all the Lending Pool actions
+   */
+  function pause() external override onlyLendingPoolConfigurator {
+    _pause();
+  }
+
+  /**
+   * @dev unpause all the Lending Pool actions
+   */
+  function unpause() external override onlyLendingPoolConfigurator {
+    _unpause();
+  }
+
+  /**
+   * @dev Returns true if the contract is paused, and false otherwise.
+   */
+  function isPaused() public override view returns (bool) {
+    return Pausable.paused();
   }
 }

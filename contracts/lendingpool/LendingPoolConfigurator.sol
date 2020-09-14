@@ -582,4 +582,18 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     proxy.upgradeToAndCall(implementation, params);
   }
+
+  /**
+   * @dev pauses LendingPool actions
+   **/
+  function pausePool() external onlyLendingPoolManager {
+    pool.pause();
+  }
+
+  /**
+   * @dev unpauses LendingPool actions
+   **/
+  function unpausePool() external onlyLendingPoolManager {
+    pool.unpause();
+  }
 }
