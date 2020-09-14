@@ -241,9 +241,9 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
     }
 
-    IERC20(asset).safeTransferFrom(user, aToken, paybackAmount);
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
 
-    emit Repay(asset, onBehalfOf, user, paybackAmount);
+    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
   }
 
   /**
