@@ -14,11 +14,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   const {
     INVALID_FROM_BALANCE_AFTER_TRANSFER,
     INVALID_TO_BALANCE_AFTER_TRANSFER,
-    INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER,
-    INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER,
-    INVALID_REDIRECTION_ADDRESS,
     // ZERO_COLLATERAL,
-    TRANSFER_AMOUNT_NOT_GT_0,
     COLLATERAL_BALANCE_IS_0,
     TRANSFER_NOT_ALLOWED,
   } = ProtocolErrors;
@@ -64,7 +60,13 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(users[1].signer)
-        .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL),
+        .borrow(
+          weth.address,
+          ethers.utils.parseEther('0.1'),
+          RateMode.Stable,
+          AAVE_REFERRAL,
+          users[1].address
+        ),
       COLLATERAL_BALANCE_IS_0
     ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
   });
@@ -77,7 +79,13 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
     await pool
       .connect(users[1].signer)
-      .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL);
+      .borrow(
+        weth.address,
+        ethers.utils.parseEther('0.1'),
+        RateMode.Stable,
+        AAVE_REFERRAL,
+        users[1].address
+      );
 
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),

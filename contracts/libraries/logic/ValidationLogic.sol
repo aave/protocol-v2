@@ -101,7 +101,7 @@ library ValidationLogic {
   /**
    * @dev validates a borrow.
    * @param reserve the reserve state from which the user is borrowing
-   * @param reserveAddress the address of the reserve
+   * @param userAddress the address of the user
    * @param amount the amount to be borrowed
    * @param amountInETH the amount to be borrowed, in ETH
    * @param interestRateMode the interest rate mode at which the user is borrowing
@@ -114,7 +114,7 @@ library ValidationLogic {
 
   function validateBorrow(
     ReserveLogic.ReserveData storage reserve,
-    address reserveAddress,
+    address userAddress,
     uint256 amount,
     uint256 amountInETH,
     uint256 interestRateMode,
@@ -152,7 +152,7 @@ library ValidationLogic {
       vars.currentLiquidationThreshold,
       vars.healthFactor
     ) = GenericLogic.calculateUserAccountData(
-      msg.sender,
+      userAddress,
       reservesData,
       userConfig,
       reserves,
@@ -191,9 +191,9 @@ library ValidationLogic {
       require(vars.stableRateBorrowingEnabled, Errors.STABLE_BORROWING_NOT_ENABLED);
 
       require(
-        !userConfig.isUsingAsCollateral(reserve.index) ||
+        !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
-          amount > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
+          amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
@@ -275,7 +275,7 @@ library ValidationLogic {
       require(stableRateEnabled, Errors.STABLE_BORROWING_NOT_ENABLED);
 
       require(
-        !userConfig.isUsingAsCollateral(reserve.index) ||
+        !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
           stableBorrowBalance.add(variableBorrowBalance) >
           IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
@@ -364,7 +364,7 @@ library ValidationLogic {
 
     bool isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-      userConfig.isUsingAsCollateral(collateralReserve.index);
+      userConfig.isUsingAsCollateral(collateralReserve.id);
 
     //if collateral isn't enabled as collateral by user, it cannot be liquidated
     if (!isCollateralEnabled) {
@@ -422,7 +422,7 @@ library ValidationLogic {
     if (msg.sender != user) {
       bool isCollateralEnabled =
         collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-        userConfig.isUsingAsCollateral(collateralReserve.index);
+        userConfig.isUsingAsCollateral(collateralReserve.id);
 
       //if collateral isn't enabled as collateral by user, it cannot be liquidated
       if (!isCollateralEnabled) {

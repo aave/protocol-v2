@@ -51,23 +51,27 @@ library ReserveLogic {
   struct ReserveData {
     //stores the reserve configuration
     ReserveConfiguration.Map configuration;
-    address aTokenAddress;
-    address stableDebtTokenAddress;
-    address variableDebtTokenAddress;
-    address interestRateStrategyAddress;
     //the liquidity index. Expressed in ray
     uint128 liquidityIndex;
+    //variable borrow index. Expressed in ray
+    uint128 variableBorrowIndex;
     //the current supply rate. Expressed in ray
     uint128 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
-    //variable borrow index. Expressed in ray
-    uint128 lastVariableBorrowIndex;
     uint40 lastUpdateTimestamp;
-    //the index of the reserve in the list of the active reserves
-    uint8 index;
+   
+    //tokens addresses
+    address aTokenAddress;
+    address stableDebtTokenAddress;
+    address variableDebtTokenAddress;
+    
+    address interestRateStrategyAddress;
+
+    //the id of the reserve. Represents the position in the list of the active reserves
+    uint8 id;
   }
 
   /**
@@ -106,14 +110,36 @@ library ReserveLogic {
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.lastVariableBorrowIndex;
+      return reserve.variableBorrowIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp)
-      .rayMul(reserve.lastVariableBorrowIndex);
+      .rayMul(reserve.variableBorrowIndex);
 
     return cumulated;
+  }
+
+  /**
+   * @dev returns an address of the debt token used for particular interest rate mode on asset.
+   * @param reserve the reserve object
+   * @param interestRateMode - STABLE or VARIABLE from ReserveLogic.InterestRateMode enum
+   * @return an address of the corresponding debt token from reserve configuration
+   **/
+  function getDebtTokenAddress(ReserveLogic.ReserveData storage reserve, uint256 interestRateMode)
+    internal
+    view
+    returns (address)
+  {
+    require(
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode) ||
+        ReserveLogic.InterestRateMode.VARIABLE == ReserveLogic.InterestRateMode(interestRateMode),
+      Errors.INVALID_INTEREST_RATE_MODE_SELECTED
+    );
+    return
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode)
+        ? reserve.stableDebtTokenAddress
+        : reserve.variableDebtTokenAddress;
   }
 
   /**
@@ -143,9 +169,9 @@ library ReserveLogic {
           reserve.currentVariableBorrowRate,
           lastUpdateTimestamp
         );
-        index = cumulatedVariableBorrowInterest.rayMul(reserve.lastVariableBorrowIndex);
+        index = cumulatedVariableBorrowInterest.rayMul(reserve.variableBorrowIndex);
         require(index < (1 << 128), Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
-        reserve.lastVariableBorrowIndex = uint128(index);
+        reserve.variableBorrowIndex = uint128(index);
       }
     }
 
@@ -194,8 +220,8 @@ library ReserveLogic {
       reserve.liquidityIndex = uint128(WadRayMath.ray());
     }
 
-    if (reserve.lastVariableBorrowIndex == 0) {
-      reserve.lastVariableBorrowIndex = uint128(WadRayMath.ray());
+    if (reserve.variableBorrowIndex == 0) {
+      reserve.variableBorrowIndex = uint128(WadRayMath.ray());
     }
 
     reserve.aTokenAddress = aTokenAddress;
@@ -260,7 +286,7 @@ library ReserveLogic {
       vars.currentAvgStableRate,
       vars.newVariableRate,
       reserve.liquidityIndex,
-      reserve.lastVariableBorrowIndex
+      reserve.variableBorrowIndex
     );
   }
 }

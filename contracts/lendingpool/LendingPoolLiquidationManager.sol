@@ -44,6 +44,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;
+  mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
 
   address[] internal reservesList;
 
@@ -358,7 +359,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
 
     if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
-      usersConfig[user].setUsingAsCollateral(collateralReserve.index, false);
+      usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
     }
 
     vars.principalAToken = debtReserve.aTokenAddress;
