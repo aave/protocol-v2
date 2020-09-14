@@ -100,7 +100,7 @@ export enum ProtocolErrors {
   INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
 
   IS_PAUSED = '54', // Pool is paused
-  IS_ACTIVE = '55', // Pool is active
+  NOT_PAUSED = '55', // Pool is not paused
 
   // old
 

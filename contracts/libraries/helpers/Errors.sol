@@ -76,5 +76,5 @@ library Errors {
 
   // pausable error message
   string public constant IS_PAUSED = '54'; // 'Pool is paused'
-  string public constant IS_ACTIVE = '55'; // 'Pool is active'
+  string public constant NOT_PAUSED = '55'; // 'Pool is not paused'
 }
