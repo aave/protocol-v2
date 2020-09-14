@@ -15,7 +15,8 @@ interface ILendingPool {
    **/
   event Deposit(
     address indexed reserve,
-    address indexed user,
+    address user,
+    address indexed onBehalfOf,
     uint256 amount,
     uint16 indexed referral
   );
@@ -147,6 +148,7 @@ interface ILendingPool {
   function deposit(
     address reserve,
     uint256 amount,
+    address onBehalfOf,
     uint16 referralCode
   ) external;
 

@@ -40,17 +40,17 @@ export const expectRepayWithCollateralEvent = (
 
 makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
   it('User 1 provides some liquidity for others to borrow', async () => {
-    const {pool, weth, dai, usdc} = testEnv;
+    const {pool, weth, dai, usdc, deployer} = testEnv;
 
     await weth.mint(parseEther('200'));
     await weth.approve(pool.address, parseEther('200'));
-    await pool.deposit(weth.address, parseEther('200'), 0);
+    await pool.deposit(weth.address, parseEther('200'), deployer.address, 0);
     await dai.mint(parseEther('20000'));
     await dai.approve(pool.address, parseEther('20000'));
-    await pool.deposit(dai.address, parseEther('20000'), 0);
+    await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
     await usdc.mint(parseEther('20000'));
     await usdc.approve(pool.address, parseEther('20000'));
-    await pool.deposit(usdc.address, parseEther('20000'), 0);
+    await pool.deposit(usdc.address, parseEther('20000'), deployer.address, 0);
   });
 
   it('User 2 deposit WETH and borrows DAI at Variable', async () => {
@@ -63,7 +63,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
     await pool.connect(user.signer).borrow(dai.address, amountToBorrow, 2, 0, user.address);
   });
@@ -185,7 +185,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
   });
@@ -307,7 +307,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await weth.connect(user.signer).mint(amountToDeposit);
 
-    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrowVariable, 2, 0, user.address);
 
@@ -447,8 +447,8 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(user.signer).deposit(weth.address, amountToDepositWeth, '0');
-    await pool.connect(user.signer).deposit(dai.address, amountToDepositDAI, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountToDepositWeth, user.address, '0');
+    await pool.connect(user.signer).deposit(dai.address, amountToDepositDAI, user.address, '0');
 
     await pool.connect(user.signer).borrow(dai.address, amountToBorrowVariable, 2, 0, user.address);
 
@@ -536,11 +536,11 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await weth.connect(user.signer).mint(amountWETHToDeposit);
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, '0');
+    await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, user.address, '0');
 
     await dai.connect(user.signer).mint(amountDAIToDeposit);
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-    await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, '0');
+    await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, user.address, '0');
 
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
   });

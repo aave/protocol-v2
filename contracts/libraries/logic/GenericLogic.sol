@@ -64,7 +64,7 @@ library GenericLogic {
   ) external view returns (bool) {
     if (
       !userConfig.isBorrowingAny() ||
-      !userConfig.isUsingAsCollateral(reservesData[asset].index)
+      !userConfig.isUsingAsCollateral(reservesData[asset].id)
     ) {
       return true;
     }

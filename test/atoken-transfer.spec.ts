@@ -14,11 +14,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   const {
     INVALID_FROM_BALANCE_AFTER_TRANSFER,
     INVALID_TO_BALANCE_AFTER_TRANSFER,
-    INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER,
-    INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER,
-    INVALID_REDIRECTION_ADDRESS,
     // ZERO_COLLATERAL,
-    TRANSFER_AMOUNT_NOT_GT_0,
     COLLATERAL_BALANCE_IS_0,
     TRANSFER_NOT_ALLOWED,
   } = ProtocolErrors;
@@ -33,7 +29,9 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
-    await pool.connect(users[0].signer).deposit(dai.address, amountDAItoDeposit, '0');
+    await pool
+      .connect(users[0].signer)
+      .deposit(dai.address, amountDAItoDeposit, users[0].address, '0');
 
     await aDai.connect(users[0].signer).transfer(users[1].address, amountDAItoDeposit);
 
@@ -47,59 +45,18 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     );
   });
 
-  it('User 1 redirects interest to user 2, transfers 500 DAI back to user 0', async () => {
-    const {users, aDai, dai} = testEnv;
-    await aDai.connect(users[1].signer).redirectInterestStream(users[2].address);
-
-    const aDAIRedirected = await convertToCurrencyDecimals(dai.address, '1000');
-
-    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '500');
-
-    const user2RedirectedBalanceBefore = await aDai.getRedirectedBalance(users[2].address);
-    expect(user2RedirectedBalanceBefore.toString()).to.be.equal(
-      aDAIRedirected,
-      INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER
-    );
-
-    await aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer);
-
-    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(users[2].address);
-    const user1RedirectionAddress = await aDai.getInterestRedirectionAddress(users[1].address);
-
-    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
-      aDAItoTransfer,
-      INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER
-    );
-    expect(user1RedirectionAddress.toString()).to.be.equal(
-      users[2].address,
-      INVALID_REDIRECTION_ADDRESS
-    );
-  });
-
-  it('User 0 transfers back to user 1', async () => {
-    const {users, aDai, dai, weth} = testEnv;
-    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '500');
-
-    await aDai.connect(users[0].signer).transfer(users[1].address, aDAItoTransfer);
-
-    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(users[2].address);
-
-    const user1BalanceAfter = await aDai.balanceOf(users[1].address);
-
-    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
-      user1BalanceAfter.toString(),
-      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
-    );
-  });
 
   it('User 0 deposits 1 WETH and user 1 tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)', async () => {
     const {users, pool, weth} = testEnv;
+    const userAddress = await pool.signer.getAddress();
 
     await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
 
     await weth.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(users[0].signer).deposit(weth.address, ethers.utils.parseEther('1.0'), '0');
+    await pool
+      .connect(users[0].signer)
+      .deposit(weth.address, ethers.utils.parseEther('1.0'), userAddress, '0');
     await expect(
       pool
         .connect(users[1].signer)
@@ -136,87 +93,4 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     ).to.be.revertedWith(TRANSFER_NOT_ALLOWED);
   });
 
-  it('User 0 tries to transfer 0 balance (revert expected)', async () => {
-    const {users, pool, aDai, dai, weth} = testEnv;
-    await expect(
-      aDai.connect(users[0].signer).transfer(users[1].address, '0'),
-      TRANSFER_AMOUNT_NOT_GT_0
-    ).to.be.revertedWith(TRANSFER_AMOUNT_NOT_GT_0);
-  });
-
-  it('User 1 repays the borrow, transfers aDAI back to user 0', async () => {
-    const {users, pool, aDai, dai, weth} = testEnv;
-
-    await weth.connect(users[1].signer).mint(await convertToCurrencyDecimals(weth.address, '2'));
-
-    await weth.connect(users[1].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    await pool
-      .connect(users[1].signer)
-      .repay(weth.address, MAX_UINT_AMOUNT, RateMode.Stable, users[1].address);
-
-    const aDAItoTransfer = await convertToCurrencyDecimals(aDai.address, '1000');
-
-    await aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer);
-
-    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(users[2].address);
-
-    const user1RedirectionAddress = await aDai.getInterestRedirectionAddress(users[1].address);
-
-    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
-      '0',
-      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
-    );
-
-    expect(user1RedirectionAddress.toString()).to.be.equal(
-      ZERO_ADDRESS,
-      INVALID_REDIRECTION_ADDRESS
-    );
-  });
-
-  it('User 0 redirects interest to user 2, transfers 500 aDAI to user 1. User 1 redirects to user 3. User 0 transfers another 100 aDAI', async () => {
-    const {users, pool, aDai, dai, weth} = testEnv;
-
-    let aDAItoTransfer = await convertToCurrencyDecimals(aDai.address, '500');
-
-    await aDai.connect(users[0].signer).redirectInterestStream(users[2].address);
-
-    await aDai.connect(users[0].signer).transfer(users[1].address, aDAItoTransfer);
-
-    await aDai.connect(users[1].signer).redirectInterestStream(users[3].address);
-
-    aDAItoTransfer = await convertToCurrencyDecimals(aDai.address, '100');
-
-    await aDai.connect(users[0].signer).transfer(users[1].address, aDAItoTransfer);
-
-    const user2RedirectedBalanceAfter = await aDai.getRedirectedBalance(users[2].address);
-    const user3RedirectedBalanceAfter = await aDai.getRedirectedBalance(users[3].address);
-
-    const expectedUser2Redirected = await convertToCurrencyDecimals(aDai.address, '400');
-    const expectedUser3Redirected = await convertToCurrencyDecimals(aDai.address, '600');
-
-    expect(user2RedirectedBalanceAfter.toString()).to.be.equal(
-      expectedUser2Redirected,
-      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
-    );
-    expect(user3RedirectedBalanceAfter.toString()).to.be.equal(
-      expectedUser3Redirected,
-      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
-    );
-  });
-
-  it('User 1 transfers the whole amount to himself', async () => {
-    const {users, pool, aDai, dai} = testEnv;
-
-    const user1BalanceBefore = await aDai.balanceOf(users[1].address);
-
-    await aDai.connect(users[1].signer).transfer(users[1].address, user1BalanceBefore);
-
-    const user1BalanceAfter = await aDai.balanceOf(users[1].address);
-
-    expect(user1BalanceAfter.toString()).to.be.equal(
-      user1BalanceBefore,
-      INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER
-    );
-  });
 });
