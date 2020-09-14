@@ -5,6 +5,7 @@ export enum eEthereumNetwork {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
+  coverage = 'coverage'
 }
 
 export enum AavePools {
@@ -78,11 +79,8 @@ export enum ProtocolErrors {
 
   // require error messages - aToken
   CALLER_MUST_BE_LENDING_POOL = '28', // 'The caller of this function must be a lending pool'
-  INTEREST_REDIRECTION_NOT_ALLOWED = '29', // 'Caller is not allowed to redirect the interest of the user'
   CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
   TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
-  INTEREST_ALREADY_REDIRECTED = '32', // 'Interest is already redirected to the user'
-  NO_VALID_BALANCE_FOR_REDIRECTION = '33', // 'Interest stream can only be redirected if there is a valid balance'
 
   // require error messages - ReserveLogic
   RESERVE_ALREADY_INITIALIZED = '34', // 'Reserve has already been initialized'
@@ -107,9 +105,6 @@ export enum ProtocolErrors {
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
   INVALID_TO_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
   INVALID_OWNER_REVERT_MSG = 'Ownable: caller is not the owner',
-  INVALID_REDIRECTED_BALANCE_BEFORE_TRANSFER = 'Invalid redirected balance before transfer',
-  INVALID_REDIRECTED_BALANCE_AFTER_TRANSFER = 'Invalid redirected balance after transfer',
-  INVALID_REDIRECTION_ADDRESS = 'Invalid redirection address',
   INVALID_HF = 'Invalid health factor',
   TRANSFER_AMOUNT_EXCEEDS_BALANCE = 'ERC20: transfer amount exceeds balance',
   SAFEERC20_LOWLEVEL_CALL = 'SafeERC20: low-level call failed',
@@ -251,6 +246,8 @@ export interface IMarketRates {
 }
 
 export interface iParamsPerNetwork<T> {
+  [eEthereumNetwork.coverage]: T;
+  [eEthereumNetwork.buidlerevm]: T;
   [eEthereumNetwork.kovan]: T;
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;

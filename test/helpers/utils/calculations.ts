@@ -933,17 +933,6 @@ export const calcExpectedATokenBalance = (
   return scaledBalanceBeforeAction.rayMul(index);
 };
 
-const calcExpectedRedirectedBalance = (
-  expectedUserDataAfterAction: UserReserveData,
-  index: BigNumber,
-  redirectedBalanceBefore: BigNumber,
-  amountToAdd: BigNumber,
-  amountToSubstract: BigNumber
-): BigNumber => {
-  return expectedUserDataAfterAction.interestRedirectionAddress !== ZERO_ADDRESS
-    ? redirectedBalanceBefore.plus(amountToAdd.rayDiv(index)).minus(amountToSubstract.rayDiv(index))
-    : new BigNumber('0');
-};
 const calcExpectedAverageStableBorrowRate = (
   avgStableRateBefore: BigNumber,
   totalBorrowsStableBefore: BigNumber,

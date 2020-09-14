@@ -40,13 +40,13 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
         ethers.utils.parseEther('1.1'),
         '0x10'
       )
-    ).to.be.revertedWith('52');
+    ).to.be.revertedWith('55');
   });
 
   it('User tries to swap more then available on the reserve', async () => {
-    const {pool, weth, dai, users, aEth} = testEnv;
+    const {pool, weth, dai, users, aEth, deployer} = testEnv;
 
-    await pool.borrow(weth.address, ethers.utils.parseEther('0.1'), 1, 0);
+    await pool.borrow(weth.address, ethers.utils.parseEther('0.1'), 1, 0, deployer.address);
     await pool.connect(users[2].signer).withdraw(weth.address, ethers.utils.parseEther('1'));
 
     await expect(
@@ -57,11 +57,11 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
         ethers.utils.parseEther('1'),
         '0x10'
       )
-    ).to.be.revertedWith('SafeMath: subtraction overflow');
+    ).to.be.revertedWith('55');
   });
 
   it('User tries to swap correct amount', async () => {
-    const {pool, weth, dai, aEth, aDai} = testEnv;
+    const {pool, weth, dai, aEth, aDai} = testEnv;  
     const userAddress = await pool.signer.getAddress();
     const amountToSwap = ethers.utils.parseEther('0.25');
 
@@ -122,13 +122,13 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
   });
 
   it('User tries to drop HF below one', async () => {
-    const {pool, weth, dai} = testEnv;
+    const {pool, weth, dai, deployer} = testEnv;
     const amountToSwap = ethers.utils.parseEther('0.3');
 
     const amountToReturn = ethers.utils.parseEther('0.5');
     await _mockSwapAdapter.setAmountToReturn(amountToReturn);
 
-    await pool.borrow(weth.address, ethers.utils.parseEther('0.3'), 1, 0);
+    await pool.borrow(weth.address, ethers.utils.parseEther('0.3'), 1, 0, deployer.address);
 
     await expect(
       pool.collateralSwap(_mockSwapAdapter.address, weth.address, dai.address, amountToSwap, '0x10')
