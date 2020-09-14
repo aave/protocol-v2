@@ -3,6 +3,7 @@ pragma solidity ^0.6.8;
 
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
@@ -26,8 +27,9 @@ import {Errors} from '../libraries/helpers/Errors.sol';
  * @title LendingPoolLiquidationManager contract
  * @author Aave
  * @notice Implements the liquidation function.
+ * @dev LendingPoolLiquidationManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
  **/
-contract LendingPoolLiquidationManager is VersionedInitializable {
+contract LendingPoolLiquidationManager is VersionedInitializable, Pausable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -271,7 +273,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
 
       //burn the equivalent amount of atoken
-      vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
+      vars.collateralAtoken.burn(
+        user,
+        msg.sender,
+        vars.maxCollateralToLiquidate,
+        collateralReserve.liquidityIndex
+      );
     }
 
     //transfers the principal currency to the aToken
@@ -391,7 +398,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     //updating collateral reserve indexes
     collateralReserve.updateCumulativeIndexesAndTimestamp();
 
-    vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
+    vars.collateralAtoken.burn(
+      user,
+      receiver,
+      vars.maxCollateralToLiquidate,
+      collateralReserve.liquidityIndex
+    );
 
     if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
       usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
