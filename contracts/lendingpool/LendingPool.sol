@@ -711,7 +711,7 @@ contract LendingPool is VersionedInitializable, Pausable, ILendingPool {
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external override onlyLendingPoolConfigurator whenNotPaused {
+  ) external override onlyLendingPoolConfigurator {
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
@@ -731,7 +731,6 @@ contract LendingPool is VersionedInitializable, Pausable, ILendingPool {
     external
     override
     onlyLendingPoolConfigurator
-    whenNotPaused
   {
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }

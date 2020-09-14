@@ -17,6 +17,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     // ZERO_COLLATERAL,
     COLLATERAL_BALANCE_IS_0,
     TRANSFER_NOT_ALLOWED,
+    IS_PAUSED,
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
@@ -133,5 +134,50 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
       user1Balance.add(amountDAItoDeposit),
       INVALID_TO_BALANCE_AFTER_TRANSFER
     );
+  });
+
+  it('User 0 deposits 1000 DAI but reverts due pool is paused', async () => {
+    const {users, pool, dai, aDai, configurator} = testEnv;
+
+    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
+
+    await dai.connect(users[0].signer).mint(amountDAItoDeposit);
+
+    // user 0 deposits 1000 DAI
+    await dai.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    // Configurator pauses the pool
+    await configurator.pausePool();
+    await expect(
+      pool.connect(users[0].signer).deposit(dai.address, amountDAItoDeposit, users[0].address, '0')
+    ).to.revertedWith(IS_PAUSED);
+
+    // Configurator unpauses the pool
+    await configurator.unpausePool();
+  });
+
+  it('User 0 burns 1000 aDAI but reverts due pool is paused', async () => {
+    const {users, pool, dai, aDai, configurator} = testEnv;
+
+    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
+
+    await dai.connect(users[0].signer).mint(amountDAItoDeposit);
+
+    // user 0 deposits 1000 DAI
+    await dai.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await pool
+      .connect(users[0].signer)
+      .deposit(dai.address, amountDAItoDeposit, users[0].address, '0');
+
+    // Configurator pauses the pool
+    await configurator.pausePool();
+
+    // user tries to burn
+    await expect(
+      pool.connect(users[0].signer).withdraw(dai.address, amountDAItoDeposit)
+    ).to.revertedWith(IS_PAUSED);
+
+    // Configurator unpauses the pool
+    await configurator.unpausePool();
   });
 });
