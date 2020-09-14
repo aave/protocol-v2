@@ -167,11 +167,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address asset,
     uint256 interestRateMode
   ) external override view returns (uint256) {
-    address debtToken = ReserveLogic.InterestRateMode.STABLE ==
-      ReserveLogic.InterestRateMode(interestRateMode)
-      ? _reserves[asset].stableDebtTokenAddress
-      : _reserves[asset].variableDebtTokenAddress;
-    return _borrowAllowance[debtToken][fromUser][toUser];
+    return
+      _borrowAllowance[_reserves[asset].getDebtTokenAddress(interestRateMode)][fromUser][toUser];
   }
 
   function delegateBorrowAllowance(
@@ -180,10 +177,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 interestRateMode,
     uint256 amount
   ) external override {
-    address debtToken = ReserveLogic.InterestRateMode.STABLE ==
-      ReserveLogic.InterestRateMode(interestRateMode)
-      ? _reserves[asset].stableDebtTokenAddress
-      : _reserves[asset].variableDebtTokenAddress;
+    address debtToken = _reserves[asset].getDebtTokenAddress(interestRateMode);
+
     _borrowAllowance[debtToken][msg.sender][user] = amount;
     emit BorrowAllowanceDelegated(asset, msg.sender, user, interestRateMode, amount);
   }
@@ -206,10 +201,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     if (onBehalfOf != msg.sender) {
-      address debtToken = ReserveLogic.InterestRateMode.STABLE ==
-        ReserveLogic.InterestRateMode(interestRateMode)
-        ? reserve.stableDebtTokenAddress
-        : reserve.variableDebtTokenAddress;
+      address debtToken = reserve.getDebtTokenAddress(interestRateMode);
 
       _borrowAllowance[debtToken][onBehalfOf][msg
         .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(

@@ -73,7 +73,7 @@
       ]
     },
     {
-      "description": "User 0 delegates borrowing of 1 WETH to user 4, user 4 borrows 3 WETH on behalf of user 0, revert expected",
+      "description": "User 0 delegates borrowing of 1 WETH to user 4, user 4 borrows 3 WETH variable on behalf of user 0, revert expected",
       "actions": [
         {
           "name": "delegateBorrowAllowance",
@@ -81,6 +81,7 @@
             "reserve": "WETH",
             "amount": "1",
             "user": "0",
+            "borrowRateMode": "variable",
             "toUser": "4"
           },
           "expected": "success"
@@ -123,6 +124,23 @@
             "borrowRateMode": "stable"
           },
           "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 delegates borrowing of 1 WETH to user 2 with wrong borrowRateMode, revert expected",
+      "actions": [
+        {
+          "name": "delegateBorrowAllowance",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "0",
+            "borrowRateMode": "random",
+            "toUser": "2"
+          },
+          "expected": "revert",
+          "revertMessage": "8"
         }
       ]
     }

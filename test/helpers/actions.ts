@@ -284,19 +284,27 @@ export const delegateBorrowAllowance = async (
   interestRateMode: string,
   user: SignerWithAddress,
   receiver: tEthereumAddress,
-  testEnv: TestEnv
+  expectedResult: string,
+  testEnv: TestEnv,
+  revertMessage?: string
 ) => {
   const {pool} = testEnv;
 
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
   const amountToDelegate = await convertToCurrencyDecimals(reserve, amount);
 
-  await pool
+  const delegateAllowancePromise = pool
     .connect(user.signer)
     .delegateBorrowAllowance(receiver, reserve, interestRateMode, amountToDelegate.toString());
-  expect(
-    (await pool.getBorrowAllowance(user.address, receiver, reserve, interestRateMode)).toString()
-  ).to.be.equal(amountToDelegate.toString(), 'borrowAllowance are set incorrectly');
+  if (expectedResult === 'revert') {
+    await expect(delegateAllowancePromise, revertMessage).to.be.reverted;
+    return;
+  } else {
+    await delegateAllowancePromise;
+    expect(
+      (await pool.getBorrowAllowance(user.address, receiver, reserve, interestRateMode)).toString()
+    ).to.be.equal(amountToDelegate.toString(), 'borrowAllowance are set incorrectly');
+  }
 };
 
 export const borrow = async (

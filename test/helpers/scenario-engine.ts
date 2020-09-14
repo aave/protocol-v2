@@ -111,7 +111,16 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
           throw `Invalid amount to deposit into the ${reserve} reserve`;
         }
 
-        await delegateBorrowAllowance(reserve, amount, rateMode, user, toUser, testEnv);
+        await delegateBorrowAllowance(
+          reserve,
+          amount,
+          rateMode,
+          user,
+          toUser,
+          expected,
+          testEnv,
+          revertMessage
+        );
       }
       break;
 
