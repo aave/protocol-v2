@@ -38,6 +38,8 @@ library Errors {
   string public constant INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26'; // 'The actual balance of the protocol is inconsistent'
   string public constant CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The actual balance of the protocol is inconsistent'
   string public constant INVALID_FLASHLOAN_MODE = '43'; //Invalid flashloan mode selected
+  string public constant REENTRANCY_NOT_ALLOWED = '52';
+  string public constant FAILED_REPAY_WITH_COLLATERAL = '53';
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
@@ -46,8 +48,9 @@ library Errors {
   string public constant TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
   string public constant INTEREST_ALREADY_REDIRECTED = '32'; // 'Interest is already redirected to the user'
   string public constant NO_VALID_BALANCE_FOR_REDIRECTION = '33'; // 'Interest stream can only be redirected if there is a valid balance'
-
-  // require error messages - ReserveLogic
+  string public constant INVALID_ATOKEN_BALANCE = '52'; // balance on burning is invalid
+  
+   // require error messages - ReserveLogic
   string public constant RESERVE_ALREADY_INITIALIZED = '34'; // 'Reserve has already been initialized'
   string public constant LIQUIDITY_INDEX_OVERFLOW = '47'; //  Liquidity index overflows uint128
   string public constant VARIABLE_BORROW_INDEX_OVERFLOW = '48'; //  Variable borrow index overflows uint128
@@ -70,7 +73,7 @@ library Errors {
   string public constant NO_ERRORS = '42'; // 'No errors'
 
   //require error messages - Math libraries
-  string public constant MULTIPLICATION_OVERFLOW = '44'; 
-  string public constant ADDITION_OVERFLOW = '45'; 
+  string public constant MULTIPLICATION_OVERFLOW = '44';
+  string public constant ADDITION_OVERFLOW = '45';
   string public constant DIVISION_BY_ZERO = '46';
 }

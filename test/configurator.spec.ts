@@ -251,7 +251,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
     const {dai, pool, configurator} = testEnv;
-
+    const userAddress = await pool.signer.getAddress();
     await dai.mint(await convertToCurrencyDecimals(dai.address, '1000'));
 
     //approve protocol to access depositor wallet
@@ -259,7 +259,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
     //user 1 deposits 1000 DAI
-    await pool.deposit(dai.address, amountDAItoDeposit, '0');
+    await pool.deposit(dai.address, amountDAItoDeposit, userAddress, '0');
 
     await expect(
       configurator.deactivateReserve(dai.address),

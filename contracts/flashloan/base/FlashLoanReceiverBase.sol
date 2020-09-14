@@ -19,5 +19,4 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
   }
 
   receive() external payable {}
-
 }

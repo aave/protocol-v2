@@ -8,7 +8,7 @@ usePlugin('buidler-typechain');
 usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
-//usePlugin('buidler-gas-reporter');
+usePlugin('buidler-gas-reporter');
 
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = 10;
@@ -57,6 +57,9 @@ const config: any = {
     timeout: 0,
   },
   networks: {
+    coverage: {
+      url: 'http://localhost:8555',
+    },
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),

@@ -51,24 +51,27 @@ library ReserveLogic {
   struct ReserveData {
     //stores the reserve configuration
     ReserveConfiguration.Map configuration;
-    address aTokenAddress;
-    address stableDebtTokenAddress;
-    address variableDebtTokenAddress;
-    address interestRateStrategyAddress;
     //the liquidity index. Expressed in ray
-    uint128 lastLiquidityIndex;
+    uint128 liquidityIndex;
+    //variable borrow index. Expressed in ray
+    uint128 variableBorrowIndex;
     //the current supply rate. Expressed in ray
     uint128 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
-    //variable borrow index. Expressed in ray
-    uint128 lastVariableBorrowIndex;
     uint40 lastUpdateTimestamp;
-    //the index of the reserve in the list of the active reserves
-    uint8 index;
    
+    //tokens addresses
+    address aTokenAddress;
+    address stableDebtTokenAddress;
+    address variableDebtTokenAddress;
+    
+    address interestRateStrategyAddress;
+
+    //the id of the reserve. Represents the position in the list of the active reserves
+    uint8 id;
   }
 
   /**
@@ -84,12 +87,12 @@ library ReserveLogic {
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.lastLiquidityIndex;
+      return reserve.liquidityIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateLinearInterest(reserve.currentLiquidityRate, timestamp)
-      .rayMul(reserve.lastLiquidityIndex);
+      .rayMul(reserve.liquidityIndex);
 
     return cumulated;
   }
@@ -107,12 +110,12 @@ library ReserveLogic {
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.lastVariableBorrowIndex;
+      return reserve.variableBorrowIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp)
-      .rayMul(reserve.lastVariableBorrowIndex);
+      .rayMul(reserve.variableBorrowIndex);
 
     return cumulated;
   }
@@ -122,7 +125,7 @@ library ReserveLogic {
    * a formal specification.
    * @param reserve the reserve object
    **/
-    function updateCumulativeIndexesAndTimestamp(ReserveData storage reserve) internal {
+  function updateCumulativeIndexesAndTimestamp(ReserveData storage reserve) internal {
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     //only cumulating if there is any income being produced
@@ -132,10 +135,10 @@ library ReserveLogic {
         currentLiquidityRate,
         lastUpdateTimestamp
       );
-      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.lastLiquidityIndex);
+      uint256 index = cumulatedLiquidityInterest.rayMul(reserve.liquidityIndex);
       require(index < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
 
-      reserve.lastLiquidityIndex = uint128(index);
+      reserve.liquidityIndex = uint128(index);
 
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
@@ -144,11 +147,9 @@ library ReserveLogic {
           reserve.currentVariableBorrowRate,
           lastUpdateTimestamp
         );
-        index = cumulatedVariableBorrowInterest.rayMul(
-          reserve.lastVariableBorrowIndex
-        );
-        require(index < (1 << 128),  Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
-        reserve.lastVariableBorrowIndex = uint128(index);
+        index = cumulatedVariableBorrowInterest.rayMul(reserve.variableBorrowIndex);
+        require(index < (1 << 128), Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
+        reserve.variableBorrowIndex = uint128(index);
       }
     }
 
@@ -172,12 +173,10 @@ library ReserveLogic {
 
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
-    result = result.rayMul(
-      reserve.lastLiquidityIndex
-    );
+    result = result.rayMul(reserve.liquidityIndex);
     require(result < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
 
-    reserve.lastLiquidityIndex = uint128(result);
+    reserve.liquidityIndex = uint128(result);
   }
 
   /**
@@ -194,13 +193,13 @@ library ReserveLogic {
     address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), Errors.RESERVE_ALREADY_INITIALIZED);
-    if (reserve.lastLiquidityIndex == 0) {
+    if (reserve.liquidityIndex == 0) {
       //if the reserve has not been initialized yet
-      reserve.lastLiquidityIndex = uint128(WadRayMath.ray());
+      reserve.liquidityIndex = uint128(WadRayMath.ray());
     }
 
-    if (reserve.lastVariableBorrowIndex == 0) {
-      reserve.lastVariableBorrowIndex = uint128(WadRayMath.ray());
+    if (reserve.variableBorrowIndex == 0) {
+      reserve.variableBorrowIndex = uint128(WadRayMath.ray());
     }
 
     reserve.aTokenAddress = aTokenAddress;
@@ -217,6 +216,7 @@ library ReserveLogic {
     uint256 newStableRate;
     uint256 newVariableRate;
   }
+
   /**
    * @dev Updates the reserve current stable borrow rate Rf, the current variable borrow rate Rv and the current liquidity rate Rl.
    * Also updates the lastUpdateTimestamp value. Please refer to the whitepaper for further information.
@@ -234,7 +234,8 @@ library ReserveLogic {
     UpdateInterestRatesLocalVars memory vars;
 
     vars.stableDebtTokenAddress = reserve.stableDebtTokenAddress;
-    vars.currentAvgStableRate = IStableDebtToken(vars.stableDebtTokenAddress).getAverageStableRate();
+    vars.currentAvgStableRate = IStableDebtToken(vars.stableDebtTokenAddress)
+      .getAverageStableRate();
     vars.availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress);
 
     (
@@ -249,9 +250,9 @@ library ReserveLogic {
       vars.currentAvgStableRate,
       reserve.configuration.getReserveFactor()
     );
-    require(vars.newLiquidityRate < (1 << 128), "ReserveLogic: Liquidity rate overflow");
-    require(vars.newStableRate < (1 << 128), "ReserveLogic: Stable borrow rate overflow");
-    require(vars.newVariableRate < (1 << 128), "ReserveLogic: Variable borrow rate overflow");
+    require(vars.newLiquidityRate < (1 << 128), 'ReserveLogic: Liquidity rate overflow');
+    require(vars.newStableRate < (1 << 128), 'ReserveLogic: Stable borrow rate overflow');
+    require(vars.newVariableRate < (1 << 128), 'ReserveLogic: Variable borrow rate overflow');
 
     reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
     reserve.currentStableBorrowRate = uint128(vars.newStableRate);
@@ -263,8 +264,8 @@ library ReserveLogic {
       vars.newStableRate,
       vars.currentAvgStableRate,
       vars.newVariableRate,
-      reserve.lastLiquidityIndex,
-      reserve.lastVariableBorrowIndex
+      reserve.liquidityIndex,
+      reserve.variableBorrowIndex
     );
   }
 }

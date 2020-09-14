@@ -32,7 +32,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
-    await pool.connect(depositor.signer).deposit(dai.address, amountDAItoDeposit, '0');
+    await pool
+      .connect(depositor.signer)
+      .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
 
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
 
@@ -43,7 +45,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     //user 2 deposits 1 WETH
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
+    await pool
+      .connect(borrower.signer)
+      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
 
     //user 2 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -192,7 +196,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(daiReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       daiReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );
@@ -213,6 +217,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const {users, pool, usdc, oracle, weth} = testEnv;
     const depositor = users[3];
     const borrower = users[4];
+
     //mints USDC to depositor
     await usdc
       .connect(depositor.signer)
@@ -224,7 +229,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //user 3 deposits 1000 USDC
     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
 
-    await pool.connect(depositor.signer).deposit(usdc.address, amountUSDCtoDeposit, '0');
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
     //user 4 deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
@@ -235,7 +242,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //approve protocol to access borrower wallet
     await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await pool.connect(borrower.signer).deposit(weth.address, amountETHtoDeposit, '0');
+    await pool
+      .connect(borrower.signer)
+      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -246,7 +255,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       usdc.address,
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(usdcPrice.toString())
-        .multipliedBy(0.95)
+        .multipliedBy(0.9502)
         .toFixed(0)
     );
 
@@ -274,7 +283,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const ethReserveDataBefore = await pool.getReserveData(weth.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
-      .div(2)
+      .multipliedBy(0.5)
       .toFixed(0);
 
     await pool.liquidationCall(
@@ -328,7 +337,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     //the liquidity index of the principal reserve needs to be bigger than the index before
-    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gt(
+    expect(usdcReserveDataAfter.liquidityIndex.toString()).to.be.bignumber.gte(
       usdcReserveDataBefore.liquidityIndex.toString(),
       'Invalid liquidity index'
     );

@@ -32,10 +32,11 @@ import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 import { ZERO_ADDRESS } from './constants';
+import {MockSwapAdapter} from '../types/MockSwapAdapter';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
-  if (currentNetwork !== 'buidlerevm' && currentNetwork !== 'soliditycoverage') {
+  if (currentNetwork !== 'buidlerevm' && !currentNetwork.includes('coverage')) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
     console.log(`tx: ${contractInstance.deployTransaction.hash}`);
@@ -213,6 +214,9 @@ export const deployMockFlashLoanReceiver = async (addressesProvider: tEthereumAd
     addressesProvider,
   ]);
 
+export const deployMockSwapAdapter = async (addressesProvider: tEthereumAddress) =>
+  await deployContract<MockSwapAdapter>(eContractid.MockSwapAdapter, [addressesProvider]);
+
 export const deployWalletBalancerProvider = async (addressesProvider: tEthereumAddress) =>
   await deployContract<WalletBalanceProvider>(eContractid.WalletBalanceProvider, [
     addressesProvider,
@@ -387,6 +391,14 @@ export const getMockFlashLoanReceiver = async (address?: tEthereumAddress) => {
     address ||
       (await getDb().get(`${eContractid.MockFlashLoanReceiver}.${BRE.network.name}`).value())
         .address
+  );
+};
+
+export const getMockSwapAdapter = async (address?: tEthereumAddress) => {
+  return await getContract<MockSwapAdapter>(
+    eContractid.MockSwapAdapter,
+    address ||
+      (await getDb().get(`${eContractid.MockSwapAdapter}.${BRE.network.name}`).value()).address
   );
 };
 

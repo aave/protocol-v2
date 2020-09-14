@@ -14,7 +14,6 @@ import {
   calcExpectedUserDataAfterStableRateRebalance,
   calcExpectedUserDataAfterSwapRateMode,
   calcExpectedUserDataAfterWithdraw,
-  calcExpectedUsersDataAfterRedirectInterest,
 } from './utils/calculations';
 import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/helpers';
 
@@ -49,23 +48,25 @@ const almostEqualOrEqual = function (
       key === 'marketStableRate' ||
       key === 'symbol' ||
       key === 'aTokenAddress' ||
-      key === 'initialATokenExchangeRate' ||
       key === 'decimals'
     ) {
       // skipping consistency check on accessory data
       return;
     }
 
+    
     this.assert(actual[key] != undefined, `Property ${key} is undefined in the actual data`);
     expect(expected[key] != undefined, `Property ${key} is undefined in the expected data`);
 
+    if (expected[key] == null || actual[key] == null) {
+      console.log('Found a undefined value for Key ', key, ' value ', expected[key], actual[key]);
+    }
+
     if (actual[key] instanceof BigNumber) {
-      if (!expected[key]) {
-        console.log('Key ', key, ' value ', expected[key], actual[key]);
-      }
+
       const actualValue = (<BigNumber>actual[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
       const expectedValue = (<BigNumber>expected[key]).decimalPlaces(0, BigNumber.ROUND_DOWN);
-
+  
       this.assert(
         actualValue.eq(expectedValue) ||
           actualValue.plus(1).eq(expectedValue) ||
@@ -133,7 +134,8 @@ export const approve = async (reserveSymbol: string, user: SignerWithAddress, te
 export const deposit = async (
   reserveSymbol: string,
   amount: string,
-  user: SignerWithAddress,
+  sender: SignerWithAddress,
+  onBehalfOf: tEthereumAddress,
   sendValue: string,
   expectedResult: string,
   testEnv: TestEnv,
@@ -149,8 +151,9 @@ export const deposit = async (
 
   const {reserveData: reserveDataBefore, userData: userDataBefore} = await getContractsData(
     reserve,
-    user.address,
-    testEnv
+    onBehalfOf,
+    testEnv,
+    sender.address
   );
 
   if (sendValue) {
@@ -158,14 +161,16 @@ export const deposit = async (
   }
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await await pool.connect(user.signer).deposit(reserve, amountToDeposit, '0', txOptions)
+      await pool
+        .connect(sender.signer)
+        .deposit(reserve, amountToDeposit, onBehalfOf, '0', txOptions)
     );
 
     const {
       reserveData: reserveDataAfter,
       userData: userDataAfter,
       timestamp,
-    } = await getContractsData(reserve, user.address, testEnv);
+    } = await getContractsData(reserve, onBehalfOf, testEnv, sender.address);
 
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
 
@@ -198,7 +203,7 @@ export const deposit = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      pool.connect(user.signer).deposit(reserve, amountToDeposit, '0', txOptions),
+      pool.connect(sender.signer).deposit(reserve, amountToDeposit, onBehalfOf, '0', txOptions),
       revertMessage
     ).to.be.reverted;
   }
@@ -650,153 +655,6 @@ export const rebalanceStableBorrowRate = async (
   }
 };
 
-export const redirectInterestStream = async (
-  reserveSymbol: string,
-  user: SignerWithAddress,
-  to: tEthereumAddress,
-  expectedResult: string,
-  testEnv: TestEnv,
-  revertMessage?: string
-) => {
-  const {
-    aTokenInstance,
-    reserve,
-    userData: fromDataBefore,
-    reserveData: reserveDataBefore,
-  } = await getDataBeforeAction(reserveSymbol, user.address, testEnv);
-
-  const {userData: toDataBefore} = await getContractsData(reserve, to, testEnv);
-
-  if (expectedResult === 'success') {
-    const txResult = await waitForTx(
-      await aTokenInstance.connect(user.signer).redirectInterestStream(to)
-    );
-
-    const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
-
-    const {userData: fromDataAfter} = await getContractsData(reserve, user.address, testEnv);
-
-    const {userData: toDataAfter} = await getContractsData(reserve, to, testEnv);
-
-    const [expectedFromData, expectedToData] = calcExpectedUsersDataAfterRedirectInterest(
-      reserveDataBefore,
-      fromDataBefore,
-      toDataBefore,
-      user.address,
-      to,
-      true,
-      txCost,
-      txTimestamp
-    );
-
-    expectEqual(fromDataAfter, expectedFromData);
-    expectEqual(toDataAfter, expectedToData);
-
-    // truffleAssert.eventEmitted(txResult, 'InterestStreamRedirected', (ev: any) => {
-    //   const {_from, _to} = ev;
-    //   return _from === user
-    //   && _to === (to === user ? NIL_ADDRESS : to);
-    // });
-  } else if (expectedResult === 'revert') {
-    await expect(aTokenInstance.connect(user.signer).redirectInterestStream(to), revertMessage).to
-      .be.reverted;
-  }
-};
-
-export const redirectInterestStreamOf = async (
-  reserveSymbol: string,
-  user: SignerWithAddress,
-  from: tEthereumAddress,
-  to: tEthereumAddress,
-  expectedResult: string,
-  testEnv: TestEnv,
-  revertMessage?: string
-) => {
-  const {
-    aTokenInstance,
-    reserve,
-    userData: fromDataBefore,
-    reserveData: reserveDataBefore,
-  } = await getDataBeforeAction(reserveSymbol, from, testEnv);
-
-  const {userData: toDataBefore} = await getContractsData(reserve, user.address, testEnv);
-
-  if (expectedResult === 'success') {
-    const txResult = await waitForTx(
-      await aTokenInstance.connect(user.signer).redirectInterestStreamOf(from, to)
-    );
-
-    const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
-
-    const {userData: fromDataAfter} = await getContractsData(reserve, from, testEnv);
-
-    const {userData: toDataAfter} = await getContractsData(reserve, to, testEnv);
-
-    const [expectedFromData, exptectedToData] = calcExpectedUsersDataAfterRedirectInterest(
-      reserveDataBefore,
-      fromDataBefore,
-      toDataBefore,
-      from,
-      to,
-      from === user.address,
-      txCost,
-      txTimestamp
-    );
-
-    expectEqual(fromDataAfter, expectedFromData);
-    expectEqual(toDataAfter, exptectedToData);
-
-    // truffleAssert.eventEmitted(
-    //   txResult,
-    //   "InterestStreamRedirected",
-    //   (ev: any) => {
-    //     const {_from, _to} = ev;
-    //     return (
-    //       _from.toLowerCase() === from.toLowerCase() &&
-    //       _to.toLowerCase() === to.toLowerCase()
-    //     );
-    //   }
-    // );
-  } else if (expectedResult === 'revert') {
-    await expect(
-      aTokenInstance.connect(user.signer).redirectInterestStreamOf(from, to),
-      revertMessage
-    ).to.be.reverted;
-  }
-};
-
-export const allowInterestRedirectionTo = async (
-  reserveSymbol: string,
-  user: SignerWithAddress,
-  to: tEthereumAddress,
-  expectedResult: string,
-  testEnv: TestEnv,
-  revertMessage?: string
-) => {
-  const {aTokenInstance} = await getDataBeforeAction(reserveSymbol, user.address, testEnv);
-
-  if (expectedResult === 'success') {
-    const txResult = await waitForTx(
-      await aTokenInstance.connect(user.signer).allowInterestRedirectionTo(to)
-    );
-
-    // truffleAssert.eventEmitted(
-    //   txResult,
-    //   "InterestRedirectionAllowanceChanged",
-    //   (ev: any) => {
-    //     const {_from, _to} = ev;
-    //     return (
-    //       _from.toLowerCase() === user.toLowerCase() &&
-    //       _to.toLowerCase() === to.toLowerCase()
-    //     );
-    //   }
-    // );
-  } else if (expectedResult === 'revert') {
-    await expect(aTokenInstance.connect(user.signer).allowInterestRedirectionTo(to), revertMessage)
-      .to.be.reverted;
-  }
-};
-
 const expectEqual = (
   actual: UserReserveData | ReserveData,
   expected: UserReserveData | ReserveData
@@ -845,10 +703,15 @@ const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
   return {txCost, txTimestamp};
 };
 
-const getContractsData = async (reserve: string, user: string, testEnv: TestEnv) => {
+export const getContractsData = async (
+  reserve: string,
+  user: string,
+  testEnv: TestEnv,
+  sender?: string
+) => {
   const {pool} = testEnv;
   const reserveData = await getReserveData(pool, reserve);
-  const userData = await getUserData(pool, reserve, user);
+  const userData = await getUserData(pool, reserve, user, sender || user);
   const timestamp = await timeLatest();
 
   return {

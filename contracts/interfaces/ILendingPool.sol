@@ -15,7 +15,8 @@ interface ILendingPool {
    **/
   event Deposit(
     address indexed reserve,
-    address indexed user,
+    address user,
+    address indexed onBehalfOf,
     uint256 amount,
     uint16 indexed referral
   );
@@ -139,6 +140,7 @@ interface ILendingPool {
   function deposit(
     address reserve,
     uint256 amount,
+    address onBehalfOf,
     uint16 referralCode
   ) external;
 
@@ -216,6 +218,27 @@ interface ILendingPool {
     address user,
     uint256 purchaseAmount,
     bool receiveAToken
+  ) external;
+
+  /**
+   * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
+   * - Both the owner of the position and other liquidators can execute it
+   * - The owner can repay with his collateral at any point, no matter the health factor
+   * - Other liquidators can only use this function below 1 HF. To liquidate 50% of the debt > HF 0.98 or the whole below
+   * @param collateral The address of the collateral asset
+   * @param principal The address of the owed asset
+   * @param user Address of the borrower
+   * @param principalAmount Amount of the debt to repay. type(uint256).max to repay the maximum possible
+   * @param receiver Address of the contract receiving the collateral to swap
+   * @param params Variadic bytes param to pass with extra information to the receiver
+   **/
+  function repayWithCollateral(
+    address collateral,
+    address principal,
+    address user,
+    uint256 principalAmount,
+    address receiver,
+    bytes calldata params
   ) external;
 
   /**

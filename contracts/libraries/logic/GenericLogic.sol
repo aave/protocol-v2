@@ -24,7 +24,8 @@ library GenericLogic {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
-  uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1e18;
+  uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
+  uint256 public constant HEALTH_FACTOR_CRITICAL_THRESHOLD = 0.98 ether;
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
@@ -63,7 +64,7 @@ library GenericLogic {
   ) external view returns (bool) {
     if (
       !userConfig.isBorrowingAny() ||
-      !userConfig.isUsingAsCollateral(reservesData[asset].index)
+      !userConfig.isUsingAsCollateral(reservesData[asset].id)
     ) {
       return true;
     }

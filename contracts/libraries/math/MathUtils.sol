@@ -55,17 +55,17 @@ library MathUtils {
       return WadRayMath.ray();
     }
 
-    uint256 expMinusOne = exp-1;
+    uint256 expMinusOne = exp - 1;
 
-    uint256 expMinusTwo = exp > 2 ? exp-2 : 0;
+    uint256 expMinusTwo = exp > 2 ? exp - 2 : 0;
 
-    uint256 ratePerSecond = rate/SECONDS_PER_YEAR;
+    uint256 ratePerSecond = rate / SECONDS_PER_YEAR;
 
     uint256 basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
     uint256 basePowerThree = basePowerTwo.rayMul(ratePerSecond);
 
-    uint256 secondTerm = exp.mul(expMinusOne).mul(basePowerTwo)/2;
-    uint256 thirdTerm = exp.mul(expMinusOne).mul(expMinusTwo).mul(basePowerThree)/6;
+    uint256 secondTerm = exp.mul(expMinusOne).mul(basePowerTwo) / 2;
+    uint256 thirdTerm = exp.mul(expMinusOne).mul(expMinusTwo).mul(basePowerThree) / 6;
 
     return WadRayMath.ray().add(ratePerSecond.mul(exp)).add(secondTerm).add(thirdTerm);
   }

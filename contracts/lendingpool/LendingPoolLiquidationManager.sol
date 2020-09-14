@@ -20,6 +20,7 @@ import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
@@ -36,12 +37,17 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
+  // IMPORTANT The storage layout of the LendingPool is reproduced here because this contract
+  // is gonna be used through DELEGATECALL
+
   LendingPoolAddressesProvider internal addressesProvider;
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;
 
   address[] internal reservesList;
+
+  bool internal _flashLiquidationLocked;
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
@@ -63,6 +69,24 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     uint256 liquidatedCollateralAmount,
     address liquidator,
     bool receiveAToken
+  );
+
+  /**
+    @dev emitted when a borrower/liquidator repays with the borrower's collateral
+    @param collateral the address of the collateral being swapped to repay
+    @param principal the address of the reserve of the debt
+    @param user the borrower's address
+    @param liquidator the address of the liquidator, same as the one of the borrower on self-repayment
+    @param principalAmount the amount of the debt finally covered
+    @param swappedCollateralAmount the amount of collateral finally swapped
+  */
+  event RepaidWithCollateral(
+    address indexed collateral,
+    address indexed principal,
+    address indexed user,
+    address liquidator,
+    uint256 principalAmount,
+    uint256 swappedCollateralAmount
   );
 
   enum LiquidationErrors {
@@ -142,7 +166,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     vars.isCollateralEnabled =
       collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-      userConfig.isUsingAsCollateral(collateralReserve.index);
+      userConfig.isUsingAsCollateral(collateralReserve.id);
 
     //if collateral isn't enabled as collateral by user, it cannot be liquidated
     if (!vars.isCollateralEnabled) {
@@ -264,7 +288,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
 
       //burn the equivalent amount of atoken
-      vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate);
+      vars.collateralAtoken.burn(user, msg.sender, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
     }
 
     //transfers the principal currency to the aToken
@@ -282,6 +306,158 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       vars.maxCollateralToLiquidate,
       msg.sender,
       receiveAToken
+    );
+
+    return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+  }
+
+  /**
+   * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
+   * - Both the owner of the position and other liquidators can execute it.
+   * - The owner can repay with his collateral at any point, no matter the health factor.
+   * - Other liquidators can only use this function below 1 HF. To liquidate 50% of the debt > HF 0.98 or the whole below.
+   * @param collateral The address of the collateral asset.
+   * @param principal The address of the owed asset.
+   * @param user Address of the borrower.
+   * @param principalAmount Amount of the debt to repay.
+   * @param receiver Address of the contract receiving the collateral to swap.
+   * @param params Variadic bytes param to pass with extra information to the receiver
+   **/
+  function repayWithCollateral(
+    address collateral,
+    address principal,
+    address user,
+    uint256 principalAmount,
+    address receiver,
+    bytes calldata params
+  ) external returns (uint256, string memory) {
+    ReserveLogic.ReserveData storage debtReserve = reserves[principal];
+    ReserveLogic.ReserveData storage collateralReserve = reserves[collateral];
+
+    UserConfiguration.Map storage userConfig = usersConfig[user];
+
+    LiquidationCallLocalVars memory vars;
+
+    (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
+      user,
+      reserves,
+      usersConfig[user],
+      reservesList,
+      addressesProvider.getPriceOracle()
+    );
+
+    if (
+      msg.sender != user && vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD
+    ) {
+      return (
+        uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
+        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
+      );
+    }
+
+    if (msg.sender != user) {
+      vars.isCollateralEnabled =
+        collateralReserve.configuration.getLiquidationThreshold() > 0 &&
+        userConfig.isUsingAsCollateral(collateralReserve.id);
+
+      //if collateral isn't enabled as collateral by user, it cannot be liquidated
+      if (!vars.isCollateralEnabled) {
+        return (
+          uint256(LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
+          Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
+        );
+      }
+    }
+
+    (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(user, debtReserve);
+
+    if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
+      return (
+        uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
+        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
+      );
+    }
+
+    vars.maxPrincipalAmountToLiquidate = vars.userStableDebt.add(vars.userVariableDebt);
+
+    vars.actualAmountToLiquidate = principalAmount > vars.maxPrincipalAmountToLiquidate
+      ? vars.maxPrincipalAmountToLiquidate
+      : principalAmount;
+
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
+    vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
+
+    (
+      vars.maxCollateralToLiquidate,
+      vars.principalAmountNeeded
+    ) = calculateAvailableCollateralToLiquidate(
+      collateralReserve,
+      debtReserve,
+      collateral,
+      principal,
+      vars.actualAmountToLiquidate,
+      vars.userCollateralBalance
+    );
+
+    //if principalAmountNeeded < vars.ActualAmountToLiquidate, there isn't enough
+    //of collateral to cover the actual amount that is being liquidated, hence we liquidate
+    //a smaller amount
+    if (vars.principalAmountNeeded < vars.actualAmountToLiquidate) {
+      vars.actualAmountToLiquidate = vars.principalAmountNeeded;
+    }
+    //updating collateral reserve indexes
+    collateralReserve.updateCumulativeIndexesAndTimestamp();
+
+    vars.collateralAtoken.burn(user, receiver, vars.maxCollateralToLiquidate, collateralReserve.liquidityIndex);
+
+    if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
+      usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
+    }
+
+    address principalAToken = debtReserve.aTokenAddress;
+
+    // Notifies the receiver to proceed, sending as param the underlying already transferred
+    ISwapAdapter(receiver).executeOperation(
+      collateral,
+      principal,
+      vars.maxCollateralToLiquidate,
+      address(this),
+      params
+    );
+
+    //updating debt reserve
+    debtReserve.updateCumulativeIndexesAndTimestamp();
+    debtReserve.updateInterestRates(principal, principalAToken, vars.actualAmountToLiquidate, 0);
+    IERC20(principal).transferFrom(receiver, principalAToken, vars.actualAmountToLiquidate);
+
+    if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
+      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
+        user,
+        vars.actualAmountToLiquidate
+      );
+    } else {
+      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(user, vars.userVariableDebt);
+      IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(
+        user,
+        vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
+      );
+    }
+
+    //updating collateral reserve
+    collateralReserve.updateInterestRates(
+      collateral,
+      address(vars.collateralAtoken),
+      0,
+      vars.maxCollateralToLiquidate
+    );
+
+    emit RepaidWithCollateral(
+      collateral,
+      principal,
+      user,
+      msg.sender,
+      vars.actualAmountToLiquidate,
+      vars.maxCollateralToLiquidate
     );
 
     return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
