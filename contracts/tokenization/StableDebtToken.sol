@@ -81,10 +81,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   struct MintLocalVars {
-    uint256 supplyAfterMint;
-    uint256 supplyBeforeMint;
+    uint256 currentPrincipalSupply;
+    uint256 nextSupply;
     uint256 amountInRay;
     uint256 newStableRate;
+    uint256 currentAvgStableRate;
   }
 
   /**
@@ -108,8 +109,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    vars.supplyBeforeMint = totalSupply().add(balanceIncrease);
-    vars.supplyAfterMint = vars.supplyBeforeMint.add(amount);
+    vars.currentPrincipalSupply = totalSupply();
+    vars.currentAvgStableRate = _avgStableRate;
+    vars.nextSupply = _totalSupply = _calcTotalSupply(vars.currentAvgStableRate).add(amount);
 
     vars.amountInRay = amount.wadToRay();
 
@@ -126,10 +128,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
 
     //calculates the updated average stable rate
-    _avgStableRate = _avgStableRate
-      .rayMul(vars.supplyBeforeMint.wadToRay())
+    _avgStableRate = vars.currentAvgStableRate
+      .rayMul(vars.currentPrincipalSupply.wadToRay())
       .add(rate.rayMul(vars.amountInRay))
-      .rayDiv(vars.supplyAfterMint.wadToRay());
+      .rayDiv(vars.nextSupply.wadToRay());
 
     _mint(user, amount.add(balanceIncrease));
 
@@ -237,6 +239,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   function getTotalSupplyLastUpdated() public override view returns(uint40) {
     return _totalSupplyTimestamp;
   }
+
   /**
    * @dev Returns the principal debt balance of the user from
    * @return The debt balance of the user since the last burn/mint action
