@@ -175,7 +175,8 @@ const initReserves = async (
   lendingPoolAddressesProvider: LendingPoolAddressesProvider,
   lendingPool: LendingPool,
   lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools
+  aavePool: AavePools,
+  incentivesController: tEthereumAddress
 ) => {
   if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
     console.log(`Invalid Aave pool ${aavePool}`);
@@ -230,6 +231,7 @@ const initReserves = async (
         `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         tokenAddress,
         lendingPool.address,
+        incentivesController,
       ]);
 
       const variableDebtToken = await deployVariableDebtToken([
@@ -237,6 +239,7 @@ const initReserves = async (
         `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         tokenAddress,
         lendingPool.address,
+        incentivesController,
       ]);
 
       const aToken = await deployGenericAToken([
@@ -244,6 +247,7 @@ const initReserves = async (
         tokenAddress,
         `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        incentivesController,
       ]);
 
       if (process.env.POOL === AavePools.secondary) {
@@ -481,7 +485,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     addressesProvider,
     lendingPoolProxy,
     lendingPoolConfiguratorProxy,
-    AavePools.proto
+    AavePools.proto,
+    ZERO_ADDRESS
   );
   await enableReservesToBorrow(
     reservesParams,
