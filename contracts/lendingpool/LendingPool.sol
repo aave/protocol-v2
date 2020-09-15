@@ -20,6 +20,7 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
@@ -577,6 +578,43 @@ contract LendingPool is VersionedInitializable, ILendingPool {
           false
         )
       );
+    }
+  }
+
+  /**
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
+   * - It's not possible to release one asset to swap for the same
+   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
+   * @param fromAsset Asset to swap from
+   * @param toAsset Asset to swap to
+   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
+   **/
+  function swapLiquidity(
+    address receiverAddress,
+    address fromAsset,
+    address toAsset,
+    uint256 amountToSwap,
+    bytes calldata params
+  ) external override {
+    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+
+    //solium-disable-next-line
+    (bool success, bytes memory result) = liquidationManager.delegatecall(
+      abi.encodeWithSignature(
+        'swapLiquidity(address,address,address,uint256,bytes)',
+        receiverAddress,
+        fromAsset,
+        toAsset,
+        amountToSwap,
+        params
+      )
+    );
+    require(success, Errors.FAILED_COLLATERAL_SWAP);
+
+    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
+
+    if (returnCode != 0) {
+      revert(string(abi.encodePacked(returnMessage)));
     }
   }
 

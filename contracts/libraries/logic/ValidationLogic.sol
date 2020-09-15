@@ -347,12 +347,11 @@ library ValidationLogic {
     uint256 userHealthFactor,
     uint256 userStableDebt,
     uint256 userVariableDebt
-  ) internal view returns(uint256, string memory) {
-    if ( !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()) {
-      return (
-        uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE),
-        Errors.NO_ACTIVE_RESERVE
-      );
+  ) internal view returns (uint256, string memory) {
+    if (
+      !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()
+    ) {
+      return (uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
     }
 
     if (userHealthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
@@ -362,8 +361,7 @@ library ValidationLogic {
       );
     }
 
-    bool isCollateralEnabled =
-      collateralReserve.configuration.getLiquidationThreshold() > 0 &&
+    bool isCollateralEnabled = collateralReserve.configuration.getLiquidationThreshold() > 0 &&
       userConfig.isUsingAsCollateral(collateralReserve.id);
 
     //if collateral isn't enabled as collateral by user, it cannot be liquidated
@@ -402,12 +400,11 @@ library ValidationLogic {
     uint256 userHealthFactor,
     uint256 userStableDebt,
     uint256 userVariableDebt
-  ) internal view returns(uint256, string memory) {
-    if ( !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()) {
-      return (
-        uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE),
-        Errors.NO_ACTIVE_RESERVE
-      );
+  ) internal view returns (uint256, string memory) {
+    if (
+      !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()
+    ) {
+      return (uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
     }
 
     if (
@@ -420,8 +417,7 @@ library ValidationLogic {
     }
 
     if (msg.sender != user) {
-      bool isCollateralEnabled =
-        collateralReserve.configuration.getLiquidationThreshold() > 0 &&
+      bool isCollateralEnabled = collateralReserve.configuration.getLiquidationThreshold() > 0 &&
         userConfig.isUsingAsCollateral(collateralReserve.id);
 
       //if collateral isn't enabled as collateral by user, it cannot be liquidated
@@ -437,6 +433,33 @@ library ValidationLogic {
       return (
         uint256(Errors.LiquidationErrors.CURRRENCY_NOT_BORROWED),
         Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
+      );
+    }
+
+    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+  }
+
+  /**
+   * @dev Validates the swapLiquidity() action
+   * @param fromReserve The reserve data of the asset to swap from
+   * @param toReserve The reserve data of the asset to swap to
+   * @param fromAsset Address of the asset to swap from
+   * @param toAsset Address of the asset to swap to
+   **/
+  function validateSwapLiquidity(
+    ReserveLogic.ReserveData storage fromReserve,
+    ReserveLogic.ReserveData storage toReserve,
+    address fromAsset,
+    address toAsset
+  ) internal view returns (uint256, string memory) {
+    if (!fromReserve.configuration.getActive() || !toReserve.configuration.getActive()) {
+      return (uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
+    }
+
+    if (fromAsset == toAsset) {
+      return (
+        uint256(Errors.LiquidationErrors.INVALID_EQUAL_ASSETS_TO_SWAP),
+        Errors.INVALID_EQUAL_ASSETS_TO_SWAP
       );
     }
 

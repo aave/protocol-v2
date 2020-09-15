@@ -919,7 +919,7 @@ const calcExpectedScaledATokenBalance = (
     .minus(amountTaken.rayDiv(index));
 };
 
-const calcExpectedATokenBalance = (
+export const calcExpectedATokenBalance = (
   reserveDataBeforeAction: ReserveData,
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber

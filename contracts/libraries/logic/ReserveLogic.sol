@@ -190,7 +190,7 @@ library ReserveLogic {
     ReserveData storage reserve,
     uint256 totalLiquidity,
     uint256 amount
-  ) internal {
+  ) external {
     uint256 amountToLiquidityRatio = amount.wadToRay().rayDiv(totalLiquidity.wadToRay());
 
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
@@ -252,7 +252,7 @@ library ReserveLogic {
     address aTokenAddress,
     uint256 liquidityAdded,
     uint256 liquidityTaken
-  ) internal {
+  ) external {
     UpdateInterestRatesLocalVars memory vars;
 
     vars.stableDebtTokenAddress = reserve.stableDebtTokenAddress;

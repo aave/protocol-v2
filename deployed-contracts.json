@@ -493,9 +493,6 @@
   "MockSwapAdapter": {
     "buidlerevm": {
       "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
-    },
-    "localhost": {
-      "address": "0x749258D38b0473d96FEcc14cC5e7DCE12d7Bd6f6"
     }
   }
 }
