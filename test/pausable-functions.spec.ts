@@ -44,7 +44,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // User 0 tries the transfer to User 1
     await expect(
       aDai.connect(users[0].signer).transfer(users[1].address, amountDAItoDeposit)
-    ).to.revertedWith(TRANSFER_NOT_ALLOWED);
+    ).to.revertedWith(IS_PAUSED);
 
     const pausedFromBalance = await aDai.balanceOf(users[0].address);
     const pausedToBalance = await aDai.balanceOf(users[1].address);

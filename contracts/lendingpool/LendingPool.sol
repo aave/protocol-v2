@@ -993,9 +993,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address user,
     uint256 amount
   ) external override view returns (bool) {
-    if (_paused) {
-      return false;
-    }
+    whenNotPaused();
     return
       GenericLogic.balanceDecreaseAllowed(
         asset,

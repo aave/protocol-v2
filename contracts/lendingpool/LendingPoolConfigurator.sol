@@ -585,6 +585,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
   /**
    * @dev pauses or unpauses LendingPool actions
+   * @param val the boolean value to set the current pause state of LendingPool
    **/
   function setPoolPause(bool val) external onlyLendingPoolManager {
     pool.setPause(val);
