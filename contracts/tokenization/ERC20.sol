@@ -180,7 +180,9 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
     if (address(_incentivesController) != address(0)) {
       uint256 totalSupply = _totalSupply;
       _incentivesController.handleAction(sender, totalSupply, oldSenderBalance);
-      _incentivesController.handleAction(recipient, totalSupply, oldRecipientBalance);
+      if (sender != recipient) {
+        _incentivesController.handleAction(recipient, totalSupply, oldRecipientBalance);
+      }
     }
     emit Transfer(sender, recipient, amount);
   }
