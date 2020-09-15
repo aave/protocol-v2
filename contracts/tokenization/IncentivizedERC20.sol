@@ -12,7 +12,7 @@ import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController
  * @notice Basic ERC20 implementation
  * @author Aave
  **/
-contract ERC20 is Context, IERC20, IERC20Detailed {
+contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   using SafeMath for uint256;
 
   IAaveIncentivesController internal immutable _incentivesController;

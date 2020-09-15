@@ -8,7 +8,7 @@ import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {
   VersionedInitializable
 } from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-import {ERC20} from '../ERC20.sol';
+import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
 /**
@@ -17,7 +17,7 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
  * @author Aave
  */
 
-abstract contract DebtTokenBase is ERC20, VersionedInitializable {
+abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
   address internal immutable UNDERLYING_ASSET;
   ILendingPool internal immutable POOL;
   mapping(address => uint256) internal _usersData;
@@ -40,7 +40,7 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
     string memory name,
     string memory symbol,
     address incentivesController
-  ) public ERC20(name, symbol, 18, incentivesController) {
+  ) public IncentivizedERC20(name, symbol, 18, incentivesController) {
     POOL = ILendingPool(pool);
     UNDERLYING_ASSET = underlyingAssetAddress;
   }
