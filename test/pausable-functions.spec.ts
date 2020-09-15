@@ -40,7 +40,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     const user1Balance = await aDai.balanceOf(users[1].address);
 
     // Configurator pauses the pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     // User 0 tries the transfer to User 1
     await expect(
@@ -60,7 +60,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     );
 
     // Configurator unpauses the pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
 
     // User 0 succeeds transfer to User 1
     await aDai.connect(users[0].signer).transfer(users[1].address, amountDAItoDeposit);
@@ -89,13 +89,13 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await dai.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     // Configurator pauses the pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
     await expect(
       pool.connect(users[0].signer).deposit(dai.address, amountDAItoDeposit, users[0].address, '0')
     ).to.revertedWith(IS_PAUSED);
 
     // Configurator unpauses the pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('User 0 burns 1000 aDAI but reverts due pool is paused', async () => {
@@ -112,7 +112,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
       .deposit(dai.address, amountDAItoDeposit, users[0].address, '0');
 
     // Configurator pauses the pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     // user tries to burn
     await expect(
@@ -120,7 +120,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     ).to.revertedWith(IS_PAUSED);
 
     // Configurator unpauses the pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('Repay with collateral', async () => {
@@ -129,7 +129,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     const liquidator = users[5];
 
     // Pause the pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     // Try to execute liquidation
     await expect(
@@ -146,7 +146,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     ).revertedWith(IS_PAUSED);
 
     // Unpause the pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('Flash loan', async () => {
@@ -159,7 +159,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
     // Pause pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     await expect(
       pool
@@ -168,7 +168,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('Liquidation call', async () => {
@@ -238,7 +238,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
       .toFixed(0);
 
     // Pause pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     // Do liquidation
     expect(
@@ -246,7 +246,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('User 6 deposits WETH and DAI, then borrows USDC at Variable', async () => {
@@ -271,7 +271,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
 
     // Pause pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     // Try to repay
     await expect(
@@ -288,7 +288,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('User 2 deposits WETH and DAI, then borrows USDC at Variable, then tries to swap to stable but pool is paused', async () => {
@@ -309,7 +309,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
 
     // Pause pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     // Try to repay
     await expect(
@@ -317,21 +317,21 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('User 2 tries to rebalance stable borrow rate', async () => {
     const {pool, dai, users, configurator} = testEnv;
     const user = users[1];
     // Pause pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     await expect(
       pool.connect(user.signer).rebalanceStableBorrowRate(dai.address, user.address)
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 
   it('User 2 tries to rebalance stable borrow rate', async () => {
@@ -344,13 +344,13 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await pool.connect(user.signer).deposit(weth.address, amountWETHToDeposit, user.address, '0');
 
     // Pause pool
-    await configurator.pausePool();
+    await configurator.setPoolPause(true);
 
     await expect(
       pool.connect(user.signer).setUserUseReserveAsCollateral(weth.address, false)
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
-    await configurator.unpausePool();
+    await configurator.setPoolPause(false);
   });
 });

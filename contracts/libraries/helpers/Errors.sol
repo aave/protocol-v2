@@ -79,7 +79,6 @@ library Errors {
 
   // pausable error message
   string public constant IS_PAUSED = '54'; // 'Pool is paused'
-  string public constant NOT_PAUSED = '55'; // 'Pool is not paused'
   enum LiquidationErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,
