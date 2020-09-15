@@ -55,7 +55,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   address[] internal _reservesList;
 
   bool internal _flashLiquidationLocked;
-  bool public _paused;
+  bool internal _paused;
 
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
@@ -1030,5 +1030,12 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     } else {
       emit Unpaused();
     }
+  }
+
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
+  function paused() external view override returns(bool) {
+    return _paused;
   }
 }

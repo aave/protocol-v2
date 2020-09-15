@@ -430,5 +430,14 @@ interface ILendingPool {
 
   function getReserves() external view returns (address[] memory);
 
+  /**
+   * @dev Set the _pause state
+   * @param val the boolean value to set the current pause state of LendingPool
+   */
   function setPause(bool val) external;
+
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
+  function paused() external view returns(bool);
 }
