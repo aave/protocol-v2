@@ -453,19 +453,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     }
   }
 
-  struct FlashLoanLocalVars {
-    uint256 premium;
-    uint256 amountPlusPremium;
-    uint256 amountPlusPremiumInETH;
-    uint256 receiverBalance;
-    uint256 receiverAllowance;
-    uint256 availableBalance;
-    uint256 assetPrice;
-    IFlashLoanReceiver receiver;
-    address aTokenAddress;
-    address oracle;
-  }
-
   /**
    * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
    * - Both the owner of the position and other liquidators can execute it
@@ -512,6 +499,14 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     }
 
     _flashLiquidationLocked = false;
+  }
+
+    struct FlashLoanLocalVars {
+    uint256 premium;
+    uint256 amountPlusPremium;
+    IFlashLoanReceiver receiver;
+    address aTokenAddress;
+    address oracle;
   }
 
   /**
@@ -569,7 +564,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
           asset,
           msg.sender,
           msg.sender,
-          vars.amountPlusPremium.sub(vars.availableBalance),
+          vars.amountPlusPremium,
           mode,
           vars.aTokenAddress,
           referralCode,
