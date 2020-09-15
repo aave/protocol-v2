@@ -39,6 +39,44 @@ export const expectRepayWithCollateralEvent = (
 };
 
 makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
+  it("It's not possible to repayWithCollateral() on a non-active collateral or a non active principal", async () => {
+    const {configurator, weth, pool, users, dai, mockSwapAdapter} = testEnv;
+    const user = users[1];
+    await configurator.deactivateReserve(weth.address);
+
+    await expect(
+      pool
+        .connect(user.signer)
+        .repayWithCollateral(
+          weth.address,
+          dai.address,
+          user.address,
+          parseEther('100'),
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).to.be.revertedWith('2');
+
+    await configurator.activateReserve(weth.address);
+
+    await configurator.deactivateReserve(dai.address);
+
+    await expect(
+      pool
+        .connect(user.signer)
+        .repayWithCollateral(
+          weth.address,
+          dai.address,
+          user.address,
+          parseEther('100'),
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).to.be.revertedWith('2');
+
+    await configurator.activateReserve(dai.address);
+  });
+
   it('User 1 provides some liquidity for others to borrow', async () => {
     const {pool, weth, dai, usdc, deployer} = testEnv;
 
@@ -65,7 +103,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(dai.address, amountToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(dai.address, amountToBorrow, 2, 0, user.address);
   });
 
   it('It is not possible to do reentrancy on repayWithCollateral()', async () => {
@@ -187,7 +225,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
   });
 
   it('User 3 repays completely his USDC loan by swapping his WETH collateral', async () => {
@@ -309,9 +347,9 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrowVariable, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrowVariable, 2, 0, user.address);
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrowStable, 1, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrowStable, 1, 0, user.address);
 
     const amountToRepay = parseUnits('80', 6);
 
@@ -450,7 +488,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     await pool.connect(user.signer).deposit(weth.address, amountToDepositWeth, user.address, '0');
     await pool.connect(user.signer).deposit(dai.address, amountToDepositDAI, user.address, '0');
 
-    await pool.connect(user.signer).borrow(dai.address, amountToBorrowVariable, 2, 0);
+    await pool.connect(user.signer).borrow(dai.address, amountToBorrowVariable, 2, 0, user.address);
 
     const amountToRepay = parseEther('80');
 
@@ -542,7 +580,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
     await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
   });
 
   it('User 5 tries to repay his USDC loan by swapping his WETH collateral, should not revert even with WETH collateral disabled', async () => {

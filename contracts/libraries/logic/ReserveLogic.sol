@@ -121,8 +121,30 @@ library ReserveLogic {
   }
 
   /**
-   * @dev Updates the state of the reserve by minting to the reserve treasury and calculate the new
-   * reserve indexes
+   * @dev returns an address of the debt token used for particular interest rate mode on asset.
+   * @param reserve the reserve object
+   * @param interestRateMode - STABLE or VARIABLE from ReserveLogic.InterestRateMode enum
+   * @return an address of the corresponding debt token from reserve configuration
+   **/
+  function getDebtTokenAddress(ReserveLogic.ReserveData storage reserve, uint256 interestRateMode)
+    internal
+    view
+    returns (address)
+  {
+    require(
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode) ||
+        ReserveLogic.InterestRateMode.VARIABLE == ReserveLogic.InterestRateMode(interestRateMode),
+      Errors.INVALID_INTEREST_RATE_MODE_SELECTED
+    );
+    return
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode)
+        ? reserve.stableDebtTokenAddress
+        : reserve.variableDebtTokenAddress;
+  }
+
+  /**
+   * @dev Updates the liquidity cumulative index Ci and variable borrow cumulative index Bvc. Refer to the whitepaper for
+   * a formal specification.
    * @param reserve the reserve object
    **/
   function updateState(ReserveData storage reserve) internal {

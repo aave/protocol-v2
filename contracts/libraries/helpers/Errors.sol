@@ -38,6 +38,7 @@ library Errors {
   string public constant INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26'; // 'The actual balance of the protocol is inconsistent'
   string public constant CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The actual balance of the protocol is inconsistent'
   string public constant INVALID_FLASHLOAN_MODE = '43'; //Invalid flashloan mode selected
+  string public constant BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '54'; // User borrows on behalf, but allowance are too small
   string public constant REENTRANCY_NOT_ALLOWED = '52';
   string public constant FAILED_REPAY_WITH_COLLATERAL = '53';
 
@@ -73,4 +74,14 @@ library Errors {
   string public constant MULTIPLICATION_OVERFLOW = '44';
   string public constant ADDITION_OVERFLOW = '45';
   string public constant DIVISION_BY_ZERO = '46';
+
+  enum LiquidationErrors {
+    NO_ERROR,
+    NO_COLLATERAL_AVAILABLE,
+    COLLATERAL_CANNOT_BE_LIQUIDATED,
+    CURRRENCY_NOT_BORROWED,
+    HEALTH_FACTOR_ABOVE_THRESHOLD,
+    NOT_ENOUGH_LIQUIDITY,
+    NO_ACTIVE_RESERVE
+  }
 }
