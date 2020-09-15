@@ -9,7 +9,6 @@ usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
-
 const BUIDLEREVM_CHAINID = 31337;
 const COVERAGE_CHAINID = 1337;
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;

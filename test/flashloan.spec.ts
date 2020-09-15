@@ -23,6 +23,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
     INVALID_FLASHLOAN_MODE,
     SAFEERC20_LOWLEVEL_CALL,
+    IS_PAUSED,
   } = ProtocolErrors;
 
   before(async () => {

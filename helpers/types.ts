@@ -5,7 +5,7 @@ export enum eEthereumNetwork {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
-  coverage = 'coverage'
+  coverage = 'coverage',
 }
 
 export enum AavePools {
@@ -42,7 +42,7 @@ export enum eContractid {
   AaveProtocolTestHelpers = 'AaveProtocolTestHelpers',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
-  VariableDebtToken = 'VariableDebtToken'
+  VariableDebtToken = 'VariableDebtToken',
 }
 
 export enum ProtocolErrors {
@@ -99,6 +99,8 @@ export enum ProtocolErrors {
   NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '41', // "There isn't enough liquidity available to liquidate"
   NO_ERRORS = '42', // 'No errors'
   INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
+
+  IS_PAUSED = '58', // Pool is paused
 
   // old
 

@@ -536,17 +536,16 @@ export const getFeeDistributionParamsCommon = (
   };
 };
 
-export const getATokenDomainSeparatorPerNetwork = (
-  network: eEthereumNetwork
-): tEthereumAddress =>
+export const getATokenDomainSeparatorPerNetwork = (network: eEthereumNetwork): tEthereumAddress =>
   getParamPerNetwork<tEthereumAddress>(
     {
-      [eEthereumNetwork.coverage]: "0x95b73a72c6ecf4ccbbba5178800023260bad8e75cdccdb8e4827a2977a37c820",
+      [eEthereumNetwork.coverage]:
+        '0x95b73a72c6ecf4ccbbba5178800023260bad8e75cdccdb8e4827a2977a37c820',
       [eEthereumNetwork.buidlerevm]:
-        "0x76cbbf8aa4b11a7c207dd79ccf8c394f59475301598c9a083f8258b4fafcfa86",
-      [eEthereumNetwork.kovan]: "",
-      [eEthereumNetwork.ropsten]: "",
-      [eEthereumNetwork.main]: "",
+        '0x76cbbf8aa4b11a7c207dd79ccf8c394f59475301598c9a083f8258b4fafcfa86',
+      [eEthereumNetwork.kovan]: '',
+      [eEthereumNetwork.ropsten]: '',
+      [eEthereumNetwork.main]: '',
     },
     network
   );

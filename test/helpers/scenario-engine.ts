@@ -230,7 +230,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
         await rebalanceStableBorrowRate(reserve, user, target, expected, testEnv, revertMessage);
       }
       break;
-   
+
     default:
       throw `Invalid action requested: ${name}`;
   }

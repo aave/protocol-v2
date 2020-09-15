@@ -62,14 +62,11 @@ library ReserveLogic {
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
     uint40 lastUpdateTimestamp;
-   
     //tokens addresses
     address aTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
-    
     address interestRateStrategyAddress;
-
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
   }
