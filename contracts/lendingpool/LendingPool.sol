@@ -580,7 +580,15 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     }
   }
 
-  function collateralSwap(
+  /**
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral.
+   * - It's not possible to release one asset to swap for the same
+   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
+   * @param fromAsset Asset to swap from
+   * @param toAsset Asset to swap to
+   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
+   **/
+  function swapLiquidity(
     address receiverAddress,
     address fromAsset,
     address toAsset,
@@ -592,7 +600,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     //solium-disable-next-line
     (bool success, bytes memory result) = liquidationManager.delegatecall(
       abi.encodeWithSignature(
-        'collateralSwap(address,address,address,uint256,bytes)',
+        'swapLiquidity(address,address,address,uint256,bytes)',
         receiverAddress,
         fromAsset,
         toAsset,

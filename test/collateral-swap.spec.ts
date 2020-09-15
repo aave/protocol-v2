@@ -11,7 +11,7 @@ import {advanceBlock, timeLatest} from '../helpers/misc-utils';
 
 const {expect} = require('chai');
 
-makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
+makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
   let _mockSwapAdapter = {} as MockSwapAdapter;
   const {HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD} = ProtocolErrors;
 
@@ -35,7 +35,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
   it('User tries to swap more then he can, revert expected', async () => {
     const {pool, weth, dai} = testEnv;
     await expect(
-      pool.collateralSwap(
+      pool.swapLiquidity(
         _mockSwapAdapter.address,
         weth.address,
         dai.address,
@@ -48,7 +48,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
   it('User tries to swap asset on equal asset, revert expected', async () => {
     const {pool, weth} = testEnv;
     await expect(
-      pool.collateralSwap(
+      pool.swapLiquidity(
         _mockSwapAdapter.address,
         weth.address,
         weth.address,
@@ -65,7 +65,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
     await pool.connect(users[2].signer).withdraw(weth.address, ethers.utils.parseEther('1'));
 
     await expect(
-      pool.collateralSwap(
+      pool.swapLiquidity(
         _mockSwapAdapter.address,
         weth.address,
         dai.address,
@@ -98,7 +98,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
     const reserveBalanceDAIBefore = await dai.balanceOf(aDai.address);
 
     const txReceipt = await waitForTx(
-      await pool.collateralSwap(
+      await pool.swapLiquidity(
         _mockSwapAdapter.address,
         weth.address,
         dai.address,
@@ -146,7 +146,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
     await pool.borrow(weth.address, ethers.utils.parseEther('0.3'), 1, 0, deployer.address);
 
     await expect(
-      pool.collateralSwap(_mockSwapAdapter.address, weth.address, dai.address, amountToSwap, '0x10')
+      pool.swapLiquidity(_mockSwapAdapter.address, weth.address, dai.address, amountToSwap, '0x10')
     ).to.be.revertedWith(HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD);
   });
 
@@ -178,7 +178,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
 
     await advanceBlock(txTimestamp.toNumber());
 
-    await pool.collateralSwap(
+    await pool.swapLiquidity(
       _mockSwapAdapter.address,
       weth.address,
       dai.address,
