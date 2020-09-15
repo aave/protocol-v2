@@ -27,10 +27,12 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
       const connectedWETH = weth.connect(signer);
       await connectedWETH.mint(amountToDeposit);
       await connectedWETH.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-      await pool.connect(signer).deposit(weth.address, amountToDeposit, await signer.getAddress(), '0',);
+      await pool
+        .connect(signer)
+        .deposit(weth.address, amountToDeposit, await signer.getAddress(), '0');
     }
   });
-  it('User tries to swap more then he can', async () => {
+  it('User tries to swap more then he can, revert expected', async () => {
     const {pool, weth, dai} = testEnv;
     await expect(
       pool.collateralSwap(
@@ -41,6 +43,19 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
         '0x10'
       )
     ).to.be.revertedWith('55');
+  });
+
+  it('User tries to swap asset on equal asset, revert expected', async () => {
+    const {pool, weth} = testEnv;
+    await expect(
+      pool.collateralSwap(
+        _mockSwapAdapter.address,
+        weth.address,
+        weth.address,
+        ethers.utils.parseEther('0.1'),
+        '0x10'
+      )
+    ).to.be.revertedWith('56');
   });
 
   it('User tries to swap more then available on the reserve', async () => {
@@ -61,7 +76,7 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
   });
 
   it('User tries to swap correct amount', async () => {
-    const {pool, weth, dai, aEth, aDai} = testEnv;  
+    const {pool, weth, dai, aEth, aDai} = testEnv;
     const userAddress = await pool.signer.getAddress();
     const amountToSwap = ethers.utils.parseEther('0.25');
 
@@ -141,7 +156,9 @@ makeSuite('LendingPool CollateralSwap function', (testEnv: TestEnv) => {
 
     // add more liquidity to allow user 0 to swap everything he has
     await weth.connect(users[2].signer).mint(ethers.utils.parseEther('1'));
-    await pool.connect(users[2].signer).deposit(weth.address, ethers.utils.parseEther('1'), users[2].address, '0');
+    await pool
+      .connect(users[2].signer)
+      .deposit(weth.address, ethers.utils.parseEther('1'), users[2].address, '0');
 
     // cleanup borrowings, to be abe to swap whole weth
     const amountToRepay = ethers.utils.parseEther('0.5');

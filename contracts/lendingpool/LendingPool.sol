@@ -592,7 +592,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     //solium-disable-next-line
     (bool success, bytes memory result) = liquidationManager.delegatecall(
       abi.encodeWithSignature(
-        'collateralSwap(address,address,address,uint256,address,bytes)',
+        'collateralSwap(address,address,address,uint256,bytes)',
         receiverAddress,
         fromAsset,
         toAsset,
