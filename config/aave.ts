@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import {oneRay} from '../helpers/constants';
-import {IAaveConfiguration, EthereumNetwork} from '../helpers/types';
+import {IAaveConfiguration, EthereumNetwork, eEthereumNetwork} from '../helpers/types';
 
 import {CommonsConfig} from './commons';
 
@@ -255,6 +255,8 @@ export const AaveConfig: IAaveConfiguration = {
     },
   },
   ReserveAssets: {
+    [eEthereumNetwork.buidlerevm]: {},
+    [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       WETH: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
       DAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',

@@ -47,6 +47,8 @@ const {
 
 export type MockTokenMap = {[symbol: string]: MintableERC20};
 import {MockSwapAdapter} from '../types/MockSwapAdapter';
+import {signTypedData_v4, TypedData} from 'eth-sig-util';
+import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -553,10 +555,14 @@ const linkBytecode = (artifact: Artifact, libraries: any) => {
 };
 
 export const getParamPerNetwork = <T>(
-  {kovan, ropsten, main}: iParamsPerNetwork<T>,
+  {kovan, ropsten, main, buidlerevm, coverage}: iParamsPerNetwork<T>,
   network: eEthereumNetwork
 ) => {
   switch (network) {
+    case eEthereumNetwork.coverage:
+      return coverage;
+    case eEthereumNetwork.buidlerevm:
+      return buidlerevm;
     case eEthereumNetwork.kovan:
       return kovan;
     case eEthereumNetwork.ropsten:
@@ -833,4 +839,56 @@ export const getLendingPoolAddressesProviderRegistry = async (address?: tEthereu
           .value()
       ).address
   );
+};
+
+export const buildPermitParams = (
+  chainId: number,
+  token: tEthereumAddress,
+  revision: string,
+  tokenName: string,
+  owner: tEthereumAddress,
+  spender: tEthereumAddress,
+  nonce: number,
+  deadline: string,
+  value: tStringTokenSmallUnits
+) => ({
+  types: {
+    EIP712Domain: [
+      {name: 'name', type: 'string'},
+      {name: 'version', type: 'string'},
+      {name: 'chainId', type: 'uint256'},
+      {name: 'verifyingContract', type: 'address'},
+    ],
+    Permit: [
+      {name: 'owner', type: 'address'},
+      {name: 'spender', type: 'address'},
+      {name: 'value', type: 'uint256'},
+      {name: 'nonce', type: 'uint256'},
+      {name: 'deadline', type: 'uint256'},
+    ],
+  },
+  primaryType: 'Permit' as const,
+  domain: {
+    name: tokenName,
+    version: revision,
+    chainId: chainId,
+    verifyingContract: token,
+  },
+  message: {
+    owner,
+    spender,
+    value,
+    nonce,
+    deadline,
+  },
+});
+
+export const getSignatureFromTypedData = (
+  privateKey: string,
+  typedData: any // TODO: should be TypedData, from eth-sig-utils, but TS doesn't accept it
+): ECDSASignature => {
+  const signature = signTypedData_v4(Buffer.from(privateKey.substring(2, 66), 'hex'), {
+    data: typedData,
+  });
+  return fromRpcSig(signature);
 };

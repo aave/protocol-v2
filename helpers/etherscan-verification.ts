@@ -1,3 +1,4 @@
+import {exit} from 'process';
 import {BRE} from './misc-utils';
 
 export const SUPPORTED_ETHERSCAN_NETWORKS = ['main', 'ropsten', 'kovan'];
@@ -83,14 +84,17 @@ export const runTaskWithRetry = async (
 export const checkVerification = () => {
   const currentNetwork = BRE.network.name;
   if (!process.env.ETHERSCAN_KEY) {
-    throw Error('Missing process.env.ETHERSCAN_KEY.');
+    console.error('Missing process.env.ETHERSCAN_KEY.');
+    exit(3);
   }
   if (!process.env.ETHERSCAN_NETWORK) {
-    throw Error('Missing process.env.ETHERSCAN_NETWORK');
+    console.error('Missing process.env.ETHERSCAN_NETWORK');
+    exit(4);
   }
   if (!SUPPORTED_ETHERSCAN_NETWORKS.includes(currentNetwork)) {
-    throw Error(
+    console.error(
       `Current network ${currentNetwork} not supported. Please change to one of the next networks: ${SUPPORTED_ETHERSCAN_NETWORKS.toString()}`
     );
+    exit(5);
   }
 };

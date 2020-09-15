@@ -1,3 +1,5 @@
+import BigNumber from 'bignumber.js';
+
 import {TestEnv, makeSuite} from './helpers/make-suite';
 import {APPROVAL_AMOUNT_LENDING_POOL, oneRay} from '../helpers/constants';
 import {
@@ -8,7 +10,6 @@ import {
 import {ethers} from 'ethers';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {ProtocolErrors, eContractid} from '../helpers/types';
-import BigNumber from 'bignumber.js';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 import {StableDebtToken} from '../types/StableDebtToken';
 
@@ -22,13 +23,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
     INVALID_FLASHLOAN_MODE,
     SAFEERC20_LOWLEVEL_CALL,
+    IS_PAUSED,
   } = ProtocolErrors;
 
   before(async () => {
     _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
   });
 
-  it('Deposits ETH into the reserve', async () => {
+  it('Deposits WETH into the reserve', async () => {
     const {pool, weth} = testEnv;
     const userAddress = await pool.signer.getAddress();
     const amountToDeposit = ethers.utils.parseEther('1');

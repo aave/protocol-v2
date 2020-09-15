@@ -1,5 +1,7 @@
 import BigNumber from 'bignumber.js';
 
+export const BUIDLEREVM_CHAINID = 31337;
+export const COVERAGE_CHAINID = 1337;
 export const TEST_SNAPSHOT_ID = '0x1';
 
 export const WAD = Math.pow(10, 18).toString();

@@ -3,7 +3,7 @@ import {checkVerification} from '../../helpers/etherscan-verification';
 import {ConfigNames} from '../../helpers/configuration';
 
 task('uniswap:full', 'Deploy development enviroment')
-  .addOptionalParam('verify', 'Verify contracts at Etherscan')
+  .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     const POOL_NAME = ConfigNames.Uniswap;
 

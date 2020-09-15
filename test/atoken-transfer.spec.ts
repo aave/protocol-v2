@@ -17,6 +17,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     // ZERO_COLLATERAL,
     COLLATERAL_BALANCE_IS_0,
     TRANSFER_NOT_ALLOWED,
+    IS_PAUSED,
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
@@ -59,7 +60,13 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(users[1].signer)
-        .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL),
+        .borrow(
+          weth.address,
+          ethers.utils.parseEther('0.1'),
+          RateMode.Stable,
+          AAVE_REFERRAL,
+          users[1].address
+        ),
       COLLATERAL_BALANCE_IS_0
     ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
   });
@@ -72,7 +79,13 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
     await pool
       .connect(users[1].signer)
-      .borrow(weth.address, ethers.utils.parseEther('0.1'), RateMode.Stable, AAVE_REFERRAL);
+      .borrow(
+        weth.address,
+        ethers.utils.parseEther('0.1'),
+        RateMode.Stable,
+        AAVE_REFERRAL,
+        users[1].address
+      );
 
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),

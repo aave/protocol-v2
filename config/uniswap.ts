@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {EthereumNetwork, IUniswapConfiguration} from '../helpers/types';
+import {eEthereumNetwork, EthereumNetwork, IUniswapConfiguration} from '../helpers/types';
 import {oneRay} from '../helpers/constants';
 
 import {CommonsConfig} from './commons';
@@ -157,6 +157,8 @@ export const UniswapConfig: IUniswapConfiguration = {
     },
   },
   ChainlinkAggregator: {
+    [eEthereumNetwork.buidlerevm]: {},
+    [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       DAI: '0x6F47077D3B6645Cb6fb7A29D280277EC1e5fFD90',
       USDC: '0x672c1C0d1130912D83664011E7960a42E8cA05D5',
@@ -192,6 +194,8 @@ export const UniswapConfig: IUniswapConfiguration = {
     },
   },
   ReserveAssets: {
+    [eEthereumNetwork.buidlerevm]: {},
+    [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       WETH: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
       DAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',

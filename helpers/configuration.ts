@@ -3,13 +3,18 @@ import {
   iMultiPoolsAssets,
   IReserveParams,
   PoolConfiguration,
-  tEthereumAddress,
   iBasicDistributionParams,
+  ICommonConfiguration,
+  eEthereumNetwork,
 } from './types';
 import {getParamPerPool} from './contracts-helpers';
 import {AaveConfig} from '../config/aave';
 import {UniswapConfig} from '../config/uniswap';
+import {CommonsConfig} from '../config/commons';
 import {ZERO_ADDRESS} from './constants';
+import {BRE} from './misc-utils';
+import {tEthereumAddress} from './types';
+import {getParamPerNetwork} from './contracts-helpers';
 
 export enum ConfigNames {
   Commons = 'Commons',
@@ -23,6 +28,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return AaveConfig;
     case ConfigNames.Uniswap:
       return UniswapConfig;
+    case ConfigNames.Commons:
+      return CommonsConfig;
     default:
       throw new Error(`Unsupported pool configuration: ${Object.values(ConfigNames)}`);
   }
@@ -55,3 +62,24 @@ export const getFeeDistributionParamsCommon = (
     percentages,
   };
 };
+
+export const getGenesisLendingPoolManagerAddress = async (config: ICommonConfiguration) => {
+  const currentNetwork = BRE.network.name;
+  const targetAddress = getParamPerNetwork(
+    config.LendingPoolManagerAddress,
+    <eEthereumNetwork>currentNetwork
+  );
+  if (targetAddress) {
+    return targetAddress;
+  }
+  const addressList = await Promise.all(
+    (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
+  const addressIndex = config.LendingPoolManagerAddressIndex;
+  return addressList[addressIndex];
+};
+
+export const getATokenDomainSeparatorPerNetwork = (
+  network: eEthereumNetwork,
+  config: ICommonConfiguration
+): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);

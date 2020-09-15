@@ -6,8 +6,11 @@ import {
   getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-helpers';
 import {waitForTx} from '../../helpers/misc-utils';
-import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
-import {getGenesisLendingPoolManagerAddress} from '../../helpers/contracts-getters';
+import {
+  ConfigNames,
+  loadPoolConfig,
+  getGenesisLendingPoolManagerAddress,
+} from '../../helpers/configuration';
 import {eEthereumNetwork} from '../../helpers/types';
 
 task(

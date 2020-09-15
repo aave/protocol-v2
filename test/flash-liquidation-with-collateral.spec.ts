@@ -16,7 +16,7 @@ const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
 
 makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEnv) => {
-  const {INVALID_HF, COLLATERAL_CANNOT_BE_LIQUIDATED} = ProtocolErrors;
+  const {INVALID_HF, COLLATERAL_CANNOT_BE_LIQUIDATED, IS_PAUSED} = ProtocolErrors;
 
   it('User 1 provides some liquidity for others to borrow', async () => {
     const {pool, weth, dai, usdc, deployer} = testEnv;
@@ -46,9 +46,9 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 1, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 1, 0, user.address);
 
     const {userData: wethUserDataBefore} = await getContractsData(
       weth.address,
@@ -202,7 +202,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
         .toFixed(0)
     );
 
-    await pool.connect(user.signer).borrow(usdc.address, amountUSDCToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountUSDCToBorrow, 2, 0, user.address);
   });
 
   it('User 5 liquidates half the USDC loan of User 3 by swapping his WETH collateral', async () => {
@@ -463,7 +463,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
         .toFixed(0)
     );
 
-    await pool.connect(user.signer).borrow(dai.address, amountDAIToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(dai.address, amountDAIToBorrow, 2, 0, user.address);
   });
 
   it('It is not possible to do reentrancy on repayWithCollateral()', async () => {
@@ -735,7 +735,9 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await pool.connect(user.signer).deposit(weth.address, amountToDepositWeth, user.address, '0');
     await pool.connect(user.signer).deposit(dai.address, amountToDepositDAI, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrowVariable, 2, 0);
+    await pool
+      .connect(user.signer)
+      .borrow(usdc.address, amountToBorrowVariable, 2, 0, user.address);
 
     const amountToRepay = amountToBorrowVariable;
 
@@ -843,7 +845,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await dai.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
     await pool.connect(user.signer).deposit(dai.address, amountDAIToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0);
+    await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
   });
 
   it('Liquidator tries to liquidates User 5 USDC loan by swapping his WETH collateral, should revert due WETH collateral disabled', async () => {

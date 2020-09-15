@@ -21,6 +21,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     INVALID_HF,
     SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER,
     COLLATERAL_CANNOT_BE_LIQUIDATED,
+    IS_PAUSED,
   } = ProtocolErrors;
 
   it('LIQUIDATION - Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
@@ -67,7 +68,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await pool
       .connect(borrower.signer)
-      .borrow(dai.address, amountDAIToBorrow, RateMode.Variable, '0');
+      .borrow(dai.address, amountDAIToBorrow, RateMode.Variable, '0', borrower.address);
 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -265,7 +266,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await pool
       .connect(borrower.signer)
-      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Stable, '0');
+      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Stable, '0', borrower.address);
 
     //drops HF below 1
 

@@ -29,6 +29,13 @@ interface ILendingPool {
    **/
   event Withdraw(address indexed reserve, address indexed user, uint256 amount);
 
+  event BorrowAllowanceDelegated(
+    address indexed asset,
+    address indexed fromUser,
+    address indexed toUser,
+    uint256 interestRateMode,
+    uint256 amount
+  );
   /**
    * @dev emitted on borrow
    * @param reserve the address of the reserve
@@ -40,7 +47,8 @@ interface ILendingPool {
    **/
   event Borrow(
     address indexed reserve,
-    address indexed user,
+    address user,
+    address indexed onBehalfOf,
     uint256 amount,
     uint256 borrowRateMode,
     uint256 borrowRate,
@@ -129,6 +137,15 @@ interface ILendingPool {
     address liquidator,
     bool receiveAToken
   );
+  /**
+   * @dev Emitted when the pause is triggered.
+   */
+  event Paused();
+
+  /**
+   * @dev Emitted when the pause is lifted.
+   */
+  event Unpaused();
 
   /**
    * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
@@ -152,6 +169,27 @@ interface ILendingPool {
   function withdraw(address reserve, uint256 amount) external;
 
   /**
+   * @dev Sets allowance to borrow on a certain type of debt asset for a certain user address
+   * @param asset The underlying asset of the debt token
+   * @param user The user to give allowance to
+   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
+   * @param amount Allowance amount to borrow
+   **/
+  function delegateBorrowAllowance(
+    address asset,
+    address user,
+    uint256 interestRateMode,
+    uint256 amount
+  ) external;
+
+  function getBorrowAllowance(
+    address fromUser,
+    address toUser,
+    address asset,
+    uint256 interestRateMode
+  ) external view returns (uint256);
+
+  /**
    * @dev Allows users to borrow a specific amount of the reserve currency, provided that the borrower
    * already deposited enough collateral.
    * @param reserve the address of the reserve
@@ -162,7 +200,8 @@ interface ILendingPool {
     address reserve,
     uint256 amount,
     uint256 interestRateMode,
-    uint16 referralCode
+    uint16 referralCode,
+    address onBehalfOf
   ) external;
 
   /**
@@ -258,6 +297,22 @@ interface ILendingPool {
     uint256 debtType,
     bytes calldata params,
     uint16 referralCode
+  ) external;
+
+  /**
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
+   * - It's not possible to release one asset to swap for the same
+   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
+   * @param fromAsset Asset to swap from
+   * @param toAsset Asset to swap to
+   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
+   **/
+  function swapLiquidity(
+    address receiverAddress,
+    address fromAsset,
+    address toAsset,
+    uint256 amountToSwap,
+    bytes calldata params
   ) external;
 
   /**
@@ -374,4 +429,15 @@ interface ILendingPool {
   ) external view returns (bool);
 
   function getReserves() external view returns (address[] memory);
+
+  /**
+   * @dev Set the _pause state
+   * @param val the boolean value to set the current pause state of LendingPool
+   */
+  function setPause(bool val) external;
+
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
+  function paused() external view returns (bool);
 }

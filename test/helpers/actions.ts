@@ -280,11 +280,41 @@ export const withdraw = async (
   }
 };
 
+export const delegateBorrowAllowance = async (
+  reserveSymbol: string,
+  amount: string,
+  interestRateMode: string,
+  user: SignerWithAddress,
+  receiver: tEthereumAddress,
+  expectedResult: string,
+  testEnv: TestEnv,
+  revertMessage?: string
+) => {
+  const {pool} = testEnv;
+
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
+  const amountToDelegate = await convertToCurrencyDecimals(reserve, amount);
+
+  const delegateAllowancePromise = pool
+    .connect(user.signer)
+    .delegateBorrowAllowance(reserve, receiver, interestRateMode, amountToDelegate.toString());
+  if (expectedResult === 'revert') {
+    await expect(delegateAllowancePromise, revertMessage).to.be.reverted;
+    return;
+  } else {
+    await delegateAllowancePromise;
+    expect(
+      (await pool.getBorrowAllowance(user.address, receiver, reserve, interestRateMode)).toString()
+    ).to.be.equal(amountToDelegate.toString(), 'borrowAllowance are set incorrectly');
+  }
+};
+
 export const borrow = async (
   reserveSymbol: string,
   amount: string,
   interestRateMode: string,
   user: SignerWithAddress,
+  onBehalfOf: tEthereumAddress,
   timeTravel: string,
   expectedResult: string,
   testEnv: TestEnv,
@@ -296,15 +326,18 @@ export const borrow = async (
 
   const {reserveData: reserveDataBefore, userData: userDataBefore} = await getContractsData(
     reserve,
-    user.address,
-    testEnv
+    onBehalfOf,
+    testEnv,
+    user.address
   );
 
   const amountToBorrow = await convertToCurrencyDecimals(reserve, amount);
 
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await pool.connect(user.signer).borrow(reserve, amountToBorrow, interestRateMode, '0')
+      await pool
+        .connect(user.signer)
+        .borrow(reserve, amountToBorrow, interestRateMode, '0', onBehalfOf)
     );
 
     const {txCost, txTimestamp} = await getTxCostAndTimestamp(txResult);
@@ -319,7 +352,7 @@ export const borrow = async (
       reserveData: reserveDataAfter,
       userData: userDataAfter,
       timestamp,
-    } = await getContractsData(reserve, user.address, testEnv);
+    } = await getContractsData(reserve, onBehalfOf, testEnv, user.address);
 
     const expectedReserveData = calcExpectedReserveDataAfterBorrow(
       amountToBorrow.toString(),
@@ -366,7 +399,7 @@ export const borrow = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      pool.connect(user.signer).borrow(reserve, amountToBorrow, interestRateMode, '0'),
+      pool.connect(user.signer).borrow(reserve, amountToBorrow, interestRateMode, '0', onBehalfOf),
       revertMessage
     ).to.be.reverted;
   }
@@ -686,7 +719,7 @@ const getDataBeforeAction = async (
   };
 };
 
-const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
+export const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
   if (!tx.blockNumber || !tx.transactionHash || !tx.cumulativeGasUsed) {
     throw new Error('No tx blocknumber');
   }

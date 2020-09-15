@@ -1,11 +1,13 @@
 import {task} from '@nomiclabs/buidler/config';
 import {checkVerification} from '../../helpers/etherscan-verification';
 import {ConfigNames} from '../../helpers/configuration';
+import {EthereumNetworkNames} from '../../helpers/types';
 
 task('aave:full', 'Deploy development enviroment')
-  .addOptionalParam('verify', 'Verify contracts at Etherscan')
+  .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     const POOL_NAME = ConfigNames.Aave;
+    const network = <EthereumNetworkNames>localBRE.network.name;
 
     await localBRE.run('set-bre');
 

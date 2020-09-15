@@ -10,6 +10,13 @@ export enum eEthereumNetwork {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
+  coverage = 'coverage',
+}
+
+export enum EthereumNetworkNames {
+  kovan = 'kovan',
+  ropsten = 'ropsten',
+  main = 'main',
 }
 
 export enum AavePools {
@@ -105,6 +112,8 @@ export enum ProtocolErrors {
   NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '41', // "There isn't enough liquidity available to liquidate"
   NO_ERRORS = '42', // 'No errors'
   INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
+
+  IS_PAUSED = '58', // Pool is paused
 
   // old
 
@@ -254,6 +263,8 @@ export interface IMarketRates {
 }
 
 export interface iParamsPerNetwork<T> {
+  [eEthereumNetwork.coverage]: T;
+  [eEthereumNetwork.buidlerevm]: T;
   [eEthereumNetwork.kovan]: T;
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
@@ -330,6 +341,7 @@ export interface ICommonConfiguration {
   LendingPoolManagerAddressIndex: number;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+  ATokenDomainSeparator: iParamsPerNetwork<string>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
@@ -344,4 +356,4 @@ export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = IAaveConfiguration | IUniswapConfiguration;
+export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration | IUniswapConfiguration;

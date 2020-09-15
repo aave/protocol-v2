@@ -14,7 +14,7 @@
     "test": "buidler test",
     "test-scenarios": "buidler test test/__setup.spec.ts test/scenario.spec.ts",
     "aave:evm:dev:migration": "buidler aave:dev",
-    "aave:evm:full:migration": "buidler aave:full",
+    "aave:evm:full:migration": "buidler aave:full --verify",
     "aave:kovan:dev:migration": "npm run buidler:kovan -- aave:dev --verify",
     "aave:kovan:full:migration": "npm run buidler:kovan -- aave:full --verify",
     "aave:ropsten:dev:migration": "npm run buidler:ropsten -- aave:dev --verify",
@@ -22,7 +22,7 @@
     "aave:main:dev:migration": "npm run buidler:main -- aave:dev --verify",
     "aave:main:full:migration": "npm run buidler:main -- aave:full --verify",
     "uniswap:evm:dev:migration": "buidler uniswap:dev",
-    "uniswap:evm:full:migration": "buidler uniswap:full",
+    "uniswap:evm:full:migration": "buidler uniswap:full --verify",
     "uniswap:kovan:dev:migration": "npm run buidler:kovan -- uniswap:dev --verify",
     "uniswap:kovan:full:migration": "npm run buidler:kovan -- uniswap:full --verify",
     "uniswap:ropsten:dev:migration": "npm run buidler:ropsten -- uniswap:dev --verify",
@@ -31,7 +31,11 @@
     "uniswap:main:full:migration": "npm run buidler:main -- uniswap:full --verify",
     "test-repay-with-collateral": "buidler test test/__setup.spec.ts test/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "buidler test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
+    "test-transfers": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts",
     "test-flash": "buidler test test/__setup.spec.ts test/flashloan.spec.ts",
+    "test-liquidate": "buidler test test/__setup.spec.ts test/liquidation-atoken.spec.ts",
+    "test-pausable": "buidler test test/__setup.spec.ts test/pausable-functions.spec.ts",
+    "test-permit": "buidler test test/__setup.spec.ts test/atoken-permit.spec.ts",
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
@@ -74,7 +78,9 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-plugin-prettier": "^2.3.0",
     "typechain": "2.0.0",
-    "typescript": "3.9.3"
+    "typescript": "3.9.3",
+    "eth-sig-util": "2.5.3",
+    "ethereumjs-util": "7.0.2"
   },
   "husky": {
     "hooks": {

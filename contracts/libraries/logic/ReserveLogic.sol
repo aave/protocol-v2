@@ -118,6 +118,28 @@ library ReserveLogic {
   }
 
   /**
+   * @dev returns an address of the debt token used for particular interest rate mode on asset.
+   * @param reserve the reserve object
+   * @param interestRateMode - STABLE or VARIABLE from ReserveLogic.InterestRateMode enum
+   * @return an address of the corresponding debt token from reserve configuration
+   **/
+  function getDebtTokenAddress(ReserveLogic.ReserveData storage reserve, uint256 interestRateMode)
+    internal
+    view
+    returns (address)
+  {
+    require(
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode) ||
+        ReserveLogic.InterestRateMode.VARIABLE == ReserveLogic.InterestRateMode(interestRateMode),
+      Errors.INVALID_INTEREST_RATE_MODE_SELECTED
+    );
+    return
+      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode)
+        ? reserve.stableDebtTokenAddress
+        : reserve.variableDebtTokenAddress;
+  }
+
+  /**
    * @dev Updates the liquidity cumulative index Ci and variable borrow cumulative index Bvc. Refer to the whitepaper for
    * a formal specification.
    * @param reserve the reserve object
@@ -165,7 +187,7 @@ library ReserveLogic {
     ReserveData storage reserve,
     uint256 totalLiquidity,
     uint256 amount
-  ) internal {
+  ) external {
     uint256 amountToLiquidityRatio = amount.wadToRay().rayDiv(totalLiquidity.wadToRay());
 
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
@@ -227,7 +249,7 @@ library ReserveLogic {
     address aTokenAddress,
     uint256 liquidityAdded,
     uint256 liquidityTaken
-  ) internal {
+  ) external {
     UpdateInterestRatesLocalVars memory vars;
 
     vars.stableDebtTokenAddress = reserve.stableDebtTokenAddress;

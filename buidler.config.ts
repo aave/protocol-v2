@@ -1,10 +1,10 @@
 import path from 'path';
 import fs from 'fs';
 import {usePlugin} from '@nomiclabs/buidler/config';
-
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
+import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/constants';
 
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');
@@ -14,6 +14,7 @@ usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
+
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = 10;
 const HARDFORK = 'istanbul';
@@ -73,6 +74,7 @@ const buidlerConfig: any = {
   networks: {
     coverage: {
       url: 'http://localhost:8555',
+      chainId: COVERAGE_CHAINID,
     },
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
@@ -82,7 +84,7 @@ const buidlerConfig: any = {
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
       gasPrice: 8000000000,
-      chainId: 31337,
+      chainId: BUIDLEREVM_CHAINID,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       accounts: accounts.map(({secretKey, balance}: {secretKey: string; balance: string}) => ({

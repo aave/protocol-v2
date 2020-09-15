@@ -21,11 +21,13 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
+import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
  * @author Aave
  * @notice Implements the liquidation function.
+ * @dev LendingPoolLiquidationManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
  **/
 contract LendingPoolLiquidationManager is VersionedInitializable {
   using SafeERC20 for IERC20;
@@ -43,10 +45,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
   mapping(address => ReserveLogic.ReserveData) internal reserves;
   mapping(address => UserConfiguration.Map) internal usersConfig;
+  mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
 
   address[] internal reservesList;
 
   bool internal _flashLiquidationLocked;
+  bool public _paused;
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
@@ -88,15 +92,6 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     uint256 swappedCollateralAmount
   );
 
-  enum LiquidationErrors {
-    NO_ERROR,
-    NO_COLLATERAL_AVAILABLE,
-    COLLATERAL_CANNOT_BE_LIQUIDATED,
-    CURRRENCY_NOT_BORROWED,
-    HEALTH_FACTOR_ABOVE_THRESHOLD,
-    NOT_ENOUGH_LIQUIDITY
-  }
-
   struct LiquidationCallLocalVars {
     uint256 userCollateralBalance;
     uint256 userStableDebt;
@@ -112,6 +107,29 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     uint256 healthFactor;
     IAToken collateralAtoken;
     bool isCollateralEnabled;
+    address principalAToken;
+    uint256 errorCode;
+    string errorMsg;
+  }
+
+  struct SwapLiquidityLocalVars {
+    uint256 healthFactor;
+    uint256 amountToReceive;
+    uint256 userBalanceBefore;
+    IAToken fromReserveAToken;
+    IAToken toReserveAToken;
+    uint256 errorCode;
+    string errorMsg;
+  }
+
+  struct AvailableCollateralToLiquidateLocalVars {
+    uint256 userCompoundedBorrowBalance;
+    uint256 liquidationBonus;
+    uint256 collateralPrice;
+    uint256 principalCurrencyPrice;
+    uint256 maxAmountCollateralToLiquidate;
+    uint256 principalDecimals;
+    uint256 collateralDecimals;
   }
 
   /**
@@ -138,8 +156,8 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     uint256 purchaseAmount,
     bool receiveAToken
   ) external returns (uint256, string memory) {
-    ReserveLogic.ReserveData storage principalReserve = reserves[principal];
     ReserveLogic.ReserveData storage collateralReserve = reserves[collateral];
+    ReserveLogic.ReserveData storage principalReserve = reserves[principal];
     UserConfiguration.Map storage userConfig = usersConfig[user];
 
     LiquidationCallLocalVars memory vars;
@@ -152,43 +170,29 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       addressesProvider.getPriceOracle()
     );
 
-    if (vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
-      return (
-        uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
-      );
-    }
-
-    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
-
-    vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
-
-    vars.isCollateralEnabled =
-      collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-      userConfig.isUsingAsCollateral(collateralReserve.id);
-
-    //if collateral isn't enabled as collateral by user, it cannot be liquidated
-    if (!vars.isCollateralEnabled) {
-      return (
-        uint256(LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
-        Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
-      );
-    }
-
     //if the user hasn't borrowed the specific currency defined by asset, it cannot be liquidated
     (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(
       user,
       principalReserve
     );
 
-    if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
-      return (
-        uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
-        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
-      );
+    (vars.errorCode, vars.errorMsg) = ValidationLogic.validateLiquidationCall(
+      collateralReserve,
+      principalReserve,
+      userConfig,
+      vars.healthFactor,
+      vars.userStableDebt,
+      vars.userVariableDebt
+    );
+
+    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+      return (vars.errorCode, vars.errorMsg);
     }
 
-    //all clear - calculate the max principal amount that can be liquidated
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
+
+    vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
+
     vars.maxPrincipalAmountToLiquidate = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
       LIQUIDATION_CLOSE_FACTOR_PERCENT
     );
@@ -224,7 +228,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
-          uint256(LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
+          uint256(Errors.LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
           Errors.NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
         );
       }
@@ -296,7 +300,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       receiveAToken
     );
 
-    return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -319,9 +323,8 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     address receiver,
     bytes calldata params
   ) external returns (uint256, string memory) {
-    ReserveLogic.ReserveData storage debtReserve = reserves[principal];
     ReserveLogic.ReserveData storage collateralReserve = reserves[collateral];
-
+    ReserveLogic.ReserveData storage debtReserve = reserves[principal];
     UserConfiguration.Map storage userConfig = usersConfig[user];
 
     LiquidationCallLocalVars memory vars;
@@ -334,36 +337,20 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       addressesProvider.getPriceOracle()
     );
 
-    if (
-      msg.sender != user && vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD
-    ) {
-      return (
-        uint256(LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
-      );
-    }
-
-    if (msg.sender != user) {
-      vars.isCollateralEnabled =
-        collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-        userConfig.isUsingAsCollateral(collateralReserve.id);
-
-      //if collateral isn't enabled as collateral by user, it cannot be liquidated
-      if (!vars.isCollateralEnabled) {
-        return (
-          uint256(LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
-          Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
-        );
-      }
-    }
-
     (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(user, debtReserve);
 
-    if (vars.userStableDebt == 0 && vars.userVariableDebt == 0) {
-      return (
-        uint256(LiquidationErrors.CURRRENCY_NOT_BORROWED),
-        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
-      );
+    (vars.errorCode, vars.errorMsg) = ValidationLogic.validateRepayWithCollateral(
+      collateralReserve,
+      debtReserve,
+      userConfig,
+      user,
+      vars.healthFactor,
+      vars.userStableDebt,
+      vars.userVariableDebt
+    );
+
+    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+      return (vars.errorCode, vars.errorMsg);
     }
 
     vars.maxPrincipalAmountToLiquidate = vars.userStableDebt.add(vars.userVariableDebt);
@@ -407,7 +394,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
     }
 
-    address principalAToken = debtReserve.aTokenAddress;
+    vars.principalAToken = debtReserve.aTokenAddress;
 
     // Notifies the receiver to proceed, sending as param the underlying already transferred
     ISwapAdapter(receiver).executeOperation(
@@ -420,8 +407,13 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     //updating debt reserve
     debtReserve.updateCumulativeIndexesAndTimestamp();
-    debtReserve.updateInterestRates(principal, principalAToken, vars.actualAmountToLiquidate, 0);
-    IERC20(principal).transferFrom(receiver, principalAToken, vars.actualAmountToLiquidate);
+    debtReserve.updateInterestRates(
+      principal,
+      vars.principalAToken,
+      vars.actualAmountToLiquidate,
+      0
+    );
+    IERC20(principal).transferFrom(receiver, vars.principalAToken, vars.actualAmountToLiquidate);
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
@@ -453,17 +445,100 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       vars.maxCollateralToLiquidate
     );
 
-    return (uint256(LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
-  struct AvailableCollateralToLiquidateLocalVars {
-    uint256 userCompoundedBorrowBalance;
-    uint256 liquidationBonus;
-    uint256 collateralPrice;
-    uint256 principalCurrencyPrice;
-    uint256 maxAmountCollateralToLiquidate;
-    uint256 principalDecimals;
-    uint256 collateralDecimals;
+  /**
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
+   * - It's not possible to release one asset to swap for the same
+   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
+   * @param fromAsset Asset to swap from
+   * @param toAsset Asset to swap to
+   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
+   **/
+  function swapLiquidity(
+    address receiverAddress,
+    address fromAsset,
+    address toAsset,
+    uint256 amountToSwap,
+    bytes calldata params
+  ) external returns (uint256, string memory) {
+    ReserveLogic.ReserveData storage fromReserve = reserves[fromAsset];
+    ReserveLogic.ReserveData storage toReserve = reserves[toAsset];
+
+    // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
+    SwapLiquidityLocalVars memory vars;
+
+    (vars.errorCode, vars.errorMsg) = ValidationLogic.validateSwapLiquidity(
+      fromReserve,
+      toReserve,
+      fromAsset,
+      toAsset
+    );
+
+    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+      return (vars.errorCode, vars.errorMsg);
+    }
+
+    vars.fromReserveAToken = IAToken(fromReserve.aTokenAddress);
+    vars.toReserveAToken = IAToken(toReserve.aTokenAddress);
+
+    fromReserve.updateCumulativeIndexesAndTimestamp();
+    toReserve.updateCumulativeIndexesAndTimestamp();
+
+    if (vars.fromReserveAToken.balanceOf(msg.sender) == amountToSwap) {
+      usersConfig[msg.sender].setUsingAsCollateral(fromReserve.id, false);
+    }
+
+    fromReserve.updateInterestRates(fromAsset, address(vars.fromReserveAToken), 0, amountToSwap);
+
+    vars.fromReserveAToken.burn(
+      msg.sender,
+      receiverAddress,
+      amountToSwap,
+      fromReserve.liquidityIndex
+    );
+    // Notifies the receiver to proceed, sending as param the underlying already transferred
+    ISwapAdapter(receiverAddress).executeOperation(
+      fromAsset,
+      toAsset,
+      amountToSwap,
+      address(this),
+      params
+    );
+
+    vars.amountToReceive = IERC20(toAsset).balanceOf(receiverAddress);
+    if (vars.amountToReceive != 0) {
+      IERC20(toAsset).transferFrom(
+        receiverAddress,
+        address(vars.toReserveAToken),
+        vars.amountToReceive
+      );
+      vars.toReserveAToken.mint(msg.sender, vars.amountToReceive, toReserve.liquidityIndex);
+      toReserve.updateInterestRates(
+        toAsset,
+        address(vars.toReserveAToken),
+        vars.amountToReceive,
+        0
+      );
+    }
+
+    (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
+      msg.sender,
+      reserves,
+      usersConfig[msg.sender],
+      reservesList,
+      addressesProvider.getPriceOracle()
+    );
+
+    if (vars.healthFactor < GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
+      return (
+        uint256(Errors.LiquidationErrors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD),
+        Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
+      );
+    }
+
+    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
