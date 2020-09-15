@@ -539,7 +539,7 @@ export const calcExpectedUserDataAfterBorrow = (
     currentTimestamp
   );
   expectedUserData.scaledATokenBalance = userDataBeforeAction.scaledATokenBalance;
-  
+
   expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountBorrowed);
 
   return expectedUserData;
@@ -623,7 +623,7 @@ export const calcExpectedUserDataAfterRepay = (
     txTimestamp
   );
   expectedUserData.scaledATokenBalance = userDataBeforeAction.scaledATokenBalance;
- 
+
   if (user === onBehalfOf) {
     expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(totalRepaid);
   } else {
@@ -919,16 +919,14 @@ const calcExpectedScaledATokenBalance = (
     .minus(amountTaken.rayDiv(index));
 };
 
-const calcExpectedATokenBalance = (
+export const calcExpectedATokenBalance = (
   reserveDataBeforeAction: ReserveData,
   userDataBeforeAction: UserReserveData,
   currentTimestamp: BigNumber
 ) => {
   const index = calcExpectedReserveNormalizedIncome(reserveDataBeforeAction, currentTimestamp);
 
-  const {
-    scaledATokenBalance: scaledBalanceBeforeAction,
-  } = userDataBeforeAction;
+  const {scaledATokenBalance: scaledBalanceBeforeAction} = userDataBeforeAction;
 
   return scaledBalanceBeforeAction.rayMul(index);
 };

@@ -40,6 +40,43 @@ export const expectRepayWithCollateralEvent = (
 
 makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
   const {IS_PAUSED} = ProtocolErrors;
+  it("It's not possible to repayWithCollateral() on a non-active collateral or a non active principal", async () => {
+    const {configurator, weth, pool, users, dai, mockSwapAdapter} = testEnv;
+    const user = users[1];
+    await configurator.deactivateReserve(weth.address);
+
+    await expect(
+      pool
+        .connect(user.signer)
+        .repayWithCollateral(
+          weth.address,
+          dai.address,
+          user.address,
+          parseEther('100'),
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).to.be.revertedWith('2');
+
+    await configurator.activateReserve(weth.address);
+
+    await configurator.deactivateReserve(dai.address);
+
+    await expect(
+      pool
+        .connect(user.signer)
+        .repayWithCollateral(
+          weth.address,
+          dai.address,
+          user.address,
+          parseEther('100'),
+          mockSwapAdapter.address,
+          '0x'
+        )
+    ).to.be.revertedWith('2');
+
+    await configurator.activateReserve(dai.address);
+  });
 
   it('User 1 provides some liquidity for others to borrow', async () => {
     const {pool, weth, dai, usdc, deployer} = testEnv;

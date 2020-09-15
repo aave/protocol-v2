@@ -720,7 +720,7 @@ const getDataBeforeAction = async (
   };
 };
 
-const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
+export const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
   if (!tx.blockNumber || !tx.transactionHash || !tx.cumulativeGasUsed) {
     throw new Error('No tx blocknumber');
   }
