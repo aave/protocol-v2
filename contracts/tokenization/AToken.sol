@@ -45,8 +45,9 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     LendingPool pool,
     address underlyingAssetAddress,
     string memory tokenName,
-    string memory tokenSymbol
-  ) public ERC20(tokenName, tokenSymbol, 18) {
+    string memory tokenSymbol,
+    address incentivesController
+  ) public ERC20(tokenName, tokenSymbol, 18, incentivesController) {
     POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
   }
@@ -159,6 +160,21 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    **/
   function scaledBalanceOf(address user) external override view returns (uint256) {
     return super.balanceOf(user);
+  }
+
+  /**
+   * @dev returns the principal balance of the user and principal total supply.
+   * @param user the address of the user
+   * @return the principal balance of the user
+   * @return the principal total supply
+   **/
+  function getScaledUserBalanceAndSupply(address user)
+    external
+    override
+    view
+    returns (uint256, uint256)
+  {
+    return (super.balanceOf(user), super.totalSupply());
   }
 
   /**

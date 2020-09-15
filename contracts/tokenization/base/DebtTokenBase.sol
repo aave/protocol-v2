@@ -38,8 +38,9 @@ abstract contract DebtTokenBase is ERC20, VersionedInitializable {
     address pool,
     address underlyingAssetAddress,
     string memory name,
-    string memory symbol
-  ) public ERC20(name, symbol, 18) {
+    string memory symbol,
+    address incentivesController
+  ) public ERC20(name, symbol, 18, incentivesController) {
     POOL = ILendingPool(pool);
     UNDERLYING_ASSET = underlyingAssetAddress;
   }
