@@ -69,7 +69,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   }
 
   /**
-   * @dev Modifier to make a function callable only when the contract is not paused.
+   * @dev Function to make a function callable only when the contract is not paused.
    *
    * Requirements:
    *
@@ -618,6 +618,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amountToSwap,
     bytes calldata params
   ) external override {
+    whenNotPaused();
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line

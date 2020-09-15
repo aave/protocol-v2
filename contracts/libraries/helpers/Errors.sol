@@ -78,7 +78,7 @@ library Errors {
   string public constant DIVISION_BY_ZERO = '46';
 
   // pausable error message
-  string public constant IS_PAUSED = '54'; // 'Pool is paused'
+  string public constant IS_PAUSED = '58'; // 'Pool is paused'
   enum LiquidationErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,
