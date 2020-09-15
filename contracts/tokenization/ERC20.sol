@@ -177,7 +177,7 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldRecipientBalance = _balances[recipient];
     _balances[recipient] = _balances[recipient].add(amount);
 
-    if (address(_incentivesController) != address(0x0)) {
+    if (address(_incentivesController) != address(0)) {
       uint256 totalSupply = _totalSupply;
       _incentivesController.handleAction(sender, totalSupply, oldSenderBalance);
       _incentivesController.handleAction(recipient, totalSupply, oldRecipientBalance);
@@ -196,7 +196,7 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.add(amount);
 
-    if (address(_incentivesController) != address(0x0)) {
+    if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }
 
@@ -214,7 +214,7 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
 
-    if (address(_incentivesController) != address(0x0)) {
+    if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }
 
