@@ -80,6 +80,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     require(newUserIndex < (1 << 128), 'Debt token: Index overflow');
     _usersData[user] = newUserIndex;
 
+    emit Transfer(address(0), user, amount);
     emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
 
@@ -109,6 +110,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     }
     _usersData[user] = newUserIndex;
 
+    // transfer event to track the balances
+    emit Transfer(user, address(0), amount);
     emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
   }
 }

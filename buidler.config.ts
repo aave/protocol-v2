@@ -10,7 +10,6 @@ usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
-
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = 10;
 const HARDFORK = 'istanbul';

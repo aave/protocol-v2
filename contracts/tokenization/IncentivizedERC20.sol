@@ -10,16 +10,17 @@ import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController
 /**
  * @title ERC20
  * @notice Basic ERC20 implementation
- * @author Aave
+ * @author Aave, inspired by the Openzeppelin ERC20 implementation
  **/
 contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   using SafeMath for uint256;
 
   IAaveIncentivesController internal immutable _incentivesController;
 
-  mapping(address => uint256) private _balances;
+  mapping(address => uint256) internal _balances;
+
   mapping(address => mapping(address => uint256)) private _allowances;
-  uint256 private _totalSupply;
+  uint256 internal _totalSupply;
   string private _name;
   string private _symbol;
   uint8 private _decimals;
@@ -79,6 +80,7 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
    **/
   function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
+    emit Transfer(msg.sender, recipient, amount);
     return true;
   }
 
@@ -126,6 +128,7 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
       _msgSender(),
       _allowances[sender][_msgSender()].sub(amount, 'ERC20: transfer amount exceeds allowance')
     );
+    emit Transfer(sender, recipient, amount);
     return true;
   }
 
@@ -184,7 +187,6 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
         _incentivesController.handleAction(recipient, totalSupply, oldRecipientBalance);
       }
     }
-    emit Transfer(sender, recipient, amount);
   }
 
   function _mint(address account, uint256 amount) internal virtual {
@@ -201,8 +203,6 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }
-
-    emit Transfer(address(0), account, amount);
   }
 
   function _burn(address account, uint256 amount) internal virtual {
@@ -219,8 +219,6 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }
-
-    emit Transfer(account, address(0), amount);
   }
 
   function _approve(
