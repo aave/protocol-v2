@@ -447,7 +447,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
   }
 
   /**
-   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral.
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
    * - It's not possible to release one asset to swap for the same
    * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
    * @param fromAsset Asset to swap from
@@ -490,7 +490,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     fromReserve.updateInterestRates(fromAsset, address(vars.fromReserveAToken), 0, amountToSwap);
 
-    vars.fromReserveAToken.burn(msg.sender, receiverAddress, amountToSwap, fromReserve.liquidityIndex);
+    vars.fromReserveAToken.burn(
+      msg.sender,
+      receiverAddress,
+      amountToSwap,
+      fromReserve.liquidityIndex
+    );
     // Notifies the receiver to proceed, sending as param the underlying already transferred
     ISwapAdapter(receiverAddress).executeOperation(
       fromAsset,
@@ -502,9 +507,18 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     vars.amountToReceive = IERC20(toAsset).balanceOf(receiverAddress);
     if (vars.amountToReceive != 0) {
-      IERC20(toAsset).transferFrom(receiverAddress, address(vars.toReserveAToken), vars.amountToReceive);
+      IERC20(toAsset).transferFrom(
+        receiverAddress,
+        address(vars.toReserveAToken),
+        vars.amountToReceive
+      );
       vars.toReserveAToken.mint(msg.sender, vars.amountToReceive, toReserve.liquidityIndex);
-      toReserve.updateInterestRates(toAsset, address(vars.toReserveAToken), vars.amountToReceive, 0);
+      toReserve.updateInterestRates(
+        toAsset,
+        address(vars.toReserveAToken),
+        vars.amountToReceive,
+        0
+      );
     }
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
@@ -582,5 +596,4 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     }
     return (collateralAmount, principalAmountNeeded);
   }
-
 }

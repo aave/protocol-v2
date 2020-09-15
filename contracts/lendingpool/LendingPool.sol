@@ -582,7 +582,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   }
 
   /**
-   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral.
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
    * - It's not possible to release one asset to swap for the same
    * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
    * @param fromAsset Asset to swap from
