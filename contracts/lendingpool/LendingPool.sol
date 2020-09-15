@@ -1004,16 +1004,9 @@ contract LendingPool is VersionedInitializable, PausablePool, ILendingPool {
   }
 
   /**
-   * @dev pause all the Lending Pool actions
+   * @dev pause or unpause all the Lending Pool actions and aToken transfers
    */
-  function pause() external override onlyLendingPoolConfigurator {
-    PausablePool._pause();
-  }
-
-  /**
-   * @dev unpause all the Lending Pool actions
-   */
-  function unpause() external override onlyLendingPoolConfigurator {
-    PausablePool._unpause();
+  function setPause(bool val) external override onlyLendingPoolConfigurator {
+    PausablePool._setPause(val);
   }
 }

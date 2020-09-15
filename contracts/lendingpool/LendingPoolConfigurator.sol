@@ -584,16 +584,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev pauses LendingPool actions
+   * @dev pauses or unpauses LendingPool actions
    **/
-  function pausePool() external onlyLendingPoolManager {
-    pool.pause();
-  }
-
-  /**
-   * @dev unpauses LendingPool actions
-   **/
-  function unpausePool() external onlyLendingPoolManager {
-    pool.unpause();
+  function setPoolPause(bool val) external onlyLendingPoolManager {
+    pool.setPause(val);
   }
 }

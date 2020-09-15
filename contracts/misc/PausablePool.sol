@@ -27,13 +27,6 @@ contract PausablePool {
   bool private _paused;
 
   /**
-   * @dev Initializes the contract in unpaused state.
-   */
-  constructor() internal {
-    _paused = false;
-  }
-
-  /**
    * @dev Returns true if the contract is paused, and false otherwise.
    */
   function paused() public virtual view returns (bool) {
@@ -54,39 +47,18 @@ contract PausablePool {
   }
 
   /**
-   * @dev Modifier to make a function callable only when the contract is paused.
-   *
-   * Requirements:
-   *
-   * - The contract must be paused.
-   */
-  modifier whenPaused() {
-    // require(_paused, Errors.NOT_PAUSED);
-    require(_paused, '55');
-    _;
-  }
-
-  /**
-   * @dev Triggers stopped state.
-   *
-   * Requirements:
-   *
-   * - The contract must not be paused.
-   */
-  function _pause() internal virtual whenNotPaused {
-    _paused = true;
-    emit Paused();
-  }
-
-  /**
    * @dev Returns to normal state.
    *
    * Requirements:
    *
    * - The contract must be paused.
    */
-  function _unpause() internal virtual whenPaused {
-    _paused = false;
+  function _setPause(bool val) internal virtual {
+    _paused = val;
+    if (_paused) {
+      emit Paused();
+      return;
+    }
     emit Unpaused();
   }
 }
