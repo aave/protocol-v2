@@ -1,4 +1,4 @@
-import {usePlugin, BuidlerConfig} from '@nomiclabs/buidler/config';
+import {usePlugin} from '@nomiclabs/buidler/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';

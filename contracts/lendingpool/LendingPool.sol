@@ -60,12 +60,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
-  modifier onlyLendingPoolConfigurator {
+  function onlyLendingPoolConfigurator() internal view {
     require(
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
       Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
-    _;
   }
 
   /**
@@ -814,7 +813,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external override onlyLendingPoolConfigurator {
+  ) external override {
+    onlyLendingPoolConfigurator();
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
@@ -833,16 +833,13 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
-    onlyLendingPoolConfigurator
   {
+    onlyLendingPoolConfigurator();
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
-  function setConfiguration(address asset, uint256 configuration)
-    external
-    override
-    onlyLendingPoolConfigurator
-  {
+  function setConfiguration(address asset, uint256 configuration) external override {
+    onlyLendingPoolConfigurator();
     _reserves[asset].configuration.data = configuration;
   }
 
@@ -1021,13 +1018,12 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   }
 
   /**
-   * @dev Returns to normal state.
-   *
-   * Requirements:
-   *
-   * - The contract must be paused.
+   * @dev Set the _pause state
+   * @param val the boolean value to set the current pause state of LendingPool
    */
-  function setPause(bool val) external override onlyLendingPoolConfigurator {
+  function setPause(bool val) external override {
+    onlyLendingPoolConfigurator();
+
     _paused = val;
     if (_paused) {
       emit Paused();
