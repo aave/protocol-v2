@@ -1,8 +1,8 @@
-import {usePlugin, BuidlerConfig} from '@nomiclabs/buidler/config';
+import {usePlugin} from '@nomiclabs/buidler/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
-import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/constants';
+import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
 
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');
