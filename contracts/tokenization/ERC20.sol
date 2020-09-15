@@ -9,14 +9,14 @@ import {SafeMath} from '../libraries/math/SafeMath.sol';
 /**
  * @title ERC20
  * @notice Basic ERC20 implementation
- * @author Aave
+ * @author Aave, inspired by the Openzeppelin ERC20 implementation
  **/
 contract ERC20 is Context, IERC20, IERC20Detailed {
   using SafeMath for uint256;
 
-  mapping(address => uint256) private _balances;
+  mapping(address => uint256) internal _balances;
   mapping(address => mapping(address => uint256)) private _allowances;
-  uint256 private _totalSupply;
+  uint256 internal _totalSupply;
   string private _name;
   string private _symbol;
   uint8 private _decimals;
@@ -74,6 +74,7 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
    **/
   function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
+    emit Transfer(msg.sender, recipient, amount);
     return true;
   }
 
@@ -121,6 +122,7 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
       _msgSender(),
       _allowances[sender][_msgSender()].sub(amount, 'ERC20: transfer amount exceeds allowance')
     );
+    emit Transfer(sender, recipient, amount);
     return true;
   }
 
@@ -169,7 +171,6 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
 
     _balances[sender] = _balances[sender].sub(amount, 'ERC20: transfer amount exceeds balance');
     _balances[recipient] = _balances[recipient].add(amount);
-    emit Transfer(sender, recipient, amount);
   }
 
   function _mint(address account, uint256 amount) internal virtual {
@@ -179,7 +180,6 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
 
     _totalSupply = _totalSupply.add(amount);
     _balances[account] = _balances[account].add(amount);
-    emit Transfer(address(0), account, amount);
   }
 
   function _burn(address account, uint256 amount) internal virtual {
@@ -189,7 +189,6 @@ contract ERC20 is Context, IERC20, IERC20Detailed {
 
     _balances[account] = _balances[account].sub(amount, 'ERC20: burn amount exceeds balance');
     _totalSupply = _totalSupply.sub(amount);
-    emit Transfer(account, address(0), amount);
   }
 
   function _approve(
