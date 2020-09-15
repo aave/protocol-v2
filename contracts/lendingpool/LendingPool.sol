@@ -22,6 +22,7 @@ import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol'
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
@@ -62,12 +63,11 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
-  modifier onlyLendingPoolConfigurator {
+  function onlyLendingPoolConfigurator() internal view {
     require(
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
       Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
-    _;
   }
 
   function getRevision() internal override pure returns (uint256) {
@@ -420,7 +420,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 purchaseAmount,
     bool receiveAToken
   ) external override {
-    
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -567,6 +566,43 @@ contract LendingPool is VersionedInitializable, ILendingPool {
           false
         )
       );
+    }
+  }
+
+  /**
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
+   * - It's not possible to release one asset to swap for the same
+   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
+   * @param fromAsset Asset to swap from
+   * @param toAsset Asset to swap to
+   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
+   **/
+  function swapLiquidity(
+    address receiverAddress,
+    address fromAsset,
+    address toAsset,
+    uint256 amountToSwap,
+    bytes calldata params
+  ) external override {
+    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+
+    //solium-disable-next-line
+    (bool success, bytes memory result) = liquidationManager.delegatecall(
+      abi.encodeWithSignature(
+        'swapLiquidity(address,address,address,uint256,bytes)',
+        receiverAddress,
+        fromAsset,
+        toAsset,
+        amountToSwap,
+        params
+      )
+    );
+    require(success, Errors.FAILED_COLLATERAL_SWAP);
+
+    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
+
+    if (returnCode != 0) {
+      revert(string(abi.encodePacked(returnMessage)));
     }
   }
 
@@ -744,7 +780,8 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external override onlyLendingPoolConfigurator {
+  ) external override {
+    onlyLendingPoolConfigurator();
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
@@ -763,16 +800,13 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
-    onlyLendingPoolConfigurator
   {
+    onlyLendingPoolConfigurator();
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
-  function setConfiguration(address asset, uint256 configuration)
-    external
-    override
-    onlyLendingPoolConfigurator
-  {
+  function setConfiguration(address asset, uint256 configuration) external override {
+    onlyLendingPoolConfigurator();
     _reserves[asset].configuration.data = configuration;
   }
 

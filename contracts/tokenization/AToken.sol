@@ -106,6 +106,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //transfers the underlying to the target
     ERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
+    //transfer event to track balances
+    emit Transfer(user, address(0), amount);
 
     emit Burn(msg.sender, receiverOfUnderlying, amount, index);
   }
@@ -124,6 +126,8 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     //mint an equivalent amount of tokens to cover the new deposit
     _mint(user,scaledAmount);
 
+    //transfer event to track balances
+    emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
   }
 

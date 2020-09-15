@@ -39,8 +39,10 @@ library Errors {
   string public constant CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The actual balance of the protocol is inconsistent'
   string public constant INVALID_FLASHLOAN_MODE = '43'; //Invalid flashloan mode selected
   string public constant BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '54'; // User borrows on behalf, but allowance are too small
-  string public constant REENTRANCY_NOT_ALLOWED = '52';
+  string public constant REENTRANCY_NOT_ALLOWED = '57';
   string public constant FAILED_REPAY_WITH_COLLATERAL = '53';
+  string public constant FAILED_COLLATERAL_SWAP = '55';
+  string public constant INVALID_EQUAL_ASSETS_TO_SWAP = '56';
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
@@ -82,6 +84,8 @@ library Errors {
     CURRRENCY_NOT_BORROWED,
     HEALTH_FACTOR_ABOVE_THRESHOLD,
     NOT_ENOUGH_LIQUIDITY,
-    NO_ACTIVE_RESERVE
+    NO_ACTIVE_RESERVE,
+    HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
+    INVALID_EQUAL_ASSETS_TO_SWAP
   }
 }

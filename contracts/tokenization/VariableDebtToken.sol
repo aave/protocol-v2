@@ -60,6 +60,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     _mint(user, amount.rayDiv(index));
   
+    emit Transfer(address(0), user, amount);
     emit MintDebt(user, amount, index);
   }
 
@@ -71,6 +72,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   function burn(address user, uint256 amount, uint256 index) external override onlyLendingPool {
     _burn(user, amount.rayDiv(index)); 
     _userIndexes[user] = index;
+    
+    emit Transfer(user, address(0), amount);
     emit BurnDebt(user, amount, index);
   }
 

@@ -111,6 +111,26 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     string errorMsg;
   }
 
+  struct SwapLiquidityLocalVars {
+    uint256 healthFactor;
+    uint256 amountToReceive;
+    uint256 userBalanceBefore;
+    IAToken fromReserveAToken;
+    IAToken toReserveAToken;
+    uint256 errorCode;
+    string errorMsg;
+  }
+
+  struct AvailableCollateralToLiquidateLocalVars {
+    uint256 userCompoundedBorrowBalance;
+    uint256 liquidationBonus;
+    uint256 collateralPrice;
+    uint256 principalCurrencyPrice;
+    uint256 maxAmountCollateralToLiquidate;
+    uint256 principalDecimals;
+    uint256 collateralDecimals;
+  }
+
   /**
    * @dev as the contract extends the VersionedInitializable contract to match the state
    * of the LendingPool contract, the getRevision() function is needed.
@@ -390,7 +410,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     //updating debt reserve
     debtReserve.updateState();
-    debtReserve.updateInterestRates(principal, vars.principalAToken, vars.actualAmountToLiquidate, 0);
+    debtReserve.updateInterestRates(
+      principal,
+      vars.principalAToken,
+      vars.actualAmountToLiquidate,
+      0
+    );
     IERC20(principal).transferFrom(receiver, vars.principalAToken, vars.actualAmountToLiquidate);
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
@@ -431,14 +456,97 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
-  struct AvailableCollateralToLiquidateLocalVars {
-    uint256 userCompoundedBorrowBalance;
-    uint256 liquidationBonus;
-    uint256 collateralPrice;
-    uint256 principalCurrencyPrice;
-    uint256 maxAmountCollateralToLiquidate;
-    uint256 principalDecimals;
-    uint256 collateralDecimals;
+  /**
+   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
+   * - It's not possible to release one asset to swap for the same
+   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
+   * @param fromAsset Asset to swap from
+   * @param toAsset Asset to swap to
+   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
+   **/
+  function swapLiquidity(
+    address receiverAddress,
+    address fromAsset,
+    address toAsset,
+    uint256 amountToSwap,
+    bytes calldata params
+  ) external returns (uint256, string memory) {
+    ReserveLogic.ReserveData storage fromReserve = reserves[fromAsset];
+    ReserveLogic.ReserveData storage toReserve = reserves[toAsset];
+
+    // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
+    SwapLiquidityLocalVars memory vars;
+
+    (vars.errorCode, vars.errorMsg) = ValidationLogic.validateSwapLiquidity(
+      fromReserve,
+      toReserve,
+      fromAsset,
+      toAsset
+    );
+
+    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+      return (vars.errorCode, vars.errorMsg);
+    }
+
+    vars.fromReserveAToken = IAToken(fromReserve.aTokenAddress);
+    vars.toReserveAToken = IAToken(toReserve.aTokenAddress);
+
+    fromReserve.updateCumulativeIndexesAndTimestamp();
+    toReserve.updateCumulativeIndexesAndTimestamp();
+
+    if (vars.fromReserveAToken.balanceOf(msg.sender) == amountToSwap) {
+      usersConfig[msg.sender].setUsingAsCollateral(fromReserve.id, false);
+    }
+
+    fromReserve.updateInterestRates(fromAsset, address(vars.fromReserveAToken), 0, amountToSwap);
+
+    vars.fromReserveAToken.burn(
+      msg.sender,
+      receiverAddress,
+      amountToSwap,
+      fromReserve.liquidityIndex
+    );
+    // Notifies the receiver to proceed, sending as param the underlying already transferred
+    ISwapAdapter(receiverAddress).executeOperation(
+      fromAsset,
+      toAsset,
+      amountToSwap,
+      address(this),
+      params
+    );
+
+    vars.amountToReceive = IERC20(toAsset).balanceOf(receiverAddress);
+    if (vars.amountToReceive != 0) {
+      IERC20(toAsset).transferFrom(
+        receiverAddress,
+        address(vars.toReserveAToken),
+        vars.amountToReceive
+      );
+      vars.toReserveAToken.mint(msg.sender, vars.amountToReceive, toReserve.liquidityIndex);
+      toReserve.updateInterestRates(
+        toAsset,
+        address(vars.toReserveAToken),
+        vars.amountToReceive,
+        0
+      );
+    }
+
+    (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
+      msg.sender,
+      reserves,
+      usersConfig[msg.sender],
+      reservesList,
+      addressesProvider.getPriceOracle()
+    );
+
+    if (vars.healthFactor < GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
+      return (
+        uint256(Errors.LiquidationErrors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD),
+        Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
+      );
+    }
+
+    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
