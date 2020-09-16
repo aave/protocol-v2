@@ -9,7 +9,7 @@ pragma solidity ^0.6.8;
 interface ILendingPoolAddressesProvider {
   //events
   event LendingPoolUpdated(address indexed newAddress);
-  event LendingPoolManagerUpdated(address indexed newAddress);
+  event AaveAdminUpdated(address indexed newAddress);
   event LendingPoolConfiguratorUpdated(address indexed newAddress);
   event LendingPoolCollateralManagerUpdated(address indexed newAddress);
   event EthereumAddressUpdated(address indexed newAddress);
@@ -30,9 +30,9 @@ interface ILendingPoolAddressesProvider {
 
   function setLendingPoolCollateralManager(address manager) external;
 
-  function getLendingPoolManager() external view returns (address);
+  function getAaveAdmin() external view returns (address);
 
-  function setLendingPoolManager(address lendingPoolManager) external;
+  function setAaveAdmin(address aaveAdmin) external;
 
   function getPriceOracle() external view returns (address);
 

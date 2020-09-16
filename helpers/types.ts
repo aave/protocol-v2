@@ -86,7 +86,7 @@ export enum ProtocolErrors {
   RESERVE_ALREADY_INITIALIZED = '34', // 'Reserve has already been initialized'
 
   //require error messages - LendingPoolConfiguration
-  CALLER_NOT_LENDING_POOL_MANAGER = '35', // 'The caller must be a lending pool manager'
+  CALLER_NOT_AAVE_ADMIN = '35', // 'The caller must be a lending pool manager'
   RESERVE_LIQUIDITY_NOT_0 = '36', // 'The liquidity of the reserve needs to be 0'
 
   //require error messages - LendingPoolAddressesProviderRegistry

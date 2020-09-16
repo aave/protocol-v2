@@ -59,7 +59,7 @@ library Errors {
   string public constant STABLE_BORROW_RATE_OVERFLOW = '51'; //  Stable borrow rate overflows uint128
 
   //require error messages - LendingPoolConfiguration
-  string public constant CALLER_NOT_LENDING_POOL_MANAGER = '35'; // 'The caller must be a lending pool manager'
+  string public constant CALLER_NOT_AAVE_ADMIN = '35'; // 'The caller must be a lending pool manager'
   string public constant RESERVE_LIQUIDITY_NOT_0 = '36'; // 'The liquidity of the reserve needs to be 0'
 
   //require error messages - LendingPoolAddressesProviderRegistry
@@ -79,7 +79,7 @@ library Errors {
 
   // pausable error message
   string public constant IS_PAUSED = '58'; // 'Pool is paused'
-  enum LiquidationErrors {
+  enum CollateralManagerErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,
     COLLATERAL_CANNOT_BE_LIQUIDATED,
