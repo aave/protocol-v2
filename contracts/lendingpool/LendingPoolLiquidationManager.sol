@@ -6,14 +6,12 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -22,6 +20,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
+import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
 /**
  * @title LendingPoolLiquidationManager contract
@@ -29,28 +28,14 @@ import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
  * @notice Implements the liquidation function.
  * @dev LendingPoolLiquidationManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
  **/
-contract LendingPoolLiquidationManager is VersionedInitializable {
+contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolStorage {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-  using ReserveLogic for ReserveLogic.ReserveData;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
 
   // IMPORTANT The storage layout of the LendingPool is reproduced here because this contract
   // is gonna be used through DELEGATECALL
-
-  LendingPoolAddressesProvider internal addressesProvider;
-
-  mapping(address => ReserveLogic.ReserveData) internal reserves;
-  mapping(address => UserConfiguration.Map) internal usersConfig;
-  mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
-
-  address[] internal reservesList;
-
-  bool internal _flashLiquidationLocked;
-  bool public _paused;
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
@@ -156,18 +141,18 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     uint256 purchaseAmount,
     bool receiveAToken
   ) external returns (uint256, string memory) {
-    ReserveLogic.ReserveData storage collateralReserve = reserves[collateral];
-    ReserveLogic.ReserveData storage principalReserve = reserves[principal];
-    UserConfiguration.Map storage userConfig = usersConfig[user];
+    ReserveLogic.ReserveData storage collateralReserve = _reserves[collateral];
+    ReserveLogic.ReserveData storage principalReserve = _reserves[principal];
+    UserConfiguration.Map storage userConfig = _usersConfig[user];
 
     LiquidationCallLocalVars memory vars;
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       user,
-      reserves,
-      usersConfig[user],
-      reservesList,
-      addressesProvider.getPriceOracle()
+      _reserves,
+      _usersConfig[user],
+      _reservesList,
+      _addressesProvider.getPriceOracle()
     );
 
     //if the user hasn't borrowed the specific currency defined by asset, it cannot be liquidated
@@ -323,18 +308,18 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     address receiver,
     bytes calldata params
   ) external returns (uint256, string memory) {
-    ReserveLogic.ReserveData storage collateralReserve = reserves[collateral];
-    ReserveLogic.ReserveData storage debtReserve = reserves[principal];
-    UserConfiguration.Map storage userConfig = usersConfig[user];
+    ReserveLogic.ReserveData storage collateralReserve = _reserves[collateral];
+    ReserveLogic.ReserveData storage debtReserve = _reserves[principal];
+    UserConfiguration.Map storage userConfig = _usersConfig[user];
 
     LiquidationCallLocalVars memory vars;
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       user,
-      reserves,
-      usersConfig[user],
-      reservesList,
-      addressesProvider.getPriceOracle()
+      _reserves,
+      _usersConfig[user],
+      _reservesList,
+      _addressesProvider.getPriceOracle()
     );
 
     (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(user, debtReserve);
@@ -391,7 +376,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     );
 
     if (vars.userCollateralBalance == vars.maxCollateralToLiquidate) {
-      usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
+      _usersConfig[user].setUsingAsCollateral(collateralReserve.id, false);
     }
 
     vars.principalAToken = debtReserve.aTokenAddress;
@@ -463,8 +448,8 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     uint256 amountToSwap,
     bytes calldata params
   ) external returns (uint256, string memory) {
-    ReserveLogic.ReserveData storage fromReserve = reserves[fromAsset];
-    ReserveLogic.ReserveData storage toReserve = reserves[toAsset];
+    ReserveLogic.ReserveData storage fromReserve = _reserves[fromAsset];
+    ReserveLogic.ReserveData storage toReserve = _reserves[toAsset];
 
     // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     SwapLiquidityLocalVars memory vars;
@@ -487,7 +472,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     toReserve.updateCumulativeIndexesAndTimestamp();
 
     if (vars.fromReserveAToken.balanceOf(msg.sender) == amountToSwap) {
-      usersConfig[msg.sender].setUsingAsCollateral(fromReserve.id, false);
+      _usersConfig[msg.sender].setUsingAsCollateral(fromReserve.id, false);
     }
 
     fromReserve.updateInterestRates(fromAsset, address(vars.fromReserveAToken), 0, amountToSwap);
@@ -525,10 +510,10 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       msg.sender,
-      reserves,
-      usersConfig[msg.sender],
-      reservesList,
-      addressesProvider.getPriceOracle()
+      _reserves,
+      _usersConfig[msg.sender],
+      _reservesList,
+      _addressesProvider.getPriceOracle()
     );
 
     if (vars.healthFactor < GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
@@ -562,7 +547,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
   ) internal view returns (uint256, uint256) {
     uint256 collateralAmount = 0;
     uint256 principalAmountNeeded = 0;
-    IPriceOracleGetter oracle = IPriceOracleGetter(addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
 
     // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     AvailableCollateralToLiquidateLocalVars memory vars;
