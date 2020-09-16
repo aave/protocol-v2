@@ -55,6 +55,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   address[] internal _reservesList;
 
   bool internal _flashLiquidationLocked;
+  bool internal _paused;
 
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
@@ -64,6 +65,17 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
       Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
+  }
+
+  /**
+   * @dev Function to make a function callable only when the contract is not paused.
+   *
+   * Requirements:
+   *
+   * - The contract must not be paused.
+   */
+  function whenNotPaused() internal view {
+    require(!_paused, Errors.IS_PAUSED);
   }
 
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
@@ -96,6 +108,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address onBehalfOf,
     uint16 referralCode
   ) external override {
+    whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -124,6 +137,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param amount the underlying amount to be redeemed
    **/
   function withdraw(address asset, uint256 amount) external override {
+    whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
@@ -184,6 +198,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 interestRateMode,
     uint256 amount
   ) external override {
+    whenNotPaused();
     address debtToken = _reserves[asset].getDebtTokenAddress(interestRateMode);
 
     _borrowAllowance[debtToken][msg.sender][user] = amount;
@@ -206,6 +221,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint16 referralCode,
     address onBehalfOf
   ) external override {
+    whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     if (onBehalfOf != msg.sender) {
@@ -245,6 +261,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 rateMode,
     address onBehalfOf
   ) external override {
+    whenNotPaused();
     _executeRepay(asset, msg.sender, amount, rateMode, onBehalfOf);
   }
 
@@ -306,6 +323,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param rateMode the rate mode that the user wants to swap
    **/
   function swapBorrowRateMode(address asset, uint256 rateMode) external override {
+    whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -349,6 +367,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param user the address of the user to be rebalanced
    **/
   function rebalanceStableBorrowRate(address asset, address user) external override {
+    whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     IStableDebtToken stableDebtToken = IStableDebtToken(reserve.stableDebtTokenAddress);
@@ -394,6 +413,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    * @param useAsCollateral true if the user wants to user the deposit as collateral, false otherwise.
    **/
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
+    whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
@@ -430,6 +450,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 purchaseAmount,
     bool receiveAToken
   ) external override {
+    whenNotPaused();
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -473,6 +494,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address receiver,
     bytes calldata params
   ) external override {
+    whenNotPaused();
     require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
     _flashLiquidationLocked = true;
 
@@ -528,6 +550,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     bytes calldata params,
     uint16 referralCode
   ) external override {
+    whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
     FlashLoanLocalVars memory vars;
 
@@ -589,6 +612,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amountToSwap,
     bytes calldata params
   ) external override {
+    whenNotPaused();
     address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
 
     //solium-disable-next-line
@@ -961,6 +985,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     address user,
     uint256 amount
   ) external override view returns (bool) {
+    whenNotPaused();
     return
       GenericLogic.balanceDecreaseAllowed(
         asset,
@@ -985,5 +1010,27 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    **/
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
+  }
+
+  /**
+   * @dev Set the _pause state
+   * @param val the boolean value to set the current pause state of LendingPool
+   */
+  function setPause(bool val) external override {
+    onlyLendingPoolConfigurator();
+
+    _paused = val;
+    if (_paused) {
+      emit Paused();
+    } else {
+      emit Unpaused();
+    }
+  }
+
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
+  function paused() external view override returns(bool) {
+    return _paused;
   }
 }

@@ -83,6 +83,14 @@ interface IAToken is IERC20 {
   function scaledBalanceOf(address user) external view returns (uint256);
 
   /**
+   * @dev returns the principal balance of the user and principal total supply.
+   * @param user the address of the user
+   * @return the principal balance of the user
+   * @return the principal total supply
+   **/
+  function getScaledUserBalanceAndSupply(address user) external view returns (uint256, uint256);
+
+  /**
    * @dev Used to validate transfers before actually executing them.
    * @param user address of the user to check
    * @param amount the amount to check
