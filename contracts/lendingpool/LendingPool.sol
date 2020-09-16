@@ -21,7 +21,7 @@ import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol'
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
-import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
+import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
@@ -451,10 +451,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     bool receiveAToken
   ) external override {
     whenNotPaused();
-    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = liquidationManager.delegatecall(
+    (bool success, bytes memory result) = collateralManager.delegatecall(
       abi.encodeWithSignature(
         'liquidationCall(address,address,address,uint256,bool)',
         collateral,
@@ -511,10 +511,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
     _flashLiquidationLocked = true;
 
-    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = liquidationManager.delegatecall(
+    (bool success, bytes memory result) = collateralManager.delegatecall(
       abi.encodeWithSignature(
         'repayWithCollateral(address,address,address,uint256,address,bytes)',
         collateral,
@@ -618,10 +618,10 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     bytes calldata params
   ) external override {
     whenNotPaused();
-    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = liquidationManager.delegatecall(
+    (bool success, bytes memory result) = collateralManager.delegatecall(
       abi.encodeWithSignature(
         'swapLiquidity(address,address,address,uint256,bytes)',
         receiverAddress,
@@ -1035,7 +1035,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   /**
    * @dev Returns if the LendingPool is paused
    */
-  function paused() external view override returns(bool) {
+  function paused() external override view returns (bool) {
     return _paused;
   }
 }

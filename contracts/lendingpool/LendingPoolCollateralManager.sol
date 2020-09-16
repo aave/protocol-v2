@@ -24,12 +24,13 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 
 /**
- * @title LendingPoolLiquidationManager contract
+ * @title LendingPoolCollateralManager contract
  * @author Aave
- * @notice Implements the liquidation function.
- * @dev LendingPoolLiquidationManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
+ * @notice Implements actions involving management of collateral in the protocol.
+ * @notice this contract will be ran always through delegatecall
+ * @dev LendingPoolCollateralManager inherits VersionedInitializable from OpenZeppelin to have the same storage layout as LendingPool
  **/
-contract LendingPoolLiquidationManager is VersionedInitializable {
+contract LendingPoolCollateralManager is VersionedInitializable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -185,7 +186,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       vars.userVariableDebt
     );
 
-    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+    if (Errors.CollateralManagerErrors(vars.errorCode) != Errors.CollateralManagerErrors.NO_ERROR) {
       return (vars.errorCode, vars.errorMsg);
     }
 
@@ -228,7 +229,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       );
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
-          uint256(Errors.LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
+          uint256(Errors.CollateralManagerErrors.NOT_ENOUGH_LIQUIDITY),
           Errors.NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
         );
       }
@@ -300,7 +301,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       receiveAToken
     );
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -349,7 +350,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       vars.userVariableDebt
     );
 
-    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+    if (Errors.CollateralManagerErrors(vars.errorCode) != Errors.CollateralManagerErrors.NO_ERROR) {
       return (vars.errorCode, vars.errorMsg);
     }
 
@@ -445,7 +446,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       vars.maxCollateralToLiquidate
     );
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -476,7 +477,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
       toAsset
     );
 
-    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+    if (Errors.CollateralManagerErrors(vars.errorCode) != Errors.CollateralManagerErrors.NO_ERROR) {
       return (vars.errorCode, vars.errorMsg);
     }
 
@@ -538,12 +539,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
 
     if (vars.healthFactor < GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
-        uint256(Errors.LiquidationErrors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD),
+        uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD),
         Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
       );
     }
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
