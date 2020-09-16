@@ -82,7 +82,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   struct MintLocalVars {
-    uint256 currentPrincipalSupply;
+    uint256 currentSupply;
     uint256 nextSupply;
     uint256 amountInRay;
     uint256 newStableRate;
@@ -110,9 +110,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    vars.currentPrincipalSupply = totalSupply();
+    vars.currentSupply = totalSupply();
     vars.currentAvgStableRate = _avgStableRate;
-    vars.nextSupply = _totalSupply = _calcTotalSupply(vars.currentAvgStableRate).add(amount);
+    vars.nextSupply = vars.currentSupply.add(amount);
 
     vars.amountInRay = amount.wadToRay();
 

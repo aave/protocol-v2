@@ -299,7 +299,7 @@ export const deployGenericAToken = async ([
   const token = await deployContract<AToken>(eContractid.AToken, [
     poolAddress,
     underlyingAssetAddress,
-    ZERO_ADDRESS,
+    reserveTreasuryAddress,
     name,
     symbol,
     incentivesController,

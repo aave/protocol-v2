@@ -33,7 +33,6 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
  * @notice Implements the actions of the LendingPool, and exposes accessory methods to fetch the users and reserve data
  * @author Aave
  **/
-
 contract LendingPool is VersionedInitializable, ILendingPool {
   using SafeMath for uint256;
   using WadRayMath for uint256;
