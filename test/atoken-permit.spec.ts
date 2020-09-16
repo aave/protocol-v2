@@ -2,7 +2,6 @@ import {
   MAX_UINT_AMOUNT,
   ZERO_ADDRESS,
   getATokenDomainSeparatorPerNetwork,
-  BUIDLEREVM_CHAINID,
 } from '../helpers/constants';
 import {buildPermitParams, getSignatureFromTypedData} from '../helpers/contracts-helpers';
 import {expect} from 'chai';
@@ -11,6 +10,7 @@ import {eEthereumNetwork} from '../helpers/types';
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {BRE} from '../helpers/misc-utils';
 import {waitForTx} from './__setup.spec';
+import {BUIDLEREVM_CHAINID} from '../helpers/buidler-constants';
 
 const {parseEther} = ethers.utils;
 
