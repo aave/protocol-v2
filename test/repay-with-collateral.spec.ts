@@ -9,7 +9,7 @@ import {
 import {getContractsData} from './helpers/actions';
 import {waitForTx} from './__setup.spec';
 import {timeLatest} from '../helpers/misc-utils';
-import {tEthereumAddress} from '../helpers/types';
+import {ProtocolErrors, tEthereumAddress} from '../helpers/types';
 import {parse} from 'path';
 
 const {expect} = require('chai');
@@ -39,6 +39,7 @@ export const expectRepayWithCollateralEvent = (
 };
 
 makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
+  const {IS_PAUSED} = ProtocolErrors;
   it("It's not possible to repayWithCollateral() on a non-active collateral or a non active principal", async () => {
     const {configurator, weth, pool, users, dai, mockSwapAdapter} = testEnv;
     const user = users[1];
@@ -347,7 +348,9 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
 
     await pool.connect(user.signer).deposit(weth.address, amountToDeposit, user.address, '0');
 
-    await pool.connect(user.signer).borrow(usdc.address, amountToBorrowVariable, 2, 0, user.address);
+    await pool
+      .connect(user.signer)
+      .borrow(usdc.address, amountToBorrowVariable, 2, 0, user.address);
 
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrowStable, 1, 0, user.address);
 

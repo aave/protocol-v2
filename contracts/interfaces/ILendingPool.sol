@@ -137,6 +137,15 @@ interface ILendingPool {
     address liquidator,
     bool receiveAToken
   );
+  /**
+   * @dev Emitted when the pause is triggered.
+   */
+  event Paused();
+
+  /**
+   * @dev Emitted when the pause is lifted.
+   */
+  event Unpaused();
 
   /**
    * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
@@ -420,4 +429,15 @@ interface ILendingPool {
   ) external view returns (bool);
 
   function getReserves() external view returns (address[] memory);
+
+  /**
+   * @dev Set the _pause state
+   * @param val the boolean value to set the current pause state of LendingPool
+   */
+  function setPause(bool val) external;
+
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
+  function paused() external view returns(bool);
 }

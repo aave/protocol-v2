@@ -5,7 +5,7 @@ export enum eEthereumNetwork {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
-  coverage = 'coverage'
+  coverage = 'coverage',
 }
 
 export enum AavePools {
@@ -42,7 +42,7 @@ export enum eContractid {
   AaveProtocolTestHelpers = 'AaveProtocolTestHelpers',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
-  VariableDebtToken = 'VariableDebtToken'
+  VariableDebtToken = 'VariableDebtToken',
 }
 
 export enum ProtocolErrors {
@@ -67,6 +67,7 @@ export enum ProtocolErrors {
   NO_VARIABLE_RATE_LOAN_IN_RESERVE = '18', // 'User does not have a variable rate loan in progress on this reserve'
   UNDERLYING_BALANCE_NOT_GREATER_THAN_0 = '19', // 'The underlying balance needs to be greater than 0'
   DEPOSIT_ALREADY_IN_USE = '20', // 'User deposit is already being used as collateral'
+  INVALID_EQUAL_ASSETS_TO_SWAP = '56', // User can't use same reserve as destination of liquidity swap
 
   // require error messages - LendingPool
   NOT_ENOUGH_STABLE_BORROW_BALANCE = '21', // 'User does not have any stable rate loan for this reserve'
@@ -99,6 +100,8 @@ export enum ProtocolErrors {
   NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '41', // "There isn't enough liquidity available to liquidate"
   NO_ERRORS = '42', // 'No errors'
   INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
+
+  IS_PAUSED = '58', // Pool is paused
 
   // old
 

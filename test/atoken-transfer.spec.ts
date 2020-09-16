@@ -17,6 +17,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     // ZERO_COLLATERAL,
     COLLATERAL_BALANCE_IS_0,
     TRANSFER_NOT_ALLOWED,
+    IS_PAUSED,
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
@@ -44,7 +45,6 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
       INVALID_TO_BALANCE_AFTER_TRANSFER
     );
   });
-
 
   it('User 0 deposits 1 WETH and user 1 tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)', async () => {
     const {users, pool, weth} = testEnv;
@@ -92,5 +92,4 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
       TRANSFER_NOT_ALLOWED
     ).to.be.revertedWith(TRANSFER_NOT_ALLOWED);
   });
-
 });

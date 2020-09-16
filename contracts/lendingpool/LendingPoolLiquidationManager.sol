@@ -28,6 +28,7 @@ import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
  * @title LendingPoolLiquidationManager contract
  * @author Aave
  * @notice Implements the liquidation function.
+ * @dev LendingPoolLiquidationManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
  **/
 contract LendingPoolLiquidationManager is VersionedInitializable {
   using SafeERC20 for IERC20;
@@ -50,6 +51,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
   address[] internal reservesList;
 
   bool internal _flashLiquidationLocked;
+  bool public _paused;
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
@@ -491,8 +493,8 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
     vars.fromReserveAToken = IAToken(fromReserve.aTokenAddress);
     vars.toReserveAToken = IAToken(toReserve.aTokenAddress);
 
-    fromReserve.updateCumulativeIndexesAndTimestamp();
-    toReserve.updateCumulativeIndexesAndTimestamp();
+    fromReserve.updateState();
+    toReserve.updateState();
 
     if (vars.fromReserveAToken.balanceOf(msg.sender) == amountToSwap) {
       usersConfig[msg.sender].setUsingAsCollateral(fromReserve.id, false);
@@ -522,6 +524,11 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
         address(vars.toReserveAToken),
         vars.amountToReceive
       );
+
+      if (vars.toReserveAToken.balanceOf(msg.sender) == 0) {
+        usersConfig[msg.sender].setUsingAsCollateral(toReserve.id, true);
+      }
+
       vars.toReserveAToken.mint(msg.sender, vars.amountToReceive, toReserve.liquidityIndex);
       toReserve.updateInterestRates(
         toAsset,

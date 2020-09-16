@@ -33,8 +33,8 @@ import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 import { ZERO_ADDRESS } from './constants';
 import {MockSwapAdapter} from '../types/MockSwapAdapter';
-import { signTypedData_v4, TypedData } from "eth-sig-util";
-import { fromRpcSig, ECDSASignature } from "ethereumjs-util";
+import {signTypedData_v4, TypedData} from 'eth-sig-util';
+import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -252,51 +252,57 @@ export const deployDefaultReserveInterestRateStrategy = async ([
     ]
   );
 
-export const deployStableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
+export const deployStableDebtToken = async ([
+  name,
+  symbol,
+  underlyingAsset,
+  poolAddress,
+  incentivesController,
+]: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
     poolAddress,
     underlyingAsset,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
 };
 
-export const deployVariableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
+export const deployVariableDebtToken = async ([
+  name,
+  symbol,
+  underlyingAsset,
+  poolAddress,
+  incentivesController,
+]: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
     poolAddress,
     underlyingAsset,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
 };
 
-export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, reserveTreasuryAddress, name, symbol]: [
-  tEthereumAddress,
-  tEthereumAddress,
-  tEthereumAddress,
-  string,
-  string
-]) => {
+export const deployGenericAToken = async ([
+  poolAddress,
+  underlyingAssetAddress,
+  reserveTreasuryAddress,
+  name,
+  symbol,
+  incentivesController,
+]: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress]) => {
   const token = await deployContract<AToken>(eContractid.AToken, [
     poolAddress,
     underlyingAssetAddress,
     ZERO_ADDRESS,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
@@ -509,20 +515,20 @@ export const buildPermitParams = (
 ) => ({
   types: {
     EIP712Domain: [
-      { name: "name", type: "string" },
-      { name: "version", type: "string" },
-      { name: "chainId", type: "uint256" },
-      { name: "verifyingContract", type: "address" },
+      {name: 'name', type: 'string'},
+      {name: 'version', type: 'string'},
+      {name: 'chainId', type: 'uint256'},
+      {name: 'verifyingContract', type: 'address'},
     ],
     Permit: [
-      { name: "owner", type: "address" },
-      { name: "spender", type: "address" },
-      { name: "value", type: "uint256" },
-      { name: "nonce", type: "uint256" },
-      { name: "deadline", type: "uint256" },
+      {name: 'owner', type: 'address'},
+      {name: 'spender', type: 'address'},
+      {name: 'value', type: 'uint256'},
+      {name: 'nonce', type: 'uint256'},
+      {name: 'deadline', type: 'uint256'},
     ],
   },
-  primaryType: "Permit" as const,
+  primaryType: 'Permit' as const,
   domain: {
     name: tokenName,
     version: revision,
@@ -538,16 +544,12 @@ export const buildPermitParams = (
   },
 });
 
-
 export const getSignatureFromTypedData = (
   privateKey: string,
   typedData: any // TODO: should be TypedData, from eth-sig-utils, but TS doesn't accept it
 ): ECDSASignature => {
-  const signature = signTypedData_v4(
-    Buffer.from(privateKey.substring(2, 66), "hex"),
-    {
-      data: typedData,
-    }
-  );
+  const signature = signTypedData_v4(Buffer.from(privateKey.substring(2, 66), 'hex'), {
+    data: typedData,
+  });
   return fromRpcSig(signature);
 };

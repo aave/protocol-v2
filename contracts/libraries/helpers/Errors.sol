@@ -49,8 +49,8 @@ library Errors {
   string public constant CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
   string public constant TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
   string public constant INVALID_ATOKEN_BALANCE = '52'; // balance on burning is invalid
-  
-   // require error messages - ReserveLogic
+
+  // require error messages - ReserveLogic
   string public constant RESERVE_ALREADY_INITIALIZED = '34'; // 'Reserve has already been initialized'
   string public constant LIQUIDITY_INDEX_OVERFLOW = '47'; //  Liquidity index overflows uint128
   string public constant VARIABLE_BORROW_INDEX_OVERFLOW = '48'; //  Variable borrow index overflows uint128
@@ -77,6 +77,8 @@ library Errors {
   string public constant ADDITION_OVERFLOW = '45';
   string public constant DIVISION_BY_ZERO = '46';
 
+  // pausable error message
+  string public constant IS_PAUSED = '58'; // 'Pool is paused'
   enum LiquidationErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,
@@ -86,6 +88,7 @@ library Errors {
     NOT_ENOUGH_LIQUIDITY,
     NO_ACTIVE_RESERVE,
     HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
-    INVALID_EQUAL_ASSETS_TO_SWAP
+    INVALID_EQUAL_ASSETS_TO_SWAP,
+    NO_UNFREEZED_RESERVE
   }
 }
