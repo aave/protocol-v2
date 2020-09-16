@@ -110,7 +110,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    vars.currentSupply = totalSupply();
+    //accrueing the interest accumulation to the stored total supply and caching it
+    vars.currentSupply = _totalSupply =  totalSupply();
     vars.currentAvgStableRate = _avgStableRate;
     vars.nextSupply = vars.currentSupply.add(amount);
 
@@ -125,12 +126,13 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     require(vars.newStableRate < (1 << 128), 'Debt token: stable rate overflow');
     _usersData[user] = vars.newStableRate;
 
+    //updating the user and supply timestamp
     //solium-disable-next-line
     _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
 
     //calculates the updated average stable rate
     _avgStableRate = vars.currentAvgStableRate
-      .rayMul(vars.currentPrincipalSupply.wadToRay())
+      .rayMul(vars.currentSupply.wadToRay())
       .add(rate.rayMul(vars.amountInRay))
       .rayDiv(vars.nextSupply.wadToRay());
 
@@ -224,8 +226,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     );
   }
 
-  function getPrincipalSupplyAndAvgRate() public override view returns (uint256, uint256) {
-    return (super.totalSupply(), _avgStableRate);
+  function getSupplyData() public override view returns (uint256, uint256, uint256) {
+    uint256 avgRate = _avgStableRate;
+    return (super.totalSupply(), _calcTotalSupply(avgRate), avgRate);
   }
 
   function getTotalSupplyAndAvgRate() public override view returns (uint256, uint256) {

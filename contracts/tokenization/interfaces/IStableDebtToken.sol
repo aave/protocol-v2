@@ -86,9 +86,9 @@ interface IStableDebtToken {
   function getUserLastUpdated(address user) external view returns (uint40);
 
   /**
-   * @dev returns the principal total supply and the average stable rate
+   * @dev returns the principal, the total supply and the average stable rate
    **/
-  function getPrincipalSupplyAndAvgRate() external view returns (uint256, uint256);
+  function getSupplyData() external view returns (uint256, uint256, uint256);
 
   /**
    * @dev returns the timestamp of the last update of the total supply
