@@ -28,7 +28,7 @@ import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
  * @author Aave
  * @notice Implements actions involving management of collateral in the protocol.
  * @notice this contract will be ran always through delegatecall
- * @dev LendingPoolCollateralManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
+ * @dev LendingPoolCollateralManager inherits VersionedInitializable from OpenZeppelin to have the same storage layout as LendingPool
  **/
 contract LendingPoolCollateralManager is VersionedInitializable {
   using SafeERC20 for IERC20;
