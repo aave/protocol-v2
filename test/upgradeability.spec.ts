@@ -10,6 +10,7 @@ import {
 import {MockAToken} from '../types/MockAToken';
 import {MockStableDebtToken} from '../types/MockStableDebtToken';
 import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
+import {ZERO_ADDRESS} from '../helpers/constants';
 
 makeSuite('Upgradeability', (testEnv: TestEnv) => {
   const {CALLER_NOT_AAVE_ADMIN} = ProtocolErrors;
@@ -24,16 +25,29 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       dai.address,
       'Aave Interest bearing DAI updated',
       'aDAI',
+      ZERO_ADDRESS,
     ]);
 
     const stableDebtTokenInstance = await deployContract<MockStableDebtToken>(
       eContractid.MockStableDebtToken,
-      [pool.address, dai.address, 'Aave stable debt bearing DAI updated', 'stableDebtDAI']
+      [
+        pool.address,
+        dai.address,
+        'Aave stable debt bearing DAI updated',
+        'stableDebtDAI',
+        ZERO_ADDRESS,
+      ]
     );
 
     const variableDebtTokenInstance = await deployContract<MockVariableDebtToken>(
       eContractid.MockVariableDebtToken,
-      [pool.address, dai.address, 'Aave variable debt bearing DAI updated', 'variableDebtDAI']
+      [
+        pool.address,
+        dai.address,
+        'Aave variable debt bearing DAI updated',
+        'variableDebtDAI',
+        ZERO_ADDRESS,
+      ]
     );
 
     newATokenAddress = aTokenInstance.address;

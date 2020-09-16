@@ -1,22 +1,17 @@
 import {
-  iAssetBase,
-  iAavePoolAssets,
-  IMarketRates,
-  iAssetAggregatorBase,
   AavePools,
+  eEthereumNetwork,
+  iAavePoolAssets,
+  iAssetAggregatorBase,
+  iAssetBase,
+  iBasicDistributionParams,
+  IMarketRates,
   iMultiPoolsAssets,
   IReserveParams,
   tEthereumAddress,
-  iBasicDistributionParams,
-  eEthereumNetwork,
 } from './types';
 import BigNumber from 'bignumber.js';
-import {getParamPerPool, getParamPerNetwork} from './contracts-helpers';
-
-export const TEST_SNAPSHOT_ID = '0x1';
-
-export const BUIDLEREVM_CHAINID = 31337;
-export const COVERAGE_CHAINID = 1337;
+import {getParamPerNetwork, getParamPerPool} from './contracts-helpers';
 
 // ----------------
 // MATH

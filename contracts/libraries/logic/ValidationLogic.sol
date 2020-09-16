@@ -452,14 +452,21 @@ library ValidationLogic {
     address fromAsset,
     address toAsset
   ) internal view returns (uint256, string memory) {
-    if (!fromReserve.configuration.getActive() || !toReserve.configuration.getActive()) {
-      return (uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
-    }
-
     if (fromAsset == toAsset) {
       return (
         uint256(Errors.CollateralManagerErrors.INVALID_EQUAL_ASSETS_TO_SWAP),
         Errors.INVALID_EQUAL_ASSETS_TO_SWAP
+      );
+    }
+
+    (bool isToActive, bool isToFreezed, , ) = toReserve.configuration.getFlags();
+    if (!fromReserve.configuration.getActive() || !isToActive) {
+      return (uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
+    }
+    if (isToFreezed) {
+      return (
+        uint256(Errors.CollateralManagerErrors.NO_UNFREEZED_RESERVE),
+        Errors.NO_UNFREEZED_RESERVE
       );
     }
 

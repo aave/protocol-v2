@@ -251,49 +251,55 @@ export const deployDefaultReserveInterestRateStrategy = async ([
     ]
   );
 
-export const deployStableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
+export const deployStableDebtToken = async ([
+  name,
+  symbol,
+  underlyingAsset,
+  poolAddress,
+  incentivesController,
+]: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
     poolAddress,
     underlyingAsset,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
 };
 
-export const deployVariableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
+export const deployVariableDebtToken = async ([
+  name,
+  symbol,
+  underlyingAsset,
+  poolAddress,
+  incentivesController,
+]: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
     poolAddress,
     underlyingAsset,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
 };
 
-export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, name, symbol]: [
-  tEthereumAddress,
-  tEthereumAddress,
-  string,
-  string
-]) => {
+export const deployGenericAToken = async ([
+  poolAddress,
+  underlyingAssetAddress,
+  name,
+  symbol,
+  incentivesController,
+]: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress]) => {
   const token = await deployContract<AToken>(eContractid.AToken, [
     poolAddress,
     underlyingAssetAddress,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
