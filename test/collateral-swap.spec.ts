@@ -83,6 +83,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         .deposit(weth.address, amountToDeposit, await signer.getAddress(), '0');
     }
   });
+
   it('User tries to swap more then he can, revert expected', async () => {
     const {pool, weth, dai} = testEnv;
     await expect(
@@ -94,19 +95,6 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         '0x10'
       )
     ).to.be.revertedWith('55');
-  });
-
-  it('User tries to swap asset on equal asset, revert expected', async () => {
-    const {pool, weth} = testEnv;
-    await expect(
-      pool.swapLiquidity(
-        _mockSwapAdapter.address,
-        weth.address,
-        weth.address,
-        ethers.utils.parseEther('0.1'),
-        '0x10'
-      )
-    ).to.be.revertedWith('56');
   });
 
   it('User tries to swap more then available on the reserve', async () => {
@@ -185,6 +173,9 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
       reserveBalanceDAIBefore.add(amountToReturn).toString(),
       'was received incorrect amount if reserve funds'
     );
+    expect(
+      (await pool.getUserReserveData(dai.address, userAddress)).usageAsCollateralEnabled
+    ).to.be.equal(true, 'usage as collateral was not enabled on destination reserve for the user');
   });
 
   it('User tries to drop HF below one', async () => {

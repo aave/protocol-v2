@@ -514,6 +514,11 @@ contract LendingPoolLiquidationManager is VersionedInitializable {
         address(vars.toReserveAToken),
         vars.amountToReceive
       );
+
+      if (vars.toReserveAToken.balanceOf(msg.sender) == 0) {
+        usersConfig[msg.sender].setUsingAsCollateral(toReserve.id, true);
+      }
+
       vars.toReserveAToken.mint(msg.sender, vars.amountToReceive, toReserve.liquidityIndex);
       toReserve.updateInterestRates(
         toAsset,
