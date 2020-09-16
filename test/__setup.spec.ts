@@ -12,7 +12,7 @@ import {
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
   deployDefaultReserveInterestRateStrategy,
-  deployLendingPoolLiquidationManager,
+  deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   getLendingPool,
@@ -496,9 +496,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolConfiguratorProxy
   );
 
-  const liquidationManager = await deployLendingPoolLiquidationManager();
+  const collateralManager = await deployLendingPoolCollateralManager();
   await waitForTx(
-    await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
+    await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);

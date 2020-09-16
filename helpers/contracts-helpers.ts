@@ -21,7 +21,7 @@ import {PriceOracle} from '../types/PriceOracle';
 import {MockAggregator} from '../types/MockAggregator';
 import {LendingRateOracle} from '../types/LendingRateOracle';
 import {DefaultReserveInterestRateStrategy} from '../types/DefaultReserveInterestRateStrategy';
-import {LendingPoolLiquidationManager} from '../types/LendingPoolLiquidationManager';
+import {LendingPoolCollateralManager} from '../types/LendingPoolCollateralManager';
 import {InitializableAdminUpgradeabilityProxy} from '../types/InitializableAdminUpgradeabilityProxy';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {WalletBalanceProvider} from '../types/WalletBalanceProvider';
@@ -192,16 +192,16 @@ export const deployChainlinkProxyPriceProvider = async ([
 export const deployLendingRateOracle = async () =>
   await deployContract<LendingRateOracle>(eContractid.LendingRateOracle, []);
 
-export const deployLendingPoolLiquidationManager = async () => {
-  const liquidationManagerArtifact = await readArtifact(
+export const deployLendingPoolCollateralManager = async () => {
+  const collateralManagerArtifact = await readArtifact(
     BRE.config.paths.artifacts,
-    eContractid.LendingPoolLiquidationManager
+    eContractid.LendingPoolCollateralManager
   );
 
-  const factory = await linkLibrariesToArtifact(liquidationManagerArtifact);
+  const factory = await linkLibrariesToArtifact(collateralManagerArtifact);
 
-  const liquidationManager = await factory.deploy();
-  return (await liquidationManager.deployed()) as LendingPoolLiquidationManager;
+  const collateralManager = await factory.deploy();
+  return (await collateralManager.deployed()) as LendingPoolCollateralManager;
 };
 
 export const deployInitializableAdminUpgradeabilityProxy = async () =>

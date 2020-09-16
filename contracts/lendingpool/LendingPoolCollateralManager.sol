@@ -24,12 +24,12 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 
 /**
- * @title LendingPoolLiquidationManager contract
+ * @title LendingPoolCollateralManager contract
  * @author Aave
  * @notice Implements the liquidation function.
- * @dev LendingPoolLiquidationManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
+ * @dev LendingPoolCollateralManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
  **/
-contract LendingPoolLiquidationManager is VersionedInitializable {
+contract LendingPoolCollateralManager is VersionedInitializable {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;

@@ -30,7 +30,7 @@ export enum eContractid {
   LendingRateOracle = 'LendingRateOracle',
   ChainlinkProxyPriceProvider = 'ChainlinkProxyPriceProvider',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
-  LendingPoolLiquidationManager = 'LendingPoolLiquidationManager',
+  LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
   MockSwapAdapter = 'MockSwapAdapter',
@@ -92,7 +92,7 @@ export enum ProtocolErrors {
   //require error messages - LendingPoolAddressesProviderRegistry
   PROVIDER_NOT_REGISTERED = '37', // 'Provider is not registered'
 
-  //return error messages - LendingPoolLiquidationManager
+  //return error messages - LendingPoolCollateralManager
   HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '38', // 'Health factor is not below the threshold'
   COLLATERAL_CANNOT_BE_LIQUIDATED = '39', // 'The collateral chosen cannot be liquidated'
   SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '40', // 'User did not borrow the specified currency'

@@ -65,7 +65,7 @@ library Errors {
   //require error messages - LendingPoolAddressesProviderRegistry
   string public constant PROVIDER_NOT_REGISTERED = '37'; // 'Provider is not registered'
 
-  //return error messages - LendingPoolLiquidationManager
+  //return error messages - LendingPoolCollateralManager
   string public constant HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '38'; // 'Health factor is not below the threshold'
   string public constant COLLATERAL_CANNOT_BE_LIQUIDATED = '39'; // 'The collateral chosen cannot be liquidated'
   string public constant SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '40'; // 'User did not borrow the specified currency'
