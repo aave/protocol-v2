@@ -44,6 +44,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   uint256 public constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
   uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
+  uint256 public constant MAX_NUMBER_RESERVES = 128;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 
@@ -945,6 +946,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
    **/
   function _addReserveToList(address asset) internal {
     bool reserveAlreadyAdded = false;
+    require(_reservesList.length < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
     for (uint256 i = 0; i < _reservesList.length; i++)
       if (_reservesList[i] == asset) {
         reserveAlreadyAdded = true;
