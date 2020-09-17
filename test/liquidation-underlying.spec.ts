@@ -175,7 +175,9 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     const stableDebtBeforeTx = calcExpectedStableDebtTokenBalance(
-      userReserveDataBefore,
+      userReserveDataBefore.principalStableDebt,
+      userReserveDataBefore.stableBorrowRate,
+      userReserveDataBefore.stableRateLastUpdated,
       txTimestamp
     );
 

@@ -125,7 +125,9 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     ).minus(usdcUserDataBefore.currentVariableDebt);
 
     const expectedStableDebtIncrease = calcExpectedStableDebtTokenBalance(
-      usdcUserDataBefore,
+      usdcUserDataBefore.principalStableDebt,
+      usdcUserDataBefore.stableBorrowRate,
+      usdcUserDataBefore.stableRateLastUpdated,
       new BigNumber(repayWithCollateralTimestamp)
     ).minus(usdcUserDataBefore.currentStableDebt);
 
