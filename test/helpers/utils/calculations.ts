@@ -296,8 +296,7 @@ export const calcExpectedReserveDataAfterBorrow = (
 
   if (borrowRateMode == RateMode.Stable) {
 
-    expectedReserveData.
-    const debtAccrued = userStableDebt.minus(userDataBeforeAction.principalStableDebt);
+    //if the borrow rate mode 
 
     expectedReserveData.totalLiquidity = reserveDataBeforeAction.totalLiquidity.plus(debtAccrued);
 

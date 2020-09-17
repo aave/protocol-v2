@@ -111,9 +111,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     ) = _calculateBalanceIncrease(user);
 
     //accrueing the interest accumulation to the stored total supply and caching it
-    vars.currentSupply = _totalSupply =  totalSupply();
+    vars.currentSupply = totalSupply();
     vars.currentAvgStableRate = _avgStableRate;
-    vars.nextSupply = vars.currentSupply.add(amount);
+    vars.nextSupply = _totalSupply = vars.currentSupply.add(amount);
 
     vars.amountInRay = amount.wadToRay();
 
@@ -163,25 +163,32 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-    uint256 supplyBeforeBurn = totalSupply().add(balanceIncrease);
-    uint256 supplyAfterBurn = supplyBeforeBurn.sub(amount);
+      
+    uint256 currentSupply = totalSupply();
+    uint256 currentAvgStableRate = _avgStableRate;
+   
 
-    if (supplyAfterBurn == 0) {
+    if (currentSupply <= amount) {
       _avgStableRate = 0;
+      _totalSupply = 0;
     } else {
+       uint256 nextSupply = _totalSupply = currentSupply.sub(amount);
       _avgStableRate = _avgStableRate
-        .rayMul(supplyBeforeBurn.wadToRay())
+        .rayMul(currentSupply.wadToRay())
         .sub(_usersData[user].rayMul(amount.wadToRay()))
-        .rayDiv(supplyAfterBurn.wadToRay());
+        .rayDiv(nextSupply.wadToRay());
     }
 
     if (amount == currentBalance) {
       _usersData[user] = 0;
       _timestamps[user] = 0;
+
     } else {
       //solium-disable-next-line
-      _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
+      _timestamps[user] = uint40(block.timestamp);
     }
+    //solium-disable-next-line
+    _totalSupplyTimestamp = uint40(block.timestamp);
 
     if (balanceIncrease > amount) {
       _mint(user, balanceIncrease.sub(amount));

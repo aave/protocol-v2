@@ -58,6 +58,6 @@ interface IVariableDebtToken {
   * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
   * @return the scaled total supply
   **/
- function scaledTotalSupply() external view returns(uint256);
+  function scaledTotalSupply() external view returns(uint256);
 
 }
