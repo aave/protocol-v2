@@ -563,9 +563,6 @@ export const calcExpectedUserDataAfterBorrow = (
       reserveDataBeforeAction.stableBorrowRate
     );
 
-    console.log("Principal stable debt: ",expectedUserData.principalStableDebt.toFixed() );
-    console.log("stable borrow rate: ",expectedUserData.stableBorrowRate.toFixed() );
-    
     expectedUserData.currentStableDebt = calcExpectedStableDebtTokenBalance(
       expectedUserData.principalStableDebt,
       expectedUserData.stableBorrowRate,
@@ -573,8 +570,6 @@ export const calcExpectedUserDataAfterBorrow = (
       currentTimestamp
     );
 
-    console.log("expected stable debt: ", expectedUserData.currentStableDebt);
-    
     expectedUserData.scaledVariableDebt = userDataBeforeAction.scaledVariableDebt;
     
     expectedUserData.currentVariableDebt = calcExpectedVariableDebtTokenBalance(
