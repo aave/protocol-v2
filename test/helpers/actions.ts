@@ -375,19 +375,6 @@ export const borrow = async (
       txCost
     );
 
-    console.log("Expected available liquidity: ", expectedReserveData.availableLiquidity.toFixed());
-    console.log("Expected total liquidity: ", expectedReserveData.totalLiquidity.toFixed());
-    console.log("Expected total debt stable: ", expectedReserveData.totalStableDebt.toFixed());
-    console.log("Expected total debt variable: ", expectedReserveData.totalVariableDebt.toFixed());
-    console.log("Expected utilization rate: ", expectedReserveData.utilizationRate.toFixed());
-
-    console.log("actual available liquidity: ", reserveDataAfter.availableLiquidity.toFixed());
-    console.log("actual total liquidity: ", reserveDataAfter.totalLiquidity.toFixed());
-    console.log("actual total debt stable: ", reserveDataAfter.totalStableDebt.toFixed());
-    console.log("actual total debt variable: ", reserveDataAfter.totalVariableDebt.toFixed());
-    console.log("actual utilization rate: ", reserveDataAfter.utilizationRate.toFixed());
-    console.log("User debt: ", userDataAfter.currentStableDebt.toFixed(0));
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
