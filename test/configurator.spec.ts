@@ -6,7 +6,7 @@ import {ProtocolErrors} from '../helpers/types';
 const {expect} = require('chai');
 
 makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
-  const {CALLER_NOT_LENDING_POOL_MANAGER, RESERVE_LIQUIDITY_NOT_0} = ProtocolErrors;
+  const {CALLER_NOT_AAVE_ADMIN, RESERVE_LIQUIDITY_NOT_0} = ProtocolErrors;
 
   it('Deactivates the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
@@ -23,20 +23,20 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(isActive).to.be.equal(true);
   });
 
-  it('Check the onlyLendingPoolManager on deactivateReserve ', async () => {
+  it('Check the onlyAaveAdmin on deactivateReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).deactivateReserve(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-  it('Check the onlyLendingPoolManager on activateReserve ', async () => {
+  it('Check the onlyAaveAdmin on activateReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).activateReserve(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Freezes the ETH reserve', async () => {
@@ -54,20 +54,20 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(isFreezed).to.be.equal(false);
   });
 
-  it('Check the onlyLendingPoolManager on freezeReserve ', async () => {
+  it('Check the onlyAaveAdmin on freezeReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).freezeReserve(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-  it('Check the onlyLendingPoolManager on unfreezeReserve ', async () => {
+  it('Check the onlyAaveAdmin on unfreezeReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).unfreezeReserve(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Deactivates the ETH reserve for borrowing', async () => {
@@ -86,20 +86,20 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
 
-  it('Check the onlyLendingPoolManager on disableBorrowingOnReserve ', async () => {
+  it('Check the onlyAaveAdmin on disableBorrowingOnReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).disableBorrowingOnReserve(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-  it('Check the onlyLendingPoolManager on enableBorrowingOnReserve ', async () => {
+  it('Check the onlyAaveAdmin on enableBorrowingOnReserve ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).enableBorrowingOnReserve(weth.address, true),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Deactivates the ETH reserve as collateral', async () => {
@@ -117,22 +117,22 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(usageAsCollateralEnabled).to.be.equal(true);
   });
 
-  it('Check the onlyLendingPoolManager on disableReserveAsCollateral ', async () => {
+  it('Check the onlyAaveAdmin on disableReserveAsCollateral ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).disableReserveAsCollateral(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-  it('Check the onlyLendingPoolManager on enableReserveAsCollateral ', async () => {
+  it('Check the onlyAaveAdmin on enableReserveAsCollateral ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator
         .connect(users[2].signer)
         .enableReserveAsCollateral(weth.address, '75', '80', '105'),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Disable stable borrow rate on the ETH reserve', async () => {
@@ -149,20 +149,20 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(true);
   });
 
-  it('Check the onlyLendingPoolManager on disableReserveStableRate', async () => {
+  it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).disableReserveStableRate(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-  it('Check the onlyLendingPoolManager on enableReserveStableRate', async () => {
+  it('Check the onlyAaveAdmin on enableReserveStableRate', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).enableReserveStableRate(weth.address),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Changes LTV of the reserve', async () => {
@@ -172,12 +172,12 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(ltv.toString()).to.be.bignumber.equal('60', 'Invalid LTV');
   });
 
-  it('Check the onlyLendingPoolManager on setLtv', async () => {
+  it('Check the onlyAaveAdmin on setLtv', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLtv(weth.address, '75'),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
 
@@ -207,12 +207,12 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     );
   });
 
-  it('Check the onlyLendingPoolManager on setLiquidationThreshold', async () => {
+  it('Check the onlyAaveAdmin on setLiquidationThreshold', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLiquidationThreshold(weth.address, '80'),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Changes liquidation bonus of the reserve', async () => {
@@ -225,28 +225,28 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     );
   });
 
-  it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {
+  it('Check the onlyAaveAdmin on setLiquidationBonus', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-  it('Check the onlyLendingPoolManager on setReserveDecimals', async () => {
+  it('Check the onlyAaveAdmin on setReserveDecimals', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setReserveDecimals(weth.address, '80'),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-  it('Check the onlyLendingPoolManager on setLiquidationBonus', async () => {
+  it('Check the onlyAaveAdmin on setLiquidationBonus', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {

@@ -12,7 +12,7 @@ import {
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
   deployDefaultReserveInterestRateStrategy,
-  deployLendingPoolLiquidationManager,
+  deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   getLendingPool,
@@ -354,12 +354,12 @@ export const waitForTx = async (tx: ContractTransaction) => await tx.wait();
 
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');
-  const lendingPoolManager = await deployer.getAddress();
+  const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
-  await waitForTx(await addressesProvider.setLendingPoolManager(lendingPoolManager));
+  await waitForTx(await addressesProvider.setAaveAdmin(aaveAdmin));
 
   const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry();
   await waitForTx(
@@ -502,9 +502,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolConfiguratorProxy
   );
 
-  const liquidationManager = await deployLendingPoolLiquidationManager();
+  const collateralManager = await deployLendingPoolCollateralManager();
   await waitForTx(
-    await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
+    await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);

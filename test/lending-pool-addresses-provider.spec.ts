@@ -14,8 +14,8 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
     for (const contractFunction of [
       addressesProvider.setLendingPoolImpl,
       addressesProvider.setLendingPoolConfiguratorImpl,
-      addressesProvider.setLendingPoolLiquidationManager,
-      addressesProvider.setLendingPoolManager,
+      addressesProvider.setLendingPoolCollateralManager,
+      addressesProvider.setAaveAdmin,
       addressesProvider.setPriceOracle,
       addressesProvider.setLendingRateOracle,
     ]) {
