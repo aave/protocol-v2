@@ -192,8 +192,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setReserveFactor(weth.address, '2000'),
-      CALLER_NOT_LENDING_POOL_MANAGER
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+      CALLER_NOT_AAVE_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
 

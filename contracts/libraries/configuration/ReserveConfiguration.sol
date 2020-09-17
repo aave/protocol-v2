@@ -42,8 +42,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param reserveFactor the reserve factor
    **/
-  function setReserveFactor(ReserveConfiguration.Map memory self, uint256 reserveFactor) internal view {
-    console.log("Setting reserve factor to %s", reserveFactor);
+  function setReserveFactor(ReserveConfiguration.Map memory self, uint256 reserveFactor) internal pure {
  
     self.data = (self.data & RESERVE_FACTOR_MASK) | reserveFactor << 64;
   }

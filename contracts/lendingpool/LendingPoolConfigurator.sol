@@ -484,7 +484,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param reserveFactor the new reserve factor of the reserve
    **/
-  function setReserveFactor(address asset, uint256 reserveFactor) external onlyLendingPoolManager {
+  function setReserveFactor(address asset, uint256 reserveFactor) external onlyAaveAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setReserveFactor(reserveFactor);

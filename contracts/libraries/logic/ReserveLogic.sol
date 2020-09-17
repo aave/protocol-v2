@@ -147,7 +147,7 @@ library ReserveLogic {
    * a formal specification.
    * @param reserve the reserve object
    **/
-  function updateState(ReserveData storage reserve) internal {
+  function updateState(ReserveData storage reserve) external {
     address stableDebtToken = reserve.stableDebtTokenAddress;
     address variableDebtToken = reserve.variableDebtTokenAddress;
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
@@ -166,7 +166,6 @@ library ReserveLogic {
       reserve,
       stableDebtToken,
       variableDebtToken,
-      previousLiquidityIndex,
       previousVariableBorrowIndex,
       newLiquidityIndex,
       newVariableBorrowIndex,
@@ -306,7 +305,6 @@ library ReserveLogic {
     ReserveData storage reserve,
     address stableDebtToken,
     address variableDebtToken,
-    uint256 previousLiquidityIndex,
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
     uint256 newVariableBorrowIndex,

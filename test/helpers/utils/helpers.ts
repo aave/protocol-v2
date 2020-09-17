@@ -24,7 +24,7 @@ export const getReserveData = async (
   const stableDebtToken = await getStableDebtToken(tokenAddresses.stableDebtTokenAddress);
   const variableDebtToken = await getVariableDebtToken(tokenAddresses.variableDebtTokenAddress);
 
-  const [principalStableDebt] = await stableDebtToken.getPrincipalSupplyAndAvgRate();
+  const [principalStableDebt] = await stableDebtToken.getSupplyData();
 
   const scaledVariableDebt = await variableDebtToken.scaledTotalSupply();
 

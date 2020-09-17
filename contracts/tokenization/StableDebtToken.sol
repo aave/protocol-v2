@@ -8,6 +8,7 @@ import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
+import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title contract StableDebtToken
@@ -82,7 +83,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   struct MintLocalVars {
-    uint256 currentSupply;
+    uint256 previousSupply;
     uint256 nextSupply;
     uint256 amountInRay;
     uint256 newStableRate;
@@ -111,9 +112,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     ) = _calculateBalanceIncrease(user);
 
     //accrueing the interest accumulation to the stored total supply and caching it
-    vars.currentSupply = totalSupply();
+    vars.previousSupply = totalSupply();
     vars.currentAvgStableRate = _avgStableRate;
-    vars.nextSupply = _totalSupply = vars.currentSupply.add(amount);
+    vars.nextSupply = _totalSupply = vars.previousSupply.add(amount);
 
     vars.amountInRay = amount.wadToRay();
 
@@ -132,11 +133,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     //calculates the updated average stable rate
     _avgStableRate = vars.currentAvgStableRate
-      .rayMul(vars.currentSupply.wadToRay())
+      .rayMul(vars.previousSupply.wadToRay())
       .add(rate.rayMul(vars.amountInRay))
       .rayDiv(vars.nextSupply.wadToRay());
 
-    _mint(user, amount.add(balanceIncrease));
+    _mint(user, amount.add(balanceIncrease), vars.previousSupply);
 
     // transfer event to track balances
     emit Transfer(address(0), user, amount);
@@ -164,17 +165,15 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     ) = _calculateBalanceIncrease(user);
 
       
-    uint256 currentSupply = totalSupply();
-    uint256 currentAvgStableRate = _avgStableRate;
-   
+    uint256 previousSupply = totalSupply();
 
-    if (currentSupply <= amount) {
+    if (previousSupply <= amount) {
       _avgStableRate = 0;
       _totalSupply = 0;
     } else {
-       uint256 nextSupply = _totalSupply = currentSupply.sub(amount);
+       uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
       _avgStableRate = _avgStableRate
-        .rayMul(currentSupply.wadToRay())
+        .rayMul(previousSupply.wadToRay())
         .sub(_usersData[user].rayMul(amount.wadToRay()))
         .rayDiv(nextSupply.wadToRay());
     }
@@ -191,9 +190,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = uint40(block.timestamp);
 
     if (balanceIncrease > amount) {
-      _mint(user, balanceIncrease.sub(amount));
+      _mint(user, balanceIncrease.sub(amount), previousSupply);
     } else {
-      _burn(user, amount.sub(balanceIncrease));
+      _burn(user, amount.sub(balanceIncrease), previousSupply);
     }
 
     // transfer event to track balances
@@ -244,7 +243,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   function totalSupply() public override view returns (uint256) {
-    _calcTotalSupply(_avgStableRate);
+    return _calcTotalSupply(_avgStableRate);
   }
   
   function getTotalSupplyLastUpdated() public override view returns(uint40) {
@@ -261,13 +260,37 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   function _calcTotalSupply(uint256 avgRate) internal view returns(uint256) {
     uint256 principalSupply = super.totalSupply();
+
     if (principalSupply == 0) {
       return 0;
     }
+
     uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(
       avgRate,
       _totalSupplyTimestamp
     );
+
     return principalSupply.rayMul(cumulatedInterest);
+  }
+
+   function _mint(address account, uint256 amount, uint256 oldTotalSupply) internal {
+
+    uint256 oldAccountBalance = _balances[account];
+    _balances[account] = oldAccountBalance.add(amount);
+
+    if (address(_incentivesController) != address(0)) {
+      _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
+    }
+  }
+
+  function _burn(address account, uint256 amount, uint256 oldTotalSupply) internal {
+ 
+   
+    uint256 oldAccountBalance = _balances[account];
+    _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
+
+    if (address(_incentivesController) != address(0)) {
+      _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
+    }
   }
 }

@@ -27,6 +27,7 @@ import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title LendingPool contract
@@ -702,6 +703,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     )
   {
     ReserveLogic.ReserveData memory reserve = _reserves[asset];
+
     return (
       IERC20(asset).balanceOf(reserve.aTokenAddress),
       IERC20(reserve.stableDebtTokenAddress).totalSupply(),
