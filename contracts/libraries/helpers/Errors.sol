@@ -59,13 +59,13 @@ library Errors {
   string public constant STABLE_BORROW_RATE_OVERFLOW = '51'; //  Stable borrow rate overflows uint128
 
   //require error messages - LendingPoolConfiguration
-  string public constant CALLER_NOT_LENDING_POOL_MANAGER = '35'; // 'The caller must be a lending pool manager'
+  string public constant CALLER_NOT_AAVE_ADMIN = '35'; // 'The caller must be the aave admin'
   string public constant RESERVE_LIQUIDITY_NOT_0 = '36'; // 'The liquidity of the reserve needs to be 0'
 
   //require error messages - LendingPoolAddressesProviderRegistry
   string public constant PROVIDER_NOT_REGISTERED = '37'; // 'Provider is not registered'
 
-  //return error messages - LendingPoolLiquidationManager
+  //return error messages - LendingPoolCollateralManager
   string public constant HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '38'; // 'Health factor is not below the threshold'
   string public constant COLLATERAL_CANNOT_BE_LIQUIDATED = '39'; // 'The collateral chosen cannot be liquidated'
   string public constant SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '40'; // 'User did not borrow the specified currency'
@@ -79,7 +79,7 @@ library Errors {
 
   // pausable error message
   string public constant IS_PAUSED = '58'; // 'Pool is paused'
-  enum LiquidationErrors {
+  enum CollateralManagerErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,
     COLLATERAL_CANNOT_BE_LIQUIDATED,
