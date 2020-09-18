@@ -377,9 +377,13 @@ export const borrow = async (
 
     console.log("total stable debt actual: ", reserveDataAfter.totalStableDebt.toFixed());
     console.log("total stable debt expected: ", expectedReserveData.totalStableDebt.toFixed());
+    console.log("total avg stable rate actual: ", reserveDataAfter.averageStableBorrowRate.toFixed());
+    console.log("total avg stable rate expected: ", expectedReserveData.averageStableBorrowRate.toFixed());
 
     console.log("total variable debt actual: ", reserveDataAfter.totalVariableDebt.toFixed());
     console.log("total variable debt expected: ", expectedReserveData.totalVariableDebt.toFixed());
+    console.log("variable borrow rate actual: ", reserveDataAfter.variableBorrowRate.toFixed());
+    console.log("variable borrow rate expected: ", expectedReserveData.variableBorrowRate.toFixed());
 
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
