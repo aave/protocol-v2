@@ -167,6 +167,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       
     uint256 previousSupply = totalSupply();
 
+    //since the total supply and each single user debt accrue separately,
+    //there might be accumulation errors so that the last borrower repaying
+    //might actually try to repay more than the available debt supply.
+    //in this case we simply set the total supply and the avg stable rate to 0
     if (previousSupply <= amount) {
       _avgStableRate = 0;
       _totalSupply = 0;
@@ -232,32 +236,51 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     );
   }
 
+  /**
+   * @dev returns the principal, total supply and the average borrow rate
+   **/
   function getSupplyData() public override view returns (uint256, uint256, uint256) {
     uint256 avgRate = _avgStableRate;
     return (super.totalSupply(), _calcTotalSupply(avgRate), avgRate);
   }
 
+  /**
+   * @dev returns the the total supply and the average stable rate
+   **/
   function getTotalSupplyAndAvgRate() public override view returns (uint256, uint256) {
     uint256 avgRate = _avgStableRate;
     return (_calcTotalSupply(avgRate), avgRate);
   }
 
+  /**
+   * @dev returns the total supply
+   **/
   function totalSupply() public override view returns (uint256) {
     return _calcTotalSupply(_avgStableRate);
   }
-  
+
+  /**
+   * @dev returns the timestamp at which the total supply was updated
+   **/
   function getTotalSupplyLastUpdated() public override view returns(uint40) {
     return _totalSupplyTimestamp;
   }
 
   /**
    * @dev Returns the principal debt balance of the user from
+   * @param user the user
    * @return The debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address user) external virtual override view returns (uint256) {
     return super.balanceOf(user);
   }
 
+
+  /**
+   * @dev calculates the total supply 
+   * @param avgRate the average rate at which calculate the total supply
+   * @return The debt balance of the user since the last burn/mint action
+   **/
   function _calcTotalSupply(uint256 avgRate) internal view returns(uint256) {
     uint256 principalSupply = super.totalSupply();
 
@@ -273,6 +296,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return principalSupply.rayMul(cumulatedInterest);
   }
 
+   /**
+   * @dev mints stable debt tokens to an user
+   * @param account the account receiving the debt tokens
+   * @param amount the amount being minted
+   * @param oldTotalSupply the total supply before the minting event
+   **/
    function _mint(address account, uint256 amount, uint256 oldTotalSupply) internal {
 
     uint256 oldAccountBalance = _balances[account];
@@ -283,9 +312,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     }
   }
 
+   /**
+   * @dev burns stable debt tokens of an user
+   * @param account the user getting his debt burned
+   * @param amount the amount being burned
+   * @param oldTotalSupply the total supply before the burning event
+   **/
   function _burn(address account, uint256 amount, uint256 oldTotalSupply) internal {
  
-   
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
 

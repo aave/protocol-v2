@@ -375,6 +375,12 @@ export const borrow = async (
       txCost
     );
 
+    console.log("total stable debt actual: ", reserveDataAfter.totalStableDebt.toFixed());
+    console.log("total stable debt expected: ", expectedReserveData.totalStableDebt.toFixed());
+
+    console.log("total variable debt actual: ", reserveDataAfter.totalVariableDebt.toFixed());
+    console.log("total variable debt expected: ", expectedReserveData.totalVariableDebt.toFixed());
+
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
@@ -478,6 +484,14 @@ export const repay = async (
       timestamp,
       txCost
     );
+
+
+    console.log("total stable debt actual: ", reserveDataAfter.totalStableDebt.toFixed());
+    console.log("total stable debt expected: ", expectedReserveData.totalStableDebt.toFixed());
+
+    console.log("total variable debt actual: ", reserveDataAfter.totalVariableDebt.toFixed());
+    console.log("total variable debt expected: ", expectedReserveData.totalVariableDebt.toFixed());
+
 
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
@@ -741,9 +755,12 @@ export const getContractsData = async (
   sender?: string
 ) => {
   const {pool} = testEnv;
-  const reserveData = await getReserveData(pool, reserve);
-  const userData = await getUserData(pool, reserve, user, sender || user);
-  const timestamp = await timeLatest();
+
+  const [userData, reserveData, timestamp] = await Promise.all([
+    getUserData(pool, reserve, user, sender || user),
+    getReserveData(pool, reserve),
+    timeLatest(),
+  ]);
 
   return {
     reserveData,
