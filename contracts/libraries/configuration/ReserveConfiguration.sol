@@ -143,7 +143,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param active the active state
    **/
-  function setActive(ReserveConfiguration.Map memory self, bool active) internal {
+  function setActive(ReserveConfiguration.Map memory self, bool active) internal pure {
     self.data = (self.data & ACTIVE_MASK) | (uint256(active ? 1 : 0) << 56);
   }
 
