@@ -89,6 +89,10 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _baseVariableBorrowRate;
   }
 
+  function getMaxVariableBorrowRate() external override view returns (uint256) {
+    return _baseVariableBorrowRate.add(_variableRateSlope1).add(_variableRateSlope2);
+  }
+
   /**
    * @dev calculates the interest rates depending on the available liquidity and the total borrowed.
    * @param reserve the address of the reserve

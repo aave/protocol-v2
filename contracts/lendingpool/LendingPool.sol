@@ -12,6 +12,7 @@ import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
+import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
@@ -26,6 +27,7 @@ import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
 
 /**
  * @title LendingPool contract
@@ -36,10 +38,12 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
 contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage {
   using SafeMath for uint256;
   using WadRayMath for uint256;
+  using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
   //main configuration parameters
-  uint256 public constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
+  uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
+  uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
   uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
 
@@ -354,26 +358,39 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
-    IStableDebtToken stableDebtToken = IStableDebtToken(reserve.stableDebtTokenAddress);
+    IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
+    IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
 
-    uint256 stableBorrowBalance = IERC20(address(stableDebtToken)).balanceOf(user);
+    uint256 stableBorrowBalance = IERC20(stableDebtToken).balanceOf(user);
 
     // user must be borrowing on asset at a stable rate
     require(stableBorrowBalance > 0, Errors.NOT_ENOUGH_STABLE_BORROW_BALANCE);
 
-    uint256 rebalanceDownRateThreshold = WadRayMath.ray().add(REBALANCE_DOWN_RATE_DELTA).rayMul(
-      reserve.currentStableBorrowRate
-    );
-
-    //1. user stable borrow rate is below the current liquidity rate. The loan needs to be rebalanced,
-    //as this situation can be abused (user putting back the borrowed liquidity in the same reserve to earn on it)
-    //2. user stable rate is above the market avg borrow rate of a certain delta, and utilization rate is low.
-    //In this case, the user is paying an interest that is too high, and needs to be rescaled down.
-
-    uint256 userStableRate = stableDebtToken.getUserStableRate(user);
+    //if the utilization rate is below 95%, no rebalances are needed
+    uint256 totalBorrows = stableDebtToken.totalSupply().add(variableDebtToken.totalSupply());
+    uint256 availableLiquidity = IERC20(reserve.aTokenAddress).totalSupply();
+    uint256 utilizationRate = totalBorrows == 0
+      ? 0
+      : totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
 
     require(
-      userStableRate < reserve.currentLiquidityRate || userStableRate > rebalanceDownRateThreshold,
+      utilizationRate >= REBALANCE_UP_USAGE_RATIO_THRESHOLD,
+      Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+    );
+
+    //if the liquidity rate is below REBALANCE_UP_THRESHOLD of the max variable APR at 95% usage,
+    //then we allow rebalancing of the stable rate positions.
+
+    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+    uint256 maxVariableBorrowRate = IReserveInterestRateStrategy(
+      reserve
+        .interestRateStrategyAddress
+    )
+      .getMaxVariableBorrowRate();
+
+    require(
+      currentLiquidityRate <=
+        maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
       Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
     );
 
@@ -381,8 +398,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateCumulativeIndexesAndTimestamp();
 
-    stableDebtToken.burn(user, stableBorrowBalance);
-    stableDebtToken.mint(user, stableBorrowBalance, reserve.currentStableBorrowRate);
+    IStableDebtToken(address(stableDebtToken)).burn(user, stableBorrowBalance);
+    IStableDebtToken(address(stableDebtToken)).mint(user, stableBorrowBalance, reserve.currentStableBorrowRate);
 
     reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
 
@@ -507,7 +524,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _flashLiquidationLocked = false;
   }
 
-    struct FlashLoanLocalVars {
+  struct FlashLoanLocalVars {
     uint256 premium;
     uint256 amountPlusPremium;
     IFlashLoanReceiver receiver;
