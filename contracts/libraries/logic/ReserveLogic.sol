@@ -148,28 +148,23 @@ library ReserveLogic {
    * @param reserve the reserve object
    **/
   function updateState(ReserveData storage reserve) external {
-    address stableDebtToken = reserve.stableDebtTokenAddress;
     address variableDebtToken = reserve.variableDebtTokenAddress;
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
-    uint40 timestamp = reserve.lastUpdateTimestamp;
 
     (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
       reserve,
       variableDebtToken,
       previousLiquidityIndex,
-      previousVariableBorrowIndex,
-      timestamp
+      previousVariableBorrowIndex
     );
 
     _mintToTreasury(
       reserve,
-      stableDebtToken,
       variableDebtToken,
       previousVariableBorrowIndex,
       newLiquidityIndex,
-      newVariableBorrowIndex,
-      timestamp
+      newVariableBorrowIndex
     );
   }
 
@@ -299,16 +294,24 @@ library ReserveLogic {
     uint256 totalDebtAccrued;
     uint256 amountToMint;
     uint256 reserveFactor;
+    uint40 stableSupplyUpdatedTimestamp;
   }
 
+   /**
+   * @dev mints part of the repaid interest to the reserve treasury, depending on the reserveFactor for the
+   * specific asset.
+   * @param reserve the reserve reserve to be updated
+   * @param variableDebtToken the debt token address
+   * @param previousVariableBorrowIndex the variable borrow index before the last accumulation of the interest
+   * @param newLiquidityIndex the new liquidity index
+   * @param newVariableBorrowIndex the variable borrow index after the last accumulation of the interest
+   **/
   function _mintToTreasury(
     ReserveData storage reserve,
-    address stableDebtToken,
     address variableDebtToken,
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
-    uint256 newVariableBorrowIndex,
-    uint40 previousTimestamp
+    uint256 newVariableBorrowIndex
   ) internal {
     MintToTreasuryLocalVars memory vars;
 
@@ -322,10 +325,12 @@ library ReserveLogic {
     vars.scaledVariableDebt = IVariableDebtToken(variableDebtToken).scaledTotalSupply();
 
     //fetching the principal, total stable debt and the avg stable rate
-    (vars.principalStableDebt, vars.currentStableDebt, vars.avgStableRate) = IStableDebtToken(
-      stableDebtToken
-    )
-      .getSupplyData();
+    (
+      vars.principalStableDebt,
+      vars.currentStableDebt,
+      vars.avgStableRate,
+      vars.stableSupplyUpdatedTimestamp
+    ) = IStableDebtToken(reserve.stableDebtTokenAddress).getSupplyData();
 
     //calculate the last principal variable debt
     vars.previousVariableDebt = vars.scaledVariableDebt.rayMul(previousVariableBorrowIndex);
@@ -336,7 +341,7 @@ library ReserveLogic {
     //calculate the stable debt until the last timestamp update
     vars.cumulatedStableInterest = MathUtils.calculateCompoundedInterest(
       vars.avgStableRate,
-      previousTimestamp
+      vars.stableSupplyUpdatedTimestamp
     );
 
     vars.previousStableDebt = vars.principalStableDebt.rayMul(vars.cumulatedStableInterest);
@@ -353,13 +358,22 @@ library ReserveLogic {
     IAToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
   }
 
+   /**
+   * @dev updates the reserve indexes and the timestamp of the update
+   * @param reserve the reserve reserve to be updated
+   * @param variableDebtToken the debt token address
+   * @param liquidityIndex the last stored liquidity index
+   * @param variableBorrowIndex the last stored variable borrow index
+   **/
   function _updateIndexes(
     ReserveData storage reserve,
     address variableDebtToken,
     uint256 liquidityIndex,
-    uint256 variableBorrowIndex,
-    uint40 lastUpdateTimestamp
+    uint256 variableBorrowIndex
   ) internal returns (uint256, uint256) {
+
+    uint40 timestamp = reserve.lastUpdateTimestamp;
+
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     uint256 newLiquidityIndex = liquidityIndex;
@@ -369,7 +383,7 @@ library ReserveLogic {
     if (currentLiquidityRate > 0) {
       uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(
         currentLiquidityRate,
-        lastUpdateTimestamp
+        timestamp
       );
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
       require(newLiquidityIndex < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
@@ -381,7 +395,7 @@ library ReserveLogic {
       if (IERC20(variableDebtToken).totalSupply() > 0) {
         uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
           reserve.currentVariableBorrowRate,
-          lastUpdateTimestamp
+          timestamp
         );
         newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
         require(newVariableBorrowIndex < (1 << 128), Errors.VARIABLE_BORROW_INDEX_OVERFLOW);

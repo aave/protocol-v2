@@ -237,11 +237,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev returns the principal, total supply and the average borrow rate
+   * @dev returns the principal and total supply, the average borrow rate and the last supply update timestamp
    **/
-  function getSupplyData() public override view returns (uint256, uint256, uint256) {
+  function getSupplyData() public override view returns (uint256, uint256, uint256,uint40) {
     uint256 avgRate = _avgStableRate;
-    return (super.totalSupply(), _calcTotalSupply(avgRate), avgRate);
+    return (super.totalSupply(), _calcTotalSupply(avgRate), avgRate, _totalSupplyTimestamp);
   }
 
   /**
