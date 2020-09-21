@@ -6,6 +6,7 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReserveLogic} from '../logic/ReserveLogic.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title ReserveConfiguration library
@@ -13,14 +14,15 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
  * @notice Implements the bitmap logic to handle the reserve configuration
  */
 library ReserveConfiguration {
-  uint256 constant LTV_MASK = 0xFFFFFFFFFFF0000;
-  uint256 constant LIQUIDATION_THRESHOLD_MASK = 0xFFFFFFF0000FFFF;
-  uint256 constant LIQUIDATION_BONUS_MASK = 0xFFF0000FFFFFFFF;
-  uint256 constant DECIMALS_MASK = 0xF00FFFFFFFFFFFF;
-  uint256 constant ACTIVE_MASK = 0xEFFFFFFFFFFFFFF;
-  uint256 constant FROZEN_MASK = 0xDFFFFFFFFFFFFFF;
-  uint256 constant BORROWING_MASK = 0xBFFFFFFFFFFFFFF;
-  uint256 constant STABLE_BORROWING_MASK = 0x7FFFFFFFFFFFFFF;
+  uint256 constant LTV_MASK = 0xFFFFFFFFFFFFFFFF0000;
+  uint256 constant LIQUIDATION_THRESHOLD_MASK = 0xFFFFFFFFFFFF0000FFFF;
+  uint256 constant LIQUIDATION_BONUS_MASK = 0xFFFFFFF0000FFFFFFFF;
+  uint256 constant DECIMALS_MASK = 0xFFFFFF00FFFFFFFFFFFF;
+  uint256 constant ACTIVE_MASK = 0xFFFFFEFFFFFFFFFFFFFF;
+  uint256 constant FROZEN_MASK = 0xFFFFFDFFFFFFFFFFFFFF;
+  uint256 constant BORROWING_MASK = 0xFFFFFBFFFFFFFFFFFFFF;
+  uint256 constant STABLE_BORROWING_MASK = 0xFFFF07FFFFFFFFFFFFFF;
+  uint256 constant RESERVE_FACTOR_MASK = 0xFFFFFFFFFFFFFFFF;
 
   struct Map {
     //bit 0-15: LTV
@@ -31,9 +33,28 @@ library ReserveConfiguration {
     //bit 57: reserve is freezed
     //bit 58: borrowing is enabled
     //bit 59: stable rate borrowing enabled
+    //bit 64-79: reserve factor
     uint256 data;
   }
 
+  /**
+   * @dev sets the reserve factor of the reserve
+   * @param self the reserve configuration
+   * @param reserveFactor the reserve factor
+   **/
+  function setReserveFactor(ReserveConfiguration.Map memory self, uint256 reserveFactor) internal pure {
+ 
+    self.data = (self.data & RESERVE_FACTOR_MASK) | reserveFactor << 64;
+  }
+
+  /**
+   * @dev gets the reserve factor of the reserve
+   * @param self the reserve configuration
+   * @return the reserve factor
+   **/
+  function getReserveFactor(ReserveConfiguration.Map storage self) internal view returns (uint256) {
+    return (self.data & ~RESERVE_FACTOR_MASK) >> 64;
+  }
   /**
    * @dev sets the Loan to Value of the reserve
    * @param self the reserve configuration

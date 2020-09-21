@@ -253,28 +253,4 @@ library GenericLogic {
 
     return (collateralBalanceETH.percentMul(liquidationThreshold)).wadDiv(borrowBalanceETH);
   }
-
-  /**
-   * @dev calculates the equivalent amount in ETH that an user can borrow, depending on the available collateral and the
-   * average Loan To Value.
-   * @param collateralBalanceETH the total collateral balance
-   * @param borrowBalanceETH the total borrow balance
-   * @param ltv the average loan to value
-   * @return the amount available to borrow in ETH for the user
-   **/
-
-  function calculateAvailableBorrowsETH(
-    uint256 collateralBalanceETH,
-    uint256 borrowBalanceETH,
-    uint256 ltv
-  ) internal pure returns (uint256) {
-    uint256 availableBorrowsETH = collateralBalanceETH.percentMul(ltv); //ltv is in percentage
-
-    if (availableBorrowsETH < borrowBalanceETH) {
-      return 0;
-    }
-
-    availableBorrowsETH = availableBorrowsETH.sub(borrowBalanceETH);
-    return availableBorrowsETH;
-  }
 }

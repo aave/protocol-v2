@@ -18,7 +18,7 @@ makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
       daiVariableDebtTokenAddress
     );
 
-    await expect(variableDebtContract.mint(deployer.address, '1')).to.be.revertedWith(
+    await expect(variableDebtContract.mint(deployer.address, '1', '1')).to.be.revertedWith(
       CALLER_MUST_BE_LENDING_POOL
     );
   });
@@ -34,7 +34,7 @@ makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
       daiVariableDebtTokenAddress
     );
 
-    await expect(variableDebtContract.burn(deployer.address, '1')).to.be.revertedWith(
+    await expect(variableDebtContract.burn(deployer.address, '1', '1')).to.be.revertedWith(
       CALLER_MUST_BE_LENDING_POOL
     );
   });

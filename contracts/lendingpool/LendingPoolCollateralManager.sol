@@ -9,6 +9,7 @@ import {
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
+import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
@@ -221,7 +222,8 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     }
 
     //update the principal reserve
-    principalReserve.updateCumulativeIndexesAndTimestamp();
+    principalReserve.updateState();
+
     principalReserve.updateInterestRates(
       principal,
       principalReserve.aTokenAddress,
@@ -232,13 +234,16 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate
+        vars.actualAmountToLiquidate,
+        principalReserve.variableBorrowIndex
       );
     } else {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
         user,
-        vars.userVariableDebt
+        vars.userVariableDebt,
+        principalReserve.variableBorrowIndex
       );
+
       IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(
         user,
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
@@ -252,7 +257,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       //otherwise receives the underlying asset
 
       //updating collateral reserve
-      collateralReserve.updateCumulativeIndexesAndTimestamp();
+      collateralReserve.updateState();
       collateralReserve.updateInterestRates(
         collateral,
         address(vars.collateralAtoken),
@@ -367,7 +372,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       vars.actualAmountToLiquidate = vars.principalAmountNeeded;
     }
     //updating collateral reserve indexes
-    collateralReserve.updateCumulativeIndexesAndTimestamp();
+    collateralReserve.updateState();
 
     vars.collateralAtoken.burn(
       user,
@@ -392,7 +397,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     );
 
     //updating debt reserve
-    debtReserve.updateCumulativeIndexesAndTimestamp();
+    debtReserve.updateState();
     debtReserve.updateInterestRates(
       principal,
       vars.principalAToken,
@@ -404,10 +409,15 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate
+        vars.actualAmountToLiquidate,
+        debtReserve.variableBorrowIndex
       );
     } else {
-      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(user, vars.userVariableDebt);
+      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
+        user,
+        vars.userVariableDebt,
+        debtReserve.variableBorrowIndex
+      );
       IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(
         user,
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
@@ -468,8 +478,8 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     vars.fromReserveAToken = IAToken(fromReserve.aTokenAddress);
     vars.toReserveAToken = IAToken(toReserve.aTokenAddress);
 
-    fromReserve.updateCumulativeIndexesAndTimestamp();
-    toReserve.updateCumulativeIndexesAndTimestamp();
+    fromReserve.updateState();
+    toReserve.updateState();
 
     if (vars.fromReserveAToken.balanceOf(msg.sender) == amountToSwap) {
       _usersConfig[msg.sender].setUsingAsCollateral(fromReserve.id, false);

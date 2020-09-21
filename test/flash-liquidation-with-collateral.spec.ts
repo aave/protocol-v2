@@ -125,7 +125,9 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     ).minus(usdcUserDataBefore.currentVariableDebt);
 
     const expectedStableDebtIncrease = calcExpectedStableDebtTokenBalance(
-      usdcUserDataBefore,
+      usdcUserDataBefore.principalStableDebt,
+      usdcUserDataBefore.stableBorrowRate,
+      usdcUserDataBefore.stableRateLastUpdated,
       new BigNumber(repayWithCollateralTimestamp)
     ).minus(usdcUserDataBefore.currentStableDebt);
 
@@ -233,7 +235,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       userData: usdcUserDataBefore,
     } = await getContractsData(usdc.address, user.address, testEnv);
 
-    const amountToRepay = usdcReserveDataBefore.totalBorrowsVariable.dividedBy(2).toFixed(0);
+    const amountToRepay = usdcReserveDataBefore.totalVariableDebt.dividedBy(2).toFixed(0);
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -295,7 +297,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       'INVALID_DEBT_POSITION'
     );
 
-    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(
+    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.almostEqual(
       new BigNumber(wethUserDataBefore.currentATokenBalance).minus(
         expectedCollateralLiquidated.toString()
       ),
@@ -368,7 +370,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       userData: usdcUserDataBefore,
     } = await getContractsData(usdc.address, user.address, testEnv);
 
-    const amountToRepay = usdcReserveDataBefore.totalBorrowsVariable.toFixed(0);
+    const amountToRepay = usdcReserveDataBefore.totalVariableDebt.toFixed(0);
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -486,7 +488,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       testEnv
     );
 
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt.toString();
 
     await waitForTx(await mockSwapAdapter.setTryReentrancy(true));
 
@@ -522,7 +524,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     );
 
     // First half
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.dividedBy(2).toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt.dividedBy(2).toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await expect(
@@ -568,7 +570,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     );
 
     // First half
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.multipliedBy(0.6).toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt.multipliedBy(0.6).toFixed(0).toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -654,7 +656,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     await increaseTime(1000);
     // Repay the remaining DAI
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt.toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     const receipt = await waitForTx(
@@ -816,7 +818,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       new BigNumber(repayWithCollateralTimestamp)
     ).minus(usdcUserDataBefore.currentVariableDebt);
 
-    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.equal(
+    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
       new BigNumber(usdcUserDataBefore.currentVariableDebt)
         .minus(expectedDebtCovered.toString())
         .plus(expectedVariableDebtIncrease),
