@@ -392,12 +392,13 @@ export const calcExpectedReserveDataAfterBorrow = (
       expectedReserveData.totalLiquidity
     );
   } else {
+
     expectedReserveData.principalStableDebt = reserveDataBeforeAction.principalStableDebt;
 
     const totalStableDebtAfterTx = calcExpectedStableDebtTokenBalance(
       reserveDataBeforeAction.principalStableDebt,
       reserveDataBeforeAction.averageStableBorrowRate,
-      reserveDataBeforeAction.lastUpdateTimestamp,
+      reserveDataBeforeAction.totalStableDebtLastUpdated,
       txTimestamp
     );
 
@@ -630,7 +631,9 @@ export const calcExpectedUserDataAfterBorrow = (
     );
 
     expectedUserData.scaledVariableDebt = userDataBeforeAction.scaledVariableDebt;
+
   } else {
+
     expectedUserData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt.plus(
       amountBorrowedBN.rayDiv(expectedDataAfterAction.variableBorrowIndex)
     );
@@ -654,6 +657,7 @@ export const calcExpectedUserDataAfterBorrow = (
     expectedUserData,
     currentTimestamp
   );
+
   expectedUserData.liquidityRate = expectedDataAfterAction.liquidityRate;
 
   expectedUserData.usageAsCollateralEnabled = userDataBeforeAction.usageAsCollateralEnabled;
@@ -951,6 +955,8 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
   txTimestamp: BigNumber
 ): ReserveData => {
   const expectedReserveData: ReserveData = <ReserveData>{};
+
+  console.log("Rebalancing");
 
   expectedReserveData.address = reserveDataBeforeAction.address;
 

@@ -372,22 +372,6 @@ export const borrow = async (
       timestamp
     );
 
-    console.log("total debt stable exp ", expectedReserveData.totalStableDebt.toFixed());
-    console.log("total debt stable act ", reserveDataAfter.totalStableDebt.toFixed());
-
-    console.log("total debt variable exp ", expectedReserveData.totalVariableDebt.toFixed());
-    console.log("total debt variable act ", reserveDataAfter.totalVariableDebt.toFixed());
-
-    console.log("avl liquidity exp ", expectedReserveData.availableLiquidity.toFixed());
-    console.log("avl liquidity act ", reserveDataAfter.availableLiquidity.toFixed());
-
-    console.log("avg borrow rate exp ", expectedReserveData.averageStableBorrowRate.toFixed());
-    console.log("avl borrow rate act ", reserveDataAfter.averageStableBorrowRate.toFixed());
-
-    console.log("liquidity rate exp ", expectedReserveData.averageStableBorrowRate.toFixed());
-    console.log("avl borrow rate act ", reserveDataAfter.averageStableBorrowRate.toFixed());
-
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
