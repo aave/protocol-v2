@@ -32,6 +32,7 @@ import {waitForTx} from '../__setup.spec';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
+import { time } from 'console';
 
 const {expect} = chai;
 
@@ -262,10 +263,6 @@ export const withdraw = async (
       txCost
     );
 
-    const actualAmountWithdrawn = userDataBefore.currentATokenBalance.minus(
-      expectedUserData.currentATokenBalance
-    );
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
@@ -375,16 +372,6 @@ export const borrow = async (
       txCost
     );
 
-    console.log("total stable debt actual: ", reserveDataAfter.totalStableDebt.toFixed());
-    console.log("total stable debt expected: ", expectedReserveData.totalStableDebt.toFixed());
-    console.log("total avg stable rate actual: ", reserveDataAfter.averageStableBorrowRate.toFixed());
-    console.log("total avg stable rate expected: ", expectedReserveData.averageStableBorrowRate.toFixed());
-
-    console.log("total variable debt actual: ", reserveDataAfter.totalVariableDebt.toFixed());
-    console.log("total variable debt expected: ", expectedReserveData.totalVariableDebt.toFixed());
-    console.log("variable borrow rate actual: ", reserveDataAfter.variableBorrowRate.toFixed());
-    console.log("variable borrow rate expected: ", expectedReserveData.variableBorrowRate.toFixed());
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
@@ -488,14 +475,6 @@ export const repay = async (
       timestamp,
       txCost
     );
-
-
-    console.log("total stable debt actual: ", reserveDataAfter.totalStableDebt.toFixed());
-    console.log("total stable debt expected: ", expectedReserveData.totalStableDebt.toFixed());
-
-    console.log("total variable debt actual: ", reserveDataAfter.totalVariableDebt.toFixed());
-    console.log("total variable debt expected: ", expectedReserveData.totalVariableDebt.toFixed());
-
 
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
