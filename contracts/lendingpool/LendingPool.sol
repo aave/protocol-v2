@@ -47,7 +47,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
   uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
-  uint256 public constant UINT_MAX_VALUE = uint256(-1);
+  uint256 public constant MAX_NUMBER_RESERVES = 128;
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
   /**
@@ -940,6 +940,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function _addReserveToList(address asset) internal {
     bool reserveAlreadyAdded = false;
+    require(_reservesList.length < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
     for (uint256 i = 0; i < _reservesList.length; i++)
       if (_reservesList[i] == asset) {
         reserveAlreadyAdded = true;
