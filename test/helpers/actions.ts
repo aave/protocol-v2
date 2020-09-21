@@ -663,15 +663,6 @@ export const rebalanceStableBorrowRate = async (
       txTimestamp
     );
 
-    console.log("total debt stable exp ", expectedReserveData.totalStableDebt.toFixed());
-    console.log("total debt stable act ", reserveDataAfter.totalStableDebt.toFixed());
-
-    console.log("total debt variable exp ", expectedReserveData.totalVariableDebt.toFixed());
-    console.log("total debt variable act ", reserveDataAfter.totalVariableDebt.toFixed());
-
-    console.log("avl liquidity exp ", expectedReserveData.availableLiquidity.toFixed());
-    console.log("avl liquidity exp ", reserveDataAfter.availableLiquidity.toFixed());
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 

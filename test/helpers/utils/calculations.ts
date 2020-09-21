@@ -956,8 +956,6 @@ export const calcExpectedReserveDataAfterStableRateRebalance = (
 ): ReserveData => {
   const expectedReserveData: ReserveData = <ReserveData>{};
 
-  console.log("Rebalancing");
-
   expectedReserveData.address = reserveDataBeforeAction.address;
 
   const userStableDebt = calcExpectedStableDebtTokenBalance(

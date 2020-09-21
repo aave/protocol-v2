@@ -558,14 +558,14 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
       new BigNumber(repayWithCollateralTimestamp)
     ).minus(daiUserDataBefore.currentVariableDebt);
 
-    expect(daiUserDataAfter.currentVariableDebt).to.be.bignumber.equal(
+    expect(daiUserDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
       new BigNumber(daiUserDataBefore.currentVariableDebt)
         .minus(expectedDebtCovered.toString())
         .plus(expectedVariableDebtIncrease),
       'INVALID_VARIABLE_DEBT_POSITION'
     );
 
-    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(0);
+    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.almostEqual(0);
 
     expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
   });
