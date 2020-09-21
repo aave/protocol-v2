@@ -254,7 +254,7 @@ library GenericLogic {
     return (collateralBalanceETH.percentMul(liquidationThreshold)).wadDiv(borrowBalanceETH);
   }
 
-  /**
+    /**
    * @dev calculates the equivalent amount in ETH that an user can borrow, depending on the available collateral and the
    * average Loan To Value.
    * @param collateralBalanceETH the total collateral balance

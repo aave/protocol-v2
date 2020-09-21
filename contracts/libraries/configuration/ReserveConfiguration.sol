@@ -6,7 +6,6 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReserveLogic} from '../logic/ReserveLogic.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
-import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title ReserveConfiguration library
@@ -143,7 +142,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param active the active state
    **/
-  function setActive(ReserveConfiguration.Map memory self, bool active) internal {
+  function setActive(ReserveConfiguration.Map memory self, bool active) internal pure {
     self.data = (self.data & ACTIVE_MASK) | (uint256(active ? 1 : 0) << 56);
   }
 

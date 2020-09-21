@@ -34,7 +34,7 @@ library ValidationLogic {
    * @param reserve the reserve state on which the user is depositing
    * @param amount the amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) internal view {
+  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
 
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
@@ -45,13 +45,11 @@ library ValidationLogic {
   /**
    * @dev validates a withdraw action.
    * @param reserveAddress the address of the reserve
-   * @param aTokenAddress the address of the aToken for the reserve
    * @param amount the amount to be withdrawn
    * @param userBalance the balance of the user
    */
   function validateWithdraw(
     address reserveAddress,
-    address aTokenAddress,
     uint256 amount,
     uint256 userBalance,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,

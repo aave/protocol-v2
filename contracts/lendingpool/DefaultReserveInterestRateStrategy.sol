@@ -91,6 +91,10 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _baseVariableBorrowRate;
   }
 
+  function getMaxVariableBorrowRate() external override view returns (uint256) {
+    return _baseVariableBorrowRate.add(_variableRateSlope1).add(_variableRateSlope2);
+  }
+  
   struct CalcInterestRatesLocalVars {
 
     uint256 totalBorrows;

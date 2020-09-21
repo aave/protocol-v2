@@ -127,7 +127,7 @@ library ReserveLogic {
    * @return an address of the corresponding debt token from reserve configuration
    **/
   function getDebtTokenAddress(ReserveLogic.ReserveData storage reserve, uint256 interestRateMode)
-    internal
+    external
     view
     returns (address)
   {
@@ -297,7 +297,7 @@ library ReserveLogic {
     uint40 stableSupplyUpdatedTimestamp;
   }
 
-   /**
+  /**
    * @dev mints part of the repaid interest to the reserve treasury, depending on the reserveFactor for the
    * specific asset.
    * @param reserve the reserve reserve to be updated
@@ -358,7 +358,7 @@ library ReserveLogic {
     IAToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
   }
 
-   /**
+  /**
    * @dev updates the reserve indexes and the timestamp of the update
    * @param reserve the reserve reserve to be updated
    * @param variableDebtToken the debt token address
@@ -371,7 +371,6 @@ library ReserveLogic {
     uint256 liquidityIndex,
     uint256 variableBorrowIndex
   ) internal returns (uint256, uint256) {
-
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
