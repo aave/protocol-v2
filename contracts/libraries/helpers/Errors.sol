@@ -43,6 +43,7 @@ library Errors {
   string public constant FAILED_REPAY_WITH_COLLATERAL = '53';
   string public constant FAILED_COLLATERAL_SWAP = '55';
   string public constant INVALID_EQUAL_ASSETS_TO_SWAP = '56';
+  string public constant NO_MORE_RESERVES_ALLOWED = '59';
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
