@@ -22,7 +22,6 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
-
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN = keccak256(
     'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
@@ -39,9 +38,9 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
-  
+
   bytes32 public DOMAIN_SEPARATOR;
- 
+
   modifier onlyLendingPool {
     require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
@@ -140,7 +139,11 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
-      _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
+    _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
+    
+    //transfer event to track balances
+    emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
+    emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
   }
 
   /**
@@ -214,6 +217,14 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     }
 
     return currentSupplyScaled.rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
+  }
+
+  /**
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
+   * @return the scaled total supply
+   **/
+  function scaledTotalSupply() public virtual override view returns (uint256) {
+    return super.totalSupply();
   }
 
   /**

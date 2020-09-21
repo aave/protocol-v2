@@ -62,7 +62,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _mint(user, amount.rayDiv(index));
 
     emit Transfer(address(0), user, amount);
-    emit MintDebt(user, amount, index);
+    emit Mint(user, amount, index);
   }
 
   /**
@@ -78,7 +78,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _burn(user, amount.rayDiv(index));
 
     emit Transfer(user, address(0), amount);
-    emit BurnDebt(user, amount, index);
+    emit Burn(user, amount, index);
   }
 
   /**
@@ -104,4 +104,15 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   function scaledTotalSupply() public virtual override view returns (uint256) {
     return super.totalSupply();
   }
+
+    /**
+   * @dev returns the principal balance of the user and principal total supply.
+   * @param user the address of the user
+   * @return the principal balance of the user
+   * @return the principal total supply
+   **/
+  function getScaledUserBalanceAndSupply(address user) external override view returns (uint256, uint256){
+    return (super.balanceOf(user), super.totalSupply());
+  }
+
 }
