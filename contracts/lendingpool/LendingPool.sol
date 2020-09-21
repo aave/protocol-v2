@@ -25,6 +25,7 @@ import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
 /**
  * @title LendingPool contract
@@ -32,30 +33,15 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
  * @author Aave
  **/
 
-contract LendingPool is VersionedInitializable, ILendingPool {
+contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage {
   using SafeMath for uint256;
   using WadRayMath for uint256;
-  using ReserveLogic for ReserveLogic.ReserveData;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
   using SafeERC20 for IERC20;
 
   //main configuration parameters
   uint256 public constant REBALANCE_DOWN_RATE_DELTA = (1e27) / 5;
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 25;
   uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
-
-  ILendingPoolAddressesProvider internal _addressesProvider;
-
-  mapping(address => ReserveLogic.ReserveData) internal _reserves;
-  mapping(address => UserConfiguration.Map) internal _usersConfig;
-  // debt token address => user who gives allowance => user who receives allowance => amount
-  mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
-
-  address[] internal _reservesList;
-
-  bool internal _flashLiquidationLocked;
-  bool internal _paused;
 
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
@@ -77,8 +63,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
   function whenNotPaused() internal view {
     require(!_paused, Errors.IS_PAUSED);
   }
-
-  uint256 public constant UINT_MAX_VALUE = uint256(-1);
 
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
@@ -147,7 +131,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
     uint256 amountToWithdraw = amount;
 
     //if amount is equal to uint(-1), the user wants to redeem everything
-    if (amount == UINT_MAX_VALUE) {
+    if (amount == type(uint256).max) {
       amountToWithdraw = userBalance;
     }
 
@@ -283,7 +267,7 @@ contract LendingPool is VersionedInitializable, ILendingPool {
       ? stableDebt
       : variableDebt;
 
-    if (amount != UINT_MAX_VALUE && amount < paybackAmount) {
+    if (amount != type(uint256).max && amount < paybackAmount) {
       paybackAmount = amount;
     }
 
@@ -996,20 +980,6 @@ contract LendingPool is VersionedInitializable, ILendingPool {
         _reservesList,
         _addressesProvider.getPriceOracle()
       );
-  }
-
-  /**
-   * @dev returns the list of the initialized reserves
-   **/
-  function getReservesList() external view returns (address[] memory) {
-    return _reservesList;
-  }
-
-  /**
-   * @dev returns the addresses provider
-   **/
-  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
-    return _addressesProvider;
   }
 
   /**
