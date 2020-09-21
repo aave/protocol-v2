@@ -115,7 +115,6 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
-
     emit Burn(msg.sender, receiverOfUnderlying, amount, index);
   }
 

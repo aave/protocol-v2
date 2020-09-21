@@ -17,7 +17,6 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using WadRayMath for uint256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
-  mapping(address => uint256) _userIndexes;
 
   constructor(
     address pool,
@@ -41,14 +40,12 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
     uint256 scaledBalance = super.balanceOf(user);
-    
+
     if (scaledBalance == 0) {
       return 0;
     }
 
-    return
-      scaledBalance
-        .rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
+    return scaledBalance.rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
   }
 
   /**
@@ -57,10 +54,13 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param amount the amount of debt being minted
    * @param index the variable debt index of the reserve
    **/
-  function mint(address user, uint256 amount, uint256 index) external override onlyLendingPool { 
-
+  function mint(
+    address user,
+    uint256 amount,
+    uint256 index
+  ) external override onlyLendingPool {
     _mint(user, amount.rayDiv(index));
-  
+
     emit Transfer(address(0), user, amount);
     emit MintDebt(user, amount, index);
   }
@@ -70,35 +70,38 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param user the user which debt is burnt
    * @param index the variable debt index of the reserve
    **/
-  function burn(address user, uint256 amount, uint256 index) external override onlyLendingPool {
-    _burn(user, amount.rayDiv(index)); 
-    _userIndexes[user] = index;
-    
+  function burn(
+    address user,
+    uint256 amount,
+    uint256 index
+  ) external override onlyLendingPool {
+    _burn(user, amount.rayDiv(index));
+
     emit Transfer(user, address(0), amount);
     emit BurnDebt(user, amount, index);
   }
 
   /**
-  * @dev Returns the principal debt balance of the user from
-  * @return The debt balance of the user since the last burn/mint action
-  **/
+   * @dev Returns the principal debt balance of the user from
+   * @return The debt balance of the user since the last burn/mint action
+   **/
   function scaledBalanceOf(address user) public virtual override view returns (uint256) {
     return super.balanceOf(user);
   }
 
   /**
-  * @dev Returns the total supply of the variable debt token. Represents the total debt accrued by the users
-  * @return the total supply
-  **/
-  function totalSupply() public virtual override view returns(uint256) {
+   * @dev Returns the total supply of the variable debt token. Represents the total debt accrued by the users
+   * @return the total supply
+   **/
+  function totalSupply() public virtual override view returns (uint256) {
     return super.totalSupply().rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
   }
 
   /**
-  * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
-  * @return the scaled total supply
-  **/
-  function scaledTotalSupply() public virtual override view returns(uint256) {
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
+   * @return the scaled total supply
+   **/
+  function scaledTotalSupply() public virtual override view returns (uint256) {
     return super.totalSupply();
   }
 }
