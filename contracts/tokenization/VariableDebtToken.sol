@@ -59,6 +59,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
+    
     _mint(user, amount.rayDiv(index));
 
     emit Transfer(address(0), user, amount);

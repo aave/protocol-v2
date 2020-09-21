@@ -101,13 +101,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    uint256 currentBalance = balanceOf(user);
-
-    require(amount <= currentBalance, Errors.INVALID_ATOKEN_BALANCE);
-
-    uint256 scaledAmount = amount.rayDiv(index);
-
-    _burn(user, scaledAmount);
+    _burn(user, amount.rayDiv(index));
 
     //transfers the underlying to the target
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
@@ -128,10 +122,8 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    uint256 scaledAmount = amount.rayDiv(index);
-
     //mint an equivalent amount of tokens to cover the new deposit
-    _mint(user, scaledAmount);
+    _mint(user, amount.rayDiv(index));
 
     //transfer event to track balances
     emit Transfer(address(0), user, amount);
@@ -140,7 +132,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
     _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
-    
+
     //transfer event to track balances
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
     emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
@@ -289,6 +281,14 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     _approve(owner, spender, value);
   }
 
+  /**
+   * @dev transfers the aTokens between two users. Validates the transfer
+   * (ie checks for valid HF after the transfer) if required
+   * @param from the source address
+   * @param to the destination address
+   * @param amount the amount to transfer
+   * @param validate true if the transfer needs to be validated
+   **/
   function _transfer(
     address from,
     address to,
@@ -301,13 +301,17 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     uint256 index = POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
-    uint256 scaledAmount = amount.rayDiv(index);
-
-    super._transfer(from, to, scaledAmount);
+    super._transfer(from, to, amount.rayDiv(index));
 
     emit BalanceTransfer(from, to, amount, index);
   }
 
+  /**
+   * @dev overrides the parent _transfer to force validated transfer() and transferFrom()
+   * @param from the source address
+   * @param to the destination address
+   * @param amount the amount to transfer
+   **/
   function _transfer(
     address from,
     address to,
