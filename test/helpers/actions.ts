@@ -49,7 +49,8 @@ const almostEqualOrEqual = function (
       key === 'marketStableRate' ||
       key === 'symbol' ||
       key === 'aTokenAddress' ||
-      key === 'decimals'
+      key === 'decimals' ||
+      key === 'totalStableDebtLastUpdated'
     ) {
       // skipping consistency check on accessory data
       return;
@@ -369,8 +370,22 @@ export const borrow = async (
       userDataBefore,
       txTimestamp,
       timestamp,
-      txCost
+      onBehalfOf,
+      user.address
     );
+
+    console.log("total debt stable exp ", expectedReserveData.totalStableDebt.toFixed());
+    console.log("total debt stable act ", reserveDataAfter.totalStableDebt.toFixed());
+
+    console.log("total debt variable exp ", expectedReserveData.totalVariableDebt.toFixed());
+    console.log("total debt variable act ", reserveDataAfter.totalVariableDebt.toFixed());
+
+    console.log("avl liquidity exp ", expectedReserveData.availableLiquidity.toFixed());
+    console.log("avl liquidity exp ", reserveDataAfter.availableLiquidity.toFixed());
+
+    console.log("avg borrow rate exp ", expectedReserveData.averageStableBorrowRate.toFixed());
+    console.log("avl borrow rate exp ", reserveDataAfter.averageStableBorrowRate.toFixed());
+
 
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
@@ -663,6 +678,15 @@ export const rebalanceStableBorrowRate = async (
       txCost,
       txTimestamp
     );
+
+    console.log("total debt stable exp ", expectedReserveData.totalStableDebt.toFixed());
+    console.log("total debt stable act ", reserveDataAfter.totalStableDebt.toFixed());
+
+    console.log("total debt variable exp ", expectedReserveData.totalVariableDebt.toFixed());
+    console.log("total debt variable act ", reserveDataAfter.totalVariableDebt.toFixed());
+
+    console.log("avl liquidity exp ", expectedReserveData.availableLiquidity.toFixed());
+    console.log("avl liquidity exp ", reserveDataAfter.availableLiquidity.toFixed());
 
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);

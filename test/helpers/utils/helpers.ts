@@ -25,6 +25,8 @@ export const getReserveData = async (
   const variableDebtToken = await getVariableDebtToken(tokenAddresses.variableDebtTokenAddress);
 
   const [principalStableDebt] = await stableDebtToken.getSupplyData();
+  const totalStableDebtLastUpdated = await stableDebtToken.getTotalSupplyLastUpdated();
+
 
   const scaledVariableDebt = await variableDebtToken.scaledTotalSupply();
 
@@ -57,6 +59,7 @@ export const getReserveData = async (
     liquidityIndex: new BigNumber(reserveData.liquidityIndex.toString()),
     variableBorrowIndex: new BigNumber(reserveData.variableBorrowIndex.toString()),
     lastUpdateTimestamp: new BigNumber(reserveData.lastUpdateTimestamp),
+    totalStableDebtLastUpdated: new BigNumber(totalStableDebtLastUpdated),
     principalStableDebt: new BigNumber(principalStableDebt.toString()),
     scaledVariableDebt: new BigNumber(scaledVariableDebt.toString()),
     address: reserve,
