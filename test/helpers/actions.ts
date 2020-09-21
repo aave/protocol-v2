@@ -369,9 +369,7 @@ export const borrow = async (
       expectedReserveData,
       userDataBefore,
       txTimestamp,
-      timestamp,
-      onBehalfOf,
-      user.address
+      timestamp
     );
 
     console.log("total debt stable exp ", expectedReserveData.totalStableDebt.toFixed());
@@ -381,10 +379,13 @@ export const borrow = async (
     console.log("total debt variable act ", reserveDataAfter.totalVariableDebt.toFixed());
 
     console.log("avl liquidity exp ", expectedReserveData.availableLiquidity.toFixed());
-    console.log("avl liquidity exp ", reserveDataAfter.availableLiquidity.toFixed());
+    console.log("avl liquidity act ", reserveDataAfter.availableLiquidity.toFixed());
 
     console.log("avg borrow rate exp ", expectedReserveData.averageStableBorrowRate.toFixed());
-    console.log("avl borrow rate exp ", reserveDataAfter.averageStableBorrowRate.toFixed());
+    console.log("avl borrow rate act ", reserveDataAfter.averageStableBorrowRate.toFixed());
+
+    console.log("liquidity rate exp ", expectedReserveData.averageStableBorrowRate.toFixed());
+    console.log("avl borrow rate act ", reserveDataAfter.averageStableBorrowRate.toFixed());
 
 
     expectEqual(reserveDataAfter, expectedReserveData);
@@ -487,8 +488,7 @@ export const repay = async (
       user.address,
       onBehalfOf.address,
       txTimestamp,
-      timestamp,
-      txCost
+      timestamp
     );
 
     expectEqual(reserveDataAfter, expectedReserveData);

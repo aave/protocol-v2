@@ -597,9 +597,7 @@ export const calcExpectedUserDataAfterBorrow = (
   expectedDataAfterAction: ReserveData,
   userDataBeforeAction: UserReserveData,
   txTimestamp: BigNumber,
-  currentTimestamp: BigNumber,
-  user: tEthereumAddress,
-  onBehalfOf: tEthereumAddress
+  currentTimestamp: BigNumber
 ): UserReserveData => {
   const expectedUserData = <UserReserveData>{};
 
@@ -682,8 +680,7 @@ export const calcExpectedUserDataAfterRepay = (
   user: string,
   onBehalfOf: string,
   txTimestamp: BigNumber,
-  currentTimestamp: BigNumber,
-  txCost: BigNumber
+  currentTimestamp: BigNumber
 ): UserReserveData => {
   const expectedUserData = <UserReserveData>{};
 

@@ -47,7 +47,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
-
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
@@ -68,7 +67,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function whenNotPaused() internal view {
     require(!_paused, Errors.IS_PAUSED);
   }
- 
+
   function getRevision() internal override pure returns (uint256) {
     return LENDINGPOOL_REVISION;
   }
@@ -248,9 +247,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 rateMode,
     address onBehalfOf
   ) external override {
-    
     whenNotPaused();
-    
+
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -281,7 +279,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(onBehalfOf, paybackAmount, reserve.variableBorrowIndex);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
+        onBehalfOf,
+        paybackAmount,
+        reserve.variableBorrowIndex
+      );
     }
 
     address aToken = reserve.aTokenAddress;
@@ -322,10 +324,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       //burn stable rate tokens, mint variable rate tokens
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(msg.sender, stableDebt, reserve.variableBorrowIndex);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
+        msg.sender,
+        stableDebt,
+        reserve.variableBorrowIndex
+      );
     } else {
       //do the opposite
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(msg.sender, variableDebt, reserve.variableBorrowIndex);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
+        msg.sender,
+        variableDebt,
+        reserve.variableBorrowIndex
+      );
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(
         msg.sender,
         variableDebt,
@@ -371,7 +381,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       userStableRate < reserve.currentLiquidityRate || userStableRate > rebalanceDownRateThreshold,
       Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
     );
-
 
     reserve.updateState();
 
@@ -502,7 +511,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _flashLiquidationLocked = false;
   }
 
-    struct FlashLoanLocalVars {
+  struct FlashLoanLocalVars {
     uint256 premium;
     uint256 amountPlusPremium;
     IFlashLoanReceiver receiver;
@@ -883,9 +892,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ) {
       currentStableRate = reserve.currentStableBorrowRate;
 
-      IStableDebtToken(reserve.stableDebtTokenAddress).mint(vars.user, vars.amount, currentStableRate);
+      IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+        vars.onBehalfOf,
+        vars.amount,
+        currentStableRate
+      );
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(vars.user, vars.amount, reserve.variableBorrowIndex);
+      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
+        vars.onBehalfOf,
+        vars.amount,
+        reserve.variableBorrowIndex
+      );
     }
 
     reserve.updateInterestRates(
