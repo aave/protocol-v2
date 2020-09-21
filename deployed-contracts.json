@@ -65,12 +65,9 @@
       "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
     },
     "localhost": {
-<<<<<<< HEAD
-=======
       "address": "0x65e0Cd5B8904A02f2e00BC6f58bf881998D54BDe"
     },
     "coverage": {
->>>>>>> master
       "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
     }
   },
@@ -84,12 +81,9 @@
       "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
     },
     "localhost": {
-<<<<<<< HEAD
-=======
       "address": "0x5d12dDe3286D94E0d85F9D3B01B7099cfA0aBCf1"
     },
     "coverage": {
->>>>>>> master
       "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
     }
   },
@@ -213,12 +207,9 @@
       "address": "0x2B681757d757fbB80cc51c6094cEF5eE75bF55aA"
     },
     "localhost": {
-<<<<<<< HEAD
-=======
       "address": "0xAd49512dFBaD6fc13D67d3935283c0606812E962"
     },
     "coverage": {
->>>>>>> master
       "address": "0x2B681757d757fbB80cc51c6094cEF5eE75bF55aA"
     }
   },
@@ -563,12 +554,9 @@
       "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
     },
     "localhost": {
-<<<<<<< HEAD
-=======
       "address": "0x9305d862ee95a899b83906Cd9CB666aC269E5f66"
     },
     "coverage": {
->>>>>>> master
       "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
     }
   },
@@ -674,11 +662,7 @@
     "buidlerevm": {
       "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
     },
-<<<<<<< HEAD
-    "localhost": {
-=======
     "coverage": {
->>>>>>> master
       "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
     }
   }
