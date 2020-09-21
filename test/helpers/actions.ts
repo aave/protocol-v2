@@ -32,6 +32,7 @@ import {waitForTx} from '../__setup.spec';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
+import { time } from 'console';
 
 const {expect} = chai;
 
@@ -48,7 +49,8 @@ const almostEqualOrEqual = function (
       key === 'marketStableRate' ||
       key === 'symbol' ||
       key === 'aTokenAddress' ||
-      key === 'decimals'
+      key === 'decimals' ||
+      key === 'totalStableDebtLastUpdated'
     ) {
       // skipping consistency check on accessory data
       return;
@@ -262,10 +264,6 @@ export const withdraw = async (
       txCost
     );
 
-    const actualAmountWithdrawn = userDataBefore.currentATokenBalance.minus(
-      expectedUserData.currentATokenBalance
-    );
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
@@ -371,8 +369,7 @@ export const borrow = async (
       expectedReserveData,
       userDataBefore,
       txTimestamp,
-      timestamp,
-      txCost
+      timestamp
     );
 
     expectEqual(reserveDataAfter, expectedReserveData);
@@ -475,8 +472,7 @@ export const repay = async (
       user.address,
       onBehalfOf.address,
       txTimestamp,
-      timestamp,
-      txCost
+      timestamp
     );
 
     expectEqual(reserveDataAfter, expectedReserveData);
@@ -741,9 +737,12 @@ export const getContractsData = async (
   sender?: string
 ) => {
   const {pool} = testEnv;
-  const reserveData = await getReserveData(pool, reserve);
-  const userData = await getUserData(pool, reserve, user, sender || user);
-  const timestamp = await timeLatest();
+
+  const [userData, reserveData, timestamp] = await Promise.all([
+    getUserData(pool, reserve, user, sender || user),
+    getReserveData(pool, reserve),
+    timeLatest(),
+  ]);
 
   return {
     reserveData,

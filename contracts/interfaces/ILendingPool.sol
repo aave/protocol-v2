@@ -327,6 +327,7 @@ interface ILendingPool {
       uint256 ltv,
       uint256 liquidationThreshold,
       uint256 liquidationBonus,
+      uint256 reserveFactor,
       address interestRateStrategyAddress,
       bool usageAsCollateralEnabled,
       bool borrowingEnabled,
@@ -349,8 +350,8 @@ interface ILendingPool {
     view
     returns (
       uint256 availableLiquidity,
-      uint256 totalBorrowsStable,
-      uint256 totalBorrowsVariable,
+      uint256 totalStableDebt,
+      uint256 totalVariableDebt,
       uint256 liquidityRate,
       uint256 variableBorrowRate,
       uint256 stableBorrowRate,
@@ -380,10 +381,9 @@ interface ILendingPool {
       uint256 currentStableDebt,
       uint256 currentVariableDebt,
       uint256 principalStableDebt,
-      uint256 principalVariableDebt,
+      uint256 scaledVariableDebt,
       uint256 stableBorrowRate,
       uint256 liquidityRate,
-      uint256 variableBorrowIndex,
       uint40 stableRateLastUpdated,
       bool usageAsCollateralEnabled
     );

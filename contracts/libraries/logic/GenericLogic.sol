@@ -69,7 +69,6 @@ library GenericLogic {
       return true;
     }
 
-    // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     balanceDecreaseAllowedLocalVars memory vars;
 
     (vars.ltv, , , vars.decimals) = reservesData[asset].configuration.getParams();

@@ -20,18 +20,8 @@ import {SafeERC20} from '../misc/SafeERC20.sol';
  */
 contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
-  using SafeERC20 for IncentivizedERC20;
+  using SafeERC20 for IERC20;
 
-  uint256 public constant UINT_MAX_VALUE = uint256(-1);
-  address public immutable UNDERLYING_ASSET_ADDRESS;
-  LendingPool public immutable POOL;
-
-  /// @dev owner => next valid nonce to submit with permit()
-  mapping(address => uint256) public _nonces;
-
-  uint256 public constant ATOKEN_REVISION = 0x1;
-
-  bytes32 public DOMAIN_SEPARATOR;
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN = keccak256(
     'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
@@ -39,6 +29,17 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   bytes32 public constant PERMIT_TYPEHASH = keccak256(
     'Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)'
   );
+
+  uint256 public constant UINT_MAX_VALUE = uint256(-1);
+  uint256 public constant ATOKEN_REVISION = 0x1;
+  address public immutable UNDERLYING_ASSET_ADDRESS;
+  address public immutable RESERVE_TREASURY_ADDRESS;
+  LendingPool public immutable POOL;
+
+  /// @dev owner => next valid nonce to submit with permit()
+  mapping(address => uint256) public _nonces;
+
+  bytes32 public DOMAIN_SEPARATOR;
 
   modifier onlyLendingPool {
     require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
@@ -48,12 +49,14 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   constructor(
     LendingPool pool,
     address underlyingAssetAddress,
+    address reserveTreasuryAddress,
     string memory tokenName,
     string memory tokenSymbol,
     address incentivesController
   ) public IncentivizedERC20(tokenName, tokenSymbol, 18, incentivesController) {
     POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
+    RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
   }
 
   function getRevision() internal virtual override pure returns (uint256) {
@@ -98,20 +101,13 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    uint256 currentBalance = balanceOf(user);
-
-    require(amount <= currentBalance, Errors.INVALID_ATOKEN_BALANCE);
-
-    uint256 scaledAmount = amount.rayDiv(index);
-
-    _burn(user, scaledAmount);
+    _burn(user, amount.rayDiv(index));
 
     //transfers the underlying to the target
-    IncentivizedERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
+    IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
-
     emit Burn(msg.sender, receiverOfUnderlying, amount, index);
   }
 
@@ -126,14 +122,20 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    uint256 scaledAmount = amount.rayDiv(index);
-
     //mint an equivalent amount of tokens to cover the new deposit
-    _mint(user, scaledAmount);
+    _mint(user, amount.rayDiv(index));
 
     //transfer event to track balances
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
+  }
+
+  function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
+    _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
+
+    //transfer event to track balances
+    emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
+    emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
   }
 
   /**
@@ -210,6 +212,14 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
+   * @return the scaled total supply
+   **/
+  function scaledTotalSupply() public virtual override view returns (uint256) {
+    return super.totalSupply();
+  }
+
+  /**
    * @dev Used to validate transfers before actually executing them.
    * @param user address of the user to check
    * @param amount the amount to check
@@ -232,7 +242,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     onlyLendingPool
     returns (uint256)
   {
-    IncentivizedERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(target, amount);
+    IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(target, amount);
     return amount;
   }
 
@@ -271,6 +281,14 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     _approve(owner, spender, value);
   }
 
+  /**
+   * @dev transfers the aTokens between two users. Validates the transfer
+   * (ie checks for valid HF after the transfer) if required
+   * @param from the source address
+   * @param to the destination address
+   * @param amount the amount to transfer
+   * @param validate true if the transfer needs to be validated
+   **/
   function _transfer(
     address from,
     address to,
@@ -283,13 +301,17 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     uint256 index = POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
 
-    uint256 scaledAmount = amount.rayDiv(index);
-
-    super._transfer(from, to, scaledAmount);
+    super._transfer(from, to, amount.rayDiv(index));
 
     emit BalanceTransfer(from, to, amount, index);
   }
 
+  /**
+   * @dev overrides the parent _transfer to force validated transfer() and transferFrom()
+   * @param from the source address
+   * @param to the destination address
+   * @param amount the amount to transfer
+   **/
   function _transfer(
     address from,
     address to,

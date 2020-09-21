@@ -39,79 +39,81 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the debt balance of the user
    **/
   function balanceOf(address user) public virtual override view returns (uint256) {
-    uint256 userBalance = principalBalanceOf(user);
-    uint256 index = _usersData[user];
-    if (userBalance == 0) {
+    uint256 scaledBalance = super.balanceOf(user);
+
+    if (scaledBalance == 0) {
       return 0;
     }
 
-    return
-      userBalance
-        .wadToRay()
-        .rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET))
-        .rayDiv(index)
-        .rayToWad();
-  }
-
-  /**
-   * @dev returns the index of the last user action
-   * @return the user index
-   **/
-
-  function getUserIndex(address user) external virtual override view returns (uint256) {
-    return _usersData[user];
+    return scaledBalance.rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
   }
 
   /**
    * @dev mints new variable debt
    * @param user the user receiving the debt
    * @param amount the amount of debt being minted
+   * @param index the variable debt index of the reserve
    **/
-  function mint(address user, uint256 amount) external override onlyLendingPool {
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(user);
-
-    _mint(user, amount.add(balanceIncrease));
-
-    uint256 newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
-    require(newUserIndex < (1 << 128), 'Debt token: Index overflow');
-    _usersData[user] = newUserIndex;
+  function mint(
+    address user,
+    uint256 amount,
+    uint256 index
+  ) external override onlyLendingPool {
+    
+    _mint(user, amount.rayDiv(index));
 
     emit Transfer(address(0), user, amount);
-    emit MintDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
+    emit Mint(user, amount, index);
   }
 
   /**
    * @dev burns user variable debt
    * @param user the user which debt is burnt
-   * @param amount the amount of debt being burned
+   * @param index the variable debt index of the reserve
    **/
-  function burn(address user, uint256 amount) external override onlyLendingPool {
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(user);
+  function burn(
+    address user,
+    uint256 amount,
+    uint256 index
+  ) external override onlyLendingPool {
+    _burn(user, amount.rayDiv(index));
 
-    if (balanceIncrease > amount) {
-      _mint(user, balanceIncrease.sub(amount));
-    } else {
-      _burn(user, amount.sub(balanceIncrease));
-    }
-
-    uint256 newUserIndex = 0;
-    //if user not repaid everything
-    if (currentBalance != amount) {
-      newUserIndex = POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET);
-      require(newUserIndex < (1 << 128), 'Debt token: Index overflow');
-    }
-    _usersData[user] = newUserIndex;
-
-    // transfer event to track the balances
     emit Transfer(user, address(0), amount);
-    emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease, newUserIndex);
+    emit Burn(user, amount, index);
   }
+
+  /**
+   * @dev Returns the principal debt balance of the user from
+   * @return The debt balance of the user since the last burn/mint action
+   **/
+  function scaledBalanceOf(address user) public virtual override view returns (uint256) {
+    return super.balanceOf(user);
+  }
+
+  /**
+   * @dev Returns the total supply of the variable debt token. Represents the total debt accrued by the users
+   * @return the total supply
+   **/
+  function totalSupply() public virtual override view returns (uint256) {
+    return super.totalSupply().rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
+  }
+
+  /**
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
+   * @return the scaled total supply
+   **/
+  function scaledTotalSupply() public virtual override view returns (uint256) {
+    return super.totalSupply();
+  }
+
+    /**
+   * @dev returns the principal balance of the user and principal total supply.
+   * @param user the address of the user
+   * @return the principal balance of the user
+   * @return the principal total supply
+   **/
+  function getScaledUserBalanceAndSupply(address user) external override view returns (uint256, uint256){
+    return (super.balanceOf(user), super.totalSupply());
+  }
+
 }
