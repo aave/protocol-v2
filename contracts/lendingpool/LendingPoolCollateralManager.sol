@@ -23,12 +23,13 @@ import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
 /**
- * @title LendingPoolLiquidationManager contract
+ * @title LendingPoolCollateralManager contract
  * @author Aave
- * @notice Implements the liquidation function.
- * @dev LendingPoolLiquidationManager inherits Pausable from OpenZeppelin to have the same storage layout as LendingPool
+ * @notice Implements actions involving management of collateral in the protocol.
+ * @notice this contract will be ran always through delegatecall
+ * @dev LendingPoolCollateralManager inherits VersionedInitializable from OpenZeppelin to have the same storage layout as LendingPool
  **/
-contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolStorage {
+contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStorage {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -170,7 +171,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
       vars.userVariableDebt
     );
 
-    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+    if (Errors.CollateralManagerErrors(vars.errorCode) != Errors.CollateralManagerErrors.NO_ERROR) {
       return (vars.errorCode, vars.errorMsg);
     }
 
@@ -213,7 +214,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
       );
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
-          uint256(Errors.LiquidationErrors.NOT_ENOUGH_LIQUIDITY),
+          uint256(Errors.CollateralManagerErrors.NOT_ENOUGH_LIQUIDITY),
           Errors.NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
         );
       }
@@ -285,7 +286,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
       receiveAToken
     );
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -334,7 +335,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
       vars.userVariableDebt
     );
 
-    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+    if (Errors.CollateralManagerErrors(vars.errorCode) != Errors.CollateralManagerErrors.NO_ERROR) {
       return (vars.errorCode, vars.errorMsg);
     }
 
@@ -430,7 +431,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
       vars.maxCollateralToLiquidate
     );
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -451,7 +452,6 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
     ReserveLogic.ReserveData storage fromReserve = _reserves[fromAsset];
     ReserveLogic.ReserveData storage toReserve = _reserves[toAsset];
 
-    // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     SwapLiquidityLocalVars memory vars;
 
     (vars.errorCode, vars.errorMsg) = ValidationLogic.validateSwapLiquidity(
@@ -461,7 +461,7 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
       toAsset
     );
 
-    if (Errors.LiquidationErrors(vars.errorCode) != Errors.LiquidationErrors.NO_ERROR) {
+    if (Errors.CollateralManagerErrors(vars.errorCode) != Errors.CollateralManagerErrors.NO_ERROR) {
       return (vars.errorCode, vars.errorMsg);
     }
 
@@ -499,6 +499,11 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
         address(vars.toReserveAToken),
         vars.amountToReceive
       );
+
+      if (vars.toReserveAToken.balanceOf(msg.sender) == 0) {
+        _usersConfig[msg.sender].setUsingAsCollateral(toReserve.id, true);
+      }
+
       vars.toReserveAToken.mint(msg.sender, vars.amountToReceive, toReserve.liquidityIndex);
       toReserve.updateInterestRates(
         toAsset,
@@ -518,12 +523,12 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
 
     if (vars.healthFactor < GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
-        uint256(Errors.LiquidationErrors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD),
+        uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD),
         Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
       );
     }
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -549,7 +554,6 @@ contract LendingPoolLiquidationManager is VersionedInitializable, LendingPoolSto
     uint256 principalAmountNeeded = 0;
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
 
-    // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     AvailableCollateralToLiquidateLocalVars memory vars;
 
     vars.collateralPrice = oracle.getAssetPrice(collateralAddress);

@@ -351,12 +351,12 @@ library ValidationLogic {
     if (
       !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()
     ) {
-      return (uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
+      return (uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
     }
 
     if (userHealthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
-        uint256(Errors.LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
+        uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
         Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
       );
     }
@@ -367,19 +367,19 @@ library ValidationLogic {
     //if collateral isn't enabled as collateral by user, it cannot be liquidated
     if (!isCollateralEnabled) {
       return (
-        uint256(Errors.LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
+        uint256(Errors.CollateralManagerErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
         Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
       );
     }
 
     if (userStableDebt == 0 && userVariableDebt == 0) {
       return (
-        uint256(Errors.LiquidationErrors.CURRRENCY_NOT_BORROWED),
+        uint256(Errors.CollateralManagerErrors.CURRRENCY_NOT_BORROWED),
         Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
       );
     }
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -404,14 +404,14 @@ library ValidationLogic {
     if (
       !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()
     ) {
-      return (uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
+      return (uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
     }
 
     if (
       msg.sender != user && userHealthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD
     ) {
       return (
-        uint256(Errors.LiquidationErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
+        uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
         Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
       );
     }
@@ -423,7 +423,7 @@ library ValidationLogic {
       //if collateral isn't enabled as collateral by user, it cannot be liquidated
       if (!isCollateralEnabled) {
         return (
-          uint256(Errors.LiquidationErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
+          uint256(Errors.CollateralManagerErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
           Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
         );
       }
@@ -431,12 +431,12 @@ library ValidationLogic {
 
     if (userStableDebt == 0 && userVariableDebt == 0) {
       return (
-        uint256(Errors.LiquidationErrors.CURRRENCY_NOT_BORROWED),
+        uint256(Errors.CollateralManagerErrors.CURRRENCY_NOT_BORROWED),
         Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
       );
     }
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 
   /**
@@ -452,17 +452,24 @@ library ValidationLogic {
     address fromAsset,
     address toAsset
   ) internal view returns (uint256, string memory) {
-    if (!fromReserve.configuration.getActive() || !toReserve.configuration.getActive()) {
-      return (uint256(Errors.LiquidationErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
-    }
-
     if (fromAsset == toAsset) {
       return (
-        uint256(Errors.LiquidationErrors.INVALID_EQUAL_ASSETS_TO_SWAP),
+        uint256(Errors.CollateralManagerErrors.INVALID_EQUAL_ASSETS_TO_SWAP),
         Errors.INVALID_EQUAL_ASSETS_TO_SWAP
       );
     }
 
-    return (uint256(Errors.LiquidationErrors.NO_ERROR), Errors.NO_ERRORS);
+    (bool isToActive, bool isToFreezed, , ) = toReserve.configuration.getFlags();
+    if (!fromReserve.configuration.getActive() || !isToActive) {
+      return (uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
+    }
+    if (isToFreezed) {
+      return (
+        uint256(Errors.CollateralManagerErrors.NO_UNFREEZED_RESERVE),
+        Errors.NO_UNFREEZED_RESERVE
+      );
+    }
+
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
   }
 }

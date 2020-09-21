@@ -21,7 +21,7 @@ import {PriceOracle} from '../types/PriceOracle';
 import {MockAggregator} from '../types/MockAggregator';
 import {LendingRateOracle} from '../types/LendingRateOracle';
 import {DefaultReserveInterestRateStrategy} from '../types/DefaultReserveInterestRateStrategy';
-import {LendingPoolLiquidationManager} from '../types/LendingPoolLiquidationManager';
+import {LendingPoolCollateralManager} from '../types/LendingPoolCollateralManager';
 import {InitializableAdminUpgradeabilityProxy} from '../types/InitializableAdminUpgradeabilityProxy';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {WalletBalanceProvider} from '../types/WalletBalanceProvider';
@@ -192,16 +192,16 @@ export const deployChainlinkProxyPriceProvider = async ([
 export const deployLendingRateOracle = async () =>
   await deployContract<LendingRateOracle>(eContractid.LendingRateOracle, []);
 
-export const deployLendingPoolLiquidationManager = async () => {
-  const liquidationManagerArtifact = await readArtifact(
+export const deployLendingPoolCollateralManager = async () => {
+  const collateralManagerArtifact = await readArtifact(
     BRE.config.paths.artifacts,
-    eContractid.LendingPoolLiquidationManager
+    eContractid.LendingPoolCollateralManager
   );
 
-  const factory = await linkLibrariesToArtifact(liquidationManagerArtifact);
+  const factory = await linkLibrariesToArtifact(collateralManagerArtifact);
 
-  const liquidationManager = await factory.deploy();
-  return (await liquidationManager.deployed()) as LendingPoolLiquidationManager;
+  const collateralManager = await factory.deploy();
+  return (await collateralManager.deployed()) as LendingPoolCollateralManager;
 };
 
 export const deployInitializableAdminUpgradeabilityProxy = async () =>
@@ -251,49 +251,55 @@ export const deployDefaultReserveInterestRateStrategy = async ([
     ]
   );
 
-export const deployStableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
+export const deployStableDebtToken = async ([
+  name,
+  symbol,
+  underlyingAsset,
+  poolAddress,
+  incentivesController,
+]: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<StableDebtToken>(eContractid.StableDebtToken, [
     poolAddress,
     underlyingAsset,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
 };
 
-export const deployVariableDebtToken = async ([name, symbol, underlyingAsset, poolAddress]: [
-  string,
-  string,
-  tEthereumAddress,
-  tEthereumAddress
-]) => {
+export const deployVariableDebtToken = async ([
+  name,
+  symbol,
+  underlyingAsset,
+  poolAddress,
+  incentivesController,
+]: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress]) => {
   const token = await deployContract<VariableDebtToken>(eContractid.VariableDebtToken, [
     poolAddress,
     underlyingAsset,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;
 };
 
-export const deployGenericAToken = async ([poolAddress, underlyingAssetAddress, name, symbol]: [
-  tEthereumAddress,
-  tEthereumAddress,
-  string,
-  string
-]) => {
+export const deployGenericAToken = async ([
+  poolAddress,
+  underlyingAssetAddress,
+  name,
+  symbol,
+  incentivesController,
+]: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress]) => {
   const token = await deployContract<AToken>(eContractid.AToken, [
     poolAddress,
     underlyingAssetAddress,
     name,
     symbol,
+    incentivesController,
   ]);
 
   return token;

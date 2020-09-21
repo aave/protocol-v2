@@ -21,7 +21,7 @@ import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol'
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
-import {LendingPoolLiquidationManager} from './LendingPoolLiquidationManager.sol';
+import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
@@ -435,10 +435,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool receiveAToken
   ) external override {
     whenNotPaused();
-    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = liquidationManager.delegatecall(
+    (bool success, bytes memory result) = collateralManager.delegatecall(
       abi.encodeWithSignature(
         'liquidationCall(address,address,address,uint256,bool)',
         collateral,
@@ -456,19 +456,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       //error found
       revert(string(abi.encodePacked(returnMessage)));
     }
-  }
-
-  struct FlashLoanLocalVars {
-    uint256 premium;
-    uint256 amountPlusPremium;
-    uint256 amountPlusPremiumInETH;
-    uint256 receiverBalance;
-    uint256 receiverAllowance;
-    uint256 availableBalance;
-    uint256 assetPrice;
-    IFlashLoanReceiver receiver;
-    address aTokenAddress;
-    address oracle;
   }
 
   /**
@@ -495,10 +482,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
     _flashLiquidationLocked = true;
 
-    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = liquidationManager.delegatecall(
+    (bool success, bytes memory result) = collateralManager.delegatecall(
       abi.encodeWithSignature(
         'repayWithCollateral(address,address,address,uint256,address,bytes)',
         collateral,
@@ -518,6 +505,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     _flashLiquidationLocked = false;
+  }
+
+    struct FlashLoanLocalVars {
+    uint256 premium;
+    uint256 amountPlusPremium;
+    IFlashLoanReceiver receiver;
+    address aTokenAddress;
+    address oracle;
   }
 
   /**
@@ -576,7 +571,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           asset,
           msg.sender,
           msg.sender,
-          vars.amountPlusPremium.sub(vars.availableBalance),
+          vars.amountPlusPremium,
           mode,
           vars.aTokenAddress,
           referralCode,
@@ -602,10 +597,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bytes calldata params
   ) external override {
     whenNotPaused();
-    address liquidationManager = _addressesProvider.getLendingPoolLiquidationManager();
+    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = liquidationManager.delegatecall(
+    (bool success, bytes memory result) = collateralManager.delegatecall(
       abi.encodeWithSignature(
         'swapLiquidity(address,address,address,uint256,bytes)',
         receiverAddress,

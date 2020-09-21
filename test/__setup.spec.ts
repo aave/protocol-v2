@@ -12,7 +12,7 @@ import {
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
   deployDefaultReserveInterestRateStrategy,
-  deployLendingPoolLiquidationManager,
+  deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   getLendingPool,
@@ -175,7 +175,8 @@ const initReserves = async (
   lendingPoolAddressesProvider: LendingPoolAddressesProvider,
   lendingPool: LendingPool,
   lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools
+  aavePool: AavePools,
+  incentivesController: tEthereumAddress
 ) => {
   if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
     console.log(`Invalid Aave pool ${aavePool}`);
@@ -230,6 +231,7 @@ const initReserves = async (
         `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         tokenAddress,
         lendingPool.address,
+        incentivesController,
       ]);
 
       const variableDebtToken = await deployVariableDebtToken([
@@ -237,6 +239,7 @@ const initReserves = async (
         `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         tokenAddress,
         lendingPool.address,
+        incentivesController,
       ]);
 
       const aToken = await deployGenericAToken([
@@ -244,6 +247,7 @@ const initReserves = async (
         tokenAddress,
         `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
         `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+        incentivesController,
       ]);
 
       if (process.env.POOL === AavePools.secondary) {
@@ -349,12 +353,12 @@ export const waitForTx = async (tx: ContractTransaction) => await tx.wait();
 
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');
-  const lendingPoolManager = await deployer.getAddress();
+  const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
-  await waitForTx(await addressesProvider.setLendingPoolManager(lendingPoolManager));
+  await waitForTx(await addressesProvider.setAaveAdmin(aaveAdmin));
 
   const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry();
   await waitForTx(
@@ -481,7 +485,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     addressesProvider,
     lendingPoolProxy,
     lendingPoolConfiguratorProxy,
-    AavePools.proto
+    AavePools.proto,
+    ZERO_ADDRESS
   );
   await enableReservesToBorrow(
     reservesParams,
@@ -496,9 +501,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolConfiguratorProxy
   );
 
-  const liquidationManager = await deployLendingPoolLiquidationManager();
+  const collateralManager = await deployLendingPoolCollateralManager();
   await waitForTx(
-    await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
+    await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
