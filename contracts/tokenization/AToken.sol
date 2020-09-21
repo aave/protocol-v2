@@ -20,19 +20,9 @@ import {SafeERC20} from '../misc/SafeERC20.sol';
  */
 contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
-  using SafeERC20 for IncentivizedERC20;
+  using SafeERC20 for IERC20;
 
-  uint256 public constant UINT_MAX_VALUE = uint256(-1);
-  address public immutable UNDERLYING_ASSET_ADDRESS;
-  address public immutable RESERVE_TREASURY_ADDRESS;
-  LendingPool public immutable POOL;
 
-  /// @dev owner => next valid nonce to submit with permit()
-  mapping(address => uint256) public _nonces;
-
-  uint256 public constant ATOKEN_REVISION = 0x1;
-
-  bytes32 public DOMAIN_SEPARATOR;
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN = keccak256(
     'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
@@ -41,6 +31,17 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     'Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)'
   );
 
+  uint256 public constant UINT_MAX_VALUE = uint256(-1);
+  uint256 public constant ATOKEN_REVISION = 0x1;
+  address public immutable UNDERLYING_ASSET_ADDRESS;
+  address public immutable RESERVE_TREASURY_ADDRESS;
+  LendingPool public immutable POOL;
+
+  /// @dev owner => next valid nonce to submit with permit()
+  mapping(address => uint256) public _nonces;
+  
+  bytes32 public DOMAIN_SEPARATOR;
+ 
   modifier onlyLendingPool {
     require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
@@ -110,7 +111,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     _burn(user, scaledAmount);
 
     //transfers the underlying to the target
-    IncentivizedERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
+    IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
@@ -239,7 +240,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     onlyLendingPool
     returns (uint256)
   {
-    IncentivizedERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(target, amount);
+    IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(target, amount);
     return amount;
   }
 
