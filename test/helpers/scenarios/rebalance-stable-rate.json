@@ -78,8 +78,8 @@
           "name": "borrow",
           "args": {
             "reserve": "DAI",
-            "amount": "600",
-            "borrowRateMode": "variable",
+            "amount": "250",
+            "borrowRateMode": "stable",
             "user": "1",
             "timeTravel": "365"
           },
@@ -98,14 +98,68 @@
       ]
     },
     {
-      "description": "User 1 swaps to stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "description": "User 1 borrows another 200 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
       "actions": [
         {
-          "name": "swapBorrowRateMode",
+          "name": "borrow",
           "args": {
             "reserve": "DAI",
+            "amount": "200",
+            "borrowRateMode": "stable",
             "user": "1",
-            "borrowRateMode": "variable"
+            "timeTravel": "365"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "rebalanceStableBorrowRate",
+          "args": {
+            "reserve": "DAI",
+            "user": "0",
+            "target": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Interest rate rebalance conditions were not met"
+        }
+      ]
+    },
+    {
+      "description": "User 1 borrows another 200 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "actions": [
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "DAI",
+            "amount": "200",
+            "borrowRateMode": "stable",
+            "user": "1",
+            "timeTravel": "365"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "rebalanceStableBorrowRate",
+          "args": {
+            "reserve": "DAI",
+            "user": "0",
+            "target": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Interest rate rebalance conditions were not met"
+        }
+      ]
+    },
+    {
+      "description": "User 1 borrows another 100 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "actions": [
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "DAI",
+            "amount": "100",
+            "borrowRateMode": "stable",
+            "user": "1",
+            "timeTravel": "365"
           },
           "expected": "success"
         },
@@ -155,7 +209,7 @@
           "name": "borrow",
           "args": {
             "reserve": "DAI",
-            "amount": "340",
+            "amount": "190",
             "borrowRateMode": "variable",
             "user": "2"
           },

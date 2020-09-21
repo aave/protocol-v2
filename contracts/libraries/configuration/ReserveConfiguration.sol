@@ -6,7 +6,6 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReserveLogic} from '../logic/ReserveLogic.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
-import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title ReserveConfiguration library

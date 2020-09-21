@@ -8,7 +8,6 @@ import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
-import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title contract StableDebtToken

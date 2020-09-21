@@ -29,7 +29,6 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
-
 /**
  * @title LendingPool contract
  * @notice Implements the actions of the LendingPool, and exposes accessory methods to fetch the users and reserve data
@@ -161,6 +160,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     emit Withdraw(asset, msg.sender, amount);
   }
 
+  /**
+   * @dev returns the borrow allowance of the user
+   * @param asset The underlying asset of the debt token
+   * @param fromUser The user to giving allowance
+   * @param toUser The user to give allowance to
+   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
+   * @return the current allowance of toUser
+   **/
   function getBorrowAllowance(
     address fromUser,
     address toUser,
@@ -363,15 +370,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
     IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
+    address aTokenAddress = reserve.aTokenAddress;
 
     uint256 stableBorrowBalance = IERC20(stableDebtToken).balanceOf(user);
 
-    // user must be borrowing on asset at a stable rate
-    require(stableBorrowBalance > 0, Errors.NOT_ENOUGH_STABLE_BORROW_BALANCE);
-
     //if the utilization rate is below 95%, no rebalances are needed
     uint256 totalBorrows = stableDebtToken.totalSupply().add(variableDebtToken.totalSupply()).wadToRay();
-    uint256 availableLiquidity = IERC20(asset).balanceOf(reserve.aTokenAddress).wadToRay();
+    uint256 availableLiquidity = IERC20(asset).balanceOf(aTokenAddress).wadToRay();
     uint256 usageRatio = totalBorrows == 0
       ? 0
       : totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
@@ -398,11 +403,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IStableDebtToken(address(stableDebtToken)).burn(user, stableBorrowBalance);
     IStableDebtToken(address(stableDebtToken)).mint(user, stableBorrowBalance, reserve.currentStableBorrowRate);
 
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
+    reserve.updateInterestRates(asset, aTokenAddress, 0, 0);
 
     emit RebalanceStableBorrowRate(asset, user);
 
-    return;
   }
 
   /**
@@ -731,6 +735,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     returns (
       uint256 totalCollateralETH,
       uint256 totalBorrowsETH,
+      uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
       uint256 healthFactor
@@ -748,6 +753,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _usersConfig[user],
       _reservesList,
       _addressesProvider.getPriceOracle()
+    );
+    
+    availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
+      totalCollateralETH,
+      totalBorrowsETH,
+      ltv
     );
   }
 

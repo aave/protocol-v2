@@ -367,6 +367,7 @@ interface ILendingPool {
     returns (
       uint256 totalCollateralETH,
       uint256 totalBorrowsETH,
+      uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
       uint256 healthFactor

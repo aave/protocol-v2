@@ -636,11 +636,6 @@ export const rebalanceStableBorrowRate = async (
     testEnv
   );
 
-  console.log("avl liquidity ", reserveDataBefore.availableLiquidity.toFixed());
-  console.log("Total borrows stable ", reserveDataBefore.totalStableDebt.toFixed());
-  console.log("Total borrows variable ", reserveDataBefore.totalVariableDebt.toFixed());
-  console.log("Usage ratio ", reserveDataBefore.utilizationRate.toFixed());
-
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
       await pool.connect(user.signer).rebalanceStableBorrowRate(reserve, target.address)
