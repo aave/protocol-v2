@@ -66,14 +66,6 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
   }
 
   /**
-   * @dev Returns the principal debt balance of the user from
-   * @return The debt balance of the user since the last burn/mint action
-   **/
-  function principalBalanceOf(address user) public view returns (uint256) {
-    return super.balanceOf(user);
-  }
-
-  /**
    * @dev Being non transferrable, the debt token does not implement any of the
    * standard ERC20 functions for transfer and allowance.
    **/
@@ -132,36 +124,5 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
     spender;
     subtractedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
-  }
-
-  /**
-   * @dev Calculates the increase in balance since the last user interaction
-   * @param user The address of the user for which the interest is being accumulated
-   * @return The previous principal balance, the new principal balance, the balance increase
-   * and the new user index
-   **/
-  function _calculateBalanceIncrease(address user)
-    internal
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
-    uint256 previousPrincipalBalance = principalBalanceOf(user);
-
-    if (previousPrincipalBalance == 0) {
-      return (0, 0, 0);
-    }
-
-    // Calculation of the accrued interest since the last accumulation
-    uint256 balanceIncrease = balanceOf(user).sub(previousPrincipalBalance);
-
-    return (
-      previousPrincipalBalance,
-      previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease
-    );
   }
 }

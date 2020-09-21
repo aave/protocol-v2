@@ -23,9 +23,10 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     const aTokenInstance = await deployContract<MockAToken>(eContractid.MockAToken, [
       pool.address,
       dai.address,
+      ZERO_ADDRESS,
       'Aave Interest bearing DAI updated',
       'aDAI',
-      ZERO_ADDRESS,
+      ZERO_ADDRESS
     ]);
 
     const stableDebtTokenInstance = await deployContract<MockStableDebtToken>(

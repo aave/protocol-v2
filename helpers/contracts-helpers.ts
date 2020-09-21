@@ -31,6 +31,7 @@ import BigNumber from 'bignumber.js';
 import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
+import { ZERO_ADDRESS } from './constants';
 import {MockSwapAdapter} from '../types/MockSwapAdapter';
 import {signTypedData_v4, TypedData} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
@@ -290,13 +291,15 @@ export const deployVariableDebtToken = async ([
 export const deployGenericAToken = async ([
   poolAddress,
   underlyingAssetAddress,
+  reserveTreasuryAddress,
   name,
   symbol,
   incentivesController,
-]: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress]) => {
+]: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress]) => {
   const token = await deployContract<AToken>(eContractid.AToken, [
     poolAddress,
     underlyingAssetAddress,
+    reserveTreasuryAddress,
     name,
     symbol,
     incentivesController,
@@ -352,6 +355,21 @@ export const getAToken = async (address?: tEthereumAddress) => {
     address || (await getDb().get(`${eContractid.AToken}.${BRE.network.name}`).value()).address
   );
 };
+
+export const getStableDebtToken = async (address?: tEthereumAddress) => {
+  return await getContract<AToken>(
+    eContractid.StableDebtToken,
+    address || (await getDb().get(`${eContractid.StableDebtToken}.${BRE.network.name}`).value()).address
+  );
+};
+
+export const getVariableDebtToken = async (address?: tEthereumAddress) => {
+  return await getContract<AToken>(
+    eContractid.VariableDebtToken,
+    address || (await getDb().get(`${eContractid.VariableDebtToken}.${BRE.network.name}`).value()).address
+  );
+};
+
 
 export const getMintableErc20 = async (address: tEthereumAddress) => {
   return await getContract<MintableErc20>(

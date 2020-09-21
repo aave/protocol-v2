@@ -26,21 +26,4 @@ library Helpers {
       DebtTokenBase(reserve.variableDebtTokenAddress).balanceOf(user)
     );
   }
-
-  /**
-   * @dev fetches the user principal stable and variable debt balances
-   * @param user the user
-   * @param reserve the reserve object
-   * @return the stable and variable debt balance
-   **/
-  function getUserPrincipalDebt(address user, ReserveLogic.ReserveData storage reserve)
-    internal
-    view
-    returns (uint256, uint256)
-  {
-    return (
-      DebtTokenBase(reserve.stableDebtTokenAddress).principalBalanceOf(user),
-      DebtTokenBase(reserve.variableDebtTokenAddress).principalBalanceOf(user)
-    );
-  }
 }
