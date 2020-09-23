@@ -9,7 +9,7 @@ import {
   getMintableErc20,
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
-  getMockSwapAdapter,
+  getMockSwapAdapter, getLendingPoolAddressesProviderRegistry
 } from '../../helpers/contracts-helpers';
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
@@ -25,6 +25,7 @@ import {almostEqual} from './almost-equal';
 import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
 import { MockSwapAdapter } from '../../types/MockSwapAdapter';
+import { LendingPoolAddressesProviderRegistry } from '../../types/LendingPoolAddressesProviderRegistry';
 chai.use(bignumberChai());
 chai.use(almostEqual());
 
@@ -47,6 +48,7 @@ export interface TestEnv {
   lend: MintableErc20;
   addressesProvider: LendingPoolAddressesProvider;
   mockSwapAdapter: MockSwapAdapter;
+  registry: LendingPoolAddressesProviderRegistry;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -70,7 +72,8 @@ const testEnv: TestEnv = {
   usdc: {} as MintableErc20,
   lend: {} as MintableErc20,
   addressesProvider: {} as LendingPoolAddressesProvider,
-  mockSwapAdapter: {} as MockSwapAdapter
+  mockSwapAdapter: {} as MockSwapAdapter,
+  registry: {} as LendingPoolAddressesProviderRegistry
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -95,6 +98,7 @@ export async function initializeMakeSuite() {
 
   testEnv.oracle = await getPriceOracle();
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
+  testEnv.registry = await getLendingPoolAddressesProviderRegistry();
 
   testEnv.helpersContract = await getAaveProtocolTestHelpers();
 

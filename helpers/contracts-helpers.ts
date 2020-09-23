@@ -317,6 +317,15 @@ export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress
   );
 };
 
+export const getLendingPoolAddressesProviderRegistry = async (address?: tEthereumAddress) => {
+  return await getContract<LendingPoolAddressesProviderRegistry>(
+    eContractid.LendingPoolAddressesProviderRegistry,
+    address ||
+      (await getDb().get(`${eContractid.LendingPoolAddressesProviderRegistry}.${BRE.network.name}`).value())
+        .address
+  );
+};
+
 export const getLendingPoolConfiguratorProxy = async (address?: tEthereumAddress) => {
   return await getContract<LendingPoolConfigurator>(
     eContractid.LendingPoolConfigurator,
