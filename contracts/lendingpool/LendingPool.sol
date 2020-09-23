@@ -583,7 +583,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
     } else {
-      // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
+     //if the user didn't choose to return the funds, the system checks if there
+     //is enough collateral and eventually open a position
       _executeBorrow(
         ExecuteBorrowParams(
           asset,
