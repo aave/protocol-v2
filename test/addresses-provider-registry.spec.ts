@@ -51,5 +51,43 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
     expect(providers[1].toString()).to.be.equal(ZERO_ADDRESS, " Invalid addresses");
 
   });
+
+  it('Tries to remove a unregistered addressesProvider', async () => {
+    
+    const {PROVIDER_NOT_REGISTERED} = ProtocolErrors;
+
+    const {users, registry} = testEnv;
+
+    await expect(registry.unregisterAddressesProvider(users[2].address)).to.be.revertedWith(PROVIDER_NOT_REGISTERED);
+
+  });
+
+  it('Tries to remove a unregistered addressesProvider', async () => {
+    
+    const {PROVIDER_NOT_REGISTERED} = ProtocolErrors;
+
+    const {users, registry} = testEnv;
+
+    await expect(registry.unregisterAddressesProvider(users[2].address)).to.be.revertedWith(PROVIDER_NOT_REGISTERED);
+
+  });
+
+  it('Tries to add an already added addressesProvider with a different id. Should overwrite the previous id', async () => {
+
+    const {users, registry, addressesProvider} = testEnv;
+
+    await registry.registerAddressesProvider(addressesProvider.address,"2");
+
+    const providers = await registry.getAddressesProvidersList();
+
+    const id = await registry.isAddressesProviderRegistered(addressesProvider.address);
+
+    expect(providers.length).to.be.equal(2, "Invalid length of the addresses providers list");
+    
+    expect(providers[0].toString()).to.be.equal(addressesProvider.address, " Invalid addresses provider added to the list");
+    expect(providers[1].toString()).to.be.equal(ZERO_ADDRESS, " Invalid addresses");
+
+  });
+
 });
 
