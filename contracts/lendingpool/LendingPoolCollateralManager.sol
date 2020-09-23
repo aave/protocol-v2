@@ -404,7 +404,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       vars.actualAmountToLiquidate,
       0
     );
-    IERC20(principal).transferFrom(receiver, vars.principalAToken, vars.actualAmountToLiquidate);
+    IERC20(principal).safeTransferFrom(receiver, vars.principalAToken, vars.actualAmountToLiquidate);
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
@@ -504,7 +504,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
 
     vars.amountToReceive = IERC20(toAsset).balanceOf(receiverAddress);
     if (vars.amountToReceive != 0) {
-      IERC20(toAsset).transferFrom(
+      IERC20(toAsset).safeTransferFrom(
         receiverAddress,
         address(vars.toReserveAToken),
         vars.amountToReceive
