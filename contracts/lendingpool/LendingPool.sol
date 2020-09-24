@@ -575,7 +575,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     vars.amountPlusPremium = amount.add(vars.premium);
 
     if (debtMode == ReserveLogic.InterestRateMode.NONE) {
-      IERC20(asset).transferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
+      IERC20(asset).safeTransferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
 
       reserve.updateState();
       reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
@@ -583,7 +583,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
     } else {
-      // If the transfer didn't succeed, the receiver either didn't return the funds, or didn't approve the transfer.
+     //if the user didn't choose to return the funds, the system checks if there
+     //is enough collateral and eventually open a position
       _executeBorrow(
         ExecuteBorrowParams(
           asset,
