@@ -10,6 +10,8 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import "@nomiclabs/buidler/console.sol";
+
 
 /**
  * @title GenericLogic library
@@ -29,11 +31,10 @@ library GenericLogic {
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
-    uint256 ltv;
+    uint256 liquidationThreshold;
     uint256 collateralBalanceETH;
     uint256 borrowBalanceETH;
-    uint256 currentLiquidationThreshold;
-    uint256 reserveLiquidationThreshold;
+    uint256 avgLiquidationThreshold;
     uint256 amountToDecreaseETH;
     uint256 collateralBalancefterDecrease;
     uint256 liquidationThresholdAfterDecrease;
@@ -71,9 +72,10 @@ library GenericLogic {
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (vars.ltv, , , vars.decimals) = reservesData[asset].configuration.getParams();
 
-    if (vars.ltv == 0) {
+    (, vars.liquidationThreshold, , vars.decimals) = reservesData[asset].configuration.getParams();
+
+    if (vars.liquidationThreshold == 0) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer
     }
 
@@ -81,7 +83,7 @@ library GenericLogic {
       vars.collateralBalanceETH,
       vars.borrowBalanceETH,
       ,
-      vars.currentLiquidationThreshold,
+      vars.avgLiquidationThreshold,
 
     ) = calculateUserAccountData(user, reservesData, userConfig, reserves, oracle);
 
@@ -102,8 +104,8 @@ library GenericLogic {
 
     vars.liquidationThresholdAfterDecrease = vars
       .collateralBalanceETH
-      .mul(vars.currentLiquidationThreshold)
-      .sub(vars.amountToDecreaseETH.mul(vars.reserveLiquidationThreshold))
+      .mul(vars.avgLiquidationThreshold)
+      .sub(vars.amountToDecreaseETH.mul(vars.liquidationThreshold))
       .div(vars.collateralBalancefterDecrease);
 
     uint256 healthFactorAfterDecrease = calculateHealthFactorFromBalances(
