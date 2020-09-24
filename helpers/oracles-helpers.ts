@@ -31,6 +31,7 @@ export const setInitialMarketRatesInRatesOracle = async (
       assetAddressIndex
     ];
     await lendingRateOracleInstance.setMarketBorrowRate(assetAddress, borrowRate);
+    console.log('added Market Borrow Rate for: ', assetSymbol);
   }
 };
 

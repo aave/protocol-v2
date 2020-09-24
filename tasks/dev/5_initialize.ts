@@ -2,7 +2,7 @@ import {task} from '@nomiclabs/buidler/config';
 import {
   getLendingPoolAddressesProvider,
   initReserves,
-  deployLendingPoolLiquidationManager,
+  deployLendingPoolCollateralManager,
   insertContractAddressInDb,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -17,6 +17,7 @@ import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../../helpers/init-helpers';
 import {getAllTokenAddresses} from '../../helpers/mock-helpers';
+import {ZERO_ADDRESS} from '../../helpers/constants';
 
 task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
@@ -43,6 +44,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       lendingPoolProxy,
       lendingPoolConfiguratorProxy,
       AavePools.proto,
+      ZERO_ADDRESS,
       verify
     );
     await enableReservesToBorrow(
@@ -58,9 +60,9 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       lendingPoolConfiguratorProxy
     );
 
-    const liquidationManager = await deployLendingPoolLiquidationManager(verify);
+    const collateralManager = await deployLendingPoolCollateralManager(verify);
     await waitForTx(
-      await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
+      await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
     );
 
     const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(

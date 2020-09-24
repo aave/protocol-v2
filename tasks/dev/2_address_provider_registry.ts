@@ -13,10 +13,10 @@ task(
   .setAction(async ({verify}, localBRE) => {
     await localBRE.run('set-bre');
 
-    const lendingPoolManager = await (await localBRE.ethers.getSigners())[0].getAddress();
+    const admin = await (await localBRE.ethers.getSigners())[0].getAddress();
 
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
-    await waitForTx(await addressesProvider.setLendingPoolManager(lendingPoolManager));
+    await waitForTx(await addressesProvider.setAaveAdmin(admin));
 
     const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry(verify);
     await waitForTx(

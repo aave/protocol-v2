@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {ERC20} from './ERC20.sol';
+import {IncentivizedERC20} from './IncentivizedERC20.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
@@ -18,9 +18,9 @@ import {SafeERC20} from '../misc/SafeERC20.sol';
  * @dev Implementation of the interest bearing token for the DLP protocol.
  * @author Aave
  */
-contract AToken is VersionedInitializable, ERC20, IAToken {
+contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
-  using SafeERC20 for ERC20;
+  using SafeERC20 for IncentivizedERC20;
 
   uint256 public constant UINT_MAX_VALUE = uint256(-1);
   address public immutable UNDERLYING_ASSET_ADDRESS;
@@ -49,8 +49,9 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     LendingPool pool,
     address underlyingAssetAddress,
     string memory tokenName,
-    string memory tokenSymbol
-  ) public ERC20(tokenName, tokenSymbol, 18) {
+    string memory tokenSymbol,
+    address incentivesController
+  ) public IncentivizedERC20(tokenName, tokenSymbol, 18, incentivesController) {
     POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
   }
@@ -106,7 +107,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     _burn(user, scaledAmount);
 
     //transfers the underlying to the target
-    ERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
+    IncentivizedERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
@@ -158,7 +159,12 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
    * @param user the user for which the balance is being calculated
    * @return the total balance of the user
    **/
-  function balanceOf(address user) public override(ERC20, IERC20) view returns (uint256) {
+  function balanceOf(address user)
+    public
+    override(IncentivizedERC20, IERC20)
+    view
+    returns (uint256)
+  {
     return super.balanceOf(user).rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
   }
 
@@ -173,12 +179,27 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
   }
 
   /**
+   * @dev returns the principal balance of the user and principal total supply.
+   * @param user the address of the user
+   * @return the principal balance of the user
+   * @return the principal total supply
+   **/
+  function getScaledUserBalanceAndSupply(address user)
+    external
+    override
+    view
+    returns (uint256, uint256)
+  {
+    return (super.balanceOf(user), super.totalSupply());
+  }
+
+  /**
    * @dev calculates the total supply of the specific aToken
    * since the balance of every single user increases over time, the total supply
    * does that too.
    * @return the current total supply
    **/
-  function totalSupply() public override(ERC20, IERC20) view returns (uint256) {
+  function totalSupply() public override(IncentivizedERC20, IERC20) view returns (uint256) {
     uint256 currentSupplyScaled = super.totalSupply();
 
     if (currentSupplyScaled == 0) {
@@ -211,7 +232,7 @@ contract AToken is VersionedInitializable, ERC20, IAToken {
     onlyLendingPool
     returns (uint256)
   {
-    ERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(target, amount);
+    IncentivizedERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(target, amount);
     return amount;
   }
 

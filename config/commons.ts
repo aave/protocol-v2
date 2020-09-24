@@ -119,14 +119,14 @@ export const CommonsConfig: ICommonConfiguration = {
   // ----------------
 
   // If lendingPoolManagerAddress is set, will take priority over lendingPoolManagerAddressIndex
-  LendingPoolManagerAddress: {
+  AaveAdmin: {
     [eEthereumNetwork.coverage]: undefined,
     [eEthereumNetwork.buidlerevm]: undefined,
     [eEthereumNetwork.kovan]: undefined,
     [eEthereumNetwork.ropsten]: undefined,
     [eEthereumNetwork.main]: undefined,
   },
-  LendingPoolManagerAddressIndex: 0,
+  AaveAdminIndex: 0,
   ProviderRegistry: {
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',

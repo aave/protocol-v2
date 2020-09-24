@@ -13,10 +13,61 @@ const {expect} = require('chai');
 
 makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
   let _mockSwapAdapter = {} as MockSwapAdapter;
-  const {HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD} = ProtocolErrors;
+  const {
+    HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
+    NO_UNFREEZED_RESERVE,
+    NO_ACTIVE_RESERVE,
+    INVALID_EQUAL_ASSETS_TO_SWAP,
+  } = ProtocolErrors;
 
   before(async () => {
     _mockSwapAdapter = await getMockSwapAdapter();
+  });
+
+  it('Should not allow to swap if from equal to', async () => {
+    const {pool, weth} = testEnv;
+
+    await expect(
+      pool.swapLiquidity(
+        _mockSwapAdapter.address,
+        weth.address,
+        weth.address,
+        '1'.toString(),
+        '0x10'
+      )
+    ).to.be.revertedWith(INVALID_EQUAL_ASSETS_TO_SWAP);
+  });
+
+  it('Should not allow to swap if from or to reserves are not active', async () => {
+    const {pool, weth, dai, configurator} = testEnv;
+
+    await configurator.deactivateReserve(weth.address);
+
+    await expect(
+      pool.swapLiquidity(
+        _mockSwapAdapter.address,
+        weth.address,
+        dai.address,
+        '1'.toString(),
+        '0x10'
+      )
+    ).to.be.revertedWith(NO_ACTIVE_RESERVE);
+    await configurator.activateReserve(weth.address);
+
+    await configurator.deactivateReserve(dai.address);
+
+    await expect(
+      pool.swapLiquidity(
+        _mockSwapAdapter.address,
+        weth.address,
+        dai.address,
+        '1'.toString(),
+        '0x10'
+      )
+    ).to.be.revertedWith(NO_ACTIVE_RESERVE);
+
+    //cleanup state
+    await configurator.activateReserve(dai.address);
   });
 
   it('Deposits WETH into the reserve', async () => {
@@ -32,6 +83,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         .deposit(weth.address, amountToDeposit, await signer.getAddress(), '0');
     }
   });
+
   it('User tries to swap more then he can, revert expected', async () => {
     const {pool, weth, dai} = testEnv;
     await expect(
@@ -43,19 +95,6 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         '0x10'
       )
     ).to.be.revertedWith('55');
-  });
-
-  it('User tries to swap asset on equal asset, revert expected', async () => {
-    const {pool, weth} = testEnv;
-    await expect(
-      pool.swapLiquidity(
-        _mockSwapAdapter.address,
-        weth.address,
-        weth.address,
-        ethers.utils.parseEther('0.1'),
-        '0x10'
-      )
-    ).to.be.revertedWith('56');
   });
 
   it('User tries to swap more then available on the reserve', async () => {
@@ -134,6 +173,9 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
       reserveBalanceDAIBefore.add(amountToReturn).toString(),
       'was received incorrect amount if reserve funds'
     );
+    expect(
+      (await pool.getUserReserveData(dai.address, userAddress)).usageAsCollateralEnabled
+    ).to.be.equal(true, 'usage as collateral was not enabled on destination reserve for the user');
   });
 
   it('User tries to drop HF below one', async () => {
@@ -151,7 +193,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
   });
 
   it('Should set usage as collateral to false if no leftovers after swap', async () => {
-    const {pool, weth, dai, aEth, users} = testEnv;
+    const {pool, weth, dai, users} = testEnv;
     const userAddress = await pool.signer.getAddress();
 
     // add more liquidity to allow user 0 to swap everything he has
@@ -194,5 +236,23 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
       false,
       'usageAsCollateralEnabled are not set to false'
     );
+  });
+  it('Should not allow to swap if to reserve are freezed', async () => {
+    const {pool, weth, dai, configurator} = testEnv;
+
+    await configurator.freezeReserve(dai.address);
+
+    await expect(
+      pool.swapLiquidity(
+        _mockSwapAdapter.address,
+        weth.address,
+        dai.address,
+        '1'.toString(),
+        '0x10'
+      )
+    ).to.be.revertedWith(NO_UNFREEZED_RESERVE);
+
+    //cleanup state
+    await configurator.unfreezeReserve(dai.address);
   });
 });

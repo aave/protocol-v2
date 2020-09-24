@@ -11,7 +11,7 @@ import {eContractid} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 
 task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
-  .addOptionalParam('verify', 'Verify contracts at Etherscan')
+  .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     await localBRE.run('set-bre');
 

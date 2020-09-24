@@ -111,7 +111,7 @@ interface ILendingPool {
   );
   /**
    * @dev these events are not emitted directly by the LendingPool
-   * but they are declared here as the LendingPoolLiquidationManager
+   * but they are declared here as the LendingPoolCollateralManager
    * is executed using a delegateCall().
    * This allows to have the events in the generated ABI for LendingPool.
    **/

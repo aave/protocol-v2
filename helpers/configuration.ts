@@ -63,19 +63,16 @@ export const getFeeDistributionParamsCommon = (
   };
 };
 
-export const getGenesisLendingPoolManagerAddress = async (config: ICommonConfiguration) => {
+export const getGenesisAaveAdmin = async (config: ICommonConfiguration) => {
   const currentNetwork = BRE.network.name;
-  const targetAddress = getParamPerNetwork(
-    config.LendingPoolManagerAddress,
-    <eEthereumNetwork>currentNetwork
-  );
+  const targetAddress = getParamPerNetwork(config.AaveAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
   const addressList = await Promise.all(
     (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
-  const addressIndex = config.LendingPoolManagerAddressIndex;
+  const addressIndex = config.AaveAdminIndex;
   return addressList[addressIndex];
 };
 

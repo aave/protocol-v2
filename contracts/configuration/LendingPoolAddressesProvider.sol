@@ -21,8 +21,8 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';
   bytes32 private constant LENDING_POOL_CORE = 'LENDING_POOL_CORE';
   bytes32 private constant LENDING_POOL_CONFIGURATOR = 'LENDING_POOL_CONFIGURATOR';
-  bytes32 private constant LENDING_POOL_MANAGER = 'LENDING_POOL_MANAGER';
-  bytes32 private constant LENDING_POOL_LIQUIDATION_MANAGER = 'LIQUIDATION_MANAGER';
+  bytes32 private constant AAVE_ADMIN = 'AAVE_ADMIN';
+  bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
   bytes32 private constant LENDING_POOL_FLASHLOAN_PROVIDER = 'FLASHLOAN_PROVIDER';
   bytes32 private constant DATA_PROVIDER = 'DATA_PROVIDER';
   bytes32 private constant ETHEREUM_ADDRESS = 'ETHEREUM_ADDRESS';
@@ -65,23 +65,23 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   /**
-   * @dev returns the address of the LendingPoolLiquidationManager. Since the manager is used
+   * @dev returns the address of the LendingPoolCollateralManager. Since the manager is used
    * through delegateCall within the LendingPool contract, the proxy contract pattern does not work properly hence
    * the addresses are changed directly.
-   * @return the address of the Lending pool liquidation manager
+   * @return the address of the Lending pool collateral manager
    **/
 
-  function getLendingPoolLiquidationManager() external override view returns (address) {
-    return _addresses[LENDING_POOL_LIQUIDATION_MANAGER];
+  function getLendingPoolCollateralManager() external override view returns (address) {
+    return _addresses[LENDING_POOL_COLLATERAL_MANAGER];
   }
 
   /**
-   * @dev updates the address of the Lending pool liquidation manager
-   * @param manager the new lending pool liquidation manager address
+   * @dev updates the address of the Lending pool collateral manager
+   * @param manager the new lending pool collateral manager address
    **/
-  function setLendingPoolLiquidationManager(address manager) external override onlyOwner {
-    _addresses[LENDING_POOL_LIQUIDATION_MANAGER] = manager;
-    emit LendingPoolLiquidationManagerUpdated(manager);
+  function setLendingPoolCollateralManager(address manager) external override onlyOwner {
+    _addresses[LENDING_POOL_COLLATERAL_MANAGER] = manager;
+    emit LendingPoolCollateralManagerUpdated(manager);
   }
 
   /**
@@ -89,13 +89,13 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * hence the upgradable proxy pattern is not used
    **/
 
-  function getLendingPoolManager() external override view returns (address) {
-    return _addresses[LENDING_POOL_MANAGER];
+  function getAaveAdmin() external override view returns (address) {
+    return _addresses[AAVE_ADMIN];
   }
 
-  function setLendingPoolManager(address lendingPoolManager) external override onlyOwner {
-    _addresses[LENDING_POOL_MANAGER] = lendingPoolManager;
-    emit LendingPoolManagerUpdated(lendingPoolManager);
+  function setAaveAdmin(address aaveAdmin) external override onlyOwner {
+    _addresses[AAVE_ADMIN] = aaveAdmin;
+    emit AaveAdminUpdated(aaveAdmin);
   }
 
   function getPriceOracle() external override view returns (address) {

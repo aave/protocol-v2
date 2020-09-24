@@ -11,22 +11,30 @@
   },
   "LendingPoolAddressesProvider": {
     "buidlerevm": {
-      "address": "0xa4bcDF64Cdd5451b6ac3743B414124A6299B65FF",
+      "address": "0x7c2C195CD6D34B8F845992d380aADB2730bB9C6F",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
       "address": "0xAfC307938C1c0035942c141c31524504c89Aaa8B",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x20e080B395341B3b617E893c281c7E999C942276",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "LendingPoolAddressesProviderRegistry": {
     "buidlerevm": {
-      "address": "0x5A0773Ff307Bf7C71a832dBB5312237fD3437f9F",
+      "address": "0x0078371BDeDE8aAc7DeBfFf451B74c5EDB385Af7",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
       "address": "0x73DE1e0ab6A5C221258703bc546E0CAAcCc6EC87",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x00219a2958f758122106Bb8A801AFc1B70897663",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "FeeProvider": {
@@ -50,10 +58,13 @@
   },
   "LendingPoolConfigurator": {
     "buidlerevm": {
-      "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
+      "address": "0x1b88b3E43526cB076931AD76cB2eC0CC93382FAc"
     },
     "localhost": {
       "address": "0x65e0Cd5B8904A02f2e00BC6f58bf881998D54BDe"
+    },
+    "kovan": {
+      "address": "0x50C9d3aD9399c1EEf6DDeadF8e57fF69994F552e"
     }
   },
   "LendingPoolDataProvider": {
@@ -63,10 +74,13 @@
   },
   "LendingPool": {
     "buidlerevm": {
-      "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
+      "address": "0xdA71454D2a71D63116cd67099e4a0fdd3a8Dfb47"
     },
     "localhost": {
       "address": "0x5d12dDe3286D94E0d85F9D3B01B7099cfA0aBCf1"
+    },
+    "kovan": {
+      "address": "0x6d1e69bB0578699dd955Eefbf23aAC65c0DA5cE7"
     }
   },
   "PriceOracle": {
@@ -97,6 +111,10 @@
     "localhost": {
       "address": "0xE30c3983E51bC9d6baE3E9437710a1459e21e81F",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x18a107d4fa249Efefd4DAf9A76EEE3b6366701AA",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "LendingRateOracle": {
@@ -107,6 +125,10 @@
     "localhost": {
       "address": "0xDf69898e844197a24C658CcF9fD53dF15948dc8b",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0xac6Eb7B1083D39eC695a3898C2f782E7c7C64973",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "DefaultReserveInterestRateStrategy": {

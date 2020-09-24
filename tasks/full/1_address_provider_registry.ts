@@ -6,18 +6,14 @@ import {
   getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-helpers';
 import {waitForTx} from '../../helpers/misc-utils';
-import {
-  ConfigNames,
-  loadPoolConfig,
-  getGenesisLendingPoolManagerAddress,
-} from '../../helpers/configuration';
+import {ConfigNames, loadPoolConfig, getGenesisAaveAdmin} from '../../helpers/configuration';
 import {eEthereumNetwork} from '../../helpers/types';
 
 task(
   'full:deploy-address-provider',
   'Deploy address provider, registry and fee provider for dev enviroment'
 )
-  .addOptionalParam('verify', 'Verify contracts at Etherscan')
+  .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({verify, pool}, localBRE) => {
     await localBRE.run('set-bre');
@@ -28,11 +24,7 @@ task(
     const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
     // Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
-    await waitForTx(
-      await addressesProvider.setLendingPoolManager(
-        await getGenesisLendingPoolManagerAddress(poolConfig)
-      )
-    );
+    await waitForTx(await addressesProvider.setAaveAdmin(await getGenesisAaveAdmin(poolConfig)));
 
     // If no provider registry is set, deploy lending pool address provider registry and register the address provider
     const addressesProviderRegistry = !providerRegistryAddress

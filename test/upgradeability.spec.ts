@@ -10,9 +10,10 @@ import {
 import {MockAToken} from '../types/MockAToken';
 import {MockStableDebtToken} from '../types/MockStableDebtToken';
 import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
+import {ZERO_ADDRESS} from '../helpers/constants';
 
 makeSuite('Upgradeability', (testEnv: TestEnv) => {
-  const {CALLER_NOT_LENDING_POOL_MANAGER} = ProtocolErrors;
+  const {CALLER_NOT_AAVE_ADMIN} = ProtocolErrors;
   let newATokenAddress: string;
   let newStableTokenAddress: string;
   let newVariableTokenAddress: string;
@@ -24,16 +25,29 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       dai.address,
       'Aave Interest bearing DAI updated',
       'aDAI',
+      ZERO_ADDRESS,
     ]);
 
     const stableDebtTokenInstance = await deployContract<MockStableDebtToken>(
       eContractid.MockStableDebtToken,
-      [pool.address, dai.address, 'Aave stable debt bearing DAI updated', 'stableDebtDAI']
+      [
+        pool.address,
+        dai.address,
+        'Aave stable debt bearing DAI updated',
+        'stableDebtDAI',
+        ZERO_ADDRESS,
+      ]
     );
 
     const variableDebtTokenInstance = await deployContract<MockVariableDebtToken>(
       eContractid.MockVariableDebtToken,
-      [pool.address, dai.address, 'Aave variable debt bearing DAI updated', 'variableDebtDAI']
+      [
+        pool.address,
+        dai.address,
+        'Aave variable debt bearing DAI updated',
+        'variableDebtDAI',
+        ZERO_ADDRESS,
+      ]
     );
 
     newATokenAddress = aTokenInstance.address;
@@ -46,7 +60,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     await expect(
       configurator.connect(users[1].signer).updateAToken(dai.address, newATokenAddress)
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Upgrades the DAI Atoken implementation ', async () => {
@@ -68,7 +82,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       configurator
         .connect(users[1].signer)
         .updateStableDebtToken(dai.address, newStableTokenAddress)
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Upgrades the DAI stable debt token implementation ', async () => {
@@ -97,7 +111,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       configurator
         .connect(users[1].signer)
         .updateVariableDebtToken(dai.address, newVariableTokenAddress)
-    ).to.be.revertedWith(CALLER_NOT_LENDING_POOL_MANAGER);
+    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Upgrades the DAI variable debt token implementation ', async () => {

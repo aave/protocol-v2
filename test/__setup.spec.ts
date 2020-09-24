@@ -9,8 +9,7 @@ import {
   deployPriceOracle,
   getLendingPoolConfiguratorProxy,
   deployChainlinkProxyPriceProvider,
-  deployLendingRateOracle,
-  deployLendingPoolLiquidationManager,
+  deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   getLendingPool,
@@ -21,6 +20,7 @@ import {
   getPairsTokenAggregator,
   initReserves,
   deployMockSwapAdapter,
+  deployLendingRateOracle,
 } from '../helpers/contracts-helpers';
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
@@ -36,6 +36,7 @@ import {
 import {waitForTx} from '../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../helpers/init-helpers';
 import {AaveConfig} from '../config/aave';
+import {ZERO_ADDRESS} from '../helpers/constants';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -75,12 +76,12 @@ const deployAllMockTokens = async (deployer: Signer) => {
 
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');
-  const lendingPoolManager = await deployer.getAddress();
+  const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
-  await waitForTx(await addressesProvider.setLendingPoolManager(lendingPoolManager));
+  await waitForTx(await addressesProvider.setAaveAdmin(aaveAdmin));
 
   const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry();
   await waitForTx(
@@ -208,6 +209,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolProxy,
     lendingPoolConfiguratorProxy,
     AavePools.proto,
+    ZERO_ADDRESS,
     false
   );
   await enableReservesToBorrow(
@@ -223,9 +225,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolConfiguratorProxy
   );
 
-  const liquidationManager = await deployLendingPoolLiquidationManager();
+  const collateralManager = await deployLendingPoolCollateralManager();
   await waitForTx(
-    await addressesProvider.setLendingPoolLiquidationManager(liquidationManager.address)
+    await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);

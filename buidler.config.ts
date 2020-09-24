@@ -4,7 +4,7 @@ import {usePlugin} from '@nomiclabs/buidler/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
-import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/constants';
+import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
 
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');
@@ -14,17 +14,16 @@ usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
-
-const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
-const DEFAULT_GAS_PRICE = 10;
+const DEFAULT_BLOCK_GAS_LIMIT = 12500000;
+const DEFAULT_GAS_PRICE = 1;
 const HARDFORK = 'istanbul';
-const INFURA_KEY = '';
-const ETHERSCAN_KEY = '';
+const INFURA_KEY = process.env.INFURA_KEY || '';
+const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONICS: {[network: string]: string} = {
-  [eEthereumNetwork.kovan]: '',
-  [eEthereumNetwork.ropsten]: '',
-  [eEthereumNetwork.main]: '',
+  [eEthereumNetwork.kovan]: process.env.MNEMONIC || '',
+  [eEthereumNetwork.ropsten]: process.env.MNEMONIC || '',
+  [eEthereumNetwork.main]: process.env.MNEMONIC || '',
 };
 
 // Prevent to load scripts before compilation and typechain
@@ -64,7 +63,6 @@ const buidlerConfig: any = {
     target: 'ethers-v4',
   },
   etherscan: {
-    url: 'https://api-kovan.etherscan.io/api',
     apiKey: ETHERSCAN_KEY,
   },
   defaultNetwork: 'buidlerevm',
