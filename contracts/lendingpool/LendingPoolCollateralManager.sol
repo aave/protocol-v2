@@ -374,6 +374,14 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     //updating collateral reserve indexes
     collateralReserve.updateState();
 
+    //updating collateral reserve interest rates
+    collateralReserve.updateInterestRates(
+      collateral,
+      address(vars.collateralAtoken),
+      0,
+      vars.maxCollateralToLiquidate
+    );
+
     vars.collateralAtoken.burn(
       user,
       receiver,
@@ -423,14 +431,6 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
       );
     }
-
-    //updating collateral reserve
-    collateralReserve.updateInterestRates(
-      collateral,
-      address(vars.collateralAtoken),
-      0,
-      vars.maxCollateralToLiquidate
-    );
 
     emit RepaidWithCollateral(
       collateral,
