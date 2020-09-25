@@ -72,7 +72,6 @@ library GenericLogic {
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-
     (, vars.liquidationThreshold, , vars.decimals) = reservesData[asset].configuration.getParams();
 
     if (vars.liquidationThreshold == 0) {
