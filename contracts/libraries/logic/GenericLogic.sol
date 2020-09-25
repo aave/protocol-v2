@@ -10,8 +10,6 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
-import "@nomiclabs/buidler/console.sol";
-
 
 /**
  * @title GenericLogic library
@@ -63,10 +61,7 @@ library GenericLogic {
     address[] calldata reserves,
     address oracle
   ) external view returns (bool) {
-    if (
-      !userConfig.isBorrowingAny() ||
-      !userConfig.isUsingAsCollateral(reservesData[asset].id)
-    ) {
+    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
       return true;
     }
 
@@ -255,7 +250,7 @@ library GenericLogic {
     return (collateralBalanceETH.percentMul(liquidationThreshold)).wadDiv(borrowBalanceETH);
   }
 
-    /**
+  /**
    * @dev calculates the equivalent amount in ETH that an user can borrow, depending on the available collateral and the
    * average Loan To Value.
    * @param collateralBalanceETH the total collateral balance
