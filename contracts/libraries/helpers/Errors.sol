@@ -61,6 +61,7 @@ library Errors {
   //require error messages - LendingPoolConfiguration
   string public constant CALLER_NOT_AAVE_ADMIN = '35'; // 'The caller must be the aave admin'
   string public constant RESERVE_LIQUIDITY_NOT_0 = '36'; // 'The liquidity of the reserve needs to be 0'
+  string public constant INVALID_CONFIGURATION = '52'; // 'Invalid risk parameters for the reserve'
 
   //require error messages - LendingPoolAddressesProviderRegistry
   string public constant PROVIDER_NOT_REGISTERED = '37'; // 'Provider is not registered'
