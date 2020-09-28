@@ -43,7 +43,7 @@
       ]
     },
     {
-      "description": "User 1 Deposits 2 ETH, disables ETH as collateral, borrows 400 DAI (revert expected)",
+      "description": "User 1 Deposits 2 WETH, disables WETH as collateral, borrows 400 DAI (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -96,7 +96,7 @@
       ]
     },
     {
-      "description": "User 1 enables ETH as collateral, borrows 400 DAI",
+      "description": "User 1 enables WETH as collateral, borrows 400 DAI",
       "actions": [
         {
           "name": "setUseAsCollateral",
@@ -120,7 +120,7 @@
       ]
     },
     {
-      "description": "User 1 disables ETH as collateral (revert expected)",
+      "description": "User 1 disables WETH as collateral (revert expected)",
       "actions": [
         {
           "name": "setUseAsCollateral",
@@ -132,6 +132,97 @@
           },
           "expected": "revert",
           "revertMessage": "User deposit is already being used as collateral"
+        }
+      ]
+    },
+    {
+      "description": "User 1 Deposits 1000 LEND, disables WETH as collateral. Should revert as 1000 LEND are not enough to cover the debt (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "LEND",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "LEND",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "LEND",
+
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "setUseAsCollateral",
+          "args": {
+            "reserve": "WETH",
+
+            "user": "1",
+            "useAsCollateral": "false"
+          },
+          "expected": "revert"
+        }
+      ]
+    },
+    {
+      "description": "User 1 Deposits 64000 more LEND (enough to cover the DAI debt), disables WETH as collateral",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "LEND",
+            "amount": "64000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "LEND",
+
+            "amount": "64000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "setUseAsCollateral",
+          "args": {
+            "reserve": "WETH",
+
+            "user": "1",
+            "useAsCollateral": "false"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 1 disables LEND as collateral (revert expected)",
+      "actions": [
+        {
+          "name": "setUseAsCollateral",
+          "args": {
+            "reserve": "LEND",
+
+            "user": "1",
+            "useAsCollateral": "false"
+          },
+          "expected": "User deposit is already being used as collateral"
         }
       ]
     }

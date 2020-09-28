@@ -29,11 +29,10 @@ library GenericLogic {
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
-    uint256 ltv;
+    uint256 liquidationThreshold;
     uint256 collateralBalanceETH;
     uint256 borrowBalanceETH;
-    uint256 currentLiquidationThreshold;
-    uint256 reserveLiquidationThreshold;
+    uint256 avgLiquidationThreshold;
     uint256 amountToDecreaseETH;
     uint256 collateralBalancefterDecrease;
     uint256 liquidationThresholdAfterDecrease;
@@ -62,18 +61,15 @@ library GenericLogic {
     address[] calldata reserves,
     address oracle
   ) external view returns (bool) {
-    if (
-      !userConfig.isBorrowingAny() ||
-      !userConfig.isUsingAsCollateral(reservesData[asset].id)
-    ) {
+    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
       return true;
     }
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (vars.ltv, , , vars.decimals) = reservesData[asset].configuration.getParams();
+    (, vars.liquidationThreshold, , vars.decimals) = reservesData[asset].configuration.getParams();
 
-    if (vars.ltv == 0) {
+    if (vars.liquidationThreshold == 0) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer
     }
 
@@ -81,7 +77,7 @@ library GenericLogic {
       vars.collateralBalanceETH,
       vars.borrowBalanceETH,
       ,
-      vars.currentLiquidationThreshold,
+      vars.avgLiquidationThreshold,
 
     ) = calculateUserAccountData(user, reservesData, userConfig, reserves, oracle);
 
@@ -102,8 +98,8 @@ library GenericLogic {
 
     vars.liquidationThresholdAfterDecrease = vars
       .collateralBalanceETH
-      .mul(vars.currentLiquidationThreshold)
-      .sub(vars.amountToDecreaseETH.mul(vars.reserveLiquidationThreshold))
+      .mul(vars.avgLiquidationThreshold)
+      .sub(vars.amountToDecreaseETH.mul(vars.liquidationThreshold))
       .div(vars.collateralBalancefterDecrease);
 
     uint256 healthFactorAfterDecrease = calculateHealthFactorFromBalances(
@@ -186,7 +182,7 @@ library GenericLogic {
       vars.tokenUnit = 10**vars.decimals;
       vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
-      if (vars.ltv != 0 && userConfig.isUsingAsCollateral(vars.i)) {
+      if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
         vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(user);
 
         uint256 liquidityBalanceETH = vars
@@ -254,7 +250,7 @@ library GenericLogic {
     return (collateralBalanceETH.percentMul(liquidationThreshold)).wadDiv(borrowBalanceETH);
   }
 
-    /**
+  /**
    * @dev calculates the equivalent amount in ETH that an user can borrow, depending on the available collateral and the
    * average Loan To Value.
    * @param collateralBalanceETH the total collateral balance
