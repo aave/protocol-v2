@@ -31,11 +31,40 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant WALLET_BALANCE_PROVIDER = 'WALLET_BALANCE_PROVIDER';
 
   /**
+   * @dev Sets an address for an id, allowing to cover it or not with a proxy
+   * @param id The id
+   * @param newAddress The address to set, pass address(0) if a proxy is needed
+   * @param implementationAddress The address of the implementation if we want it covered by a proxy
+   * address(0) if we don't want a proxy covering
+   */
+  function setAddress(
+    bytes32 id,
+    address newAddress,
+    address implementationAddress
+  ) external override onlyOwner {
+    if (implementationAddress != address(0)) {
+      _updateImpl(id, implementationAddress);
+      emit AddressSet(id, implementationAddress, true);
+    } else {
+      _addresses[id] = newAddress;
+      emit AddressSet(id, newAddress, false);
+    }
+  }
+
+  /**
+   * @dev Returns an address by id
+   * @return The address
+   */
+  function getAddress(bytes32 id) public override view returns (address) {
+    return _addresses[id];
+  }
+
+  /**
    * @dev returns the address of the LendingPool proxy
    * @return the lending pool proxy address
    **/
   function getLendingPool() external override view returns (address) {
-    return _addresses[LENDING_POOL];
+    return getAddress(LENDING_POOL);
   }
 
   /**
@@ -52,7 +81,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @return the lending pool configurator proxy address
    **/
   function getLendingPoolConfigurator() external override view returns (address) {
-    return _addresses[LENDING_POOL_CONFIGURATOR];
+    return getAddress(LENDING_POOL_CONFIGURATOR);
   }
 
   /**
@@ -72,7 +101,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    **/
 
   function getLendingPoolCollateralManager() external override view returns (address) {
-    return _addresses[LENDING_POOL_COLLATERAL_MANAGER];
+    return getAddress(LENDING_POOL_COLLATERAL_MANAGER);
   }
 
   /**
@@ -90,7 +119,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    **/
 
   function getAaveAdmin() external override view returns (address) {
-    return _addresses[AAVE_ADMIN];
+    return getAddress(AAVE_ADMIN);
   }
 
   function setAaveAdmin(address aaveAdmin) external override onlyOwner {
@@ -99,7 +128,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   function getPriceOracle() external override view returns (address) {
-    return _addresses[PRICE_ORACLE];
+    return getAddress(PRICE_ORACLE);
   }
 
   function setPriceOracle(address priceOracle) external override onlyOwner {
@@ -108,7 +137,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   function getLendingRateOracle() external override view returns (address) {
-    return _addresses[LENDING_RATE_ORACLE];
+    return getAddress(LENDING_RATE_ORACLE);
   }
 
   function setLendingRateOracle(address lendingRateOracle) external override onlyOwner {
