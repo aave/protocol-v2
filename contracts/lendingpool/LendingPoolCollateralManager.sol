@@ -238,12 +238,15 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
         principalReserve.variableBorrowIndex
       );
     } else {
-      IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
-        user,
-        vars.userVariableDebt,
-        principalReserve.variableBorrowIndex
-      );
-
+      //if the user does not have variable debt, no need to try to burn variable
+      //debt tokens
+      if (vars.userVariableDebt > 0) {
+        IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
+          user,
+          vars.userVariableDebt,
+          principalReserve.variableBorrowIndex
+        );
+      }
       IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(
         user,
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
@@ -412,7 +415,11 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       vars.actualAmountToLiquidate,
       0
     );
-    IERC20(principal).safeTransferFrom(receiver, vars.principalAToken, vars.actualAmountToLiquidate);
+    IERC20(principal).safeTransferFrom(
+      receiver,
+      vars.principalAToken,
+      vars.actualAmountToLiquidate
+    );
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
