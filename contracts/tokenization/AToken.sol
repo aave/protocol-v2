@@ -101,7 +101,9 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    _burn(user, amount.rayDiv(index));
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
+    _burn(user, amountScaled);
 
     //transfers the underlying to the target
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
@@ -122,8 +124,9 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    //mint an equivalent amount of tokens to cover the new deposit
-    _mint(user, amount.rayDiv(index));
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
+    _mint(user, amountScaled);
 
     //transfer event to track balances
     emit Transfer(address(0), user, amount);
