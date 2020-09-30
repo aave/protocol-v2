@@ -7,7 +7,6 @@ pragma solidity ^0.6.8;
  */
 
 interface ILendingPoolAddressesProvider {
-  //events
   event LendingPoolUpdated(address indexed newAddress);
   event AaveAdminUpdated(address indexed newAddress);
   event LendingPoolConfiguratorUpdated(address indexed newAddress);
@@ -15,8 +14,16 @@ interface ILendingPoolAddressesProvider {
   event EthereumAddressUpdated(address indexed newAddress);
   event PriceOracleUpdated(address indexed newAddress);
   event LendingRateOracleUpdated(address indexed newAddress);
-
   event ProxyCreated(bytes32 id, address indexed newAddress);
+  event AddressSet(bytes32 id, address indexed newAddress, bool hasProxy);
+
+  function setAddress(
+    bytes32 id,
+    address newAddress,
+    address impl
+  ) external;
+
+  function getAddress(bytes32 id) external view returns (address);
 
   function getLendingPool() external view returns (address);
 

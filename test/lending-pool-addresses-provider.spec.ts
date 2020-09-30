@@ -2,6 +2,12 @@ import {expect} from 'chai';
 import {createRandomAddress} from '../helpers/misc-utils';
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {ProtocolErrors} from '../helpers/types';
+import {ethers} from 'ethers';
+import {ZERO_ADDRESS} from '../helpers/constants';
+import {waitForTx} from './__setup.spec';
+import {deployLendingPool} from '../helpers/contracts-helpers';
+
+const {utils} = ethers;
 
 makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
   it('Test the accessibility of the LendingPoolAddressesProvider', async () => {
@@ -21,5 +27,65 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
     ]) {
       await expect(contractFunction(mockAddress)).to.be.revertedWith(INVALID_OWNER_REVERT_MSG);
     }
+
+    await expect(
+      addressesProvider.setAddress(
+        utils.keccak256(utils.toUtf8Bytes('RANDOM_ID')),
+        mockAddress,
+        ZERO_ADDRESS
+      )
+    ).to.be.revertedWith(INVALID_OWNER_REVERT_MSG);
+  });
+
+  it('Tests adding both a proxied and non-proxied addres with `setAddress()`', async () => {
+    const {addressesProvider, users} = testEnv;
+    const {INVALID_OWNER_REVERT_MSG} = ProtocolErrors;
+
+    const currentAddressesProviderOwner = users[1];
+
+    const mockNonProxiedAddress = createRandomAddress();
+    const nonProxiedAddressId = utils.keccak256(utils.toUtf8Bytes('RANDOM_NON_PROXIED'));
+
+    const mockLendingPool = await deployLendingPool();
+    const proxiedAddressId = utils.keccak256(utils.toUtf8Bytes('RANDOM_PROXIED'));
+
+    const nonProxiedAddressSetReceipt = await waitForTx(
+      await addressesProvider
+        .connect(currentAddressesProviderOwner.signer)
+        .setAddress(nonProxiedAddressId, mockNonProxiedAddress, ZERO_ADDRESS)
+    );
+
+    expect(mockNonProxiedAddress.toLowerCase()).to.be.equal(
+      (await addressesProvider.getAddress(nonProxiedAddressId)).toLowerCase()
+    );
+
+    if (!nonProxiedAddressSetReceipt.events || nonProxiedAddressSetReceipt.events?.length < 1) {
+      throw new Error('INVALID_EVENT_EMMITED');
+    }
+
+    expect(nonProxiedAddressSetReceipt.events[0].event).to.be.equal('AddressSet');
+    expect(nonProxiedAddressSetReceipt.events[0].args?.id).to.be.equal(nonProxiedAddressId);
+    expect(nonProxiedAddressSetReceipt.events[0].args?.newAddress).to.be.equal(
+      mockNonProxiedAddress
+    );
+    expect(nonProxiedAddressSetReceipt.events[0].args?.hasProxy).to.be.equal(false);
+
+    const proxiedAddressSetReceipt = await waitForTx(
+      await addressesProvider
+        .connect(currentAddressesProviderOwner.signer)
+        .setAddress(proxiedAddressId, ZERO_ADDRESS, mockLendingPool.address)
+    );
+
+    if (!proxiedAddressSetReceipt.events || proxiedAddressSetReceipt.events?.length < 2) {
+      throw new Error('INVALID_EVENT_EMMITED');
+    }
+
+    expect(proxiedAddressSetReceipt.events[0].event).to.be.equal('ProxyCreated');
+    expect(proxiedAddressSetReceipt.events[1].event).to.be.equal('AddressSet');
+    expect(proxiedAddressSetReceipt.events[1].args?.id).to.be.equal(proxiedAddressId);
+    expect(proxiedAddressSetReceipt.events[1].args?.newAddress).to.be.equal(
+      mockLendingPool.address
+    );
+    expect(proxiedAddressSetReceipt.events[1].args?.hasProxy).to.be.equal(true);
   });
 });
