@@ -134,7 +134,17 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
-    _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
+
+    if(amount == 0){
+      return;
+    }
+
+    //compared to the normal mint, we don't check for rounding errors.
+    //the amount to mint can easily be very small since is a fraction of the interest
+    //accrued. in that case, the treasury will experience a (very small) loss, but it
+    //wont cause potentially valid transactions to fail.
+
+    _mint(RESERVE_TREASURY_ADDRESS, amount.rayDiv(index));
 
     //transfer event to track balances
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
