@@ -42,8 +42,27 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Freezes the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.freezeReserve(weth.address);
-    const {isFreezed} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
     expect(isFreezed).to.be.equal(true);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);    
   });
 
   it('Unfreezes the ETH reserve', async () => {
@@ -73,8 +92,28 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Deactivates the ETH reserve for borrowing', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.disableBorrowingOnReserve(weth.address);
-    const {borrowingEnabled} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed
+    } = await pool.getReserveConfigurationData(weth.address);
+
     expect(borrowingEnabled).to.be.equal(false);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
+
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
@@ -180,7 +219,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-
   it('Changes the reserve factor of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.setReserveFactor(weth.address, '1000');
@@ -195,7 +233,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       CALLER_NOT_AAVE_ADMIN
     ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
-
 
   it('Changes liquidation threshold of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
