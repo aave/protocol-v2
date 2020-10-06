@@ -423,12 +423,28 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Changes liquidation bonus of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
-    await configurator.setLiquidationBonus(weth.address, '110');
-    const {liquidationBonus} = await pool.getReserveConfigurationData(weth.address);
-    expect(liquidationBonus.toString()).to.be.bignumber.equal(
-      '110',
-      'Invalid Liquidation discount'
-    );
+    await configurator.setLiquidationBonus(weth.address, '11000');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(6000);
+    expect(liquidationThreshold).to.be.equal(7500);
+    expect(liquidationBonus).to.be.equal(11000);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Check the onlyAaveAdmin on setLiquidationBonus', async () => {
