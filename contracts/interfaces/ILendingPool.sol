@@ -428,7 +428,7 @@ interface ILendingPool {
     uint256 amount
   ) external view returns (bool);
 
-  function getReserves() external view returns (address[] memory);
+  function getReservesList() external view returns (address[] memory);
 
   /**
    * @dev Set the _pause state

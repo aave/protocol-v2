@@ -86,7 +86,7 @@ contract WalletBalanceProvider {
   {
     ILendingPool pool = ILendingPool(_provider.getLendingPool());
 
-    address[] memory reserves = pool.getReserves();
+    address[] memory reserves = pool.getReservesList();
 
     uint256[] memory balances = new uint256[](reserves.length);
 
