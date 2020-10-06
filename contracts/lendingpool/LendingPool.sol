@@ -951,10 +951,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     
     require(_reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
   
+    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0]==asset;
+
+    if(!reserveAlreadyAdded){
       _reserves[asset].id = uint8(_reservesCount);
       _reservesList[_reservesCount] = asset;
 
       _reservesCount++;
+    }
   }
 
   /**
