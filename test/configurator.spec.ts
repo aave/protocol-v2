@@ -320,10 +320,29 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Changes LTV of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
-    await configurator.setLtv(weth.address, '60');
-    const {ltv} = await pool.getReserveConfigurationData(weth.address);
-    expect(ltv.toString()).to.be.bignumber.equal('60', 'Invalid LTV');
-  });
+    await configurator.setLtv(weth.address, '6000');
+   const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(6000);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
+    });
 
   it('Check the onlyAaveAdmin on setLtv', async () => {
     const {configurator, users, weth} = testEnv;
