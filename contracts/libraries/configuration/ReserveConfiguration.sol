@@ -15,7 +15,7 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 library ReserveConfiguration {
   uint256 constant LTV_MASK = 0xFFFFFFFFFFFFFFFF0000;
   uint256 constant LIQUIDATION_THRESHOLD_MASK = 0xFFFFFFFFFFFF0000FFFF;
-  uint256 constant LIQUIDATION_BONUS_MASK = 0xFFFFFFF0000FFFFFFFF;
+  uint256 constant LIQUIDATION_BONUS_MASK = 0xFFFFFFFF0000FFFFFFFF;
   uint256 constant DECIMALS_MASK = 0xFFFFFF00FFFFFFFFFFFF;
   uint256 constant ACTIVE_MASK = 0xFFFFFEFFFFFFFFFFFFFF;
   uint256 constant FROZEN_MASK = 0xFFFFFDFFFFFFFFFFFFFF;
@@ -42,6 +42,7 @@ library ReserveConfiguration {
     //bit 57: reserve is frozen
     //bit 58: borrowing is enabled
     //bit 59: stable rate borrowing enabled
+    //bit 60-63: reserved
     //bit 64-79: reserve factor
     uint256 data;
   }
