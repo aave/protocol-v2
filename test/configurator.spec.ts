@@ -51,7 +51,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       stableBorrowRateEnabled,
       borrowingEnabled,
       isActive,
-      isFreezed
+      isFreezed,
     } = await pool.getReserveConfigurationData(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -62,15 +62,34 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);    
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Unfreezes the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.unfreezeReserve(weth.address);
 
-    const {isFreezed} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
     expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Check the onlyAaveAdmin on freezeReserve ', async () => {
@@ -101,7 +120,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       stableBorrowRateEnabled,
       borrowingEnabled,
       isActive,
-      isFreezed
+      isFreezed,
     } = await pool.getReserveConfigurationData(weth.address);
 
     expect(borrowingEnabled).to.be.equal(false);
@@ -113,7 +132,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
     expect(reserveFactor).to.be.equal(0);
-
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
