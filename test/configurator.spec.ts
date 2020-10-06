@@ -183,8 +183,27 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Deactivates the ETH reserve as collateral', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.disableReserveAsCollateral(weth.address);
-    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(weth.address);
-    expect(usageAsCollateralEnabled).to.be.equal(false);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(0);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Activates the ETH reserve as collateral', async () => {
