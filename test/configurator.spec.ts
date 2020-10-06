@@ -208,10 +208,29 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Activates the ETH reserve as collateral', async () => {
     const {configurator, pool, weth} = testEnv;
-    await configurator.enableReserveAsCollateral(weth.address, '75', '80', '105');
+    await configurator.enableReserveAsCollateral(weth.address, '7500', '8000', '10500');
 
-    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(weth.address);
-    expect(usageAsCollateralEnabled).to.be.equal(true);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Check the onlyAaveAdmin on disableReserveAsCollateral ', async () => {
@@ -235,8 +254,27 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Disable stable borrow rate on the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.disableReserveStableRate(weth.address);
-    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(false);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Enables stable borrow rate on the ETH reserve', async () => {
