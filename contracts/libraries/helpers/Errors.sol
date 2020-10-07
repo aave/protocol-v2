@@ -44,6 +44,7 @@ library Errors {
   string public constant FAILED_COLLATERAL_SWAP = '55';
   string public constant INVALID_EQUAL_ASSETS_TO_SWAP = '56';
   string public constant NO_MORE_RESERVES_ALLOWED = '59';
+  string public constant INVALID_FLASH_LOAN_EXECUTOR_RETURN = '60';
 
   // require error messages - aToken
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
