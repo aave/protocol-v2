@@ -54,7 +54,8 @@ library ValidationLogic {
     uint256 userBalance,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   ) external view {
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
@@ -69,6 +70,7 @@ library ValidationLogic {
         reservesData,
         userConfig,
         reserves,
+        reservesCount,
         oracle
       ),
       Errors.TRANSFER_NOT_ALLOWED
@@ -119,7 +121,8 @@ library ValidationLogic {
     uint256 maxStableLoanPercent,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   ) external view {
     ValidateBorrowLocalVars memory vars;
@@ -154,6 +157,7 @@ library ValidationLogic {
       reservesData,
       userConfig,
       reserves,
+      reservesCount,
       oracle
     );
 
@@ -298,7 +302,8 @@ library ValidationLogic {
     address reserveAddress,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   ) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
@@ -313,6 +318,7 @@ library ValidationLogic {
         reservesData,
         userConfig,
         reserves,
+        reservesCount,
         oracle
       ),
       Errors.DEPOSIT_ALREADY_IN_USE

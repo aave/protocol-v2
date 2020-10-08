@@ -154,6 +154,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       _reserves,
       _usersConfig[user],
       _reservesList,
+      _reservesCount,
       _addressesProvider.getPriceOracle()
     );
 
@@ -325,6 +326,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       _reserves,
       _usersConfig[user],
       _reservesList,
+      _reservesCount,
       _addressesProvider.getPriceOracle()
     );
 
@@ -412,7 +414,11 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       vars.actualAmountToLiquidate,
       0
     );
-    IERC20(principal).safeTransferFrom(receiver, vars.principalAToken, vars.actualAmountToLiquidate);
+    IERC20(principal).safeTransferFrom(
+      receiver,
+      vars.principalAToken,
+      vars.actualAmountToLiquidate
+    );
 
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
@@ -528,6 +534,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       _reserves,
       _usersConfig[msg.sender],
       _reservesList,
+      _reservesCount,
       _addressesProvider.getPriceOracle()
     );
 

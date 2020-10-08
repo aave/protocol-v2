@@ -58,7 +58,8 @@ library GenericLogic {
     uint256 amount,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map calldata userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   ) external view returns (bool) {
     if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
@@ -79,7 +80,7 @@ library GenericLogic {
       ,
       vars.avgLiquidationThreshold,
 
-    ) = calculateUserAccountData(user, reservesData, userConfig, reserves, oracle);
+    ) = calculateUserAccountData(user, reservesData, userConfig, reserves, reservesCount, oracle);
 
     if (vars.borrowBalanceETH == 0) {
       return true; //no borrows - no reasons to block the transfer
@@ -149,7 +150,8 @@ library GenericLogic {
     address user,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map memory userConfig,
-    address[] memory reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   )
     internal
@@ -167,7 +169,7 @@ library GenericLogic {
     if (userConfig.isEmpty()) {
       return (0, 0, 0, 0, uint256(-1));
     }
-    for (vars.i = 0; vars.i < reserves.length; vars.i++) {
+    for (vars.i = 0; vars.i < reservesCount; vars.i++) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
         continue;
       }

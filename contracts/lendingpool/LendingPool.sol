@@ -144,6 +144,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reserves,
       _usersConfig[msg.sender],
       _reservesList,
+      _reservesCount,
       _addressesProvider.getPriceOracle()
     );
 
@@ -424,6 +425,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reserves,
       _usersConfig[msg.sender],
       _reservesList,
+      _reservesCount,
       _addressesProvider.getPriceOracle()
     );
 
@@ -753,6 +755,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reserves,
       _usersConfig[user],
       _reservesList,
+      _reservesCount,
       _addressesProvider.getPriceOracle()
     );
     
@@ -791,10 +794,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       user
     );
     usageAsCollateralEnabled = _usersConfig[user].isUsingAsCollateral(reserve.id);
-  }
-
-  function getReserves() external override view returns (address[] memory) {
-    return _reservesList;
   }
 
   receive() external payable {
@@ -889,6 +888,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reserves,
       userConfig,
       _reservesList,
+      _reservesCount,
       oracle
     );
 
@@ -948,15 +948,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev adds a reserve to the array of the _reserves address
    **/
   function _addReserveToList(address asset) internal {
-    bool reserveAlreadyAdded = false;
-    require(_reservesList.length < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
-    for (uint256 i = 0; i < _reservesList.length; i++)
-      if (_reservesList[i] == asset) {
-        reserveAlreadyAdded = true;
-      }
-    if (!reserveAlreadyAdded) {
-      _reserves[asset].id = uint8(_reservesList.length);
-      _reservesList.push(asset);
+    
+    require(_reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
+  
+    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0]==asset;
+
+    if(!reserveAlreadyAdded){
+      _reserves[asset].id = uint8(_reservesCount);
+      _reservesList[_reservesCount] = asset;
+
+      _reservesCount++;
     }
   }
 
@@ -1004,6 +1005,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         _reserves,
         _usersConfig[user],
         _reservesList,
+        _reservesCount,
         _addressesProvider.getPriceOracle()
       );
   }
@@ -1028,5 +1030,24 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    */
   function paused() external override view returns (bool) {
     return _paused;
+  }
+
+  /**
+   * @dev returns the list of the initialized reserves
+   **/
+  function getReservesList() external override view returns (address[] memory) {
+    address[] memory _activeReserves = new address[](_reservesCount);
+
+    for(uint256 i = 0; i < _reservesCount; i++){
+      _activeReserves[i] = _reservesList[i];
+    }
+    return _activeReserves;
+  }
+
+  /**
+   * @dev returns the addresses provider
+   **/
+  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
+    return _addressesProvider;
   }
 }
