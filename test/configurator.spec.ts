@@ -42,16 +42,54 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Freezes the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.freezeReserve(weth.address);
-    const {isFreezed} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
     expect(isFreezed).to.be.equal(true);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Unfreezes the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.unfreezeReserve(weth.address);
 
-    const {isFreezed} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
     expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Check the onlyAaveAdmin on freezeReserve ', async () => {
@@ -73,16 +111,56 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Deactivates the ETH reserve for borrowing', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.disableBorrowingOnReserve(weth.address);
-    const {borrowingEnabled} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
     expect(borrowingEnabled).to.be.equal(false);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.enableBorrowingOnReserve(weth.address, true);
-    const {borrowingEnabled} = await pool.getReserveConfigurationData(weth.address);
     const {variableBorrowIndex} = await pool.getReserveData(weth.address);
+
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
     expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
+
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
 
@@ -105,16 +183,54 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Deactivates the ETH reserve as collateral', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.disableReserveAsCollateral(weth.address);
-    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(weth.address);
-    expect(usageAsCollateralEnabled).to.be.equal(false);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(0);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Activates the ETH reserve as collateral', async () => {
     const {configurator, pool, weth} = testEnv;
-    await configurator.enableReserveAsCollateral(weth.address, '75', '80', '105');
+    await configurator.enableReserveAsCollateral(weth.address, '7500', '8000', '10500');
 
-    const {usageAsCollateralEnabled} = await pool.getReserveConfigurationData(weth.address);
-    expect(usageAsCollateralEnabled).to.be.equal(true);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Check the onlyAaveAdmin on disableReserveAsCollateral ', async () => {
@@ -138,15 +254,53 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Disable stable borrow rate on the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.disableReserveStableRate(weth.address);
-    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(false);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Enables stable borrow rate on the ETH reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.enableReserveStableRate(weth.address);
-    const {stableBorrowRateEnabled} = await pool.getReserveConfigurationData(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(7500);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {
@@ -167,9 +321,28 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Changes LTV of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
-    await configurator.setLtv(weth.address, '60');
-    const {ltv} = await pool.getReserveConfigurationData(weth.address);
-    expect(ltv.toString()).to.be.bignumber.equal('60', 'Invalid LTV');
+    await configurator.setLtv(weth.address, '6000');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(6000);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(0);
   });
 
   it('Check the onlyAaveAdmin on setLtv', async () => {
@@ -180,12 +353,30 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-
   it('Changes the reserve factor of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
     await configurator.setReserveFactor(weth.address, '1000');
-    const {reserveFactor} = await pool.getReserveConfigurationData(weth.address);
-    expect(reserveFactor.toString()).to.be.bignumber.equal('1000', 'Invalid reserve factor');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(6000);
+    expect(liquidationThreshold).to.be.equal(8000);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Check the onlyLendingPoolManager on setReserveFactor', async () => {
@@ -196,15 +387,30 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
 
-
   it('Changes liquidation threshold of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
-    await configurator.setLiquidationThreshold(weth.address, '75');
-    const {liquidationThreshold} = await pool.getReserveConfigurationData(weth.address);
-    expect(liquidationThreshold.toString()).to.be.bignumber.equal(
-      '75',
-      'Invalid Liquidation threshold'
-    );
+    await configurator.setLiquidationThreshold(weth.address, '7500');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(6000);
+    expect(liquidationThreshold).to.be.equal(7500);
+    expect(liquidationBonus).to.be.equal(10500);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Check the onlyAaveAdmin on setLiquidationThreshold', async () => {
@@ -217,12 +423,28 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Changes liquidation bonus of the reserve', async () => {
     const {configurator, pool, weth} = testEnv;
-    await configurator.setLiquidationBonus(weth.address, '110');
-    const {liquidationBonus} = await pool.getReserveConfigurationData(weth.address);
-    expect(liquidationBonus.toString()).to.be.bignumber.equal(
-      '110',
-      'Invalid Liquidation discount'
-    );
+    await configurator.setLiquidationBonus(weth.address, '11000');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFreezed,
+    } = await pool.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFreezed).to.be.equal(false);
+    expect(decimals).to.be.equal(18);
+    expect(ltv).to.be.equal(6000);
+    expect(liquidationThreshold).to.be.equal(7500);
+    expect(liquidationBonus).to.be.equal(11000);
+    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Check the onlyAaveAdmin on setLiquidationBonus', async () => {
