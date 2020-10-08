@@ -19,7 +19,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 ETH, borrows 100 DAI at a variable rate, user 0 rebalances user 1 (revert expected)",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 5 ETH, borrows 600 DAI at a variable rate, user 0 rebalances user 1 (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -51,7 +51,7 @@
           "name": "mint",
           "args": {
             "reserve": "WETH",
-            "amount": "1",
+            "amount": "5",
             "user": "1"
           },
           "expected": "success"
@@ -69,7 +69,7 @@
           "args": {
             "reserve": "WETH",
 
-            "amount": "1",
+            "amount": "5",
             "user": "1"
           },
           "expected": "success"
@@ -78,8 +78,8 @@
           "name": "borrow",
           "args": {
             "reserve": "DAI",
-            "amount": "100",
-            "borrowRateMode": "variable",
+            "amount": "250",
+            "borrowRateMode": "stable",
             "user": "1",
             "timeTravel": "365"
           },
@@ -98,14 +98,16 @@
       ]
     },
     {
-      "description": "User 1 swaps to stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "description": "User 1 borrows another 200 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
       "actions": [
         {
-          "name": "swapBorrowRateMode",
+          "name": "borrow",
           "args": {
             "reserve": "DAI",
+            "amount": "200",
+            "borrowRateMode": "stable",
             "user": "1",
-            "borrowRateMode": "variable"
+            "timeTravel": "365"
           },
           "expected": "success"
         },
@@ -122,7 +124,59 @@
       ]
     },
     {
-      "description": "User 2 deposits ETH and borrows the remaining DAI, causing the stable rates to rise (liquidity rate < user 1 borrow rate). User 0 tries to rebalance user 1 (revert expected)",
+      "description": "User 1 borrows another 200 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "actions": [
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "DAI",
+            "amount": "200",
+            "borrowRateMode": "stable",
+            "user": "1",
+            "timeTravel": "365"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "rebalanceStableBorrowRate",
+          "args": {
+            "reserve": "DAI",
+            "user": "0",
+            "target": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Interest rate rebalance conditions were not met"
+        }
+      ]
+    },
+    {
+      "description": "User 1 borrows another 100 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "actions": [
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "DAI",
+            "amount": "100",
+            "borrowRateMode": "stable",
+            "user": "1",
+            "timeTravel": "365"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "rebalanceStableBorrowRate",
+          "args": {
+            "reserve": "DAI",
+            "user": "0",
+            "target": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Interest rate rebalance conditions were not met"
+        }
+      ]
+    },
+    {
+      "description": "User 2 deposits ETH and borrows the remaining DAI, causing the stable rates to rise (usage ratio = 94%). User 0 tries to rebalance user 1 (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -155,7 +209,7 @@
           "name": "borrow",
           "args": {
             "reserve": "DAI",
-            "amount": "100",
+            "amount": "190",
             "borrowRateMode": "variable",
             "user": "2"
           },
@@ -174,40 +228,13 @@
       ]
     },
     {
-      "description": "User 2 borrows more DAI, causing the liquidity rate to rise above user 1 stable borrow rate User 0 rebalances user 1",
+      "description": "User 2 borrows the remaining DAI (usage ratio = 100%). User 0 rebalances user 1",
       "actions": [
-        {
-          "name": "mint",
-          "args": {
-            "reserve": "WETH",
-            "amount": "3",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "approve",
-          "args": {
-            "reserve": "WETH",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "WETH",
-
-            "amount": "3",
-            "user": "2"
-          },
-          "expected": "success"
-        },
         {
           "name": "borrow",
           "args": {
             "reserve": "DAI",
-            "amount": "700",
+            "amount": "60",
             "borrowRateMode": "variable",
             "user": "2"
           },

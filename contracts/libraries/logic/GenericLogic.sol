@@ -29,11 +29,10 @@ library GenericLogic {
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
-    uint256 ltv;
+    uint256 liquidationThreshold;
     uint256 collateralBalanceETH;
     uint256 borrowBalanceETH;
-    uint256 currentLiquidationThreshold;
-    uint256 reserveLiquidationThreshold;
+    uint256 avgLiquidationThreshold;
     uint256 amountToDecreaseETH;
     uint256 collateralBalancefterDecrease;
     uint256 liquidationThresholdAfterDecrease;
@@ -59,19 +58,19 @@ library GenericLogic {
     uint256 amount,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map calldata userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   ) external view returns (bool) {
     if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
       return true;
     }
 
-    // Usage of a memory struct of vars to avoid "Stack too deep" errors due to local variables
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (vars.ltv, , , vars.decimals) = reservesData[asset].configuration.getParams();
+    (, vars.liquidationThreshold, , vars.decimals) = reservesData[asset].configuration.getParams();
 
-    if (vars.ltv == 0) {
+    if (vars.liquidationThreshold == 0) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer
     }
 
@@ -79,9 +78,9 @@ library GenericLogic {
       vars.collateralBalanceETH,
       vars.borrowBalanceETH,
       ,
-      vars.currentLiquidationThreshold,
+      vars.avgLiquidationThreshold,
 
-    ) = calculateUserAccountData(user, reservesData, userConfig, reserves, oracle);
+    ) = calculateUserAccountData(user, reservesData, userConfig, reserves, reservesCount, oracle);
 
     if (vars.borrowBalanceETH == 0) {
       return true; //no borrows - no reasons to block the transfer
@@ -100,8 +99,8 @@ library GenericLogic {
 
     vars.liquidationThresholdAfterDecrease = vars
       .collateralBalanceETH
-      .mul(vars.currentLiquidationThreshold)
-      .sub(vars.amountToDecreaseETH.mul(vars.reserveLiquidationThreshold))
+      .mul(vars.avgLiquidationThreshold)
+      .sub(vars.amountToDecreaseETH.mul(vars.liquidationThreshold))
       .div(vars.collateralBalancefterDecrease);
 
     uint256 healthFactorAfterDecrease = calculateHealthFactorFromBalances(
@@ -151,7 +150,8 @@ library GenericLogic {
     address user,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map memory userConfig,
-    address[] memory reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   )
     internal
@@ -169,7 +169,7 @@ library GenericLogic {
     if (userConfig.isEmpty()) {
       return (0, 0, 0, 0, uint256(-1));
     }
-    for (vars.i = 0; vars.i < reserves.length; vars.i++) {
+    for (vars.i = 0; vars.i < reservesCount; vars.i++) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
         continue;
       }
@@ -184,7 +184,7 @@ library GenericLogic {
       vars.tokenUnit = 10**vars.decimals;
       vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
-      if (vars.ltv != 0 && userConfig.isUsingAsCollateral(vars.i)) {
+      if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
         vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(user);
 
         uint256 liquidityBalanceETH = vars

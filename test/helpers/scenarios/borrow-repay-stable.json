@@ -627,6 +627,17 @@
           "expected": "success"
         },
         {
+          "name": "repay",
+          "args": {
+            "reserve": "DAI",
+            "amount": "-1",
+            "user": "1",
+            "onBehalfOf": "1",
+            "borrowRateMode": "variable"
+          },
+          "expected": "success"
+        },
+        {
           "name": "withdraw",
           "args": {
             "reserve": "DAI",

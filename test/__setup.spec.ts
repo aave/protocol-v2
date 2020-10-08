@@ -85,7 +85,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry();
   await waitForTx(
-    await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 0)
+    await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 1)
   );
 
   const lendingPoolImpl = await deployLendingPool();

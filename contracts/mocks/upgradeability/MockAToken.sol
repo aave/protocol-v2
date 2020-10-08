@@ -6,12 +6,23 @@ import {LendingPool} from '../../lendingpool/LendingPool.sol';
 
 contract MockAToken is AToken {
   constructor(
-    LendingPool _pool,
-    address _underlyingAssetAddress,
-    string memory _tokenName,
-    string memory _tokenSymbol,
+    LendingPool pool,
+    address underlyingAssetAddress,
+    address reserveTreasury,
+    string memory tokenName,
+    string memory tokenSymbol,
     address incentivesController
-  ) public AToken(_pool, _underlyingAssetAddress, _tokenName, _tokenSymbol, incentivesController) {}
+  )
+    public
+    AToken(
+      pool,
+      underlyingAssetAddress,
+      reserveTreasury,
+      tokenName,
+      tokenSymbol,
+      incentivesController
+    )
+  {}
 
   function getRevision() internal override pure returns (uint256) {
     return 0x2;

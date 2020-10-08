@@ -46,6 +46,7 @@ const {
 } = CommonsConfig;
 
 export type MockTokenMap = {[symbol: string]: MintableERC20};
+import {ZERO_ADDRESS} from './constants';
 import {MockSwapAdapter} from '../types/MockSwapAdapter';
 import {signTypedData_v4, TypedData} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
@@ -421,7 +422,14 @@ export const deployGenericAToken = async (
   verify: boolean
 ) => {
   const id = eContractid.AToken;
-  const args = [poolAddress, underlyingAssetAddress, name, symbol, incentivesController];
+  const args = [
+    poolAddress,
+    underlyingAssetAddress,
+    ZERO_ADDRESS,
+    name,
+    symbol,
+    incentivesController,
+  ];
   const instance = await deployContract<AToken>(id, args);
 
   if (verify) {
@@ -478,7 +486,23 @@ export const getAToken = async (address?: tEthereumAddress) => {
   );
 };
 
-export const getMintableERC20 = async (address: tEthereumAddress) => {
+export const getStableDebtToken = async (address?: tEthereumAddress) => {
+  return await getContract<AToken>(
+    eContractid.StableDebtToken,
+    address ||
+      (await getDb().get(`${eContractid.StableDebtToken}.${BRE.network.name}`).value()).address
+  );
+};
+
+export const getVariableDebtToken = async (address?: tEthereumAddress) => {
+  return await getContract<AToken>(
+    eContractid.VariableDebtToken,
+    address ||
+      (await getDb().get(`${eContractid.VariableDebtToken}.${BRE.network.name}`).value()).address
+  );
+};
+
+export const getMintableErc20 = async (address: tEthereumAddress) => {
   return await getContract<MintableERC20>(
     eContractid.MintableERC20,
     address ||

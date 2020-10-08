@@ -20,7 +20,7 @@ contract AaveProtocolTestHelpers {
 
   function getAllReservesTokens() external view returns (TokenData[] memory) {
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
-    address[] memory reserves = pool.getReserves();
+    address[] memory reserves = pool.getReservesList();
     TokenData[] memory reservesTokens = new TokenData[](reserves.length);
     for (uint256 i = 0; i < reserves.length; i++) {
       reservesTokens[i] = TokenData({
@@ -35,7 +35,7 @@ contract AaveProtocolTestHelpers {
 
   function getAllATokens() external view returns (TokenData[] memory) {
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
-    address[] memory reserves = pool.getReserves();
+    address[] memory reserves = pool.getReservesList();
     TokenData[] memory aTokens = new TokenData[](reserves.length);
     for (uint256 i = 0; i < reserves.length; i++) {
       (address aTokenAddress, , ) = pool.getReserveTokensAddresses(reserves[i]);

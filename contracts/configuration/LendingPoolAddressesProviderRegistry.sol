@@ -14,8 +14,8 @@ import {Errors} from '../libraries/helpers/Errors.sol';
  **/
 
 contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesProviderRegistry {
-  mapping(address => uint256) addressesProviders;
-  address[] addressesProvidersList;
+  mapping(address => uint256) private _addressesProviders;
+  address[] private _addressesProvidersList;
 
   /**
    * @dev returns if an addressesProvider is registered or not
@@ -28,7 +28,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
     view
     returns (uint256)
   {
-    return addressesProviders[provider];
+    return _addressesProviders[provider];
   }
 
   /**
@@ -36,13 +36,13 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @return the list of addressesProviders
    **/
   function getAddressesProvidersList() external override view returns (address[] memory) {
-    uint256 maxLength = addressesProvidersList.length;
+    uint256 maxLength = _addressesProvidersList.length;
 
     address[] memory activeProviders = new address[](maxLength);
 
-    for (uint256 i = 0; i < addressesProvidersList.length; i++) {
-      if (addressesProviders[addressesProvidersList[i]] > 0) {
-        activeProviders[i] = addressesProvidersList[i];
+    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
+      if (_addressesProviders[_addressesProvidersList[i]] > 0) {
+        activeProviders[i] = _addressesProvidersList[i];
       }
     }
 
@@ -54,7 +54,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be registered
    **/
   function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
-    addressesProviders[provider] = id;
+    _addressesProviders[provider] = id;
     _addToAddressesProvidersList(provider);
     emit AddressesProviderRegistered(provider);
   }
@@ -64,8 +64,8 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be unregistered
    **/
   function unregisterAddressesProvider(address provider) external override onlyOwner {
-    require(addressesProviders[provider] > 0, Errors.PROVIDER_NOT_REGISTERED);
-    addressesProviders[provider] = 0;
+    require(_addressesProviders[provider] > 0, Errors.PROVIDER_NOT_REGISTERED);
+    _addressesProviders[provider] = 0;
     emit AddressesProviderUnregistered(provider);
   }
 
@@ -74,12 +74,25 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be added
    **/
   function _addToAddressesProvidersList(address provider) internal {
-    for (uint256 i = 0; i < addressesProvidersList.length; i++) {
-      if (addressesProvidersList[i] == provider) {
+    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
+      if (_addressesProvidersList[i] == provider) {
         return;
       }
     }
 
-    addressesProvidersList.push(provider);
+    _addressesProvidersList.push(provider);
+  }
+
+  /**
+   * @dev Returns the id on an `addressesProvider` or address(0) if not registered
+   * @return The id or address(0)
+   */
+  function getAddressesProviderIdByAddress(address addressesProvider)
+    external
+    override
+    view
+    returns (uint256)
+  {
+    return _addressesProviders[addressesProvider];
   }
 }

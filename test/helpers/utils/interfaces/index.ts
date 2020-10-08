@@ -6,8 +6,7 @@ export interface UserReserveData {
   currentStableDebt: BigNumber;
   currentVariableDebt: BigNumber;
   principalStableDebt: BigNumber;
-  principalVariableDebt: BigNumber;
-  variableBorrowIndex: BigNumber;
+  scaledVariableDebt: BigNumber;
   liquidityRate: BigNumber;
   stableBorrowRate: BigNumber;
   stableRateLastUpdated: BigNumber;
@@ -22,8 +21,10 @@ export interface ReserveData {
   decimals: BigNumber;
   totalLiquidity: BigNumber;
   availableLiquidity: BigNumber;
-  totalBorrowsStable: BigNumber;
-  totalBorrowsVariable: BigNumber;
+  totalStableDebt: BigNumber;
+  totalVariableDebt: BigNumber;
+  principalStableDebt: BigNumber;
+  scaledVariableDebt: BigNumber;
   averageStableBorrowRate: BigNumber;
   variableBorrowRate: BigNumber;
   stableBorrowRate: BigNumber;
@@ -33,6 +34,7 @@ export interface ReserveData {
   aTokenAddress: string;
   marketStableRate: BigNumber;
   lastUpdateTimestamp: BigNumber;
+  totalStableDebtLastUpdated: BigNumber;
   liquidityRate: BigNumber;
   [key: string]: BigNumber | string;
 }

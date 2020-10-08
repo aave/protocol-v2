@@ -20,7 +20,7 @@ import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/
 import {
   convertToCurrencyDecimals,
   getAToken,
-  getMintableERC20,
+  getMintableErc20,
 } from '../../helpers/contracts-helpers';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
@@ -31,6 +31,7 @@ import {ReserveData, UserReserveData} from './utils/interfaces';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
+import {time} from 'console';
 
 const {expect} = chai;
 
@@ -47,7 +48,8 @@ const almostEqualOrEqual = function (
       key === 'marketStableRate' ||
       key === 'symbol' ||
       key === 'aTokenAddress' ||
-      key === 'decimals'
+      key === 'decimals' ||
+      key === 'totalStableDebtLastUpdated'
     ) {
       // skipping consistency check on accessory data
       return;
@@ -112,7 +114,7 @@ export const configuration: ActionsConfig = <ActionsConfig>{};
 export const mint = async (reserveSymbol: string, amount: string, user: SignerWithAddress) => {
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
-  const token = await getMintableERC20(reserve);
+  const token = await getMintableErc20(reserve);
 
   await waitForTx(
     await token.connect(user.signer).mint(await convertToCurrencyDecimals(reserve, amount))
@@ -123,7 +125,7 @@ export const approve = async (reserveSymbol: string, user: SignerWithAddress, te
   const {pool} = testEnv;
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
-  const token = await getMintableERC20(reserve);
+  const token = await getMintableErc20(reserve);
 
   await token.connect(user.signer).approve(pool.address, '100000000000000000000000000000');
 };
@@ -261,10 +263,6 @@ export const withdraw = async (
       txCost
     );
 
-    const actualAmountWithdrawn = userDataBefore.currentATokenBalance.minus(
-      expectedUserData.currentATokenBalance
-    );
-
     expectEqual(reserveDataAfter, expectedReserveData);
     expectEqual(userDataAfter, expectedUserData);
 
@@ -370,8 +368,7 @@ export const borrow = async (
       expectedReserveData,
       userDataBefore,
       txTimestamp,
-      timestamp,
-      txCost
+      timestamp
     );
 
     expectEqual(reserveDataAfter, expectedReserveData);
@@ -474,8 +471,7 @@ export const repay = async (
       user.address,
       onBehalfOf.address,
       txTimestamp,
-      timestamp,
-      txCost
+      timestamp
     );
 
     expectEqual(reserveDataAfter, expectedReserveData);
@@ -740,9 +736,12 @@ export const getContractsData = async (
   sender?: string
 ) => {
   const {pool} = testEnv;
-  const reserveData = await getReserveData(pool, reserve);
-  const userData = await getUserData(pool, reserve, user, sender || user);
-  const timestamp = await timeLatest();
+
+  const [userData, reserveData, timestamp] = await Promise.all([
+    getUserData(pool, reserve, user, sender || user),
+    getReserveData(pool, reserve),
+    timeLatest(),
+  ]);
 
   return {
     reserveData,

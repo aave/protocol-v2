@@ -124,7 +124,9 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     ).minus(usdcUserDataBefore.currentVariableDebt);
 
     const expectedStableDebtIncrease = calcExpectedStableDebtTokenBalance(
-      usdcUserDataBefore,
+      usdcUserDataBefore.principalStableDebt,
+      usdcUserDataBefore.stableBorrowRate,
+      usdcUserDataBefore.stableRateLastUpdated,
       new BigNumber(repayWithCollateralTimestamp)
     ).minus(usdcUserDataBefore.currentStableDebt);
 
@@ -232,7 +234,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       userData: usdcUserDataBefore,
     } = await getContractsData(usdc.address, user.address, testEnv);
 
-    const amountToRepay = usdcReserveDataBefore.totalBorrowsVariable.dividedBy(2).toFixed(0);
+    const amountToRepay = usdcReserveDataBefore.totalVariableDebt.dividedBy(2).toFixed(0);
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -294,7 +296,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       'INVALID_DEBT_POSITION'
     );
 
-    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.equal(
+    expect(wethUserDataAfter.currentATokenBalance).to.be.bignumber.almostEqual(
       new BigNumber(wethUserDataBefore.currentATokenBalance).minus(
         expectedCollateralLiquidated.toString()
       ),
@@ -367,7 +369,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       userData: usdcUserDataBefore,
     } = await getContractsData(usdc.address, user.address, testEnv);
 
-    const amountToRepay = usdcReserveDataBefore.totalBorrowsVariable.toFixed(0);
+    const amountToRepay = usdcReserveDataBefore.totalVariableDebt.toFixed(0);
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -485,7 +487,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       testEnv
     );
 
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt.toString();
 
     await waitForTx(await mockSwapAdapter.setTryReentrancy(true));
 
@@ -521,7 +523,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     );
 
     // First half
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.dividedBy(2).toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt.dividedBy(2).toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await expect(
@@ -567,7 +569,10 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     );
 
     // First half
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.multipliedBy(0.6).toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt
+      .multipliedBy(0.6)
+      .toFixed(0)
+      .toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -653,7 +658,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     await increaseTime(1000);
     // Repay the remaining DAI
-    const amountToRepay = daiReserveDataBefore.totalBorrowsVariable.toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt.toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     const receipt = await waitForTx(
@@ -815,7 +820,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
       new BigNumber(repayWithCollateralTimestamp)
     ).minus(usdcUserDataBefore.currentVariableDebt);
 
-    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.equal(
+    expect(usdcUserDataAfter.currentVariableDebt).to.be.bignumber.almostEqual(
       new BigNumber(usdcUserDataBefore.currentVariableDebt)
         .minus(expectedDebtCovered.toString())
         .plus(expectedVariableDebtIncrease),
@@ -830,12 +835,13 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await oracle.setAssetPrice(dai.address, daiPrice);
   });
 
-  it('User 5 deposits WETH and DAI, then borrows USDC at Variable, then disables WETH as collateral', async () => {
+  it('User 4 deposits WETH, LEND and DAI, then borrows USDC at Variable, then disables WETH as collateral', async () => {
     const {pool, weth, dai, usdc, users} = testEnv;
     const user = users[4];
     const amountWETHToDeposit = parseEther('10');
-    const amountDAIToDeposit = parseEther('60');
-    const amountToBorrow = parseUnits('65', 6);
+    const amountDAIToDeposit = parseEther('100');
+
+    const amountToBorrow = parseUnits('75', 6);
 
     await weth.connect(user.signer).mint(amountWETHToDeposit);
     await weth.connect(user.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -848,8 +854,8 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     await pool.connect(user.signer).borrow(usdc.address, amountToBorrow, 2, 0, user.address);
   });
 
-  it('Liquidator tries to liquidates User 5 USDC loan by swapping his WETH collateral, should revert due WETH collateral disabled', async () => {
-    const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
+  it('Liquidator tries to liquidate User 5 USDC loan by swapping his WETH collateral, should revert due WETH collateral disabled', async () => {
+    const {pool, weth, dai, usdc, users, mockSwapAdapter, oracle} = testEnv;
     const user = users[4];
     const liquidator = users[5];
 
@@ -871,6 +877,14 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
 
     expect(wethUserDataBefore.usageAsCollateralEnabled).to.be.false;
 
+    //drop the price to set the HF below 1
+    const daiPrice = await oracle.getAssetPrice(dai.address);
+
+    await oracle.setAssetPrice(
+      dai.address,
+      new BigNumber(daiPrice.toString()).multipliedBy(0.9).toFixed(0)
+    );
+
     // Liquidator should NOT be able to liquidate himself with WETH, even if is disabled
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await expect(
@@ -885,6 +899,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
           '0x'
         )
     ).to.be.revertedWith(COLLATERAL_CANNOT_BE_LIQUIDATED);
+
     const repayWithCollateralTimestamp = await timeLatest();
 
     const {userData: wethUserDataAfter} = await getContractsData(
