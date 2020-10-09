@@ -131,7 +131,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
 
     //calculates the updated average stable rate
-    _avgStableRate = vars.currentAvgStableRate
+    _avgStableRate = vars
+      .currentAvgStableRate
       .rayMul(vars.previousSupply.wadToRay())
       .add(rate.rayMul(vars.amountInRay))
       .rayDiv(vars.nextSupply.wadToRay());
@@ -141,14 +142,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(address(0), user, amount);
 
-    emit MintDebt(
-      user,
-      amount,
-      previousBalance,
-      currentBalance,
-      balanceIncrease,
-      vars.newStableRate
-    );
+    emit Mint(user, amount, previousBalance, currentBalance, balanceIncrease, vars.newStableRate);
   }
 
   /**
@@ -163,7 +157,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-      
     uint256 previousSupply = totalSupply();
 
     //since the total supply and each single user debt accrue separately,
@@ -174,7 +167,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _avgStableRate = 0;
       _totalSupply = 0;
     } else {
-       uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
+      uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
       _avgStableRate = _avgStableRate
         .rayMul(previousSupply.wadToRay())
         .sub(_usersData[user].rayMul(amount.wadToRay()))
@@ -184,7 +177,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     if (amount == currentBalance) {
       _usersData[user] = 0;
       _timestamps[user] = 0;
-
     } else {
       //solium-disable-next-line
       _timestamps[user] = uint40(block.timestamp);
@@ -200,8 +192,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     // transfer event to track balances
     emit Transfer(user, address(0), amount);
- 
-    emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease);
+
+    emit Burn(user, amount, previousBalance, currentBalance, balanceIncrease);
   }
 
   /**
@@ -238,7 +230,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   /**
    * @dev returns the principal and total supply, the average borrow rate and the last supply update timestamp
    **/
-  function getSupplyData() public override view returns (uint256, uint256, uint256,uint40) {
+  function getSupplyData()
+    public
+    override
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256,
+      uint40
+    )
+  {
     uint256 avgRate = _avgStableRate;
     return (super.totalSupply(), _calcTotalSupply(avgRate), avgRate, _totalSupplyTimestamp);
   }
@@ -261,7 +263,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   /**
    * @dev returns the timestamp at which the total supply was updated
    **/
-  function getTotalSupplyLastUpdated() public override view returns(uint40) {
+  function getTotalSupplyLastUpdated() public override view returns (uint40) {
     return _totalSupplyTimestamp;
   }
 
@@ -274,13 +276,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return super.balanceOf(user);
   }
 
-
   /**
-   * @dev calculates the total supply 
+   * @dev calculates the total supply
    * @param avgRate the average rate at which calculate the total supply
    * @return The debt balance of the user since the last burn/mint action
    **/
-  function _calcTotalSupply(uint256 avgRate) internal view returns(uint256) {
+  function _calcTotalSupply(uint256 avgRate) internal view returns (uint256) {
     uint256 principalSupply = super.totalSupply();
 
     if (principalSupply == 0) {
@@ -295,14 +296,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return principalSupply.rayMul(cumulatedInterest);
   }
 
-   /**
+  /**
    * @dev mints stable debt tokens to an user
    * @param account the account receiving the debt tokens
    * @param amount the amount being minted
    * @param oldTotalSupply the total supply before the minting event
    **/
-   function _mint(address account, uint256 amount, uint256 oldTotalSupply) internal {
-
+  function _mint(
+    address account,
+    uint256 amount,
+    uint256 oldTotalSupply
+  ) internal {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.add(amount);
 
@@ -311,14 +315,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     }
   }
 
-   /**
+  /**
    * @dev burns stable debt tokens of an user
    * @param account the user getting his debt burned
    * @param amount the amount being burned
    * @param oldTotalSupply the total supply before the burning event
    **/
-  function _burn(address account, uint256 amount, uint256 oldTotalSupply) internal {
- 
+  function _burn(
+    address account,
+    uint256 amount,
+    uint256 oldTotalSupply
+  ) internal {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
 
