@@ -22,8 +22,8 @@ interface IStableDebtToken {
    * @param balanceIncrease the debt increase since the last update
    * @param newRate the rate of the debt after the minting
    **/
-  event MintDebt(
-    address user,
+  event Mint(
+    address indexed user,
     uint256 amount,
     uint256 previousBalance,
     uint256 currentBalance,
@@ -39,8 +39,8 @@ interface IStableDebtToken {
    * @param currentBalance the current balance of the user
    * @param balanceIncrease the debt increase since the last update
    **/
-  event BurnDebt(
-    address user,
+  event Burn(
+    address indexed user,
     uint256 amount,
     uint256 previousBalance,
     uint256 currentBalance,
@@ -88,7 +88,15 @@ interface IStableDebtToken {
   /**
    * @dev returns the principal, the total supply and the average stable rate
    **/
-  function getSupplyData() external view returns (uint256, uint256, uint256, uint40);
+  function getSupplyData()
+    external
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256,
+      uint40
+    );
 
   /**
    * @dev returns the timestamp of the last update of the total supply
