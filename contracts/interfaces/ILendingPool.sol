@@ -3,6 +3,8 @@ pragma solidity ^0.6.8;
 
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+
 pragma experimental ABIEncoderV2;
 
 interface ILendingPool {
@@ -360,6 +362,8 @@ interface ILendingPool {
   function getReserveNormalizedIncome(address reserve) external view returns (uint256);
 
   function getReserveNormalizedVariableDebt(address reserve) external view returns (uint256);
+
+  function getReserveData(address asset) external view returns (ReserveLogic.ReserveData memory);
 
   function balanceDecreaseAllowed(
     address reserve,
