@@ -3,6 +3,7 @@ pragma solidity ^0.6.8;
 
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 pragma experimental ABIEncoderV2;
@@ -358,6 +359,8 @@ interface ILendingPool {
     external
     view
     returns (ReserveConfiguration.Map memory);
+
+  function getUserConfiguration(address user) external view returns (UserConfiguration.Map memory);
 
   function getReserveNormalizedIncome(address reserve) external view returns (uint256);
 

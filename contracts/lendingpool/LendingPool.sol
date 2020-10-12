@@ -721,6 +721,20 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
     /**
+   * @dev returns the configuration of the user for the specific reserve
+   * @param user the user
+   * @return the configuration of the user
+   **/
+  function getUserConfiguration(address user)
+    external
+    override
+    view
+    returns (UserConfiguration.Map memory)
+  {
+    return _usersConfig[user];
+  }
+
+    /**
    * @dev returns the normalized income per unit of asset
    * @param asset the address of the reserve
    * @return the reserve normalized income
@@ -969,5 +983,4 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reservesCount++;
     }
   }
-
 }
