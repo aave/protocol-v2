@@ -90,6 +90,7 @@ export enum ProtocolErrors {
   REQUESTED_AMOUNT_TOO_SMALL = '25', // 'The requested amount is too small for a FlashLoan.'
   INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26', // 'The actual balance of the protocol is inconsistent'
   CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The actual balance of the protocol is inconsistent'
+  INVALID_FLASH_LOAN_EXECUTOR_RETURN = '60', // The flash loan received returned 0 (EOA)
 
   // require error messages - aToken
   CALLER_MUST_BE_LENDING_POOL = '28', // 'The caller of this function must be a lending pool'

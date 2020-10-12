@@ -101,7 +101,9 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    _burn(user, amount.rayDiv(index));
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
+    _burn(user, amountScaled);
 
     //transfers the underlying to the target
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
@@ -116,22 +118,39 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
    * only lending pools can call this function
    * @param user the address receiving the minted tokens
    * @param amount the amount of tokens to mint
+   * @param index the the last index of the reserve
    */
   function mint(
     address user,
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    //mint an equivalent amount of tokens to cover the new deposit
-    _mint(user, amount.rayDiv(index));
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
+    _mint(user, amountScaled);
 
     //transfer event to track balances
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
   }
 
+  /**
+   * @dev mints aTokens to reserve treasury
+   * only lending pools can call this function
+   * @param amount the amount of tokens to mint to the treasury
+   * @param index the the last index of the reserve
+   */
   function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
-    _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
+    if (amount == 0) {
+      return;
+    }
+
+    //compared to the normal mint, we don't check for rounding errors.
+    //the amount to mint can easily be very small since is a fraction of the interest
+    //accrued. in that case, the treasury will experience a (very small) loss, but it
+    //wont cause potentially valid transactions to fail.
+
+    _mint(RESERVE_TREASURY_ADDRESS, amount.rayDiv(index));
 
     //transfer event to track balances
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);

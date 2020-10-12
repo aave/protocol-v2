@@ -579,7 +579,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IAToken(vars.aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
 
     //execute action of the receiver
-    vars.receiver.executeOperation(asset, amount, vars.premium, params);
+    require(
+      vars.receiver.executeOperation(asset, amount, vars.premium, params),
+      Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
+    );
 
     vars.amountPlusPremium = amount.add(vars.premium);
 
