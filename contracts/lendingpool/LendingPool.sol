@@ -571,7 +571,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     //execute action of the receiver
     require(
-      vars.receiver.executeOperation(asset, amount, vars.premium, params) != 0,
+      vars.receiver.executeOperation(asset, amount, vars.premium, params),
       Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 

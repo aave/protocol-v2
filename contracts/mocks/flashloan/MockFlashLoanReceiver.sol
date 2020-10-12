@@ -49,7 +49,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     uint256 amount,
     uint256 fee,
     bytes memory params
-  ) public override returns(uint256) {
+  ) public override returns(bool) {
     params;
     //mint to this contract the specific amount
     MintableERC20 token = MintableERC20(reserve);
@@ -61,7 +61,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
     if (_failExecution) {
       emit ExecutedWithFail(reserve, amount, fee);
-      return (_simulateEOA) ? 0 : amountToReturn;
+      return !_simulateEOA;
     }
 
     //execution does not fail - mint tokens and return them to the _destination
@@ -73,6 +73,6 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
     emit ExecutedWithSuccess(reserve, amount, fee);
 
-    return amountToReturn;
+    return true;
   }
 }
