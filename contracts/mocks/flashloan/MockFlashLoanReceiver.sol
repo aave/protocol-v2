@@ -20,6 +20,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
   bool _failExecution;
   uint256 _amountToApprove;
+  bool _simulateEOA;
 
   constructor(ILendingPoolAddressesProvider provider) public FlashLoanReceiverBase(provider) {}
 
@@ -31,8 +32,16 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     _amountToApprove = amountToApprove;
   }
 
+  function setSimulateEOA(bool flag) public {
+    _simulateEOA = flag;
+  }
+
   function amountToApprove() public view returns (uint256) {
     return _amountToApprove;
+  }
+
+  function simulateEOA() public view returns(bool) {
+    return _simulateEOA;
   }
 
   function executeOperation(
@@ -40,7 +49,8 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     uint256 amount,
     uint256 fee,
     bytes memory params
-  ) public override {
+  ) public override returns(bool) {
+    params;
     //mint to this contract the specific amount
     MintableERC20 token = MintableERC20(reserve);
 
@@ -51,7 +61,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
     if (_failExecution) {
       emit ExecutedWithFail(reserve, amount, fee);
-      return;
+      return !_simulateEOA;
     }
 
     //execution does not fail - mint tokens and return them to the _destination
@@ -62,5 +72,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     IERC20(reserve).approve(_addressesProvider.getLendingPool(), amountToReturn);
 
     emit ExecutedWithSuccess(reserve, amount, fee);
+
+    return true;
   }
 }
