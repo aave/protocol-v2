@@ -313,14 +313,12 @@ library ReserveConfiguration {
       uint256
     )
   {
-    uint256 dataLocal = self.data;
-
     return (
-      dataLocal & ~LTV_MASK,
-      (dataLocal & ~LIQUIDATION_THRESHOLD_MASK) >> LIQUIDATION_THRESHOLD_START_BIT_POSITION,
-      (dataLocal & ~LIQUIDATION_BONUS_MASK) >> LIQUIDATION_BONUS_START_BIT_POSITION,
-      (dataLocal & ~DECIMALS_MASK) >> RESERVE_DECIMALS_START_BIT_POSITION,
-      (dataLocal & ~RESERVE_FACTOR_MASK) >> RESERVE_FACTOR_START_BIT_POSITION
+      self.data & ~LTV_MASK,
+      (self.data & ~LIQUIDATION_THRESHOLD_MASK) >> LIQUIDATION_THRESHOLD_START_BIT_POSITION,
+      (self.data & ~LIQUIDATION_BONUS_MASK) >> LIQUIDATION_BONUS_START_BIT_POSITION,
+      (self.data & ~DECIMALS_MASK) >> RESERVE_DECIMALS_START_BIT_POSITION,
+      (self.data & ~RESERVE_FACTOR_MASK) >> RESERVE_FACTOR_START_BIT_POSITION
     );
   }
 
@@ -340,13 +338,11 @@ library ReserveConfiguration {
       bool
     )
   {
-    uint256 dataLocal = self.data;
-
     return (
-      (dataLocal & ~ACTIVE_MASK) >> IS_ACTIVE_START_BIT_POSITION != 0,
-      (dataLocal & ~FROZEN_MASK) >> IS_FROZEN_START_BIT_POSITION != 0,
-      (dataLocal & ~BORROWING_MASK) >> BORROWING_ENABLED_START_BIT_POSITION != 0,
-      (dataLocal & ~STABLE_BORROWING_MASK) >> STABLE_BORROWING_ENABLED_START_BIT_POSITION != 0
+      (self.data & ~ACTIVE_MASK) >> IS_ACTIVE_START_BIT_POSITION != 0,
+      (self.data & ~FROZEN_MASK) >> IS_FROZEN_START_BIT_POSITION != 0,
+      (self.data & ~BORROWING_MASK) >> BORROWING_ENABLED_START_BIT_POSITION != 0,
+      (self.data & ~STABLE_BORROWING_MASK) >> STABLE_BORROWING_ENABLED_START_BIT_POSITION != 0
     );
   }
 }

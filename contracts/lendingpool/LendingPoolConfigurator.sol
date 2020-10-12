@@ -578,9 +578,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     ReserveConfiguration.Map memory configuration = pool.getConfiguration(asset);
 
+    (, , , uint256 decimals, ) = configuration.getParamsMemory();
+
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',
-      uint8(configuration.getDecimals()),
+      uint8(decimals),
       IERC20Detailed(implementation).name(),
       IERC20Detailed(implementation).symbol()
     );

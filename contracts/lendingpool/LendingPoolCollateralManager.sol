@@ -579,7 +579,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     vars.collateralPrice = oracle.getAssetPrice(collateralAddress);
     vars.principalCurrencyPrice = oracle.getAssetPrice(principalAddress);
 
-    (, , vars.liquidationBonus, vars.collateralDecimals) = collateralReserve
+    (, , vars.liquidationBonus, vars.collateralDecimals, ) = collateralReserve
       .configuration
       .getParams();
     vars.principalDecimals = principalReserve.configuration.getDecimals();
