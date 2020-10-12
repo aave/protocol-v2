@@ -7,10 +7,13 @@ import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
+import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 
 contract AaveProtocolTestHelpers {
   using ReserveConfiguration for ReserveConfiguration.Map;
+  using UserConfiguration for UserConfiguration.Map;
 
   struct TokenData {
     string symbol;
@@ -114,7 +117,7 @@ contract AaveProtocolTestHelpers {
       reserve.lastUpdateTimestamp
     );
   }
-/*
+
   function getUserReserveData(address asset, address user)
     external
     view
@@ -130,12 +133,15 @@ contract AaveProtocolTestHelpers {
       bool usageAsCollateralEnabled
     )
   {
- 
-     ReserveLogic.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+    ReserveLogic.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
       .getReserveData(asset);
-    
-    currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(user);
-    (currentStableDebt, currentVariableDebt) = Helpers.getUserCurrentDebt(user, reserve);
+
+    UserConfiguration.Map memory userConfig = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+      .getUserConfiguration(user);
+
+    currentATokenBalance = IERC20Detailed(reserve.aTokenAddress).balanceOf(user);
+    currentVariableDebt = IERC20Detailed(reserve.variableDebtTokenAddress).balanceOf(user);
+    currentStableDebt = IERC20Detailed(reserve.stableDebtTokenAddress).balanceOf(user);
     principalStableDebt = IStableDebtToken(reserve.stableDebtTokenAddress).principalBalanceOf(user);
     scaledVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress).scaledBalanceOf(user);
     liquidityRate = reserve.currentLiquidityRate;
@@ -143,8 +149,6 @@ contract AaveProtocolTestHelpers {
     stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(
       user
     );
-    usageAsCollateralEnabled = _usersConfig[user].isUsingAsCollateral(reserve.id);
-
+    usageAsCollateralEnabled = userConfig.isUsingAsCollateral(reserve.id);
   }
-  */
 }
