@@ -7,6 +7,7 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title contract VariableDebtToken
@@ -60,7 +61,10 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 index
   ) external override onlyLendingPool {
     
-    _mint(user, amount.rayDiv(index));
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
+
+    _mint(user, amountScaled);
 
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
@@ -76,7 +80,11 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    _burn(user, amount.rayDiv(index));
+
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
+
+    _burn(user, amountScaled);
 
     emit Transfer(user, address(0), amount);
     emit Burn(user, amount, index);
