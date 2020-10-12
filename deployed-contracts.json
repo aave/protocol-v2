@@ -145,7 +145,7 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "buidlerevm": {
-      "address": "0x626FdE749F9d499d3777320CAf29484B624ab84a",
+      "address": "0xB660Fdd109a95718cB9d20E3A89EE6cE342aDcB6",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -204,7 +204,7 @@
   },
   "MockFlashLoanReceiver": {
     "buidlerevm": {
-      "address": "0x2B681757d757fbB80cc51c6094cEF5eE75bF55aA"
+      "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
     },
     "localhost": {
       "address": "0x2B681757d757fbB80cc51c6094cEF5eE75bF55aA"
@@ -215,7 +215,7 @@
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10",
+      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -551,7 +551,7 @@
   },
   "AaveProtocolTestHelpers": {
     "buidlerevm": {
-      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
+      "address": "0xe7536f450378748E1BD4645D3c77ec38e0F3ba28"
     },
     "localhost": {
       "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
@@ -562,7 +562,7 @@
   },
   "StableDebtToken": {
     "buidlerevm": {
-      "address": "0xB660Fdd109a95718cB9d20E3A89EE6cE342aDcB6",
+      "address": "0x830bceA96E56DBC1F8578f75fBaC0AF16B32A07d",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -576,7 +576,7 @@
   },
   "VariableDebtToken": {
     "buidlerevm": {
-      "address": "0x830bceA96E56DBC1F8578f75fBaC0AF16B32A07d",
+      "address": "0xA0AB1cB92A4AF81f84dCd258155B5c25D247b54E",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -594,7 +594,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "buidlerevm": {
-      "address": "0xA0AB1cB92A4AF81f84dCd258155B5c25D247b54E",
+      "address": "0x5f7134cd38C826a7649f9Cc47dda24d834DD2967",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -660,7 +660,7 @@
   },
   "MockSwapAdapter": {
     "buidlerevm": {
-      "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
+      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10"
     },
     "coverage": {
       "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"

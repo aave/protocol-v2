@@ -8,10 +8,11 @@ makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
   const {CALLER_MUST_BE_LENDING_POOL} = ProtocolErrors;
 
   it('Tries to invoke mint not being the LendingPool', async () => {
-    const {deployer, pool, dai} = testEnv;
+    const {deployer, pool, dai, helpersContract} = testEnv;
 
-    const daiVariableDebtTokenAddress = (await pool.getReserveTokensAddresses(dai.address))
-      .variableDebtTokenAddress;
+    const daiVariableDebtTokenAddress = (
+      await helpersContract.getReserveTokensAddresses(dai.address)
+    ).variableDebtTokenAddress;
 
     const variableDebtContract = await getContract<VariableDebtToken>(
       eContractid.VariableDebtToken,
@@ -24,10 +25,11 @@ makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
   });
 
   it('Tries to invoke burn not being the LendingPool', async () => {
-    const {deployer, pool, dai} = testEnv;
+    const {deployer, pool, dai, helpersContract} = testEnv;
 
-    const daiVariableDebtTokenAddress = (await pool.getReserveTokensAddresses(dai.address))
-      .variableDebtTokenAddress;
+    const daiVariableDebtTokenAddress = (
+      await helpersContract.getReserveTokensAddresses(dai.address)
+    ).variableDebtTokenAddress;
 
     const variableDebtContract = await getContract<VariableDebtToken>(
       eContractid.VariableDebtToken,

@@ -9,7 +9,8 @@ import {
   getMintableErc20,
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
-  getMockSwapAdapter, getLendingPoolAddressesProviderRegistry
+  getMockSwapAdapter,
+  getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-helpers';
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
@@ -24,8 +25,8 @@ import bignumberChai from 'chai-bignumber';
 import {almostEqual} from './almost-equal';
 import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
-import { MockSwapAdapter } from '../../types/MockSwapAdapter';
-import { LendingPoolAddressesProviderRegistry } from '../../types/LendingPoolAddressesProviderRegistry';
+import {MockSwapAdapter} from '../../types/MockSwapAdapter';
+import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
 chai.use(bignumberChai());
 chai.use(almostEqual());
 
@@ -73,7 +74,7 @@ const testEnv: TestEnv = {
   lend: {} as MintableErc20,
   addressesProvider: {} as LendingPoolAddressesProvider,
   mockSwapAdapter: {} as MockSwapAdapter,
-  registry: {} as LendingPoolAddressesProviderRegistry
+  registry: {} as LendingPoolAddressesProviderRegistry,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -134,7 +135,7 @@ export async function initializeMakeSuite() {
   testEnv.lend = await getMintableErc20(lendAddress);
   testEnv.weth = await getMintableErc20(wethAddress);
 
-  testEnv.mockSwapAdapter = await getMockSwapAdapter()
+  testEnv.mockSwapAdapter = await getMockSwapAdapter();
 }
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {

@@ -115,7 +115,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
   });
 
   it('User tries to swap correct amount', async () => {
-    const {pool, weth, dai, aEth, aDai} = testEnv;
+    const {pool, weth, dai, aEth, aDai, helpersContract} = testEnv;
     const userAddress = await pool.signer.getAddress();
     const amountToSwap = ethers.utils.parseEther('0.25');
 
@@ -174,7 +174,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
       'was received incorrect amount if reserve funds'
     );
     expect(
-      (await pool.getUserReserveData(dai.address, userAddress)).usageAsCollateralEnabled
+      (await helpersContract.getUserReserveData(dai.address, userAddress)).usageAsCollateralEnabled
     ).to.be.equal(true, 'usage as collateral was not enabled on destination reserve for the user');
   });
 

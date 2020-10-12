@@ -131,7 +131,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
   });
 
   it('User 2 tries to repay his DAI Variable loan using his WETH collateral. First half the amount, after that, the rest', async () => {
-    const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;
+    const {pool, weth, dai, users, mockSwapAdapter, oracle, helpersContract} = testEnv;
     const user = users[1];
 
     const amountToRepay = parseEther('10');
@@ -177,10 +177,10 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     const principalPrice = await oracle.getAssetPrice(dai.address);
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(weth.address)
+      await helpersContract.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
-      await pool.getReserveConfigurationData(dai.address)
+      await helpersContract.getReserveConfigurationData(dai.address)
     ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())
@@ -230,7 +230,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
   });
 
   it('User 3 repays completely his USDC loan by swapping his WETH collateral', async () => {
-    const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
+    const {pool, weth, usdc, users, mockSwapAdapter, oracle, helpersContract} = testEnv;
     const user = users[2];
 
     const amountToRepay = parseUnits('10', 6);
@@ -277,10 +277,10 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(weth.address)
+      await helpersContract.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
-      await pool.getReserveConfigurationData(usdc.address)
+      await helpersContract.getReserveConfigurationData(usdc.address)
     ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())
@@ -337,7 +337,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
   });
 
   it('User 3 tries to repay with his collateral all his variable debt and part of the stable', async () => {
-    const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
+    const {pool, weth, usdc, users, mockSwapAdapter, oracle, helpersContract} = testEnv;
     const user = users[2];
 
     const amountToDeposit = parseEther('20');
@@ -398,10 +398,10 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(weth.address)
+      await helpersContract.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
-      await pool.getReserveConfigurationData(usdc.address)
+      await helpersContract.getReserveConfigurationData(usdc.address)
     ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())
@@ -478,7 +478,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
   });
 
   it('User 4 tries to repay a bigger amount that what can be swapped of a particular collateral, repaying only the maximum allowed by that collateral', async () => {
-    const {pool, weth, dai, users, mockSwapAdapter, oracle} = testEnv;
+    const {pool, weth, dai, users, mockSwapAdapter, oracle, helpersContract} = testEnv;
     const user = users[3];
 
     const amountToDepositWeth = parseEther('0.1');
@@ -535,13 +535,14 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     const collateralPrice = await oracle.getAssetPrice(weth.address);
     const principalPrice = await oracle.getAssetPrice(dai.address);
 
-    const collateralConfig = await pool.getReserveConfigurationData(weth.address);
+    const collateralConfig = await helpersContract.getReserveConfigurationData(weth.address);
 
     const collateralDecimals = collateralConfig.decimals.toString();
-    const principalDecimals = (
-      await pool.getReserveConfigurationData(dai.address)
-    ).decimals.toString();
     const collateralLiquidationBonus = collateralConfig.liquidationBonus.toString();
+
+    const principalDecimals = (
+      await helpersContract.getReserveConfigurationData(dai.address)
+    ).decimals.toString();
 
     const expectedDebtCovered = new BigNumber(collateralPrice.toString())
       .times(new BigNumber(wethUserDataBefore.currentATokenBalance.toString()))
@@ -589,7 +590,7 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
   });
 
   it('User 5 tries to repay his USDC loan by swapping his WETH collateral, should not revert even with WETH collateral disabled', async () => {
-    const {pool, weth, usdc, users, mockSwapAdapter, oracle} = testEnv;
+    const {pool, weth, usdc, users, mockSwapAdapter, oracle, helpersContract} = testEnv;
     const user = users[4];
 
     const amountToRepay = parseUnits('65', 6);
@@ -642,10 +643,10 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(weth.address)
+      await helpersContract.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
-      await pool.getReserveConfigurationData(usdc.address)
+      await helpersContract.getReserveConfigurationData(usdc.address)
     ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())

@@ -82,7 +82,7 @@ contract AaveProtocolTestHelpers {
     (isActive, isFrozen, borrowingEnabled, stableBorrowRateEnabled) = configuration
       .getFlagsMemory();
 
-    usageAsCollateralEnabled = liquidationThreshold == 0;
+    usageAsCollateralEnabled = liquidationThreshold > 0;
   }
 
   function getReserveData(address asset)
@@ -150,5 +150,24 @@ contract AaveProtocolTestHelpers {
       user
     );
     usageAsCollateralEnabled = userConfig.isUsingAsCollateral(reserve.id);
+  }
+
+  function getReserveTokensAddresses(address asset)
+    external
+    view
+    returns (
+      address aTokenAddress,
+      address stableDebtTokenAddress,
+      address variableDebtTokenAddress
+    )
+  {
+    ReserveLogic.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+      .getReserveData(asset);
+
+    return (
+      reserve.aTokenAddress,
+      reserve.stableDebtTokenAddress,
+      reserve.variableDebtTokenAddress
+    );
   }
 }

@@ -57,6 +57,7 @@ import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {initializeMakeSuite} from './helpers/make-suite';
 import path from 'path';
 import fs from 'fs';
+import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
 
 ['misc'].forEach((folder) => {
   const tasksPath = path.join(__dirname, '../', 'tasks', folder);
@@ -175,6 +176,7 @@ const initReserves = async (
   lendingPoolAddressesProvider: LendingPoolAddressesProvider,
   lendingPool: LendingPool,
   lendingPoolConfigurator: LendingPoolConfigurator,
+  helpersContract: AaveProtocolTestHelpers,
   aavePool: AavePools,
   incentivesController: tEthereumAddress
 ) => {
@@ -194,7 +196,7 @@ const initReserves = async (
       assetAddressIndex
     ];
 
-    const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
+    const {isActive: reserveInitialized} = await helpersContract.getReserveConfigurationData(
       tokenAddress
     );
 
@@ -276,7 +278,7 @@ const initReserves = async (
 const enableReservesToBorrow = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPool: LendingPool,
+  helpersContract: AaveProtocolTestHelpers,
   lendingPoolConfigurator: LendingPoolConfigurator
 ) => {
   for (const [assetSymbol, {borrowingEnabled, stableBorrowRateEnabled}] of Object.entries(
@@ -292,7 +294,7 @@ const enableReservesToBorrow = async (
       ];
       const {
         borrowingEnabled: borrowingAlreadyEnabled,
-      } = await lendingPool.getReserveConfigurationData(tokenAddress);
+      } = await helpersContract.getReserveConfigurationData(tokenAddress);
 
       if (borrowingAlreadyEnabled) {
         console.log(`Reserve ${assetSymbol} is already enabled for borrowing, skipping`);
@@ -311,7 +313,7 @@ const enableReservesToBorrow = async (
 const enableReservesAsCollateral = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPool: LendingPool,
+  helpersContract: AaveProtocolTestHelpers,
   lendingPoolConfigurator: LendingPoolConfigurator
 ) => {
   for (const [
@@ -328,7 +330,7 @@ const enableReservesAsCollateral = async (
     ];
     const {
       usageAsCollateralEnabled: alreadyEnabled,
-    } = await lendingPool.getReserveConfigurationData(tokenAddress);
+    } = await helpersContract.getReserveConfigurationData(tokenAddress);
 
     if (alreadyEnabled) {
       console.log(`Reserve ${assetSymbol} is already enabled as collateral, skipping`);
@@ -479,6 +481,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const reservesParams = getReservesConfigByPool(AavePools.proto);
 
+  const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
+
+  await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+
   console.log('Initialize configuration');
   await initReserves(
     reservesParams,
@@ -486,19 +492,20 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     addressesProvider,
     lendingPoolProxy,
     lendingPoolConfiguratorProxy,
+    testHelpers,
     AavePools.proto,
     ZERO_ADDRESS
   );
   await enableReservesToBorrow(
     reservesParams,
     protoPoolReservesAddresses,
-    lendingPoolProxy,
+    testHelpers,
     lendingPoolConfiguratorProxy
   );
   await enableReservesAsCollateral(
     reservesParams,
     protoPoolReservesAddresses,
-    lendingPoolProxy,
+    testHelpers,
     lendingPoolConfiguratorProxy
   );
 
@@ -514,10 +521,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await insertContractAddressInDb(eContractid.MockSwapAdapter, mockSwapAdapter.address);
 
   await deployWalletBalancerProvider(addressesProvider.address);
-
-  const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
-
-  await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
 
   console.timeEnd('setup');
 };
