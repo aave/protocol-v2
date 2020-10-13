@@ -7,8 +7,8 @@ import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {
-  InitializableImmutableAdminUpgradeabilityProxy
-} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
+  ERC20InitializableImmutableAdminUpgradeabilityProxy
+} from '../libraries/aave-upgradeability/ERC20InitializableImmutableAdminUpgradeabilityProxy.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
@@ -479,7 +479,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     emit ReserveBaseLtvChanged(asset, ltv);
   }
 
-    /**
+  /**
    * @dev updates the reserve factor of a reserve
    * @param asset the address of the reserve
    * @param reserveFactor the new reserve factor of the reserve
@@ -493,7 +493,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     emit ReserveFactorChanged(asset, reserveFactor);
   }
-
 
   /**
    * @dev updates the liquidation threshold of a reserve.
@@ -559,7 +558,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param decimals the decimals of the token
    **/
   function _initTokenWithProxy(address implementation, uint8 decimals) internal returns (address) {
-    InitializableImmutableAdminUpgradeabilityProxy proxy = new InitializableImmutableAdminUpgradeabilityProxy(address(this));
+
+      ERC20InitializableImmutableAdminUpgradeabilityProxy proxy
+     = new ERC20InitializableImmutableAdminUpgradeabilityProxy(address(this));
 
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',
@@ -578,9 +579,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address proxyAddress,
     address implementation
   ) internal {
-    InitializableImmutableAdminUpgradeabilityProxy proxy = InitializableImmutableAdminUpgradeabilityProxy(
-      payable(proxyAddress)
-    );
+
+      ERC20InitializableImmutableAdminUpgradeabilityProxy proxy
+     = ERC20InitializableImmutableAdminUpgradeabilityProxy(payable(proxyAddress));
 
     (uint256 decimals, , , , , , , , , , ) = pool.getReserveConfigurationData(asset);
 

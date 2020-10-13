@@ -4,9 +4,11 @@ pragma solidity ^0.6.8;
 import '../openzeppelin-upgradeability/BaseUpgradeabilityProxy.sol';
 
 /**
- * @title BaseAdminUpgradeabilityProxy
+ * @title BaseImmutableAdminUpgradeabilityProxy
+ * @author Aave, inspired by the OpenZeppelin upgradeability proxy pattern
  * @dev This contract combines an upgradeability proxy with an authorization
- * mechanism for administrative tasks.
+ * mechanism for administrative tasks. The admin role is stored in an immutable, which
+ * helps saving transactions costs
  * All external functions in this contract must be guarded by the
  * `ifAdmin` modifier. See ethereum/solidity#3864 for a Solidity
  * feature proposal that would enable this to be done automatically.
