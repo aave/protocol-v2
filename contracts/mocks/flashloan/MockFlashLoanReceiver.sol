@@ -40,7 +40,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     return _amountToApprove;
   }
 
-  function simulateEOA() public view returns(bool) {
+  function simulateEOA() public view returns (bool) {
     return _simulateEOA;
   }
 
@@ -49,7 +49,7 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
     uint256 amount,
     uint256 fee,
     bytes memory params
-  ) public override returns(bool) {
+  ) public override returns (bool) {
     params;
     //mint to this contract the specific amount
     MintableERC20 token = MintableERC20(reserve);

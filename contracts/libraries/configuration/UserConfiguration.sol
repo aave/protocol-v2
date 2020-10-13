@@ -5,13 +5,15 @@ import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+
 /**
  * @title UserConfiguration library
  * @author Aave
  * @notice Implements the bitmap logic to handle the user configuration
  */
 library UserConfiguration {
-  uint256 internal constant BORROWING_MASK = 0x5555555555555555555555555555555555555555555555555555555555555555;
+  uint256
+    internal constant BORROWING_MASK = 0x5555555555555555555555555555555555555555555555555555555555555555;
 
   struct Map {
     uint256 data;

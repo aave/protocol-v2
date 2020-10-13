@@ -4,7 +4,7 @@ import {makeSuite, TestEnv} from './helpers/make-suite';
 import {ProtocolErrors} from '../helpers/types';
 import {ethers} from 'ethers';
 import {ZERO_ADDRESS} from '../helpers/constants';
-import {waitForTx} from './__setup.spec';
+import {waitForTx} from '../helpers/misc-utils';
 import {deployLendingPool} from '../helpers/contracts-helpers';
 
 const {utils} = ethers;

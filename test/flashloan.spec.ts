@@ -24,7 +24,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     INVALID_FLASHLOAN_MODE,
     SAFEERC20_LOWLEVEL_CALL,
     IS_PAUSED,
-    INVALID_FLASH_LOAN_EXECUTOR_RETURN
+    INVALID_FLASH_LOAN_EXECUTOR_RETURN,
   } = ProtocolErrors;
 
   before(async () => {
@@ -121,7 +121,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const {pool, weth, users} = testEnv;
     const caller = users[1];
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
-    await _mockFlashLoanReceiver.setSimulateEOA(true)
+    await _mockFlashLoanReceiver.setSimulateEOA(true);
 
     await expect(
       pool
@@ -140,7 +140,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   it('Takes a WETH flashloan with an invalid mode. (revert expected)', async () => {
     const {pool, weth, users} = testEnv;
     const caller = users[1];
-    await _mockFlashLoanReceiver.setSimulateEOA(false)
+    await _mockFlashLoanReceiver.setSimulateEOA(false);
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
     await expect(

@@ -23,8 +23,8 @@ export interface ReserveData {
   availableLiquidity: BigNumber;
   totalStableDebt: BigNumber;
   totalVariableDebt: BigNumber;
-  principalStableDebt: BigNumber,
-  scaledVariableDebt: BigNumber,
+  principalStableDebt: BigNumber;
+  scaledVariableDebt: BigNumber;
   averageStableBorrowRate: BigNumber;
   variableBorrowRate: BigNumber;
   stableBorrowRate: BigNumber;

@@ -134,7 +134,6 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     emit Mint(user, amount, index);
   }
 
-
   /**
    * @dev mints aTokens to reserve treasury
    * only lending pools can call this function
@@ -142,8 +141,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
    * @param index the the last index of the reserve
    */
   function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
-
-    if(amount == 0){
+    if (amount == 0) {
       return;
     }
 

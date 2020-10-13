@@ -9,12 +9,13 @@ import {
   getMintableErc20,
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
-  getMockSwapAdapter, getLendingPoolAddressesProviderRegistry
+  getMockSwapAdapter,
+  getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-helpers';
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
 import {AaveProtocolTestHelpers} from '../../types/AaveProtocolTestHelpers';
-import {MintableErc20} from '../../types/MintableErc20';
+import {MintableErc20 as MintableERC20} from '../../types/MintableErc20';
 import {AToken} from '../../types/AToken';
 import {LendingPoolConfigurator} from '../../types/LendingPoolConfigurator';
 
@@ -24,8 +25,8 @@ import bignumberChai from 'chai-bignumber';
 import {almostEqual} from './almost-equal';
 import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
-import { MockSwapAdapter } from '../../types/MockSwapAdapter';
-import { LendingPoolAddressesProviderRegistry } from '../../types/LendingPoolAddressesProviderRegistry';
+import {MockSwapAdapter} from '../../types/MockSwapAdapter';
+import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
 chai.use(bignumberChai());
 chai.use(almostEqual());
 
@@ -40,12 +41,12 @@ export interface TestEnv {
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolTestHelpers;
-  weth: MintableErc20;
+  weth: MintableERC20;
   aEth: AToken;
-  dai: MintableErc20;
+  dai: MintableERC20;
   aDai: AToken;
-  usdc: MintableErc20;
-  lend: MintableErc20;
+  usdc: MintableERC20;
+  lend: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
   mockSwapAdapter: MockSwapAdapter;
   registry: LendingPoolAddressesProviderRegistry;
@@ -65,15 +66,15 @@ const testEnv: TestEnv = {
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolTestHelpers,
   oracle: {} as PriceOracle,
-  weth: {} as MintableErc20,
+  weth: {} as MintableERC20,
   aEth: {} as AToken,
-  dai: {} as MintableErc20,
+  dai: {} as MintableERC20,
   aDai: {} as AToken,
-  usdc: {} as MintableErc20,
-  lend: {} as MintableErc20,
+  usdc: {} as MintableERC20,
+  lend: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
   mockSwapAdapter: {} as MockSwapAdapter,
-  registry: {} as LendingPoolAddressesProviderRegistry
+  registry: {} as LendingPoolAddressesProviderRegistry,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -134,7 +135,7 @@ export async function initializeMakeSuite() {
   testEnv.lend = await getMintableErc20(lendAddress);
   testEnv.weth = await getMintableErc20(wethAddress);
 
-  testEnv.mockSwapAdapter = await getMockSwapAdapter()
+  testEnv.mockSwapAdapter = await getMockSwapAdapter();
 }
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
