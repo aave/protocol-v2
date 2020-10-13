@@ -6,7 +6,7 @@ import {ethers} from 'ethers';
 import {APPROVAL_AMOUNT_LENDING_POOL} from '../helpers/constants';
 import {getContractsData, getTxCostAndTimestamp} from './helpers/actions';
 import {calcExpectedATokenBalance} from './helpers/utils/calculations';
-import {waitForTx} from './__setup.spec';
+import {waitForTx} from '../helpers/misc-utils';
 import {advanceBlock, timeLatest} from '../helpers/misc-utils';
 
 const {expect} = require('chai');

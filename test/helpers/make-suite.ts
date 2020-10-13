@@ -15,7 +15,7 @@ import {
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
 import {AaveProtocolTestHelpers} from '../../types/AaveProtocolTestHelpers';
-import {MintableErc20} from '../../types/MintableErc20';
+import {MintableErc20 as MintableERC20} from '../../types/MintableErc20';
 import {AToken} from '../../types/AToken';
 import {LendingPoolConfigurator} from '../../types/LendingPoolConfigurator';
 
@@ -41,12 +41,12 @@ export interface TestEnv {
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolTestHelpers;
-  weth: MintableErc20;
+  weth: MintableERC20;
   aEth: AToken;
-  dai: MintableErc20;
+  dai: MintableERC20;
   aDai: AToken;
-  usdc: MintableErc20;
-  lend: MintableErc20;
+  usdc: MintableERC20;
+  lend: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
   mockSwapAdapter: MockSwapAdapter;
   registry: LendingPoolAddressesProviderRegistry;
@@ -66,12 +66,12 @@ const testEnv: TestEnv = {
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolTestHelpers,
   oracle: {} as PriceOracle,
-  weth: {} as MintableErc20,
+  weth: {} as MintableERC20,
   aEth: {} as AToken,
-  dai: {} as MintableErc20,
+  dai: {} as MintableERC20,
   aDai: {} as AToken,
-  usdc: {} as MintableErc20,
-  lend: {} as MintableErc20,
+  usdc: {} as MintableERC20,
+  lend: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
   mockSwapAdapter: {} as MockSwapAdapter,
   registry: {} as LendingPoolAddressesProviderRegistry,

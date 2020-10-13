@@ -60,7 +60,6 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
 
@@ -80,7 +79,6 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
 
@@ -114,14 +112,18 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     return super.totalSupply();
   }
 
-    /**
+  /**
    * @dev returns the principal balance of the user and principal total supply.
    * @param user the address of the user
    * @return the principal balance of the user
    * @return the principal total supply
    **/
-  function getScaledUserBalanceAndSupply(address user) external override view returns (uint256, uint256){
+  function getScaledUserBalanceAndSupply(address user)
+    external
+    override
+    view
+    returns (uint256, uint256)
+  {
     return (super.balanceOf(user), super.totalSupply());
   }
-
 }

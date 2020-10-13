@@ -7,8 +7,7 @@ import {
   calcExpectedStableDebtTokenBalance,
 } from './helpers/utils/calculations';
 import {getContractsData} from './helpers/actions';
-import {waitForTx} from './__setup.spec';
-import {timeLatest, BRE, increaseTime} from '../helpers/misc-utils';
+import {timeLatest, BRE, increaseTime, waitForTx} from '../helpers/misc-utils';
 import {ProtocolErrors} from '../helpers/types';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {expectRepayWithCollateralEvent} from './repay-with-collateral.spec';

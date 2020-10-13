@@ -7,10 +7,8 @@ import {
   calcExpectedStableDebtTokenBalance,
 } from './helpers/utils/calculations';
 import {getContractsData} from './helpers/actions';
-import {waitForTx} from './__setup.spec';
-import {timeLatest} from '../helpers/misc-utils';
+import {timeLatest, waitForTx} from '../helpers/misc-utils';
 import {ProtocolErrors, tEthereumAddress} from '../helpers/types';
-import {parse} from 'path';
 
 const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;

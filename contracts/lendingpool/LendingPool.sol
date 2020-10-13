@@ -579,7 +579,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IAToken(vars.aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
 
     //execute action of the receiver
-    vars.receiver.executeOperation(asset, amount, vars.premium, params);
+    require(
+      vars.receiver.executeOperation(asset, amount, vars.premium, params),
+      Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
+    );
 
     vars.amountPlusPremium = amount.add(vars.premium);
 
@@ -720,7 +723,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _reserves[asset].configuration;
   }
 
-    /**
+  /**
    * @dev returns the configuration of the user for the specific reserve
    * @param user the user
    * @return the configuration of the user
@@ -734,7 +737,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _usersConfig[user];
   }
 
-    /**
+  /**
    * @dev returns the normalized income per unit of asset
    * @param asset the address of the reserve
    * @return the reserve normalized income
@@ -757,7 +760,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _reserves[asset].getNormalizedDebt();
   }
 
-   /**
+  /**
    * @dev Returns if the LendingPool is paused
    */
   function paused() external override view returns (bool) {
@@ -810,8 +813,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-  * @dev avoids direct transfers of ETH
-  **/
+   * @dev avoids direct transfers of ETH
+   **/
   receive() external payable {
     revert();
   }
@@ -853,10 +856,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-  * @dev sets the configuration map of the reserve
-  * @param asset the address of the reserve
-  * @param configuration the configuration map
-  **/
+   * @dev sets the configuration map of the reserve
+   * @param asset the address of the reserve
+   * @param configuration the configuration map
+   **/
   function setConfiguration(address asset, uint256 configuration) external override {
     _onlyLendingPoolConfigurator();
     _reserves[asset].configuration.data = configuration;
@@ -876,6 +879,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       emit Unpaused();
     }
   }
+
   // internal functions
   struct ExecuteBorrowParams {
     address asset;

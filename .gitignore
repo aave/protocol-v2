@@ -1,12 +1,13 @@
+.env
 #Buidler files
 cache
 artifacts
-types
 node_modules
 dist/
 build/
 .vscode
 .idea
+types
 
 coverage
 .coverage_artifacts

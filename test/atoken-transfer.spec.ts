@@ -1,14 +1,14 @@
-import {
-  APPROVAL_AMOUNT_LENDING_POOL,
-  AAVE_REFERRAL,
-  MAX_UINT_AMOUNT,
-  ZERO_ADDRESS,
-} from '../helpers/constants';
+import {MAX_UINT_AMOUNT, ZERO_ADDRESS} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {expect} from 'chai';
 import {ethers} from 'ethers';
 import {RateMode, ProtocolErrors} from '../helpers/types';
 import {makeSuite, TestEnv} from './helpers/make-suite';
+import {CommonsConfig} from '../config/commons';
+
+const APPROVAL_AMOUNT_LENDING_POOL =
+  CommonsConfig.ProtocolGlobalParams.ApprovalAmountLendingPoolCore;
+const AAVE_REFERRAL = CommonsConfig.ProtocolGlobalParams.AaveReferral;
 
 makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   const {
