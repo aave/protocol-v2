@@ -7,8 +7,7 @@ import {
   calcExpectedStableDebtTokenBalance,
 } from './helpers/utils/calculations';
 import {getContractsData} from './helpers/actions';
-import {waitForTx} from './__setup.spec';
-import {timeLatest, BRE, increaseTime} from '../helpers/misc-utils';
+import {timeLatest, BRE, increaseTime, waitForTx} from '../helpers/misc-utils';
 import {ProtocolErrors} from '../helpers/types';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {expectRepayWithCollateralEvent} from './repay-with-collateral.spec';
@@ -570,7 +569,10 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     );
 
     // First half
-    const amountToRepay = daiReserveDataBefore.totalVariableDebt.multipliedBy(0.6).toFixed(0).toString();
+    const amountToRepay = daiReserveDataBefore.totalVariableDebt
+      .multipliedBy(0.6)
+      .toFixed(0)
+      .toString();
 
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await waitForTx(
@@ -879,10 +881,10 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
     const daiPrice = await oracle.getAssetPrice(dai.address);
 
     await oracle.setAssetPrice(
-          dai.address,
-          new BigNumber(daiPrice.toString()).multipliedBy(0.9).toFixed(0)
-        );
-    
+      dai.address,
+      new BigNumber(daiPrice.toString()).multipliedBy(0.9).toFixed(0)
+    );
+
     // Liquidator should NOT be able to liquidate himself with WETH, even if is disabled
     await mockSwapAdapter.setAmountToReturn(amountToRepay);
     await expect(

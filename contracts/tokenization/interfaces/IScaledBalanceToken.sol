@@ -1,9 +1,7 @@
-
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
 interface IScaledBalanceToken {
-
   /**
    * @dev emitted after the mint action
    * @param from the address performing the mint

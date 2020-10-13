@@ -4,7 +4,9 @@ import {
   getLendingRateOracle,
   getIErc20Detailed,
   getMintableErc20,
-  getAToken, getStableDebtToken, getVariableDebtToken
+  getAToken,
+  getStableDebtToken,
+  getVariableDebtToken,
 } from '../../../helpers/contracts-helpers';
 import {tEthereumAddress} from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
@@ -26,7 +28,6 @@ export const getReserveData = async (
 
   const [principalStableDebt] = await stableDebtToken.getSupplyData();
   const totalStableDebtLastUpdated = await stableDebtToken.getTotalSupplyLastUpdated();
-
 
   const scaledVariableDebt = await variableDebtToken.scaledTotalSupply();
 

@@ -26,7 +26,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
       'Aave Interest bearing DAI updated',
       'aDAI',
-      ZERO_ADDRESS
+      ZERO_ADDRESS,
     ]);
 
     const stableDebtTokenInstance = await deployContract<MockStableDebtToken>(

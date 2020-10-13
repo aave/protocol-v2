@@ -13,5 +13,5 @@ interface IFlashLoanReceiver {
     uint256 amount,
     uint256 fee,
     bytes calldata params
-  ) external returns(bool);
+  ) external returns (bool);
 }

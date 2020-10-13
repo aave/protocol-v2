@@ -25,5 +25,4 @@ contract LendingPoolStorage {
 
   bool internal _flashLiquidationLocked;
   bool internal _paused;
-
 }

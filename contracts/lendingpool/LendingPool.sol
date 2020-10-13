@@ -29,6 +29,7 @@ import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
+
 /**
  * @title LendingPool contract
  * @notice Implements the actions of the LendingPool, and exposes accessory methods to fetch the users and reserve data
@@ -57,6 +58,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
   }
+
   /**
    * @dev Function to make a function callable only when the contract is not paused.
    *
@@ -364,9 +366,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param user the address of the user to be rebalanced
    **/
   function rebalanceStableBorrowRate(address asset, address user) external override {
-    
     _whenNotPaused();
-    
+
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
@@ -376,7 +377,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 stableBorrowBalance = IERC20(stableDebtToken).balanceOf(user);
 
     //if the utilization rate is below 95%, no rebalances are needed
-    uint256 totalBorrows = stableDebtToken.totalSupply().add(variableDebtToken.totalSupply()).wadToRay();
+    uint256 totalBorrows = stableDebtToken
+      .totalSupply()
+      .add(variableDebtToken.totalSupply())
+      .wadToRay();
     uint256 availableLiquidity = IERC20(asset).balanceOf(aTokenAddress).wadToRay();
     uint256 usageRatio = totalBorrows == 0
       ? 0
@@ -394,7 +398,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     require(
       usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
-      currentLiquidityRate <=
+        currentLiquidityRate <=
         maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
       Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
     );
@@ -402,12 +406,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     reserve.updateState();
 
     IStableDebtToken(address(stableDebtToken)).burn(user, stableBorrowBalance);
-    IStableDebtToken(address(stableDebtToken)).mint(user, stableBorrowBalance, reserve.currentStableBorrowRate);
+    IStableDebtToken(address(stableDebtToken)).mint(
+      user,
+      stableBorrowBalance,
+      reserve.currentStableBorrowRate
+    );
 
     reserve.updateInterestRates(asset, aTokenAddress, 0, 0);
 
     emit RebalanceStableBorrowRate(asset, user);
-
   }
 
   /**
@@ -588,8 +595,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
     } else {
-     //if the user didn't choose to return the funds, the system checks if there
-     //is enough collateral and eventually open a position
+      //if the user didn't choose to return the funds, the system checks if there
+      //is enough collateral and eventually open a position
       _executeBorrow(
         ExecuteBorrowParams(
           asset,
@@ -761,7 +768,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reservesCount,
       _addressesProvider.getPriceOracle()
     );
-    
+
     availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
       totalCollateralETH,
       totalBorrowsETH,
@@ -951,12 +958,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev adds a reserve to the array of the _reserves address
    **/
   function _addReserveToList(address asset) internal {
-    
     require(_reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
-  
-    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0]==asset;
 
-    if(!reserveAlreadyAdded){
+    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
+
+    if (!reserveAlreadyAdded) {
       _reserves[asset].id = uint8(_reservesCount);
       _reservesList[_reservesCount] = asset;
 
@@ -1041,7 +1047,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function getReservesList() external override view returns (address[] memory) {
     address[] memory _activeReserves = new address[](_reservesCount);
 
-    for(uint256 i = 0; i < _reservesCount; i++){
+    for (uint256 i = 0; i < _reservesCount; i++) {
       _activeReserves[i] = _reservesList[i];
     }
     return _activeReserves;

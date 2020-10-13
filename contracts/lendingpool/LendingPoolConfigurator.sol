@@ -479,7 +479,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     emit ReserveBaseLtvChanged(asset, ltv);
   }
 
-    /**
+  /**
    * @dev updates the reserve factor of a reserve
    * @param asset the address of the reserve
    * @param reserveFactor the new reserve factor of the reserve
@@ -493,7 +493,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     emit ReserveFactorChanged(asset, reserveFactor);
   }
-
 
   /**
    * @dev updates the liquidation threshold of a reserve.
