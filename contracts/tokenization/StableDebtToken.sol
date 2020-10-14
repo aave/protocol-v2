@@ -280,7 +280,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param avgRate the average rate at which calculate the total supply
    * @return The debt balance of the user since the last burn/mint action
    **/
-  function _calcTotalSupply(uint256 avgRate) internal view returns(uint256) {
+  function _calcTotalSupply(uint256 avgRate) internal virtual view returns(uint256) { // Certora: Added virtual modifier
     uint256 principalSupply = super.totalSupply();
 
     if (principalSupply == 0) {
