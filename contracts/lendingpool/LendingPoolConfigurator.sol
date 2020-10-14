@@ -413,12 +413,10 @@ contract LendingPoolConfigurator is VersionedInitializable {
   function deactivateReserve(address asset) external onlyAaveAdmin {
     ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
-    uint256 availableLiquidity = IERC20Detailed(reserveData.aTokenAddress).totalSupply();
-    uint256 totalStableDebt = IERC20Detailed(reserveData.stableDebtTokenAddress).totalSupply();
-    uint256 totalVariableDebt = IERC20Detailed(reserveData.variableDebtTokenAddress).totalSupply();
+    uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
 
     require(
-      availableLiquidity == 0 && totalStableDebt == 0 && totalVariableDebt == 0,
+      availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
       Errors.RESERVE_LIQUIDITY_NOT_0
     );
 
