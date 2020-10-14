@@ -724,7 +724,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the configuration of the user for the specific reserve
+   * @dev returns the configuration of the user across all the reserves
    * @param user the user
    * @return the configuration of the user
    **/
