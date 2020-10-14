@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {
   VersionedInitializable

@@ -4,7 +4,6 @@ pragma solidity ^0.6.8;
 import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {MathUtils} from '../math/MathUtils.sol';
-import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
 import {IAToken} from '../../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../../tokenization/interfaces/IStableDebtToken.sol';

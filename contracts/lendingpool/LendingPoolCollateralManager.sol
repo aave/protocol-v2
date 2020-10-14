@@ -9,7 +9,6 @@ import {
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
-import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
