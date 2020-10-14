@@ -12,8 +12,8 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
 
   const {
-    IS_PAUSED,
-    TRANSFER_NOT_ALLOWED,
+    P_IS_PAUSED,
+    VL_TRANSFER_NOT_ALLOWED,
     INVALID_FROM_BALANCE_AFTER_TRANSFER,
     INVALID_TO_BALANCE_AFTER_TRANSFER,
   } = ProtocolErrors;
@@ -44,7 +44,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // User 0 tries the transfer to User 1
     await expect(
       aDai.connect(users[0].signer).transfer(users[1].address, amountDAItoDeposit)
-    ).to.revertedWith(IS_PAUSED);
+    ).to.revertedWith(P_IS_PAUSED);
 
     const pausedFromBalance = await aDai.balanceOf(users[0].address);
     const pausedToBalance = await aDai.balanceOf(users[1].address);
@@ -91,7 +91,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await configurator.setPoolPause(true);
     await expect(
       pool.connect(users[0].signer).deposit(dai.address, amountDAItoDeposit, users[0].address, '0')
-    ).to.revertedWith(IS_PAUSED);
+    ).to.revertedWith(P_IS_PAUSED);
 
     // Configurator unpauses the pool
     await configurator.setPoolPause(false);
@@ -116,7 +116,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // user tries to burn
     await expect(
       pool.connect(users[0].signer).withdraw(dai.address, amountDAItoDeposit)
-    ).to.revertedWith(IS_PAUSED);
+    ).to.revertedWith(P_IS_PAUSED);
 
     // Configurator unpauses the pool
     await configurator.setPoolPause(false);
@@ -133,7 +133,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // Try to execute liquidation
     await expect(
       pool.connect(user.signer).delegateBorrowAllowance(dai.address, toUser.address, '1', '1')
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause the pool
     await configurator.setPoolPause(false);
@@ -149,7 +149,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // Try to execute liquidation
     await expect(
       pool.connect(user.signer).borrow(dai.address, '1', '1', '0', user.address)
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause the pool
     await configurator.setPoolPause(false);
@@ -165,7 +165,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // Try to execute liquidation
     await expect(
       pool.connect(user.signer).swapLiquidity(user.address, dai.address, weth.address, '1', '0x')
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause the pool
     await configurator.setPoolPause(false);
@@ -180,7 +180,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     // Try to execute liquidation
     await expect(pool.connect(user.signer).repay(dai.address, '1', '1', user.address)).revertedWith(
-      IS_PAUSED
+      P_IS_PAUSED
     );
 
     // Unpause the pool
@@ -207,7 +207,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
           mockSwapAdapter.address,
           '0x'
         )
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause the pool
     await configurator.setPoolPause(false);
@@ -229,7 +229,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
       pool
         .connect(caller.signer)
         .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0')
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause pool
     await configurator.setPoolPause(false);
@@ -307,7 +307,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // Do liquidation
     expect(
       pool.liquidationCall(weth.address, usdc.address, borrower.address, amountToLiquidate, true)
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause pool
     await configurator.setPoolPause(false);
@@ -336,7 +336,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     // Try to repay
     await expect(
       pool.connect(user.signer).swapBorrowRateMode(usdc.address, RateMode.Stable)
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause pool
     await configurator.setPoolPause(false);
@@ -350,7 +350,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     await expect(
       pool.connect(user.signer).rebalanceStableBorrowRate(dai.address, user.address)
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause pool
     await configurator.setPoolPause(false);
@@ -370,7 +370,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     await expect(
       pool.connect(user.signer).setUserUseReserveAsCollateral(weth.address, false)
-    ).revertedWith(IS_PAUSED);
+    ).revertedWith(P_IS_PAUSED);
 
     // Unpause pool
     await configurator.setPoolPause(false);

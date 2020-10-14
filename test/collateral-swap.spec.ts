@@ -14,10 +14,10 @@ const {expect} = require('chai');
 makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
   let _mockSwapAdapter = {} as MockSwapAdapter;
   const {
-    HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
-    NO_UNFREEZED_RESERVE,
-    NO_ACTIVE_RESERVE,
-    INVALID_EQUAL_ASSETS_TO_SWAP,
+    VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
+    VL_NO_UNFREEZED_RESERVE,
+    VL_NO_ACTIVE_RESERVE,
+    LP_INVALID_EQUAL_ASSETS_TO_SWAP,
   } = ProtocolErrors;
 
   before(async () => {
@@ -35,7 +35,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         '1'.toString(),
         '0x10'
       )
-    ).to.be.revertedWith(INVALID_EQUAL_ASSETS_TO_SWAP);
+    ).to.be.revertedWith(LP_INVALID_EQUAL_ASSETS_TO_SWAP);
   });
 
   it('Should not allow to swap if from or to reserves are not active', async () => {
@@ -51,7 +51,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         '1'.toString(),
         '0x10'
       )
-    ).to.be.revertedWith(NO_ACTIVE_RESERVE);
+    ).to.be.revertedWith(VL_NO_ACTIVE_RESERVE);
     await configurator.activateReserve(weth.address);
 
     await configurator.deactivateReserve(dai.address);
@@ -64,7 +64,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         '1'.toString(),
         '0x10'
       )
-    ).to.be.revertedWith(NO_ACTIVE_RESERVE);
+    ).to.be.revertedWith(VL_NO_ACTIVE_RESERVE);
 
     //cleanup state
     await configurator.activateReserve(dai.address);
@@ -189,7 +189,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
 
     await expect(
       pool.swapLiquidity(_mockSwapAdapter.address, weth.address, dai.address, amountToSwap, '0x10')
-    ).to.be.revertedWith(HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD);
+    ).to.be.revertedWith(VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD);
   });
 
   it('Should set usage as collateral to false if no leftovers after swap', async () => {
@@ -250,7 +250,7 @@ makeSuite('LendingPool SwapDeposit function', (testEnv: TestEnv) => {
         '1'.toString(),
         '0x10'
       )
-    ).to.be.revertedWith(NO_UNFREEZED_RESERVE);
+    ).to.be.revertedWith(VL_NO_UNFREEZED_RESERVE);
 
     //cleanup state
     await configurator.unfreezeReserve(dai.address);

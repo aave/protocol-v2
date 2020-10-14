@@ -61,7 +61,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 index
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
+    require(amountScaled != 0, Errors.AT_INVALID_MINT_AMOUNT);
 
     _mint(user, amountScaled);
 
@@ -80,7 +80,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 index
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
+    require(amountScaled != 0, Errors.AT_INVALID_BURN_AMOUNT);
 
     _burn(user, amountScaled);
 

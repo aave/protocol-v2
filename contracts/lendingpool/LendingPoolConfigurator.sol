@@ -184,7 +184,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev only the lending pool manager can call functions affected by this modifier
    **/
   modifier onlyAaveAdmin {
-    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.CALLER_NOT_AAVE_ADMIN);
+    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.LPC_CALLER_NOT_AAVE_ADMIN);
     _;
   }
 
@@ -424,7 +424,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     ) = pool.getReserveData(asset);
     require(
       availableLiquidity == 0 && totalStableDebt == 0 && totalVariableDebt == 0,
-      Errors.RESERVE_LIQUIDITY_NOT_0
+      Errors.LPC_RESERVE_LIQUIDITY_NOT_0
     );
 
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);

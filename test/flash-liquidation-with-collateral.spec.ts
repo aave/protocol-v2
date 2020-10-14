@@ -16,7 +16,7 @@ const {expect} = require('chai');
 const {parseUnits, parseEther} = ethers.utils;
 
 makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEnv) => {
-  const {INVALID_HF, COLLATERAL_CANNOT_BE_LIQUIDATED, IS_PAUSED} = ProtocolErrors;
+  const {INVALID_HF, LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED, P_IS_PAUSED} = ProtocolErrors;
 
   it('User 1 provides some liquidity for others to borrow', async () => {
     const {pool, weth, dai, usdc, deployer} = testEnv;
@@ -898,7 +898,7 @@ makeSuite('LendingPool. repayWithCollateral() with liquidator', (testEnv: TestEn
           mockSwapAdapter.address,
           '0x'
         )
-    ).to.be.revertedWith(COLLATERAL_CANNOT_BE_LIQUIDATED);
+    ).to.be.revertedWith(LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED);
 
     const repayWithCollateralTimestamp = await timeLatest();
 

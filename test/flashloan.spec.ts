@@ -18,13 +18,13 @@ const {expect} = require('chai');
 makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
   const {
-    COLLATERAL_BALANCE_IS_0,
-    REQUESTED_AMOUNT_TOO_SMALL,
+    VL_COLLATERAL_BALANCE_IS_0,
+    LP_REQUESTED_AMOUNT_TOO_SMALL,
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
-    INVALID_FLASHLOAN_MODE,
+    LP_INVALID_FLASHLOAN_MODE,
     SAFEERC20_LOWLEVEL_CALL,
-    IS_PAUSED,
-    INVALID_FLASH_LOAN_EXECUTOR_RETURN,
+    P_IS_PAUSED,
+    LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN,
   } = ProtocolErrors;
 
   before(async () => {
@@ -134,7 +134,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(INVALID_FLASH_LOAN_EXECUTOR_RETURN);
+    ).to.be.revertedWith(LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN);
   });
 
   it('Takes a WETH flashloan with an invalid mode. (revert expected)', async () => {
@@ -154,7 +154,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(INVALID_FLASHLOAN_MODE);
+    ).to.be.revertedWith(LP_INVALID_FLASHLOAN_MODE);
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes WETH flashloan with mode = 2, does not return the funds. A variable loan for caller is created', async () => {
@@ -206,7 +206,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         '0x10',
         '0'
       )
-    ).to.be.revertedWith(REQUESTED_AMOUNT_TOO_SMALL);
+    ).to.be.revertedWith(LP_REQUESTED_AMOUNT_TOO_SMALL);
   });
 
   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {
@@ -296,7 +296,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       pool
         .connect(caller.signer)
         .flashLoan(_mockFlashLoanReceiver.address, usdc.address, flashloanAmount, 2, '0x10', '0')
-    ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
+    ).to.be.revertedWith(VL_COLLATERAL_BALANCE_IS_0);
   });
 
   it('Caller deposits 5 WETH as collateral, Takes a USDC flashloan with mode = 2, does not return the funds. A loan for caller is created', async () => {

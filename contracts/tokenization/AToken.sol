@@ -42,7 +42,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   bytes32 public DOMAIN_SEPARATOR;
 
   modifier onlyLendingPool {
-    require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
+    require(msg.sender == address(POOL), Errors.AT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
@@ -102,7 +102,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 index
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
+    require(amountScaled != 0, Errors.AT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
     //transfers the underlying to the target
@@ -126,7 +126,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 index
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
+    require(amountScaled != 0, Errors.AT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
     //transfer event to track balances
@@ -315,7 +315,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     bool validate
   ) internal {
     if (validate) {
-      require(isTransferAllowed(from, amount), Errors.TRANSFER_NOT_ALLOWED);
+      require(isTransferAllowed(from, amount), Errors.VL_TRANSFER_NOT_ALLOWED);
     }
 
     uint256 index = POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);

@@ -15,9 +15,9 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     INVALID_FROM_BALANCE_AFTER_TRANSFER,
     INVALID_TO_BALANCE_AFTER_TRANSFER,
     // ZERO_COLLATERAL,
-    COLLATERAL_BALANCE_IS_0,
-    TRANSFER_NOT_ALLOWED,
-    IS_PAUSED,
+    VL_COLLATERAL_BALANCE_IS_0,
+    VL_TRANSFER_NOT_ALLOWED,
+    P_IS_PAUSED,
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
@@ -67,8 +67,8 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
           AAVE_REFERRAL,
           users[1].address
         ),
-      COLLATERAL_BALANCE_IS_0
-    ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
+      VL_COLLATERAL_BALANCE_IS_0
+    ).to.be.revertedWith(VL_COLLATERAL_BALANCE_IS_0);
   });
 
   it('User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)', async () => {
@@ -89,7 +89,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
-      TRANSFER_NOT_ALLOWED
-    ).to.be.revertedWith(TRANSFER_NOT_ALLOWED);
+      VL_TRANSFER_NOT_ALLOWED
+    ).to.be.revertedWith(VL_TRANSFER_NOT_ALLOWED);
   });
 });

@@ -55,7 +55,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function _onlyLendingPoolConfigurator() internal view {
     require(
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
-      Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
+      Errors.LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
   }
 
@@ -67,7 +67,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - The contract must not be paused.
    */
   function _whenNotPaused() internal view {
-    require(!_paused, Errors.IS_PAUSED);
+    require(!_paused, Errors.P_IS_PAUSED);
   }
 
   function getRevision() internal override pure returns (uint256) {
@@ -226,7 +226,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _borrowAllowance[debtToken][onBehalfOf][msg
         .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
         amount,
-        Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH
+        Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH
       );
     }
     _executeBorrow(
@@ -400,7 +400,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
         currentLiquidityRate <=
         maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
-      Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
     );
 
     reserve.updateState();
@@ -475,7 +475,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         receiveAToken
       )
     );
-    require(success, Errors.LIQUIDATION_CALL_FAILED);
+    require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
@@ -506,7 +506,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bytes calldata params
   ) external override {
     _whenNotPaused();
-    require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
+    require(!_flashLiquidationLocked, Errors.LP_REENTRANCY_NOT_ALLOWED);
     _flashLiquidationLocked = true;
 
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
@@ -523,7 +523,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         params
       )
     );
-    require(success, Errors.FAILED_REPAY_WITH_COLLATERAL);
+    require(success, Errors.LP_FAILED_REPAY_WITH_COLLATERAL);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
@@ -581,7 +581,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     //execute action of the receiver
     require(
       vars.receiver.executeOperation(asset, amount, vars.premium, params),
-      Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
+      Errors.LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
     vars.amountPlusPremium = amount.add(vars.premium);
@@ -641,7 +641,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         params
       )
     );
-    require(success, Errors.FAILED_COLLATERAL_SWAP);
+    require(success, Errors.LP_FAILED_COLLATERAL_SWAP);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
@@ -958,7 +958,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev adds a reserve to the array of the _reserves address
    **/
   function _addReserveToList(address asset) internal {
-    require(_reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
+    require(_reservesCount < MAX_NUMBER_RESERVES, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
     bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
 
