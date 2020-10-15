@@ -1,13 +1,9 @@
 import {task} from '@nomiclabs/buidler/config';
 import {
-  getLendingPoolAddressesProvider,
   initReserves,
   deployLendingPoolCollateralManager,
-  insertContractAddressInDb,
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
-  getLendingPool,
-  getLendingPoolConfiguratorProxy,
   getParamPerNetwork,
 } from '../../helpers/contracts-helpers';
 import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
@@ -17,6 +13,11 @@ import {waitForTx} from '../../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../../helpers/init-helpers';
 import {ZERO_ADDRESS} from '../../helpers/constants';
 import {exit} from 'process';
+import {
+  getLendingPool,
+  getLendingPoolConfiguratorProxy,
+  getLendingPoolAddressesProvider,
+} from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')

@@ -7,17 +7,14 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  getLendingPoolConfiguratorProxy,
   deployChainlinkProxyPriceProvider,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  getLendingPool,
   insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
   getEthersSigners,
   registerContractInJsonDb,
-  getPairsTokenAggregator,
   initReserves,
   deployMockSwapAdapter,
   deployLendingRateOracle,
@@ -38,6 +35,11 @@ import {waitForTx} from '../helpers/misc-utils';
 import {enableReservesToBorrow, enableReservesAsCollateral} from '../helpers/init-helpers';
 import {AaveConfig} from '../config/aave';
 import {ZERO_ADDRESS} from '../helpers/constants';
+import {
+  getLendingPool,
+  getLendingPoolConfiguratorProxy,
+  getPairsTokenAggregator,
+} from '../helpers/contracts-getters';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;

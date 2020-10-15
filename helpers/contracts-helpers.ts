@@ -12,7 +12,6 @@ import {
   TokenContractId,
   iMultiPoolsAssets,
   IReserveParams,
-  ICommonConfiguration,
   PoolConfiguration,
 } from './types';
 
@@ -23,9 +22,6 @@ import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {Artifact} from '@nomiclabs/buidler/types';
 import {LendingPool} from '../types/LendingPool';
-import {PriceOracle} from '../types/PriceOracle';
-import {MockAggregator} from '../types/MockAggregator';
-import {LendingRateOracle} from '../types/LendingRateOracle';
 import {DefaultReserveInterestRateStrategy} from '../types/DefaultReserveInterestRateStrategy';
 import {LendingPoolCollateralManager} from '../types/LendingPoolCollateralManager';
 import {InitializableAdminUpgradeabilityProxy} from '../types/InitializableAdminUpgradeabilityProxy';
@@ -34,7 +30,6 @@ import {WalletBalanceProvider} from '../types/WalletBalanceProvider';
 import {AToken} from '../types/AToken';
 import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
 import BigNumber from 'bignumber.js';
-import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 import {MockContract} from 'ethereum-waffle';
@@ -50,7 +45,15 @@ import {ZERO_ADDRESS} from './constants';
 import {MockSwapAdapter} from '../types/MockSwapAdapter';
 import {signTypedData_v4, TypedData} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
-import {SignerWithAddress} from '../test/helpers/make-suite';
+
+import {
+  ChainlinkProxyPriceProviderFactory,
+  LendingPoolCollateralManagerFactory,
+  LendingRateOracleFactory,
+  MockAggregatorFactory,
+  PriceOracleFactory,
+} from '../types';
+import {getIErc20Detailed} from './contracts-getters';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -213,7 +216,7 @@ export const deployLendingPool = async (verify?: boolean) => {
 };
 
 export const deployPriceOracle = async (verify?: boolean) => {
-  const instance = await deployContract<PriceOracle>(eContractid.PriceOracle, []);
+  const instance = await new PriceOracleFactory().deploy();
   if (verify) {
     await verifyContract(eContractid.PriceOracle, instance.address, []);
   }
@@ -221,7 +224,7 @@ export const deployPriceOracle = async (verify?: boolean) => {
 };
 
 export const deployLendingRateOracle = async (verify?: boolean) => {
-  const instance = await deployContract<LendingRateOracle>(eContractid.LendingRateOracle, []);
+  const instance = await new LendingRateOracleFactory().deploy();
   if (verify) {
     await verifyContract(eContractid.LendingRateOracle, instance.address, []);
   }
@@ -229,8 +232,8 @@ export const deployLendingRateOracle = async (verify?: boolean) => {
 };
 
 export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify?: boolean) => {
-  const args = [price];
-  const instance = await deployContract<MockAggregator>(eContractid.MockAggregator, args);
+  const args: [tStringTokenSmallUnits] = [price];
+  const instance = await new MockAggregatorFactory().deploy(...args);
   if (verify) {
     await verifyContract(eContractid.MockAggregator, instance.address, args);
   }
@@ -245,11 +248,12 @@ export const deployChainlinkProxyPriceProvider = async (
   ],
   verify?: boolean
 ) => {
-  const args = [assetsAddresses, sourcesAddresses, fallbackOracleAddress];
-  const instance = await deployContract<MockAggregator>(
-    eContractid.ChainlinkProxyPriceProvider,
-    args
-  );
+  const args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress] = [
+    assetsAddresses,
+    sourcesAddresses,
+    fallbackOracleAddress,
+  ];
+  const instance = await new ChainlinkProxyPriceProviderFactory().deploy(...args);
   if (verify) {
     await verifyContract(eContractid.MockAggregator, instance.address, args);
   }
@@ -257,8 +261,7 @@ export const deployChainlinkProxyPriceProvider = async (
 };
 
 export const getChainlingProxyPriceProvider = async (address?: tEthereumAddress) =>
-  await getContract<MockAggregator>(
-    eContractid.ChainlinkProxyPriceProvider,
+  new ChainlinkProxyPriceProviderFactory().attach(
     address ||
       (await getDb().get(`${eContractid.ChainlinkProxyPriceProvider}.${BRE.network.name}`).value())
         .address
@@ -438,132 +441,6 @@ export const deployGenericAToken = async (
   return instance;
 };
 
-export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) => {
-  return await getContract<LendingPoolAddressesProvider>(
-    eContractid.LendingPoolAddressesProvider,
-    address ||
-      (await getDb().get(`${eContractid.LendingPoolAddressesProvider}.${BRE.network.name}`).value())
-        .address
-  );
-};
-
-export const getLendingPoolConfiguratorProxy = async (address?: tEthereumAddress) => {
-  return await getContract<LendingPoolConfigurator>(
-    eContractid.LendingPoolConfigurator,
-    address ||
-      (await getDb().get(`${eContractid.LendingPoolConfigurator}.${BRE.network.name}`).value())
-        .address
-  );
-};
-
-export const getLendingPool = async (address?: tEthereumAddress) => {
-  const lendingPoolArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.LendingPool
-  );
-
-  const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
-
-  return <LendingPool>(
-    await factory.attach(
-      address ||
-        (await getDb().get(`${eContractid.LendingPool}.${BRE.network.name}`).value()).address
-    )
-  );
-};
-
-export const getPriceOracle = async (address?: tEthereumAddress) => {
-  return await getContract<PriceOracle>(
-    eContractid.PriceOracle,
-    address || (await getDb().get(`${eContractid.PriceOracle}.${BRE.network.name}`).value()).address
-  );
-};
-
-export const getAToken = async (address?: tEthereumAddress) => {
-  return await getContract<AToken>(
-    eContractid.AToken,
-    address || (await getDb().get(`${eContractid.AToken}.${BRE.network.name}`).value()).address
-  );
-};
-
-export const getStableDebtToken = async (address?: tEthereumAddress) => {
-  return await getContract<AToken>(
-    eContractid.StableDebtToken,
-    address ||
-      (await getDb().get(`${eContractid.StableDebtToken}.${BRE.network.name}`).value()).address
-  );
-};
-
-export const getVariableDebtToken = async (address?: tEthereumAddress) => {
-  return await getContract<AToken>(
-    eContractid.VariableDebtToken,
-    address ||
-      (await getDb().get(`${eContractid.VariableDebtToken}.${BRE.network.name}`).value()).address
-  );
-};
-
-export const getMintableErc20 = async (address: tEthereumAddress) => {
-  return await getContract<MintableERC20>(
-    eContractid.MintableERC20,
-    address ||
-      (await getDb().get(`${eContractid.MintableERC20}.${BRE.network.name}`).value()).address
-  );
-};
-
-export const getIErc20Detailed = async (address: tEthereumAddress) => {
-  return await getContract<Ierc20Detailed>(
-    eContractid.IERC20Detailed,
-    address ||
-      (await getDb().get(`${eContractid.IERC20Detailed}.${BRE.network.name}`).value()).address
-  );
-};
-
-export const getAaveProtocolTestHelpers = async (address?: tEthereumAddress) => {
-  return await getContract<AaveProtocolTestHelpers>(
-    eContractid.AaveProtocolTestHelpers,
-    address ||
-      (await getDb().get(`${eContractid.AaveProtocolTestHelpers}.${BRE.network.name}`).value())
-        .address
-  );
-};
-
-export const getInterestRateStrategy = async (address?: tEthereumAddress) => {
-  return await getContract<DefaultReserveInterestRateStrategy>(
-    eContractid.DefaultReserveInterestRateStrategy,
-    address ||
-      (
-        await getDb()
-          .get(`${eContractid.DefaultReserveInterestRateStrategy}.${BRE.network.name}`)
-          .value()
-      ).address
-  );
-};
-
-export const getMockFlashLoanReceiver = async (address?: tEthereumAddress) => {
-  return await getContract<MockFlashLoanReceiver>(
-    eContractid.MockFlashLoanReceiver,
-    address ||
-      (await getDb().get(`${eContractid.MockFlashLoanReceiver}.${BRE.network.name}`).value())
-        .address
-  );
-};
-
-export const getMockSwapAdapter = async (address?: tEthereumAddress) => {
-  return await getContract<MockSwapAdapter>(
-    eContractid.MockSwapAdapter,
-    address ||
-      (await getDb().get(`${eContractid.MockSwapAdapter}.${BRE.network.name}`).value()).address
-  );
-};
-
-export const getLendingRateOracle = async (address?: tEthereumAddress) => {
-  return await getContract<LendingRateOracle>(
-    eContractid.LendingRateOracle,
-    address ||
-      (await getDb().get(`${eContractid.LendingRateOracle}.${BRE.network.name}`).value()).address
-  );
-};
-
 const linkBytecode = (artifact: Artifact, libraries: any) => {
   let bytecode = artifact.bytecode;
 
@@ -688,68 +565,6 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
   return tokens;
 };
 
-export const getMockedTokens = async (config: PoolConfiguration) => {
-  const tokenSymbols = config.ReserveSymbols;
-  const db = getDb();
-  const tokens: MockTokenMap = await tokenSymbols.reduce<Promise<MockTokenMap>>(
-    async (acc, tokenSymbol) => {
-      const accumulator = await acc;
-      const address = db.get(`${tokenSymbol.toUpperCase()}.${BRE.network.name}`).value().address;
-      accumulator[tokenSymbol] = await getContract<MintableERC20>(
-        eContractid.MintableERC20,
-        address
-      );
-      return Promise.resolve(acc);
-    },
-    Promise.resolve({})
-  );
-  return tokens;
-};
-
-export const getAllMockedTokens = async () => {
-  const db = getDb();
-  const tokens: MockTokenMap = await Object.keys(TokenContractId).reduce<Promise<MockTokenMap>>(
-    async (acc, tokenSymbol) => {
-      const accumulator = await acc;
-      const address = db.get(`${tokenSymbol.toUpperCase()}.${BRE.network.name}`).value().address;
-      accumulator[tokenSymbol] = await getContract<MintableERC20>(
-        eContractid.MintableERC20,
-        address
-      );
-      return Promise.resolve(acc);
-    },
-    Promise.resolve({})
-  );
-  return tokens;
-};
-
-export const getPairsTokenAggregator = (
-  allAssetsAddresses: {
-    [tokenSymbol: string]: tEthereumAddress;
-  },
-  aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
-): [string[], string[]] => {
-  const {ETH, USD, WETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
-
-  const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
-    if (tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH') {
-      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
-        (value) => value === tokenSymbol
-      );
-      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
-        string,
-        tEthereumAddress
-      ][])[aggregatorAddressIndex];
-      return [tokenAddress, aggregatorAddress];
-    }
-  }) as [string, string][];
-
-  const mappedPairs = pairs.map(([asset]) => asset);
-  const mappedAggregators = pairs.map(([, source]) => source);
-
-  return [mappedPairs, mappedAggregators];
-};
-
 export const initReserves = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
@@ -798,7 +613,6 @@ export const initReserves = async (
           stableRateSlope2,
         },
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      console.log('deploy def reserve');
       const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
         [
           lendingPoolAddressesProvider.address,
@@ -811,7 +625,6 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy stable deb totken ', assetSymbol);
       const stableDebtToken = await deployStableDebtToken(
         [
           `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
@@ -823,7 +636,6 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy var deb totken ', assetSymbol);
       const variableDebtToken = await deployVariableDebtToken(
         [
           `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
@@ -835,7 +647,6 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy a token ', assetSymbol);
       const aToken = await deployGenericAToken(
         [
           lendingPool.address,
@@ -855,7 +666,6 @@ export const initReserves = async (
         }
       }
 
-      console.log('init reserve currency ', assetSymbol);
       await lendingPoolConfigurator.initReserve(
         tokenAddress,
         aToken.address,
@@ -868,18 +678,6 @@ export const initReserves = async (
       console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
     }
   }
-};
-
-export const getLendingPoolAddressesProviderRegistry = async (address?: tEthereumAddress) => {
-  return await getContract<LendingPoolAddressesProviderRegistry>(
-    eContractid.LendingPoolAddressesProviderRegistry,
-    address ||
-      (
-        await getDb()
-          .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${BRE.network.name}`)
-          .value()
-      ).address
-  );
 };
 
 export const buildPermitParams = (

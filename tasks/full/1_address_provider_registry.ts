@@ -3,11 +3,11 @@ import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
   getParamPerNetwork,
-  getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-helpers';
 import {waitForTx} from '../../helpers/misc-utils';
 import {ConfigNames, loadPoolConfig, getGenesisAaveAdmin} from '../../helpers/configuration';
 import {eEthereumNetwork} from '../../helpers/types';
+import {getLendingPoolAddressesProviderRegistry} from '../../helpers/contracts-getters';
 
 task(
   'full:deploy-address-provider',
