@@ -342,20 +342,6 @@
           "expected": "success"
         }
       ]
-    },
-    {
-      "description": "Users 1 tries to withdraw 0.05 WETH, which does not bring the HF below 1",
-      "actions": [
-        {
-          "name": "withdraw",
-          "args": {
-            "reserve": "WETH",
-            "amount": "0.05",
-            "user": "1"
-          },
-          "expected": "success"
-        }
-      ]
     }
   ]
 }
