@@ -735,11 +735,11 @@ export const getContractsData = async (
   testEnv: TestEnv,
   sender?: string
 ) => {
-  const {pool} = testEnv;
+  const {pool, helpersContract} = testEnv;
 
   const [userData, reserveData, timestamp] = await Promise.all([
-    getUserData(pool, reserve, user, sender || user),
-    getReserveData(pool, reserve),
+    getUserData(pool, helpersContract, reserve, user, sender || user),
+    getReserveData(helpersContract, reserve),
     timeLatest(),
   ]);
 

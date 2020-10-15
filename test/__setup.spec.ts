@@ -27,6 +27,7 @@ import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../help
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
 import {getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
+import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
 
 import {
   setInitialAssetPricesInOracle,
@@ -201,12 +202,17 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const reservesParams = getReservesConfigByPool(AavePools.proto);
 
+  const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
+
+  await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+
   console.log('Initialize configuration');
   await initReserves(
     reservesParams,
     protoPoolReservesAddresses,
     addressesProvider,
     lendingPoolProxy,
+    testHelpers,
     lendingPoolConfiguratorProxy,
     AavePools.proto,
     ZERO_ADDRESS,
@@ -215,13 +221,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await enableReservesToBorrow(
     reservesParams,
     protoPoolReservesAddresses,
-    lendingPoolProxy,
+    testHelpers,
     lendingPoolConfiguratorProxy
   );
   await enableReservesAsCollateral(
     reservesParams,
     protoPoolReservesAddresses,
-    lendingPoolProxy,
+    testHelpers,
     lendingPoolConfiguratorProxy
   );
 
@@ -237,10 +243,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await insertContractAddressInDb(eContractid.MockSwapAdapter, mockSwapAdapter.address);
 
   await deployWalletBalancerProvider(addressesProvider.address);
-
-  const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
-
-  await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
 
   console.timeEnd('setup');
 };

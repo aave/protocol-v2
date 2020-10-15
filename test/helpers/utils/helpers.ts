@@ -11,14 +11,15 @@ import {
 import {tEthereumAddress} from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import {getDb, BRE} from '../../../helpers/misc-utils';
+import {AaveProtocolTestHelpers} from '../../../types/AaveProtocolTestHelpers';
 
 export const getReserveData = async (
-  pool: LendingPool,
+  helper: AaveProtocolTestHelpers,
   reserve: tEthereumAddress
 ): Promise<ReserveData> => {
   const [reserveData, tokenAddresses, rateOracle, token] = await Promise.all([
-    pool.getReserveData(reserve),
-    pool.getReserveTokensAddresses(reserve),
+    helper.getReserveData(reserve),
+    helper.getReserveTokensAddresses(reserve),
     getLendingRateOracle(),
     getIErc20Detailed(reserve),
   ]);
@@ -73,13 +74,14 @@ export const getReserveData = async (
 
 export const getUserData = async (
   pool: LendingPool,
+  helper: AaveProtocolTestHelpers,
   reserve: string,
   user: tEthereumAddress,
   sender?: tEthereumAddress
 ): Promise<UserReserveData> => {
   const [userData, scaledATokenBalance] = await Promise.all([
-    pool.getUserReserveData(reserve, user),
-    getATokenUserData(reserve, user, pool),
+    helper.getUserReserveData(reserve, user),
+    getATokenUserData(reserve, user, helper),
   ]);
 
   const token = await getMintableErc20(reserve);
@@ -111,8 +113,13 @@ export const getReserveAddressFromSymbol = async (symbol: string) => {
   return token.address;
 };
 
-const getATokenUserData = async (reserve: string, user: string, pool: LendingPool) => {
-  const aTokenAddress: string = (await pool.getReserveTokensAddresses(reserve)).aTokenAddress;
+const getATokenUserData = async (
+  reserve: string,
+  user: string,
+  helpersContract: AaveProtocolTestHelpers
+) => {
+  const aTokenAddress: string = (await helpersContract.getReserveTokensAddresses(reserve))
+    .aTokenAddress;
 
   const aToken = await getAToken(aTokenAddress);
 

@@ -87,13 +87,13 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
   });
 
   it('Upgrades the DAI stable debt token implementation ', async () => {
-    const {dai, configurator, pool} = testEnv;
+    const {dai, configurator, pool, helpersContract} = testEnv;
 
     const name = await (await getAToken(newATokenAddress)).name();
 
     await configurator.updateStableDebtToken(dai.address, newStableTokenAddress);
 
-    const {stableDebtTokenAddress} = await pool.getReserveTokensAddresses(dai.address);
+    const {stableDebtTokenAddress} = await helpersContract.getReserveTokensAddresses(dai.address);
 
     const debtToken = await getContract<MockStableDebtToken>(
       eContractid.MockStableDebtToken,
@@ -116,13 +116,13 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
   });
 
   it('Upgrades the DAI variable debt token implementation ', async () => {
-    const {dai, configurator, pool} = testEnv;
+    const {dai, configurator, pool, helpersContract} = testEnv;
 
     const name = await (await getAToken(newATokenAddress)).name();
 
     await configurator.updateVariableDebtToken(dai.address, newVariableTokenAddress);
 
-    const {variableDebtTokenAddress} = await pool.getReserveTokensAddresses(dai.address);
+    const {variableDebtTokenAddress} = await helpersContract.getReserveTokensAddresses(dai.address);
 
     const debtToken = await getContract<MockStableDebtToken>(
       eContractid.MockStableDebtToken,

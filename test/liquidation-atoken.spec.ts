@@ -118,7 +118,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('LIQUIDATION - Liquidates the borrow', async () => {
-    const {pool, dai, weth, users, oracle} = testEnv;
+    const {pool, dai, weth, users, oracle, helpersContract} = testEnv;
     const borrower = users[1];
 
     //mints dai to the caller
@@ -128,10 +128,15 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //approve protocol to access depositor wallet
     await dai.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    const daiReserveDataBefore = await getReserveData(pool, dai.address);
-    const ethReserveDataBefore = await pool.getReserveData(weth.address);
+    const daiReserveDataBefore = await getReserveData(helpersContract, dai.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(weth.address);
 
-    const userReserveDataBefore = await getUserData(pool, dai.address, borrower.address);
+    const userReserveDataBefore = await getUserData(
+      pool,
+      helpersContract,
+      dai.address,
+      borrower.address
+    );
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
       .div(2)
@@ -145,21 +150,24 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       true
     );
 
-    const userReserveDataAfter = await pool.getUserReserveData(dai.address, borrower.address);
+    const userReserveDataAfter = await helpersContract.getUserReserveData(
+      dai.address,
+      borrower.address
+    );
 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
-    const daiReserveDataAfter = await pool.getReserveData(dai.address);
-    const ethReserveDataAfter = await pool.getReserveData(weth.address);
+    const daiReserveDataAfter = await helpersContract.getReserveData(dai.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(weth.address);
 
     const collateralPrice = (await oracle.getAssetPrice(weth.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(dai.address)).toString();
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(weth.address)
+      await helpersContract.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
-      await pool.getReserveConfigurationData(dai.address)
+      await helpersContract.getReserveConfigurationData(dai.address)
     ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice)
@@ -219,7 +227,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('User 3 deposits 1000 USDC, user 4 1 WETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const {users, pool, usdc, oracle, weth} = testEnv;
+    const {users, pool, usdc, oracle, weth, helpersContract} = testEnv;
     const depositor = users[3];
     const borrower = users[4];
 
@@ -282,10 +290,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     //approve protocol to access depositor wallet
     await usdc.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    const userReserveDataBefore = await pool.getUserReserveData(usdc.address, borrower.address);
+    const userReserveDataBefore = await helpersContract.getUserReserveData(
+      usdc.address,
+      borrower.address
+    );
 
-    const usdcReserveDataBefore = await pool.getReserveData(usdc.address);
-    const ethReserveDataBefore = await pool.getReserveData(weth.address);
+    const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(weth.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
       .multipliedBy(0.5)
@@ -299,21 +310,24 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       true
     );
 
-    const userReserveDataAfter = await pool.getUserReserveData(usdc.address, borrower.address);
+    const userReserveDataAfter = await helpersContract.getUserReserveData(
+      usdc.address,
+      borrower.address
+    );
 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
-    const usdcReserveDataAfter = await pool.getReserveData(usdc.address);
-    const ethReserveDataAfter = await pool.getReserveData(weth.address);
+    const usdcReserveDataAfter = await helpersContract.getReserveData(usdc.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(weth.address);
 
     const collateralPrice = (await oracle.getAssetPrice(weth.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(usdc.address)).toString();
 
     const collateralDecimals = (
-      await pool.getReserveConfigurationData(weth.address)
+      await helpersContract.getReserveConfigurationData(weth.address)
     ).decimals.toString();
     const principalDecimals = (
-      await pool.getReserveConfigurationData(usdc.address)
+      await helpersContract.getReserveConfigurationData(usdc.address)
     ).decimals.toString();
 
     const expectedCollateralLiquidated = new BigNumber(principalPrice)

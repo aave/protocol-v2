@@ -7,13 +7,14 @@ import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {
-  InitializableAdminUpgradeabilityProxy
-} from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+  InitializableImmutableAdminUpgradeabilityProxy
+} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -260,11 +261,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param implementation the address of the new aToken implementation
    **/
   function updateAToken(address asset, address implementation) external onlyAaveAdmin {
-    (address aTokenAddress, , ) = pool.getReserveTokensAddresses(asset);
+    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
-    _upgradeTokenImplementation(asset, aTokenAddress, implementation);
+    _upgradeTokenImplementation(asset, reserveData.aTokenAddress, implementation);
 
-    emit ATokenUpgraded(asset, aTokenAddress, implementation);
+    emit ATokenUpgraded(asset, reserveData.aTokenAddress, implementation);
   }
 
   /**
@@ -273,11 +274,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param implementation the address of the new aToken implementation
    **/
   function updateStableDebtToken(address asset, address implementation) external onlyAaveAdmin {
-    (, address stableDebtToken, ) = pool.getReserveTokensAddresses(asset);
+    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
-    _upgradeTokenImplementation(asset, stableDebtToken, implementation);
+    _upgradeTokenImplementation(asset, reserveData.stableDebtTokenAddress, implementation);
 
-    emit StableDebtTokenUpgraded(asset, stableDebtToken, implementation);
+    emit StableDebtTokenUpgraded(asset, reserveData.stableDebtTokenAddress, implementation);
   }
 
   /**
@@ -286,11 +287,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param implementation the address of the new aToken implementation
    **/
   function updateVariableDebtToken(address asset, address implementation) external onlyAaveAdmin {
-    (, , address variableDebtToken) = pool.getReserveTokensAddresses(asset);
+    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
-    _upgradeTokenImplementation(asset, variableDebtToken, implementation);
+    _upgradeTokenImplementation(asset, reserveData.variableDebtTokenAddress, implementation);
 
-    emit VariableDebtTokenUpgraded(asset, variableDebtToken, implementation);
+    emit VariableDebtTokenUpgraded(asset, reserveData.variableDebtTokenAddress, implementation);
   }
 
   /**
@@ -410,20 +411,12 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   function deactivateReserve(address asset) external onlyAaveAdmin {
-    (
-      uint256 availableLiquidity,
-      uint256 totalStableDebt,
-      uint256 totalVariableDebt,
-      ,
-      ,
-      ,
-      ,
-      ,
-      ,
+    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
-    ) = pool.getReserveData(asset);
+    uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
+
     require(
-      availableLiquidity == 0 && totalStableDebt == 0 && totalVariableDebt == 0,
+      availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
       Errors.RESERVE_LIQUIDITY_NOT_0
     );
 
@@ -558,7 +551,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param decimals the decimals of the token
    **/
   function _initTokenWithProxy(address implementation, uint8 decimals) internal returns (address) {
-    InitializableAdminUpgradeabilityProxy proxy = new InitializableAdminUpgradeabilityProxy();
+
+      InitializableImmutableAdminUpgradeabilityProxy proxy
+     = new InitializableImmutableAdminUpgradeabilityProxy(address(this));
 
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',
@@ -567,7 +562,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
       IERC20Detailed(implementation).symbol()
     );
 
-    proxy.initialize(implementation, address(this), params);
+    proxy.initialize(implementation, params);
 
     return address(proxy);
   }
@@ -577,11 +572,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address proxyAddress,
     address implementation
   ) internal {
-    InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(
-      payable(proxyAddress)
-    );
 
-    (uint256 decimals, , , , , , , , , , ) = pool.getReserveConfigurationData(asset);
+      InitializableImmutableAdminUpgradeabilityProxy proxy
+     = InitializableImmutableAdminUpgradeabilityProxy(payable(proxyAddress));
+
+    ReserveConfiguration.Map memory configuration = pool.getConfiguration(asset);
+
+    (, , , uint256 decimals, ) = configuration.getParamsMemory();
 
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',

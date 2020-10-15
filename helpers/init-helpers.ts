@@ -1,11 +1,12 @@
 import {iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
 import {LendingPool} from '../types/LendingPool';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
+import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
 
 export const enableReservesToBorrow = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPool: LendingPool,
+  helpers: AaveProtocolTestHelpers,
   lendingPoolConfigurator: LendingPoolConfigurator
 ) => {
   for (const [assetSymbol, {borrowingEnabled, stableBorrowRateEnabled}] of Object.entries(
@@ -19,9 +20,9 @@ export const enableReservesToBorrow = async (
       const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
         assetAddressIndex
       ];
-      const {
-        borrowingEnabled: borrowingAlreadyEnabled,
-      } = await lendingPool.getReserveConfigurationData(tokenAddress);
+      const {borrowingEnabled: borrowingAlreadyEnabled} = await helpers.getReserveConfigurationData(
+        tokenAddress
+      );
 
       if (borrowingAlreadyEnabled) {
         console.log(`Reserve ${assetSymbol} is already enabled for borrowing, skipping`);
@@ -40,7 +41,7 @@ export const enableReservesToBorrow = async (
 export const enableReservesAsCollateral = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPool: LendingPool,
+  helpers: AaveProtocolTestHelpers,
   lendingPoolConfigurator: LendingPoolConfigurator
 ) => {
   for (const [
@@ -55,9 +56,9 @@ export const enableReservesAsCollateral = async (
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
-    const {
-      usageAsCollateralEnabled: alreadyEnabled,
-    } = await lendingPool.getReserveConfigurationData(tokenAddress);
+    const {usageAsCollateralEnabled: alreadyEnabled} = await helpers.getReserveConfigurationData(
+      tokenAddress
+    );
 
     if (alreadyEnabled) {
       console.log(`Reserve ${assetSymbol} is already enabled as collateral, skipping`);

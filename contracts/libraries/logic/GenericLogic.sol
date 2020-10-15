@@ -68,7 +68,7 @@ library GenericLogic {
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (, vars.liquidationThreshold, , vars.decimals) = reservesData[asset].configuration.getParams();
+    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset].configuration.getParams();
 
     if (vars.liquidationThreshold == 0) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer
@@ -177,7 +177,7 @@ library GenericLogic {
       vars.currentReserveAddress = reserves[vars.i];
       ReserveLogic.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
 
-      (vars.ltv, vars.liquidationThreshold, , vars.decimals) = currentReserve
+      (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
         .configuration
         .getParams();
 
