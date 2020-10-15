@@ -114,7 +114,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(TRANSFER_AMOUNT_EXCEEDS_BALANCE);
+    ).to.be.revertedWith(SAFEERC20_LOWLEVEL_CALL);
   });
 
   it('Takes WETH flashloan, simulating a receiver as EOA (revert expected)', async () => {
@@ -356,7 +356,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       pool
         .connect(caller.signer)
         .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 0, '0x10', '0')
-    ).to.be.revertedWith('ERC20: transfer amount exceeds allowance');
+    ).to.be.revertedWith(SAFEERC20_LOWLEVEL_CALL);
   });
 
   it('Caller takes a WETH flashloan with mode = 1', async () => {
