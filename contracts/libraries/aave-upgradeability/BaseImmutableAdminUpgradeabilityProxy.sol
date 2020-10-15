@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import '../openzeppelin-upgradeability/BaseUpgradeabilityProxy.sol';
+import '../external/openzeppelin/upgradeability/BaseUpgradeabilityProxy.sol';
 
 /**
  * @title BaseImmutableAdminUpgradeabilityProxy
@@ -14,11 +14,10 @@ import '../openzeppelin-upgradeability/BaseUpgradeabilityProxy.sol';
  * feature proposal that would enable this to be done automatically.
  */
 contract BaseImmutableAdminUpgradeabilityProxy is BaseUpgradeabilityProxy {
-
   address immutable ADMIN;
 
   constructor(address admin) public {
-     ADMIN = admin; 
+    ADMIN = admin;
   }
 
   modifier ifAdmin() {
@@ -70,7 +69,6 @@ contract BaseImmutableAdminUpgradeabilityProxy is BaseUpgradeabilityProxy {
     (bool success, ) = newImplementation.delegatecall(data);
     require(success);
   }
-
 
   /**
    * @dev Only fall back when the sender is not the admin.

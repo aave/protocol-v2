@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '../../libraries/external/openzeppelin/contracts/SafeMath.sol';
+import {IERC20} from '../../libraries/external/openzeppelin/contracts/IERC20.sol';
 
 import {FlashLoanReceiverBase} from '../../flashloan/base/FlashLoanReceiverBase.sol';
 import {MintableERC20} from '../tokens/MintableERC20.sol';
-import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '../../libraries/external/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 
 contract MockFlashLoanReceiver is FlashLoanReceiverBase {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   ILendingPoolAddressesProvider internal _provider;

@@ -3,7 +3,7 @@ pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
+import {IERC20Detailed} from '../libraries/external/openzeppelin/contracts/IERC20Detailed.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';

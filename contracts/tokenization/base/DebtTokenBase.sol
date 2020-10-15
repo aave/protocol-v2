@@ -4,7 +4,7 @@ pragma solidity ^0.6.8;
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {
   VersionedInitializable
-} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+} from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 

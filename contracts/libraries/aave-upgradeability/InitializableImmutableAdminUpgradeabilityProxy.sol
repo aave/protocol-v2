@@ -2,7 +2,7 @@
 pragma solidity ^0.6.8;
 
 import './BaseImmutableAdminUpgradeabilityProxy.sol';
-import '../openzeppelin-upgradeability/InitializableUpgradeabilityProxy.sol';
+import '../external/openzeppelin/upgradeability/InitializableUpgradeabilityProxy.sol';
 
 /**
  * @title InitializableAdminUpgradeabilityProxy
@@ -13,9 +13,7 @@ contract InitializableImmutableAdminUpgradeabilityProxy is
   BaseImmutableAdminUpgradeabilityProxy,
   InitializableUpgradeabilityProxy
 {
-
-  constructor(address admin) public BaseImmutableAdminUpgradeabilityProxy(admin) {
-  }
+  constructor(address admin) public BaseImmutableAdminUpgradeabilityProxy(admin) {}
 
   /**
    * @dev Only fall back when the sender is not the admin.
