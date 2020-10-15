@@ -5,12 +5,10 @@ import {IncentivizedERC20} from './IncentivizedERC20.sol';
 import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
-import {
-  VersionedInitializable
-} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IAToken} from './interfaces/IAToken.sol';
-import {IERC20} from '../interfaces/IERC20.sol';
-import {SafeERC20} from '../misc/SafeERC20.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 /**
  * @title Aave ERC20 AToken

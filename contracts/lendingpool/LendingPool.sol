@@ -2,11 +2,9 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {
-  VersionedInitializable
-} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
@@ -25,7 +23,7 @@ import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol
 import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';

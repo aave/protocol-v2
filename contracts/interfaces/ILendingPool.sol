@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
