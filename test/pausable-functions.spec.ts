@@ -236,7 +236,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Liquidation call', async () => {
-    const {users, pool, usdc, oracle, weth, configurator} = testEnv;
+    const {users, pool, usdc, oracle, weth, configurator, helpersContract} = testEnv;
     const depositor = users[3];
     const borrower = users[4];
 
@@ -295,7 +295,10 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await usdc.mint(await convertToCurrencyDecimals(usdc.address, '1000'));
     await usdc.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    const userReserveDataBefore = await pool.getUserReserveData(usdc.address, borrower.address);
+    const userReserveDataBefore = await helpersContract.getUserReserveData(
+      usdc.address,
+      borrower.address
+    );
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
       .multipliedBy(0.5)

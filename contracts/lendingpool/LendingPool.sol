@@ -651,103 +651,36 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev accessory functions to fetch data from the core contract
+   * @dev returns the state and configuration of the reserve
+   * @param asset the address of the reserve
+   * @return the state of the reserve
    **/
-
-  function getReserveConfigurationData(address asset)
-    external
-    override
-    view
-    returns (
-      uint256 decimals,
-      uint256 ltv,
-      uint256 liquidationThreshold,
-      uint256 liquidationBonus,
-      uint256 reserveFactor,
-      address interestRateStrategyAddress,
-      bool usageAsCollateralEnabled,
-      bool borrowingEnabled,
-      bool stableBorrowRateEnabled,
-      bool isActive,
-      bool isFreezed
-    )
-  {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
-
-    return (
-      reserve.configuration.getDecimals(),
-      reserve.configuration.getLtv(),
-      reserve.configuration.getLiquidationThreshold(),
-      reserve.configuration.getLiquidationBonus(),
-      reserve.configuration.getReserveFactor(),
-      reserve.interestRateStrategyAddress,
-      reserve.configuration.getLtv() != 0,
-      reserve.configuration.getBorrowingEnabled(),
-      reserve.configuration.getStableRateBorrowingEnabled(),
-      reserve.configuration.getActive(),
-      reserve.configuration.getFrozen()
-    );
-  }
-
-  function getReserveTokensAddresses(address asset)
-    external
-    override
-    view
-    returns (
-      address aTokenAddress,
-      address stableDebtTokenAddress,
-      address variableDebtTokenAddress
-    )
-  {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
-
-    return (
-      reserve.aTokenAddress,
-      reserve.stableDebtTokenAddress,
-      reserve.variableDebtTokenAddress
-    );
-  }
-
   function getReserveData(address asset)
     external
     override
     view
-    returns (
-      uint256 availableLiquidity,
-      uint256 totalStableDebt,
-      uint256 totalVariableDebt,
-      uint256 liquidityRate,
-      uint256 variableBorrowRate,
-      uint256 stableBorrowRate,
-      uint256 averageStableBorrowRate,
-      uint256 liquidityIndex,
-      uint256 variableBorrowIndex,
-      uint40 lastUpdateTimestamp
-    )
+    returns (ReserveLogic.ReserveData memory)
   {
-    ReserveLogic.ReserveData memory reserve = _reserves[asset];
-
-    return (
-      IERC20(asset).balanceOf(reserve.aTokenAddress),
-      IERC20(reserve.stableDebtTokenAddress).totalSupply(),
-      IERC20(reserve.variableDebtTokenAddress).totalSupply(),
-      reserve.currentLiquidityRate,
-      reserve.currentVariableBorrowRate,
-      reserve.currentStableBorrowRate,
-      IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate(),
-      reserve.liquidityIndex,
-      reserve.variableBorrowIndex,
-      reserve.lastUpdateTimestamp
-    );
+    return _reserves[asset];
   }
 
+  /**
+   * @dev returns the user account data across all the reserves
+   * @param user the address of the user
+   * @return totalCollateralETH the total collateral in ETH of the user
+   * @return totalDebtETH the total debt in ETH of the user
+   * @return availableBorrowsETH the borrowing power left of the user
+   * @return currentLiquidationThreshold the liquidation threshold of the user
+   * @return ltv the loan to value of the user
+   * @return healthFactor the current health factor of the user
+   **/
   function getUserAccountData(address user)
     external
     override
     view
     returns (
       uint256 totalCollateralETH,
-      uint256 totalBorrowsETH,
+      uint256 totalDebtETH,
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
@@ -756,7 +689,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   {
     (
       totalCollateralETH,
-      totalBorrowsETH,
+      totalDebtETH,
       ltv,
       currentLiquidationThreshold,
       healthFactor
@@ -771,41 +704,117 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
       totalCollateralETH,
-      totalBorrowsETH,
+      totalDebtETH,
       ltv
     );
   }
 
-  function getUserReserveData(address asset, address user)
+  /**
+   * @dev returns the configuration of the reserve
+   * @param asset the address of the reserve
+   * @return the configuration of the reserve
+   **/
+  function getConfiguration(address asset)
     external
     override
     view
-    returns (
-      uint256 currentATokenBalance,
-      uint256 currentStableDebt,
-      uint256 currentVariableDebt,
-      uint256 principalStableDebt,
-      uint256 scaledVariableDebt,
-      uint256 stableBorrowRate,
-      uint256 liquidityRate,
-      uint40 stableRateLastUpdated,
-      bool usageAsCollateralEnabled
-    )
+    returns (ReserveConfiguration.Map memory)
   {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
-
-    currentATokenBalance = IERC20(reserve.aTokenAddress).balanceOf(user);
-    (currentStableDebt, currentVariableDebt) = Helpers.getUserCurrentDebt(user, reserve);
-    principalStableDebt = IStableDebtToken(reserve.stableDebtTokenAddress).principalBalanceOf(user);
-    scaledVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress).scaledBalanceOf(user);
-    liquidityRate = reserve.currentLiquidityRate;
-    stableBorrowRate = IStableDebtToken(reserve.stableDebtTokenAddress).getUserStableRate(user);
-    stableRateLastUpdated = IStableDebtToken(reserve.stableDebtTokenAddress).getUserLastUpdated(
-      user
-    );
-    usageAsCollateralEnabled = _usersConfig[user].isUsingAsCollateral(reserve.id);
+    return _reserves[asset].configuration;
   }
 
+  /**
+   * @dev returns the configuration of the user across all the reserves
+   * @param user the user
+   * @return the configuration of the user
+   **/
+  function getUserConfiguration(address user)
+    external
+    override
+    view
+    returns (UserConfiguration.Map memory)
+  {
+    return _usersConfig[user];
+  }
+
+  /**
+   * @dev returns the normalized income per unit of asset
+   * @param asset the address of the reserve
+   * @return the reserve normalized income
+   */
+  function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
+    return _reserves[asset].getNormalizedIncome();
+  }
+
+  /**
+   * @dev returns the normalized variable debt per unit of asset
+   * @param asset the address of the reserve
+   * @return the reserve normalized debt
+   */
+  function getReserveNormalizedVariableDebt(address asset)
+    external
+    override
+    view
+    returns (uint256)
+  {
+    return _reserves[asset].getNormalizedDebt();
+  }
+
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
+  function paused() external override view returns (bool) {
+    return _paused;
+  }
+
+  /**
+   * @dev returns the list of the initialized reserves
+   **/
+  function getReservesList() external override view returns (address[] memory) {
+    address[] memory _activeReserves = new address[](_reservesCount);
+
+    for (uint256 i = 0; i < _reservesCount; i++) {
+      _activeReserves[i] = _reservesList[i];
+    }
+    return _activeReserves;
+  }
+
+  /**
+   * @dev returns the addresses provider
+   **/
+  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
+    return _addressesProvider;
+  }
+
+  /**
+   * @dev validate if a balance decrease for an asset is allowed
+   * @param asset the address of the reserve
+   * @param user the user related to the balance decrease
+   * @param amount the amount being transferred/redeemed
+   * @return true if the balance decrease can be allowed, false otherwise
+   */
+  function balanceDecreaseAllowed(
+    address asset,
+    address user,
+    uint256 amount
+  ) external override view returns (bool) {
+    _whenNotPaused();
+    return
+      GenericLogic.balanceDecreaseAllowed(
+        asset,
+        user,
+        amount,
+        _reserves,
+        _usersConfig[user],
+        _reservesList,
+        _reservesCount,
+        _addressesProvider.getPriceOracle()
+      );
+  }
+
+  /**
+   * @dev avoids direct transfers of ETH
+   **/
   receive() external payable {
     revert();
   }
@@ -838,7 +847,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @param rateStrategyAddress the address of the interest rate strategy contract
    **/
-
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
@@ -847,22 +855,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
+  /**
+   * @dev sets the configuration map of the reserve
+   * @param asset the address of the reserve
+   * @param configuration the configuration map
+   **/
   function setConfiguration(address asset, uint256 configuration) external override {
     _onlyLendingPoolConfigurator();
     _reserves[asset].configuration.data = configuration;
   }
 
-  function getConfiguration(address asset)
-    external
-    override
-    view
-    returns (ReserveConfiguration.Map memory)
-  {
-    return _reserves[asset].configuration;
+  /**
+   * @dev Set the _pause state
+   * @param val the boolean value to set the current pause state of LendingPool
+   */
+  function setPause(bool val) external override {
+    _onlyLendingPoolConfigurator();
+
+    _paused = val;
+    if (_paused) {
+      emit Paused();
+    } else {
+      emit Unpaused();
+    }
   }
 
   // internal functions
-
   struct ExecuteBorrowParams {
     address asset;
     address user;
@@ -968,95 +986,5 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       _reservesCount++;
     }
-  }
-
-  /**
-   * @dev returns the normalized income per unit of asset
-   * @param asset the address of the reserve
-   * @return the reserve normalized income
-   */
-  function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
-    return _reserves[asset].getNormalizedIncome();
-  }
-
-  /**
-   * @dev returns the normalized variable debt per unit of asset
-   * @param asset the address of the reserve
-   * @return the reserve normalized debt
-   */
-  function getReserveNormalizedVariableDebt(address asset)
-    external
-    override
-    view
-    returns (uint256)
-  {
-    return _reserves[asset].getNormalizedDebt();
-  }
-
-  /**
-   * @dev validate if a balance decrease for an asset is allowed
-   * @param asset the address of the reserve
-   * @param user the user related to the balance decrease
-   * @param amount the amount being transferred/redeemed
-   * @return true if the balance decrease can be allowed, false otherwise
-   */
-  function balanceDecreaseAllowed(
-    address asset,
-    address user,
-    uint256 amount
-  ) external override view returns (bool) {
-    _whenNotPaused();
-    return
-      GenericLogic.balanceDecreaseAllowed(
-        asset,
-        user,
-        amount,
-        _reserves,
-        _usersConfig[user],
-        _reservesList,
-        _reservesCount,
-        _addressesProvider.getPriceOracle()
-      );
-  }
-
-  /**
-   * @dev Set the _pause state
-   * @param val the boolean value to set the current pause state of LendingPool
-   */
-  function setPause(bool val) external override {
-    _onlyLendingPoolConfigurator();
-
-    _paused = val;
-    if (_paused) {
-      emit Paused();
-    } else {
-      emit Unpaused();
-    }
-  }
-
-  /**
-   * @dev Returns if the LendingPool is paused
-   */
-  function paused() external override view returns (bool) {
-    return _paused;
-  }
-
-  /**
-   * @dev returns the list of the initialized reserves
-   **/
-  function getReservesList() external override view returns (address[] memory) {
-    address[] memory _activeReserves = new address[](_reservesCount);
-
-    for (uint256 i = 0; i < _reservesCount; i++) {
-      _activeReserves[i] = _reservesList[i];
-    }
-    return _activeReserves;
-  }
-
-  /**
-   * @dev returns the addresses provider
-   **/
-  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
-    return _addressesProvider;
   }
 }

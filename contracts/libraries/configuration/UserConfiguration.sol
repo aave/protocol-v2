@@ -12,8 +12,7 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
  * @notice Implements the bitmap logic to handle the user configuration
  */
 library UserConfiguration {
-  uint256
-    internal constant BORROWING_MASK = 0x5555555555555555555555555555555555555555555555555555555555555555;
+  uint256 internal constant BORROWING_MASK = 0x5555555555555555555555555555555555555555555555555555555555555555;
 
   struct Map {
     uint256 data;

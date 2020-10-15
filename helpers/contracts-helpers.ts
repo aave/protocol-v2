@@ -755,6 +755,7 @@ export const initReserves = async (
   tokenAddresses: {[symbol: string]: tEthereumAddress},
   lendingPoolAddressesProvider: LendingPoolAddressesProvider,
   lendingPool: LendingPool,
+  helpers: AaveProtocolTestHelpers,
   lendingPoolConfigurator: LendingPoolConfigurator,
   aavePool: AavePools,
   incentivesController: tEthereumAddress,
@@ -776,9 +777,7 @@ export const initReserves = async (
       assetAddressIndex
     ];
 
-    const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
-      tokenAddress
-    );
+    const {isActive: reserveInitialized} = await helpers.getReserveConfigurationData(tokenAddress);
 
     if (reserveInitialized) {
       console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);

@@ -35,12 +35,15 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
+      const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
+
       console.log('init reserves');
       await initReserves(
         ReservesConfig,
         reserveAssets,
         addressesProvider,
         lendingPoolProxy,
+        testHelpers,
         lendingPoolConfiguratorProxy,
         AavePools.proto,
         ZERO_ADDRESS,
@@ -50,14 +53,14 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       await enableReservesToBorrow(
         ReservesConfig,
         reserveAssets,
-        lendingPoolProxy,
+        testHelpers,
         lendingPoolConfiguratorProxy
       );
       console.log('enable reserves as collateral');
       await enableReservesAsCollateral(
         ReservesConfig,
         reserveAssets,
-        lendingPoolProxy,
+        testHelpers,
         lendingPoolConfiguratorProxy
       );
 

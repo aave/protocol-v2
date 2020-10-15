@@ -35,6 +35,8 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI'))
     );
 
+    const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
+
     const reservesParams = getReservesConfigByPool(AavePools.proto);
 
     await initReserves(
@@ -42,6 +44,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       protoPoolReservesAddresses,
       addressesProvider,
       lendingPoolProxy,
+      testHelpers,
       lendingPoolConfiguratorProxy,
       AavePools.proto,
       ZERO_ADDRESS,
@@ -50,13 +53,13 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     await enableReservesToBorrow(
       reservesParams,
       protoPoolReservesAddresses,
-      lendingPoolProxy,
+      testHelpers,
       lendingPoolConfiguratorProxy
     );
     await enableReservesAsCollateral(
       reservesParams,
       protoPoolReservesAddresses,
-      lendingPoolProxy,
+      testHelpers,
       lendingPoolConfiguratorProxy
     );
 
@@ -75,8 +78,6 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     );
 
     await deployWalletBalancerProvider(addressesProvider.address, verify);
-
-    const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
 
     await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
   });
