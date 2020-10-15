@@ -3,12 +3,12 @@ pragma solidity ^0.6.8;
 
 pragma experimental ABIEncoderV2;
 
-import {Address} from '@openzeppelin/contracts/utils/Address.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Address} from '../dependencies/openzeppelin/contracts/Address.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 
 /**

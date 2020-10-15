@@ -2,7 +2,7 @@
 pragma solidity ^0.6.8;
 
 import {ILendingRateOracle} from '../../interfaces/ILendingRateOracle.sol';
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 
 contract LendingRateOracle is ILendingRateOracle, Ownable {
   mapping(address => uint256) borrowRates;

@@ -5,7 +5,7 @@ import {MintableERC20} from '../tokens/MintableERC20.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ISwapAdapter} from '../../interfaces/ISwapAdapter.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 
 contract MockSwapAdapter is ISwapAdapter {
   uint256 internal _amountToReturn;
