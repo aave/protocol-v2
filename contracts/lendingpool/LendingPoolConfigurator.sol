@@ -7,8 +7,8 @@ import {
   VersionedInitializable
 } from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
 import {
-  InitializableAdminUpgradeabilityProxy
-} from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+  InitializableImmutableAdminUpgradeabilityProxy
+} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
@@ -558,7 +558,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param decimals the decimals of the token
    **/
   function _initTokenWithProxy(address implementation, uint8 decimals) internal returns (address) {
-    InitializableAdminUpgradeabilityProxy proxy = new InitializableAdminUpgradeabilityProxy();
+
+      InitializableImmutableAdminUpgradeabilityProxy proxy
+     = new InitializableImmutableAdminUpgradeabilityProxy(address(this));
 
     bytes memory params = abi.encodeWithSignature(
       'initialize(uint8,string,string)',
@@ -567,7 +569,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
       IERC20Detailed(implementation).symbol()
     );
 
-    proxy.initialize(implementation, address(this), params);
+    proxy.initialize(implementation, params);
 
     return address(proxy);
   }
@@ -577,9 +579,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address proxyAddress,
     address implementation
   ) internal {
-    InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(
-      payable(proxyAddress)
-    );
+
+      InitializableImmutableAdminUpgradeabilityProxy proxy
+     = InitializableImmutableAdminUpgradeabilityProxy(payable(proxyAddress));
 
     (uint256 decimals, , , , , , , , , , ) = pool.getReserveConfigurationData(asset);
 
