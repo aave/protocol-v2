@@ -65,7 +65,7 @@ library ValidationLogic {
       GenericLogic.balanceDecreaseAllowed(
         reserveAddress,
         msg.sender,
-        userBalance,
+        amount,
         reservesData,
         userConfig,
         reserves,
