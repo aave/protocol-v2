@@ -15,16 +15,10 @@ import {
   PoolConfiguration,
 } from './types';
 
-import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {LendingPoolAddressesProviderRegistry} from '../types/LendingPoolAddressesProviderRegistry';
-import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {Artifact} from '@nomiclabs/buidler/types';
-import {LendingPool} from '../types/LendingPool';
 import {DefaultReserveInterestRateStrategy} from '../types/DefaultReserveInterestRateStrategy';
-import {LendingPoolCollateralManager} from '../types/LendingPoolCollateralManager';
-import {InitializableAdminUpgradeabilityProxy} from '../types/InitializableAdminUpgradeabilityProxy';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {WalletBalanceProvider} from '../types/WalletBalanceProvider';
 import {AToken} from '../types/AToken';
@@ -35,7 +29,7 @@ import {VariableDebtToken} from '../types/VariableDebtToken';
 import {MockContract} from 'ethereum-waffle';
 import {getReservesConfigByPool} from './configuration';
 import {verifyContract} from './etherscan-verification';
-
+import {getFirstSigner, getGenericLogic} from './contracts-getters';
 const {
   ProtocolGlobalParams: {UsdAddress},
 } = CommonsConfig;
@@ -45,15 +39,25 @@ import {ZERO_ADDRESS} from './constants';
 import {MockSwapAdapter} from '../types/MockSwapAdapter';
 import {signTypedData_v4, TypedData} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
-
+import {getIErc20Detailed} from './contracts-getters';
 import {
   ChainlinkProxyPriceProviderFactory,
+  GenericLogicFactory,
+  InitializableAdminUpgradeabilityProxyFactory,
+  LendingPoolAddressesProviderFactory,
+  LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
+  LendingPoolConfiguratorFactory,
+  LendingPoolFactory,
+  LendingPoolLibraryAddresses,
   LendingRateOracleFactory,
   MockAggregatorFactory,
+  MockFlashLoanReceiverFactory,
+  MockSwapAdapterFactory,
   PriceOracleFactory,
+  ReserveLogicFactory,
+  WalletBalanceProviderFactory,
 } from '../types';
-import {getIErc20Detailed} from './contracts-getters';
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
@@ -109,71 +113,69 @@ export const deployContract = async <ContractType extends Contract>(
   return contract;
 };
 
+export const withSaveAndVerify = async (
+  instance: Contract,
+  id: string,
+  args: (string | string[])[],
+  verify?: boolean
+) => {
+  await registerContractInJsonDb(id, instance);
+  if (verify) {
+    await verifyContract(id, instance.address, args);
+  }
+  return instance;
+};
+
 export const getContract = async <ContractType extends Contract>(
   contractName: string,
   address: string
 ): Promise<ContractType> => (await BRE.ethers.getContractAt(contractName, address)) as ContractType;
 
-export const deployLendingPoolAddressesProvider = async (verify?: boolean) => {
-  const instance = await deployContract<LendingPoolAddressesProvider>(
+export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new LendingPoolAddressesProviderFactory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolAddressesProvider,
-    []
+    [],
+    verify
   );
-  if (verify) {
-    await verifyContract(eContractid.LendingPoolAddressesProvider, instance.address, []);
-  }
-  return instance;
-};
 
-export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolean) => {
-  const instance = await deployContract<LendingPoolAddressesProviderRegistry>(
+export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new LendingPoolAddressesProviderRegistryFactory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolAddressesProviderRegistry,
-    []
+    [],
+    verify
   );
-  if (verify) {
-    await verifyContract(eContractid.LendingPoolAddressesProviderRegistry, instance.address, []);
-  }
-  return instance;
-};
 
-export const deployLendingPoolConfigurator = async (verify?: boolean) => {
-  const instance = await deployContract<LendingPoolConfigurator>(
+export const deployLendingPoolConfigurator = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new LendingPoolConfiguratorFactory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolConfigurator,
-    []
-  );
-  if (verify) {
-    await verifyContract(eContractid.LendingPoolConfigurator, instance.address, []);
-  }
-  return instance;
-};
-
-const deployLibrary = async (libraryId: eContractid) => {
-  const factory = await BRE.ethers.getContractFactory(libraryId);
-  const library = await factory.deploy();
-  await library.deployed();
-
-  return library;
-};
-
-export const linkLibrariesToArtifact = async (artifact: Artifact) => {
-  const reserveLogic = await deployLibrary(eContractid.ReserveLogic);
-
-  const genericLogicArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.GenericLogic
+    [],
+    verify
   );
 
-  const linkedGenericLogicByteCode = linkBytecode(genericLogicArtifact, {
-    [eContractid.ReserveLogic]: reserveLogic.address,
-  });
-
-  const genericLogicFactory = await BRE.ethers.getContractFactory(
-    genericLogicArtifact.abi,
-    linkedGenericLogicByteCode
+export const deployReserveLogicLibrary = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ReserveLogicFactory(await getFirstSigner()).deploy(),
+    eContractid.ReserveLogic,
+    [],
+    verify
   );
 
-  const genericLogic = await (await genericLogicFactory.deploy()).deployed();
+export const deployGenericLogic = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new GenericLogicFactory(await getFirstSigner()).deploy(),
+    eContractid.GenericLogic,
+    [],
+    verify
+  );
 
+export const deployValidationLogic = async (
+  reserveLogic: Contract,
+  genericLogic: Contract,
+  verify?: boolean
+) => {
   const validationLogicArtifact = await readArtifact(
     BRE.config.paths.artifacts,
     eContractid.ValidationLogic
@@ -191,141 +193,122 @@ export const linkLibrariesToArtifact = async (artifact: Artifact) => {
 
   const validationLogic = await (await validationLogicFactory.deploy()).deployed();
 
-  const linkedBytecode = linkBytecode(artifact, {
-    [eContractid.ReserveLogic]: reserveLogic.address,
-    [eContractid.GenericLogic]: genericLogic.address,
-    [eContractid.ValidationLogic]: validationLogic.address,
-  });
-  const factory = await BRE.ethers.getContractFactory(artifact.abi, linkedBytecode);
+  return withSaveAndVerify(validationLogic, eContractid.ValidationLogic, [], verify);
+};
 
-  return factory;
+export const deployAaveLibraries = async (
+  verify?: boolean
+): Promise<LendingPoolLibraryAddresses> => {
+  const reserveLogic = await deployReserveLogicLibrary(verify);
+  const genericLogic = await deployGenericLogic(verify);
+  const validationLogic = await deployValidationLogic(reserveLogic, genericLogic, verify);
+
+  // Hardcoded solidity placeholders, if any library changes path this will fail.
+  // Placeholder can be calculated via solidity keccak, but the LendingPoolLibraryAddresses Type seems to
+  // require a hardcoded string.
+  //
+  //  how-to: PLACEHOLDER = solidityKeccak256(['string'], `${libPath}:${libName}`).slice(2, 36)
+  // '__$PLACEHOLDER$__'
+  // or grab placeholdes from LendingPoolLibraryAddresses at Typechain generation.
+  return {
+    ['__$5201a97c05ba6aa659e2f36a933dd51801$__']: reserveLogic.address,
+    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: genericLogic.address,
+    ['__$4c26be947d349222af871a3168b3fe584b$__']: validationLogic.address,
+  };
 };
 
 export const deployLendingPool = async (verify?: boolean) => {
-  const lendingPoolArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.LendingPool
+  const libraries = await deployAaveLibraries(verify);
+  return withSaveAndVerify(
+    await new LendingPoolFactory(libraries, await getFirstSigner()).deploy(),
+    eContractid.LendingPool,
+    [],
+    verify
   );
-  const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
-  const lendingPool = await factory.deploy();
-  const instance = (await lendingPool.deployed()) as LendingPool;
-  if (verify) {
-    await verifyContract(eContractid.LendingPool, instance.address, []);
-  }
-  return instance;
 };
 
-export const deployPriceOracle = async (verify?: boolean) => {
-  const instance = await new PriceOracleFactory().deploy();
-  if (verify) {
-    await verifyContract(eContractid.PriceOracle, instance.address, []);
-  }
-  return instance;
-};
+export const deployPriceOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new PriceOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.PriceOracle,
+    [],
+    verify
+  );
 
-export const deployLendingRateOracle = async (verify?: boolean) => {
-  const instance = await new LendingRateOracleFactory().deploy();
-  if (verify) {
-    await verifyContract(eContractid.LendingRateOracle, instance.address, []);
-  }
-  return instance;
-};
+export const deployLendingRateOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new LendingRateOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.LendingRateOracle,
+    [],
+    verify
+  );
 
-export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify?: boolean) => {
-  const args: [tStringTokenSmallUnits] = [price];
-  const instance = await new MockAggregatorFactory().deploy(...args);
-  if (verify) {
-    await verifyContract(eContractid.MockAggregator, instance.address, args);
-  }
-  return instance;
-};
+export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify?: boolean) =>
+  withSaveAndVerify(
+    await new MockAggregatorFactory(await getFirstSigner()).deploy(price),
+    eContractid.MockAggregator,
+    [price],
+    verify
+  );
 
 export const deployChainlinkProxyPriceProvider = async (
-  [assetsAddresses, sourcesAddresses, fallbackOracleAddress]: [
-    tEthereumAddress[],
-    tEthereumAddress[],
-    tEthereumAddress
-  ],
+  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress],
   verify?: boolean
-) => {
-  const args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress] = [
-    assetsAddresses,
-    sourcesAddresses,
-    fallbackOracleAddress,
-  ];
-  const instance = await new ChainlinkProxyPriceProviderFactory().deploy(...args);
-  if (verify) {
-    await verifyContract(eContractid.MockAggregator, instance.address, args);
-  }
-  return instance;
-};
-
-export const getChainlingProxyPriceProvider = async (address?: tEthereumAddress) =>
-  new ChainlinkProxyPriceProviderFactory().attach(
-    address ||
-      (await getDb().get(`${eContractid.ChainlinkProxyPriceProvider}.${BRE.network.name}`).value())
-        .address
+) =>
+  withSaveAndVerify(
+    await new ChainlinkProxyPriceProviderFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ChainlinkProxyPriceProvider,
+    args,
+    verify
   );
 
 export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
-  const collateralManagerArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.LendingPoolCollateralManager
+  const genericLogic = await getGenericLogic();
+  const libraries = {
+    // See deployAaveLibraries() function
+    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: genericLogic.address,
+  };
+
+  return withSaveAndVerify(
+    await new LendingPoolCollateralManagerFactory(libraries, await getFirstSigner()).deploy(),
+    eContractid.LendingPoolCollateralManager,
+    [],
+    verify
   );
-
-  const factory = await linkLibrariesToArtifact(collateralManagerArtifact);
-  const args: string[] = [];
-  const collateralManager = await factory.deploy(args);
-  const instance = (await collateralManager.deployed()) as LendingPoolCollateralManager;
-
-  if (verify) {
-    await verifyContract(eContractid.LendingPoolCollateralManager, instance.address, args);
-  }
-  return instance;
 };
 
-export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) => {
-  const instance = await deployContract<InitializableAdminUpgradeabilityProxy>(
+export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new InitializableAdminUpgradeabilityProxyFactory(await getFirstSigner()).deploy(),
     eContractid.InitializableAdminUpgradeabilityProxy,
-    []
+    [],
+    verify
   );
-  if (verify) {
-    await verifyContract(eContractid.InitializableAdminUpgradeabilityProxy, instance.address, []);
-  }
-  return instance;
-};
 
 export const deployMockFlashLoanReceiver = async (
   addressesProvider: tEthereumAddress,
   verify?: boolean
-) => {
-  const args = [addressesProvider];
-  const instance = await deployContract<MockFlashLoanReceiver>(
+) =>
+  withSaveAndVerify(
+    await new MockFlashLoanReceiverFactory(await getFirstSigner()).deploy(addressesProvider),
     eContractid.MockFlashLoanReceiver,
-    args
+    [addressesProvider],
+    verify
   );
-  if (verify) {
-    await verifyContract(eContractid.MockFlashLoanReceiver, instance.address, args);
-  }
-  return instance;
-};
 
 export const deployWalletBalancerProvider = async (
   addressesProvider: tEthereumAddress,
   verify?: boolean
-) => {
-  const args = [addressesProvider];
-  const instance = await deployContract<WalletBalanceProvider>(
+) =>
+  withSaveAndVerify(
+    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(addressesProvider),
     eContractid.WalletBalanceProvider,
-    args
+    [addressesProvider],
+    verify
   );
-  if (verify) {
-    await verifyContract(eContractid.WalletBalanceProvider, instance.address, args);
-  }
-  return instance;
-};
+
 export const deployMockSwapAdapter = async (addressesProvider: tEthereumAddress) =>
-  await deployContract<MockSwapAdapter>(eContractid.MockSwapAdapter, [addressesProvider]);
+  await new MockSwapAdapterFactory(await getFirstSigner()).deploy(addressesProvider);
 
 export const deployAaveProtocolTestHelpers = async (
   addressesProvider: tEthereumAddress,
@@ -563,121 +546,6 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
     }
   }
   return tokens;
-};
-
-export const initReserves = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPoolAddressesProvider: LendingPoolAddressesProvider,
-  lendingPool: LendingPool,
-  helpers: AaveProtocolTestHelpers,
-  lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools,
-  incentivesController: tEthereumAddress,
-  verify: boolean
-) => {
-  if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
-    console.log(`Invalid Aave pool ${aavePool}`);
-    process.exit(1);
-  }
-
-  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
-    string,
-    IReserveParams
-  ][]) {
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-
-    const {isActive: reserveInitialized} = await helpers.getReserveConfigurationData(tokenAddress);
-
-    if (reserveInitialized) {
-      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
-      continue;
-    }
-
-    try {
-      const reserveParamIndex = Object.keys(reservesParams).findIndex(
-        (value) => value === assetSymbol
-      );
-      const [
-        ,
-        {
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        },
-      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
-        [
-          lendingPoolAddressesProvider.address,
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        ],
-        verify
-      );
-
-      const stableDebtToken = await deployStableDebtToken(
-        [
-          `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          tokenAddress,
-          lendingPool.address,
-          incentivesController,
-        ],
-        verify
-      );
-
-      const variableDebtToken = await deployVariableDebtToken(
-        [
-          `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          tokenAddress,
-          lendingPool.address,
-          incentivesController,
-        ],
-        verify
-      );
-
-      const aToken = await deployGenericAToken(
-        [
-          lendingPool.address,
-          tokenAddress,
-          `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          incentivesController,
-        ],
-        verify
-      );
-
-      if (process.env.POOL === AavePools.secondary) {
-        if (assetSymbol.search('UNI') === -1) {
-          assetSymbol = `Uni${assetSymbol}`;
-        } else {
-          assetSymbol = assetSymbol.replace(/_/g, '').replace('UNI', 'Uni');
-        }
-      }
-
-      await lendingPoolConfigurator.initReserve(
-        tokenAddress,
-        aToken.address,
-        stableDebtToken.address,
-        variableDebtToken.address,
-        reserveDecimals,
-        rateStrategyContract.address
-      );
-    } catch (e) {
-      console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
-    }
-  }
 };
 
 export const buildPermitParams = (

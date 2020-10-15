@@ -1,7 +1,6 @@
 import {evmRevert, evmSnapshot, BRE} from '../../helpers/misc-utils';
 import {Signer} from 'ethers';
 import {
-  getEthersSigners,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getAaveProtocolTestHelpers,
@@ -11,7 +10,7 @@ import {
   getPriceOracle,
   getMockSwapAdapter,
   getLendingPoolAddressesProviderRegistry,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-getters';
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
 import {AaveProtocolTestHelpers} from '../../types/AaveProtocolTestHelpers';
@@ -27,6 +26,8 @@ import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
 import {MockSwapAdapter} from '../../types/MockSwapAdapter';
 import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
+import {getEthersSigners} from '../../helpers/contracts-helpers';
+import {AaveProtocolTestHelpersFactory} from '../../types';
 chai.use(bignumberChai());
 chai.use(almostEqual());
 

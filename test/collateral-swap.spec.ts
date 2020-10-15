@@ -1,6 +1,6 @@
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {MockSwapAdapter} from '../types/MockSwapAdapter';
-import {getMockSwapAdapter} from '../helpers/contracts-helpers';
+import {getMockSwapAdapter} from '../helpers/contracts-getters';
 import {ProtocolErrors} from '../helpers/types';
 import {ethers} from 'ethers';
 import {APPROVAL_AMOUNT_LENDING_POOL} from '../helpers/constants';

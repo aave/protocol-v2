@@ -17,11 +17,8 @@ import {
 } from './utils/calculations';
 import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/helpers';
 
-import {
-  convertToCurrencyDecimals,
-  getAToken,
-  getMintableErc20,
-} from '../../helpers/contracts-helpers';
+import {convertToCurrencyDecimals} from '../../helpers/contracts-helpers';
+import {getAToken, getMintableErc20} from '../../helpers/contracts-getters';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
 import {BRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';

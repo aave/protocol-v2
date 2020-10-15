@@ -93,7 +93,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const lendingPoolImpl = await deployLendingPool();
 
-  console.log('Deployed lending pool, address:', lendingPoolImpl.address);
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
   console.log('Added pool to addresses provider');
@@ -153,7 +152,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     fallbackOracle
   );
 
+  console.log('setted prices');
+  console.log('prior mocks');
   const mockAggregators = await deployAllMockAggregators(MOCK_CHAINLINK_AGGREGATORS_PRICES);
+  console.log('aftahlocks');
 
   const allTokenAddresses = Object.entries(mockTokens).reduce(
     (accum: {[tokenSymbol: string]: tEthereumAddress}, [tokenSymbol, tokenContract]) => ({

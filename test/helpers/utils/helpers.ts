@@ -7,7 +7,7 @@ import {
   getAToken,
   getStableDebtToken,
   getVariableDebtToken,
-} from '../../../helpers/contracts-helpers';
+} from '../../../helpers/contracts-getters';
 import {tEthereumAddress} from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import {getDb, BRE} from '../../../helpers/misc-utils';
@@ -27,7 +27,7 @@ export const getReserveData = async (
   const stableDebtToken = await getStableDebtToken(tokenAddresses.stableDebtTokenAddress);
   const variableDebtToken = await getVariableDebtToken(tokenAddresses.variableDebtTokenAddress);
 
-  const [principalStableDebt] = await stableDebtToken.getSupplyData();
+  const {0: principalStableDebt} = await stableDebtToken.getSupplyData();
   const totalStableDebtLastUpdated = await stableDebtToken.getTotalSupplyLastUpdated();
 
   const scaledVariableDebt = await variableDebtToken.scaledTotalSupply();
