@@ -7,8 +7,8 @@ import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IAToken} from './interfaces/IAToken.sol';
-import {IERC20} from '../libraries/external/openzeppelin/contracts/IERC20.sol';
-import {SafeERC20} from '../libraries/external/openzeppelin/contracts/SafeERC20.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 /**
  * @title Aave ERC20 AToken

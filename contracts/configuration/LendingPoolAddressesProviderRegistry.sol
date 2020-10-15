@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {
   ILendingPoolAddressesProviderRegistry
 } from '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
