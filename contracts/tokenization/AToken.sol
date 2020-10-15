@@ -119,12 +119,15 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
    * @param user the address receiving the minted tokens
    * @param amount the amount of tokens to mint
    * @param index the the last index of the reserve
+   * @return true if the the previous balance of the user is 0
    */
   function mint(
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
+  ) external override onlyLendingPool returns (bool) {
+    uint256 previousBalance = super.balanceOf(user);
+
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
@@ -132,6 +135,8 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     //transfer event to track balances
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
+
+    return previousBalance == 0;
   }
 
   /**

@@ -21,7 +21,7 @@ interface IScaledBalanceToken {
     address user,
     uint256 amount,
     uint256 index
-  ) external;
+  ) external returns (bool);
 
   /**
    * @dev returns the principal balance of the user. The principal balance is the last
