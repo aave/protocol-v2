@@ -27,7 +27,6 @@ import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProv
 import {MockSwapAdapter} from '../../types/MockSwapAdapter';
 import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
 import {getEthersSigners} from '../../helpers/contracts-helpers';
-import {AaveProtocolTestHelpersFactory} from '../../types';
 chai.use(bignumberChai());
 chai.use(almostEqual());
 

@@ -196,24 +196,16 @@ export const getLendingPoolAddressesProviderRegistry = async (address?: tEthereu
     await getFirstSigner()
   );
 
-export const getReserveLogicLibrary = async (address?: tEthereumAddress) =>
+export const getReserveLogic = async (address?: tEthereumAddress) =>
   await ReserveLogicFactory.connect(
     address ||
-      (
-        await getDb()
-          .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${BRE.network.name}`)
-          .value()
-      ).address,
+      (await getDb().get(`${eContractid.ReserveLogic}.${BRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 
 export const getGenericLogic = async (address?: tEthereumAddress) =>
   await GenericLogicFactory.connect(
     address ||
-      (
-        await getDb()
-          .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${BRE.network.name}`)
-          .value()
-      ).address,
+      (await getDb().get(`${eContractid.GenericLogic}.${BRE.network.name}`).value()).address,
     await getFirstSigner()
   );

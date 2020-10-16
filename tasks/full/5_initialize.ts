@@ -1,16 +1,18 @@
 import {task} from '@nomiclabs/buidler/config';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
-  initReserves,
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
-  getParamPerNetwork,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
-
-import {AavePools, eContractid, eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
+import {AavePools, eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
-import {enableReservesToBorrow, enableReservesAsCollateral} from '../../helpers/init-helpers';
+import {
+  enableReservesToBorrow,
+  enableReservesAsCollateral,
+  initReserves,
+} from '../../helpers/init-helpers';
 import {ZERO_ADDRESS} from '../../helpers/constants';
 import {exit} from 'process';
 import {

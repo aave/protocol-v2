@@ -15,7 +15,7 @@ import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
 import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {MockContract} from 'ethereum-waffle';
 import {getReservesConfigByPool} from './configuration';
-import {getFirstSigner, getGenericLogic} from './contracts-getters';
+import {getFirstSigner, getReserveLogic} from './contracts-getters';
 import {ZERO_ADDRESS} from './constants';
 import {
   AaveProtocolTestHelpersFactory,
@@ -115,17 +115,22 @@ export const deployAaveLibraries = async (
   const genericLogic = await deployGenericLogic(verify);
   const validationLogic = await deployValidationLogic(reserveLogic, genericLogic, verify);
 
+  console.log('generic logic address LEND POOL', genericLogic.address);
   // Hardcoded solidity placeholders, if any library changes path this will fail.
-  // Placeholder can be calculated via solidity keccak, but the LendingPoolLibraryAddresses Type seems to
+  // The '__$PLACEHOLDER$__ can be calculated via solidity keccak, but the LendingPoolLibraryAddresses Type seems to
   // require a hardcoded string.
   //
-  //  how-to: PLACEHOLDER = solidityKeccak256(['string'], `${libPath}:${libName}`).slice(2, 36)
-  // '__$PLACEHOLDER$__'
+  //  how-to:
+  //  1. PLACEHOLDER = solidityKeccak256(['string'], `${libPath}:${libName}`).slice(2, 36)
+  //  2. LIB_PLACEHOLDER = `__$${PLACEHOLDER}$__`
   // or grab placeholdes from LendingPoolLibraryAddresses at Typechain generation.
+  //
+  // libPath example: contracts/libraries/logic/GenericLogic.sol
+  // libName example: GenericLogic
   return {
-    ['__$5201a97c05ba6aa659e2f36a933dd51801$__']: reserveLogic.address,
-    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: genericLogic.address,
-    ['__$4c26be947d349222af871a3168b3fe584b$__']: validationLogic.address,
+    ['__$5201a97c05ba6aa659e2f36a933dd51801$__']: validationLogic.address,
+    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: reserveLogic.address,
+    ['__$4c26be947d349222af871a3168b3fe584b$__']: genericLogic.address,
   };
 };
 
@@ -175,10 +180,10 @@ export const deployChainlinkProxyPriceProvider = async (
   );
 
 export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
-  const genericLogic = await getGenericLogic();
+  const reservesLogic = await getReserveLogic();
   const libraries = {
     // See deployAaveLibraries() function
-    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: genericLogic.address,
+    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: reservesLogic.address,
   };
 
   return withSaveAndVerify(
@@ -256,7 +261,7 @@ export const deployDefaultReserveInterestRateStrategy = async (
   );
 
 export const deployStableDebtToken = async (
-  args: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
   verify: boolean
 ) =>
   withSaveAndVerify(
@@ -267,7 +272,7 @@ export const deployStableDebtToken = async (
   );
 
 export const deployVariableDebtToken = async (
-  args: [string, string, tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
   verify: boolean
 ) =>
   withSaveAndVerify(
@@ -295,7 +300,7 @@ export const deployGenericAToken = async (
     string,
     tEthereumAddress
   ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
-  withSaveAndVerify(
+  return withSaveAndVerify(
     await new ATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.VariableDebtToken,
     args,

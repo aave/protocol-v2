@@ -1,10 +1,9 @@
 import {task} from '@nomiclabs/buidler/config';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
-  getParamPerNetwork,
-} from '../../helpers/contracts-helpers';
-
+} from '../../helpers/contracts-deployments';
 import {setInitialMarketRatesInRatesOracle} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';

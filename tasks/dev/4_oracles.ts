@@ -3,7 +3,7 @@ import {
   deployPriceOracle,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 
 import {
   setInitialAssetPricesInOracle,

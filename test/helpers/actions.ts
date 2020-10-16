@@ -28,7 +28,6 @@ import {ReserveData, UserReserveData} from './utils/interfaces';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
-import {time} from 'console';
 
 const {expect} = chai;
 

@@ -8,7 +8,8 @@ import {
   deployStableDebtToken,
   deployVariableDebtToken,
   deployGenericAToken,
-} from './contracts-helpers';
+} from './contracts-deployments';
+import {getEthersSigners} from './contracts-helpers';
 
 export const enableReservesToBorrow = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -151,10 +152,10 @@ export const initReserves = async (
       console.log('- Deploy stable deb totken ', assetSymbol);
       const stableDebtToken = await deployStableDebtToken(
         [
+          lendingPool.address,
+          tokenAddress,
           `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
           `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          tokenAddress,
-          lendingPool.address,
           incentivesController,
         ],
         verify
@@ -163,10 +164,10 @@ export const initReserves = async (
       console.log('- Deploy var deb totken ', assetSymbol);
       const variableDebtToken = await deployVariableDebtToken(
         [
+          lendingPool.address,
+          tokenAddress,
           `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
           `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          tokenAddress,
-          lendingPool.address,
           incentivesController,
         ],
         verify

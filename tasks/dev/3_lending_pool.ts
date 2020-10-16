@@ -1,9 +1,8 @@
 import {task} from '@nomiclabs/buidler/config';
 import {
   deployLendingPool,
-  insertContractAddressInDb,
   deployLendingPoolConfigurator,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 import {eContractid} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 import {
@@ -11,6 +10,7 @@ import {
   getLendingPool,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
+import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 
 task('dev:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
