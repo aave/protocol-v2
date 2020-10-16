@@ -33,7 +33,7 @@ library ValidationLogic {
    * @param reserve the reserve state on which the user is depositing
    * @param amount the amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
+  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) internal view {
     (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
 
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
@@ -56,7 +56,7 @@ library ValidationLogic {
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
-  ) external view {
+  ) internal view {
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
 
     require(amount <= userBalance, Errors.NOT_ENOUGH_AVAILABLE_USER_BALANCE);
