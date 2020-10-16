@@ -1,23 +1,28 @@
 import {task} from '@nomiclabs/buidler/config';
 import {
-  getLendingPoolAddressesProvider,
-  initReserves,
   deployLendingPoolCollateralManager,
-  insertContractAddressInDb,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
-  getLendingPool,
-  getLendingPoolConfiguratorProxy,
-  getAllMockedTokens,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 import {getReservesConfigByPool} from '../../helpers/configuration';
 
 import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
-import {enableReservesToBorrow, enableReservesAsCollateral} from '../../helpers/init-helpers';
+import {
+  enableReservesToBorrow,
+  enableReservesAsCollateral,
+  initReserves,
+} from '../../helpers/init-helpers';
 import {getAllTokenAddresses} from '../../helpers/mock-helpers';
 import {ZERO_ADDRESS} from '../../helpers/constants';
+import {
+  getAllMockedTokens,
+  getLendingPool,
+  getLendingPoolConfiguratorProxy,
+  getLendingPoolAddressesProvider,
+} from '../../helpers/contracts-getters';
+import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 
 task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')

@@ -1,17 +1,18 @@
 import {task} from '@nomiclabs/buidler/config';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
-  getLendingPoolAddressesProvider,
-  getPairsTokenAggregator,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
-  getParamPerNetwork,
-} from '../../helpers/contracts-helpers';
-
+} from '../../helpers/contracts-deployments';
 import {setInitialMarketRatesInRatesOracle} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
 import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
 import {exit} from 'process';
+import {
+  getLendingPoolAddressesProvider,
+  getPairsTokenAggregator,
+} from '../../helpers/contracts-getters';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')

@@ -2,7 +2,7 @@ import {task} from '@nomiclabs/buidler/config';
 import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 import {waitForTx} from '../../helpers/misc-utils';
 
 task(

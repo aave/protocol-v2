@@ -1,14 +1,16 @@
 import {task} from '@nomiclabs/buidler/config';
+import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 import {
   deployLendingPool,
-  getLendingPoolAddressesProvider,
-  getLendingPool,
-  insertContractAddressInDb,
   deployLendingPoolConfigurator,
-  getLendingPoolConfiguratorProxy,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 import {eContractid} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
+import {
+  getLendingPoolAddressesProvider,
+  getLendingPool,
+  getLendingPoolConfiguratorProxy,
+} from '../../helpers/contracts-getters';
 
 task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')

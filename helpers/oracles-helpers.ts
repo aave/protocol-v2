@@ -11,7 +11,7 @@ import {
 import {LendingRateOracle} from '../types/LendingRateOracle';
 import {PriceOracle} from '../types/PriceOracle';
 import {MockAggregator} from '../types/MockAggregator';
-import {deployMockAggregator, getContract, MockTokenMap} from './contracts-helpers';
+import {deployMockAggregator} from './contracts-deployments';
 import {waitForTx} from './misc-utils';
 import {verifyContract} from './etherscan-verification';
 

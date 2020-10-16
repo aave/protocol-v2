@@ -1,33 +1,30 @@
 import rawBRE from '@nomiclabs/buidler';
 import {MockContract} from 'ethereum-waffle';
 import {
+  insertContractAddressInDb,
+  getEthersSigners,
+  registerContractInJsonDb,
+} from '../helpers/contracts-helpers';
+import {
   deployLendingPoolAddressesProvider,
   deployMintableERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  getLendingPoolConfiguratorProxy,
   deployChainlinkProxyPriceProvider,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  getLendingPool,
-  insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
-  getEthersSigners,
-  registerContractInJsonDb,
-  getPairsTokenAggregator,
-  initReserves,
   deployMockSwapAdapter,
   deployLendingRateOracle,
-} from '../helpers/contracts-helpers';
+} from '../helpers/contracts-deployments';
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
 import {getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
-import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
 
 import {
   setInitialAssetPricesInOracle,
@@ -35,9 +32,18 @@ import {
   deployAllMockAggregators,
 } from '../helpers/oracles-helpers';
 import {waitForTx} from '../helpers/misc-utils';
-import {enableReservesToBorrow, enableReservesAsCollateral} from '../helpers/init-helpers';
+import {
+  enableReservesToBorrow,
+  enableReservesAsCollateral,
+  initReserves,
+} from '../helpers/init-helpers';
 import {AaveConfig} from '../config/aave';
 import {ZERO_ADDRESS} from '../helpers/constants';
+import {
+  getLendingPool,
+  getLendingPoolConfiguratorProxy,
+  getPairsTokenAggregator,
+} from '../helpers/contracts-getters';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -91,16 +97,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const lendingPoolImpl = await deployLendingPool();
 
-  console.log('Deployed lending pool, address:', lendingPoolImpl.address);
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
-  console.log('Added pool to addresses provider');
-
   const address = await addressesProvider.getLendingPool();
-  console.log('Address is ', address);
   const lendingPoolProxy = await getLendingPool(address);
-
-  console.log('implementation set, address:', lendingPoolProxy.address);
 
   await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
@@ -111,6 +111,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
     await addressesProvider.getLendingPoolConfigurator()
   );
+  console.log('proxy address', lendingPoolConfiguratorProxy.address);
   await insertContractAddressInDb(
     eContractid.LendingPoolConfigurator,
     lendingPoolConfiguratorProxy.address
