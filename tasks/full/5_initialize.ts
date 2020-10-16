@@ -40,7 +40,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
 
-      console.log('init reserves');
       await initReserves(
         ReservesConfig,
         reserveAssets,
@@ -52,14 +51,12 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         ZERO_ADDRESS,
         verify
       );
-      console.log('enable reserves');
       await enableReservesToBorrow(
         ReservesConfig,
         reserveAssets,
         testHelpers,
         lendingPoolConfiguratorProxy
       );
-      console.log('enable reserves as collateral');
       await enableReservesAsCollateral(
         ReservesConfig,
         reserveAssets,
@@ -67,13 +64,11 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         lendingPoolConfiguratorProxy
       );
 
-      console.log('deploy coll manager');
       const collateralManager = await deployLendingPoolCollateralManager(verify);
       await waitForTx(
         await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
       );
 
-      console.log('deploy bal provicer');
       await deployWalletBalancerProvider(addressesProvider.address, verify);
     } catch (err) {
       console.error(err);

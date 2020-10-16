@@ -92,10 +92,8 @@ export async function initializeMakeSuite() {
   }
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
-  console.log('Pool loaded');
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
-  console.log('Configurator loaded');
 
   testEnv.oracle = await getPriceOracle();
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();

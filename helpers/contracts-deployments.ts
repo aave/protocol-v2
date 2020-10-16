@@ -115,7 +115,6 @@ export const deployAaveLibraries = async (
   const genericLogic = await deployGenericLogic(verify);
   const validationLogic = await deployValidationLogic(reserveLogic, genericLogic, verify);
 
-  console.log('generic logic address LEND POOL', genericLogic.address);
   // Hardcoded solidity placeholders, if any library changes path this will fail.
   // The '__$PLACEHOLDER$__ can be calculated via solidity keccak, but the LendingPoolLibraryAddresses Type seems to
   // require a hardcoded string.
