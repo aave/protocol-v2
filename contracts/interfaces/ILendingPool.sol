@@ -121,21 +121,19 @@ interface ILendingPool {
   /**
    * @dev emitted when a borrower is liquidated
    * @param collateral the address of the collateral being liquidated
-   * @param reserve the address of the reserve
+   * @param principal the address of the reserve
    * @param user the address of the user being liquidated
    * @param purchaseAmount the total amount liquidated
    * @param liquidatedCollateralAmount the amount of collateral being liquidated
-   * @param accruedBorrowInterest the amount of interest accrued by the borrower since the last action
    * @param liquidator the address of the liquidator
    * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
    **/
   event LiquidationCall(
     address indexed collateral,
-    address indexed reserve,
+    address indexed principal,
     address indexed user,
     uint256 purchaseAmount,
     uint256 liquidatedCollateralAmount,
-    uint256 accruedBorrowInterest,
     address liquidator,
     bool receiveAToken
   );
