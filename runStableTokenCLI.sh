@@ -1,0 +1,1 @@
+certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --solc solc6.8 --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond,-useNonLinearArithmetic --cache StableDebtToken --staging master
