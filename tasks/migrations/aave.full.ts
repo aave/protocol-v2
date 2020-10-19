@@ -24,10 +24,7 @@ task('aave:full', 'Deploy development enviroment')
     console.log('2. Deploy lending pool');
     await localBRE.run('full:deploy-lending-pool', {verify});
 
-    console.log('3. Deploy oracles');
-    await localBRE.run('full:deploy-oracles', {verify, pool: POOL_NAME});
-
-    console.log('4. Initialize lending pool');
+    console.log('3. Initialize lending pool');
     await localBRE.run('full:initialize-lending-pool', {verify, pool: POOL_NAME});
 
     console.log('\nFinished migrations');
