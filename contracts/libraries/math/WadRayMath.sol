@@ -54,7 +54,7 @@ library WadRayMath {
    * @return the result of a*b, in wad
    **/
   function wadMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0) {
+    if (a == 0 || b == 0) {
       return 0;
     }
 
