@@ -857,7 +857,6 @@ export const initReserves = async (
 
       console.log('init reserve currency ', assetSymbol);
       await lendingPoolConfigurator.initReserve(
-        tokenAddress,
         aToken.address,
         stableDebtToken.address,
         variableDebtToken.address,
