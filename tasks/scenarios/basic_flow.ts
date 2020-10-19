@@ -24,8 +24,11 @@ task('aave:basicFlow', 'Execute protocol basic flow').setAction(async ({verify},
 
   console.log('Basic Flow started\n');
   // deploy protocol
-  await localBRE.run('aave:dev');
+  // await localBRE.run('aave:dev');
   const tokens: MockTokenMap = await getMockedTokens(AaveConfig);
+  if (!tokens || Object.keys(tokens).length === 0) {
+    throw new Error('Deploy contracts first');
+  }
 
   // mint reserve tokens to user0
   const DAI = tokens.DAI;
