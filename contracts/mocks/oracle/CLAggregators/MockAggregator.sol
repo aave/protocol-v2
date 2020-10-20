@@ -14,4 +14,20 @@ contract MockAggregator {
   function latestAnswer() external view returns (int256) {
     return _latestAnswer;
   }
+
+  // function getToken() external view returns (address) {
+
+  // }
+
+  function getTokenType() external view returns (uint256) {
+    return 1;
+  }
+
+  // function getPlatformId() external view returns (uint256) {
+
+  // }
+
+  // function getSubTokens() external view returns (address[] memory) {
+
+  // }
 }
