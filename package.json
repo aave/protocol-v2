@@ -21,7 +21,7 @@
     "aave:docker:dev:migration": "npm run buidler:docker -- aave:dev",
     "aave:docker:full:migration": "npm run buidler:docker -- aave:full",
     "aave:kovan:dev:migration": "npm run buidler:kovan -- aave:dev --verify",
-    "aave:kovan:full:migration": "npm run buidler:kovan -- aave:full --verify",
+    "aave:kovan:full:migration": "npm run buidler:kovan -- aave:full",
     "aave:ropsten:dev:migration": "npm run buidler:ropsten -- aave:dev --verify",
     "aave:ropsten:full:migration": "npm run buidler:ropsten -- aave:full --verify",
     "aave:main:dev:migration": "npm run buidler:main -- aave:dev --verify",
