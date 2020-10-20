@@ -37,4 +37,11 @@ task(
         ProviderId
       )
     );
+
+    //register the proxy price provider on the addressesProvider
+    const proxyProvider = getParamPerNetwork(poolConfig.ProxyPriceProvider, network);
+
+    if (proxyProvider && proxyProvider !== '') {
+      await waitForTx(await addressesProvider.setPriceOracle(proxyProvider));
+    }
   });
