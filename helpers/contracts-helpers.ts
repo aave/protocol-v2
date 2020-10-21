@@ -205,6 +205,7 @@ export const deployLendingPool = async (verify?: boolean) => {
   );
   const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
   const lendingPool = await factory.deploy();
+  await waitForTx(lendingPool.deployTransaction);
   const instance = (await lendingPool.deployed()) as LendingPool;
   if (verify) {
     await verifyContract(eContractid.LendingPool, instance.address, []);
