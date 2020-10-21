@@ -799,7 +799,7 @@ export const initReserves = async (
           stableRateSlope2,
         },
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      console.log('deploy def reserve');
+      console.log('deploy the interest rate strategy for ', assetSymbol);
       const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
         [
           lendingPoolAddressesProvider.address,
@@ -812,7 +812,7 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy stable deb totken ', assetSymbol);
+      console.log('deploy the stable debt totken for ', assetSymbol);
       const stableDebtToken = await deployStableDebtToken(
         [
           `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
@@ -824,7 +824,7 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy var deb totken ', assetSymbol);
+      console.log('deploy the variable debt totken for ', assetSymbol);
       const variableDebtToken = await deployVariableDebtToken(
         [
           `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
@@ -836,7 +836,7 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy a token ', assetSymbol);
+      console.log('deploy the aToken for ', assetSymbol);
       const aToken = await deployGenericAToken(
         [
           lendingPool.address,
@@ -856,7 +856,7 @@ export const initReserves = async (
         }
       }
 
-      console.log('init reserve currency ', assetSymbol);
+      console.log('initialize the reserve ', assetSymbol);
       await waitForTx(
         await lendingPoolConfigurator.initReserve(
           tokenAddress,

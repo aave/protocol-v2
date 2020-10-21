@@ -30,6 +30,8 @@ export const enableReservesToBorrow = async (
         continue;
       }
 
+      console.log('Enabling borrowing on reserve ', assetSymbol);
+
       await waitForTx(
         await lendingPoolConfigurator.enableBorrowingOnReserve(
           tokenAddress,
@@ -72,6 +74,8 @@ export const enableReservesAsCollateral = async (
     }
 
     try {
+      console.log(`Enabling reserve ${assetSymbol} as collateral`);
+
       await waitForTx(
         await lendingPoolConfigurator.enableReserveAsCollateral(
           tokenAddress,
