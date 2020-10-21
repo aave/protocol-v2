@@ -1,6 +1,6 @@
 import {Contract, Signer, utils, ethers} from 'ethers';
 import {CommonsConfig} from '../config/commons';
-import {getDb, BRE} from './misc-utils';
+import {getDb, BRE, waitForTx} from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -101,7 +101,7 @@ export const deployContract = async <ContractType extends Contract>(
   const contract = (await (await BRE.ethers.getContractFactory(contractName)).deploy(
     ...args
   )) as ContractType;
-
+  await waitForTx(contract.deployTransaction);
   await registerContractInJsonDb(<eContractid>contractName, contract);
   return contract;
 };
@@ -856,13 +856,15 @@ export const initReserves = async (
       }
 
       console.log('init reserve currency ', assetSymbol);
-      await lendingPoolConfigurator.initReserve(
-        tokenAddress,
-        aToken.address,
-        stableDebtToken.address,
-        variableDebtToken.address,
-        reserveDecimals,
-        rateStrategyContract.address
+      await waitForTx(
+        await lendingPoolConfigurator.initReserve(
+          tokenAddress,
+          aToken.address,
+          stableDebtToken.address,
+          variableDebtToken.address,
+          reserveDecimals,
+          rateStrategyContract.address
+        )
       );
     } catch (e) {
       console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);

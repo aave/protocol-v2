@@ -2,6 +2,7 @@ import {iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
 import {LendingPool} from '../types/LendingPool';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
+import {waitForTx} from './misc-utils';
 
 export const enableReservesToBorrow = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -29,7 +30,12 @@ export const enableReservesToBorrow = async (
         continue;
       }
 
-      await lendingPoolConfigurator.enableBorrowingOnReserve(tokenAddress, stableBorrowRateEnabled);
+      await waitForTx(
+        await lendingPoolConfigurator.enableBorrowingOnReserve(
+          tokenAddress,
+          stableBorrowRateEnabled
+        )
+      );
     } catch (e) {
       console.log(
         `Enabling reserve for borrowings for ${assetSymbol} failed with error ${e}. Skipped.`
@@ -66,11 +72,13 @@ export const enableReservesAsCollateral = async (
     }
 
     try {
-      await lendingPoolConfigurator.enableReserveAsCollateral(
-        tokenAddress,
-        baseLTVAsCollateral,
-        liquidationThreshold,
-        liquidationBonus
+      await waitForTx(
+        await lendingPoolConfigurator.enableReserveAsCollateral(
+          tokenAddress,
+          baseLTVAsCollateral,
+          liquidationThreshold,
+          liquidationBonus
+        )
       );
     } catch (e) {
       console.log(
