@@ -1,13 +1,20 @@
 import {exit} from 'process';
 import fs from 'fs';
+import globby from 'globby';
 import {file} from 'tmp-promise';
 import {BRE} from './misc-utils';
+
+const listSolidityFiles = (dir: string) => globby(`${dir}/**/*.sol`);
+
+const fatalErrors = [
+  `The address provided as argument contains a contract, but its bytecode`,
+  `Daily limit of 100 source code submissions reached`,
+];
 
 export const SUPPORTED_ETHERSCAN_NETWORKS = ['main', 'ropsten', 'kovan'];
 
 export const getEtherscanPath = async (contractName: string) => {
-  const compilerInput = await BRE.run('compile:get-compiler-input');
-  const paths = Object.keys(compilerInput.sources);
+  const paths = await listSolidityFiles(BRE.config.paths.sources);
   const path = paths.find((p) => p.includes(contractName));
   if (!path) {
     throw new Error(
@@ -79,12 +86,22 @@ export const runTaskWithRetry = async (
       cleanup();
     } else {
       cleanup();
-      console.error('[ERROR] Errors after all the retries, check the logs for more information.');
+      console.error(
+        '[ETHERSCAN][ERROR] Errors after all the retries, check the logs for more information.'
+      );
     }
   } catch (error) {
     counter--;
-    console.info(`[INFO] Retrying attemps: ${counter}.`);
-    console.error('[ERROR]', error.message);
+    console.info(`[ETHERSCAN][[INFO] Retrying attemps: ${counter}.`);
+    console.error('[ETHERSCAN][[ERROR]', error.message);
+
+    if (fatalErrors.some((fatalError) => error.message.includes(fatalError))) {
+      console.error(
+        '[ETHERSCAN][[ERROR] Fatal error detected, skip retries and resume deployment.'
+      );
+      return;
+    }
+
     await runTaskWithRetry(task, params, counter, msDelay, cleanup);
   }
 };
