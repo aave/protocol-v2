@@ -1,3 +1,4 @@
+/*
 import {TestEnv, makeSuite} from './helpers/make-suite';
 import {APPROVAL_AMOUNT_LENDING_POOL} from '../helpers/constants';
 import {ethers} from 'ethers';
@@ -680,3 +681,5 @@ makeSuite('LendingPool. repayWithCollateral()', (testEnv: TestEnv) => {
     expect(wethUserDataAfter.usageAsCollateralEnabled).to.be.false;
   });
 });
+
+*/

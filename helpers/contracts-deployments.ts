@@ -15,14 +15,13 @@ import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
 import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {MockContract} from 'ethereum-waffle';
 import {getReservesConfigByPool} from './configuration';
-import {getFirstSigner, getReserveLogic} from './contracts-getters';
+import {getFirstSigner} from './contracts-getters';
 import {ZERO_ADDRESS} from './constants';
 import {
   AaveProtocolTestHelpersFactory,
   ATokenFactory,
   ChainlinkProxyPriceProviderFactory,
   DefaultReserveInterestRateStrategyFactory,
-  GenericLogicFactory,
   InitializableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
@@ -42,9 +41,6 @@ import {
   WalletBalanceProviderFactory,
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
-import {verifyContract} from './etherscan-verification';
-import {LendingPool} from '../types/LendingPool';
-import {Artifact} from '@nomiclabs/buidler/types';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -147,7 +143,7 @@ export const deployAaveLibraries = async (
   };
 };
 
-export const deployLendingPoolWithFactory = async (verify?: boolean) => {
+export const deployLendingPool = async (verify?: boolean) => {
   const libraries = await deployAaveLibraries(verify);
   return withSaveAndVerify(
     await new LendingPoolFactory(libraries, await getFirstSigner()).deploy(),
@@ -155,74 +151,6 @@ export const deployLendingPoolWithFactory = async (verify?: boolean) => {
     [],
     verify
   );
-};
-
-const deployLibrary = async (libraryId: eContractid) => {
-  const factory = await BRE.ethers.getContractFactory(libraryId);
-  const library = await factory.deploy();
-  await library.deployed();
-
-  return library;
-};
-
-export const linkLibrariesToArtifact = async (artifact: Artifact) => {
-  const reserveLogic = await deployLibrary(eContractid.ReserveLogic);
-
-  const genericLogicArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.GenericLogic
-  );
-
-  const linkedGenericLogicByteCode = linkBytecode(genericLogicArtifact, {
-    [eContractid.ReserveLogic]: reserveLogic.address,
-  });
-
-  const genericLogicFactory = await BRE.ethers.getContractFactory(
-    genericLogicArtifact.abi,
-    linkedGenericLogicByteCode
-  );
-
-  const genericLogic = await (await genericLogicFactory.deploy()).deployed();
-
-  const validationLogicArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.ValidationLogic
-  );
-
-  const linkedValidationLogicByteCode = linkBytecode(validationLogicArtifact, {
-    [eContractid.ReserveLogic]: reserveLogic.address,
-    [eContractid.GenericLogic]: genericLogic.address,
-  });
-
-  const validationLogicFactory = await BRE.ethers.getContractFactory(
-    validationLogicArtifact.abi,
-    linkedValidationLogicByteCode
-  );
-
-  const validationLogic = await (await validationLogicFactory.deploy()).deployed();
-
-  const linkedBytecode = linkBytecode(artifact, {
-    [eContractid.ReserveLogic]: reserveLogic.address,
-    [eContractid.GenericLogic]: genericLogic.address,
-    [eContractid.ValidationLogic]: validationLogic.address,
-  });
-  const factory = await BRE.ethers.getContractFactory(artifact.abi, linkedBytecode);
-
-  return factory;
-};
-
-export const deployLendingPool = async (verify?: boolean) => {
-  const lendingPoolArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.LendingPool
-  );
-  const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
-  const lendingPool = await factory.deploy();
-  const instance = (await lendingPool.deployed()) as LendingPool;
-  if (verify) {
-    await verifyContract(eContractid.LendingPool, instance.address, []);
-  }
-  return instance;
 };
 
 export const deployPriceOracle = async (verify?: boolean) =>
@@ -261,15 +189,8 @@ export const deployChainlinkProxyPriceProvider = async (
   );
 
 export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
-  const reservesLogic = await getReserveLogic();
-  console.log('ADDRESS RESERVELOGIC', reservesLogic.address);
-  const libraries = {
-    // See deployAaveLibraries() function
-    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: reservesLogic.address,
-  };
-
   return withSaveAndVerify(
-    await new LendingPoolCollateralManagerFactory(libraries, await getFirstSigner()).deploy(),
+    await new LendingPoolCollateralManagerFactory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolCollateralManager,
     [],
     verify

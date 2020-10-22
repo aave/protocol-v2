@@ -32,17 +32,11 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Get aDAI for tests', async () => {
-    const {dai, pool, deployer, addressesProvider} = testEnv;
-    const addre = await addressesProvider.getLendingPool();
-    console.log('pool', pool.address, addre);
+    const {dai, pool, deployer} = testEnv;
 
     await dai.mint(parseEther('20000'));
     await dai.approve(pool.address, parseEther('20000'));
 
-    const some = await pool.getReserveData(dai.address);
-    const aa = await pool.getReservesList();
-    console.log('some', some);
-    console.log('aa', aa);
     await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
   });
 
