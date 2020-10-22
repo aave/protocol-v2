@@ -260,27 +260,6 @@ interface ILendingPool {
   ) external;
 
   /**
-   * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
-   * - Both the owner of the position and other liquidators can execute it
-   * - The owner can repay with his collateral at any point, no matter the health factor
-   * - Other liquidators can only use this function below 1 HF. To liquidate 50% of the debt > HF 0.98 or the whole below
-   * @param collateral The address of the collateral asset
-   * @param principal The address of the owed asset
-   * @param user Address of the borrower
-   * @param principalAmount Amount of the debt to repay. type(uint256).max to repay the maximum possible
-   * @param receiver Address of the contract receiving the collateral to swap
-   * @param params Variadic bytes param to pass with extra information to the receiver
-   **/
-  function repayWithCollateral(
-    address collateral,
-    address principal,
-    address user,
-    uint256 principalAmount,
-    address receiver,
-    bytes calldata params
-  ) external;
-
-  /**
    * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
    * that must be kept into consideration. For further details please visit https://developers.aave.com
@@ -297,22 +276,6 @@ interface ILendingPool {
     uint256 debtType,
     bytes calldata params,
     uint16 referralCode
-  ) external;
-
-  /**
-   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
-   * - It's not possible to release one asset to swap for the same
-   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
-   * @param fromAsset Asset to swap from
-   * @param toAsset Asset to swap to
-   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
-   **/
-  function swapLiquidity(
-    address receiverAddress,
-    address fromAsset,
-    address toAsset,
-    uint256 amountToSwap,
-    bytes calldata params
   ) external;
 
   function getUserAccountData(address user)
