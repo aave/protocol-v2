@@ -270,10 +270,10 @@ interface ILendingPool {
    * @param referralCode the referral code of the caller
    **/
   function flashLoan(
-    address receiver,
-    address reserve,
-    uint256 amount,
-    uint256 debtType,
+    address receiverAddress,
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256 mode,
     bytes calldata params,
     uint16 referralCode
   ) external;
