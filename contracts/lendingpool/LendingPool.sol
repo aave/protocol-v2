@@ -486,6 +486,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IFlashLoanReceiver receiver;
     address oracle;
     ReserveLogic.InterestRateMode debtMode;
+    uint256 i;
+    address currentAsset;
+    address currentATokenAddress;
+    uint256 currentAmount;
+    uint256 currentPremium;
+    uint256 currentAmountPlusPremium;
   }
 
   /**
@@ -511,7 +517,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     FlashLoanLocalVars memory vars;
 
-    ValidationLogic.validateFlashloan(assets, amounts, mode, vars.premium);
+    ValidationLogic.validateFlashloan(assets, amounts, mode);
 
     address[] memory aTokenAddresses = new address[](assets.length);
     uint256[] memory premiums = new uint256[](assets.length);
@@ -519,15 +525,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     vars.receiver = IFlashLoanReceiver(receiverAddress);
     vars.debtMode = ReserveLogic.InterestRateMode(mode);
 
-    for (uint256 i = 0; i < assets.length; i++) {
-      ReserveLogic.ReserveData storage reserve = _reserves[assets[i]];
+    for (vars.i = 0; vars.i < assets.length; vars.i++) {
+      aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
 
-      aTokenAddresses[i] = reserve.aTokenAddress;
-
-      premiums[i] = amounts[i].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
+      premiums[vars.i] = amounts[vars.i].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
 
       //transfer funds to the receiver
-      IAToken(vars.aTokenAddress).transferUnderlyingTo(receiverAddress, amounts[i]);
+      IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
 
     //execute action of the receiver
@@ -536,40 +540,49 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
-    for (uint256 i = 0; i < assets.length; i++) {
-      uint256 amountPlusPremium = amounts[i].add(premiums[i]);
+    for (vars.i = 0; vars.i < assets.length; vars.i++) {
+      vars.currentAsset = assets[vars.i];
+      vars.currentAmount = amounts[vars.i];
+      vars.currentPremium = premiums[vars.i];
+      vars.currentATokenAddress = aTokenAddresses[vars.i];
+
+      vars.currentAmountPlusPremium = amounts[vars.i].add(premiums[vars.i]);
 
       if (vars.debtMode == ReserveLogic.InterestRateMode.NONE) {
-        _reserves[assets[i]].updateState();
-        _reserves[assets[i]].cumulateToLiquidityIndex(
-          IERC20(aTokenAddresses[i]).totalSupply(),
-          vars.premium
+        _reserves[vars.currentAsset].updateState();
+        _reserves[vars.currentAsset].cumulateToLiquidityIndex(
+          IERC20(vars.currentATokenAddress).totalSupply(),
+          vars.currentPremium
         );
-        _reserves[assets[i]].updateInterestRates(assets[i], aTokenAddresses[i], vars.premium, 0);
+        _reserves[vars.currentAsset].updateInterestRates(
+          assets[vars.i],
+          vars.currentATokenAddress,
+          vars.currentPremium,
+          0
+        );
 
-        IERC20(assets[i]).safeTransferFrom(
+        IERC20(vars.currentAsset).safeTransferFrom(
           receiverAddress,
-          vars.aTokenAddresses[i],
-          vars.amountPlusPremium
+          vars.currentATokenAddress,
+          vars.currentAmountPlusPremium
         );
-
-        emit FlashLoan(receiverAddress, assets[i], amounts[i], vars.premium, referralCode);
       } else {
         //if the user didn't choose to return the funds, the system checks if there
         //is enough collateral and eventually open a position
         _executeBorrow(
           ExecuteBorrowParams(
-            assets[i],
+            vars.currentAsset,
             msg.sender,
             msg.sender,
-            amountPlusPremium,
-            vars.mode,
-            aTokenAddresses[i],
+            vars.currentAmount,
+            mode,
+            vars.currentATokenAddress,
             referralCode,
             false
           )
         );
       }
+      emit FlashLoan(receiverAddress, assets, amounts, premiums, referralCode);
     }
   }
 
