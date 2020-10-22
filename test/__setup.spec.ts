@@ -245,6 +245,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await deployWalletBalancerProvider(addressesProvider.address);
 
+  console.log('END');
   console.timeEnd('setup');
 };
 
