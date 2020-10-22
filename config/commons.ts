@@ -258,4 +258,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
   },
+  ProxyPriceProvider: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '0x276C4793F2EE3D5Bf18C5b879529dD4270BA4814',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+  },
 };

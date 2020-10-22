@@ -5,7 +5,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xAA6DfC2A802857Fadb75726B6166484e2c011cf5",
+      "address": "0xDFbeeed692AA81E7f86E72F7ACbEA2A1C4d63544",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -19,7 +19,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xFd23fD3d937ae73a7b545B8Bfeb218395bDe9b8f",
+      "address": "0x5191aA68c7dB195181Dd2441dBE23A48EA24b040",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -27,8 +27,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x20e080B395341B3b617E893c281c7E999C942276",
-      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
+      "address": "0xd7e3C4b2CE495066dE1923c268D68A844bD7Ae13",
+      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
     }
   },
   "LendingPoolAddressesProviderRegistry": {
@@ -37,7 +37,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xE567BA007c79D491D585015c30c73BA7FfDAFaF0",
+      "address": "0xa89E20284Bd638F31b0011D0fC754Fc9d2fa73e3",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -45,8 +45,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x00219a2958f758122106Bb8A801AFc1B70897663",
-      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
+      "address": "0x83c7A0E78e8eee2108a87d7a6770f22BAcb68b5A",
+      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
     }
   },
   "FeeProvider": {
@@ -73,10 +73,10 @@
       "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
     },
     "localhost": {
-      "address": "0x81228BFb2fE916C0fF76bF4e12c165321BdF1CFB"
+      "address": "0x9Ec55627757348b322c8dD0865D704649bFa0c7b"
     },
     "kovan": {
-      "address": "0x50C9d3aD9399c1EEf6DDeadF8e57fF69994F552e"
+      "address": "0x1339f3c1FfF00D0FD8946187fdC61F0ef0fFe786"
     }
   },
   "LendingPoolDataProvider": {
@@ -89,10 +89,10 @@
       "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
     },
     "localhost": {
-      "address": "0xE2302ab9A6754EfaA8Ea55eECA668bCE72d8a4FE"
+      "address": "0x3EE716e38f21e5FC16BFDB773db24D63C637A5d8"
     },
     "kovan": {
-      "address": "0x6d1e69bB0578699dd955Eefbf23aAC65c0DA5cE7"
+      "address": "0xB43CCfF1148bb5ab2104E2ee68A7c30cDEBb9A9C"
     }
   },
   "PriceOracle": {
@@ -101,7 +101,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x8720da7Bc69d35800937CD0CB2a88517Ab681a34",
+      "address": "0x5889354f21A1C8D8D2f82669d778f6Dab778B519",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -115,7 +115,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x3F1976472C22fb2bC05Ff74CF3d03E52b0FDD6b8",
+      "address": "0xC452C5244F701108B4e8E8BCe693160046b30332",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -129,7 +129,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x804E98F470694629b5005b3B8f092B0188B2A770",
+      "address": "0x0B63c002cb44B2e5e580C3B3560a27F4101D95c0",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -147,7 +147,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xdaE51d2e6C77C5EC035Ab3B2a8eEF552F74035d0",
+      "address": "0xCeB290A2C6614BF23B2faa0f0B8067F29C48DB0F",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -165,12 +165,16 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x4e92ed34740Ef54325D0382BeA1F433374e92593",
+      "address": "0x7C95b1ad025F0C9aB14192f87bF2aD53889bE4F7",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
       "address": "0x626FdE749F9d499d3777320CAf29484B624ab84a",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0xc4e3d83AEd3D3c60Cf4b238F634014cE103F6fa1",
+      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
     }
   },
   "LendingPoolLiquidationManager": {
@@ -223,7 +227,7 @@
       "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
     },
     "localhost": {
-      "address": "0xaFc2D7E7f6915c053E257200D10BF53daCD37206"
+      "address": "0x9c91aEaD98b1354C7B0EAfb8ff539d0796c79894"
     },
     "coverage": {
       "address": "0x2B681757d757fbB80cc51c6094cEF5eE75bF55aA"
@@ -235,7 +239,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x917873BDf56b8404b984e1D0946A9791fB8723ff",
+      "address": "0x145b7B6368Df63e7F3497b0A948B30fC1A4d5E55",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -249,7 +253,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xda8D610DBF58CdbBd9FF63Cfd5d152d6aC03D827",
+      "address": "0x010e948B9B7D30771E23346C0B17a4D5Ff04e300",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -263,7 +267,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x230063F7a99684eCB09C0100B46e4ef52F790787",
+      "address": "0x79094eDB848047e87a4B8a64ab5Ee2f527791bC0",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -277,7 +281,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x9357981b57000D78aE088D85D8B93aabd971E44c",
+      "address": "0xEE0A69d0Bb1312685870Dd7E20AcAD66b6f6264F",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -291,7 +295,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x347aB2276e45528d0869d98454dB85d0353289cc",
+      "address": "0x631B367fBE1dbB934bC039aAA0C9eC2EE5943fd5",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -305,7 +309,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x2120a59e1800077C8dd0a60bB36315282d3AD73d",
+      "address": "0xf55Af78B3f3059fACF166Aa338FFe059A14e75F6",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -319,7 +323,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xAD8b260d4a55fa27D9611E32029b74CE4fBb43B7",
+      "address": "0xD5A0587aAEB195028909E98930B391dFB3f9F589",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -333,7 +337,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x15556f286eA3dc789b31d71058F236d3f84a8CdC",
+      "address": "0xaD3AdbC18E4AD090034A6C74Eda61f4310dce313",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -347,7 +351,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xc1D388F1b4a9448cC88249020D3Bb82588496aDD",
+      "address": "0x25a88BbA9c8D2a46e3Ff4bFe98712DF7A1044fB6",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -361,7 +365,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x8AA4ef0B7069333d32e1a301c3e8867050Ce7dd4",
+      "address": "0x16d1802cd7cfcb67955BBBa26bAae1cE559B5F5B",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -375,7 +379,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xFB2DB49aEfdfb4A1443D369F9707BF07EC200609",
+      "address": "0xE58d8c88f5A670f16BE8F7864707170F43e943A6",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -389,7 +393,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x231926CDdAf87b45382127E83b371D81dd3071dE",
+      "address": "0xfdAF4f6e47e854c05bE158993d32872e784F0502",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -403,7 +407,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x3DBE70A3bE31C9Bd7EeE42F2d89e6D8BdbB60d9D",
+      "address": "0x92edC13A10036A3C50396f2B63148a3e9a8D589e",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -417,7 +421,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x17CcC196687feD7693580e5C327C16623c1422aA",
+      "address": "0xE5C277cDb7E10372918Ac54Ce54022910A24FE88",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -431,7 +435,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xa3C9636e8A83e9A20F17d6101D8f5fC19cFa5cF1",
+      "address": "0xF5742a599a0F4520089cbf2EBBa66Bb4F471B85F",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -445,7 +449,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x7b3e185D7Dd72CB6a8e4f3b77f2afa9cc2986702",
+      "address": "0x380EF388e13D8cAdeACef6eF682C7B7D85865076",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -459,7 +463,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x582e9540A4FCA6aF23543D10e274bFfC6A1C4bd0",
+      "address": "0xC89577DED8441e52C17C13D527b85b225C5c8311",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -473,7 +477,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x1380773F68a96A09181551658ae1F23EA5298339",
+      "address": "0xD4b06774A717Ff5A7c20c8712e31c6BbfFcb1F01",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -487,7 +491,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x0E512D4c480168bB354F9D70EfEe4c2779757Dc7",
+      "address": "0xbe66dC9DFEe580ED968403e35dF7b5159f873df8",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -501,7 +505,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x77607B1E8f05c2D80Ad209368F9d812a79E89D0a",
+      "address": "0x93AfC6Df4bB8F62F2493B19e577f8382c0BA9EBC",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -515,7 +519,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x86089a044275B66A8C01D31B5e234a2c4099DCcA",
+      "address": "0x75Ded61646B5945BdDd0CD9a9Db7c8288DA6F810",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -529,7 +533,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x7B49a4DA95c3d8e3a308D9d550fd735285D2445b",
+      "address": "0xdE7c40e675bF1aA45c18cCbaEb9662B16b0Ddf7E",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -543,7 +547,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xE3e60d4513d7A63a5C4EE91df71e92cfDd97ac89",
+      "address": "0xEcb928A3c079a1696Aa5244779eEc3dE1717fACd",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -557,7 +561,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xAA6DfC2A802857Fadb75726B6166484e2c011cf5",
+      "address": "0xDFbeeed692AA81E7f86E72F7ACbEA2A1C4d63544",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -570,10 +574,14 @@
       "address": "0xe7536f450378748E1BD4645D3c77ec38e0F3ba28"
     },
     "localhost": {
-      "address": "0xAD4EA7747fF8C3ea98009B016280d3E5A93B71e4"
+      "address": "0x987223924D2DD6c6efB601756850f3886ECbceF6"
     },
     "coverage": {
       "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
+    },
+    "kovan": {
+      "address": "0xE4566ce19626826360f4faD941418e2849fC3685",
+      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
     }
   },
   "StableDebtToken": {
@@ -582,12 +590,16 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xc59Ff5B5Ed3F1aEF6e37ec21B5BfFA21bD7fb2D9",
+      "address": "0xaca5aCeB6f44845d07Fd339a51F0bd52Bb3D8D1A",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
       "address": "0xB660Fdd109a95718cB9d20E3A89EE6cE342aDcB6",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x0043967C1Cf13c4Ff3Bc38109054D5a97C147B4A",
+      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
     }
   },
   "VariableDebtToken": {
@@ -596,17 +608,21 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xB6a7e0831d309e3dA99A4D169f0074910f047Dae",
+      "address": "0x9bD0Bec44106D8Ea8fFb6296d7A84742a290E064",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
       "address": "0x830bceA96E56DBC1F8578f75fBaC0AF16B32A07d",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0xdF75B68c75c30D177f4Dbd47cBcb5E2E4f3cf8F9",
+      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
     }
   },
   "AToken": {
     "localhost": {
-      "address": "0x094D1D9DbA786f0cb1269e5Ddb3EfeB0d12d20c5",
+      "address": "0x00f126cCA2266bFb634Ed6DB17c4C74fb8cA5177",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "buidlerevm": {
@@ -616,6 +632,10 @@
     "coverage": {
       "address": "0xA0AB1cB92A4AF81f84dCd258155B5c25D247b54E",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x1A23ADa7218e0a66b7368E12E379Ea88d7a68a27",
+      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
     }
   },
   "MockAToken": {
@@ -624,7 +644,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x5DbA865405aAEFe5bf9b77a877EA3956C92E309b",
+      "address": "0xbF538F34cb100bAeEE55aa1F036D33F03b03d900",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -638,7 +658,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0xdA43fC20d88c77FdebE172b960f8eb1853a0A46F",
+      "address": "0xff1B1B810F5DCe853a9b1819DE220D532D1CFeF2",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -652,7 +672,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x7AE7D25Ce30A48FED0bf4A5e86B46829EA73C69a",
+      "address": "0x7436d6adaA697413F00cb63E1A2A854bF2Aec5A1",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -666,7 +686,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
-      "address": "0x031F94d0E0B894aa4458E3d34ceA141103641CDC",
+      "address": "0x2A7BE996B8801ED21f2f45148791D402811A2106",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "coverage": {
@@ -682,7 +702,7 @@
       "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
     },
     "localhost": {
-      "address": "0x48AbD2dBBbaA7466313963ea17804B3cBC2cA71f"
+      "address": "0x48FAde2E719B770E1783d03466dAEe98b5183538"
     }
   },
   "MockFlashRepayAdapter": {
