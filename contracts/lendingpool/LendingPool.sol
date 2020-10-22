@@ -482,55 +482,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  /**
-   * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
-   * - Both the owner of the position and other liquidators can execute it
-   * - The owner can repay with his collateral at any point, no matter the health factor
-   * - Other liquidators can only use this function below 1 HF. To liquidate 50% of the debt > HF 0.98 or the whole below
-   * @param collateral The address of the collateral asset
-   * @param principal The address of the owed asset
-   * @param user Address of the borrower
-   * @param principalAmount Amount of the debt to repay. type(uint256).max to repay the maximum possible
-   * @param receiver Address of the contract receiving the collateral to swap
-   * @param params Variadic bytes param to pass with extra information to the receiver
-   **/
-  function repayWithCollateral(
-    address collateral,
-    address principal,
-    address user,
-    uint256 principalAmount,
-    address receiver,
-    bytes calldata params
-  ) external override {
-    _whenNotPaused();
-    require(!_flashLiquidationLocked, Errors.REENTRANCY_NOT_ALLOWED);
-    _flashLiquidationLocked = true;
-
-    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
-
-    //solium-disable-next-line
-    (bool success, bytes memory result) = collateralManager.delegatecall(
-      abi.encodeWithSignature(
-        'repayWithCollateral(address,address,address,uint256,address,bytes)',
-        collateral,
-        principal,
-        user,
-        principalAmount,
-        receiver,
-        params
-      )
-    );
-    require(success, Errors.FAILED_REPAY_WITH_COLLATERAL);
-
-    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
-
-    if (returnCode != 0) {
-      revert(string(abi.encodePacked(returnMessage)));
-    }
-
-    _flashLiquidationLocked = false;
-  }
-
   struct FlashLoanLocalVars {
     uint256 premium;
     uint256 amountPlusPremium;
@@ -606,44 +557,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           false
         )
       );
-    }
-  }
-
-  /**
-   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
-   * - It's not possible to release one asset to swap for the same
-   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
-   * @param fromAsset Asset to swap from
-   * @param toAsset Asset to swap to
-   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
-   **/
-  function swapLiquidity(
-    address receiverAddress,
-    address fromAsset,
-    address toAsset,
-    uint256 amountToSwap,
-    bytes calldata params
-  ) external override {
-    _whenNotPaused();
-    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
-
-    //solium-disable-next-line
-    (bool success, bytes memory result) = collateralManager.delegatecall(
-      abi.encodeWithSignature(
-        'swapLiquidity(address,address,address,uint256,bytes)',
-        receiverAddress,
-        fromAsset,
-        toAsset,
-        amountToSwap,
-        params
-      )
-    );
-    require(success, Errors.FAILED_COLLATERAL_SWAP);
-
-    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
-
-    if (returnCode != 0) {
-      revert(string(abi.encodePacked(returnMessage)));
     }
   }
 
