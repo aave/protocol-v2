@@ -54,17 +54,13 @@ library WadRayMath {
    * @return the result of a*b, in wad
    **/
   function wadMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0 || b == 0) {
+    if (a == 0) {
       return 0;
     }
 
-    uint256 result = a * b;
+    uint256 result = a * b + halfWAD;
 
-    require(result / a == b, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfWAD;
-
-    require(result >= halfWAD, Errors.ADDITION_OVERFLOW);
+    require((result - halfWAD) / a == b, Errors.MULTIPLICATION_OVERFLOW);
 
     return result / WAD;
   }
@@ -102,17 +98,13 @@ library WadRayMath {
    * @return the result of a*b, in ray
    **/
   function rayMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0 || b == 0) {
+    if (a == 0) {
       return 0;
     }
 
-    uint256 result = a * b;
+    uint256 result = a * b + halfRAY;
 
-    require(result / a == b, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfRAY;
-
-    require(result >= halfRAY, Errors.ADDITION_OVERFLOW);
+    require((result - halfRAY) / a == b, Errors.MULTIPLICATION_OVERFLOW);
 
     return result / RAY;
   }
@@ -126,19 +118,11 @@ library WadRayMath {
   function rayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.DIVISION_BY_ZERO);
 
-    if (a == 0) {
-      return 0;
-    }
-
     uint256 halfB = b / 2;
 
-    uint256 result = a * RAY;
+    uint256 result = a * RAY + halfB;
 
-    require(result / RAY == a, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfB;
-
-    require(result >= halfB, Errors.ADDITION_OVERFLOW);
+    require((result - halfB) / RAY == a, Errors.MULTIPLICATION_OVERFLOW);
 
     return result / b;
   }
