@@ -74,10 +74,6 @@ library WadRayMath {
   function wadDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.DIVISION_BY_ZERO);
 
-    if (a == 0) {
-      return 0;
-    }
-
     uint256 halfB = b / 2;
 
     uint256 result = a * WAD;
