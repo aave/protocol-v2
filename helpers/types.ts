@@ -44,7 +44,6 @@ export enum eContractid {
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
-  MockSwapAdapter = 'MockSwapAdapter',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',

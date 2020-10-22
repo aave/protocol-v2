@@ -33,7 +33,6 @@ import {
   MintableErc20Factory,
   MockAggregatorFactory,
   MockFlashLoanReceiverFactory,
-  MockSwapAdapterFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
   StableDebtTokenFactory,
@@ -226,9 +225,6 @@ export const deployWalletBalancerProvider = async (
     [addressesProvider],
     verify
   );
-
-export const deployMockSwapAdapter = async (addressesProvider: tEthereumAddress) =>
-  await new MockSwapAdapterFactory(await getFirstSigner()).deploy(addressesProvider);
 
 export const deployAaveProtocolTestHelpers = async (
   addressesProvider: tEthereumAddress,

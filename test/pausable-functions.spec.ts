@@ -276,7 +276,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('SwapBorrowRateMode', async () => {
-    const {pool, weth, dai, usdc, users, configurator, mockSwapAdapter} = testEnv;
+    const {pool, weth, dai, usdc, users, configurator} = testEnv;
     const user = users[1];
     const amountWETHToDeposit = parseEther('10');
     const amountDAIToDeposit = parseEther('120');

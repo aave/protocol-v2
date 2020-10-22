@@ -86,7 +86,8 @@
   },
   "LendingPool": {
     "buidlerevm": {
-      "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
+      "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
       "address": "0x3EE716e38f21e5FC16BFDB773db24D63C637A5d8"
@@ -235,7 +236,7 @@
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0xd4e934C2749CA8C1618659D02E7B28B074bf4df7",
+      "address": "0x93bB79570dFECC052e36E25cE10793A139e75f1b",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -694,17 +695,6 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
-  "MockSwapAdapter": {
-    "buidlerevm": {
-      "address": "0x93bB79570dFECC052e36E25cE10793A139e75f1b"
-    },
-    "coverage": {
-      "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
-    },
-    "localhost": {
-      "address": "0x48FAde2E719B770E1783d03466dAEe98b5183538"
-    }
-  },
   "MockFlashRepayAdapter": {
     "buidlerevm": {
       "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10"
@@ -717,19 +707,19 @@
   },
   "ReserveLogic": {
     "buidlerevm": {
-      "address": "0xFAe0fd738dAbc8a0426F47437322b6d026A9FD95",
+      "address": "0x63387deC8C4a0F17Cf0C27Ea3476F03F6a45d3AE",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "GenericLogic": {
     "buidlerevm": {
-      "address": "0x6082731fdAba4761277Fb31299ebC782AD3bCf24",
+      "address": "0x8280D40C9E9F04229D2435EAad6e0011309ce81B",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "ValidationLogic": {
     "buidlerevm": {
-      "address": "0x8456161947DFc1fC159A0B26c025cD2b4bba0c3e",
+      "address": "0x2B681757d757fbB80cc51c6094cEF5eE75bF55aA",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },

@@ -10,7 +10,6 @@ import {
   LendingRateOracleFactory,
   MintableErc20Factory,
   MockFlashLoanReceiverFactory,
-  MockSwapAdapterFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
   StableDebtTokenFactory,
@@ -112,13 +111,6 @@ export const getMockFlashLoanReceiver = async (address?: tEthereumAddress) =>
     address ||
       (await getDb().get(`${eContractid.MockFlashLoanReceiver}.${BRE.network.name}`).value())
         .address,
-    await getFirstSigner()
-  );
-
-export const getMockSwapAdapter = async (address?: tEthereumAddress) =>
-  await MockSwapAdapterFactory.connect(
-    address ||
-      (await getDb().get(`${eContractid.MockSwapAdapter}.${BRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 
