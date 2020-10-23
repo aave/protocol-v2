@@ -499,8 +499,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
    * that must be kept into consideration. For further details please visit https://developers.aave.com
    * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
-   * @param assets The address of the principal reserve
-   * @param amounts The amount requested for this flashloan
+   * @param assets The addresss of the assets being flashborrowed
+   * @param amounts The amounts requested for this flashloan for each asset
    * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
    * @param params Variadic packed params to pass to the receiver as extra information
    * @param referralCode Referral code of the flash loan
@@ -546,7 +546,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.currentPremium = premiums[vars.i];
       vars.currentATokenAddress = aTokenAddresses[vars.i];
 
-      vars.currentAmountPlusPremium = amounts[vars.i].add(premiums[vars.i]);
+      vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
 
       if (vars.debtMode == ReserveLogic.InterestRateMode.NONE) {
         _reserves[vars.currentAsset].updateState();
@@ -555,7 +555,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           vars.currentPremium
         );
         _reserves[vars.currentAsset].updateInterestRates(
-          assets[vars.i],
+          vars.currentAsset,
           vars.currentATokenAddress,
           vars.currentPremium,
           0

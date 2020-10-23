@@ -9,7 +9,7 @@ pragma solidity ^0.6.8;
  **/
 interface IFlashLoanReceiver {
   function executeOperation(
-    address[] calldata reserve,
+    address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
     bytes calldata params

@@ -193,7 +193,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
-    expect(callerDebt.toString()).to.be.equal('800720000000000000', 'Invalid user debt');
+    expect(callerDebt.toString()).to.be.equal('800000000000000000', 'Invalid user debt');
   });
 
   it('tries to take a flashloan that is bigger than the available liquidity (revert expected)', async () => {
@@ -324,7 +324,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const callerDebt = await usdcDebtToken.balanceOf(caller.address);
 
-    expect(callerDebt.toString()).to.be.equal('500450000', 'Invalid user debt');
+    expect(callerDebt.toString()).to.be.equal('500000000', 'Invalid user debt');
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes a WETH flashloan with mode = 0, does not approve the transfer of the funds', async () => {
@@ -373,6 +373,6 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
-    expect(callerDebt.toString()).to.be.equal('800720000000000000', 'Invalid user debt');
+    expect(callerDebt.toString()).to.be.equal('800000000000000000', 'Invalid user debt');
   });
 });
