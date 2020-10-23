@@ -33,7 +33,6 @@ import {
   setInitialMarketRatesInRatesOracle,
 } from '../helpers/oracles-helpers';
 import AaveConfig from '../config/aave';
-import {DeployTokensFactory} from '../types';
 import {initReservesByHelper} from '../helpers/init-helpers';
 import {ZERO_ADDRESS} from '../helpers/constants';
 

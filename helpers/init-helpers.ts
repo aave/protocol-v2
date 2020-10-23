@@ -10,12 +10,9 @@ import {
   deployGenericAToken,
 } from './contracts-deployments';
 import {chunk, waitForTx} from './misc-utils';
-import {DeployTokens} from '../types/DeployTokens';
-import {ZERO_ADDRESS} from './constants';
 import {getFirstSigner, getLendingPoolAddressesProvider} from './contracts-getters';
 import {DeployATokensAndRatesFactory} from '../types/DeployATokensAndRatesFactory';
 import {DeployStableAndVariableTokensFactory} from '../types/DeployStableAndVariableTokensFactory';
-import {getDefaultSettings} from 'http2';
 
 export const enableReservesToBorrow = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
