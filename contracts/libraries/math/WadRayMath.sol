@@ -60,7 +60,7 @@ library WadRayMath {
 
     uint256 result = a * b + halfWAD;
 
-    require((result - halfWAD) / a == b, Errors.MULTIPLICATION_OVERFLOW);
+    require(result >= halfWAD && (result - halfWAD) / a == b, Errors.MULTIPLICATION_OVERFLOW);
 
     return result / WAD;
   }
@@ -76,13 +76,9 @@ library WadRayMath {
 
     uint256 halfB = b / 2;
 
-    uint256 result = a * WAD;
+    uint256 result = a * WAD + halfB;
 
-    require(result / WAD == a, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfB;
-
-    require(result >= halfB, Errors.ADDITION_OVERFLOW);
+    require(result >= halfB && (result - halfB) / WAD == a, Errors.MULTIPLICATION_OVERFLOW);
 
     return result / b;
   }
