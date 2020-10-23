@@ -11,7 +11,7 @@ import {waitForTx} from '../../helpers/misc-utils';
 import {
   enableReservesToBorrow,
   enableReservesAsCollateral,
-  initReserves,
+  initReservesByHelper,
 } from '../../helpers/init-helpers';
 import {ZERO_ADDRESS} from '../../helpers/constants';
 import {exit} from 'process';
@@ -27,7 +27,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .setAction(async ({verify, pool}, localBRE) => {
     try {
       await localBRE.run('set-bre');
-      console.log('init');
       const network = <eEthereumNetwork>localBRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
@@ -40,16 +39,20 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
 
-      await initReserves(
+      const admin = await addressesProvider.getAaveAdmin();
+      if (!reserveAssets) {
+        throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
+      }
+
+      await initReservesByHelper(
+        lendingPoolProxy.address,
+        addressesProvider.address,
+        lendingPoolConfiguratorProxy.address,
         ReservesConfig,
         reserveAssets,
-        addressesProvider,
-        lendingPoolProxy,
         testHelpers,
-        lendingPoolConfiguratorProxy,
-        AavePools.proto,
-        ZERO_ADDRESS,
-        verify
+        admin,
+        ZERO_ADDRESS
       );
       await enableReservesToBorrow(
         ReservesConfig,

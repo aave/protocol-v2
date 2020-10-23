@@ -14,7 +14,7 @@ usePlugin('@nomiclabs/buidler-etherscan');
 //usePlugin('buidler-gas-reporter');
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
-const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
+const DEFAULT_BLOCK_GAS_LIMIT = 12000000;
 const DEFAULT_GAS_PRICE = 10;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';

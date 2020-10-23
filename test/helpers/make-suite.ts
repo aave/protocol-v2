@@ -97,13 +97,10 @@ export async function initializeMakeSuite() {
 
   testEnv.helpersContract = await getAaveProtocolTestHelpers();
 
-  const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
-    (aToken) => aToken.symbol === 'aDAI'
-  )?.tokenAddress;
+  const allTokens = await testEnv.helpersContract.getAllATokens();
+  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
-  const aEthAddress = (await testEnv.helpersContract.getAllATokens()).find(
-    (aToken) => aToken.symbol === 'aETH'
-  )?.tokenAddress;
+  const aEthAddress = allTokens.find((aToken) => aToken.symbol === 'aETH')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 

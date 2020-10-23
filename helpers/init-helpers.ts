@@ -9,10 +9,10 @@ import {
   deployVariableDebtToken,
   deployGenericAToken,
 } from './contracts-deployments';
-import {waitForTx} from './misc-utils';
+import {chunk, waitForTx} from './misc-utils';
 import {DeployTokens} from '../types/DeployTokens';
 import {ZERO_ADDRESS} from './constants';
-import {getFirstSigner} from './contracts-getters';
+import {getFirstSigner, getLendingPoolAddressesProvider} from './contracts-getters';
 import {DeployATokensAndRatesFactory} from '../types/DeployATokensAndRatesFactory';
 import {DeployStableAndVariableTokensFactory} from '../types/DeployStableAndVariableTokensFactory';
 import {getDefaultSettings} from 'http2';
@@ -233,93 +233,138 @@ export const initReservesByHelper = async (
   lendingPoolConfigurator: tEthereumAddress,
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers
+  helpers: AaveProtocolTestHelpers,
+  admin: tEthereumAddress,
+  incentivesController: tEthereumAddress
 ) => {
   const stableAndVariableDeployer = await new DeployStableAndVariableTokensFactory(
     await getFirstSigner()
   ).deploy(lendingPoolProxy, addressesProvider);
-  const stableTx = await waitForTx(stableAndVariableDeployer.deployTransaction);
-  console.log('GAS', stableTx.gasUsed.toString());
-  console.log('- Deployed StableAndVariableDeployer');
+  await waitForTx(stableAndVariableDeployer.deployTransaction);
   const atokenAndRatesDeployer = await new DeployATokensAndRatesFactory(
     await getFirstSigner()
   ).deploy(lendingPoolProxy, addressesProvider, lendingPoolConfigurator);
-  const atokenTx = await waitForTx(atokenAndRatesDeployer.deployTransaction);
-  console.log('GAS', atokenTx.gasUsed.toString());
-  console.log('- Deployed ATokenAndRatesDeployer');
-  console.log('doing calls');
-  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
-    string,
-    IReserveParams
-  ][]) {
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
+  await waitForTx(atokenAndRatesDeployer.deployTransaction);
+  const addressProvider = await getLendingPoolAddressesProvider(addressesProvider);
 
-    const {isActive: reserveInitialized} = await helpers.getReserveConfigurationData(tokenAddress);
+  // Set aTokenAndRatesDeployer as temporal admin
+  await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
 
-    if (reserveInitialized) {
-      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
-      continue;
-    }
+  // CHUNK CONFIGURATION
+  const tokensChunks = 3;
+  const initChunks = 6;
 
-    const reserveParamIndex = Object.keys(reservesParams).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [
-      ,
-      {
+  // Deploy tokens and rates in chunks
+  const reservesChunks = chunk(
+    Object.entries(reservesParams) as [string, IReserveParams][],
+    tokensChunks
+  );
+  // Initialize variables for future reserves initialization
+  let deployedStableTokens: string[] = [];
+  let deployedVariableTokens: string[] = [];
+  let deployedATokens: string[] = [];
+  let deployedRates: string[] = [];
+  let reserveTokens: string[] = [];
+  let reserveInitDecimals: string[] = [];
+
+  console.log(
+    `- Token deployments in ${reservesChunks.length * 2} txs instead of ${
+      Object.entries(reservesParams).length * 4
+    } txs`
+  );
+  for (let reservesChunk of reservesChunks) {
+    // Prepare data
+    const tokens: string[] = [];
+    const symbols: string[] = [];
+    const strategyRates: string[][] = [];
+    const reservesDecimals: string[] = [];
+
+    for (let [assetSymbol, {reserveDecimals}] of reservesChunk) {
+      const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
+        (value) => value === assetSymbol
+      );
+      const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
+        assetAddressIndex
+      ];
+
+      const reserveParamIndex = Object.keys(reservesParams).findIndex(
+        (value) => value === assetSymbol
+      );
+      const [
+        ,
+        {
+          baseVariableBorrowRate,
+          variableRateSlope1,
+          variableRateSlope2,
+          stableRateSlope1,
+          stableRateSlope2,
+        },
+      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
+      // Add to lists
+      tokens.push(tokenAddress);
+      symbols.push(assetSymbol === 'WETH' ? 'ETH' : assetSymbol);
+      strategyRates.push([
         baseVariableBorrowRate,
         variableRateSlope1,
         variableRateSlope2,
         stableRateSlope1,
         stableRateSlope2,
-      },
-    ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-    assetSymbol = assetSymbol === 'WETH' ? 'ETH' : assetSymbol;
+      ]);
+      reservesDecimals.push(reserveDecimals);
+    }
+
+    // Deploy stable and variable deployers
     const tx1 = await waitForTx(
-      await stableAndVariableDeployer.initDeployment([tokenAddress], [assetSymbol], ZERO_ADDRESS, {
-        gasLimit: 9000000,
-      })
+      await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
     );
-    console.log('call 1', tx1.gasUsed.toString());
 
-    const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
-    const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
-
+    // Deploy atokens and rate strategies
     const tx2 = await waitForTx(
       await atokenAndRatesDeployer.initDeployment(
-        [tokenAddress],
-        [assetSymbol],
-        [
-          [
-            baseVariableBorrowRate,
-            variableRateSlope1,
-            variableRateSlope2,
-            stableRateSlope1,
-            stableRateSlope2,
-          ],
-        ],
-        ZERO_ADDRESS
+        tokens,
+        symbols,
+        strategyRates,
+        incentivesController
       )
     );
+    console.log(`  - Deployed aToken, DebtTokens and Strategy for: ${symbols.join(', ')} `);
+    const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
+    const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
     const aTokens: string[] = tx2.events?.map((e) => e.args?.aToken) || [];
     const strategies: string[] = tx2.events?.map((e) => e.args?.strategy) || [];
-    console.log(aTokens.length, strategies.length, stableTokens.length, variableTokens.length);
-    console.log('call 2', tx2.gasUsed.toString());
+
+    deployedStableTokens = [...deployedStableTokens, ...stableTokens];
+    deployedVariableTokens = [...deployedVariableTokens, ...variableTokens];
+    deployedATokens = [...deployedATokens, ...aTokens];
+    deployedRates = [...deployedRates, ...strategies];
+    reserveInitDecimals = [...reserveInitDecimals, ...reservesDecimals];
+    reserveTokens = [...reserveTokens, ...tokens];
+  }
+
+  // Deploy init reserves per chunks
+  const chunkedTokens = chunk(reserveTokens, initChunks);
+  const chunkedStableTokens = chunk(deployedStableTokens, initChunks);
+  const chunkedVariableTokens = chunk(deployedVariableTokens, initChunks);
+  const chunkedAtokens = chunk(deployedATokens, initChunks);
+  const chunkedRates = chunk(deployedRates, initChunks);
+  const chunkedDecimals = chunk(reserveInitDecimals, initChunks);
+  const chunkedSymbols = chunk(Object.keys(tokenAddresses), initChunks);
+
+  console.log(`- Reserves initialization in ${chunkedTokens.length} txs`);
+  for (let chunkIndex = 0; chunkIndex < chunkedDecimals.length; chunkIndex++) {
     const tx3 = await waitForTx(
       await atokenAndRatesDeployer.initReserve(
-        [tokenAddress],
-        stableTokens,
-        variableTokens,
-        aTokens,
-        strategies,
-        [reserveDecimals]
+        chunkedTokens[chunkIndex],
+        chunkedStableTokens[chunkIndex],
+        chunkedVariableTokens[chunkIndex],
+        chunkedAtokens[chunkIndex],
+        chunkedRates[chunkIndex],
+        chunkedDecimals[chunkIndex]
       )
     );
-    console.log('call 3', tx3.gasUsed.toString());
+    console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
   }
+
+  // Set deployer back as admin
+  await waitForTx(await addressProvider.setAaveAdmin(admin));
 };

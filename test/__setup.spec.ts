@@ -35,6 +35,7 @@ import {
   enableReservesToBorrow,
   enableReservesAsCollateral,
   initReserves,
+  initReservesByHelper,
 } from '../helpers/init-helpers';
 import {AaveConfig} from '../config/aave';
 import {ZERO_ADDRESS} from '../helpers/constants';
@@ -206,16 +207,15 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
 
   console.log('Initialize configuration');
-  await initReserves(
+  await initReservesByHelper(
+    lendingPoolProxy.address,
+    addressesProvider.address,
+    lendingPoolConfiguratorProxy.address,
     reservesParams,
     protoPoolReservesAddresses,
-    addressesProvider,
-    lendingPoolProxy,
     testHelpers,
-    lendingPoolConfiguratorProxy,
-    AavePools.proto,
-    ZERO_ADDRESS,
-    false
+    await deployer.getAddress(),
+    ZERO_ADDRESS
   );
   await enableReservesToBorrow(
     reservesParams,

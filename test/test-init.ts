@@ -35,6 +35,7 @@ import {
 import AaveConfig from '../config/aave';
 import {DeployTokensFactory} from '../types';
 import {initReservesByHelper} from '../helpers/init-helpers';
+import {ZERO_ADDRESS} from '../helpers/constants';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -181,7 +182,9 @@ makeSuite('Init helper test', (testEnv: TestEnv) => {
       lendingPoolConfiguratorProxy.address,
       reservesParams,
       protoPoolReservesAddresses,
-      testHelpers
+      testHelpers,
+      await deployer.getAddress(),
+      ZERO_ADDRESS
     );
   });
 });

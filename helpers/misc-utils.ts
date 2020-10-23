@@ -52,3 +52,13 @@ export const filterMapBy = (raw: {[key: string]: any}, fn: (key: string) => bool
       obj[key] = raw[key];
       return obj;
     }, {});
+
+export const chunk = <T>(arr: Array<T>, chunkSize: number): Array<Array<T>> => {
+  return arr.reduce(
+    (prevVal: any, currVal: any, currIndx: number, array: Array<T>) =>
+      !(currIndx % chunkSize)
+        ? prevVal.concat([array.slice(currIndx, currIndx + chunkSize)])
+        : prevVal,
+    []
+  );
+};
