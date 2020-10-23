@@ -41,6 +41,7 @@
     "test-liquidate": "buidler test test/__setup.spec.ts test/liquidation-atoken.spec.ts",
     "test-pausable": "buidler test test/__setup.spec.ts test/pausable-functions.spec.ts",
     "test-permit": "buidler test test/__setup.spec.ts test/atoken-permit.spec.ts",
+    "test-subgraph:scenarios": "buidler --network buidlerevm_docker test test/__setup.spec.ts test/subgraph-scenarios.spec.ts",
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
