@@ -43,7 +43,7 @@ export const increaseTime = async (secondsToIncrease: number) => {
   await BRE.ethers.provider.send('evm_mine', []);
 };
 
-export const waitForTx = async (tx: ContractTransaction) => await tx.wait();
+export const waitForTx = async (tx: ContractTransaction) => await tx.wait(1);
 
 export const filterMapBy = (raw: {[key: string]: any}, fn: (key: string) => boolean) =>
   Object.keys(raw)

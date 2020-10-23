@@ -2,7 +2,7 @@ import {Contract, Signer, utils, ethers} from 'ethers';
 import {signTypedData_v4} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
-import {getDb, BRE} from './misc-utils';
+import {getDb, BRE, waitForTx} from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -68,7 +68,7 @@ export const deployContract = async <ContractType extends Contract>(
   const contract = (await (await BRE.ethers.getContractFactory(contractName)).deploy(
     ...args
   )) as ContractType;
-
+  await waitForTx(contract.deployTransaction);
   await registerContractInJsonDb(<eContractid>contractName, contract);
   return contract;
 };
@@ -79,6 +79,7 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   args: (string | string[])[],
   verify?: boolean
 ): Promise<ContractType> => {
+  await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (verify) {
     await verifyContract(id, instance.address, args);

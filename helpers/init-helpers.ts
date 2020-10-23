@@ -9,7 +9,13 @@ import {
   deployVariableDebtToken,
   deployGenericAToken,
 } from './contracts-deployments';
-import {getEthersSigners} from './contracts-helpers';
+import {waitForTx} from './misc-utils';
+import {DeployTokens} from '../types/DeployTokens';
+import {ZERO_ADDRESS} from './constants';
+import {getFirstSigner} from './contracts-getters';
+import {DeployATokensAndRatesFactory} from '../types/DeployATokensAndRatesFactory';
+import {DeployStableAndVariableTokensFactory} from '../types/DeployStableAndVariableTokensFactory';
+import {getDefaultSettings} from 'http2';
 
 export const enableReservesToBorrow = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -37,7 +43,14 @@ export const enableReservesToBorrow = async (
         continue;
       }
 
-      await lendingPoolConfigurator.enableBorrowingOnReserve(tokenAddress, stableBorrowRateEnabled);
+      console.log('Enabling borrowing on reserve ', assetSymbol);
+
+      await waitForTx(
+        await lendingPoolConfigurator.enableBorrowingOnReserve(
+          tokenAddress,
+          stableBorrowRateEnabled
+        )
+      );
     } catch (e) {
       console.log(
         `Enabling reserve for borrowings for ${assetSymbol} failed with error ${e}. Skipped.`
@@ -74,11 +87,15 @@ export const enableReservesAsCollateral = async (
     }
 
     try {
-      await lendingPoolConfigurator.enableReserveAsCollateral(
-        tokenAddress,
-        baseLTVAsCollateral,
-        liquidationThreshold,
-        liquidationBonus
+      console.log(`Enabling reserve ${assetSymbol} as collateral`);
+
+      await waitForTx(
+        await lendingPoolConfigurator.enableReserveAsCollateral(
+          tokenAddress,
+          baseLTVAsCollateral,
+          liquidationThreshold,
+          liquidationBonus
+        )
       );
     } catch (e) {
       console.log(
@@ -194,16 +211,115 @@ export const initReserves = async (
       }
 
       console.log('- init reserve currency ', assetSymbol);
-      await lendingPoolConfigurator.initReserve(
-        tokenAddress,
-        aToken.address,
-        stableDebtToken.address,
-        variableDebtToken.address,
-        reserveDecimals,
-        rateStrategyContract.address
+      await waitForTx(
+        await lendingPoolConfigurator.initReserve(
+          tokenAddress,
+          aToken.address,
+          stableDebtToken.address,
+          variableDebtToken.address,
+          reserveDecimals,
+          rateStrategyContract.address
+        )
       );
     } catch (e) {
       console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
     }
+  }
+};
+
+export const initReservesByHelper = async (
+  lendingPoolProxy: tEthereumAddress,
+  addressesProvider: tEthereumAddress,
+  lendingPoolConfigurator: tEthereumAddress,
+  reservesParams: iMultiPoolsAssets<IReserveParams>,
+  tokenAddresses: {[symbol: string]: tEthereumAddress},
+  helpers: AaveProtocolTestHelpers
+) => {
+  const stableAndVariableDeployer = await new DeployStableAndVariableTokensFactory(
+    await getFirstSigner()
+  ).deploy(lendingPoolProxy, addressesProvider);
+  const stableTx = await waitForTx(stableAndVariableDeployer.deployTransaction);
+  console.log('GAS', stableTx.gasUsed.toString());
+  console.log('- Deployed StableAndVariableDeployer');
+  const atokenAndRatesDeployer = await new DeployATokensAndRatesFactory(
+    await getFirstSigner()
+  ).deploy(lendingPoolProxy, addressesProvider, lendingPoolConfigurator);
+  const atokenTx = await waitForTx(atokenAndRatesDeployer.deployTransaction);
+  console.log('GAS', atokenTx.gasUsed.toString());
+  console.log('- Deployed ATokenAndRatesDeployer');
+  console.log('doing calls');
+  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
+    string,
+    IReserveParams
+  ][]) {
+    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
+      (value) => value === assetSymbol
+    );
+    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
+      assetAddressIndex
+    ];
+
+    const {isActive: reserveInitialized} = await helpers.getReserveConfigurationData(tokenAddress);
+
+    if (reserveInitialized) {
+      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
+      continue;
+    }
+
+    const reserveParamIndex = Object.keys(reservesParams).findIndex(
+      (value) => value === assetSymbol
+    );
+    const [
+      ,
+      {
+        baseVariableBorrowRate,
+        variableRateSlope1,
+        variableRateSlope2,
+        stableRateSlope1,
+        stableRateSlope2,
+      },
+    ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
+    assetSymbol = assetSymbol === 'WETH' ? 'ETH' : assetSymbol;
+    const tx1 = await waitForTx(
+      await stableAndVariableDeployer.initDeployment([tokenAddress], [assetSymbol], ZERO_ADDRESS, {
+        gasLimit: 9000000,
+      })
+    );
+    console.log('call 1', tx1.gasUsed.toString());
+
+    const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
+    const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
+
+    const tx2 = await waitForTx(
+      await atokenAndRatesDeployer.initDeployment(
+        [tokenAddress],
+        [assetSymbol],
+        [
+          [
+            baseVariableBorrowRate,
+            variableRateSlope1,
+            variableRateSlope2,
+            stableRateSlope1,
+            stableRateSlope2,
+          ],
+        ],
+        ZERO_ADDRESS
+      )
+    );
+    const aTokens: string[] = tx2.events?.map((e) => e.args?.aToken) || [];
+    const strategies: string[] = tx2.events?.map((e) => e.args?.strategy) || [];
+    console.log(aTokens.length, strategies.length, stableTokens.length, variableTokens.length);
+    console.log('call 2', tx2.gasUsed.toString());
+    const tx3 = await waitForTx(
+      await atokenAndRatesDeployer.initReserve(
+        [tokenAddress],
+        stableTokens,
+        variableTokens,
+        aTokens,
+        strategies,
+        [reserveDecimals]
+      )
+    );
+    console.log('call 3', tx3.gasUsed.toString());
   }
 };
