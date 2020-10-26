@@ -267,7 +267,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       ? stableDebt
       : variableDebt;
 
-    if (amount != type(uint256).max && amount < paybackAmount) {
+    if (amount < paybackAmount) {
       paybackAmount = amount;
     }
 

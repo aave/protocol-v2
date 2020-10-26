@@ -162,7 +162,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
         _stableRateSlope1.rayMul(utilizationRate.rayDiv(OPTIMAL_UTILIZATION_RATE))
       );
       vars.currentVariableBorrowRate = _baseVariableBorrowRate.add(
-        utilizationRate.rayDiv(OPTIMAL_UTILIZATION_RATE).rayMul(_variableRateSlope1)
+        utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE)
       );
     }
 
