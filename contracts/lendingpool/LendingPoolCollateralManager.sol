@@ -306,8 +306,8 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       .principalCurrencyPrice
       .mul(purchaseAmount)
       .mul(10**vars.collateralDecimals)
-      .div(vars.collateralPrice.mul(10**vars.principalDecimals))
-      .percentMul(vars.liquidationBonus);
+      .percentMul(vars.liquidationBonus)
+      .div(vars.collateralPrice.mul(10**vars.principalDecimals));
 
     if (vars.maxAmountCollateralToLiquidate > userCollateralBalance) {
       collateralAmount = userCollateralBalance;
