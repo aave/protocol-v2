@@ -262,15 +262,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ReserveLogic.InterestRateMode interestRateMode = ReserveLogic.InterestRateMode(rateMode);
 
-    //default to max amount
-    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
-      ? stableDebt
-      : variableDebt;
-
-    if (amount < paybackAmount) {
-      paybackAmount = amount;
-    }
-
     ValidationLogic.validateRepay(
       reserve,
       amount,
@@ -279,6 +270,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       stableDebt,
       variableDebt
     );
+
+    //default to max amount
+    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
+
+    if (amount < paybackAmount) {
+      paybackAmount = amount;
+    }
 
     reserve.updateState();
 
