@@ -6,20 +6,20 @@ import {
   deployAaveProtocolTestHelpers,
 } from '../../helpers/contracts-deployments';
 import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
-import {AavePools, eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
+import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 import {
-  enableReservesToBorrow,
-  enableReservesAsCollateral,
   initReservesByHelper,
+  enableReservesToBorrowByHelper,
+  enableReservesAsCollateralByHelper,
 } from '../../helpers/init-helpers';
-import {ZERO_ADDRESS} from '../../helpers/constants';
 import {exit} from 'process';
 import {
   getLendingPool,
   getLendingPoolConfiguratorProxy,
   getLendingPoolAddressesProvider,
 } from '../../helpers/contracts-getters';
+import {ZERO_ADDRESS} from '../../helpers/constants';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -52,20 +52,11 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         reserveAssets,
         testHelpers,
         admin,
-        ZERO_ADDRESS
+        ZERO_ADDRESS,
+        verify
       );
-      await enableReservesToBorrow(
-        ReservesConfig,
-        reserveAssets,
-        testHelpers,
-        lendingPoolConfiguratorProxy
-      );
-      await enableReservesAsCollateral(
-        ReservesConfig,
-        reserveAssets,
-        testHelpers,
-        lendingPoolConfiguratorProxy
-      );
+      await enableReservesToBorrowByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
+      await enableReservesAsCollateralByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
       const collateralManager = await deployLendingPoolCollateralManager(verify);
       await waitForTx(

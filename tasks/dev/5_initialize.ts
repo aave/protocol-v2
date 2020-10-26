@@ -10,9 +10,8 @@ import {getReservesConfigByPool} from '../../helpers/configuration';
 import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
 import {
-  enableReservesToBorrow,
-  enableReservesAsCollateral,
-  initReserves,
+  enableReservesToBorrowByHelper,
+  enableReservesAsCollateralByHelper,
   initReservesByHelper,
 } from '../../helpers/init-helpers';
 import {getAllTokenAddresses} from '../../helpers/mock-helpers';
@@ -55,19 +54,20 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       protoPoolReservesAddresses,
       testHelpers,
       admin,
-      ZERO_ADDRESS
+      ZERO_ADDRESS,
+      verify
     );
-    await enableReservesToBorrow(
+    await enableReservesToBorrowByHelper(
       reservesParams,
       protoPoolReservesAddresses,
       testHelpers,
-      lendingPoolConfiguratorProxy
+      admin
     );
-    await enableReservesAsCollateral(
+    await enableReservesAsCollateralByHelper(
       reservesParams,
       protoPoolReservesAddresses,
       testHelpers,
-      lendingPoolConfiguratorProxy
+      admin
     );
 
     const collateralManager = await deployLendingPoolCollateralManager(verify);

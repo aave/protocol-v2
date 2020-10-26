@@ -20,6 +20,7 @@ import {ZERO_ADDRESS} from './constants';
 import {
   AaveProtocolTestHelpersFactory,
   ATokenFactory,
+  ATokensAndRatesHelperFactory,
   ChainlinkProxyPriceProviderFactory,
   DefaultReserveInterestRateStrategyFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -40,6 +41,7 @@ import {
   WalletBalanceProviderFactory,
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
+import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -350,3 +352,25 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
   }
   return tokens;
 };
+
+export const deployStableAndVariableTokensHelper = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new StableAndVariableTokensHelperFactory(await getFirstSigner()).deploy(...args),
+    eContractid.StableAndVariableTokensHelper,
+    args,
+    verify
+  );
+
+export const deployATokensAndRatesHelper = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new ATokensAndRatesHelperFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ATokensAndRatesHelper,
+    args,
+    verify
+  );

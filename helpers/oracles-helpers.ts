@@ -13,7 +13,6 @@ import {PriceOracle} from '../types/PriceOracle';
 import {MockAggregator} from '../types/MockAggregator';
 import {deployMockAggregator} from './contracts-deployments';
 import {waitForTx} from './misc-utils';
-import {verifyContract} from './etherscan-verification';
 
 export const setInitialMarketRatesInRatesOracle = async (
   marketRates: iMultiPoolsAssets<IMarketRates>,

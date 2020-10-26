@@ -10,7 +10,7 @@ import {
   DefaultReserveInterestRateStrategy
 } from '../lendingpool/DefaultReserveInterestRateStrategy.sol';
 
-contract DeployATokensAndRates {
+contract ATokensAndRatesHelper {
   address payable private pool;
   address private addressesProvider;
   address private poolConfigurator;
@@ -84,6 +84,39 @@ contract DeployATokensAndRates {
         variables[i],
         reserveDecimals[i],
         strategies[i]
+      );
+    }
+  }
+
+  function enableReservesAsCollateral(
+    address[] calldata tokens,
+    uint256[] calldata baseLTVs,
+    uint256[] calldata liquidationThresholds,
+    uint256[] calldata liquidationBonuses
+  ) external {
+    require(baseLTVs.length == tokens.length);
+    require(liquidationThresholds.length == tokens.length);
+    require(liquidationBonuses.length == tokens.length);
+
+    for (uint256 i = 0; i < tokens.length; i++) {
+      LendingPoolConfigurator(poolConfigurator).enableReserveAsCollateral(
+        tokens[i],
+        baseLTVs[i],
+        liquidationThresholds[i],
+        liquidationBonuses[i]
+      );
+    }
+  }
+
+  function enableBorrowingOnReserves(address[] calldata tokens, bool[] calldata stableBorrows)
+    external
+  {
+    require(stableBorrows.length == tokens.length);
+
+    for (uint256 i = 0; i < tokens.length; i++) {
+      LendingPoolConfigurator(poolConfigurator).enableBorrowingOnReserve(
+        tokens[i],
+        stableBorrows[i]
       );
     }
   }

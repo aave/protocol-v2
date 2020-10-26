@@ -32,10 +32,9 @@ import {
 } from '../helpers/oracles-helpers';
 import {waitForTx} from '../helpers/misc-utils';
 import {
-  enableReservesToBorrow,
-  enableReservesAsCollateral,
-  initReserves,
   initReservesByHelper,
+  enableReservesToBorrowByHelper,
+  enableReservesAsCollateralByHelper,
 } from '../helpers/init-helpers';
 import {AaveConfig} from '../config/aave';
 import {ZERO_ADDRESS} from '../helpers/constants';
@@ -205,6 +204,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
 
   await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+  const admin = await deployer.getAddress();
 
   console.log('Initialize configuration');
   await initReservesByHelper(
@@ -214,20 +214,20 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     reservesParams,
     protoPoolReservesAddresses,
     testHelpers,
-    await deployer.getAddress(),
+    admin,
     ZERO_ADDRESS
   );
-  await enableReservesToBorrow(
+  await enableReservesToBorrowByHelper(
     reservesParams,
     protoPoolReservesAddresses,
     testHelpers,
-    lendingPoolConfiguratorProxy
+    admin
   );
-  await enableReservesAsCollateral(
+  await enableReservesAsCollateralByHelper(
     reservesParams,
     protoPoolReservesAddresses,
     testHelpers,
-    lendingPoolConfiguratorProxy
+    admin
   );
 
   const collateralManager = await deployLendingPoolCollateralManager();
@@ -245,7 +245,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 };
 
 before(async () => {
-  console.log('aaaaa');
   await rawBRE.run('set-bre');
   const [deployer, secondaryWallet] = await getEthersSigners();
   console.log('-> Deploying test environment...');

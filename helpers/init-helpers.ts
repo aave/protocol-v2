@@ -1,106 +1,12 @@
-import {AavePools, iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
-import {LendingPool} from '../types/LendingPool';
+import {iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
-import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
 import {
-  deployDefaultReserveInterestRateStrategy,
-  deployStableDebtToken,
-  deployVariableDebtToken,
-  deployGenericAToken,
+  deployATokensAndRatesHelper,
+  deployStableAndVariableTokensHelper,
 } from './contracts-deployments';
 import {chunk, waitForTx} from './misc-utils';
-import {getFirstSigner, getLendingPoolAddressesProvider} from './contracts-getters';
-import {DeployATokensAndRatesFactory} from '../types/DeployATokensAndRatesFactory';
-import {DeployStableAndVariableTokensFactory} from '../types/DeployStableAndVariableTokensFactory';
-
-export const enableReservesToBorrow = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers,
-  lendingPoolConfigurator: LendingPoolConfigurator
-) => {
-  for (const [assetSymbol, {borrowingEnabled, stableBorrowRateEnabled}] of Object.entries(
-    reservesParams
-  ) as [string, IReserveParams][]) {
-    if (!borrowingEnabled) continue;
-    try {
-      const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-        (value) => value === assetSymbol
-      );
-      const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-        assetAddressIndex
-      ];
-      const {borrowingEnabled: borrowingAlreadyEnabled} = await helpers.getReserveConfigurationData(
-        tokenAddress
-      );
-
-      if (borrowingAlreadyEnabled) {
-        console.log(`Reserve ${assetSymbol} is already enabled for borrowing, skipping`);
-        continue;
-      }
-
-      console.log('Enabling borrowing on reserve ', assetSymbol);
-
-      await waitForTx(
-        await lendingPoolConfigurator.enableBorrowingOnReserve(
-          tokenAddress,
-          stableBorrowRateEnabled
-        )
-      );
-    } catch (e) {
-      console.log(
-        `Enabling reserve for borrowings for ${assetSymbol} failed with error ${e}. Skipped.`
-      );
-    }
-  }
-};
-
-export const enableReservesAsCollateral = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers,
-  lendingPoolConfigurator: LendingPoolConfigurator
-) => {
-  for (const [
-    assetSymbol,
-    {baseLTVAsCollateral, liquidationBonus, liquidationThreshold},
-  ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
-    if (baseLTVAsCollateral === '-1') continue;
-
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-    const {usageAsCollateralEnabled: alreadyEnabled} = await helpers.getReserveConfigurationData(
-      tokenAddress
-    );
-
-    if (alreadyEnabled) {
-      console.log(`Reserve ${assetSymbol} is already enabled as collateral, skipping`);
-      continue;
-    }
-
-    try {
-      console.log(`Enabling reserve ${assetSymbol} as collateral`);
-
-      await waitForTx(
-        await lendingPoolConfigurator.enableReserveAsCollateral(
-          tokenAddress,
-          baseLTVAsCollateral,
-          liquidationThreshold,
-          liquidationBonus
-        )
-      );
-    } catch (e) {
-      console.log(
-        `Enabling reserve as collateral for ${assetSymbol} failed with error ${e}. Skipped.`
-      );
-    }
-  }
-};
+import {getATokensAndRatesHelper, getLendingPoolAddressesProvider} from './contracts-getters';
 
 export const initReservesByHelper = async (
   lendingPoolProxy: tEthereumAddress,
@@ -110,16 +16,18 @@ export const initReservesByHelper = async (
   tokenAddresses: {[symbol: string]: tEthereumAddress},
   helpers: AaveProtocolTestHelpers,
   admin: tEthereumAddress,
-  incentivesController: tEthereumAddress
+  incentivesController: tEthereumAddress,
+  verify?: boolean
 ) => {
-  const stableAndVariableDeployer = await new DeployStableAndVariableTokensFactory(
-    await getFirstSigner()
-  ).deploy(lendingPoolProxy, addressesProvider);
-  await waitForTx(stableAndVariableDeployer.deployTransaction);
-  const atokenAndRatesDeployer = await new DeployATokensAndRatesFactory(
-    await getFirstSigner()
-  ).deploy(lendingPoolProxy, addressesProvider, lendingPoolConfigurator);
-  await waitForTx(atokenAndRatesDeployer.deployTransaction);
+  const stableAndVariableDeployer = await deployStableAndVariableTokensHelper(
+    [lendingPoolProxy, addressesProvider],
+    verify
+  );
+  const atokenAndRatesDeployer = await deployATokensAndRatesHelper([
+    lendingPoolProxy,
+    addressesProvider,
+    lendingPoolConfigurator,
+  ]);
   const addressProvider = await getLendingPoolAddressesProvider(addressesProvider);
 
   // Set aTokenAndRatesDeployer as temporal admin
@@ -269,121 +177,140 @@ export const getPairsTokenAggregator = (
   return [mappedPairs, mappedAggregators];
 };
 
-export const initReserves = async (
+export const enableReservesToBorrowByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPoolAddressesProvider: LendingPoolAddressesProvider,
-  lendingPool: LendingPool,
   helpers: AaveProtocolTestHelpers,
-  lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools,
-  incentivesController: tEthereumAddress,
-  verify: boolean
+  admin: tEthereumAddress
 ) => {
-  if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
-    console.log(`Invalid Aave pool ${aavePool}`);
-    process.exit(1);
-  }
+  const addressProvider = await getLendingPoolAddressesProvider();
+  const atokenAndRatesDeployer = await getATokensAndRatesHelper();
+  const tokens: string[] = [];
+  const symbols: string[] = [];
+  const stableEnabled: boolean[] = [];
 
-  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
-    string,
-    IReserveParams
-  ][]) {
+  // Prepare data
+  for (const [assetSymbol, {borrowingEnabled, stableBorrowRateEnabled}] of Object.entries(
+    reservesParams
+  ) as [string, IReserveParams][]) {
+    if (!borrowingEnabled) continue;
     const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
       (value) => value === assetSymbol
     );
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
+    const {borrowingEnabled: borrowingAlreadyEnabled} = await helpers.getReserveConfigurationData(
+      tokenAddress
+    );
 
-    const {isActive: reserveInitialized} = await helpers.getReserveConfigurationData(tokenAddress);
-
-    if (reserveInitialized) {
-      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
+    if (borrowingAlreadyEnabled) {
+      console.log(`Reserve ${assetSymbol} is already enabled for borrowing, skipping`);
       continue;
     }
+    tokens.push(tokenAddress);
+    stableEnabled.push(stableBorrowRateEnabled);
+    symbols.push(assetSymbol);
+  }
+  if (tokens.length) {
+    // Set aTokenAndRatesDeployer as temporal admin
+    await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
 
-    try {
-      const reserveParamIndex = Object.keys(reservesParams).findIndex(
-        (value) => value === assetSymbol
-      );
-      const [
-        ,
-        {
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        },
-      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      console.log('deploy the interest rate strategy for ', assetSymbol);
-      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
-        [
-          lendingPoolAddressesProvider.address,
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        ],
-        verify
-      );
+    // Deploy init per chunks
+    const stableChunks = 20;
+    const chunkedTokens = chunk(tokens, stableChunks);
+    const chunkedSymbols = chunk(symbols, stableChunks);
+    const chunkedStableEnabled = chunk(stableEnabled, stableChunks);
 
-      console.log('deploy the stable debt totken for ', assetSymbol);
-      const stableDebtToken = await deployStableDebtToken(
-        [
-          `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          tokenAddress,
-          lendingPool.address,
-          incentivesController,
-        ],
-        verify
-      );
-
-      console.log('deploy the variable debt totken for ', assetSymbol);
-      const variableDebtToken = await deployVariableDebtToken(
-        [
-          `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          tokenAddress,
-          lendingPool.address,
-          incentivesController,
-        ],
-        verify
-      );
-
-      console.log('deploy the aToken for ', assetSymbol);
-      const aToken = await deployGenericAToken(
-        [
-          lendingPool.address,
-          tokenAddress,
-          `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          incentivesController,
-        ],
-        verify
-      );
-
-      if (process.env.POOL === AavePools.secondary) {
-        if (assetSymbol.search('UNI') === -1) {
-          assetSymbol = `Uni${assetSymbol}`;
-        } else {
-          assetSymbol = assetSymbol.replace(/_/g, '').replace('UNI', 'Uni');
-        }
+    console.log(`- Borrow stable initialization in ${chunkedTokens.length} txs`);
+    for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
+      try {
+        await waitForTx(
+          await atokenAndRatesDeployer.enableBorrowingOnReserves(
+            chunkedTokens[chunkIndex],
+            chunkedStableEnabled[chunkIndex],
+            {gasLimit: 12000000}
+          )
+        );
+      } catch (error) {
+        console.error(error);
+        throw error;
       }
 
-      console.log('initialize the reserve ', assetSymbol);
-      await lendingPoolConfigurator.initReserve(
-        aToken.address,
-        stableDebtToken.address,
-        variableDebtToken.address,
-        reserveDecimals,
-        rateStrategyContract.address
-      );
-    } catch (e) {
-      console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
+      console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
+    // Set deployer back as admin
+    await waitForTx(await addressProvider.setAaveAdmin(admin));
+  }
+};
+
+export const enableReservesAsCollateralByHelper = async (
+  reservesParams: iMultiPoolsAssets<IReserveParams>,
+  tokenAddresses: {[symbol: string]: tEthereumAddress},
+  helpers: AaveProtocolTestHelpers,
+  admin: tEthereumAddress
+) => {
+  const addressProvider = await getLendingPoolAddressesProvider();
+  const atokenAndRatesDeployer = await getATokensAndRatesHelper();
+  const tokens: string[] = [];
+  const symbols: string[] = [];
+  const baseLTVA: string[] = [];
+  const liquidationThresholds: string[] = [];
+  const liquidationBonuses: string[] = [];
+
+  for (const [
+    assetSymbol,
+    {baseLTVAsCollateral, liquidationBonus, liquidationThreshold},
+  ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
+    if (baseLTVAsCollateral === '-1') continue;
+
+    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
+      (value) => value === assetSymbol
+    );
+    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
+      assetAddressIndex
+    ];
+    const {usageAsCollateralEnabled: alreadyEnabled} = await helpers.getReserveConfigurationData(
+      tokenAddress
+    );
+
+    if (alreadyEnabled) {
+      console.log(`- Reserve ${assetSymbol} is already enabled as collateral, skipping`);
+      continue;
+    }
+    // Push data
+    tokens.push(tokenAddress);
+    symbols.push(assetSymbol);
+    baseLTVA.push(baseLTVAsCollateral);
+    liquidationThresholds.push(liquidationThreshold);
+    liquidationBonuses.push(liquidationBonus);
+  }
+  if (tokens.length) {
+    // Set aTokenAndRatesDeployer as temporal admin
+    await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
+
+    // Deploy init per chunks
+    const enableChunks = 20;
+    const chunkedTokens = chunk(tokens, enableChunks);
+    const chunkedSymbols = chunk(symbols, enableChunks);
+    const chunkedBase = chunk(baseLTVA, enableChunks);
+    const chunkedliquidationThresholds = chunk(liquidationThresholds, enableChunks);
+    const chunkedliquidationBonuses = chunk(liquidationBonuses, enableChunks);
+
+    console.log(`- Enable reserve as collateral in ${chunkedTokens.length} txs`);
+    for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
+      await waitForTx(
+        await atokenAndRatesDeployer.enableReservesAsCollateral(
+          chunkedTokens[chunkIndex],
+          chunkedBase[chunkIndex],
+          chunkedliquidationThresholds[chunkIndex],
+          chunkedliquidationBonuses[chunkIndex],
+          {gasLimit: 12000000}
+        )
+      );
+      console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+    }
+    // Set deployer back as admin
+    await waitForTx(await addressProvider.setAaveAdmin(admin));
   }
 };

@@ -2,6 +2,8 @@ import {
   AaveProtocolTestHelpersFactory,
   ATokenFactory,
   DefaultReserveInterestRateStrategyFactory,
+  DeployATokensAndRatesFactory,
+  DeployStableAndVariableTokensFactory,
   GenericLogicFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
@@ -16,7 +18,7 @@ import {
   VariableDebtTokenFactory,
 } from '../types';
 import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
-import {getContract, MockTokenMap} from './contracts-helpers';
+import {MockTokenMap} from './contracts-helpers';
 import {BRE, getDb} from './misc-utils';
 import {eContractid, PoolConfiguration, tEthereumAddress, TokenContractId} from './types';
 
@@ -199,5 +201,24 @@ export const getGenericLogic = async (address?: tEthereumAddress) =>
   await GenericLogicFactory.connect(
     address ||
       (await getDb().get(`${eContractid.GenericLogic}.${BRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getStableAndVariableTokensHelper = async (address?: tEthereumAddress) =>
+  await DeployStableAndVariableTokensFactory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.StableAndVariableTokensHelper}.${BRE.network.name}`)
+          .value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
+  await DeployATokensAndRatesFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.ATokensAndRatesHelper}.${BRE.network.name}`).value())
+        .address,
     await getFirstSigner()
   );

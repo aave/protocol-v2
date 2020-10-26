@@ -4,9 +4,8 @@ pragma experimental ABIEncoderV2;
 
 import {StableDebtToken} from '../tokenization/StableDebtToken.sol';
 import {VariableDebtToken} from '../tokenization/VariableDebtToken.sol';
-import '@nomiclabs/buidler/console.sol';
 
-contract DeployStableAndVariableTokens {
+contract StableAndVariableTokensHelper {
   address payable private pool;
   address private addressesProvider;
   event deployedContracts(address stableToken, address variableToken);
