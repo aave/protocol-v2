@@ -17,6 +17,15 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
     );
   });
 
+  it('tries to register an addresses provider with id 0', async () => {
+    const {users, registry} = testEnv;
+    const {INVALID_ADDRESSES_PROVIDER_ID} = ProtocolErrors;
+
+    await expect(registry.registerAddressesProvider(users[2].address, '0')).to.be.revertedWith(
+      INVALID_ADDRESSES_PROVIDER_ID
+    );
+  });
+
   it('Registers a new mock addresses provider', async () => {
     const {users, registry} = testEnv;
 

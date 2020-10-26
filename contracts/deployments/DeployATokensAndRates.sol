@@ -66,18 +66,19 @@ contract DeployATokensAndRates {
   }
 
   function initReserve(
-    address[] calldata tokens,
     address[] calldata stables,
     address[] calldata variables,
     address[] calldata aTokens,
     address[] calldata strategies,
     uint8[] calldata reserveDecimals
   ) external {
-    // TODO require(check lenghts)
+    require(variables.length == stables.length);
+    require(aTokens.length == stables.length);
+    require(strategies.length == stables.length);
+    require(reserveDecimals.length == stables.length);
 
-    for (uint256 i = 0; i < tokens.length; i++) {
+    for (uint256 i = 0; i < stables.length; i++) {
       LendingPoolConfigurator(poolConfigurator).initReserve(
-        tokens[i],
         aTokens[i],
         stables[i],
         variables[i],

@@ -54,6 +54,8 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be registered
    **/
   function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
+    require(id != 0, Errors.INVALID_ADDRESSES_PROVIDER_ID);
+
     _addressesProviders[provider] = id;
     _addToAddressesProvidersList(provider);
     emit AddressesProviderRegistered(provider);

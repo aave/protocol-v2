@@ -20,6 +20,6 @@ task(
 
     const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry(verify);
     await waitForTx(
-      await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 0)
+      await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 1)
     );
   });

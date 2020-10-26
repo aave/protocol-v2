@@ -245,6 +245,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 };
 
 before(async () => {
+  console.log('aaaaa');
   await rawBRE.run('set-bre');
   const [deployer, secondaryWallet] = await getEthersSigners();
   console.log('-> Deploying test environment...');

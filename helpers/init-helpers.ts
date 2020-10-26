@@ -102,128 +102,6 @@ export const enableReservesAsCollateral = async (
   }
 };
 
-export const initReserves = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPoolAddressesProvider: LendingPoolAddressesProvider,
-  lendingPool: LendingPool,
-  helpers: AaveProtocolTestHelpers,
-  lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools,
-  incentivesController: tEthereumAddress,
-  verify: boolean
-) => {
-  if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
-    console.log(`Invalid Aave pool ${aavePool}`);
-    process.exit(1);
-  }
-
-  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
-    string,
-    IReserveParams
-  ][]) {
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-
-    const {isActive: reserveInitialized} = await helpers.getReserveConfigurationData(tokenAddress);
-
-    if (reserveInitialized) {
-      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
-      continue;
-    }
-
-    try {
-      const reserveParamIndex = Object.keys(reservesParams).findIndex(
-        (value) => value === assetSymbol
-      );
-      const [
-        ,
-        {
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        },
-      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      console.log('- Deploy def reserve');
-      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
-        [
-          lendingPoolAddressesProvider.address,
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        ],
-        verify
-      );
-
-      console.log('- Deploy stable deb totken ', assetSymbol);
-      const stableDebtToken = await deployStableDebtToken(
-        [
-          lendingPool.address,
-          tokenAddress,
-          `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          incentivesController,
-        ],
-        verify
-      );
-
-      console.log('- Deploy var deb totken ', assetSymbol);
-      const variableDebtToken = await deployVariableDebtToken(
-        [
-          lendingPool.address,
-          tokenAddress,
-          `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          incentivesController,
-        ],
-        verify
-      );
-
-      console.log('- Deploy a token ', assetSymbol);
-      const aToken = await deployGenericAToken(
-        [
-          lendingPool.address,
-          tokenAddress,
-          `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-          incentivesController,
-        ],
-        verify
-      );
-
-      if (process.env.POOL === AavePools.secondary) {
-        if (assetSymbol.search('UNI') === -1) {
-          assetSymbol = `Uni${assetSymbol}`;
-        } else {
-          assetSymbol = assetSymbol.replace(/_/g, '').replace('UNI', 'Uni');
-        }
-      }
-
-      console.log('- init reserve currency ', assetSymbol);
-      await waitForTx(
-        await lendingPoolConfigurator.initReserve(
-          tokenAddress,
-          aToken.address,
-          stableDebtToken.address,
-          variableDebtToken.address,
-          reserveDecimals,
-          rateStrategyContract.address
-        )
-      );
-    } catch (e) {
-      console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
-    }
-  }
-};
-
 export const initReservesByHelper = async (
   lendingPoolProxy: tEthereumAddress,
   addressesProvider: tEthereumAddress,
@@ -339,7 +217,6 @@ export const initReservesByHelper = async (
   }
 
   // Deploy init reserves per chunks
-  const chunkedTokens = chunk(reserveTokens, initChunks);
   const chunkedStableTokens = chunk(deployedStableTokens, initChunks);
   const chunkedVariableTokens = chunk(deployedVariableTokens, initChunks);
   const chunkedAtokens = chunk(deployedATokens, initChunks);
@@ -347,11 +224,10 @@ export const initReservesByHelper = async (
   const chunkedDecimals = chunk(reserveInitDecimals, initChunks);
   const chunkedSymbols = chunk(Object.keys(tokenAddresses), initChunks);
 
-  console.log(`- Reserves initialization in ${chunkedTokens.length} txs`);
+  console.log(`- Reserves initialization in ${chunkedStableTokens.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedDecimals.length; chunkIndex++) {
     const tx3 = await waitForTx(
       await atokenAndRatesDeployer.initReserve(
-        chunkedTokens[chunkIndex],
         chunkedStableTokens[chunkIndex],
         chunkedVariableTokens[chunkIndex],
         chunkedAtokens[chunkIndex],
@@ -364,4 +240,150 @@ export const initReservesByHelper = async (
 
   // Set deployer back as admin
   await waitForTx(await addressProvider.setAaveAdmin(admin));
+};
+
+export const getPairsTokenAggregator = (
+  allAssetsAddresses: {
+    [tokenSymbol: string]: tEthereumAddress;
+  },
+  aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
+): [string[], string[]] => {
+  const {ETH, USD, WETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
+
+  const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
+    if (tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH') {
+      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
+        (value) => value === tokenSymbol
+      );
+      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
+        string,
+        tEthereumAddress
+      ][])[aggregatorAddressIndex];
+      return [tokenAddress, aggregatorAddress];
+    }
+  }) as [string, string][];
+
+  const mappedPairs = pairs.map(([asset]) => asset);
+  const mappedAggregators = pairs.map(([, source]) => source);
+
+  return [mappedPairs, mappedAggregators];
+};
+
+export const initReserves = async (
+  reservesParams: iMultiPoolsAssets<IReserveParams>,
+  tokenAddresses: {[symbol: string]: tEthereumAddress},
+  lendingPoolAddressesProvider: LendingPoolAddressesProvider,
+  lendingPool: LendingPool,
+  helpers: AaveProtocolTestHelpers,
+  lendingPoolConfigurator: LendingPoolConfigurator,
+  aavePool: AavePools,
+  incentivesController: tEthereumAddress,
+  verify: boolean
+) => {
+  if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
+    console.log(`Invalid Aave pool ${aavePool}`);
+    process.exit(1);
+  }
+
+  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
+    string,
+    IReserveParams
+  ][]) {
+    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
+      (value) => value === assetSymbol
+    );
+    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
+      assetAddressIndex
+    ];
+
+    const {isActive: reserveInitialized} = await helpers.getReserveConfigurationData(tokenAddress);
+
+    if (reserveInitialized) {
+      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
+      continue;
+    }
+
+    try {
+      const reserveParamIndex = Object.keys(reservesParams).findIndex(
+        (value) => value === assetSymbol
+      );
+      const [
+        ,
+        {
+          baseVariableBorrowRate,
+          variableRateSlope1,
+          variableRateSlope2,
+          stableRateSlope1,
+          stableRateSlope2,
+        },
+      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
+      console.log('deploy the interest rate strategy for ', assetSymbol);
+      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
+        [
+          lendingPoolAddressesProvider.address,
+          baseVariableBorrowRate,
+          variableRateSlope1,
+          variableRateSlope2,
+          stableRateSlope1,
+          stableRateSlope2,
+        ],
+        verify
+      );
+
+      console.log('deploy the stable debt totken for ', assetSymbol);
+      const stableDebtToken = await deployStableDebtToken(
+        [
+          `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          tokenAddress,
+          lendingPool.address,
+          incentivesController,
+        ],
+        verify
+      );
+
+      console.log('deploy the variable debt totken for ', assetSymbol);
+      const variableDebtToken = await deployVariableDebtToken(
+        [
+          `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          tokenAddress,
+          lendingPool.address,
+          incentivesController,
+        ],
+        verify
+      );
+
+      console.log('deploy the aToken for ', assetSymbol);
+      const aToken = await deployGenericAToken(
+        [
+          lendingPool.address,
+          tokenAddress,
+          `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
+          incentivesController,
+        ],
+        verify
+      );
+
+      if (process.env.POOL === AavePools.secondary) {
+        if (assetSymbol.search('UNI') === -1) {
+          assetSymbol = `Uni${assetSymbol}`;
+        } else {
+          assetSymbol = assetSymbol.replace(/_/g, '').replace('UNI', 'Uni');
+        }
+      }
+
+      console.log('initialize the reserve ', assetSymbol);
+      await lendingPoolConfigurator.initReserve(
+        aToken.address,
+        stableDebtToken.address,
+        variableDebtToken.address,
+        reserveDecimals,
+        rateStrategyContract.address
+      );
+    } catch (e) {
+      console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
+    }
+  }
 };
