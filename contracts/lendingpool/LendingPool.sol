@@ -582,7 +582,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           )
         );
       }
-      emit FlashLoan(receiverAddress, assets, amounts, premiums, referralCode);
+      emit FlashLoan(receiverAddress, mode, assets, amounts, premiums, referralCode);
     }
   }
 

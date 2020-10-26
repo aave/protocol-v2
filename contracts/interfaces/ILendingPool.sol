@@ -106,6 +106,7 @@ interface ILendingPool {
    **/
   event FlashLoan(
     address indexed target,
+    uint256 mode,
     address[] assets,
     uint256[] amounts,
     uint256[] premiums,
