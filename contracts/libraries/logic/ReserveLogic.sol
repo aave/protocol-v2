@@ -359,7 +359,9 @@ library ReserveLogic {
 
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
-    IAToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+    if (vars.amountToMint != 0) {
+      IAToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+    }
   }
 
   /**

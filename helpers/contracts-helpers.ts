@@ -857,15 +857,12 @@ export const initReserves = async (
       }
 
       console.log('initialize the reserve ', assetSymbol);
-      await waitForTx(
-        await lendingPoolConfigurator.initReserve(
-          tokenAddress,
-          aToken.address,
-          stableDebtToken.address,
-          variableDebtToken.address,
-          reserveDecimals,
-          rateStrategyContract.address
-        )
+      await lendingPoolConfigurator.initReserve(
+        aToken.address,
+        stableDebtToken.address,
+        variableDebtToken.address,
+        reserveDecimals,
+        rateStrategyContract.address
       );
     } catch (e) {
       console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);

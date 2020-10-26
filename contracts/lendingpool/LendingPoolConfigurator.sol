@@ -10,6 +10,7 @@ import {
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import {ITokenConfiguration} from '../tokenization/interfaces/ITokenConfiguration.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
@@ -200,7 +201,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
   /**
    * @dev initializes a reserve
-   * @param asset the address of the reserve to be initialized
    * @param aTokenImpl  the address of the aToken contract implementation
    * @param stableDebtTokenImpl the address of the stable debt token contract
    * @param variableDebtTokenImpl the address of the variable debt token contract
@@ -208,13 +208,35 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param interestRateStrategyAddress the address of the interest rate strategy contract for this reserve
    **/
   function initReserve(
-    address asset,
     address aTokenImpl,
     address stableDebtTokenImpl,
     address variableDebtTokenImpl,
     uint8 underlyingAssetDecimals,
     address interestRateStrategyAddress
   ) public onlyAaveAdmin {
+    address asset = ITokenConfiguration(aTokenImpl).UNDERLYING_ASSET_ADDRESS();
+
+    require(
+      address(pool) == ITokenConfiguration(aTokenImpl).POOL(),
+      Errors.INVALID_ATOKEN_POOL_ADDRESS
+    );
+    require(
+      address(pool) == ITokenConfiguration(stableDebtTokenImpl).POOL(),
+      Errors.INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS
+    );
+    require(
+      address(pool) == ITokenConfiguration(variableDebtTokenImpl).POOL(),
+      Errors.INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS
+    );
+    require(
+      asset == ITokenConfiguration(stableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
+      Errors.INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
+    );
+    require(
+      asset == ITokenConfiguration(variableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
+      Errors.INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
+    );
+
     address aTokenProxyAddress = _initTokenWithProxy(aTokenImpl, underlyingAssetDecimals);
 
     address stableDebtTokenProxyAddress = _initTokenWithProxy(

@@ -2,7 +2,7 @@
 pragma solidity ^0.6.8;
 
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
-import {LendingPool} from '../lendingpool/LendingPool.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
@@ -32,7 +32,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   uint256 public constant ATOKEN_REVISION = 0x1;
   address public immutable UNDERLYING_ASSET_ADDRESS;
   address public immutable RESERVE_TREASURY_ADDRESS;
-  LendingPool public immutable POOL;
+  ILendingPool public immutable POOL;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -45,7 +45,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   constructor(
-    LendingPool pool,
+    ILendingPool pool,
     address underlyingAssetAddress,
     address reserveTreasuryAddress,
     string memory tokenName,
