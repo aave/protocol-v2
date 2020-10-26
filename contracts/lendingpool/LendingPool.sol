@@ -418,7 +418,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev allows depositors to enable or disable a specific deposit as collateral.
    * @param asset the address of the reserve
-   * @param useAsCollateral true if the user wants to user the deposit as collateral, false otherwise.
+   * @param useAsCollateral true if the user wants to use the deposit as collateral, false otherwise.
    **/
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
     _whenNotPaused();
