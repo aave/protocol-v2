@@ -262,15 +262,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ReserveLogic.InterestRateMode interestRateMode = ReserveLogic.InterestRateMode(rateMode);
 
-    //default to max amount
-    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
-      ? stableDebt
-      : variableDebt;
-
-    if (amount < paybackAmount) {
-      paybackAmount = amount;
-    }
-
     ValidationLogic.validateRepay(
       reserve,
       amount,
@@ -279,6 +270,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       stableDebt,
       variableDebt
     );
+
+    //default to max amount
+    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
+
+    if (amount < paybackAmount) {
+      paybackAmount = amount;
+    }
 
     reserve.updateState();
 
@@ -356,9 +356,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev rebalances the stable interest rate of a user if current liquidity rate > user stable rate.
-   * this is regulated by Aave to ensure that the protocol is not abused, and the user is paying a fair
-   * rate. Anyone can call this function.
+   * @dev rebalances the stable interest rate of a user. Users can be rebalanced if the following conditions are satisfied:
+   * 1. Usage ratio is above 95%
+   * 2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
+   *    borrowed at a stable rate and depositors are not earning enough.
    * @param asset the address of the reserve
    * @param user the address of the user to be rebalanced
    **/
@@ -373,7 +374,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     uint256 stableBorrowBalance = IERC20(stableDebtToken).balanceOf(user);
 
-    //if the utilization rate is below 95%, no rebalances are needed
+    //if the usage ratio is below 95%, no rebalances are needed
     uint256 totalBorrows = stableDebtToken
       .totalSupply()
       .add(variableDebtToken.totalSupply())
@@ -417,7 +418,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev allows depositors to enable or disable a specific deposit as collateral.
    * @param asset the address of the reserve
-   * @param useAsCollateral true if the user wants to user the deposit as collateral, false otherwise.
+   * @param useAsCollateral true if the user wants to use the deposit as collateral, false otherwise.
    **/
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
     _whenNotPaused();
