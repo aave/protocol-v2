@@ -498,6 +498,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the principal reserve
    * @param amount The amount requested for this flashloan
    * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
+   * @param onBehalfOf If mode is not 0, then the address to take the debt onBehalfOf. The address must already have approved `msg.sender` to incur the debt on their behalf.
    * @param params Variadic packed params to pass to the receiver as extra information
    * @param referralCode Referral code of the flash loan
    **/
@@ -506,6 +507,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     uint256 mode,
+    address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external override {
@@ -549,7 +551,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         ExecuteBorrowParams(
           asset,
           msg.sender,
-          msg.sender,
+          onBehalfOf,
           vars.amountPlusPremium,
           mode,
           vars.aTokenAddress,

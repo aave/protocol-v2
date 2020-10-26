@@ -274,6 +274,7 @@ interface ILendingPool {
     address reserve,
     uint256 amount,
     uint256 debtType,
+    address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external;
