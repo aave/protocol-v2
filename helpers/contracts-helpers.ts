@@ -47,7 +47,6 @@ const {
 
 export type MockTokenMap = {[symbol: string]: MintableERC20};
 import {ZERO_ADDRESS} from './constants';
-import {MockSwapAdapter} from '../types/MockSwapAdapter';
 import {signTypedData_v4, TypedData} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
 import {SignerWithAddress} from '../test/helpers/make-suite';
@@ -322,8 +321,6 @@ export const deployWalletBalancerProvider = async (
   }
   return instance;
 };
-export const deployMockSwapAdapter = async (addressesProvider: tEthereumAddress) =>
-  await deployContract<MockSwapAdapter>(eContractid.MockSwapAdapter, [addressesProvider]);
 
 export const deployAaveProtocolTestHelpers = async (
   addressesProvider: tEthereumAddress,
@@ -546,14 +543,6 @@ export const getMockFlashLoanReceiver = async (address?: tEthereumAddress) => {
     address ||
       (await getDb().get(`${eContractid.MockFlashLoanReceiver}.${BRE.network.name}`).value())
         .address
-  );
-};
-
-export const getMockSwapAdapter = async (address?: tEthereumAddress) => {
-  return await getContract<MockSwapAdapter>(
-    eContractid.MockSwapAdapter,
-    address ||
-      (await getDb().get(`${eContractid.MockSwapAdapter}.${BRE.network.name}`).value()).address
   );
 };
 
