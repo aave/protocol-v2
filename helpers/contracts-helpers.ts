@@ -37,6 +37,9 @@ import BigNumber from 'bignumber.js';
 import {Ierc20Detailed} from '../types/Ierc20Detailed';
 import {StableDebtToken} from '../types/StableDebtToken';
 import {VariableDebtToken} from '../types/VariableDebtToken';
+import {MockUniswapV2Router02} from '../types/MockUniswapV2Router02';
+import {UniswapLiquiditySwapAdapter} from '../types/UniswapLiquiditySwapAdapter';
+import {UniswapRepayAdapter} from '../types/UniswapRepayAdapter';
 import {MockContract} from 'ethereum-waffle';
 import {getReservesConfigByPool} from './configuration';
 import {verifyContract} from './etherscan-verification';
@@ -47,7 +50,6 @@ const {
 
 export type MockTokenMap = {[symbol: string]: MintableERC20};
 import {ZERO_ADDRESS} from './constants';
-import {MockSwapAdapter} from '../types/MockSwapAdapter';
 import {signTypedData_v4, TypedData} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
 import {SignerWithAddress} from '../test/helpers/make-suite';
@@ -256,6 +258,27 @@ export const deployChainlinkProxyPriceProvider = async (
   return instance;
 };
 
+export const deployMockUniswapRouter = async () =>
+  await deployContract<MockUniswapV2Router02>(eContractid.MockUniswapV2Router02, []);
+
+export const deployUniswapLiquiditySwapAdapter = async (
+  addressesProvider: tEthereumAddress,
+  uniswapRouter: tEthereumAddress
+) =>
+  await deployContract<UniswapLiquiditySwapAdapter>(eContractid.UniswapLiquiditySwapAdapter, [
+    addressesProvider,
+    uniswapRouter,
+  ]);
+
+export const deployUniswapRepayAdapter = async (
+  addressesProvider: tEthereumAddress,
+  uniswapRouter: tEthereumAddress
+) =>
+  await deployContract<UniswapRepayAdapter>(eContractid.UniswapRepayAdapter, [
+    addressesProvider,
+    uniswapRouter,
+  ]);
+
 export const getChainlingProxyPriceProvider = async (address?: tEthereumAddress) =>
   await getContract<MockAggregator>(
     eContractid.ChainlinkProxyPriceProvider,
@@ -321,8 +344,6 @@ export const deployWalletBalancerProvider = async (
   }
   return instance;
 };
-export const deployMockSwapAdapter = async (addressesProvider: tEthereumAddress) =>
-  await deployContract<MockSwapAdapter>(eContractid.MockSwapAdapter, [addressesProvider]);
 
 export const deployAaveProtocolTestHelpers = async (
   addressesProvider: tEthereumAddress,
@@ -548,11 +569,29 @@ export const getMockFlashLoanReceiver = async (address?: tEthereumAddress) => {
   );
 };
 
-export const getMockSwapAdapter = async (address?: tEthereumAddress) => {
-  return await getContract<MockSwapAdapter>(
-    eContractid.MockSwapAdapter,
+export const getMockUniswapRouter = async (address?: tEthereumAddress) => {
+  return await getContract<MockUniswapV2Router02>(
+    eContractid.MockUniswapV2Router02,
     address ||
-      (await getDb().get(`${eContractid.MockSwapAdapter}.${BRE.network.name}`).value()).address
+      (await getDb().get(`${eContractid.MockUniswapV2Router02}.${BRE.network.name}`).value())
+        .address
+  );
+};
+
+export const getUniswapLiquiditySwapAdapter = async (address?: tEthereumAddress) => {
+  return await getContract<UniswapLiquiditySwapAdapter>(
+    eContractid.UniswapLiquiditySwapAdapter,
+    address ||
+      (await getDb().get(`${eContractid.UniswapLiquiditySwapAdapter}.${BRE.network.name}`).value())
+        .address
+  );
+};
+
+export const getUniswapRepayAdapter = async (address?: tEthereumAddress) => {
+  return await getContract<UniswapLiquiditySwapAdapter>(
+    eContractid.UniswapRepayAdapter,
+    address ||
+      (await getDb().get(`${eContractid.UniswapRepayAdapter}.${BRE.network.name}`).value()).address
   );
 };
 

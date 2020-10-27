@@ -9,8 +9,9 @@ import {
   getMintableErc20,
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
-  getMockSwapAdapter,
   getLendingPoolAddressesProviderRegistry,
+  getUniswapLiquiditySwapAdapter,
+  getUniswapRepayAdapter,
 } from '../../helpers/contracts-helpers';
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
@@ -25,8 +26,9 @@ import bignumberChai from 'chai-bignumber';
 import {almostEqual} from './almost-equal';
 import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
-import {MockSwapAdapter} from '../../types/MockSwapAdapter';
 import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
+import {UniswapLiquiditySwapAdapter} from '../../types/UniswapLiquiditySwapAdapter';
+import {UniswapRepayAdapter} from '../../types/UniswapRepayAdapter';
 chai.use(bignumberChai());
 chai.use(almostEqual());
 
@@ -48,7 +50,8 @@ export interface TestEnv {
   usdc: MintableERC20;
   lend: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
-  mockSwapAdapter: MockSwapAdapter;
+  uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
+  uniswapRepayAdapter: UniswapRepayAdapter;
   registry: LendingPoolAddressesProviderRegistry;
 }
 
@@ -73,7 +76,8 @@ const testEnv: TestEnv = {
   usdc: {} as MintableERC20,
   lend: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
-  mockSwapAdapter: {} as MockSwapAdapter,
+  uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
+  uniswapRepayAdapter: {} as UniswapRepayAdapter,
   registry: {} as LendingPoolAddressesProviderRegistry,
 } as TestEnv;
 
@@ -135,7 +139,8 @@ export async function initializeMakeSuite() {
   testEnv.lend = await getMintableErc20(lendAddress);
   testEnv.weth = await getMintableErc20(wethAddress);
 
-  testEnv.mockSwapAdapter = await getMockSwapAdapter();
+  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();
+  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter();
 }
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
