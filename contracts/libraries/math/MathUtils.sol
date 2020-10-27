@@ -8,6 +8,7 @@ library MathUtils {
   using SafeMath for uint256;
   using WadRayMath for uint256;
 
+  /// @dev Ignoring leap years
   uint256 internal constant SECONDS_PER_YEAR = 365 days;
 
   /**
