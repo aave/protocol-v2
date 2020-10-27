@@ -99,16 +99,17 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
-   * @param reserve the address of the reserve
-   * @param amount the amount requested
-   * @param totalPremium the total fee on the amount
+   * @param assets the address of the assets being flashborrowed
+   * @param amounts the amount requested
+   * @param premiums the total fee on the amount
    * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
-    address indexed reserve,
-    uint256 amount,
-    uint256 totalPremium,
+    uint256 mode,
+    address[] assets,
+    uint256[] amounts,
+    uint256[] premiums,
     uint16 referralCode
   );
   /**
@@ -264,16 +265,17 @@ interface ILendingPool {
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
    * that must be kept into consideration. For further details please visit https://developers.aave.com
    * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
-   * @param reserve the address of the principal reserve
-   * @param amount the amount requested for this flashloan
+   * @param assets the address of the principal reserve
+   * @param amounts the amount requested for this flashloan
+   * @param mode the flashloan mode
    * @param params a bytes array to be sent to the flashloan executor
    * @param referralCode the referral code of the caller
    **/
   function flashLoan(
     address receiver,
-    address reserve,
-    uint256 amount,
-    uint256 debtType,
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256 mode,
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode

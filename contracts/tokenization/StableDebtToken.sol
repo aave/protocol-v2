@@ -196,8 +196,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   /**
    * @dev Calculates the increase in balance since the last user interaction
    * @param user The address of the user for which the interest is being accumulated
-   * @return The previous principal balance, the new principal balance, the balance increase
-   * and the new user index
+   * @return The previous principal balance, the new principal balance and the balance increase
    **/
   function _calculateBalanceIncrease(address user)
     internal

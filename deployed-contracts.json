@@ -235,7 +235,7 @@
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4",
+      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -692,17 +692,6 @@
     "coverage": {
       "address": "0xEBAB67ee3ef604D5c250A53b4b8fcbBC6ec3007C",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
-    }
-  },
-  "MockSwapAdapter": {
-    "buidlerevm": {
-      "address": "0xDf73fC454FA018051D4a1509e63D11530A59DE10"
-    },
-    "coverage": {
-      "address": "0xBEF0d4b9c089a5883741fC14cbA352055f35DDA2"
-    },
-    "localhost": {
-      "address": "0x48FAde2E719B770E1783d03466dAEe98b5183538"
     }
   },
   "MockFlashRepayAdapter": {
