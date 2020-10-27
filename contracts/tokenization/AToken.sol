@@ -40,7 +40,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   bytes32 public DOMAIN_SEPARATOR;
 
   modifier onlyLendingPool {
-    require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
@@ -108,7 +108,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
-    emit Burn(msg.sender, receiverOfUnderlying, amount, index);
+    emit Burn(_msgSender(), receiverOfUnderlying, amount, index);
   }
 
   /**
