@@ -36,13 +36,15 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @return the list of addressesProviders
    **/
   function getAddressesProvidersList() external override view returns (address[] memory) {
-    uint256 maxLength = _addressesProvidersList.length;
+    address[] memory addressesProvidersList = _addressesProvidersList;
+
+    uint256 maxLength = addressesProvidersList.length;
 
     address[] memory activeProviders = new address[](maxLength);
 
-    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
-      if (_addressesProviders[_addressesProvidersList[i]] > 0) {
-        activeProviders[i] = _addressesProvidersList[i];
+    for (uint256 i = 0; i < maxLength; i++) {
+      if (_addressesProviders[addressesProvidersList[i]] > 0) {
+        activeProviders[i] = addressesProvidersList[i];
       }
     }
 
@@ -54,6 +56,8 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be registered
    **/
   function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
+    require(id != 0, Errors.INVALID_ADDRESSES_PROVIDER_ID);
+
     _addressesProviders[provider] = id;
     _addToAddressesProvidersList(provider);
     emit AddressesProviderRegistered(provider);
@@ -74,7 +78,9 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be added
    **/
   function _addToAddressesProvidersList(address provider) internal {
-    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
+    uint256 providersCount = _addressesProvidersList.length;
+
+    for (uint256 i = 0; i < providersCount; i++) {
       if (_addressesProvidersList[i] == provider) {
         return;
       }

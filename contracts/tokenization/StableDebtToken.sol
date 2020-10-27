@@ -128,7 +128,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
 
     //calculates the updated average stable rate
-    _avgStableRate = vars
+    vars.currentAvgStableRate = _avgStableRate = vars
       .currentAvgStableRate
       .rayMul(vars.previousSupply.wadToRay())
       .add(rate.rayMul(vars.amountInRay))
@@ -139,7 +139,15 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(address(0), user, amount);
 
-    emit Mint(user, amount, previousBalance, currentBalance, balanceIncrease, vars.newStableRate);
+    emit Mint(
+      user,
+      amount,
+      previousBalance,
+      currentBalance,
+      balanceIncrease,
+      vars.newStableRate,
+      vars.currentAvgStableRate
+    );
   }
 
   /**
@@ -155,17 +163,18 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     ) = _calculateBalanceIncrease(user);
 
     uint256 previousSupply = totalSupply();
+    uint256 newStableRate = 0;
 
     //since the total supply and each single user debt accrue separately,
     //there might be accumulation errors so that the last borrower repaying
     //might actually try to repay more than the available debt supply.
     //in this case we simply set the total supply and the avg stable rate to 0
     if (previousSupply <= amount) {
-      _avgStableRate = 0;
+      newStableRate = _avgStableRate = 0;
       _totalSupply = 0;
     } else {
       uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
-      _avgStableRate = _avgStableRate
+      newStableRate = _avgStableRate = _avgStableRate
         .rayMul(previousSupply.wadToRay())
         .sub(_usersData[user].rayMul(amount.wadToRay()))
         .rayDiv(nextSupply.wadToRay());
@@ -190,14 +199,13 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(user, address(0), amount);
 
-    emit Burn(user, amount, previousBalance, currentBalance, balanceIncrease);
+    emit Burn(user, amount, previousBalance, currentBalance, balanceIncrease, newStableRate);
   }
 
   /**
    * @dev Calculates the increase in balance since the last user interaction
    * @param user The address of the user for which the interest is being accumulated
-   * @return The previous principal balance, the new principal balance, the balance increase
-   * and the new user index
+   * @return The previous principal balance, the new principal balance and the balance increase
    **/
   function _calculateBalanceIncrease(address user)
     internal

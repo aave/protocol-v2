@@ -181,10 +181,10 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     _balances[recipient] = _balances[recipient].add(amount);
 
     if (address(_incentivesController) != address(0)) {
-      uint256 totalSupply = _totalSupply;
-      _incentivesController.handleAction(sender, totalSupply, oldSenderBalance);
+      uint256 currentTotalSupply = _totalSupply;
+      _incentivesController.handleAction(sender, currentTotalSupply, oldSenderBalance);
       if (sender != recipient) {
-        _incentivesController.handleAction(recipient, totalSupply, oldRecipientBalance);
+        _incentivesController.handleAction(recipient, currentTotalSupply, oldRecipientBalance);
       }
     }
   }

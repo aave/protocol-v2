@@ -194,13 +194,6 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     //update the principal reserve
     principalReserve.updateState();
 
-    principalReserve.updateInterestRates(
-      principal,
-      principalReserve.aTokenAddress,
-      vars.actualAmountToLiquidate,
-      0
-    );
-
     if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
       IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
         user,
@@ -222,6 +215,13 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
         vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
       );
     }
+
+    principalReserve.updateInterestRates(
+      principal,
+      principalReserve.aTokenAddress,
+      vars.actualAmountToLiquidate,
+      0
+    );
 
     //if liquidator reclaims the aToken, he receives the equivalent atoken amount
     if (receiveAToken) {
@@ -306,8 +306,8 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       .principalCurrencyPrice
       .mul(purchaseAmount)
       .mul(10**vars.collateralDecimals)
-      .div(vars.collateralPrice.mul(10**vars.principalDecimals))
-      .percentMul(vars.liquidationBonus);
+      .percentMul(vars.liquidationBonus)
+      .div(vars.collateralPrice.mul(10**vars.principalDecimals));
 
     if (vars.maxAmountCollateralToLiquidate > userCollateralBalance) {
       collateralAmount = userCollateralBalance;

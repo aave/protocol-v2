@@ -15,8 +15,8 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
  */
 
 abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
-  address internal immutable UNDERLYING_ASSET;
-  ILendingPool internal immutable POOL;
+  address public immutable UNDERLYING_ASSET_ADDRESS;
+  ILendingPool public immutable POOL;
   mapping(address => uint256) internal _usersData;
 
   /**
@@ -39,7 +39,7 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
     address incentivesController
   ) public IncentivizedERC20(name, symbol, 18, incentivesController) {
     POOL = ILendingPool(pool);
-    UNDERLYING_ASSET = underlyingAssetAddress;
+    UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
   }
 
   /**
@@ -56,10 +56,6 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
     _setName(name);
     _setSymbol(symbol);
     _setDecimals(decimals);
-  }
-
-  function underlyingAssetAddress() public view returns (address) {
-    return UNDERLYING_ASSET;
   }
 
   /**

@@ -1,6 +1,6 @@
 import {Contract, Signer, utils, ethers} from 'ethers';
 import {CommonsConfig} from '../config/commons';
-import {getDb, BRE} from './misc-utils';
+import {getDb, BRE, waitForTx} from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -103,7 +103,7 @@ export const deployContract = async <ContractType extends Contract>(
   const contract = (await (await BRE.ethers.getContractFactory(contractName)).deploy(
     ...args
   )) as ContractType;
-
+  await waitForTx(contract.deployTransaction);
   await registerContractInJsonDb(<eContractid>contractName, contract);
   return contract;
 };
@@ -207,6 +207,7 @@ export const deployLendingPool = async (verify?: boolean) => {
   );
   const factory = await linkLibrariesToArtifact(lendingPoolArtifact);
   const lendingPool = await factory.deploy();
+  await waitForTx(lendingPool.deployTransaction);
   const instance = (await lendingPool.deployed()) as LendingPool;
   if (verify) {
     await verifyContract(eContractid.LendingPool, instance.address, []);
@@ -837,7 +838,7 @@ export const initReserves = async (
           stableRateSlope2,
         },
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      console.log('deploy def reserve');
+      console.log('deploy the interest rate strategy for ', assetSymbol);
       const rateStrategyContract = await deployDefaultReserveInterestRateStrategy(
         [
           lendingPoolAddressesProvider.address,
@@ -850,7 +851,7 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy stable deb totken ', assetSymbol);
+      console.log('deploy the stable debt totken for ', assetSymbol);
       const stableDebtToken = await deployStableDebtToken(
         [
           `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
@@ -862,7 +863,7 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy var deb totken ', assetSymbol);
+      console.log('deploy the variable debt totken for ', assetSymbol);
       const variableDebtToken = await deployVariableDebtToken(
         [
           `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
@@ -874,7 +875,7 @@ export const initReserves = async (
         verify
       );
 
-      console.log('deploy a token ', assetSymbol);
+      console.log('deploy the aToken for ', assetSymbol);
       const aToken = await deployGenericAToken(
         [
           lendingPool.address,
@@ -894,9 +895,8 @@ export const initReserves = async (
         }
       }
 
-      console.log('init reserve currency ', assetSymbol);
+      console.log('initialize the reserve ', assetSymbol);
       await lendingPoolConfigurator.initReserve(
-        tokenAddress,
         aToken.address,
         stableDebtToken.address,
         variableDebtToken.address,

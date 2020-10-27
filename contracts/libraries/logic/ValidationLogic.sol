@@ -327,11 +327,16 @@ library ValidationLogic {
   /**
    * @dev validates a flashloan action
    * @param mode the flashloan mode (0 = classic flashloan, 1 = open a stable rate loan, 2 = open a variable rate loan)
-   * @param premium the premium paid on the flashloan
+   * @param assets the assets being flashborrowed
+   * @param amounts the amounts for each asset being borrowed
    **/
-  function validateFlashloan(uint256 mode, uint256 premium) internal pure {
-    require(premium > 0, Errors.REQUESTED_AMOUNT_TOO_SMALL);
+  function validateFlashloan(
+    address[] memory assets,
+    uint256[] memory amounts,
+    uint256 mode
+  ) internal pure {
     require(mode <= uint256(ReserveLogic.InterestRateMode.VARIABLE), Errors.INVALID_FLASHLOAN_MODE);
+    require(assets.length == amounts.length, Errors.INCONSISTENT_FLASHLOAN_PARAMS);
   }
 
   /**
