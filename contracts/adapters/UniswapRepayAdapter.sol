@@ -28,9 +28,9 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * then used to repay a debt on the protocol on behalf of the user.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
    * repay the flash loan.
-   * @param reserve Address to be swapped
-   * @param amount Amount of the reserve to be swapped
-   * @param fee Fee of the flash loan
+   * @param assets Address to be swapped
+   * @param amounts Amount of the reserve to be swapped
+   * @param premiums Fee of the flash loan
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address assetToSwapTo Address of the reserve to be swapped to and deposited
    *   address user The address of the user
@@ -41,9 +41,9 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   uint256 rateMode The rate modes of the debt to be repaid
    */
   function executeOperation(
-    address reserve,
-    uint256 amount,
-    uint256 fee,
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256[] calldata premiums,
     bytes calldata params
   ) external override returns (bool) {
     (
@@ -54,17 +54,17 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       uint256 rateMode
     ) = abi.decode(params, (address, address, uint256, uint256, uint256));
 
-    swapTokensForExactTokens(reserve, assetToSwapTo, amount, repayAmount);
+    swapTokensForExactTokens(assets[0], assetToSwapTo, amounts[0], repayAmount);
 
     // Repay debt
     IERC20(assetToSwapTo).approve(address(pool), repayAmount);
     pool.repay(assetToSwapTo, repayAmount, rateMode, user);
 
-    uint256 flashLoanDebt = amount.add(fee);
-    pullATokenAndRepayFlashLoan(reserve, user, flashLoanDebt);
+    uint256 flashLoanDebt = amounts[0].add(premiums[0]);
+    pullATokenAndRepayFlashLoan(assets[0], user, flashLoanDebt);
 
     // Take care of reserve leftover from the swap
-    sendLeftOver(reserve, flashLoanDebt, leftOverAction, user);
+    sendLeftOver(assets[0], flashLoanDebt, leftOverAction, user);
 
     return true;
   }

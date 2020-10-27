@@ -101,8 +101,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapLiquiditySwapAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -194,8 +194,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapLiquiditySwapAdapter.address,
-              usdc.address,
-              flashloanAmount.toString(),
+              [usdc.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -259,8 +259,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapLiquiditySwapAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params1,
               0
@@ -271,8 +271,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapLiquiditySwapAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params2,
               0
@@ -319,8 +319,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapLiquiditySwapAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -415,8 +415,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapRepayAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -459,7 +459,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const liquidityToSwap = amountWETHtoSwap;
         await aEth.connect(user).approve(uniswapRepayAdapter.address, liquidityToSwap);
-        const userAEthBalanceBefore = await aEth.balanceOf(userAddress);
 
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
@@ -477,8 +476,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapRepayAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -504,7 +503,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const liquidityToSwap = amountWETHtoSwap;
         await aEth.connect(user).approve(uniswapRepayAdapter.address, liquidityToSwap);
-        const userAEthBalanceBefore = await aEth.balanceOf(userAddress);
 
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
@@ -522,8 +520,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapRepayAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -532,7 +530,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
       });
 
       it('should revert when the received amount is less than expected', async () => {
-        const {users, pool, weth, oracle, dai, aEth, uniswapRepayAdapter, deployer} = testEnv;
+        const {users, pool, weth, oracle, dai, aEth, uniswapRepayAdapter} = testEnv;
         const user = users[0].signer;
         const userAddress = users[0].address;
 
@@ -570,8 +568,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapRepayAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -595,8 +593,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Open user Debt
         await pool.connect(user).borrow(dai.address, expectedDaiAmount, 1, 0, userAddress);
 
-        const liquidityToSwap = amountWETHtoSwap;
-        await aEth.connect(user).approve(uniswapRepayAdapter.address, liquidityToSwap);
+        await aEth.connect(user).approve(uniswapRepayAdapter.address, amountWETHtoSwap);
 
         // Subtract the FL fee from the amount to be swapped 0,09%
         const bigMaxAmountToSwap = amountWETHtoSwap.mul(2);
@@ -615,8 +612,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapRepayAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -686,8 +683,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapRepayAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0
@@ -776,8 +773,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .connect(user)
             .flashLoan(
               uniswapRepayAdapter.address,
-              weth.address,
-              flashloanAmount.toString(),
+              [weth.address],
+              [flashloanAmount.toString()],
               0,
               params,
               0

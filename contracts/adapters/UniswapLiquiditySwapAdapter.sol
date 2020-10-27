@@ -28,18 +28,18 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * The received funds from the swap are then deposited into the protocol on behalf of the user.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
    * repay the flash loan.
-   * @param reserve Address to be swapped
-   * @param amount Amount of the reserve to be swapped
-   * @param fee Fee of the flash loan
+   * @param assets Address to be swapped
+   * @param amounts Amount of the reserve to be swapped
+   * @param premiums Fee of the flash loan
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address assetToSwapTo Address of the reserve to be swapped to and deposited
    *   address user The address of the user
    *   uint256 slippage The max slippage percentage allowed for the swap
    */
   function executeOperation(
-    address reserve,
-    uint256 amount,
-    uint256 fee,
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256[] calldata premiums,
     bytes calldata params
   ) external override returns (bool) {
     (
@@ -49,14 +49,14 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     ) = abi.decode(params, (address, address, uint256));
     require(slippage < MAX_SLIPPAGE_PERCENT && slippage >= MIN_SLIPPAGE_PERCENT, 'SLIPPAGE_OUT_OF_RANGE');
 
-    uint256 receivedAmount = swapExactTokensForTokens(reserve, assetToSwapTo, amount, slippage);
+    uint256 receivedAmount = swapExactTokensForTokens(assets[0], assetToSwapTo, amounts[0], slippage);
 
     // Deposit new reserve
     IERC20(assetToSwapTo).approve(address(pool), receivedAmount);
     pool.deposit(assetToSwapTo, receivedAmount, user, 0);
 
-    uint256 flashLoanDebt = amount.add(fee);
-    pullATokenAndRepayFlashLoan(reserve, user, flashLoanDebt);
+    uint256 flashLoanDebt = amounts[0].add(premiums[0]);
+    pullATokenAndRepayFlashLoan(assets[0], user, flashLoanDebt);
 
     return true;
   }
