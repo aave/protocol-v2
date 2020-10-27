@@ -76,7 +76,9 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be added
    **/
   function _addToAddressesProvidersList(address provider) internal {
-    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
+    uint256 providersCount = _addressesProvidersList.length;
+
+    for (uint256 i = 0; i < providersCount; i++) {
       if (_addressesProvidersList[i] == provider) {
         return;
       }
