@@ -73,14 +73,14 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev executes a transfer of tokens from msg.sender to recipient
+   * @dev executes a transfer of tokens from _msgSender() to recipient
    * @param recipient the recipient of the tokens
    * @param amount the amount of tokens being transferred
    * @return true if the transfer succeeds, false otherwise
    **/
   function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
-    emit Transfer(msg.sender, recipient, amount);
+    emit Transfer(_msgSender(), recipient, amount);
     return true;
   }
 
@@ -101,8 +101,8 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev allows spender to spend the tokens owned by msg.sender
-   * @param spender the user allowed to spend msg.sender tokens
+   * @dev allows spender to spend the tokens owned by _msgSender()
+   * @param spender the user allowed to spend _msgSender() tokens
    * @return true
    **/
   function approve(address spender, uint256 amount) public virtual override returns (bool) {
@@ -111,7 +111,7 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev executes a transfer of token from sender to recipient, if msg.sender is allowed to do so
+   * @dev executes a transfer of token from sender to recipient, if _msgSender() is allowed to do so
    * @param sender the owner of the tokens
    * @param recipient the recipient of the tokens
    * @param amount the amount of tokens being transferred
@@ -133,8 +133,8 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev increases the allowance of spender to spend msg.sender tokens
-   * @param spender the user allowed to spend on behalf of msg.sender
+   * @dev increases the allowance of spender to spend _msgSender() tokens
+   * @param spender the user allowed to spend on behalf of _msgSender()
    * @param addedValue the amount being added to the allowance
    * @return true
    **/
@@ -144,8 +144,8 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev decreases the allowance of spender to spend msg.sender tokens
-   * @param spender the user allowed to spend on behalf of msg.sender
+   * @dev decreases the allowance of spender to spend _msgSender() tokens
+   * @param spender the user allowed to spend on behalf of _msgSender()
    * @param subtractedValue the amount being subtracted to the allowance
    * @return true
    **/
