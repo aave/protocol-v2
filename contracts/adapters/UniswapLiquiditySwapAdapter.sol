@@ -60,4 +60,31 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
     return true;
   }
+
+  /**
+   * @dev Swaps an `amountToSwap` of an asset to another and deposits the funds on behalf of the user without using a flashloan.
+   * This method can be used when the user has no debts.
+   * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
+   * perform the swap.
+   * @param assetToSwapFrom Address of the underlying asset to be swap from
+   * @param assetToSwapTo Address of the underlying asset to be swap to and deposited
+   * @param amountToSwap How much `assetToSwapFrom` needs to be swapped
+   * @param user Address that will be pulling the swapped funds
+   * @param slippage The max slippage percentage allowed for the swap
+   */
+  function swapAndDeposit(
+    address assetToSwapFrom,
+    address assetToSwapTo,
+    uint256 amountToSwap,
+    address user,
+    uint256 slippage
+  ) external {
+    pullAToken(assetToSwapFrom, user, amountToSwap);
+
+    uint256 receivedAmount = swapExactTokensForTokens(assetToSwapFrom, assetToSwapTo, amountToSwap, slippage);
+
+    // Deposit new reserve
+    IERC20(assetToSwapTo).approve(address(pool), receivedAmount);
+    pool.deposit(assetToSwapTo, receivedAmount, user, 0);
+  }
 }

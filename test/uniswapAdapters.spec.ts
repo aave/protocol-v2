@@ -34,6 +34,36 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
     await evmRevert(evmSnapshotId);
   });
 
+  describe('BaseUniswapAdapter', () => {
+    describe('getAmountOut', () => {
+      it('should return the estimated amountOut for the asset swap', async () => {
+        const {weth, dai, uniswapLiquiditySwapAdapter} = testEnv;
+        const amountIn = parseEther('1');
+        const amountOut = parseEther('2');
+
+        await mockUniswapRouter.setAmountOut(amountIn, weth.address, dai.address, amountOut);
+
+        expect(
+          await uniswapLiquiditySwapAdapter.getAmountOut(amountIn, weth.address, dai.address)
+        ).to.be.eq(amountOut);
+      });
+    });
+
+    describe('getAmountIn', () => {
+      it('should return the estimated required amountIn for the asset swap', async () => {
+        const {weth, dai, uniswapLiquiditySwapAdapter} = testEnv;
+        const amountIn = parseEther('1');
+        const amountOut = parseEther('2');
+
+        await mockUniswapRouter.setAmountIn(amountOut, weth.address, dai.address, amountIn);
+
+        expect(
+          await uniswapLiquiditySwapAdapter.getAmountIn(amountOut, weth.address, dai.address)
+        ).to.be.eq(amountIn);
+      });
+    });
+  });
+
   describe('UniswapLiquiditySwapAdapter', () => {
     describe('constructor', () => {
       it('should deploy with correct parameters', async () => {
@@ -326,6 +356,72 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               0
             )
         ).to.be.revertedWith('INSUFFICIENT_OUTPUT_AMOUNT');
+      });
+    });
+
+    describe('swapAndDeposit', () => {
+      beforeEach(async () => {
+        const {users, weth, dai, pool, deployer} = testEnv;
+        const userAddress = users[0].address;
+
+        // Provide liquidity
+        await dai.mint(parseEther('20000'));
+        await dai.approve(pool.address, parseEther('20000'));
+        await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
+
+        // Make a deposit for user
+        await weth.mint(parseEther('100'));
+        await weth.approve(pool.address, parseEther('100'));
+        await pool.deposit(weth.address, parseEther('100'), userAddress, 0);
+      });
+
+      it('should correctly swap tokens and deposit the out tokens in the pool', async () => {
+        const {users, weth, oracle, dai, aDai, aEth, uniswapLiquiditySwapAdapter} = testEnv;
+        const user = users[0].signer;
+        const userAddress = users[0].address;
+
+        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
+
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const expectedDaiAmount = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
+        );
+
+        await mockUniswapRouter.setAmountToReturn(expectedDaiAmount);
+
+        // User will swap liquidity 10 aEth to aDai
+        const liquidityToSwap = parseEther('10');
+        await aEth.connect(user).approve(uniswapLiquiditySwapAdapter.address, liquidityToSwap);
+        const userAEthBalanceBefore = await aEth.balanceOf(userAddress);
+
+        await expect(
+          uniswapLiquiditySwapAdapter.swapAndDeposit(
+            weth.address,
+            dai.address,
+            amountWETHtoSwap,
+            userAddress,
+            50
+          )
+        )
+          .to.emit(uniswapLiquiditySwapAdapter, 'Swapped')
+          .withArgs(weth.address, dai.address, amountWETHtoSwap.toString(), expectedDaiAmount);
+
+        const adapterWethBalance = await weth.balanceOf(uniswapLiquiditySwapAdapter.address);
+        const adapterDaiBalance = await dai.balanceOf(uniswapLiquiditySwapAdapter.address);
+        const adapterDaiAllowance = await dai.allowance(
+          uniswapLiquiditySwapAdapter.address,
+          userAddress
+        );
+        const userADaiBalance = await aDai.balanceOf(userAddress);
+        const userAEthBalance = await aEth.balanceOf(userAddress);
+
+        expect(adapterWethBalance).to.be.eq(Zero);
+        expect(adapterDaiBalance).to.be.eq(Zero);
+        expect(adapterDaiAllowance).to.be.eq(Zero);
+        expect(userADaiBalance).to.be.eq(expectedDaiAmount);
+        expect(userAEthBalance).to.be.lt(userAEthBalanceBefore);
+        expect(userAEthBalance).to.be.gte(userAEthBalanceBefore.sub(liquidityToSwap));
       });
     });
   });
