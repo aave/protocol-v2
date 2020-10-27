@@ -43,6 +43,48 @@ contract BaseUniswapAdapter {
   }
 
   /**
+ * @dev Given an input asset amount, returns the maximum output amount of the other asset
+ * @param amountIn Amount of reserveIn
+ * @param reserveIn Address of the asset to be swap from
+ * @param reserveOut Address of the asset to be swap to
+ * @return uint256 amountOut
+ */
+  function getAmountOut(uint256 amountIn, address reserveIn, address reserveOut)
+  public
+  view
+  returns (uint256)
+  {
+    address[] memory path = new address[](2);
+    path[0] = reserveIn;
+    path[1] = reserveOut;
+
+    uint256[] memory amounts = uniswapRouter.getAmountsOut(amountIn, path);
+
+    return amounts[1];
+  }
+
+  /**
+   * @dev Returns the minimum input asset amount required to buy the given output asset amount
+   * @param amountOut Amount of reserveOut
+   * @param reserveIn Address of the asset to be swap from
+   * @param reserveOut Address of the asset to be swap to
+   * @return uint256 amountIn
+   */
+  function getAmountIn(uint256 amountOut, address reserveIn, address reserveOut)
+  public
+  view
+  returns (uint256)
+  {
+    address[] memory path = new address[](2);
+    path[0] = reserveIn;
+    path[1] = reserveOut;
+
+    uint256[] memory amounts = uniswapRouter.getAmountsIn(amountOut, path);
+
+    return amounts[0];
+  }
+
+  /**
    * @dev Swaps an `amountToSwap` of an asset to another
    * @param assetToSwapFrom Origin asset
    * @param assetToSwapTo Destination asset
@@ -191,7 +233,27 @@ contract BaseUniswapAdapter {
   }
 
   /**
-   * @dev Take action with the swap left overs as configured in the parameters
+   * @dev Pull the ATokens from the user
+   * @param reserve address of the asset
+   * @param user address
+   * @param amount of tokens to be transferred to the contract
+   */
+  function pullAToken(
+    address reserve,
+    address user,
+    uint256 amount
+  ) internal {
+    address reserveAToken = getAToken(reserve);
+
+    // transfer from user to adapter
+    IERC20(reserveAToken).safeTransferFrom(user, address(this), amount);
+
+    // withdraw reserve
+    pool.withdraw(reserve, amount);
+  }
+
+  /**
+   * @dev Pull the ATokens from the user and use them to repay the flashloan
    * @param reserve address of the asset
    * @param user address
    * @param flashLoanDebt need to be repaid
@@ -201,13 +263,7 @@ contract BaseUniswapAdapter {
     address user,
     uint256 flashLoanDebt
   ) internal {
-    address reserveAToken = getAToken(reserve);
-
-    // transfer from user to adapter
-    IERC20(reserveAToken).safeTransferFrom(user, address(this), flashLoanDebt);
-
-    // withdraw reserve
-    pool.withdraw(reserve, flashLoanDebt);
+    pullAToken(reserve, user, flashLoanDebt);
 
     // Repay flashloan
     IERC20(reserve).approve(address(pool), flashLoanDebt);
