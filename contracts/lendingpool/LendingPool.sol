@@ -157,7 +157,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, amount);
+    emit Withdraw(asset, msg.sender, amountToWithdraw);
   }
 
   /**
