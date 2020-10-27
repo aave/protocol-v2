@@ -157,7 +157,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, amount);
+    emit Withdraw(asset, msg.sender, amountToWithdraw);
   }
 
   /**
@@ -262,15 +262,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ReserveLogic.InterestRateMode interestRateMode = ReserveLogic.InterestRateMode(rateMode);
 
-    //default to max amount
-    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
-      ? stableDebt
-      : variableDebt;
-
-    if (amount < paybackAmount) {
-      paybackAmount = amount;
-    }
-
     ValidationLogic.validateRepay(
       reserve,
       amount,
@@ -279,6 +270,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       stableDebt,
       variableDebt
     );
+
+    //default to max amount
+    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
+
+    if (amount < paybackAmount) {
+      paybackAmount = amount;
+    }
 
     reserve.updateState();
 
@@ -356,9 +356,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev rebalances the stable interest rate of a user if current liquidity rate > user stable rate.
-   * this is regulated by Aave to ensure that the protocol is not abused, and the user is paying a fair
-   * rate. Anyone can call this function.
+   * @dev rebalances the stable interest rate of a user. Users can be rebalanced if the following conditions are satisfied:
+   * 1. Usage ratio is above 95%
+   * 2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
+   *    borrowed at a stable rate and depositors are not earning enough.
    * @param asset the address of the reserve
    * @param user the address of the user to be rebalanced
    **/
@@ -373,7 +374,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     uint256 stableBorrowBalance = IERC20(stableDebtToken).balanceOf(user);
 
-    //if the utilization rate is below 95%, no rebalances are needed
+    //if the usage ratio is below 95%, no rebalances are needed
     uint256 totalBorrows = stableDebtToken
       .totalSupply()
       .add(variableDebtToken.totalSupply())
@@ -417,7 +418,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev allows depositors to enable or disable a specific deposit as collateral.
    * @param asset the address of the reserve
-   * @param useAsCollateral true if the user wants to user the deposit as collateral, false otherwise.
+   * @param useAsCollateral true if the user wants to use the deposit as collateral, false otherwise.
    **/
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
     _whenNotPaused();
@@ -483,11 +484,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   struct FlashLoanLocalVars {
-    uint256 premium;
-    uint256 amountPlusPremium;
     IFlashLoanReceiver receiver;
-    address aTokenAddress;
     address oracle;
+    ReserveLogic.InterestRateMode debtMode;
+    uint256 i;
+    address currentAsset;
+    address currentATokenAddress;
+    uint256 currentAmount;
+    uint256 currentPremium;
+    uint256 currentAmountPlusPremium;
   }
 
   /**
@@ -495,68 +500,90 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
    * that must be kept into consideration. For further details please visit https://developers.aave.com
    * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
-   * @param asset The address of the principal reserve
-   * @param amount The amount requested for this flashloan
+   * @param assets The addresss of the assets being flashborrowed
+   * @param amounts The amounts requested for this flashloan for each asset
    * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
    * @param params Variadic packed params to pass to the receiver as extra information
    * @param referralCode Referral code of the flash loan
    **/
   function flashLoan(
     address receiverAddress,
-    address asset,
-    uint256 amount,
+    address[] calldata assets,
+    uint256[] calldata amounts,
     uint256 mode,
     bytes calldata params,
     uint16 referralCode
   ) external override {
     _whenNotPaused();
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+
     FlashLoanLocalVars memory vars;
 
-    vars.aTokenAddress = reserve.aTokenAddress;
+    ValidationLogic.validateFlashloan(assets, amounts, mode);
 
-    vars.premium = amount.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
-
-    ValidationLogic.validateFlashloan(mode, vars.premium);
-
-    ReserveLogic.InterestRateMode debtMode = ReserveLogic.InterestRateMode(mode);
+    address[] memory aTokenAddresses = new address[](assets.length);
+    uint256[] memory premiums = new uint256[](assets.length);
 
     vars.receiver = IFlashLoanReceiver(receiverAddress);
+    vars.debtMode = ReserveLogic.InterestRateMode(mode);
 
-    //transfer funds to the receiver
-    IAToken(vars.aTokenAddress).transferUnderlyingTo(receiverAddress, amount);
+    for (vars.i = 0; vars.i < assets.length; vars.i++) {
+      aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
+
+      premiums[vars.i] = amounts[vars.i].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
+
+      //transfer funds to the receiver
+      IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
+    }
 
     //execute action of the receiver
     require(
-      vars.receiver.executeOperation(asset, amount, vars.premium, params),
+      vars.receiver.executeOperation(assets, amounts, premiums, params),
       Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
-    vars.amountPlusPremium = amount.add(vars.premium);
+    for (vars.i = 0; vars.i < assets.length; vars.i++) {
+      vars.currentAsset = assets[vars.i];
+      vars.currentAmount = amounts[vars.i];
+      vars.currentPremium = premiums[vars.i];
+      vars.currentATokenAddress = aTokenAddresses[vars.i];
 
-    if (debtMode == ReserveLogic.InterestRateMode.NONE) {
-      IERC20(asset).safeTransferFrom(receiverAddress, vars.aTokenAddress, vars.amountPlusPremium);
+      vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
 
-      reserve.updateState();
-      reserve.cumulateToLiquidityIndex(IERC20(vars.aTokenAddress).totalSupply(), vars.premium);
-      reserve.updateInterestRates(asset, vars.aTokenAddress, vars.premium, 0);
+      if (vars.debtMode == ReserveLogic.InterestRateMode.NONE) {
+        _reserves[vars.currentAsset].updateState();
+        _reserves[vars.currentAsset].cumulateToLiquidityIndex(
+          IERC20(vars.currentATokenAddress).totalSupply(),
+          vars.currentPremium
+        );
+        _reserves[vars.currentAsset].updateInterestRates(
+          vars.currentAsset,
+          vars.currentATokenAddress,
+          vars.currentPremium,
+          0
+        );
 
-      emit FlashLoan(receiverAddress, asset, amount, vars.premium, referralCode);
-    } else {
-      //if the user didn't choose to return the funds, the system checks if there
-      //is enough collateral and eventually open a position
-      _executeBorrow(
-        ExecuteBorrowParams(
-          asset,
-          msg.sender,
-          msg.sender,
-          vars.amountPlusPremium,
-          mode,
-          vars.aTokenAddress,
-          referralCode,
-          false
-        )
-      );
+        IERC20(vars.currentAsset).safeTransferFrom(
+          receiverAddress,
+          vars.currentATokenAddress,
+          vars.currentAmountPlusPremium
+        );
+      } else {
+        //if the user didn't choose to return the funds, the system checks if there
+        //is enough collateral and eventually open a position
+        _executeBorrow(
+          ExecuteBorrowParams(
+            vars.currentAsset,
+            msg.sender,
+            msg.sender,
+            vars.currentAmount,
+            mode,
+            vars.currentATokenAddress,
+            referralCode,
+            false
+          )
+        );
+      }
+      emit FlashLoan(receiverAddress, mode, assets, amounts, premiums, referralCode);
     }
   }
 

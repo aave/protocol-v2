@@ -25,7 +25,6 @@ library GenericLogic {
   using UserConfiguration for UserConfiguration.Map;
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
-  uint256 public constant HEALTH_FACTOR_CRITICAL_THRESHOLD = 0.98 ether;
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;

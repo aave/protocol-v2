@@ -14,8 +14,8 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
 
   ILendingPoolAddressesProvider internal _provider;
 
-  event ExecutedWithFail(address _reserve, uint256 _amount, uint256 _fee);
-  event ExecutedWithSuccess(address _reserve, uint256 _amount, uint256 _fee);
+  event ExecutedWithFail(address[] _assets, uint256[] _amounts, uint256[] _premiums);
+  event ExecutedWithSuccess(address[] _assets, uint256[] _amounts, uint256[] _premiums);
 
   bool _failExecution;
   uint256 _amountToApprove;
@@ -44,33 +44,40 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
   }
 
   function executeOperation(
-    address reserve,
-    uint256 amount,
-    uint256 fee,
+    address[] memory assets,
+    uint256[] memory amounts,
+    uint256[] memory premiums,
     bytes memory params
   ) public override returns (bool) {
     params;
-    //mint to this contract the specific amount
-    MintableERC20 token = MintableERC20(reserve);
-
-    //check the contract has the specified balance
-    require(amount <= IERC20(reserve).balanceOf(address(this)), 'Invalid balance for the contract');
-
-    uint256 amountToReturn = (_amountToApprove != 0) ? _amountToApprove : amount.add(fee);
 
     if (_failExecution) {
-      emit ExecutedWithFail(reserve, amount, fee);
+      emit ExecutedWithFail(assets, amounts, premiums);
       return !_simulateEOA;
     }
 
-    //execution does not fail - mint tokens and return them to the _destination
-    //note: if the reserve is eth, the mock contract must receive at least _fee ETH before calling executeOperation
+    for (uint256 i = 0; i < assets.length; i++) {
+      //mint to this contract the specific amount
+      MintableERC20 token = MintableERC20(assets[i]);
 
-    token.mint(fee);
+      //check the contract has the specified balance
+      require(
+        amounts[i] <= IERC20(assets[i]).balanceOf(address(this)),
+        'Invalid balance for the contract'
+      );
 
-    IERC20(reserve).approve(_addressesProvider.getLendingPool(), amountToReturn);
+      uint256 amountToReturn = (_amountToApprove != 0)
+        ? _amountToApprove
+        : amounts[i].add(premiums[i]);
+      //execution does not fail - mint tokens and return them to the _destination
+      //note: if the reserve is eth, the mock contract must receive at least _fee ETH before calling executeOperation
 
-    emit ExecutedWithSuccess(reserve, amount, fee);
+      token.mint(premiums[i]);
+
+      IERC20(assets[i]).approve(_addressesProvider.getLendingPool(), amountToReturn);
+    }
+
+    emit ExecutedWithSuccess(assets, amounts, premiums);
 
     return true;
   }

@@ -3,8 +3,6 @@ import {
   ATokenFactory,
   ATokensAndRatesHelperFactory,
   DefaultReserveInterestRateStrategyFactory,
-  DeployATokensAndRatesFactory,
-  DeployStableAndVariableTokensFactory,
   GenericLogicFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
