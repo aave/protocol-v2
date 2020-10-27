@@ -102,10 +102,10 @@ library GenericLogic {
       .collateralBalanceETH
       .mul(vars.avgLiquidationThreshold)
       .sub(vars.amountToDecreaseETH.mul(vars.liquidationThreshold))
-      .div(vars.collateralBalancefterDecrease);
+      .div(vars.collateralBalanceAfterDecrease);
 
     uint256 healthFactorAfterDecrease = calculateHealthFactorFromBalances(
-      vars.collateralBalancefterDecrease,
+      vars.collateralBalanceAfterDecrease,
       vars.borrowBalanceETH,
       vars.liquidationThresholdAfterDecrease
     );
