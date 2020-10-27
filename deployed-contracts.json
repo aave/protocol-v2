@@ -27,8 +27,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xd7e3C4b2CE495066dE1923c268D68A844bD7Ae13",
-      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
+      "address": "0xF9a2E6D57c691f3aa5269858178a13Ef06378579",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "LendingPoolAddressesProviderRegistry": {
@@ -45,8 +45,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x83c7A0E78e8eee2108a87d7a6770f22BAcb68b5A",
-      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
+      "address": "0xf3266d89e6742fAE2C35D05eD549cd4e117300a7",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "FeeProvider": {
@@ -76,7 +76,7 @@
       "address": "0x9Ec55627757348b322c8dD0865D704649bFa0c7b"
     },
     "kovan": {
-      "address": "0x1339f3c1FfF00D0FD8946187fdC61F0ef0fFe786"
+      "address": "0x1aae278bCcdb95817c7A546d752fC662F09b6DBa"
     }
   },
   "LendingPoolDataProvider": {
@@ -92,7 +92,7 @@
       "address": "0x3EE716e38f21e5FC16BFDB773db24D63C637A5d8"
     },
     "kovan": {
-      "address": "0xB43CCfF1148bb5ab2104E2ee68A7c30cDEBb9A9C"
+      "address": "0x8E05A3054cb736258FaF4638D07058cE6e294d2C"
     }
   },
   "PriceOracle": {
@@ -173,8 +173,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xc4e3d83AEd3D3c60Cf4b238F634014cE103F6fa1",
-      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
+      "address": "0x47341CE48FfE1cbD91991578B880a18c45cdB5CA",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "LendingPoolLiquidationManager": {
@@ -582,8 +582,8 @@
       "address": "0x2cfcA5785261fbC88EFFDd46fCFc04c22525F9e4"
     },
     "kovan": {
-      "address": "0xE4566ce19626826360f4faD941418e2849fC3685",
-      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
+      "address": "0xfF28b837352d9531bAb6dFF3650D7831192117F7",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "LendingPoolConfigurator": {
@@ -600,8 +600,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x0043967C1Cf13c4Ff3Bc38109054D5a97C147B4A",
-      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
+      "address": "0x0EDc241FdA0dF39EB1B9eB1236217BBe72Ab911D",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "PriceOracle": {
@@ -620,8 +620,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xdF75B68c75c30D177f4Dbd47cBcb5E2E4f3cf8F9",
-      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
+      "address": "0x293f5BcC66762c28a5d3Bd8512a799D457F5296D",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "AToken": {
@@ -645,8 +645,8 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x1A23ADa7218e0a66b7368E12E379Ea88d7a68a27",
-      "deployer": "0x6b40a028d2Ab94e5f6d3793F32D326CDf724Bb1D"
+      "address": "0xf303Ae6F24C29D94E367fdb5C7aE04D32BEbF13E",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "StableDebtToken": {
