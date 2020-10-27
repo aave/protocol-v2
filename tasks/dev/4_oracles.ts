@@ -7,8 +7,8 @@ import {
 
 import {
   setInitialAssetPricesInOracle,
-  setInitialMarketRatesInRatesOracle,
   deployAllMockAggregators,
+  setInitialMarketRatesInRatesOracleByHelper,
 } from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, iAssetBase, TokenContractId} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
@@ -42,6 +42,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       return prev;
     }, defaultTokenList);
     const addressesProvider = await getLendingPoolAddressesProvider();
+    const admin = await addressesProvider.getAaveAdmin();
 
     const fallbackOracle = await deployPriceOracle(verify);
     await waitForTx(await fallbackOracle.setEthUsdPrice(MockUsdPriceInWei));
@@ -67,9 +68,10 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
     const allReservesAddresses = {
       ...tokensAddressesWithoutUsd,
     };
-    await setInitialMarketRatesInRatesOracle(
+    await setInitialMarketRatesInRatesOracleByHelper(
       LendingRateOracleRatesCommon,
       allReservesAddresses,
-      lendingRateOracle
+      lendingRateOracle,
+      admin
     );
   });

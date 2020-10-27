@@ -1,8 +1,10 @@
 import {task} from '@nomiclabs/buidler/config';
 import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 import {
+  deployATokensAndRatesHelper,
   deployLendingPool,
   deployLendingPoolConfigurator,
+  deployStableAndVariableTokensHelper,
 } from '../../helpers/contracts-deployments';
 import {eContractid} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
@@ -45,5 +47,14 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
     await insertContractAddressInDb(
       eContractid.LendingPoolConfigurator,
       lendingPoolConfiguratorProxy.address
+    );
+    // Deploy deployment helpers
+    await deployStableAndVariableTokensHelper(
+      [lendingPoolProxy.address, addressesProvider.address],
+      verify
+    );
+    await deployATokensAndRatesHelper(
+      [lendingPoolProxy.address, addressesProvider.address, lendingPoolConfiguratorProxy.address],
+      verify
     );
   });

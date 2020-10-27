@@ -1,6 +1,7 @@
 import {
   AaveProtocolTestHelpersFactory,
   ATokenFactory,
+  ATokensAndRatesHelperFactory,
   DefaultReserveInterestRateStrategyFactory,
   DeployATokensAndRatesFactory,
   DeployStableAndVariableTokensFactory,
@@ -14,6 +15,7 @@ import {
   MockFlashLoanReceiverFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
+  StableAndVariableTokensHelperFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
 } from '../types';
@@ -205,7 +207,7 @@ export const getGenericLogic = async (address?: tEthereumAddress) =>
   );
 
 export const getStableAndVariableTokensHelper = async (address?: tEthereumAddress) =>
-  await DeployStableAndVariableTokensFactory.connect(
+  await StableAndVariableTokensHelperFactory.connect(
     address ||
       (
         await getDb()
@@ -216,7 +218,7 @@ export const getStableAndVariableTokensHelper = async (address?: tEthereumAddres
   );
 
 export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
-  await DeployATokensAndRatesFactory.connect(
+  await ATokensAndRatesHelperFactory.connect(
     address ||
       (await getDb().get(`${eContractid.ATokensAndRatesHelper}.${BRE.network.name}`).value())
         .address,

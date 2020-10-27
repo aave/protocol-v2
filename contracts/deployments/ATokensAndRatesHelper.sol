@@ -9,8 +9,9 @@ import {AToken} from '../tokenization/AToken.sol';
 import {
   DefaultReserveInterestRateStrategy
 } from '../lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 
-contract ATokensAndRatesHelper {
+contract ATokensAndRatesHelper is Ownable {
   address payable private pool;
   address private addressesProvider;
   address private poolConfigurator;
@@ -35,7 +36,7 @@ contract ATokensAndRatesHelper {
     string[] calldata symbols,
     uint256[5][] calldata rates,
     address incentivesController
-  ) external {
+  ) external onlyOwner {
     require(tokens.length == symbols.length, 't Arrays not same length');
     require(rates.length == symbols.length, 'r Arrays not same length');
 
@@ -71,7 +72,7 @@ contract ATokensAndRatesHelper {
     address[] calldata aTokens,
     address[] calldata strategies,
     uint8[] calldata reserveDecimals
-  ) external {
+  ) external onlyOwner {
     require(variables.length == stables.length);
     require(aTokens.length == stables.length);
     require(strategies.length == stables.length);
@@ -93,7 +94,7 @@ contract ATokensAndRatesHelper {
     uint256[] calldata baseLTVs,
     uint256[] calldata liquidationThresholds,
     uint256[] calldata liquidationBonuses
-  ) external {
+  ) external onlyOwner {
     require(baseLTVs.length == tokens.length);
     require(liquidationThresholds.length == tokens.length);
     require(liquidationBonuses.length == tokens.length);
@@ -110,6 +111,7 @@ contract ATokensAndRatesHelper {
 
   function enableBorrowingOnReserves(address[] calldata tokens, bool[] calldata stableBorrows)
     external
+    onlyOwner
   {
     require(stableBorrows.length == tokens.length);
 

@@ -18,6 +18,8 @@ import {
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
   deployLendingRateOracle,
+  deployStableAndVariableTokensHelper,
+  deployATokensAndRatesHelper,
 } from '../helpers/contracts-deployments';
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
@@ -27,8 +29,8 @@ import {initializeMakeSuite} from './helpers/make-suite';
 
 import {
   setInitialAssetPricesInOracle,
-  setInitialMarketRatesInRatesOracle,
   deployAllMockAggregators,
+  setInitialMarketRatesInRatesOracleByHelper,
 } from '../helpers/oracles-helpers';
 import {waitForTx} from '../helpers/misc-utils';
 import {
@@ -115,6 +117,14 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingPoolConfiguratorProxy.address
   );
 
+  // Deploy deployment helpers
+  await deployStableAndVariableTokensHelper([lendingPoolProxy.address, addressesProvider.address]);
+  await deployATokensAndRatesHelper([
+    lendingPoolProxy.address,
+    addressesProvider.address,
+    lendingPoolConfiguratorProxy.address,
+  ]);
+
   const fallbackOracle = await deployPriceOracle();
   await waitForTx(await fallbackOracle.setEthUsdPrice(MOCK_USD_PRICE_IN_WEI));
   await setInitialAssetPricesInOracle(
@@ -183,10 +193,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const allReservesAddresses = {
     ...tokensAddressesWithoutUsd,
   };
-  await setInitialMarketRatesInRatesOracle(
+  await setInitialMarketRatesInRatesOracleByHelper(
     LENDING_RATE_ORACLE_RATES_COMMON,
     allReservesAddresses,
-    lendingRateOracle
+    lendingRateOracle,
+    aaveAdmin
   );
 
   const {
@@ -207,16 +218,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const admin = await deployer.getAddress();
 
   console.log('Initialize configuration');
-  await initReservesByHelper(
-    lendingPoolProxy.address,
-    addressesProvider.address,
-    lendingPoolConfiguratorProxy.address,
-    reservesParams,
-    protoPoolReservesAddresses,
-    testHelpers,
-    admin,
-    ZERO_ADDRESS
-  );
+  await initReservesByHelper(reservesParams, protoPoolReservesAddresses, admin, ZERO_ADDRESS);
   await enableReservesToBorrowByHelper(
     reservesParams,
     protoPoolReservesAddresses,
@@ -240,7 +242,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await deployWalletBalancerProvider(addressesProvider.address);
 
-  console.log('END');
   console.timeEnd('setup');
 };
 

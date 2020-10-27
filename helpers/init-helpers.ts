@@ -6,35 +6,28 @@ import {
   deployStableAndVariableTokensHelper,
 } from './contracts-deployments';
 import {chunk, waitForTx} from './misc-utils';
-import {getATokensAndRatesHelper, getLendingPoolAddressesProvider} from './contracts-getters';
+import {
+  getATokensAndRatesHelper,
+  getLendingPoolAddressesProvider,
+  getStableAndVariableTokensHelper,
+} from './contracts-getters';
 
 export const initReservesByHelper = async (
-  lendingPoolProxy: tEthereumAddress,
-  addressesProvider: tEthereumAddress,
-  lendingPoolConfigurator: tEthereumAddress,
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers,
   admin: tEthereumAddress,
-  incentivesController: tEthereumAddress,
-  verify?: boolean
+  incentivesController: tEthereumAddress
 ) => {
-  const stableAndVariableDeployer = await deployStableAndVariableTokensHelper(
-    [lendingPoolProxy, addressesProvider],
-    verify
-  );
-  const atokenAndRatesDeployer = await deployATokensAndRatesHelper([
-    lendingPoolProxy,
-    addressesProvider,
-    lendingPoolConfigurator,
-  ]);
-  const addressProvider = await getLendingPoolAddressesProvider(addressesProvider);
+  const stableAndVariableDeployer = await getStableAndVariableTokensHelper();
+  const atokenAndRatesDeployer = await getATokensAndRatesHelper();
+
+  const addressProvider = await getLendingPoolAddressesProvider();
 
   // Set aTokenAndRatesDeployer as temporal admin
   await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
-  const tokensChunks = 3;
+  const tokensChunks = 4;
   const initChunks = 6;
 
   // Deploy tokens and rates in chunks

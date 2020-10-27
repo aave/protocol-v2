@@ -4,7 +4,7 @@ import {
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
 } from '../../helpers/contracts-deployments';
-import {setInitialMarketRatesInRatesOracle} from '../../helpers/oracles-helpers';
+import {setInitialMarketRatesInRatesOracleByHelper} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
 import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
@@ -30,11 +30,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         FallbackOracle,
         ChainlinkAggregator,
       } = poolConfig as ICommonConfiguration;
-
       const lendingRateOracles = filterMapBy(LendingRateOracleRatesCommon, (key) =>
         ReserveSymbols.includes(key)
       );
       const addressesProvider = await getLendingPoolAddressesProvider();
+      const admin = await addressesProvider.getAaveAdmin();
 
       const fallbackOracle = await getParamPerNetwork(FallbackOracle, network);
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
@@ -58,10 +58,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
 
       const {USD, ...tokensAddressesWithoutUsd} = tokensToWatch;
-      await setInitialMarketRatesInRatesOracle(
+      await setInitialMarketRatesInRatesOracleByHelper(
         lendingRateOracles,
         tokensAddressesWithoutUsd,
-        lendingRateOracle
+        lendingRateOracle,
+        admin
       );
     } catch (err) {
       console.error(err);

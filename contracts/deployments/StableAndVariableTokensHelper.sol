@@ -4,8 +4,10 @@ pragma experimental ABIEncoderV2;
 
 import {StableDebtToken} from '../tokenization/StableDebtToken.sol';
 import {VariableDebtToken} from '../tokenization/VariableDebtToken.sol';
+import {LendingRateOracle} from '../mocks/oracle/LendingRateOracle.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 
-contract StableAndVariableTokensHelper {
+contract StableAndVariableTokensHelper is Ownable {
   address payable private pool;
   address private addressesProvider;
   event deployedContracts(address stableToken, address variableToken);
@@ -23,7 +25,7 @@ contract StableAndVariableTokensHelper {
     address[] calldata tokens,
     string[] calldata symbols,
     address incentivesController
-  ) external {
+  ) external onlyOwner {
     require(tokens.length == symbols.length, 'Arrays not same length');
     require(pool != address(0), 'Pool can not be zero address');
     for (uint256 i = 0; i < tokens.length; i++) {
@@ -48,5 +50,24 @@ contract StableAndVariableTokensHelper {
         )
       );
     }
+  }
+
+  function setOracleBorrowRates(
+    address[] calldata assets,
+    uint256[] calldata rates,
+    address oracle
+  ) external onlyOwner {
+    require(assets.length == rates.length, 'Arrays not same length');
+
+    for (uint256 i = 0; i < assets.length; i++) {
+      // LendingRateOracle owner must be this contract
+      LendingRateOracle(oracle).setMarketBorrowRate(assets[i], rates[i]);
+    }
+  }
+
+  function setOracleOwnership(address oracle, address admin) external onlyOwner {
+    require(admin != address(0), 'owner can not be zero');
+    require(LendingRateOracle(oracle).owner() == address(this), 'helper is not owner');
+    LendingRateOracle(oracle).transferOwnership(admin);
   }
 }
