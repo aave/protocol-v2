@@ -640,7 +640,7 @@
   },
   "MockAToken": {
     "buidlerevm": {
-      "address": "0x392E5355a0e88Bd394F717227c752670fb3a8020",
+      "address": "0x3bDA11B584dDff7F66E0cFe1da1562c92B45db60",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -668,7 +668,7 @@
   },
   "MockStableDebtToken": {
     "buidlerevm": {
-      "address": "0x3b050AFb4ac4ACE646b31fF3639C1CD43aC31460",
+      "address": "0x392E5355a0e88Bd394F717227c752670fb3a8020",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
@@ -682,7 +682,7 @@
   },
   "MockVariableDebtToken": {
     "buidlerevm": {
-      "address": "0xEBAB67ee3ef604D5c250A53b4b8fcbBC6ec3007C",
+      "address": "0x3b050AFb4ac4ACE646b31fF3639C1CD43aC31460",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {

@@ -112,15 +112,22 @@ interface ILendingPool {
     uint256[] premiums,
     uint16 referralCode
   );
-  /**
-   * @dev these events are not emitted directly by the LendingPool
-   * but they are declared here as the LendingPoolCollateralManager
-   * is executed using a delegateCall().
-   * This allows to have the events in the generated ABI for LendingPool.
-   **/
 
   /**
-   * @dev emitted when a borrower is liquidated
+   * @dev Emitted when the pause is triggered.
+   */
+  event Paused();
+
+  /**
+   * @dev Emitted when the pause is lifted.
+   */
+  event Unpaused();
+
+  /**
+   * @dev emitted when a borrower is liquidated. Thos evemt is emitted directly by the LendingPool
+   * but it's declared here as the LendingPoolCollateralManager
+   * is executed using a delegateCall().
+   * This allows to have the events in the generated ABI for LendingPool.
    * @param collateral the address of the collateral being liquidated
    * @param principal the address of the reserve
    * @param user the address of the user being liquidated
@@ -138,15 +145,28 @@ interface ILendingPool {
     address liquidator,
     bool receiveAToken
   );
-  /**
-   * @dev Emitted when the pause is triggered.
-   */
-  event Paused();
 
   /**
-   * @dev Emitted when the pause is lifted.
-   */
-  event Unpaused();
+   * @dev Emitted when the state of a reserve is updated. NOTE: This event is actually declared
+   * in the ReserveLogic library and emitted in the updateInterestRates() function. Since the function is internal,
+   * the event will actually be fired by the LendingPool contract. The event is therefore replicated here so it
+   * gets added to the LendingPool ABI
+   * @param reserve the address of the reserve
+   * @param liquidityRate the new liquidity rate
+   * @param stableBorrowRate the new stable borrow rate
+   * @param variableBorrowRate the new variable borrow rate
+   * @param liquidityIndex the new liquidity index
+   * @param variableBorrowIndex the new variable borrow index
+   **/
+  event ReserveDataUpdated(
+    address indexed reserve,
+    uint256 liquidityRate,
+    uint256 stableBorrowRate,
+    uint256 averageStableBorrowRate,
+    uint256 variableBorrowRate,
+    uint256 liquidityIndex,
+    uint256 variableBorrowIndex
+  );
 
   /**
    * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
