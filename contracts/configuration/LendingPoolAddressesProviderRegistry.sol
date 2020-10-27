@@ -36,13 +36,15 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @return the list of addressesProviders
    **/
   function getAddressesProvidersList() external override view returns (address[] memory) {
-    uint256 maxLength = _addressesProvidersList.length;
+    address[] memory addressesProvidersList = _addressesProvidersList;
+
+    uint256 maxLength = addressesProvidersList.length;
 
     address[] memory activeProviders = new address[](maxLength);
 
-    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
-      if (_addressesProviders[_addressesProvidersList[i]] > 0) {
-        activeProviders[i] = _addressesProvidersList[i];
+    for (uint256 i = 0; i < maxLength; i++) {
+      if (_addressesProviders[addressesProvidersList[i]] > 0) {
+        activeProviders[i] = addressesProvidersList[i];
       }
     }
 
