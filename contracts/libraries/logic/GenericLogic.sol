@@ -33,7 +33,7 @@ library GenericLogic {
     uint256 borrowBalanceETH;
     uint256 avgLiquidationThreshold;
     uint256 amountToDecreaseETH;
-    uint256 collateralBalancefterDecrease;
+    uint256 collateralBalanceAfterDecrease;
     uint256 liquidationThresholdAfterDecrease;
     uint256 healthFactorAfterDecrease;
     bool reserveUsageAsCollateralEnabled;
@@ -91,10 +91,10 @@ library GenericLogic {
       10**vars.decimals
     );
 
-    vars.collateralBalancefterDecrease = vars.collateralBalanceETH.sub(vars.amountToDecreaseETH);
+    vars.collateralBalanceAfterDecrease = vars.collateralBalanceETH.sub(vars.amountToDecreaseETH);
 
     //if there is a borrow, there can't be 0 collateral
-    if (vars.collateralBalancefterDecrease == 0) {
+    if (vars.collateralBalanceAfterDecrease == 0) {
       return false;
     }
 
@@ -110,7 +110,7 @@ library GenericLogic {
       vars.liquidationThresholdAfterDecrease
     );
 
-    return healthFactorAfterDecrease > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
+    return healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
   }
 
   struct CalculateUserAccountDataVars {
