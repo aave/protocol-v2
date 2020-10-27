@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
@@ -46,7 +43,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       return 0;
     }
 
-    return scaledBalance.rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
+    return scaledBalance.rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET_ADDRESS));
   }
 
   /**
@@ -54,12 +51,14 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @param user the user receiving the debt
    * @param amount the amount of debt being minted
    * @param index the variable debt index of the reserve
+   * @return true if the the previous balance of the user is 0
    **/
   function mint(
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
+  ) external override onlyLendingPool returns (bool) {
+    uint256 previousBalance = super.balanceOf(user);
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
 
@@ -67,6 +66,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
+
+    return previousBalance == 0;
   }
 
   /**
@@ -101,7 +102,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return the total supply
    **/
   function totalSupply() public virtual override view returns (uint256) {
-    return super.totalSupply().rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET));
+    return
+      super.totalSupply().rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET_ADDRESS));
   }
 
   /**

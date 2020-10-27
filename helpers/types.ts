@@ -44,7 +44,6 @@ export enum eContractid {
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
-  MockSwapAdapter = 'MockSwapAdapter',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
@@ -106,6 +105,7 @@ export enum ProtocolErrors {
 
   //require error messages - LendingPoolAddressesProviderRegistry
   PROVIDER_NOT_REGISTERED = '37', // 'Provider is not registered'
+  INVALID_ADDRESSES_PROVIDER_ID = '68',
 
   //return error messages - LendingPoolCollateralManager
   HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '38', // 'Health factor is not below the threshold'
@@ -344,6 +344,7 @@ export interface ICommonConfiguration {
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
+  ProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

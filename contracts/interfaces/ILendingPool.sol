@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
@@ -100,46 +99,20 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
-   * @param reserve the address of the reserve
-   * @param amount the amount requested
-   * @param totalPremium the total fee on the amount
+   * @param assets the address of the assets being flashborrowed
+   * @param amounts the amount requested
+   * @param premiums the total fee on the amount
    * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
-    address indexed reserve,
-    uint256 amount,
-    uint256 totalPremium,
+    uint256 mode,
+    address[] assets,
+    uint256[] amounts,
+    uint256[] premiums,
     uint16 referralCode
   );
-  /**
-   * @dev these events are not emitted directly by the LendingPool
-   * but they are declared here as the LendingPoolCollateralManager
-   * is executed using a delegateCall().
-   * This allows to have the events in the generated ABI for LendingPool.
-   **/
 
-  /**
-   * @dev emitted when a borrower is liquidated
-   * @param collateral the address of the collateral being liquidated
-   * @param reserve the address of the reserve
-   * @param user the address of the user being liquidated
-   * @param purchaseAmount the total amount liquidated
-   * @param liquidatedCollateralAmount the amount of collateral being liquidated
-   * @param accruedBorrowInterest the amount of interest accrued by the borrower since the last action
-   * @param liquidator the address of the liquidator
-   * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
-   **/
-  event LiquidationCall(
-    address indexed collateral,
-    address indexed reserve,
-    address indexed user,
-    uint256 purchaseAmount,
-    uint256 liquidatedCollateralAmount,
-    uint256 accruedBorrowInterest,
-    address liquidator,
-    bool receiveAToken
-  );
   /**
    * @dev Emitted when the pause is triggered.
    */
@@ -149,6 +122,51 @@ interface ILendingPool {
    * @dev Emitted when the pause is lifted.
    */
   event Unpaused();
+
+  /**
+   * @dev emitted when a borrower is liquidated. Thos evemt is emitted directly by the LendingPool
+   * but it's declared here as the LendingPoolCollateralManager
+   * is executed using a delegateCall().
+   * This allows to have the events in the generated ABI for LendingPool.
+   * @param collateral the address of the collateral being liquidated
+   * @param principal the address of the reserve
+   * @param user the address of the user being liquidated
+   * @param purchaseAmount the total amount liquidated
+   * @param liquidatedCollateralAmount the amount of collateral being liquidated
+   * @param liquidator the address of the liquidator
+   * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
+   **/
+  event LiquidationCall(
+    address indexed collateral,
+    address indexed principal,
+    address indexed user,
+    uint256 purchaseAmount,
+    uint256 liquidatedCollateralAmount,
+    address liquidator,
+    bool receiveAToken
+  );
+
+  /**
+   * @dev Emitted when the state of a reserve is updated. NOTE: This event is actually declared
+   * in the ReserveLogic library and emitted in the updateInterestRates() function. Since the function is internal,
+   * the event will actually be fired by the LendingPool contract. The event is therefore replicated here so it
+   * gets added to the LendingPool ABI
+   * @param reserve the address of the reserve
+   * @param liquidityRate the new liquidity rate
+   * @param stableBorrowRate the new stable borrow rate
+   * @param variableBorrowRate the new variable borrow rate
+   * @param liquidityIndex the new liquidity index
+   * @param variableBorrowIndex the new variable borrow index
+   **/
+  event ReserveDataUpdated(
+    address indexed reserve,
+    uint256 liquidityRate,
+    uint256 stableBorrowRate,
+    uint256 averageStableBorrowRate,
+    uint256 variableBorrowRate,
+    uint256 liquidityIndex,
+    uint256 variableBorrowIndex
+  );
 
   /**
    * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
@@ -263,59 +281,23 @@ interface ILendingPool {
   ) external;
 
   /**
-   * @dev flashes the underlying collateral on an user to swap for the owed asset and repay
-   * - Both the owner of the position and other liquidators can execute it
-   * - The owner can repay with his collateral at any point, no matter the health factor
-   * - Other liquidators can only use this function below 1 HF. To liquidate 50% of the debt > HF 0.98 or the whole below
-   * @param collateral The address of the collateral asset
-   * @param principal The address of the owed asset
-   * @param user Address of the borrower
-   * @param principalAmount Amount of the debt to repay. type(uint256).max to repay the maximum possible
-   * @param receiver Address of the contract receiving the collateral to swap
-   * @param params Variadic bytes param to pass with extra information to the receiver
-   **/
-  function repayWithCollateral(
-    address collateral,
-    address principal,
-    address user,
-    uint256 principalAmount,
-    address receiver,
-    bytes calldata params
-  ) external;
-
-  /**
    * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
    * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
    * that must be kept into consideration. For further details please visit https://developers.aave.com
    * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
-   * @param reserve the address of the principal reserve
-   * @param amount the amount requested for this flashloan
+   * @param assets the address of the principal reserve
+   * @param amounts the amount requested for this flashloan
+   * @param mode the flashloan mode
    * @param params a bytes array to be sent to the flashloan executor
    * @param referralCode the referral code of the caller
    **/
   function flashLoan(
     address receiver,
-    address reserve,
-    uint256 amount,
-    uint256 debtType,
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256 mode,
     bytes calldata params,
     uint16 referralCode
-  ) external;
-
-  /**
-   * @dev Allows an user to release one of his assets deposited in the protocol, even if it is used as collateral, to swap for another.
-   * - It's not possible to release one asset to swap for the same
-   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the ISwapAdapter interface
-   * @param fromAsset Asset to swap from
-   * @param toAsset Asset to swap to
-   * @param params a bytes array to be sent (if needed) to the receiver contract with extra data
-   **/
-  function swapLiquidity(
-    address receiverAddress,
-    address fromAsset,
-    address toAsset,
-    uint256 amountToSwap,
-    bytes calldata params
   ) external;
 
   function getUserAccountData(address user)

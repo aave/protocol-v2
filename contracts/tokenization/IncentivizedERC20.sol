@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.8;
 
-import {Context} from '../misc/Context.sol';
-import {IERC20} from '../interfaces/IERC20.sol';
-import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
-import {SafeMath} from '../libraries/math/SafeMath.sol';
+import {Context} from '../dependencies/openzeppelin/contracts/Context.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController.sol';
 
 /**
@@ -181,10 +181,10 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     _balances[recipient] = _balances[recipient].add(amount);
 
     if (address(_incentivesController) != address(0)) {
-      uint256 totalSupply = _totalSupply;
-      _incentivesController.handleAction(sender, totalSupply, oldSenderBalance);
+      uint256 currentTotalSupply = _totalSupply;
+      _incentivesController.handleAction(sender, currentTotalSupply, oldSenderBalance);
       if (sender != recipient) {
-        _incentivesController.handleAction(recipient, totalSupply, oldRecipientBalance);
+        _incentivesController.handleAction(recipient, currentTotalSupply, oldRecipientBalance);
       }
     }
   }

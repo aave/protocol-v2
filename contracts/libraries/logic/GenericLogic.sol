@@ -2,8 +2,8 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
@@ -25,7 +25,6 @@ library GenericLogic {
   using UserConfiguration for UserConfiguration.Map;
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
-  uint256 public constant HEALTH_FACTOR_CRITICAL_THRESHOLD = 0.98 ether;
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
@@ -68,7 +67,9 @@ library GenericLogic {
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset].configuration.getParams();
+    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset]
+      .configuration
+      .getParams();
 
     if (vars.liquidationThreshold == 0) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer

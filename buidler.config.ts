@@ -11,7 +11,7 @@ usePlugin('buidler-typechain');
 usePlugin('solidity-coverage');
 usePlugin('@nomiclabs/buidler-waffle');
 usePlugin('@nomiclabs/buidler-etherscan');
-//usePlugin('buidler-gas-reporter');
+usePlugin('buidler-gas-reporter');
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 10000000;
@@ -89,6 +89,16 @@ const buidlerConfig: any = {
         privateKey: secretKey,
         balance,
       })),
+    },
+    buidlerevm_docker: {
+      hardfork: 'istanbul',
+      blockGasLimit: 9500000,
+      gas: 9500000,
+      gasPrice: 8000000000,
+      chainId: BUIDLEREVM_CHAINID,
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
+      url: 'http://localhost:8545',
     },
     ganache: {
       url: 'http://ganache:8545',
