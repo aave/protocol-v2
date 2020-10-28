@@ -6,6 +6,7 @@ import {StableDebtToken} from '../tokenization/StableDebtToken.sol';
 import {VariableDebtToken} from '../tokenization/VariableDebtToken.sol';
 import {LendingRateOracle} from '../mocks/oracle/LendingRateOracle.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {StringLib} from '../libraries/helpers/StringLib.sol';
 
 contract StableAndVariableTokensHelper is Ownable {
   address payable private pool;
@@ -15,10 +16,6 @@ contract StableAndVariableTokensHelper is Ownable {
   constructor(address payable _pool, address _addressesProvider) public {
     pool = _pool;
     addressesProvider = _addressesProvider;
-  }
-
-  function concat(string memory a, string memory b) internal pure returns (string memory) {
-    return string(abi.encodePacked(a, ' ', b));
   }
 
   function initDeployment(
@@ -34,8 +31,8 @@ contract StableAndVariableTokensHelper is Ownable {
           new StableDebtToken(
             pool,
             tokens[i],
-            concat('Aave stable debt bearing ', symbols[i]),
-            concat('stableDebt', symbols[i]),
+            StringLib.concat('Aave stable debt bearing ', symbols[i]),
+            StringLib.concat('stableDebt', symbols[i]),
             incentivesController
           )
         ),
@@ -43,8 +40,8 @@ contract StableAndVariableTokensHelper is Ownable {
           new VariableDebtToken(
             pool,
             tokens[i],
-            concat('Aave variable debt bearing ', symbols[i]),
-            concat('variableDebt', symbols[i]),
+            StringLib.concat('Aave variable debt bearing ', symbols[i]),
+            StringLib.concat('variableDebt', symbols[i]),
             incentivesController
           )
         )

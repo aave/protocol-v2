@@ -151,12 +151,14 @@ library ReserveLogic {
       .scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
+    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
 
     (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
       reserve,
       scaledVariableDebt,
       previousLiquidityIndex,
-      previousVariableBorrowIndex
+      previousVariableBorrowIndex,
+      lastUpdatedTimestamp
     );
 
     _mintToTreasury(
@@ -164,7 +166,8 @@ library ReserveLogic {
       scaledVariableDebt,
       previousVariableBorrowIndex,
       newLiquidityIndex,
-      newVariableBorrowIndex
+      newVariableBorrowIndex,
+      lastUpdatedTimestamp
     );
   }
 
@@ -318,7 +321,8 @@ library ReserveLogic {
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
-    uint256 newVariableBorrowIndex
+    uint256 newVariableBorrowIndex,
+    uint40 timestamp
   ) internal {
     MintToTreasuryLocalVars memory vars;
 
@@ -345,7 +349,8 @@ library ReserveLogic {
     //calculate the stable debt until the last timestamp update
     vars.cumulatedStableInterest = MathUtils.calculateCompoundedInterest(
       vars.avgStableRate,
-      vars.stableSupplyUpdatedTimestamp
+      vars.stableSupplyUpdatedTimestamp,
+      timestamp
     );
 
     vars.previousStableDebt = vars.principalStableDebt.rayMul(vars.cumulatedStableInterest);
@@ -375,10 +380,9 @@ library ReserveLogic {
     ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 liquidityIndex,
-    uint256 variableBorrowIndex
+    uint256 variableBorrowIndex,
+    uint40 timestamp
   ) internal returns (uint256, uint256) {
-    uint40 timestamp = reserve.lastUpdateTimestamp;
-
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     uint256 newLiquidityIndex = liquidityIndex;

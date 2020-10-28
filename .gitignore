@@ -9,7 +9,10 @@ build/
 .idea
 types
 
+deployed-contracts.json
+
 coverage
 .coverage_artifacts
 .coverage_cache
 .coverage_contracts
+

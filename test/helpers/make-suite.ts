@@ -40,7 +40,7 @@ export interface TestEnv {
   oracle: PriceOracle;
   helpersContract: AaveProtocolTestHelpers;
   weth: MintableERC20;
-  aEth: AToken;
+  aWETH: AToken;
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
@@ -64,7 +64,7 @@ const testEnv: TestEnv = {
   helpersContract: {} as AaveProtocolTestHelpers,
   oracle: {} as PriceOracle,
   weth: {} as MintableERC20,
-  aEth: {} as AToken,
+  aWETH: {} as AToken,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
@@ -98,9 +98,10 @@ export async function initializeMakeSuite() {
   testEnv.helpersContract = await getAaveProtocolTestHelpers();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
+
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
-  const aEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
+  const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
@@ -109,7 +110,7 @@ export async function initializeMakeSuite() {
   const lendAddress = reservesTokens.find((token) => token.symbol === 'LEND')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
-  if (!aDaiAddress || !aEthAddress) {
+  if (!aDaiAddress || !aWEthAddress) {
     console.log(`atoken-modifiers.spec: aTokens not correctly initialized`);
     process.exit(1);
   }
@@ -119,7 +120,7 @@ export async function initializeMakeSuite() {
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
-  testEnv.aEth = await getAToken(aEthAddress);
+  testEnv.aWETH = await getAToken(aWEthAddress);
 
   testEnv.dai = await getMintableErc20(daiAddress);
   testEnv.usdc = await getMintableErc20(usdcAddress);

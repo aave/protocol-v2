@@ -162,7 +162,6 @@ interface ILendingPool {
     address indexed reserve,
     uint256 liquidityRate,
     uint256 stableBorrowRate,
-    uint256 averageStableBorrowRate,
     uint256 variableBorrowRate,
     uint256 liquidityIndex,
     uint256 variableBorrowIndex

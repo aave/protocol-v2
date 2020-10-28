@@ -10,6 +10,7 @@ import {
   DefaultReserveInterestRateStrategy
 } from '../lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {StringLib} from '../libraries/helpers/StringLib.sol';
 
 contract ATokensAndRatesHelper is Ownable {
   address payable private pool;
@@ -25,10 +26,6 @@ contract ATokensAndRatesHelper is Ownable {
     pool = _pool;
     addressesProvider = _addressesProvider;
     poolConfigurator = _poolConfigurator;
-  }
-
-  function concat(string memory a, string memory b) internal pure returns (string memory) {
-    return string(abi.encodePacked(a, b));
   }
 
   function initDeployment(
@@ -47,8 +44,8 @@ contract ATokensAndRatesHelper is Ownable {
             LendingPool(pool),
             tokens[i],
             address(0),
-            concat('Aave interest bearing ', symbols[i]),
-            concat('a', symbols[i]),
+            StringLib.concat('Aave interest bearing ', symbols[i]),
+            StringLib.concat('a', symbols[i]),
             incentivesController
           )
         ),
