@@ -1,8 +1,5 @@
 pragma solidity ^0.6.8;
 
-import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {StableDebtToken} from '../../contracts/tokenization/StableDebtToken.sol';
 import {IncentivizedERC20} from '../../contracts/tokenization/IncentivizedERC20.sol';
 

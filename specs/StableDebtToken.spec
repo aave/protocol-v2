@@ -2,13 +2,6 @@ methods {
 	getUserLastUpdated(address) returns uint40 envfree
 }
 
-ghost ghostSupply() returns uint256;
-
-hook Sstore (slot 0)[address a] uint256 balance (uint256 old_balance) STORAGE {
-	require old_balance <= ghostSupply();
-	havoc ghostSupply assuming ghostSupply@new() == ghostSupply@old() + (balance - old_balance);
-}
-
 rule integrityTimeStamp(address user, method f) {
 	env e;
 	require sinvoke getIncentivesController(e) == 0;
@@ -16,15 +9,6 @@ rule integrityTimeStamp(address user, method f) {
 	calldataarg arg;
 	sinvoke f(e,arg);
 	assert getUserLastUpdated(user) <= e.block.timestamp;
-}
-
-rule totalSupplyInvariant(method f) {
-	env e;
-	require sinvoke getIncentivesController(e) == 0;
-	require totalSupply(e) == ghostSupply();
-	calldataarg arg;
-	sinvoke f(e, arg);
-	assert totalSupply(e) == ghostSupply();
 }
 
 /**
