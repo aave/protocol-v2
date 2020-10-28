@@ -1152,11 +1152,12 @@ const calcLinearInterest = (
   currentTimestamp: BigNumber,
   lastUpdateTimestamp: BigNumber
 ) => {
-  const timeDifference = currentTimestamp.minus(lastUpdateTimestamp).wadToRay();
+  const timeDifference = currentTimestamp.minus(lastUpdateTimestamp);
 
-  const timeDelta = timeDifference.rayDiv(new BigNumber(ONE_YEAR).wadToRay());
-
-  const cumulatedInterest = rate.rayMul(timeDelta).plus(RAY);
+  const cumulatedInterest = rate
+    .multipliedBy(timeDifference)
+    .dividedBy(new BigNumber(ONE_YEAR))
+    .plus(RAY);
 
   return cumulatedInterest;
 };

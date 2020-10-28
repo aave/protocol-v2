@@ -22,7 +22,7 @@ contract MintableERC20 is ERC20 {
    * @return A boolean that indicates if the operation was successful.
    */
   function mint(uint256 value) public returns (bool) {
-    _mint(msg.sender, value);
+    _mint(_msgSender(), value);
     return true;
   }
 }
