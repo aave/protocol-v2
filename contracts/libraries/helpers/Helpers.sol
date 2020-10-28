@@ -26,4 +26,15 @@ library Helpers {
       DebtTokenBase(reserve.variableDebtTokenAddress).balanceOf(user)
     );
   }
+
+  function getUserCurrentDebtViaMemory(address user, ReserveLogic.ReserveData memory reserve)
+    internal
+    view
+    returns (uint256, uint256)
+  {
+    return (
+      DebtTokenBase(reserve.stableDebtTokenAddress).balanceOf(user),
+      DebtTokenBase(reserve.variableDebtTokenAddress).balanceOf(user)
+    );
+  }
 }
