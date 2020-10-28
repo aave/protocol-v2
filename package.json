@@ -40,6 +40,7 @@
     "test-deploy": "buidler test test/__setup.spec.ts test/test-init.spec.ts",
     "test-pausable": "buidler test test/__setup.spec.ts test/pausable-functions.spec.ts",
     "test-permit": "buidler test test/__setup.spec.ts test/atoken-permit.spec.ts",
+    "test-stable-and-atokens": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts test/stable-token.spec.ts",
     "test-subgraph:scenarios": "buidler --network buidlerevm_docker test test/__setup.spec.ts test/subgraph-scenarios.spec.ts",
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
