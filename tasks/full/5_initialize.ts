@@ -4,8 +4,9 @@ import {
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
+  deployWETHGateway,
 } from '../../helpers/contracts-deployments';
-import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
+import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
 import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 import {
@@ -54,6 +55,9 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       );
 
       await deployWalletBalancerProvider(addressesProvider.address, verify);
+
+      const wethAddress = await getWethAddress(poolConfig);
+      await deployWETHGateway([wethAddress, addressesProvider.address]);
     } catch (err) {
       console.error(err);
       exit(1);

@@ -78,7 +78,7 @@ export const initReservesByHelper = async (
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
       // Add to lists
       tokens.push(tokenAddress);
-      symbols.push(assetSymbol === 'WETH' ? 'ETH' : assetSymbol);
+      symbols.push(assetSymbol);
       strategyRates.push([
         baseVariableBorrowRate,
         variableRateSlope1,

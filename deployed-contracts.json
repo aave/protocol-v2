@@ -86,7 +86,8 @@
   },
   "LendingPool": {
     "buidlerevm": {
-      "address": "0xD9273d497eDBC967F39d419461CfcF382a0A822e"
+      "address": "0x35c1419Da7cf0Ff885B8Ef8EA9242FEF6800c99b",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "localhost": {
       "address": "0x3EE716e38f21e5FC16BFDB773db24D63C637A5d8"
@@ -710,7 +711,7 @@
   },
   "ReserveLogic": {
     "buidlerevm": {
-      "address": "0xFAe0fd738dAbc8a0426F47437322b6d026A9FD95",
+      "address": "0x78Ee8Fb9fE5abD5e347Fc94c2fb85596d1f60e3c",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
@@ -720,7 +721,7 @@
   },
   "GenericLogic": {
     "buidlerevm": {
-      "address": "0x6082731fdAba4761277Fb31299ebC782AD3bCf24",
+      "address": "0x920d847fE49E54C19047ba8bc236C45A8068Bca7",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
@@ -730,7 +731,7 @@
   },
   "ValidationLogic": {
     "buidlerevm": {
-      "address": "0x8456161947DFc1fC159A0B26c025cD2b4bba0c3e",
+      "address": "0xA4765Ff72A9F3CfE73089bb2c3a41B838DF71574",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
@@ -766,6 +767,12 @@
     "kovan": {
       "address": "0xbaAa0c348ed045eF7c57136578339b20d6c375AE",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
+    }
+  },
+  "WETHGateway": {
+    "buidlerevm": {
+      "address": "0x78Aeff0658Fa67735fBF99Ce7CDB01Fe5D520259",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   }
 }

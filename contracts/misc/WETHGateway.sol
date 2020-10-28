@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
+pragma experimental ABIEncoderV2;
 
 import {IWETH} from '../interfaces/IWETH.sol';
 import {IWETHGateway} from '../interfaces/IWETHGateway.sol';
@@ -53,9 +54,9 @@ contract WETHGateway is IWETHGateway {
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     require(address(pool) != address(0));
 
-    ReserveLogic.ReserveData memory reserve = pool.getReserveData(address(WETH));
-
-    uint256 userBalance = IAToken(reserve.aTokenAddress).balanceOf(msg.sender);
+    uint256 userBalance = IAToken(pool.getReserveData(address(WETH)).aTokenAddress).balanceOf(
+      msg.sender
+    );
     uint256 amountToWithdraw = amount;
 
     // if amount is equal to uint(-1), the user wants to redeem everything
@@ -70,8 +71,10 @@ contract WETHGateway is IWETHGateway {
   }
 
   /**
-   * @dev repays a borrow on the specific reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
-   * @param amount address of the user who will receive the aTokens representing the deposit
+   * @dev repays a borrow on the WETH reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
+   * @param amount the amount to repay, or uint256(-1) if the user wants to repay everything
+   * @param rateMode the rate mode to repay
+   * @param onBehalfOf the address for which msg.sender is repaying
    */
   function repayETH(
     uint256 amount,
@@ -97,10 +100,15 @@ contract WETHGateway is IWETHGateway {
     WETH.deposit{value: paybackAmount}();
     pool.repay(address(WETH), msg.value, rateMode, onBehalfOf);
 
-    // refund dust eth
+    // refund remaining dust eth
     if (msg.value > paybackAmount) safeTransferETH(msg.sender, msg.value - paybackAmount);
   }
 
+  /**
+   * @dev transfer ETH to an address, revert if it fails.
+   * @param to recipient of the transfer
+   * @param value the amount to send
+   */
   function safeTransferETH(address to, uint256 value) internal {
     (bool success, ) = to.call{value: value}(new bytes(0));
     require(success, 'ETH_TRANSFER_FAILED');

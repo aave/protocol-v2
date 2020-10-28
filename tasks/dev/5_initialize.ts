@@ -4,8 +4,14 @@ import {
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
+  deployWETHGateway,
 } from '../../helpers/contracts-deployments';
-import {getReservesConfigByPool} from '../../helpers/configuration';
+import {
+  ConfigNames,
+  getReservesConfigByPool,
+  getWethAddress,
+  loadPoolConfig,
+} from '../../helpers/configuration';
 
 import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
@@ -26,8 +32,10 @@ import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 
 task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({verify}, localBRE) => {
+  .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
+  .setAction(async ({verify, pool}, localBRE) => {
     await localBRE.run('set-bre');
+    const poolConfig = loadPoolConfig(pool);
 
     const mockTokens = await getAllMockedTokens();
     const lendingPoolProxy = await getLendingPool();
@@ -77,4 +85,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     await deployWalletBalancerProvider(addressesProvider.address, verify);
 
     await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+
+    const wethAddress = await getWethAddress(poolConfig);
+    await deployWETHGateway([wethAddress, addressesProvider.address]);
   });

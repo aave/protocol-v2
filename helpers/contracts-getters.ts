@@ -16,6 +16,8 @@ import {
   StableAndVariableTokensHelperFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
+  Weth9Factory,
+  WethGatewayFactory,
 } from '../types';
 import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
 import {MockTokenMap} from './contracts-helpers';
@@ -220,5 +222,18 @@ export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
     address ||
       (await getDb().get(`${eContractid.ATokensAndRatesHelper}.${BRE.network.name}`).value())
         .address,
+    await getFirstSigner()
+  );
+
+export const getWETHGateway = async (address?: tEthereumAddress) =>
+  await WethGatewayFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.WETHGateway}.${BRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getWETH = async (address?: tEthereumAddress) =>
+  await Weth9Factory.connect(
+    address || (await getDb().get(`${eContractid.WETH}.${BRE.network.name}`).value()).address,
     await getFirstSigner()
   );

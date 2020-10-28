@@ -57,6 +57,8 @@ export enum eContractid {
   TokenDistributor = 'TokenDistributor',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
+  WETHGateway = 'WETHGateway',
+  WETH = 'WETH',
 }
 
 export enum ProtocolErrors {
@@ -347,6 +349,7 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   ProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+  WETH: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
