@@ -1,4 +1,4 @@
-using LendingPoolHarness as POOL
+using LendingPoolHarnessForVariableDebtToken as POOL
 /**
 TotalSupply is the sum of all users’ balances
 	
