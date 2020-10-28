@@ -155,22 +155,6 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await configurator.setPoolPause(false);
   });
 
-  it('Swap liquidity', async () => {
-    const {pool, dai, weth, users, configurator} = testEnv;
-
-    const user = users[1];
-    // Pause the pool
-    await configurator.setPoolPause(true);
-
-    // Try to execute liquidation
-    await expect(
-      pool.connect(user.signer).swapLiquidity(user.address, dai.address, weth.address, '1', '0x')
-    ).revertedWith(IS_PAUSED);
-
-    // Unpause the pool
-    await configurator.setPoolPause(false);
-  });
-
   it('Repay', async () => {
     const {pool, dai, users, configurator} = testEnv;
 
@@ -182,32 +166,6 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await expect(pool.connect(user.signer).repay(dai.address, '1', '1', user.address)).revertedWith(
       IS_PAUSED
     );
-
-    // Unpause the pool
-    await configurator.setPoolPause(false);
-  });
-
-  it('Repay with collateral', async () => {
-    const {pool, weth, dai, usdc, users, mockSwapAdapter, oracle, configurator} = testEnv;
-    const user = users[6];
-    const liquidator = users[5];
-
-    // Pause the pool
-    await configurator.setPoolPause(true);
-
-    // Try to execute liquidation
-    await expect(
-      pool
-        .connect(liquidator.signer)
-        .repayWithCollateral(
-          weth.address,
-          usdc.address,
-          user.address,
-          '1',
-          mockSwapAdapter.address,
-          '0x'
-        )
-    ).revertedWith(IS_PAUSED);
 
     // Unpause the pool
     await configurator.setPoolPause(false);
@@ -228,7 +186,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(caller.signer)
-        .flashLoan(_mockFlashLoanReceiver.address, weth.address, flashAmount, 1, '0x10', '0')
+        .flashLoan(_mockFlashLoanReceiver.address, [weth.address], [flashAmount], 1, '0x10', '0')
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
@@ -236,7 +194,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Liquidation call', async () => {
-    const {users, pool, usdc, oracle, weth, configurator} = testEnv;
+    const {users, pool, usdc, oracle, weth, configurator, helpersContract} = testEnv;
     const depositor = users[3];
     const borrower = users[4];
 
@@ -295,7 +253,10 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await usdc.mint(await convertToCurrencyDecimals(usdc.address, '1000'));
     await usdc.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    const userReserveDataBefore = await pool.getUserReserveData(usdc.address, borrower.address);
+    const userReserveDataBefore = await helpersContract.getUserReserveData(
+      usdc.address,
+      borrower.address
+    );
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
       .multipliedBy(0.5)
@@ -314,7 +275,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('SwapBorrowRateMode', async () => {
-    const {pool, weth, dai, usdc, users, configurator, mockSwapAdapter} = testEnv;
+    const {pool, weth, dai, usdc, users, configurator} = testEnv;
     const user = users[1];
     const amountWETHToDeposit = parseEther('10');
     const amountDAIToDeposit = parseEther('120');

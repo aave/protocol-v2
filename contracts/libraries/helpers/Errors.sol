@@ -44,11 +44,15 @@ library Errors {
   string public constant FAILED_COLLATERAL_SWAP = '55';
   string public constant INVALID_EQUAL_ASSETS_TO_SWAP = '56';
   string public constant NO_MORE_RESERVES_ALLOWED = '59';
+  string public constant INVALID_FLASH_LOAN_EXECUTOR_RETURN = '60';
+  string public constant INCONSISTENT_FLASHLOAN_PARAMS = '69';
 
-  // require error messages - aToken
+  // require error messages - aToken - DebtTokens
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
   string public constant CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
   string public constant TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
+  string public constant INVALID_MINT_AMOUNT = '61'; //invalid amount to mint
+  string public constant INVALID_BURN_AMOUNT = '62'; //invalid amount to burn
 
   // require error messages - ReserveLogic
   string public constant RESERVE_ALREADY_INITIALIZED = '34'; // 'Reserve has already been initialized'
@@ -61,9 +65,15 @@ library Errors {
   //require error messages - LendingPoolConfiguration
   string public constant CALLER_NOT_AAVE_ADMIN = '35'; // 'The caller must be the aave admin'
   string public constant RESERVE_LIQUIDITY_NOT_0 = '36'; // 'The liquidity of the reserve needs to be 0'
+  string public constant INVALID_ATOKEN_POOL_ADDRESS = '63'; // the lending pool in the aToken implementation is not configured correctly
+  string public constant INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS = '64'; // the lending pool in the stable debt token implementation is not configured correctly
+  string public constant INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS = '65'; // the lending pool in the variable debt token implementation is not configured correctly
+  string public constant INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '66'; // the underlying asset in the stable debt token implementation is not configured correctly
+  string public constant INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '67'; // the underlying asset in the variable debt token implementation is not configured correctly
 
   //require error messages - LendingPoolAddressesProviderRegistry
   string public constant PROVIDER_NOT_REGISTERED = '37'; // 'Provider is not registered'
+  string public constant INVALID_ADDRESSES_PROVIDER_ID = '68'; // the addresses provider id needs to be greater than 0
 
   //return error messages - LendingPoolCollateralManager
   string public constant HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '38'; // 'Health factor is not below the threshold'
@@ -79,6 +89,15 @@ library Errors {
 
   // pausable error message
   string public constant IS_PAUSED = '58'; // 'Pool is paused'
+
+  // Reserve configuration
+  string public constant INVALID_LTV = '70';
+  string public constant INVALID_LIQ_THRESHOLD = '71';
+  string public constant INVALID_LIQ_BONUS = '72';
+  string public constant INVALID_DECIMALS = '73';
+  string public constant INVALID_RESERVE_FACTOR = '74';
+
+
   enum CollateralManagerErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,

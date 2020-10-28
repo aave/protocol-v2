@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {
-  InitializableAdminUpgradeabilityProxy
-} from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+  InitializableImmutableAdminUpgradeabilityProxy
+} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 
@@ -153,14 +153,14 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function _updateImpl(bytes32 id, address newAddress) internal {
     address payable proxyAddress = payable(_addresses[id]);
 
-    InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(
-      proxyAddress
-    );
+
+      InitializableImmutableAdminUpgradeabilityProxy proxy
+     = InitializableImmutableAdminUpgradeabilityProxy(proxyAddress);
     bytes memory params = abi.encodeWithSignature('initialize(address)', address(this));
 
     if (proxyAddress == address(0)) {
-      proxy = new InitializableAdminUpgradeabilityProxy();
-      proxy.initialize(newAddress, address(this), params);
+      proxy = new InitializableImmutableAdminUpgradeabilityProxy(address(this));
+      proxy.initialize(newAddress, params);
       _addresses[id] = address(proxy);
       emit ProxyCreated(id, address(proxy));
     } else {

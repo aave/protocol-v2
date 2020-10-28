@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {IERC20} from '../../interfaces/IERC20.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 
 interface IAToken is IERC20, IScaledBalanceToken {
@@ -11,12 +11,7 @@ interface IAToken is IERC20, IScaledBalanceToken {
    * @param value the amount to be redeemed
    * @param index the last index of the reserve
    **/
-  event Burn(
-    address indexed from,
-    address indexed target,
-    uint256 value,
-    uint256 index
-  );
+  event Burn(address indexed from, address indexed target, uint256 value, uint256 index);
   /**
    * @dev emitted during the transfer action
    * @param from the address from which the tokens are being transferred
@@ -24,12 +19,8 @@ interface IAToken is IERC20, IScaledBalanceToken {
    * @param value the amount to be minted
    * @param index the last index of the reserve
    **/
-  event BalanceTransfer(
-    address indexed from,
-    address indexed to,
-    uint256 value,
-    uint256 index
-  );
+  event BalanceTransfer(address indexed from, address indexed to, uint256 value, uint256 index);
+
   /**
    * @dev burns the aTokens and sends the equivalent amount of underlying to the target.
    * only lending pools can call this function
@@ -63,7 +54,6 @@ interface IAToken is IERC20, IScaledBalanceToken {
     uint256 value
   ) external;
 
-  
   function isTransferAllowed(address user, uint256 amount) external view returns (bool);
 
   /**
@@ -73,6 +63,4 @@ interface IAToken is IERC20, IScaledBalanceToken {
    * @return the amount transferred
    **/
   function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
-
-
 }

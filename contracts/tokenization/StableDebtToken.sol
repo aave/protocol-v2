@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -131,7 +128,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
 
     //calculates the updated average stable rate
-    _avgStableRate = vars.currentAvgStableRate
+    vars.currentAvgStableRate = _avgStableRate = vars
+      .currentAvgStableRate
       .rayMul(vars.previousSupply.wadToRay())
       .add(rate.rayMul(vars.amountInRay))
       .rayDiv(vars.nextSupply.wadToRay());
@@ -141,13 +139,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(address(0), user, amount);
 
-    emit MintDebt(
+    emit Mint(
       user,
       amount,
       previousBalance,
       currentBalance,
       balanceIncrease,
-      vars.newStableRate
+      vars.newStableRate,
+      vars.currentAvgStableRate
     );
   }
 
@@ -163,19 +162,19 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 balanceIncrease
     ) = _calculateBalanceIncrease(user);
 
-      
     uint256 previousSupply = totalSupply();
+    uint256 newStableRate = 0;
 
     //since the total supply and each single user debt accrue separately,
     //there might be accumulation errors so that the last borrower repaying
     //might actually try to repay more than the available debt supply.
     //in this case we simply set the total supply and the avg stable rate to 0
     if (previousSupply <= amount) {
-      _avgStableRate = 0;
+      newStableRate = _avgStableRate = 0;
       _totalSupply = 0;
     } else {
-       uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
-      _avgStableRate = _avgStableRate
+      uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
+      newStableRate = _avgStableRate = _avgStableRate
         .rayMul(previousSupply.wadToRay())
         .sub(_usersData[user].rayMul(amount.wadToRay()))
         .rayDiv(nextSupply.wadToRay());
@@ -184,7 +183,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     if (amount == currentBalance) {
       _usersData[user] = 0;
       _timestamps[user] = 0;
-
     } else {
       //solium-disable-next-line
       _timestamps[user] = uint40(block.timestamp);
@@ -200,15 +198,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     // transfer event to track balances
     emit Transfer(user, address(0), amount);
- 
-    emit BurnDebt(user, amount, previousBalance, currentBalance, balanceIncrease);
+
+    emit Burn(user, amount, previousBalance, currentBalance, balanceIncrease, newStableRate);
   }
 
   /**
    * @dev Calculates the increase in balance since the last user interaction
    * @param user The address of the user for which the interest is being accumulated
-   * @return The previous principal balance, the new principal balance, the balance increase
-   * and the new user index
+   * @return The previous principal balance, the new principal balance and the balance increase
    **/
   function _calculateBalanceIncrease(address user)
     internal
@@ -238,7 +235,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   /**
    * @dev returns the principal and total supply, the average borrow rate and the last supply update timestamp
    **/
-  function getSupplyData() public override view returns (uint256, uint256, uint256,uint40) {
+  function getSupplyData()
+    public
+    override
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256,
+      uint40
+    )
+  {
     uint256 avgRate = _avgStableRate;
     return (super.totalSupply(), _calcTotalSupply(avgRate), avgRate, _totalSupplyTimestamp);
   }
@@ -261,7 +268,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   /**
    * @dev returns the timestamp at which the total supply was updated
    **/
-  function getTotalSupplyLastUpdated() public override view returns(uint40) {
+  function getTotalSupplyLastUpdated() public override view returns (uint40) {
     return _totalSupplyTimestamp;
   }
 
@@ -274,13 +281,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return super.balanceOf(user);
   }
 
-
   /**
-   * @dev calculates the total supply 
+   * @dev calculates the total supply
    * @param avgRate the average rate at which calculate the total supply
    * @return The debt balance of the user since the last burn/mint action
    **/
-  function _calcTotalSupply(uint256 avgRate) internal virtual view returns(uint256) { // Certora: Added virtual modifier
+  function _calcTotalSupply(uint256 avgRate) internal view returns (uint256) {
     uint256 principalSupply = super.totalSupply();
 
     if (principalSupply == 0) {
@@ -295,14 +301,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     return principalSupply.rayMul(cumulatedInterest);
   }
 
-   /**
+  /**
    * @dev mints stable debt tokens to an user
    * @param account the account receiving the debt tokens
    * @param amount the amount being minted
    * @param oldTotalSupply the total supply before the minting event
    **/
-   function _mint(address account, uint256 amount, uint256 oldTotalSupply) internal {
-
+  function _mint(
+    address account,
+    uint256 amount,
+    uint256 oldTotalSupply
+  ) internal {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.add(amount);
 
@@ -311,14 +320,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     }
   }
 
-   /**
+  /**
    * @dev burns stable debt tokens of an user
    * @param account the user getting his debt burned
    * @param amount the amount being burned
    * @param oldTotalSupply the total supply before the burning event
    **/
-  function _burn(address account, uint256 amount, uint256 oldTotalSupply) internal {
- 
+  function _burn(
+    address account,
+    uint256 amount,
+    uint256 oldTotalSupply
+  ) internal {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
 

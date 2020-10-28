@@ -24,15 +24,14 @@ import {
 } from '../../helpers/contracts-helpers';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
-import {BRE, increaseTime, timeLatest} from '../../helpers/misc-utils';
+import {BRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';
 
 import chai from 'chai';
 import {ReserveData, UserReserveData} from './utils/interfaces';
-import {waitForTx} from '../__setup.spec';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
-import { time } from 'console';
+import {time} from 'console';
 
 const {expect} = chai;
 
@@ -736,11 +735,11 @@ export const getContractsData = async (
   testEnv: TestEnv,
   sender?: string
 ) => {
-  const {pool} = testEnv;
+  const {pool, helpersContract} = testEnv;
 
   const [userData, reserveData, timestamp] = await Promise.all([
-    getUserData(pool, reserve, user, sender || user),
-    getReserveData(pool, reserve),
+    getUserData(pool, helpersContract, reserve, user, sender || user),
+    getReserveData(helpersContract, reserve),
     timeLatest(),
   ]);
 

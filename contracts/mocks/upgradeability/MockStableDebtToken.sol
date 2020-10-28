@@ -2,7 +2,6 @@
 pragma solidity ^0.6.8;
 
 import {StableDebtToken} from '../../tokenization/StableDebtToken.sol';
-import {LendingPool} from '../../lendingpool/LendingPool.sol';
 
 contract MockStableDebtToken is StableDebtToken {
   constructor(

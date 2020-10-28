@@ -2,16 +2,15 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
-import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
-import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
 
@@ -34,7 +33,7 @@ library ValidationLogic {
    * @param reserve the reserve state on which the user is depositing
    * @param amount the amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
+  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) internal view {
     (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
 
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
@@ -54,9 +53,10 @@ library ValidationLogic {
     uint256 userBalance,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
-  ) external view {
+  ) internal view {
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
 
     require(amount <= userBalance, Errors.NOT_ENOUGH_AVAILABLE_USER_BALANCE);
@@ -65,10 +65,11 @@ library ValidationLogic {
       GenericLogic.balanceDecreaseAllowed(
         reserveAddress,
         msg.sender,
-        userBalance,
+        amount,
         reservesData,
         userConfig,
         reserves,
+        reservesCount,
         oracle
       ),
       Errors.TRANSFER_NOT_ALLOWED
@@ -119,7 +120,8 @@ library ValidationLogic {
     uint256 maxStableLoanPercent,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   ) external view {
     ValidateBorrowLocalVars memory vars;
@@ -154,6 +156,7 @@ library ValidationLogic {
       reservesData,
       userConfig,
       reserves,
+      reservesCount,
       oracle
     );
 
@@ -298,7 +301,8 @@ library ValidationLogic {
     address reserveAddress,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
-    address[] calldata reserves,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
     address oracle
   ) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
@@ -313,6 +317,7 @@ library ValidationLogic {
         reservesData,
         userConfig,
         reserves,
+        reservesCount,
         oracle
       ),
       Errors.DEPOSIT_ALREADY_IN_USE
@@ -322,11 +327,16 @@ library ValidationLogic {
   /**
    * @dev validates a flashloan action
    * @param mode the flashloan mode (0 = classic flashloan, 1 = open a stable rate loan, 2 = open a variable rate loan)
-   * @param premium the premium paid on the flashloan
+   * @param assets the assets being flashborrowed
+   * @param amounts the amounts for each asset being borrowed
    **/
-  function validateFlashloan(uint256 mode, uint256 premium) internal pure {
-    require(premium > 0, Errors.REQUESTED_AMOUNT_TOO_SMALL);
+  function validateFlashloan(
+    address[] memory assets,
+    uint256[] memory amounts,
+    uint256 mode
+  ) internal pure {
     require(mode <= uint256(ReserveLogic.InterestRateMode.VARIABLE), Errors.INVALID_FLASHLOAN_MODE);
+    require(assets.length == amounts.length, Errors.INCONSISTENT_FLASHLOAN_PARAMS);
   }
 
   /**
@@ -374,97 +384,6 @@ library ValidationLogic {
       return (
         uint256(Errors.CollateralManagerErrors.CURRRENCY_NOT_BORROWED),
         Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
-      );
-    }
-
-    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
-  }
-
-  /**
-   * @dev Validates the repayWithCollateral() action
-   * @param collateralReserve The reserve data of the collateral
-   * @param principalReserve The reserve data of the principal
-   * @param userConfig The user configuration
-   * @param user The address of the user
-   * @param userHealthFactor The user's health factor
-   * @param userStableDebt Total stable debt balance of the user
-   * @param userVariableDebt Total variable debt balance of the user
-   **/
-  function validateRepayWithCollateral(
-    ReserveLogic.ReserveData storage collateralReserve,
-    ReserveLogic.ReserveData storage principalReserve,
-    UserConfiguration.Map storage userConfig,
-    address user,
-    uint256 userHealthFactor,
-    uint256 userStableDebt,
-    uint256 userVariableDebt
-  ) internal view returns (uint256, string memory) {
-    if (
-      !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()
-    ) {
-      return (uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
-    }
-
-    if (
-      msg.sender != user && userHealthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD
-    ) {
-      return (
-        uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
-        Errors.HEALTH_FACTOR_NOT_BELOW_THRESHOLD
-      );
-    }
-
-    if (msg.sender != user) {
-      bool isCollateralEnabled = collateralReserve.configuration.getLiquidationThreshold() > 0 &&
-        userConfig.isUsingAsCollateral(collateralReserve.id);
-
-      //if collateral isn't enabled as collateral by user, it cannot be liquidated
-      if (!isCollateralEnabled) {
-        return (
-          uint256(Errors.CollateralManagerErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
-          Errors.COLLATERAL_CANNOT_BE_LIQUIDATED
-        );
-      }
-    }
-
-    if (userStableDebt == 0 && userVariableDebt == 0) {
-      return (
-        uint256(Errors.CollateralManagerErrors.CURRRENCY_NOT_BORROWED),
-        Errors.SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
-      );
-    }
-
-    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
-  }
-
-  /**
-   * @dev Validates the swapLiquidity() action
-   * @param fromReserve The reserve data of the asset to swap from
-   * @param toReserve The reserve data of the asset to swap to
-   * @param fromAsset Address of the asset to swap from
-   * @param toAsset Address of the asset to swap to
-   **/
-  function validateSwapLiquidity(
-    ReserveLogic.ReserveData storage fromReserve,
-    ReserveLogic.ReserveData storage toReserve,
-    address fromAsset,
-    address toAsset
-  ) internal view returns (uint256, string memory) {
-    if (fromAsset == toAsset) {
-      return (
-        uint256(Errors.CollateralManagerErrors.INVALID_EQUAL_ASSETS_TO_SWAP),
-        Errors.INVALID_EQUAL_ASSETS_TO_SWAP
-      );
-    }
-
-    (bool isToActive, bool isToFreezed, , ) = toReserve.configuration.getFlags();
-    if (!fromReserve.configuration.getActive() || !isToActive) {
-      return (uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE), Errors.NO_ACTIVE_RESERVE);
-    }
-    if (isToFreezed) {
-      return (
-        uint256(Errors.CollateralManagerErrors.NO_UNFREEZED_RESERVE),
-        Errors.NO_UNFREEZED_RESERVE
       );
     }
 

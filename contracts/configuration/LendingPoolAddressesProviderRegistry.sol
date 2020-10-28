@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {
   ILendingPoolAddressesProviderRegistry
 } from '../interfaces/ILendingPoolAddressesProviderRegistry.sol';
@@ -20,7 +20,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   /**
    * @dev returns if an addressesProvider is registered or not
    * @param provider the addresses provider
-   * @return true if the addressesProvider is registered, false otherwise
+   * @return The id of the addresses provider or 0 if the addresses provider not registered
    **/
   function isAddressesProviderRegistered(address provider)
     external
@@ -33,16 +33,18 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev returns the list of active addressesProviders
-   * @return the list of addressesProviders
+   * @return the list of addressesProviders, potentially containing address(0) elements
    **/
   function getAddressesProvidersList() external override view returns (address[] memory) {
-    uint256 maxLength = _addressesProvidersList.length;
+    address[] memory addressesProvidersList = _addressesProvidersList;
+
+    uint256 maxLength = addressesProvidersList.length;
 
     address[] memory activeProviders = new address[](maxLength);
 
-    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
-      if (_addressesProviders[_addressesProvidersList[i]] > 0) {
-        activeProviders[i] = _addressesProvidersList[i];
+    for (uint256 i = 0; i < maxLength; i++) {
+      if (_addressesProviders[addressesProvidersList[i]] > 0) {
+        activeProviders[i] = addressesProvidersList[i];
       }
     }
 
@@ -54,6 +56,8 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be registered
    **/
   function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
+    require(id != 0, Errors.INVALID_ADDRESSES_PROVIDER_ID);
+
     _addressesProviders[provider] = id;
     _addToAddressesProvidersList(provider);
     emit AddressesProviderRegistered(provider);
@@ -74,7 +78,9 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be added
    **/
   function _addToAddressesProvidersList(address provider) internal {
-    for (uint256 i = 0; i < _addressesProvidersList.length; i++) {
+    uint256 providersCount = _addressesProvidersList.length;
+
+    for (uint256 i = 0; i < providersCount; i++) {
       if (_addressesProvidersList[i] == provider) {
         return;
       }
@@ -85,7 +91,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev Returns the id on an `addressesProvider` or address(0) if not registered
-   * @return The id or address(0)
+   * @return The id or 0 if the addresses provider is not registered
    */
   function getAddressesProviderIdByAddress(address addressesProvider)
     external

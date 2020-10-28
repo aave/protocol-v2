@@ -2,15 +2,13 @@
 pragma solidity ^0.6.8;
 
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
-import {LendingPool} from '../lendingpool/LendingPool.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
-import {
-  VersionedInitializable
-} from '../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IAToken} from './interfaces/IAToken.sol';
-import {IERC20} from '../interfaces/IERC20.sol';
-import {SafeERC20} from '../misc/SafeERC20.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 /**
  * @title Aave ERC20 AToken
@@ -34,7 +32,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   uint256 public constant ATOKEN_REVISION = 0x1;
   address public immutable UNDERLYING_ASSET_ADDRESS;
   address public immutable RESERVE_TREASURY_ADDRESS;
-  LendingPool public immutable POOL;
+  ILendingPool public immutable POOL;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -42,12 +40,12 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   bytes32 public DOMAIN_SEPARATOR;
 
   modifier onlyLendingPool {
-    require(msg.sender == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
   constructor(
-    LendingPool pool,
+    ILendingPool pool,
     address underlyingAssetAddress,
     address reserveTreasuryAddress,
     string memory tokenName,
@@ -101,14 +99,16 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    _burn(user, amount.rayDiv(index));
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
+    _burn(user, amountScaled);
 
     //transfers the underlying to the target
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
-    emit Burn(msg.sender, receiverOfUnderlying, amount, index);
+    emit Burn(_msgSender(), receiverOfUnderlying, amount, index);
   }
 
   /**
@@ -116,22 +116,44 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
    * only lending pools can call this function
    * @param user the address receiving the minted tokens
    * @param amount the amount of tokens to mint
+   * @param index the the last index of the reserve
+   * @return true if the the previous balance of the user is 0
    */
   function mint(
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
-    //mint an equivalent amount of tokens to cover the new deposit
-    _mint(user, amount.rayDiv(index));
+  ) external override onlyLendingPool returns (bool) {
+    uint256 previousBalance = super.balanceOf(user);
+
+    uint256 amountScaled = amount.rayDiv(index);
+    require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
+    _mint(user, amountScaled);
 
     //transfer event to track balances
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
+
+    return previousBalance == 0;
   }
 
+  /**
+   * @dev mints aTokens to reserve treasury
+   * only lending pools can call this function
+   * @param amount the amount of tokens to mint to the treasury
+   * @param index the the last index of the reserve
+   */
   function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
-    _mint(RESERVE_TREASURY_ADDRESS, amount.div(index));
+    if (amount == 0) {
+      return;
+    }
+
+    //compared to the normal mint, we don't check for rounding errors.
+    //the amount to mint can easily be very small since is a fraction of the interest
+    //accrued. in that case, the treasury will experience a (very small) loss, but it
+    //wont cause potentially valid transactions to fail.
+
+    _mint(RESERVE_TREASURY_ADDRESS, amount.rayDiv(index));
 
     //transfer event to track balances
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
