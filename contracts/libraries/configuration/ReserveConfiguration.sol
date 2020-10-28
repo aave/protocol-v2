@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
+import {Errors} from '../helpers/Errors.sol';
+
 /**
  * @title ReserveConfiguration library
  * @author Aave
@@ -27,6 +29,12 @@ library ReserveConfiguration {
   uint256 constant STABLE_BORROWING_ENABLED_START_BIT_POSITION = 59;
   uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
 
+  uint256 constant MAX_VALID_LTV = 65535;
+  uint256 constant MAX_VALID_LIQUIDATION_THRESHOLD = 65535;
+  uint256 constant MAX_VALID_LIQUIDATION_BONUS = 65535;
+  uint256 constant MAX_VALID_DECIMALS = 255;
+  uint256 constant MAX_VALID_RESERVE_FACTOR = 65535;
+
   struct Map {
     //bit 0-15: LTV
     //bit 16-31: Liq. threshold
@@ -47,6 +55,8 @@ library ReserveConfiguration {
    * @param ltv the new ltv
    **/
   function setLtv(ReserveConfiguration.Map memory self, uint256 ltv) internal pure {
+    require(ltv <= MAX_VALID_LTV, Errors.INVALID_LTV);
+
     self.data = (self.data & LTV_MASK) | ltv;
   }
 
@@ -68,6 +78,8 @@ library ReserveConfiguration {
     internal
     pure
   {
+    require(threshold <= MAX_VALID_LIQUIDATION_THRESHOLD, Errors.INVALID_LIQ_THRESHOLD);
+
     self.data =
       (self.data & LIQUIDATION_THRESHOLD_MASK) |
       (threshold << LIQUIDATION_THRESHOLD_START_BIT_POSITION);
@@ -92,6 +104,8 @@ library ReserveConfiguration {
    * @param bonus the new liquidation bonus
    **/
   function setLiquidationBonus(ReserveConfiguration.Map memory self, uint256 bonus) internal pure {
+    require(bonus <= MAX_VALID_LIQUIDATION_BONUS, Errors.INVALID_LIQ_BONUS);
+
     self.data =
       (self.data & LIQUIDATION_BONUS_MASK) |
       (bonus << LIQUIDATION_BONUS_START_BIT_POSITION);
@@ -116,6 +130,8 @@ library ReserveConfiguration {
    * @param decimals the decimals
    **/
   function setDecimals(ReserveConfiguration.Map memory self, uint256 decimals) internal pure {
+    require(decimals <= MAX_VALID_DECIMALS, Errors.INVALID_DECIMALS);
+
     self.data = (self.data & DECIMALS_MASK) | (decimals << RESERVE_DECIMALS_START_BIT_POSITION);
   }
 
@@ -225,6 +241,8 @@ library ReserveConfiguration {
     internal
     pure
   {
+    require(reserveFactor <= MAX_VALID_RESERVE_FACTOR, Errors.INVALID_RESERVE_FACTOR);
+
     self.data =
       (self.data & RESERVE_FACTOR_MASK) |
       (reserveFactor << RESERVE_FACTOR_START_BIT_POSITION);
@@ -316,8 +334,7 @@ library ReserveConfiguration {
     );
   }
 
-
-   /**
+  /**
    * @dev gets the configuration flags of the reserve from a memory object
    * @param self the reserve configuration
    * @return the state flags representing active, freezed, borrowing enabled, stableRateBorrowing enabled
