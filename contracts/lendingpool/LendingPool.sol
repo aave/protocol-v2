@@ -913,13 +913,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev adds a reserve to the array of the _reserves address
    **/
   function _addReserveToList(address asset) internal {
-    require(_reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
+
+    uint256 reservesCount = _reservesCount;
+
+    require(reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
 
     bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
 
     if (!reserveAlreadyAdded) {
-      _reserves[asset].id = uint8(_reservesCount);
-      _reservesList[_reservesCount] = asset;
+      _reserves[asset].id = uint8(reservesCount);
+      _reservesList[reservesCount] = asset;
 
       _reservesCount++;
     }
