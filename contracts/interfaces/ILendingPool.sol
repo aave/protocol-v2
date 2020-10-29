@@ -99,6 +99,8 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
+   * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
+   * @param onBehalfOf the address incurring the debt, if borrow mode is not 0
    * @param assets the address of the assets being flashborrowed
    * @param amounts the amount requested
    * @param premiums the total fee on the amount
@@ -107,6 +109,7 @@ interface ILendingPool {
   event FlashLoan(
     address indexed target,
     uint256 mode,
+    address indexed onBehalfOf,
     address[] assets,
     uint256[] amounts,
     uint256[] premiums,
@@ -295,6 +298,7 @@ interface ILendingPool {
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256 mode,
+    address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external;

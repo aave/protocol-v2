@@ -503,6 +503,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param assets The addresss of the assets being flashborrowed
    * @param amounts The amounts requested for this flashloan for each asset
    * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
+   * @param onBehalfOf If mode is not 0, then the address to take the debt onBehalfOf. The onBehalfOf address must already have approved `msg.sender` to incur the debt on their behalf.
    * @param params Variadic packed params to pass to the receiver as extra information
    * @param referralCode Referral code of the flash loan
    **/
@@ -511,6 +512,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256 mode,
+    address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external override {
@@ -568,13 +570,23 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           vars.currentAmountPlusPremium
         );
       } else {
+        if (msg.sender != onBehalfOf) {
+          address debtToken = _reserves[vars.currentAsset].getDebtTokenAddress(mode);
+
+          _borrowAllowance[debtToken][onBehalfOf][msg
+            .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
+            vars.currentAmount,
+            Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH
+          );
+        }
+
         //if the user didn't choose to return the funds, the system checks if there
         //is enough collateral and eventually open a position
         _executeBorrow(
           ExecuteBorrowParams(
             vars.currentAsset,
             msg.sender,
-            msg.sender,
+            onBehalfOf,
             vars.currentAmount,
             mode,
             vars.currentATokenAddress,
@@ -583,7 +595,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           )
         );
       }
-      emit FlashLoan(receiverAddress, mode, assets, amounts, premiums, referralCode);
+      emit FlashLoan(receiverAddress, mode, onBehalfOf, assets, amounts, premiums, referralCode);
     }
   }
 
