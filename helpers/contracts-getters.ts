@@ -11,10 +11,13 @@ import {
   LendingRateOracleFactory,
   MintableErc20Factory,
   MockFlashLoanReceiverFactory,
+  MockUniswapV2Router02Factory,
   PriceOracleFactory,
   ReserveLogicFactory,
   StableAndVariableTokensHelperFactory,
   StableDebtTokenFactory,
+  UniswapLiquiditySwapAdapterFactory,
+  UniswapRepayAdapterFactory,
   VariableDebtTokenFactory,
 } from '../types';
 import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
@@ -220,5 +223,28 @@ export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
     address ||
       (await getDb().get(`${eContractid.ATokensAndRatesHelper}.${BRE.network.name}`).value())
         .address,
+    await getFirstSigner()
+  );
+
+export const getMockUniswapRouter = async (address?: tEthereumAddress) =>
+  await MockUniswapV2Router02Factory.connect(
+    address ||
+      (await getDb().get(`${eContractid.MockUniswapV2Router02}.${BRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getUniswapLiquiditySwapAdapter = async (address?: tEthereumAddress) =>
+  await UniswapLiquiditySwapAdapterFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.UniswapLiquiditySwapAdapter}.${BRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getUniswapRepayAdapter = async (address?: tEthereumAddress) =>
+  await UniswapRepayAdapterFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.UniswapRepayAdapter}.${BRE.network.name}`).value()).address,
     await getFirstSigner()
   );

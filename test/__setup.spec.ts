@@ -246,19 +246,19 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const mockUniswapRouter = await deployMockUniswapRouter();
   await insertContractAddressInDb(eContractid.MockUniswapV2Router02, mockUniswapRouter.address);
 
-  const UniswapLiquiditySwapAdapter = await deployUniswapLiquiditySwapAdapter(
+  const UniswapLiquiditySwapAdapter = await deployUniswapLiquiditySwapAdapter([
     addressesProvider.address,
-    mockUniswapRouter.address
-  );
+    mockUniswapRouter.address,
+  ]);
   await insertContractAddressInDb(
     eContractid.UniswapLiquiditySwapAdapter,
     UniswapLiquiditySwapAdapter.address
   );
 
-  const UniswapRepayAdapter = await deployUniswapRepayAdapter(
+  const UniswapRepayAdapter = await deployUniswapRepayAdapter([
     addressesProvider.address,
-    mockUniswapRouter.address
-  );
+    mockUniswapRouter.address,
+  ]);
   await insertContractAddressInDb(eContractid.UniswapRepayAdapter, UniswapRepayAdapter.address);
 
   await deployWalletBalancerProvider(addressesProvider.address);
