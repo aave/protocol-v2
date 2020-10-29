@@ -31,8 +31,11 @@ import {getEthersSigners} from '../../helpers/contracts-helpers';
 import {Weth9} from '../../types/Weth9';
 import {Weth9Mocked} from '../../types/Weth9Mocked';
 import {WethGateway} from '../../types/WethGateway';
+import {solidity} from 'ethereum-waffle';
+
 chai.use(bignumberChai());
 chai.use(almostEqual());
+chai.use(solidity);
 
 export interface SignerWithAddress {
   signer: Signer;
