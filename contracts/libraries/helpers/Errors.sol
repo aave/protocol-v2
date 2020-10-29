@@ -97,6 +97,9 @@ library Errors {
   string public constant INVALID_DECIMALS = '73';
   string public constant INVALID_RESERVE_FACTOR = '74';
 
+  // Credit delegation
+  string public constant INCONSISTENT_PARAMS_LENGTH = '75';
+
 
   enum CollateralManagerErrors {
     NO_ERROR,
