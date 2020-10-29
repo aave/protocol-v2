@@ -1,22 +1,25 @@
 import {task} from '@nomiclabs/buidler/config';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
-  getLendingPoolAddressesProvider,
-  initReserves,
   deployLendingPoolCollateralManager,
-  insertContractAddressInDb,
   deployWalletBalancerProvider,
   deployAaveProtocolTestHelpers,
+} from '../../helpers/contracts-deployments';
+import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
+import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
+import {waitForTx} from '../../helpers/misc-utils';
+import {
+  initReservesByHelper,
+  enableReservesToBorrowByHelper,
+  enableReservesAsCollateralByHelper,
+} from '../../helpers/init-helpers';
+import {exit} from 'process';
+import {
   getLendingPool,
   getLendingPoolConfiguratorProxy,
-  getParamPerNetwork,
-} from '../../helpers/contracts-helpers';
-import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
-
-import {AavePools, eContractid, eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
-import {waitForTx} from '../../helpers/misc-utils';
-import {enableReservesToBorrow, enableReservesAsCollateral} from '../../helpers/init-helpers';
+  getLendingPoolAddressesProvider,
+} from '../../helpers/contracts-getters';
 import {ZERO_ADDRESS} from '../../helpers/constants';
-import {exit} from 'process';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -24,7 +27,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .setAction(async ({verify, pool}, localBRE) => {
     try {
       await localBRE.run('set-bre');
-      console.log('init');
       const network = <eEthereumNetwork>localBRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
@@ -37,40 +39,20 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
 
-      console.log('init reserves');
-      await initReserves(
-        ReservesConfig,
-        reserveAssets,
-        addressesProvider,
-        lendingPoolProxy,
-        testHelpers,
-        lendingPoolConfiguratorProxy,
-        AavePools.proto,
-        ZERO_ADDRESS,
-        verify
-      );
-      console.log('enable reserves');
-      await enableReservesToBorrow(
-        ReservesConfig,
-        reserveAssets,
-        testHelpers,
-        lendingPoolConfiguratorProxy
-      );
-      console.log('enable reserves as collateral');
-      await enableReservesAsCollateral(
-        ReservesConfig,
-        reserveAssets,
-        testHelpers,
-        lendingPoolConfiguratorProxy
-      );
+      const admin = await addressesProvider.getAaveAdmin();
+      if (!reserveAssets) {
+        throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
+      }
 
-      console.log('deploy coll manager');
+      await initReservesByHelper(ReservesConfig, reserveAssets, admin, ZERO_ADDRESS);
+      await enableReservesToBorrowByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
+      await enableReservesAsCollateralByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
+
       const collateralManager = await deployLendingPoolCollateralManager(verify);
       await waitForTx(
         await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
       );
 
-      console.log('deploy bal provicer');
       await deployWalletBalancerProvider(addressesProvider.address, verify);
     } catch (err) {
       console.error(err);

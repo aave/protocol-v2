@@ -55,6 +55,8 @@ export enum eContractid {
   VariableDebtToken = 'VariableDebtToken',
   FeeProvider = 'FeeProvider',
   TokenDistributor = 'TokenDistributor',
+  StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
+  ATokensAndRatesHelper = 'ATokensAndRatesHelper',
 }
 
 export enum ProtocolErrors {

@@ -1,6 +1,5 @@
 import {TestEnv, makeSuite} from './helpers/make-suite';
-import {RAY, APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS} from '../helpers/constants';
-import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
+import {ZERO_ADDRESS} from '../helpers/constants';
 import {ProtocolErrors} from '../helpers/types';
 
 const {expect} = require('chai');
