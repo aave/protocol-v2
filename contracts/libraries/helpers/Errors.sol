@@ -46,6 +46,7 @@ library Errors {
   string public constant NO_MORE_RESERVES_ALLOWED = '59';
   string public constant INVALID_FLASH_LOAN_EXECUTOR_RETURN = '60';
   string public constant INCONSISTENT_FLASHLOAN_PARAMS = '69';
+  string public constant CALLER_MUST_BE_AN_ATOKEN = '76';
 
   // require error messages - aToken - DebtTokens
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'
@@ -89,6 +90,15 @@ library Errors {
 
   // pausable error message
   string public constant IS_PAUSED = '58'; // 'Pool is paused'
+
+  // Reserve configuration
+  string public constant INVALID_LTV = '70';
+  string public constant INVALID_LIQ_THRESHOLD = '71';
+  string public constant INVALID_LIQ_BONUS = '72';
+  string public constant INVALID_DECIMALS = '73';
+  string public constant INVALID_RESERVE_FACTOR = '74';
+
+
   enum CollateralManagerErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,

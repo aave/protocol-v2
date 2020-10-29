@@ -32,10 +32,11 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Get aDAI for tests', async () => {
-    const {dai, deployer, pool} = testEnv;
+    const {dai, pool, deployer} = testEnv;
 
     await dai.mint(parseEther('20000'));
     await dai.approve(pool.address, parseEther('20000'));
+
     await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
   });
 

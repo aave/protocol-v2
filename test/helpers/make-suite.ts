@@ -1,7 +1,6 @@
 import {evmRevert, evmSnapshot, BRE} from '../../helpers/misc-utils';
 import {Signer} from 'ethers';
 import {
-  getEthersSigners,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getAaveProtocolTestHelpers,
@@ -12,7 +11,7 @@ import {
   getLendingPoolAddressesProviderRegistry,
   getUniswapLiquiditySwapAdapter,
   getUniswapRepayAdapter,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-getters';
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
 import {AaveProtocolTestHelpers} from '../../types/AaveProtocolTestHelpers';
@@ -27,6 +26,7 @@ import {almostEqual} from './almost-equal';
 import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
 import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
+import {getEthersSigners} from '../../helpers/contracts-helpers';
 import {UniswapLiquiditySwapAdapter} from '../../types/UniswapLiquiditySwapAdapter';
 import {UniswapRepayAdapter} from '../../types/UniswapRepayAdapter';
 chai.use(bignumberChai());
@@ -44,7 +44,7 @@ export interface TestEnv {
   oracle: PriceOracle;
   helpersContract: AaveProtocolTestHelpers;
   weth: MintableERC20;
-  aEth: AToken;
+  aWETH: AToken;
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
@@ -70,7 +70,7 @@ const testEnv: TestEnv = {
   helpersContract: {} as AaveProtocolTestHelpers,
   oracle: {} as PriceOracle,
   weth: {} as MintableERC20,
-  aEth: {} as AToken,
+  aWETH: {} as AToken,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
@@ -96,10 +96,8 @@ export async function initializeMakeSuite() {
   }
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
-  console.log('Pool loaded');
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
-  console.log('Configurator loaded');
 
   testEnv.oracle = await getPriceOracle();
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
@@ -107,13 +105,11 @@ export async function initializeMakeSuite() {
 
   testEnv.helpersContract = await getAaveProtocolTestHelpers();
 
-  const aDaiAddress = (await testEnv.helpersContract.getAllATokens()).find(
-    (aToken) => aToken.symbol === 'aDAI'
-  )?.tokenAddress;
+  const allTokens = await testEnv.helpersContract.getAllATokens();
 
-  const aEthAddress = (await testEnv.helpersContract.getAllATokens()).find(
-    (aToken) => aToken.symbol === 'aETH'
-  )?.tokenAddress;
+  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
+
+  const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
@@ -122,7 +118,7 @@ export async function initializeMakeSuite() {
   const lendAddress = reservesTokens.find((token) => token.symbol === 'LEND')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
-  if (!aDaiAddress || !aEthAddress) {
+  if (!aDaiAddress || !aWEthAddress) {
     console.log(`atoken-modifiers.spec: aTokens not correctly initialized`);
     process.exit(1);
   }
@@ -132,7 +128,7 @@ export async function initializeMakeSuite() {
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
-  testEnv.aEth = await getAToken(aEthAddress);
+  testEnv.aWETH = await getAToken(aWEthAddress);
 
   testEnv.dai = await getMintableErc20(daiAddress);
   testEnv.usdc = await getMintableErc20(usdcAddress);

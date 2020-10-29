@@ -1,5 +1,5 @@
 import {task} from '@nomiclabs/buidler/config';
-import {deployAllMockTokens} from '../../helpers/contracts-helpers';
+import {deployAllMockTokens} from '../../helpers/contracts-deployments';
 task('dev:deploy-mock-tokens', 'Deploy mock tokens for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {

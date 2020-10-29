@@ -2,7 +2,7 @@ import {task} from '@nomiclabs/buidler/config';
 import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 import {waitForTx} from '../../helpers/misc-utils';
 
 task(
@@ -20,6 +20,6 @@ task(
 
     const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry(verify);
     await waitForTx(
-      await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 0)
+      await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 1)
     );
   });
