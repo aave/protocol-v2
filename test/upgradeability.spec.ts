@@ -1,16 +1,12 @@
 import {expect} from 'chai';
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {ProtocolErrors, eContractid} from '../helpers/types';
-import {
-  deployGenericAToken,
-  getAToken,
-  deployContract,
-  getContract,
-} from '../helpers/contracts-helpers';
+import {deployContract, getContract} from '../helpers/contracts-helpers';
 import {MockAToken} from '../types/MockAToken';
 import {MockStableDebtToken} from '../types/MockStableDebtToken';
 import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 import {ZERO_ADDRESS} from '../helpers/constants';
+import {getAToken} from '../helpers/contracts-getters';
 
 makeSuite('Upgradeability', (testEnv: TestEnv) => {
   const {CALLER_NOT_AAVE_ADMIN} = ProtocolErrors;

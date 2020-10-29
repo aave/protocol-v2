@@ -36,6 +36,10 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
     await aDai.connect(users[0].signer).transfer(users[1].address, amountDAItoDeposit);
 
+    const name = await aDai.name();
+
+    expect(name).to.be.equal('Aave interest bearing DAI');
+
     const fromBalance = await aDai.balanceOf(users[0].address);
     const toBalance = await aDai.balanceOf(users[1].address);
 
@@ -46,8 +50,8 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     );
   });
 
-  it('User 0 deposits 1 WETH and user 1 tries to borrow, but the aTokens received as a transfer are not available as collateral (revert expected)', async () => {
-    const {users, pool, weth} = testEnv;
+  it('User 0 deposits 1 WETH and user 1 tries to borrow the WETH with the received DAI as collateral', async () => {
+    const {users, pool, weth, helpersContract} = testEnv;
     const userAddress = await pool.signer.getAddress();
 
     await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
@@ -57,26 +61,6 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     await pool
       .connect(users[0].signer)
       .deposit(weth.address, ethers.utils.parseEther('1.0'), userAddress, '0');
-    await expect(
-      pool
-        .connect(users[1].signer)
-        .borrow(
-          weth.address,
-          ethers.utils.parseEther('0.1'),
-          RateMode.Stable,
-          AAVE_REFERRAL,
-          users[1].address
-        ),
-      COLLATERAL_BALANCE_IS_0
-    ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
-  });
-
-  it('User 1 sets the DAI as collateral and borrows, tries to transfer everything back to user 0 (revert expected)', async () => {
-    const {users, pool, aDai, dai, weth} = testEnv;
-    await pool.connect(users[1].signer).setUserUseReserveAsCollateral(dai.address, true);
-
-    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '1000');
-
     await pool
       .connect(users[1].signer)
       .borrow(
@@ -87,9 +71,32 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
         users[1].address
       );
 
+    const userReserveData = await helpersContract.getUserReserveData(weth.address, users[1].address);
+    
+    expect(userReserveData.currentStableDebt.toString()).to.be.eq(ethers.utils.parseEther('0.1'));
+  });
+
+  it('User 1 tries to transfer all the DAI used as collateral back to user 0 (revert expected)', async () => {
+    const {users, pool, aDai, dai, weth} = testEnv;
+
+    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '1000');
+   
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
       TRANSFER_NOT_ALLOWED
     ).to.be.revertedWith(TRANSFER_NOT_ALLOWED);
   });
+
+  it('User 1 tries to transfer a small amount of DAI used as collateral back to user 0', async () => {
+    
+    const {users, pool, aDai, dai, weth} = testEnv;
+
+    const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '100');
+   
+    await aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer);
+
+    const user0Balance = await aDai.balanceOf(users[0].address);
+
+    expect(user0Balance.toString()).to.be.eq(aDAItoTransfer.toString());
+  });    
 });

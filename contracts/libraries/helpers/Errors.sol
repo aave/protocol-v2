@@ -46,6 +46,7 @@ library Errors {
   string public constant NO_MORE_RESERVES_ALLOWED = '59';
   string public constant INVALID_FLASH_LOAN_EXECUTOR_RETURN = '60';
   string public constant INCONSISTENT_FLASHLOAN_PARAMS = '69';
+  string public constant CALLER_MUST_BE_AN_ATOKEN = '76';
 
   // require error messages - aToken - DebtTokens
   string public constant CALLER_MUST_BE_LENDING_POOL = '28'; // 'The caller of this function must be a lending pool'

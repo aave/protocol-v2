@@ -1,23 +1,24 @@
 import {task} from '@nomiclabs/buidler/config';
 import {
-  getLendingPoolAddressesProvider,
   deployPriceOracle,
-  getMockedTokens,
-  getPairsTokenAggregator,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
-  getAllMockedTokens,
-} from '../../helpers/contracts-helpers';
+} from '../../helpers/contracts-deployments';
 
 import {
   setInitialAssetPricesInOracle,
-  setInitialMarketRatesInRatesOracle,
   deployAllMockAggregators,
+  setInitialMarketRatesInRatesOracleByHelper,
 } from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, iAssetBase, TokenContractId} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 import {getAllAggregatorsAddresses, getAllTokenAddresses} from '../../helpers/mock-helpers';
 import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
+import {
+  getAllMockedTokens,
+  getLendingPoolAddressesProvider,
+  getPairsTokenAggregator,
+} from '../../helpers/contracts-getters';
 
 task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
@@ -41,6 +42,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       return prev;
     }, defaultTokenList);
     const addressesProvider = await getLendingPoolAddressesProvider();
+    const admin = await addressesProvider.getAaveAdmin();
 
     const fallbackOracle = await deployPriceOracle(verify);
     await waitForTx(await fallbackOracle.setEthUsdPrice(MockUsdPriceInWei));
@@ -66,9 +68,10 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
     const allReservesAddresses = {
       ...tokensAddressesWithoutUsd,
     };
-    await setInitialMarketRatesInRatesOracle(
+    await setInitialMarketRatesInRatesOracleByHelper(
       LendingRateOracleRatesCommon,
       allReservesAddresses,
-      lendingRateOracle
+      lendingRateOracle,
+      admin
     );
   });
