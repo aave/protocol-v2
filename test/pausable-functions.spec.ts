@@ -187,7 +187,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(caller.signer)
-        .flashLoan(_mockFlashLoanReceiver.address, [weth.address], [flashAmount], 1, '0x10', '0')
+        .flashLoan(_mockFlashLoanReceiver.address, [weth.address], [flashAmount], 1, caller.address, '0x10', '0')
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
