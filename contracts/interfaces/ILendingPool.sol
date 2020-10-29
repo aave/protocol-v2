@@ -349,11 +349,14 @@ interface ILendingPool {
 
   function getReserveData(address asset) external view returns (ReserveLogic.ReserveData memory);
 
-  function balanceDecreaseAllowed(
-    address reserve,
-    address user,
-    uint256 amount
-  ) external view returns (bool);
+  function finalizeTransfer(
+    address asset,
+    address from,
+    address to,
+    uint256 amount,
+    uint256 balanceFromAfter,
+    uint256 balanceToBefore
+  ) external;
 
   function getReservesList() external view returns (address[] memory);
 
