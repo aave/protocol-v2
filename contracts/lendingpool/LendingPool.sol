@@ -742,6 +742,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override {
     _whenNotPaused();
 
+    require(msg.sender == _reserves[asset].aTokenAddress, Errors.CALLER_MUST_BE_AN_ATOKEN);
+
     ValidationLogic.validateTransfer(
       from,
       _reserves,
@@ -759,7 +761,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         fromConfig.setUsingAsCollateral(reserveId, false);
       }
 
-      if (balanceToBefore == 0) {
+      if (balanceToBefore == 0 && amount != 0) {
         UserConfiguration.Map storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
       }
