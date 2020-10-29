@@ -857,32 +857,33 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    uint256 reserveId = reserve.id;
-    if (!userConfig.isBorrowing(reserveId)) {
-      userConfig.setBorrowing(reserveId, true);
-    }
-
     reserve.updateState();
 
     //caching the current stable borrow rate
     uint256 currentStableRate = 0;
-
+    
+    bool isFirstBorrowing = false;
     if (
       ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE
     ) {
       currentStableRate = reserve.currentStableBorrowRate;
 
-      IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+      isFirstBorrowing = IStableDebtToken(reserve.stableDebtTokenAddress).mint(
         vars.onBehalfOf,
         vars.amount,
         currentStableRate
       );
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
+      isFirstBorrowing = IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
         vars.onBehalfOf,
         vars.amount,
         reserve.variableBorrowIndex
       );
+    }
+
+    uint256 reserveId = reserve.id;
+    if (isFirstBorrowing) {
+      userConfig.setBorrowing(reserveId, true);
     }
 
     reserve.updateInterestRates(
