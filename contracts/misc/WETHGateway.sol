@@ -11,6 +11,7 @@ import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
+import '@nomiclabs/buidler/console.sol';
 
 contract WETHGateway is IWETHGateway {
   using ReserveConfiguration for ReserveConfiguration.Map;
@@ -40,10 +41,15 @@ contract WETHGateway is IWETHGateway {
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
   function depositETH(address onBehalfOf, uint16 referralCode) external override payable {
+    console.log('hi');
+    console.log(msg.value);
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     require(address(pool) != address(0));
+    console.log('deposit');
     WETH.deposit{value: msg.value}();
+    console.log('weth in');
     pool.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
+    console.log('deposited');
   }
 
   /**

@@ -40,6 +40,7 @@ import {
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
   Weth9Factory,
+  Weth9MockedFactory,
   WethGatewayFactory,
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
@@ -392,6 +393,14 @@ export const deployWETH = async (verify?: boolean) =>
   withSaveAndVerify(
     await new Weth9Factory(await getFirstSigner()).deploy(),
     eContractid.WETH,
+    [],
+    verify
+  );
+
+export const deployWETHMocked = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new Weth9MockedFactory(await getFirstSigner()).deploy(),
+    eContractid.WETHMocked,
     [],
     verify
   );

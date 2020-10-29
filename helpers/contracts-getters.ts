@@ -17,6 +17,7 @@ import {
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   Weth9Factory,
+  Weth9MockedFactory,
   WethGatewayFactory,
 } from '../types';
 import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
@@ -235,5 +236,11 @@ export const getWETHGateway = async (address?: tEthereumAddress) =>
 export const getWETH = async (address?: tEthereumAddress) =>
   await Weth9Factory.connect(
     address || (await getDb().get(`${eContractid.WETH}.${BRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getWETHMocked = async (address?: tEthereumAddress) =>
+  await Weth9MockedFactory.connect(
+    address || (await getDb().get(`${eContractid.WETHMocked}.${BRE.network.name}`).value()).address,
     await getFirstSigner()
   );

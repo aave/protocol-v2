@@ -59,6 +59,7 @@ export enum eContractid {
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
   WETHGateway = 'WETHGateway',
   WETH = 'WETH',
+  WETHMocked = 'WETHMocked',
 }
 
 export enum ProtocolErrors {

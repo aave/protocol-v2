@@ -42,6 +42,7 @@
     "test-permit": "buidler test test/__setup.spec.ts test/atoken-permit.spec.ts",
     "test-stable-and-atokens": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts test/stable-token.spec.ts",
     "test-subgraph:scenarios": "buidler --network buidlerevm_docker test test/__setup.spec.ts test/subgraph-scenarios.spec.ts",
+    "test-weth": "buidler test test/__setup.spec.ts test/weth-gateway.spec.ts",
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",

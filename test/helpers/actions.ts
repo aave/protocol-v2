@@ -18,16 +18,17 @@ import {
 import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/helpers';
 
 import {convertToCurrencyDecimals} from '../../helpers/contracts-helpers';
-import {getAToken, getMintableErc20} from '../../helpers/contracts-getters';
+import {getAToken, getMintableErc20, getWETH} from '../../helpers/contracts-getters';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
 import {BRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';
 
 import chai from 'chai';
 import {ReserveData, UserReserveData} from './utils/interfaces';
-import {ContractReceipt} from 'ethers';
+import {ContractReceipt, Signer} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
+import {getWethAddress} from '../../helpers/configuration';
 
 const {expect} = chai;
 
