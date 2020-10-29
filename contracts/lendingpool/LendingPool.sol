@@ -691,7 +691,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @return the reserve normalized income
    */
-  function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
+  function getReserveNormalizedIncome(address asset) external virtual override view returns (uint256) {
     return _reserves[asset].getNormalizedIncome();
   }
 

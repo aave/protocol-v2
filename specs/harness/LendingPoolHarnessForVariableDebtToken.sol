@@ -87,17 +87,6 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     originalPool.liquidationCall(collateral, asset, user, purchaseAmount, receiveAToken);
   }
 
-  function flashLoan(
-    address receiver,
-    address[] calldata assets,
-    uint256[] calldata amounts,
-    uint256 mode,
-    bytes calldata params,
-    uint16 referralCode
-  ) external override {
-    originalPool.flashLoan(receiver, assets, amounts, mode, params, referralCode);
-  }
-
   function getReservesList() external override view returns (address[] memory) {
     return originalPool.getReservesList();
   }
@@ -175,14 +164,6 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     return reserveNormalizedVariableDebt[block.timestamp];
   }
 
-  function balanceDecreaseAllowed(
-    address asset,
-    address user,
-    uint256 amount
-  ) external override view returns (bool) {
-    return originalPool.balanceDecreaseAllowed(asset, user, amount);
-  }
-
   function setPause(bool val) external override {
     originalPool.setPause(val);
   }
@@ -190,4 +171,28 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   function paused() external override view returns (bool) {
     return originalPool.paused();
   }
+
+  function flashLoan(
+    address receiver,
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256 mode,
+    address onBehalfOf,
+    bytes calldata params,
+    uint16 referralCode
+  ) external override {
+    originalPool.flashLoan(receiver, assets, amounts, mode, onBehalfOf, params, referralCode);
+  }
+
+  function finalizeTransfer(
+    address asset,
+    address from,
+    address to,
+    uint256 amount,
+    uint256 balanceFromAfter,
+    uint256 balanceToBefore
+  ) external override {
+    originalPool.finalizeTransfer(asset, from, to, amount, balanceFromAfter, balanceToBefore);
+  }
+
 }
