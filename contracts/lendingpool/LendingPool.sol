@@ -724,29 +724,48 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev validate if a balance decrease for an asset is allowed
+   * @dev validates and finalizes an aToken transfer
    * @param asset the address of the reserve
-   * @param user the user related to the balance decrease
+   * @param from the user from which the aTokens are transferred
+   * @param to the user receiving the aTokens
    * @param amount the amount being transferred/redeemed
-   * @return true if the balance decrease can be allowed, false otherwise
+   * @param balanceFromBefore the balance of the from user before the transfer
+   * @param balanceToBefore the balance of the to user before the transfer
    */
-  function balanceDecreaseAllowed(
+  function finalizeTransfer(
     address asset,
-    address user,
-    uint256 amount
-  ) external override view returns (bool) {
+    address from,
+    address to,
+    uint256 amount,
+    uint256 balanceFromBefore,
+    uint256 balanceToBefore
+  ) external override {
     _whenNotPaused();
-    return
-      GenericLogic.balanceDecreaseAllowed(
-        asset,
-        user,
-        amount,
-        _reserves,
-        _usersConfig[user],
-        _reservesList,
-        _reservesCount,
-        _addressesProvider.getPriceOracle()
-      );
+
+    require(msg.sender == _reserves[asset].aTokenAddress, Errors.CALLER_MUST_BE_AN_ATOKEN);
+
+    ValidationLogic.validateTransfer(
+      from,
+      _reserves,
+      _usersConfig[from],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+
+    uint256 reserveId = _reserves[asset].id;
+
+    if (from != to) {
+      if (balanceFromBefore.sub(amount) == 0) {
+        UserConfiguration.Map storage fromConfig = _usersConfig[from];
+        fromConfig.setUsingAsCollateral(reserveId, false);
+      }
+
+      if (balanceToBefore == 0 && amount != 0) {
+        UserConfiguration.Map storage toConfig = _usersConfig[to];
+        toConfig.setUsingAsCollateral(reserveId, true);
+      }
+    }
   }
 
   /**

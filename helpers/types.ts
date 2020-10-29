@@ -122,6 +122,12 @@ export enum ProtocolErrors {
 
   IS_PAUSED = '58', // Pool is paused
 
+  INVALID_LTV = '70',
+  INVALID_LIQ_THRESHOLD = '71',
+  INVALID_LIQ_BONUS = '72',
+  INVALID_DECIMALS = '73',
+  INVALID_RESERVE_FACTOR = '74',
+
   // old
 
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',

@@ -10,7 +10,63 @@ const APPROVAL_AMOUNT_LENDING_POOL =
 const {expect} = require('chai');
 
 makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
-  const {CALLER_NOT_AAVE_ADMIN, RESERVE_LIQUIDITY_NOT_0} = ProtocolErrors;
+  const {
+    CALLER_NOT_AAVE_ADMIN,
+    RESERVE_LIQUIDITY_NOT_0,
+    INVALID_LTV,
+    INVALID_LIQ_THRESHOLD,
+    INVALID_LIQ_BONUS,
+    INVALID_DECIMALS,
+    INVALID_RESERVE_FACTOR,
+  } = ProtocolErrors;
+
+  it('Reverts trying to set an invalid LTV', async () => {
+    const {configurator, weth} = testEnv;
+
+    const invalidLtv = 65536;
+
+    await expect(configurator.setLtv(weth.address, invalidLtv)).to.be.revertedWith(INVALID_LTV);
+  });
+
+  it('Reverts trying to set an invalid liquidation threshold', async () => {
+    const {configurator, weth} = testEnv;
+
+    const invalidLiqThreshold = 65536;
+
+    await expect(
+      configurator.setLiquidationThreshold(weth.address, invalidLiqThreshold)
+    ).to.be.revertedWith(INVALID_LIQ_THRESHOLD);
+  });
+
+  it('Reverts trying to set an invalid liquidation bonus', async () => {
+    const {configurator, weth} = testEnv;
+
+    const invalidLiqBonus = 65536;
+
+    await expect(
+      configurator.setLiquidationBonus(weth.address, invalidLiqBonus)
+    ).to.be.revertedWith(INVALID_LIQ_BONUS);
+  });
+
+  it('Reverts trying to set an invalid reserve decimals', async () => {
+    const {configurator, weth} = testEnv;
+
+    const invalidDecimals = 256;
+
+    await expect(configurator.setReserveDecimals(weth.address, invalidDecimals)).to.be.revertedWith(
+      INVALID_DECIMALS
+    );
+  });
+
+  it('Reverts trying to set an invalid reserve factor', async () => {
+    const {configurator, weth} = testEnv;
+
+    const invalidReserveFactor = 65536;
+
+    await expect(
+      configurator.setReserveFactor(weth.address, invalidReserveFactor)
+    ).to.be.revertedWith(INVALID_RESERVE_FACTOR);
+  });
 
   it('Deactivates the ETH reserve', async () => {
     const {configurator, weth, helpersContract} = testEnv;
