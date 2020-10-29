@@ -89,6 +89,15 @@ library Errors {
 
   // pausable error message
   string public constant IS_PAUSED = '58'; // 'Pool is paused'
+
+  // Reserve configuration
+  string public constant INVALID_LTV = '70';
+  string public constant INVALID_LIQ_THRESHOLD = '71';
+  string public constant INVALID_LIQ_BONUS = '72';
+  string public constant INVALID_DECIMALS = '73';
+  string public constant INVALID_RESERVE_FACTOR = '74';
+
+
   enum CollateralManagerErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,
