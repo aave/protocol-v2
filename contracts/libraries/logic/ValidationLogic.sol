@@ -13,6 +13,8 @@ import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
+import "@nomiclabs/buidler/console.sol";
+
 
 /**
  * @title ReserveLogic library
@@ -46,6 +48,11 @@ library ValidationLogic {
    * @param reserveAddress the address of the reserve
    * @param amount the amount to be withdrawn
    * @param userBalance the balance of the user
+   * @param reservesData the reserves state
+   * @param userConfig the user configuration
+   * @param reserves the addresses of the reserves
+   * @param reservesCount the number of reserves
+   * @param oracle the price oracle
    */
   function validateWithdraw(
     address reserveAddress,
@@ -388,5 +395,38 @@ library ValidationLogic {
     }
 
     return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
+  }
+
+  /**
+   * @dev validates an aToken transfer.
+   * @param from the user from which the aTokens are being transferred
+   * @param reservesData the state of all the reserves
+   * @param userConfig the state of the user for the specific reserve
+   * @param reserves the addresses of all the active reserves
+   * @param oracle the price oracle
+   */
+  function validateTransfer(
+    address from,
+    mapping(address => ReserveLogic.ReserveData) storage reservesData,
+    UserConfiguration.Map storage userConfig,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
+    address oracle
+  ) internal view {
+    (, , , , uint256 healthFactor) = GenericLogic.calculateUserAccountData(
+      from,
+      reservesData,
+      userConfig,
+      reserves,
+      reservesCount,
+      oracle
+    );
+
+    console.log("Health factor after transfer %s", healthFactor);
+
+    require(
+      healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
+      Errors.TRANSFER_NOT_ALLOWED
+    );
   }
 }
