@@ -8,6 +8,7 @@ library MathUtils {
   using SafeMath for uint256;
   using WadRayMath for uint256;
 
+  /// @dev Ignoring leap years
   uint256 internal constant SECONDS_PER_YEAR = 365 days;
 
   /**
@@ -25,9 +26,7 @@ library MathUtils {
     //solium-disable-next-line
     uint256 timeDifference = block.timestamp.sub(uint256(lastUpdateTimestamp));
 
-    uint256 timeDelta = timeDifference.wadToRay().rayDiv(SECONDS_PER_YEAR.wadToRay());
-
-    return rate.rayMul(timeDelta).add(WadRayMath.ray());
+    return (rate.mul(timeDifference) / SECONDS_PER_YEAR).add(WadRayMath.ray());
   }
 
   /**
