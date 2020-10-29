@@ -90,19 +90,25 @@ rule integrityMint(address a, uint256 x) {
 /**
 Mint is additive, can performed either all at once or gradually
 mint(u,x); mint(u,y) ~ mint(u,x+y) at the same timestamp
+
+Note: We assume that the stable rate of the user is 0.
+The case where the rate is non-zero takes much more time to prove,
+and therefore it is currently excluded from the CI.
 */
 rule additiveMint(address a, uint256 x, uint256 y) {
 	env e;
 	require sinvoke getIncentivesController(e) == 0;
+	require getUserStableRate(e,a) == 0;
 	uint256 index;
 	storage initialStorage = lastStorage;
 	sinvoke mint(e,a,x,index);
 	sinvoke mint(e,a,y,index);
 	uint256 balanceScenario1 = sinvoke balanceOf(e,a);
-	uint t = x + y;
+	
+	uint256 t = x + y;
 	sinvoke mint(e,a, t ,index) at initialStorage;
-
-	uint256 balanceScenario2 = sinvoke  balanceOf(e,a);
+	
+	uint256 balanceScenario2 = sinvoke balanceOf(e,a);
 	assert balanceScenario1 == balanceScenario2, "mint is not additive";
 }
 
@@ -124,7 +130,7 @@ rule additiveBurn(address a, uint256 x,  uint256 y) {
 	sinvoke burn(e, a, x);
 	sinvoke burn(e, a, y);
 	uint256 balanceScenario1 = balanceOf(e, a);
-	uint t = x + y;
+	uint256 t = x + y;
 	sinvoke burn(e, a, t) at initialStorage;
 
 	uint256 balanceScenario2 = balanceOf(e, a);
