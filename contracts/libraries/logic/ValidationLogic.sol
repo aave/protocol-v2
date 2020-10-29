@@ -13,8 +13,6 @@ import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
-import "@nomiclabs/buidler/console.sol";
-
 
 /**
  * @title ReserveLogic library
@@ -421,8 +419,6 @@ library ValidationLogic {
       reservesCount,
       oracle
     );
-
-    console.log("Health factor after transfer %s", healthFactor);
 
     require(
       healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
