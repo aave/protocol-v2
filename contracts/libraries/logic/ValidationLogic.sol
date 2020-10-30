@@ -258,8 +258,8 @@ library ValidationLogic {
   function validateSwapRateMode(
     ReserveLogic.ReserveData storage reserve,
     UserConfiguration.Map storage userConfig,
-    uint256 stableBorrowBalance,
-    uint256 variableBorrowBalance,
+    uint256 stableDebt,
+    uint256 variableDebt,
     ReserveLogic.InterestRateMode currentRateMode
   ) external view {
     (bool isActive, bool isFreezed, , bool stableRateEnabled) = reserve.configuration.getFlags();
@@ -268,9 +268,9 @@ library ValidationLogic {
     require(!isFreezed, Errors.NO_UNFREEZED_RESERVE);
 
     if (currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
-      require(stableBorrowBalance > 0, Errors.NO_STABLE_RATE_LOAN_IN_RESERVE);
+      require(stableDebt > 0, Errors.NO_STABLE_RATE_LOAN_IN_RESERVE);
     } else if (currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
-      require(variableBorrowBalance > 0, Errors.NO_VARIABLE_RATE_LOAN_IN_RESERVE);
+      require(variableDebt > 0, Errors.NO_VARIABLE_RATE_LOAN_IN_RESERVE);
       /**
        * user wants to swap to stable, before swapping we need to ensure that
        * 1. stable borrow rate is enabled on the reserve
@@ -283,7 +283,7 @@ library ValidationLogic {
       require(
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
-          stableBorrowBalance.add(variableBorrowBalance) >
+          stableDebt.add(variableDebt) >
           IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
