@@ -27,9 +27,10 @@ interface ILendingPool {
    * @dev emitted during a withdraw action.
    * @param reserve the address of the reserve
    * @param user the address of the user
+   * @param to address that will receive the underlying
    * @param amount the amount to be withdrawn
    **/
-  event Withdraw(address indexed reserve, address indexed user, uint256 amount);
+  event Withdraw(address indexed reserve, address indexed user, address indexed to, uint256 amount);
 
   event BorrowAllowanceDelegated(
     address indexed asset,
@@ -188,8 +189,13 @@ interface ILendingPool {
    * @dev withdraws the assets of user.
    * @param reserve the address of the reserve
    * @param amount the underlying amount to be redeemed
+   * @param to address that will receive the underlying
    **/
-  function withdraw(address reserve, uint256 amount) external;
+  function withdraw(
+    address reserve,
+    uint256 amount,
+    address to
+  ) external;
 
   /**
    * @dev Sets allowance to borrow on a certain type of debt asset for a certain user address
