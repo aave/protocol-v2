@@ -104,6 +104,7 @@ library ValidationLogic {
 
   /**
    * @dev validates a borrow.
+   * @param asset the address of the asset to borrow
    * @param reserve the reserve state from which the user is borrowing
    * @param userAddress the address of the user
    * @param amount the amount to be borrowed
@@ -117,6 +118,7 @@ library ValidationLogic {
    */
 
   function validateBorrow(
+    address asset,
     ReserveLogic.ReserveData storage reserve,
     address userAddress,
     uint256 amount,
@@ -202,6 +204,8 @@ library ValidationLogic {
           amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
+
+      vars.availableLiquidity = IERC20(asset).balanceOf(reserve.aTokenAddress);
 
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity

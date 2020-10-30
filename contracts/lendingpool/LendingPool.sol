@@ -882,6 +882,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
 
     ValidationLogic.validateBorrow(
+      vars.asset,
       reserve,
       vars.onBehalfOf,
       vars.amount,
