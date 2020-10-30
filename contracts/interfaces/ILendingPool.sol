@@ -100,20 +100,18 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
-   * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
-   * @param onBehalfOf the address incurring the debt, if borrow mode is not 0
-   * @param assets the address of the assets being flashborrowed
-   * @param amounts the amount requested
-   * @param premiums the total fee on the amount
+   * @param initiator the address initiating the flash loan
+   * @param asset the address of the asset being flashborrowed
+   * @param amount the amount requested
+   * @param premium the total fee on the amount
    * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
-    uint256 mode,
-    address indexed onBehalfOf,
-    address[] assets,
-    uint256[] amounts,
-    uint256[] premiums,
+    address indexed initiator,
+    address indexed asset,
+    uint256 amount,
+    uint256 premium,
     uint16 referralCode
   );
 
@@ -295,7 +293,7 @@ interface ILendingPool {
    * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
    * @param assets the address of the principal reserve
    * @param amounts the amount requested for this flashloan
-   * @param mode the flashloan mode
+   * @param modes the flashloan borrow modes
    * @param params a bytes array to be sent to the flashloan executor
    * @param referralCode the referral code of the caller
    **/
@@ -303,7 +301,7 @@ interface ILendingPool {
     address receiver,
     address[] calldata assets,
     uint256[] calldata amounts,
-    uint256 mode,
+    uint256[] calldata modes,
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode

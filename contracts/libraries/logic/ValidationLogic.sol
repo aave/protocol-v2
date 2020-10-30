@@ -283,8 +283,7 @@ library ValidationLogic {
       require(
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
-          stableDebt.add(variableDebt) >
-          IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
+          stableDebt.add(variableDebt) > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
@@ -331,16 +330,10 @@ library ValidationLogic {
 
   /**
    * @dev validates a flashloan action
-   * @param mode the flashloan mode (0 = classic flashloan, 1 = open a stable rate loan, 2 = open a variable rate loan)
    * @param assets the assets being flashborrowed
    * @param amounts the amounts for each asset being borrowed
    **/
-  function validateFlashloan(
-    address[] memory assets,
-    uint256[] memory amounts,
-    uint256 mode
-  ) internal pure {
-    require(mode <= uint256(ReserveLogic.InterestRateMode.VARIABLE), Errors.INVALID_FLASHLOAN_MODE);
+  function validateFlashloan(address[] memory assets, uint256[] memory amounts) internal pure {
     require(assets.length == amounts.length, Errors.INCONSISTENT_FLASHLOAN_PARAMS);
   }
 

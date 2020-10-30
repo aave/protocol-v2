@@ -159,7 +159,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param proxy the aToken proxy address
    * @param implementation the new aToken implementation
    **/
-  event ATokenUpgraded(address indexed asset, address indexed proxy, address indexed implementation);
+  event ATokenUpgraded(
+    address indexed asset,
+    address indexed proxy,
+    address indexed implementation
+  );
 
   /**
    * @dev emitted when the implementation of a stable debt token is upgraded
@@ -167,7 +171,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param proxy the stable debt token proxy address
    * @param implementation the new aToken implementation
    **/
-  event StableDebtTokenUpgraded(address indexed asset, address indexed proxy, address indexed implementation);
+  event StableDebtTokenUpgraded(
+    address indexed asset,
+    address indexed proxy,
+    address indexed implementation
+  );
 
   /**
    * @dev emitted when the implementation of a variable debt token is upgraded
@@ -175,7 +183,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param proxy the variable debt token proxy address
    * @param implementation the new aToken implementation
    **/
-  event VariableDebtTokenUpgraded(address indexed asset, address indexed proxy, address indexed implementation);
+  event VariableDebtTokenUpgraded(
+    address indexed asset,
+    address indexed proxy,
+    address indexed implementation
+  );
 
   ILendingPoolAddressesProvider internal addressesProvider;
   ILendingPool internal pool;

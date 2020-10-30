@@ -191,7 +191,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [flashAmount],
-          1,
+          [1],
           caller.address,
           '0x10',
           '0'

@@ -97,7 +97,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     address user,
     uint256 amount,
     uint256 rate
-  ) external override onlyLendingPool returns(bool) {
+  ) external override onlyLendingPool returns (bool) {
     MintLocalVars memory vars;
 
     //cumulates the user debt

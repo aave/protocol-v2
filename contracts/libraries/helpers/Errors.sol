@@ -98,7 +98,6 @@ library Errors {
   string public constant INVALID_DECIMALS = '73';
   string public constant INVALID_RESERVE_FACTOR = '74';
 
-
   enum CollateralManagerErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,
