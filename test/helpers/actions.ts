@@ -17,11 +17,8 @@ import {
 } from './utils/calculations';
 import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/helpers';
 
-import {
-  convertToCurrencyDecimals,
-  getAToken,
-  getMintableErc20,
-} from '../../helpers/contracts-helpers';
+import {convertToCurrencyDecimals} from '../../helpers/contracts-helpers';
+import {getAToken, getMintableErc20} from '../../helpers/contracts-getters';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
 import {BRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';
@@ -31,7 +28,6 @@ import {ReserveData, UserReserveData} from './utils/interfaces';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
-import {time} from 'console';
 
 const {expect} = chai;
 
@@ -735,11 +731,11 @@ export const getContractsData = async (
   testEnv: TestEnv,
   sender?: string
 ) => {
-  const {pool} = testEnv;
+  const {pool, helpersContract} = testEnv;
 
   const [userData, reserveData, timestamp] = await Promise.all([
-    getUserData(pool, reserve, user, sender || user),
-    getReserveData(pool, reserve),
+    getUserData(pool, helpersContract, reserve, user, sender || user),
+    getReserveData(helpersContract, reserve),
     timeLatest(),
   ]);
 

@@ -2,6 +2,8 @@ version: '3.5'
 
 services:
   contracts-env:
+    env_file:
+      - .env
     build:
       context: ./
     working_dir: /src

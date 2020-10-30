@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Context} from '@openzeppelin/contracts/GSN/Context.sol';
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {
   VersionedInitializable
-} from '../../libraries/openzeppelin-upgradeability/VersionedInitializable.sol';
+} from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
@@ -18,15 +15,15 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
  */
 
 abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
-  address internal immutable UNDERLYING_ASSET;
-  ILendingPool internal immutable POOL;
+  address public immutable UNDERLYING_ASSET_ADDRESS;
+  ILendingPool public immutable POOL;
   mapping(address => uint256) internal _usersData;
 
   /**
    * @dev Only lending pool can call functions marked by this modifier
    **/
   modifier onlyLendingPool {
-    require(msg.sender == address(POOL), Errors.AT_CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(POOL), Errors.AT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
@@ -42,7 +39,7 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
     address incentivesController
   ) public IncentivizedERC20(name, symbol, 18, incentivesController) {
     POOL = ILendingPool(pool);
-    UNDERLYING_ASSET = underlyingAssetAddress;
+    UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
   }
 
   /**
@@ -59,10 +56,6 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
     _setName(name);
     _setSymbol(symbol);
     _setDecimals(decimals);
-  }
-
-  function underlyingAssetAddress() public view returns (address) {
-    return UNDERLYING_ASSET;
   }
 
   /**

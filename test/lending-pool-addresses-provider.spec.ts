@@ -5,7 +5,7 @@ import {ProtocolErrors} from '../helpers/types';
 import {ethers} from 'ethers';
 import {ZERO_ADDRESS} from '../helpers/constants';
 import {waitForTx} from '../helpers/misc-utils';
-import {deployLendingPool} from '../helpers/contracts-helpers';
+import {deployLendingPool} from '../helpers/contracts-deployments';
 
 const {utils} = ethers;
 

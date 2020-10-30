@@ -2,8 +2,8 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '@openzeppelin/contracts/math/SafeMath.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
@@ -25,7 +25,6 @@ library GenericLogic {
   using UserConfiguration for UserConfiguration.Map;
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
-  uint256 public constant HEALTH_FACTOR_CRITICAL_THRESHOLD = 0.98 ether;
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
@@ -34,7 +33,7 @@ library GenericLogic {
     uint256 borrowBalanceETH;
     uint256 avgLiquidationThreshold;
     uint256 amountToDecreaseETH;
-    uint256 collateralBalancefterDecrease;
+    uint256 collateralBalanceAfterDecrease;
     uint256 liquidationThresholdAfterDecrease;
     uint256 healthFactorAfterDecrease;
     bool reserveUsageAsCollateralEnabled;
@@ -68,7 +67,9 @@ library GenericLogic {
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (, vars.liquidationThreshold, , vars.decimals) = reservesData[asset].configuration.getParams();
+    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset]
+      .configuration
+      .getParams();
 
     if (vars.liquidationThreshold == 0) {
       return true; //if reserve is not used as collateral, no reasons to block the transfer
@@ -90,10 +91,10 @@ library GenericLogic {
       10**vars.decimals
     );
 
-    vars.collateralBalancefterDecrease = vars.collateralBalanceETH.sub(vars.amountToDecreaseETH);
+    vars.collateralBalanceAfterDecrease = vars.collateralBalanceETH.sub(vars.amountToDecreaseETH);
 
     //if there is a borrow, there can't be 0 collateral
-    if (vars.collateralBalancefterDecrease == 0) {
+    if (vars.collateralBalanceAfterDecrease == 0) {
       return false;
     }
 
@@ -101,15 +102,15 @@ library GenericLogic {
       .collateralBalanceETH
       .mul(vars.avgLiquidationThreshold)
       .sub(vars.amountToDecreaseETH.mul(vars.liquidationThreshold))
-      .div(vars.collateralBalancefterDecrease);
+      .div(vars.collateralBalanceAfterDecrease);
 
     uint256 healthFactorAfterDecrease = calculateHealthFactorFromBalances(
-      vars.collateralBalancefterDecrease,
+      vars.collateralBalanceAfterDecrease,
       vars.borrowBalanceETH,
       vars.liquidationThresholdAfterDecrease
     );
 
-    return healthFactorAfterDecrease > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
+    return healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
   }
 
   struct CalculateUserAccountDataVars {
@@ -177,7 +178,7 @@ library GenericLogic {
       vars.currentReserveAddress = reserves[vars.i];
       ReserveLogic.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
 
-      (vars.ltv, vars.liquidationThreshold, , vars.decimals) = currentReserve
+      (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
         .configuration
         .getParams();
 

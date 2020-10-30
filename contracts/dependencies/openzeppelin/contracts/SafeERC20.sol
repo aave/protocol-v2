@@ -2,8 +2,8 @@
 
 pragma solidity 0.6.8;
 
-import {IERC20} from '../interfaces/IERC20.sol';
-import {SafeMath} from '../libraries/math/SafeMath.sol';
+import {IERC20} from './IERC20.sol';
+import {SafeMath} from './SafeMath.sol';
 import {Address} from './Address.sol';
 
 /**

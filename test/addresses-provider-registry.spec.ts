@@ -1,6 +1,5 @@
 import {TestEnv, makeSuite} from './helpers/make-suite';
-import {RAY, APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS} from '../helpers/constants';
-import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
+import {ZERO_ADDRESS} from '../helpers/constants';
 import {ProtocolErrors} from '../helpers/types';
 
 const {expect} = require('chai');
@@ -15,6 +14,15 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
     expect(providers[0].toString()).to.be.equal(
       addressesProvider.address,
       ' Invalid addresses provider added to the list'
+    );
+  });
+
+  it('tries to register an addresses provider with id 0', async () => {
+    const {users, registry} = testEnv;
+    const {LPAPR_INVALID_ADDRESSES_PROVIDER_ID} = ProtocolErrors;
+
+    await expect(registry.registerAddressesProvider(users[2].address, '0')).to.be.revertedWith(
+      LPAPR_INVALID_ADDRESSES_PROVIDER_ID
     );
   });
 

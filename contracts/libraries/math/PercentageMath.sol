@@ -22,19 +22,16 @@ library PercentageMath {
    * @return the percentage of value
    **/
   function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256) {
-    if (value == 0) {
+    if (value == 0 || percentage == 0) {
       return 0;
     }
 
-    uint256 result = value * percentage;
+    require(
+      value <= (type(uint256).max - HALF_PERCENT) / percentage,
+      Errors.MATH_MULTIPLICATION_OVERFLOW
+    );
 
-    require(result / value == percentage, Errors.MATH_MULTIPLICATION_OVERFLOW);
-
-    result += HALF_PERCENT;
-
-    require(result >= HALF_PERCENT, Errors.MATH_ADDITION_OVERFLOW);
-
-    return result / PERCENTAGE_FACTOR;
+    return (value * percentage + HALF_PERCENT) / PERCENTAGE_FACTOR;
   }
 
   /**
@@ -47,14 +44,11 @@ library PercentageMath {
     require(percentage != 0, Errors.MATH_DIVISION_BY_ZERO);
     uint256 halfPercentage = percentage / 2;
 
-    uint256 result = value * PERCENTAGE_FACTOR;
+    require(
+      value <= (type(uint256).max - halfPercentage) / PERCENTAGE_FACTOR,
+      Errors.MATH_MULTIPLICATION_OVERFLOW
+    );
 
-    require(result / PERCENTAGE_FACTOR == value, Errors.MATH_MULTIPLICATION_OVERFLOW);
-
-    result += halfPercentage;
-
-    require(result >= halfPercentage, Errors.MATH_ADDITION_OVERFLOW);
-
-    return result / percentage;
+    return (value * PERCENTAGE_FACTOR + halfPercentage) / percentage;
   }
 }

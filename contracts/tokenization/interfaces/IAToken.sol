@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {IERC20} from '../../interfaces/IERC20.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 
 interface IAToken is IERC20, IScaledBalanceToken {
@@ -53,8 +53,6 @@ interface IAToken is IERC20, IScaledBalanceToken {
     address to,
     uint256 value
   ) external;
-
-  function isTransferAllowed(address user, uint256 amount) external view returns (bool);
 
   /**
    * @dev transfer the amount of the underlying asset to the user

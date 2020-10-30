@@ -44,7 +44,6 @@ export enum eContractid {
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
-  MockSwapAdapter = 'MockSwapAdapter',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
@@ -56,6 +55,8 @@ export enum eContractid {
   VariableDebtToken = 'VariableDebtToken',
   FeeProvider = 'FeeProvider',
   TokenDistributor = 'TokenDistributor',
+  StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
+  ATokensAndRatesHelper = 'ATokensAndRatesHelper',
 }
 
 /*
@@ -98,37 +99,52 @@ export enum ProtocolErrors {
   LP_REQUESTED_AMOUNT_TOO_SMALL = '25', // 'The requested amount is too small for a FlashLoan.'
   LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26', // 'The actual balance of the protocol is inconsistent'
   LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The actual balance of the protocol is inconsistent'
-  AT_CALLER_MUST_BE_LENDING_POOL = '28', // 'The caller of this function must be a lending pool'
-  AT_CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '29', // 'User cannot give allowance to himself'
-  AT_TRANSFER_AMOUNT_NOT_GT_0 = '30', // 'Transferred amount needs to be greater than zero'
-  RL_RESERVE_ALREADY_INITIALIZED = '31', // 'Reserve has already been initialized'
-  LPC_CALLER_NOT_AAVE_ADMIN = '32', // 'The caller must be the aave admin'
-  LPC_RESERVE_LIQUIDITY_NOT_0 = '33', // 'The liquidity of the reserve needs to be 0'
-  LPAPR_PROVIDER_NOT_REGISTERED = '34', // 'Provider is not registered'
-  LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '35', // 'Health factor is not below the threshold'
-  LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED = '36', // 'The collateral chosen cannot be liquidated'
-  LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '37', // 'User did not borrow the specified currency'
-  LPCM_NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '38', // "There isn't enough liquidity available to liquidate"
-  LPCM_NO_ERRORS = '39', // 'No errors'
-  LP_INVALID_FLASHLOAN_MODE = '40', //Invalid flashloan mode selected
-  MATH_MULTIPLICATION_OVERFLOW = '41',
-  MATH_ADDITION_OVERFLOW = '42',
-  MATH_DIVISION_BY_ZERO = '43',
-  RL_LIQUIDITY_INDEX_OVERFLOW = '44', //  Liquidity index overflows uint128
-  RL_VARIABLE_BORROW_INDEX_OVERFLOW = '45', //  Variable borrow index overflows uint128
-  RL_LIQUIDITY_RATE_OVERFLOW = '46', //  Liquidity rate overflows uint128
-  RL_VARIABLE_BORROW_RATE_OVERFLOW = '47', //  Variable borrow rate overflows uint128
-  RL_STABLE_BORROW_RATE_OVERFLOW = '48', //  Stable borrow rate overflows uint128
-  AT_INVALID_MINT_AMOUNT = '49', //invalid amount to mint
-  LP_FAILED_REPAY_WITH_COLLATERAL = '50',
-  AT_INVALID_BURN_AMOUNT = '51', //invalid amount to burn
-  LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '52', // User borrows on behalf, but allowance are too small
-  LP_FAILED_COLLATERAL_SWAP = '53',
-  LP_INVALID_EQUAL_ASSETS_TO_SWAP = '54',
-  LP_REENTRANCY_NOT_ALLOWED = '55',
-  P_IS_PAUSED = '56', // 'Pool is paused'
-  LP_NO_MORE_RESERVES_ALLOWED = '57',
-  LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN = '58',
+  LP_INCONSISTENT_FLASHLOAN_PARAMS = '28',
+  AT_CALLER_MUST_BE_LENDING_POOL = '29', // 'The caller of this function must be a lending pool'
+  AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
+  AT_TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
+  RL_RESERVE_ALREADY_INITIALIZED = '32', // 'Reserve has already been initialized'
+  LPC_CALLER_NOT_AAVE_ADMIN = '33', // 'The caller must be the aave admin'
+  LPC_RESERVE_LIQUIDITY_NOT_0 = '34', // 'The liquidity of the reserve needs to be 0'
+  LPC_INVALID_ATOKEN_POOL_ADDRESS = '35', // 'The liquidity of the reserve needs to be 0'
+  LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS = '36', // 'The liquidity of the reserve needs to be 0'
+  LPC_INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS = '37', // 'The liquidity of the reserve needs to be 0'
+  LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '38', // 'The liquidity of the reserve needs to be 0'
+  LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '39', // 'The liquidity of the reserve needs to be 0'
+  LPC_INVALID_ADDRESSES_PROVIDER_ID = '40', // 'The liquidity of the reserve needs to be 0'
+  LPAPR_PROVIDER_NOT_REGISTERED = '41', // 'Provider is not registered'
+  LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '42', // 'Health factor is not below the threshold'
+  LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED = '43', // 'The collateral chosen cannot be liquidated'
+  LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER = '44', // 'User did not borrow the specified currency'
+  LPCM_NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE = '45', // "There isn't enough liquidity available to liquidate"
+  LPCM_NO_ERRORS = '46', // 'No errors'
+  LP_INVALID_FLASHLOAN_MODE = '47', //Invalid flashloan mode selected
+  MATH_MULTIPLICATION_OVERFLOW = '48',
+  MATH_ADDITION_OVERFLOW = '49',
+  MATH_DIVISION_BY_ZERO = '50',
+  RL_LIQUIDITY_INDEX_OVERFLOW = '51', //  Liquidity index overflows uint128
+  RL_VARIABLE_BORROW_INDEX_OVERFLOW = '52', //  Variable borrow index overflows uint128
+  RL_LIQUIDITY_RATE_OVERFLOW = '53', //  Liquidity rate overflows uint128
+  RL_VARIABLE_BORROW_RATE_OVERFLOW = '54', //  Variable borrow rate overflows uint128
+  RL_STABLE_BORROW_RATE_OVERFLOW = '55', //  Stable borrow rate overflows uint128
+  AT_INVALID_MINT_AMOUNT = '56', //invalid amount to mint
+  LP_FAILED_REPAY_WITH_COLLATERAL = '57',
+  AT_INVALID_BURN_AMOUNT = '58', //invalid amount to burn
+  LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '59', // User borrows on behalf, but allowance are too small
+  LP_FAILED_COLLATERAL_SWAP = '60',
+  LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61',
+  LP_REENTRANCY_NOT_ALLOWED = '62',
+  LP_CALLER_MUST_BE_AN_ATOKEN = '63',
+  P_IS_PAUSED = '64', // 'Pool is paused'
+  LP_NO_MORE_RESERVES_ALLOWED = '65',
+  LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN = '66',
+  RC_INVALID_LTV = '67',
+  RC_INVALID_LIQ_THRESHOLD = '68',
+  RC_INVALID_LIQ_BONUS = '69',
+  RC_INVALID_DECIMALS = '70',
+  RC_INVALID_RESERVE_FACTOR = '71',
+  LPAPR_INVALID_ADDRESSES_PROVIDER_ID = '72',
+
   // old
 
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
@@ -356,6 +372,7 @@ export interface ICommonConfiguration {
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
+  ProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

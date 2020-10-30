@@ -5,7 +5,6 @@ import {
   MAX_UINT_AMOUNT,
   OPTIMAL_UTILIZATION_RATE,
   EXCESS_UTILIZATION_RATE,
-  ZERO_ADDRESS,
 } from '../../../helpers/constants';
 import {IReserveParams, iAavePoolAssets, RateMode, tEthereumAddress} from '../../../helpers/types';
 import './math';
@@ -1153,11 +1152,12 @@ const calcLinearInterest = (
   currentTimestamp: BigNumber,
   lastUpdateTimestamp: BigNumber
 ) => {
-  const timeDifference = currentTimestamp.minus(lastUpdateTimestamp).wadToRay();
+  const timeDifference = currentTimestamp.minus(lastUpdateTimestamp);
 
-  const timeDelta = timeDifference.rayDiv(new BigNumber(ONE_YEAR).wadToRay());
-
-  const cumulatedInterest = rate.rayMul(timeDelta).plus(RAY);
+  const cumulatedInterest = rate
+    .multipliedBy(timeDifference)
+    .dividedBy(new BigNumber(ONE_YEAR))
+    .plus(RAY);
 
   return cumulatedInterest;
 };

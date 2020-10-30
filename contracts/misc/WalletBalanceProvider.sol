@@ -1,12 +1,15 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Address} from '@openzeppelin/contracts/utils/Address.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+pragma experimental ABIEncoderV2;
+
+import {Address} from '../dependencies/openzeppelin/contracts/Address.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {SafeERC20} from '@openzeppelin/contracts/token/ERC20/SafeERC20.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 
 /**
  * @title WalletBalanceProvider contract
@@ -19,6 +22,7 @@ contract WalletBalanceProvider {
   using Address for address payable;
   using Address for address;
   using SafeERC20 for IERC20;
+  using ReserveConfiguration for ReserveConfiguration.Map;
 
   LendingPoolAddressesProvider internal immutable _provider;
 
@@ -91,7 +95,9 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reserves.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      (, , , , , , , , , bool isActive, ) = pool.getReserveConfigurationData(reserves[j]);
+      ReserveConfiguration.Map memory configuration = pool.getConfiguration(reserves[j]);
+
+      (bool isActive, , , ) = configuration.getFlagsMemory();
 
       if (!isActive) {
         balances[j] = 0;
