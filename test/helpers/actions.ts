@@ -231,7 +231,7 @@ export const withdraw = async (
 
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await pool.connect(user.signer).withdraw(reserve, amountToWithdraw)
+      await pool.connect(user.signer).withdraw(reserve, amountToWithdraw, user.address)
     );
 
     const {
@@ -269,8 +269,10 @@ export const withdraw = async (
     //   );
     // });
   } else if (expectedResult === 'revert') {
-    await expect(pool.connect(user.signer).withdraw(reserve, amountToWithdraw), revertMessage).to.be
-      .reverted;
+    await expect(
+      pool.connect(user.signer).withdraw(reserve, amountToWithdraw, user.address),
+      revertMessage
+    ).to.be.reverted;
   }
 };
 

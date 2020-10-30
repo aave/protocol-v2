@@ -1,0 +1,1 @@
+certoraRun contracts/tokenization/VariableDebtToken.sol:VariableDebtToken specs/harness/LendingPoolHarnessForVariableDebtToken.sol --solc solc6.8 --link VariableDebtToken:POOL=LendingPoolHarnessForVariableDebtToken --verify VariableDebtToken:specs/VariableDebtToken.spec --settings -assumeUnwindCond,-useNonLinearArithmetic --cache VariableDebtToken --staging

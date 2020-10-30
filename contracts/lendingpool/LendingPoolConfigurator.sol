@@ -47,7 +47,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param stableRateEnabled true if stable rate borrowing is enabled, false otherwise
    **/
-  event BorrowingEnabledOnReserve(address asset, bool stableRateEnabled);
+  event BorrowingEnabledOnReserve(address indexed asset, bool stableRateEnabled);
 
   /**
    * @dev emitted when borrowing is disabled on a reserve
@@ -116,42 +116,42 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param ltv the new value for the loan to value
    **/
-  event ReserveBaseLtvChanged(address asset, uint256 ltv);
+  event ReserveBaseLtvChanged(address indexed asset, uint256 ltv);
 
   /**
    * @dev emitted when a reserve factor is updated
    * @param asset the address of the reserve
    * @param factor the new reserve factor
    **/
-  event ReserveFactorChanged(address asset, uint256 factor);
+  event ReserveFactorChanged(address indexed asset, uint256 factor);
 
   /**
    * @dev emitted when a reserve liquidation threshold is updated
    * @param asset the address of the reserve
    * @param threshold the new value for the liquidation threshold
    **/
-  event ReserveLiquidationThresholdChanged(address asset, uint256 threshold);
+  event ReserveLiquidationThresholdChanged(address indexed asset, uint256 threshold);
 
   /**
    * @dev emitted when a reserve liquidation bonus is updated
    * @param asset the address of the reserve
    * @param bonus the new value for the liquidation bonus
    **/
-  event ReserveLiquidationBonusChanged(address asset, uint256 bonus);
+  event ReserveLiquidationBonusChanged(address indexed asset, uint256 bonus);
 
   /**
    * @dev emitted when the reserve decimals are updated
    * @param asset the address of the reserve
    * @param decimals the new decimals
    **/
-  event ReserveDecimalsChanged(address asset, uint256 decimals);
+  event ReserveDecimalsChanged(address indexed asset, uint256 decimals);
 
   /**
    * @dev emitted when a reserve interest strategy contract is updated
    * @param asset the address of the reserve
    * @param strategy the new address of the interest strategy contract
    **/
-  event ReserveInterestRateStrategyChanged(address asset, address strategy);
+  event ReserveInterestRateStrategyChanged(address indexed asset, address strategy);
 
   /**
    * @dev emitted when an aToken implementation is upgraded
@@ -159,7 +159,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param proxy the aToken proxy address
    * @param implementation the new aToken implementation
    **/
-  event ATokenUpgraded(address asset, address proxy, address implementation);
+  event ATokenUpgraded(
+    address indexed asset,
+    address indexed proxy,
+    address indexed implementation
+  );
 
   /**
    * @dev emitted when the implementation of a stable debt token is upgraded
@@ -167,7 +171,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param proxy the stable debt token proxy address
    * @param implementation the new aToken implementation
    **/
-  event StableDebtTokenUpgraded(address asset, address proxy, address implementation);
+  event StableDebtTokenUpgraded(
+    address indexed asset,
+    address indexed proxy,
+    address indexed implementation
+  );
 
   /**
    * @dev emitted when the implementation of a variable debt token is upgraded
@@ -175,7 +183,11 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param proxy the variable debt token proxy address
    * @param implementation the new aToken implementation
    **/
-  event VariableDebtTokenUpgraded(address asset, address proxy, address implementation);
+  event VariableDebtTokenUpgraded(
+    address indexed asset,
+    address indexed proxy,
+    address indexed implementation
+  );
 
   ILendingPoolAddressesProvider internal addressesProvider;
   ILendingPool internal pool;
