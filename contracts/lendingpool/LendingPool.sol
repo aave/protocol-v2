@@ -881,9 +881,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       );
     }
 
-    uint256 reserveId = reserve.id;
     if (isFirstBorrowing) {
-      userConfig.setBorrowing(reserveId, true);
+      userConfig.setBorrowing(reserve.id, true);
     }
 
     reserve.updateInterestRates(
