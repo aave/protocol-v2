@@ -1,10 +1,11 @@
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {ProtocolErrors, RateMode} from '../helpers/types';
 import {APPROVAL_AMOUNT_LENDING_POOL, oneEther} from '../helpers/constants';
-import {convertToCurrencyDecimals, getMockFlashLoanReceiver} from '../helpers/contracts-helpers';
+import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {parseEther, parseUnits} from 'ethers/lib/utils';
 import {BigNumber} from 'bignumber.js';
 import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
+import {getMockFlashLoanReceiver} from '../helpers/contracts-getters';
 
 const {expect} = require('chai');
 
@@ -186,7 +187,15 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(caller.signer)
-        .flashLoan(_mockFlashLoanReceiver.address, [weth.address], [flashAmount], 1, '0x10', '0')
+        .flashLoan(
+          _mockFlashLoanReceiver.address,
+          [weth.address],
+          [flashAmount],
+          1,
+          caller.address,
+          '0x10',
+          '0'
+        )
     ).revertedWith(IS_PAUSED);
 
     // Unpause pool
