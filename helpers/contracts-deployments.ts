@@ -140,7 +140,6 @@ export const deployAaveLibraries = async (
   return {
     ['__$5201a97c05ba6aa659e2f36a933dd51801$__']: validationLogic.address,
     ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: reserveLogic.address,
-    ['__$4c26be947d349222af871a3168b3fe584b$__']: genericLogic.address,
   };
 };
 

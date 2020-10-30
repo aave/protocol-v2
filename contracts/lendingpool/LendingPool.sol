@@ -183,23 +183,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Sets allowance to borrow on a certain type of debt asset for a certain user address
-   * @param asset The underlying asset of the debt token
+   * @dev Sets allowance to borrow on a certain type of debt assets for a certain user address
+   * @param assets The underlying asset of each debt token
    * @param user The user to give allowance to
-   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
-   * @param amount Allowance amount to borrow
+   * @param interestRateModes Types of debt: 1 for stable, 2 for variable
+   * @param amounts Allowance amounts to borrow
    **/
   function delegateBorrowAllowance(
-    address asset,
+    address[] calldata assets,
     address user,
-    uint256 interestRateMode,
-    uint256 amount
+    uint256[] calldata interestRateModes,
+    uint256[] calldata amounts
   ) external override {
     _whenNotPaused();
-    address debtToken = _reserves[asset].getDebtTokenAddress(interestRateMode);
 
-    _borrowAllowance[debtToken][msg.sender][user] = amount;
-    emit BorrowAllowanceDelegated(asset, msg.sender, user, interestRateMode, amount);
+    uint256 countAssets = assets.length;
+    require(
+      countAssets == interestRateModes.length && countAssets == amounts.length,
+      Errors.INCONSISTENT_PARAMS_LENGTH
+    );
+
+    for (uint256 i = 0; i < countAssets; i++) {
+      address debtToken = _reserves[assets[i]].getDebtTokenAddress(interestRateModes[i]);
+      _borrowAllowance[debtToken][msg.sender][user] = amounts[i];
+    }
+
+    emit BorrowAllowanceDelegated(msg.sender, user, assets, interestRateModes, amounts);
   }
 
   /**
@@ -698,7 +707,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @return the reserve normalized income
    */
-  function getReserveNormalizedIncome(address asset) external virtual override view returns (uint256) {
+  function getReserveNormalizedIncome(address asset)
+    external
+    virtual
+    override
+    view
+    returns (uint256)
+  {
     return _reserves[asset].getNormalizedIncome();
   }
 

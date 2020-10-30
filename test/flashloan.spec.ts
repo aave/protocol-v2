@@ -464,7 +464,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     // Deposited for onBehalfOf user already, delegate borrow allowance
     await pool
       .connect(onBehalfOf.signer)
-      .delegateBorrowAllowance(weth.address, caller.address, 1, flashAmount);
+      .delegateBorrowAllowance([weth.address], caller.address, [1], [flashAmount]);
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 

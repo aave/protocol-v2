@@ -33,11 +33,11 @@ interface ILendingPool {
   event Withdraw(address indexed reserve, address indexed user, address indexed to, uint256 amount);
 
   event BorrowAllowanceDelegated(
-    address indexed asset,
     address indexed fromUser,
     address indexed toUser,
-    uint256 interestRateMode,
-    uint256 amount
+    address[] assets,
+    uint256[] interestRateModes,
+    uint256[] amounts
   );
   /**
    * @dev emitted on borrow
@@ -196,17 +196,17 @@ interface ILendingPool {
   ) external;
 
   /**
-   * @dev Sets allowance to borrow on a certain type of debt asset for a certain user address
-   * @param asset The underlying asset of the debt token
+   * @dev Sets allowance to borrow on a certain type of debt assets for a certain user address
+   * @param assets The underlying asset of each debt token
    * @param user The user to give allowance to
-   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
-   * @param amount Allowance amount to borrow
+   * @param interestRateModes Types of debt: 1 for stable, 2 for variable
+   * @param amounts Allowance amounts to borrow
    **/
   function delegateBorrowAllowance(
-    address asset,
+    address[] calldata assets,
     address user,
-    uint256 interestRateMode,
-    uint256 amount
+    uint256[] calldata interestRateModes,
+    uint256[] calldata amounts
   ) external;
 
   function getBorrowAllowance(
