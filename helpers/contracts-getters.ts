@@ -10,7 +10,10 @@ import {
   LendingPoolFactory,
   LendingRateOracleFactory,
   MintableErc20Factory,
+  MockATokenFactory,
   MockFlashLoanReceiverFactory,
+  MockStableDebtTokenFactory,
+  MockVariableDebtTokenFactory,
   MockUniswapV2Router02Factory,
   PriceOracleFactory,
   ReserveLogicFactory,
@@ -223,6 +226,26 @@ export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
     address ||
       (await getDb().get(`${eContractid.ATokensAndRatesHelper}.${BRE.network.name}`).value())
         .address,
+    await getFirstSigner()
+  );
+
+export const getMockAToken = async (address?: tEthereumAddress) =>
+  await MockATokenFactory.connect(
+    address || (await getDb().get(`${eContractid.MockAToken}.${BRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockVariableDebtToken = async (address?: tEthereumAddress) =>
+  await MockVariableDebtTokenFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.MockVariableDebtToken}.${BRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+export const getMockStableDebtToken = async (address?: tEthereumAddress) =>
+  await MockStableDebtTokenFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.MockStableDebtToken}.${BRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 

@@ -196,7 +196,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev only the lending pool manager can call functions affected by this modifier
    **/
   modifier onlyAaveAdmin {
-    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.CALLER_NOT_AAVE_ADMIN);
+    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.LPC_CALLER_NOT_AAVE_ADMIN);
     _;
   }
 
@@ -230,23 +230,23 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     require(
       address(pool) == ITokenConfiguration(aTokenImpl).POOL(),
-      Errors.INVALID_ATOKEN_POOL_ADDRESS
+      Errors.LPC_INVALID_ATOKEN_POOL_ADDRESS
     );
     require(
       address(pool) == ITokenConfiguration(stableDebtTokenImpl).POOL(),
-      Errors.INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS
+      Errors.LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS
     );
     require(
       address(pool) == ITokenConfiguration(variableDebtTokenImpl).POOL(),
-      Errors.INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS
+      Errors.LPC_INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS
     );
     require(
       asset == ITokenConfiguration(stableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
-      Errors.INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
+      Errors.LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
     );
     require(
       asset == ITokenConfiguration(variableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
-      Errors.INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
+      Errors.LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
     );
 
     address aTokenProxyAddress = _initTokenWithProxy(aTokenImpl, underlyingAssetDecimals);
@@ -449,7 +449,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     require(
       availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
-      Errors.RESERVE_LIQUIDITY_NOT_0
+      Errors.LPC_RESERVE_LIQUIDITY_NOT_0
     );
 
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
