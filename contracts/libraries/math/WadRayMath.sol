@@ -54,15 +54,13 @@ library WadRayMath {
    * @return the result of a*b, in wad
    **/
   function wadMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0) {
+    if (a == 0 || b == 0) {
       return 0;
     }
 
-    uint256 result = a * b + halfWAD;
+    require(a <= (type(uint256).max - halfWAD) / b, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result >= halfWAD && (result - halfWAD) / a == b, Errors.MULTIPLICATION_OVERFLOW);
-
-    return result / WAD;
+    return (a * b + halfWAD) / WAD;
   }
 
   /**
@@ -73,14 +71,11 @@ library WadRayMath {
    **/
   function wadDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.DIVISION_BY_ZERO);
-
     uint256 halfB = b / 2;
 
-    uint256 result = a * WAD + halfB;
+    require(a <= (type(uint256).max - halfB) / WAD, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result >= halfB && (result - halfB) / WAD == a, Errors.MULTIPLICATION_OVERFLOW);
-
-    return result / b;
+    return (a * WAD + halfB) / b;
   }
 
   /**
@@ -90,15 +85,13 @@ library WadRayMath {
    * @return the result of a*b, in ray
    **/
   function rayMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0) {
+    if (a == 0 || b == 0) {
       return 0;
     }
 
-    uint256 result = a * b + halfRAY;
+    require(a <= (type(uint256).max - halfRAY) / b, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result >= halfRAY && (result - halfRAY) / a == b, Errors.MULTIPLICATION_OVERFLOW);
-
-    return result / RAY;
+    return (a * b + halfRAY) / RAY;
   }
 
   /**
@@ -109,14 +102,11 @@ library WadRayMath {
    **/
   function rayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.DIVISION_BY_ZERO);
-
     uint256 halfB = b / 2;
 
-    uint256 result = a * RAY + halfB;
+    require(a <= (type(uint256).max - halfB) / RAY, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result >= halfB && (result - halfB) / RAY == a, Errors.MULTIPLICATION_OVERFLOW);
-
-    return result / b;
+    return (a * RAY + halfB) / b;
   }
 
   /**

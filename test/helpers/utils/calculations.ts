@@ -5,7 +5,6 @@ import {
   MAX_UINT_AMOUNT,
   OPTIMAL_UTILIZATION_RATE,
   EXCESS_UTILIZATION_RATE,
-  ZERO_ADDRESS,
 } from '../../../helpers/constants';
 import {IReserveParams, iAavePoolAssets, RateMode, tEthereumAddress} from '../../../helpers/types';
 import './math';
