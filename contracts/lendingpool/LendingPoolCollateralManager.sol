@@ -185,7 +185,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
           uint256(Errors.CollateralManagerErrors.NOT_ENOUGH_LIQUIDITY),
-          Errors.NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
+          Errors.LPCM_NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE
         );
       }
     }
@@ -263,7 +263,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       receiveAToken
     );
 
-    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.NO_ERRORS);
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
   }
 
   /**
