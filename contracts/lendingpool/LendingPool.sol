@@ -486,7 +486,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   struct FlashLoanLocalVars {
     IFlashLoanReceiver receiver;
     address oracle;
-    ReserveLogic.InterestRateMode debtMode;
     uint256 i;
     address currentAsset;
     address currentATokenAddress;
@@ -548,10 +547,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.currentAmount = amounts[vars.i];
       vars.currentPremium = premiums[vars.i];
       vars.currentATokenAddress = aTokenAddresses[vars.i];
-      vars.debtMode = ReserveLogic.InterestRateMode(modes[vars.i]);
       vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
 
-      if (vars.debtMode == ReserveLogic.InterestRateMode.NONE) {
+      if (ReserveLogic.InterestRateMode(modes[vars.i]) == ReserveLogic.InterestRateMode.NONE) {
         _reserves[vars.currentAsset].updateState();
         _reserves[vars.currentAsset].cumulateToLiquidityIndex(
           IERC20(vars.currentATokenAddress).totalSupply(),
