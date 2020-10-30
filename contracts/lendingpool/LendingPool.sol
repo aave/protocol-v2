@@ -352,7 +352,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
 
-    emit Swap(asset, msg.sender);
+    emit Swap(asset, msg.sender, rateMode);
   }
 
   /**

@@ -74,7 +74,7 @@ interface ILendingPool {
    * @param reserve the address of the reserve
    * @param user the address of the user executing the swap
    **/
-  event Swap(address indexed reserve, address indexed user);
+  event Swap(address indexed reserve, address indexed user, uint256 rateMode);
 
   /**
    * @dev emitted when a user enables a reserve as collateral
