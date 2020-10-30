@@ -43,6 +43,7 @@
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
+    "dev:deployUIProvider": "npm run buidler:kovan deploy-UiPoolDataProvider",
     "dev:prettier": "prettier --write .",
     "ci:test": "npm run compile && npm run types-gen && npm run test",
     "ci:clean": "rm -rf ./artifacts ./cache ./types"
@@ -68,6 +69,7 @@
     "chai": "4.2.0",
     "chai-bignumber": "3.0.0",
     "chai-bn": "^0.2.1",
+    "dotenv": "^8.2.0",
     "eth-sig-util": "2.5.3",
     "ethereum-waffle": "3.0.2",
     "ethereumjs-util": "7.0.2",

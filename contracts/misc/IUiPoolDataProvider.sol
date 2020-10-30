@@ -11,16 +11,27 @@ interface IUiPoolDataProvider {
     string name;
     string symbol;
     uint256 decimals;
-    uint256 ltv;
-    uint256 liquidationThreshold;
-    uint256 liquidationBonus;
+    uint256 baseLTVasCollateral;
+    uint256 reserveLiquidationThreshold;
+    uint256 reserveLiquidationBonus;
     uint256 reserveFactor;
     bool usageAsCollateralEnabled;
     bool borrowingEnabled;
     bool stableBorrowRateEnabled;
     bool isActive;
     bool isFreezed;
-    ReserveLogic.ReserveData baseData;
+    // base data
+    uint128 liquidityIndex;
+    uint128 variableBorrowIndex;
+    uint128 liquidityRate;
+    uint128 variableBorrowRate;
+    uint128 stableBorrowRate;
+    uint40 lastUpdateTimestamp;
+    address aTokenAddress;
+    address stableDebtTokenAddress;
+    address variableDebtTokenAddress;
+    address interestRateStrategyAddress;
+    //
     uint256 availableLiquidity;
     uint256 totalBorrowsStable;
     uint256 totalBorrowsVariable;

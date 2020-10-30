@@ -6,6 +6,8 @@ import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
 import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
 
+require('dotenv').config();
+
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');
 usePlugin('solidity-coverage');
@@ -28,7 +30,7 @@ const MNEMONICS: {[network: string]: string} = {
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full'].forEach((folder) => {
+  ['misc', 'deployments', 'migrations', 'dev', 'full'].forEach((folder) => {
     const tasksPath = path.join(__dirname, 'tasks', folder);
     fs.readdirSync(tasksPath)
       .filter((pth) => pth.includes('.ts'))
