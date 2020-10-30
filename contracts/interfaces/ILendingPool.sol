@@ -99,15 +99,13 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
-   * @param asset the address of the assets being flashborrowed
+   * @param asset the address of the asset being flashborrowed
    * @param amount the amount requested
    * @param premium the total fee on the amount
    * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
-    // uint256[] modes,
-    // address indexed onBehalfOf,
     address asset,
     uint256 amount,
     uint256 premium,
