@@ -1,17 +1,18 @@
 import {task} from '@nomiclabs/buidler/config';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
-  getLendingPoolAddressesProvider,
-  getPairsTokenAggregator,
   deployChainlinkProxyPriceProvider,
   deployLendingRateOracle,
-  getParamPerNetwork,
-} from '../../helpers/contracts-helpers';
-
-import {setInitialMarketRatesInRatesOracle} from '../../helpers/oracles-helpers';
+} from '../../helpers/contracts-deployments';
+import {setInitialMarketRatesInRatesOracleByHelper} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
 import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
 import {exit} from 'process';
+import {
+  getLendingPoolAddressesProvider,
+  getPairsTokenAggregator,
+} from '../../helpers/contracts-getters';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -29,11 +30,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         FallbackOracle,
         ChainlinkAggregator,
       } = poolConfig as ICommonConfiguration;
-
       const lendingRateOracles = filterMapBy(LendingRateOracleRatesCommon, (key) =>
         ReserveSymbols.includes(key)
       );
       const addressesProvider = await getLendingPoolAddressesProvider();
+      const admin = await addressesProvider.getAaveAdmin();
 
       const fallbackOracle = await getParamPerNetwork(FallbackOracle, network);
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
@@ -57,10 +58,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
 
       const {USD, ...tokensAddressesWithoutUsd} = tokensToWatch;
-      await setInitialMarketRatesInRatesOracle(
+      await setInitialMarketRatesInRatesOracleByHelper(
         lendingRateOracles,
         tokensAddressesWithoutUsd,
-        lendingRateOracle
+        lendingRateOracle,
+        admin
       );
     } catch (err) {
       console.error(err);

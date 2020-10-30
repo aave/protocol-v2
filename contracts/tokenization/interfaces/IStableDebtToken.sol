@@ -62,7 +62,7 @@ interface IStableDebtToken {
     address user,
     uint256 amount,
     uint256 rate
-  ) external;
+  ) external returns (bool);
 
   /**
    * @dev burns debt of the target user.

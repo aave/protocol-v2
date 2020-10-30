@@ -34,6 +34,9 @@ makeSuite('Stable debt token tests', (testEnv: TestEnv) => {
       daiStableDebtTokenAddress
     );
 
+    const name = await stableDebtContract.name();
+
+    expect(name).to.be.equal('Aave stable debt bearing DAI');
     await expect(stableDebtContract.burn(deployer.address, '1')).to.be.revertedWith(
       CALLER_MUST_BE_LENDING_POOL
     );

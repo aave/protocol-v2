@@ -27,9 +27,10 @@ interface ILendingPool {
    * @dev emitted during a withdraw action.
    * @param reserve the address of the reserve
    * @param user the address of the user
+   * @param to address that will receive the underlying
    * @param amount the amount to be withdrawn
    **/
-  event Withdraw(address indexed reserve, address indexed user, uint256 amount);
+  event Withdraw(address indexed reserve, address indexed user, address indexed to, uint256 amount);
 
   event BorrowAllowanceDelegated(
     address indexed fromUser,
@@ -74,7 +75,7 @@ interface ILendingPool {
    * @param reserve the address of the reserve
    * @param user the address of the user executing the swap
    **/
-  event Swap(address indexed reserve, address indexed user);
+  event Swap(address indexed reserve, address indexed user, uint256 rateMode);
 
   /**
    * @dev emitted when a user enables a reserve as collateral
@@ -99,17 +100,18 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
-   * @param assets the address of the assets being flashborrowed
-   * @param amounts the amount requested
-   * @param premiums the total fee on the amount
+   * @param initiator the address initiating the flash loan
+   * @param asset the address of the asset being flashborrowed
+   * @param amount the amount requested
+   * @param premium the total fee on the amount
    * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
-    uint256 mode,
-    address[] assets,
-    uint256[] amounts,
-    uint256[] premiums,
+    address indexed initiator,
+    address indexed asset,
+    uint256 amount,
+    uint256 premium,
     uint16 referralCode
   );
 
@@ -185,8 +187,13 @@ interface ILendingPool {
    * @dev withdraws the assets of user.
    * @param reserve the address of the reserve
    * @param amount the underlying amount to be redeemed
+   * @param to address that will receive the underlying
    **/
-  function withdraw(address reserve, uint256 amount) external;
+  function withdraw(
+    address reserve,
+    uint256 amount,
+    address to
+  ) external;
 
   /**
    * @dev Sets allowance to borrow on a certain type of debt assets for a certain user address
@@ -286,7 +293,7 @@ interface ILendingPool {
    * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
    * @param assets the address of the principal reserve
    * @param amounts the amount requested for this flashloan
-   * @param mode the flashloan mode
+   * @param modes the flashloan borrow modes
    * @param params a bytes array to be sent to the flashloan executor
    * @param referralCode the referral code of the caller
    **/
@@ -294,7 +301,8 @@ interface ILendingPool {
     address receiver,
     address[] calldata assets,
     uint256[] calldata amounts,
-    uint256 mode,
+    uint256[] calldata modes,
+    address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external;
@@ -349,11 +357,14 @@ interface ILendingPool {
 
   function getReserveData(address asset) external view returns (ReserveLogic.ReserveData memory);
 
-  function balanceDecreaseAllowed(
-    address reserve,
-    address user,
-    uint256 amount
-  ) external view returns (bool);
+  function finalizeTransfer(
+    address asset,
+    address from,
+    address to,
+    uint256 amount,
+    uint256 balanceFromAfter,
+    uint256 balanceToBefore
+  ) external;
 
   function getReservesList() external view returns (address[] memory);
 

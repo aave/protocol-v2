@@ -58,7 +58,7 @@ library WadRayMath {
       return 0;
     }
 
-    require(a <= (type(uint256).max-halfWAD)/b, Errors.MULTIPLICATION_OVERFLOW);
+    require(a <= (type(uint256).max - halfWAD) / b, Errors.MULTIPLICATION_OVERFLOW);
 
     return (a * b + halfWAD) / WAD;
   }
@@ -73,7 +73,7 @@ library WadRayMath {
     require(b != 0, Errors.DIVISION_BY_ZERO);
     uint256 halfB = b / 2;
 
-    require(a <= (type(uint256).max-halfB)/WAD, Errors.MULTIPLICATION_OVERFLOW);
+    require(a <= (type(uint256).max - halfB) / WAD, Errors.MULTIPLICATION_OVERFLOW);
 
     return (a * WAD + halfB) / b;
   }
@@ -89,10 +89,9 @@ library WadRayMath {
       return 0;
     }
 
-    require(a <= (type(uint256).max-halfRAY)/b, Errors.MULTIPLICATION_OVERFLOW);
+    require(a <= (type(uint256).max - halfRAY) / b, Errors.MULTIPLICATION_OVERFLOW);
 
     return (a * b + halfRAY) / RAY;
-
   }
 
   /**
@@ -105,7 +104,7 @@ library WadRayMath {
     require(b != 0, Errors.DIVISION_BY_ZERO);
     uint256 halfB = b / 2;
 
-    require(a <= (type(uint256).max-halfB)/RAY, Errors.MULTIPLICATION_OVERFLOW);
+    require(a <= (type(uint256).max - halfB) / RAY, Errors.MULTIPLICATION_OVERFLOW);
 
     return (a * RAY + halfB) / b;
   }
