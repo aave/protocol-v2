@@ -520,7 +520,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     FlashLoanLocalVars memory vars;
 
-    ValidationLogic.validateFlashloan(assets, amounts, modes);
+    ValidationLogic.validateFlashloan(assets, amounts);
 
     address[] memory aTokenAddresses = new address[](assets.length);
     uint256[] memory premiums = new uint256[](assets.length);
