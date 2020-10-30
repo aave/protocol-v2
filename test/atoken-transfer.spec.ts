@@ -71,8 +71,11 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
         users[1].address
       );
 
-    const userReserveData = await helpersContract.getUserReserveData(weth.address, users[1].address);
-    
+    const userReserveData = await helpersContract.getUserReserveData(
+      weth.address,
+      users[1].address
+    );
+
     expect(userReserveData.currentStableDebt.toString()).to.be.eq(ethers.utils.parseEther('0.1'));
   });
 
@@ -80,7 +83,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     const {users, pool, aDai, dai, weth} = testEnv;
 
     const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '1000');
-   
+
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
       TRANSFER_NOT_ALLOWED
@@ -88,15 +91,14 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 1 tries to transfer a small amount of DAI used as collateral back to user 0', async () => {
-    
     const {users, pool, aDai, dai, weth} = testEnv;
 
     const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '100');
-   
+
     await aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer);
 
     const user0Balance = await aDai.balanceOf(users[0].address);
 
     expect(user0Balance.toString()).to.be.eq(aDAItoTransfer.toString());
-  });    
+  });
 });

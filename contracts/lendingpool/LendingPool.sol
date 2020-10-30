@@ -186,23 +186,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Sets allowance to borrow on a certain type of debt asset for a certain user address
-   * @param asset The underlying asset of the debt token
+   * @dev Sets allowance to borrow on a certain type of debt assets for a certain user address
+   * @param assets The underlying asset of each debt token
    * @param user The user to give allowance to
-   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
-   * @param amount Allowance amount to borrow
+   * @param interestRateModes Types of debt: 1 for stable, 2 for variable
+   * @param amounts Allowance amounts to borrow
    **/
   function delegateBorrowAllowance(
-    address asset,
+    address[] calldata assets,
     address user,
-    uint256 interestRateMode,
-    uint256 amount
+    uint256[] calldata interestRateModes,
+    uint256[] calldata amounts
   ) external override {
     _whenNotPaused();
-    address debtToken = _reserves[asset].getDebtTokenAddress(interestRateMode);
 
-    _borrowAllowance[debtToken][msg.sender][user] = amount;
-    emit BorrowAllowanceDelegated(asset, msg.sender, user, interestRateMode, amount);
+    uint256 countAssets = assets.length;
+    require(
+      countAssets == interestRateModes.length && countAssets == amounts.length,
+      Errors.INCONSISTENT_PARAMS_LENGTH
+    );
+
+    for (uint256 i = 0; i < countAssets; i++) {
+      address debtToken = _reserves[assets[i]].getDebtTokenAddress(interestRateModes[i]);
+      _borrowAllowance[debtToken][msg.sender][user] = amounts[i];
+    }
+
+    emit BorrowAllowanceDelegated(msg.sender, user, assets, interestRateModes, amounts);
   }
 
   /**
@@ -493,13 +502,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   struct FlashLoanLocalVars {
     IFlashLoanReceiver receiver;
     address oracle;
-    ReserveLogic.InterestRateMode debtMode;
     uint256 i;
     address currentAsset;
     address currentATokenAddress;
     uint256 currentAmount;
     uint256 currentPremium;
     uint256 currentAmountPlusPremium;
+    address debtToken;
   }
 
   /**
@@ -509,7 +518,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
    * @param assets The addresss of the assets being flashborrowed
    * @param amounts The amounts requested for this flashloan for each asset
-   * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
+   * @param modes Types of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
    * @param onBehalfOf If mode is not 0, then the address to take the debt onBehalfOf. The onBehalfOf address must already have approved `msg.sender` to incur the debt on their behalf.
    * @param params Variadic packed params to pass to the receiver as extra information
    * @param referralCode Referral code of the flash loan
@@ -518,7 +527,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address receiverAddress,
     address[] calldata assets,
     uint256[] calldata amounts,
-    uint256 mode,
+    uint256[] calldata modes,
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
@@ -527,13 +536,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     FlashLoanLocalVars memory vars;
 
-    ValidationLogic.validateFlashloan(assets, amounts, mode);
+    ValidationLogic.validateFlashloan(assets, amounts);
 
     address[] memory aTokenAddresses = new address[](assets.length);
     uint256[] memory premiums = new uint256[](assets.length);
 
     vars.receiver = IFlashLoanReceiver(receiverAddress);
-    vars.debtMode = ReserveLogic.InterestRateMode(mode);
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
@@ -555,10 +563,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.currentAmount = amounts[vars.i];
       vars.currentPremium = premiums[vars.i];
       vars.currentATokenAddress = aTokenAddresses[vars.i];
-
       vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
 
-      if (vars.debtMode == ReserveLogic.InterestRateMode.NONE) {
+      if (ReserveLogic.InterestRateMode(modes[vars.i]) == ReserveLogic.InterestRateMode.NONE) {
         _reserves[vars.currentAsset].updateState();
         _reserves[vars.currentAsset].cumulateToLiquidityIndex(
           IERC20(vars.currentATokenAddress).totalSupply(),
@@ -578,13 +585,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         );
       } else {
         if (msg.sender != onBehalfOf) {
-          address debtToken = _reserves[vars.currentAsset].getDebtTokenAddress(mode);
+          vars.debtToken = _reserves[vars.currentAsset].getDebtTokenAddress(modes[vars.i]);
 
-          _borrowAllowance[debtToken][onBehalfOf][msg
-            .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
-            vars.currentAmount,
-            Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH
-          );
+          _borrowAllowance[vars.debtToken][onBehalfOf][msg.sender] = _borrowAllowance[vars
+            .debtToken][onBehalfOf][msg.sender]
+            .sub(vars.currentAmount, Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
         }
 
         //if the user didn't choose to return the funds, the system checks if there
@@ -595,14 +600,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
             msg.sender,
             onBehalfOf,
             vars.currentAmount,
-            mode,
+            modes[vars.i],
             vars.currentATokenAddress,
             referralCode,
             false
           )
         );
       }
-      emit FlashLoan(receiverAddress, mode, onBehalfOf, assets, amounts, premiums, referralCode);
+      emit FlashLoan(
+        receiverAddress,
+        msg.sender,
+        vars.currentAsset,
+        vars.currentAmount,
+        vars.currentPremium,
+        referralCode
+      );
     }
   }
 
@@ -698,7 +710,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @return the reserve normalized income
    */
-  function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
+  function getReserveNormalizedIncome(address asset)
+    external
+    virtual
+    override
+    view
+    returns (uint256)
+  {
     return _reserves[asset].getNormalizedIncome();
   }
 
@@ -882,6 +900,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
 
     ValidationLogic.validateBorrow(
+      vars.asset,
       reserve,
       vars.onBehalfOf,
       vars.amount,

@@ -33,7 +33,7 @@ library ValidationLogic {
    * @param reserve the reserve state on which the user is depositing
    * @param amount the amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) internal view {
+  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
 
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
@@ -61,7 +61,7 @@ library ValidationLogic {
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
-  ) internal view {
+  ) external view {
     require(amount > 0, Errors.AMOUNT_NOT_GREATER_THAN_0);
 
     require(amount <= userBalance, Errors.NOT_ENOUGH_AVAILABLE_USER_BALANCE);
@@ -104,6 +104,7 @@ library ValidationLogic {
 
   /**
    * @dev validates a borrow.
+   * @param asset the address of the asset to borrow
    * @param reserve the reserve state from which the user is borrowing
    * @param userAddress the address of the user
    * @param amount the amount to be borrowed
@@ -117,6 +118,7 @@ library ValidationLogic {
    */
 
   function validateBorrow(
+    address asset,
     ReserveLogic.ReserveData storage reserve,
     address userAddress,
     uint256 amount,
@@ -203,6 +205,8 @@ library ValidationLogic {
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
+      vars.availableLiquidity = IERC20(asset).balanceOf(reserve.aTokenAddress);
+
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity
       uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(maxStableLoanPercent);
@@ -283,8 +287,7 @@ library ValidationLogic {
       require(
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
-          stableDebt.add(variableDebt) >
-          IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
+          stableDebt.add(variableDebt) > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
         Errors.CALLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
@@ -331,16 +334,10 @@ library ValidationLogic {
 
   /**
    * @dev validates a flashloan action
-   * @param mode the flashloan mode (0 = classic flashloan, 1 = open a stable rate loan, 2 = open a variable rate loan)
    * @param assets the assets being flashborrowed
    * @param amounts the amounts for each asset being borrowed
    **/
-  function validateFlashloan(
-    address[] memory assets,
-    uint256[] memory amounts,
-    uint256 mode
-  ) internal pure {
-    require(mode <= uint256(ReserveLogic.InterestRateMode.VARIABLE), Errors.INVALID_FLASHLOAN_MODE);
+  function validateFlashloan(address[] memory assets, uint256[] memory amounts) internal pure {
     require(assets.length == amounts.length, Errors.INCONSISTENT_FLASHLOAN_PARAMS);
   }
 
