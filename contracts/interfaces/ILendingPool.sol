@@ -107,8 +107,8 @@ interface ILendingPool {
    **/
   event FlashLoan(
     address indexed target,
-    address initiator,
-    address asset,
+    address indexed initiator,
+    address indexed asset,
     uint256 amount,
     uint256 premium,
     uint16 referralCode
