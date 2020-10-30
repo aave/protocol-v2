@@ -493,6 +493,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 currentAmount;
     uint256 currentPremium;
     uint256 currentAmountPlusPremium;
+    address debtToken;
   }
 
   /**
@@ -503,6 +504,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param assets The addresss of the assets being flashborrowed
    * @param amounts The amounts requested for this flashloan for each asset
    * @param modes Types of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
+   * @param onBehalfOf If mode is not 0, then the address to take the debt onBehalfOf. The onBehalfOf address must already have approved `msg.sender` to incur the debt on their behalf.
    * @param params Variadic packed params to pass to the receiver as extra information
    * @param referralCode Referral code of the flash loan
    **/
@@ -511,6 +513,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata modes,
+    address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external override {
@@ -567,13 +570,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           vars.currentAmountPlusPremium
         );
       } else {
+        if (msg.sender != onBehalfOf) {
+          vars.debtToken = _reserves[vars.currentAsset].getDebtTokenAddress(modes[vars.i]);
+
+          _borrowAllowance[vars.debtToken][onBehalfOf][msg.sender] = _borrowAllowance[vars
+            .debtToken][onBehalfOf][msg.sender]
+            .sub(vars.currentAmount, Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
+        }
+
         //if the user didn't choose to return the funds, the system checks if there
         //is enough collateral and eventually open a position
         _executeBorrow(
           ExecuteBorrowParams(
             vars.currentAsset,
             msg.sender,
-            msg.sender,
+            onBehalfOf,
             vars.currentAmount,
             modes[vars.i],
             vars.currentATokenAddress,
@@ -582,7 +593,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           )
         );
       }
-      emit FlashLoan(receiverAddress, modes, assets, amounts, premiums, referralCode);
+      emit FlashLoan(
+        receiverAddress,
+        vars.currentAsset,
+        vars.currentAmount,
+        vars.currentPremium,
+        referralCode
+      );
     }
   }
 
@@ -723,29 +740,48 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev validate if a balance decrease for an asset is allowed
+   * @dev validates and finalizes an aToken transfer
    * @param asset the address of the reserve
-   * @param user the user related to the balance decrease
+   * @param from the user from which the aTokens are transferred
+   * @param to the user receiving the aTokens
    * @param amount the amount being transferred/redeemed
-   * @return true if the balance decrease can be allowed, false otherwise
+   * @param balanceFromBefore the balance of the from user before the transfer
+   * @param balanceToBefore the balance of the to user before the transfer
    */
-  function balanceDecreaseAllowed(
+  function finalizeTransfer(
     address asset,
-    address user,
-    uint256 amount
-  ) external override view returns (bool) {
+    address from,
+    address to,
+    uint256 amount,
+    uint256 balanceFromBefore,
+    uint256 balanceToBefore
+  ) external override {
     _whenNotPaused();
-    return
-      GenericLogic.balanceDecreaseAllowed(
-        asset,
-        user,
-        amount,
-        _reserves,
-        _usersConfig[user],
-        _reservesList,
-        _reservesCount,
-        _addressesProvider.getPriceOracle()
-      );
+
+    require(msg.sender == _reserves[asset].aTokenAddress, Errors.CALLER_MUST_BE_AN_ATOKEN);
+
+    ValidationLogic.validateTransfer(
+      from,
+      _reserves,
+      _usersConfig[from],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+
+    uint256 reserveId = _reserves[asset].id;
+
+    if (from != to) {
+      if (balanceFromBefore.sub(amount) == 0) {
+        UserConfiguration.Map storage fromConfig = _usersConfig[from];
+        fromConfig.setUsingAsCollateral(reserveId, false);
+      }
+
+      if (balanceToBefore == 0 && amount != 0) {
+        UserConfiguration.Map storage toConfig = _usersConfig[to];
+        toConfig.setUsingAsCollateral(reserveId, true);
+      }
+    }
   }
 
   /**

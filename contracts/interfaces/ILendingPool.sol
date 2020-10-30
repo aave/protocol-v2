@@ -99,17 +99,18 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
-   * @param assets the address of the assets being flashborrowed
-   * @param amounts the amount requested
-   * @param premiums the total fee on the amount
+   * @param asset the address of the assets being flashborrowed
+   * @param amount the amount requested
+   * @param premium the total fee on the amount
    * @param referralCode the referral code of the caller
    **/
   event FlashLoan(
     address indexed target,
-    uint256[] modes,
-    address[] assets,
-    uint256[] amounts,
-    uint256[] premiums,
+    // uint256[] modes,
+    // address indexed onBehalfOf,
+    address asset,
+    uint256 amount,
+    uint256 premium,
     uint16 referralCode
   );
 
@@ -286,7 +287,7 @@ interface ILendingPool {
    * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
    * @param assets the address of the principal reserve
    * @param amounts the amount requested for this flashloan
-   * @param modes the flashloan mode
+   * @param modes the flashloan borrow modes
    * @param params a bytes array to be sent to the flashloan executor
    * @param referralCode the referral code of the caller
    **/
@@ -295,6 +296,7 @@ interface ILendingPool {
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata modes,
+    address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external;
@@ -349,11 +351,14 @@ interface ILendingPool {
 
   function getReserveData(address asset) external view returns (ReserveLogic.ReserveData memory);
 
-  function balanceDecreaseAllowed(
-    address reserve,
-    address user,
-    uint256 amount
-  ) external view returns (bool);
+  function finalizeTransfer(
+    address asset,
+    address from,
+    address to,
+    uint256 amount,
+    uint256 balanceFromAfter,
+    uint256 balanceToBefore
+  ) external;
 
   function getReservesList() external view returns (address[] memory);
 
