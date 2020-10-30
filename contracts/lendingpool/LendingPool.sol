@@ -20,7 +20,6 @@ import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol'
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
-import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -544,7 +543,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     //execute action of the receiver
     require(
-      vars.receiver.executeOperation(assets, amounts, premiums, params),
+      vars.receiver.executeOperation(assets, amounts, premiums, msg.sender, params),
       Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
