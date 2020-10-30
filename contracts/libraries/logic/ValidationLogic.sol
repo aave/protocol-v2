@@ -251,8 +251,8 @@ library ValidationLogic {
    * @dev validates a swap of borrow rate mode.
    * @param reserve the reserve state on which the user is swapping the rate
    * @param userConfig the user reserves configuration
-   * @param stableBorrowBalance the stable borrow balance of the user
-   * @param variableBorrowBalance the stable borrow balance of the user
+   * @param stableDebt the stable debt of the user
+   * @param variableDebt the variable debt of the user
    * @param currentRateMode the rate mode of the borrow
    */
   function validateSwapRateMode(
