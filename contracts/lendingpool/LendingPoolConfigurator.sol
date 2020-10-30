@@ -15,6 +15,7 @@ import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detai
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import "@nomiclabs/buidler/console.sol";
 
 /**
  * @title LendingPoolConfigurator contract
@@ -371,6 +372,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     // the reserve is being disabled as collateral. To do so,
     //we need to ensure no liquidity is deposited 
     if(liquidationThreshold == 0) {
+      console.log("Checking no liquidity for the asset");
       _checkNoLiquidity(asset);
     }
 
@@ -432,7 +434,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   function deactivateReserve(address asset) external onlyAaveAdmin {
 
     _checkNoLiquidity(asset);
-    
+
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setActive(false);
@@ -616,6 +618,9 @@ contract LendingPoolConfigurator is VersionedInitializable {
     ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
     uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
+
+    console.log("Available liquidity %s", availableLiquidity);
+    console.log("liq rate %s", reserveData.currentLiquidityRate);
 
     require(
       availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,

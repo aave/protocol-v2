@@ -26,6 +26,8 @@ import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
+import "@nomiclabs/buidler/console.sol";
+
 
 /**
  * @title LendingPool contract
@@ -93,6 +95,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf,
     uint16 referralCode
   ) external override {
+    console.log("Deposit");
     _whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
