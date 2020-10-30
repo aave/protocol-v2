@@ -5,14 +5,13 @@ pragma experimental ABIEncoderV2;
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-
 
 /**
  * @title BaseUniswapAdapter
@@ -23,23 +22,24 @@ contract BaseUniswapAdapter {
   using SafeMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
-  using ReserveConfiguration for ReserveConfiguration.Map;
+
+  enum LeftoverAction {DEPOSIT, TRANSFER}
 
   // Max slippage percent allow by param
   uint256 public constant MAX_SLIPPAGE_PERCENT = 3000; // 30%
   // Min slippage percent allow by param
   uint256 public constant MIN_SLIPPAGE_PERCENT = 10; // 0,1%
 
-  ILendingPoolAddressesProvider public immutable addressesProvider;
-  IUniswapV2Router02 public immutable uniswapRouter;
-  ILendingPool public immutable pool;
+  ILendingPool public immutable POOL;
+  IPriceOracleGetter public immutable ORACLE;
+  IUniswapV2Router02 public immutable UNISWAP_ROUTER;
 
   event Swapped(address fromAsset, address toAsset, uint256 fromAmount, uint256 receivedAmount);
 
-  constructor(ILendingPoolAddressesProvider _addressesProvider, IUniswapV2Router02 _uniswapRouter) public {
-    addressesProvider = _addressesProvider;
-    pool = ILendingPool(_addressesProvider.getLendingPool());
-    uniswapRouter = _uniswapRouter;
+  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter) public {
+    POOL = ILendingPool(addressesProvider.getLendingPool());
+    ORACLE = IPriceOracleGetter(addressesProvider.getPriceOracle());
+    UNISWAP_ROUTER = uniswapRouter;
   }
 
   /**
@@ -58,7 +58,7 @@ contract BaseUniswapAdapter {
     path[0] = reserveIn;
     path[1] = reserveOut;
 
-    uint256[] memory amounts = uniswapRouter.getAmountsOut(amountIn, path);
+    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsOut(amountIn, path);
 
     return amounts[1];
   }
@@ -79,7 +79,7 @@ contract BaseUniswapAdapter {
     path[0] = reserveIn;
     path[1] = reserveOut;
 
-    uint256[] memory amounts = uniswapRouter.getAmountsIn(amountOut, path);
+    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, path);
 
     return amounts[0];
   }
@@ -101,24 +101,23 @@ contract BaseUniswapAdapter {
     internal
     returns (uint256)
   {
-    uint256 fromAssetDecimals = getDecimals(assetToSwapFrom);
-    uint256 toAssetDecimals = getDecimals(assetToSwapTo);
+    uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
+    uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
 
-    (uint256 fromAssetPrice, uint256 toAssetPrice) = getPrices(assetToSwapFrom, assetToSwapTo);
+    uint256 fromAssetPrice = _getPrice(assetToSwapFrom);
+    uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
     uint256 amountOutMin = amountToSwap
     .mul(fromAssetPrice.mul(10**toAssetDecimals))
     .div(toAssetPrice.mul(10**fromAssetDecimals))
     .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(slippage));
 
-    IERC20(assetToSwapFrom).approve(address(uniswapRouter), amountToSwap);
+    IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), amountToSwap);
 
     address[] memory path = new address[](2);
     path[0] = assetToSwapFrom;
     path[1] = assetToSwapTo;
-    uint256[] memory amounts = uniswapRouter.swapExactTokensForTokens(amountToSwap, amountOutMin, path, address(this), block.timestamp);
-
-    require(amounts[1] >= amountOutMin, 'INSUFFICIENT_OUTPUT_AMOUNT');
+    uint256[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(amountToSwap, amountOutMin, path, address(this), block.timestamp);
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
 
@@ -143,10 +142,11 @@ contract BaseUniswapAdapter {
     internal
     returns (uint256)
   {
-    uint256 fromAssetDecimals = getDecimals(assetToSwapFrom);
-    uint256 toAssetDecimals = getDecimals(assetToSwapTo);
+    uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
+    uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
 
-    (uint256 fromAssetPrice, uint256 toAssetPrice) = getPrices(assetToSwapFrom, assetToSwapTo);
+    uint256 fromAssetPrice = _getPrice(assetToSwapFrom);
+    uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
     uint256 expectedMaxAmountToSwap = amountToReceive
     .mul(toAssetPrice.mul(10**fromAssetDecimals))
@@ -155,14 +155,12 @@ contract BaseUniswapAdapter {
 
     require(maxAmountToSwap < expectedMaxAmountToSwap, 'maxAmountToSwap exceed max slippage');
 
-    IERC20(assetToSwapFrom).approve(address(uniswapRouter), maxAmountToSwap);
+    IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), maxAmountToSwap);
 
     address[] memory path = new address[](2);
     path[0] = assetToSwapFrom;
     path[1] = assetToSwapTo;
-    uint256[] memory amounts = uniswapRouter.swapTokensForExactTokens(amountToReceive, maxAmountToSwap, path, address(this), block.timestamp);
-
-    require(amounts[1] >= amountToReceive, 'INSUFFICIENT_OUTPUT_AMOUNT');
+    uint256[] memory amounts = UNISWAP_ROUTER.swapTokensForExactTokens(amountToReceive, maxAmountToSwap, path, address(this), block.timestamp);
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
 
@@ -170,34 +168,20 @@ contract BaseUniswapAdapter {
   }
 
   /**
-   * @dev Get assets prices from the oracle denominated in eth
-   * @param assetToSwapFrom first asset
-   * @param assetToSwapTo second asset
-   * @return fromAssetPrice eth price for the first asset
-   * @return toAssetPrice eth price for the second asset
+   * @dev Get the price of the asset from the oracle denominated in eth
+   * @param asset address
+   * @return eth price for the asset
    */
-  function getPrices(
-    address assetToSwapFrom,
-    address assetToSwapTo
-  )
-    internal
-    view
-    returns (uint256 fromAssetPrice, uint256 toAssetPrice)
-  {
-    IPriceOracleGetter oracle = IPriceOracleGetter(addressesProvider.getPriceOracle());
-    fromAssetPrice = oracle.getAssetPrice(assetToSwapFrom);
-    toAssetPrice = oracle.getAssetPrice(assetToSwapTo);
+  function _getPrice(address asset) internal view returns (uint256) {
+    return ORACLE.getAssetPrice(asset);
   }
 
   /**
    * @dev Get the decimals of an asset
    * @return number of decimals of the asset
    */
-  function getDecimals(address asset) internal view returns (uint256) {
-    ReserveConfiguration.Map memory configuration = pool.getConfiguration(asset);
-    (, , , uint256 decimals, ) = configuration.getParamsMemory();
-
-    return decimals;
+  function _getDecimals(address asset) internal view returns (uint256) {
+    return IERC20Detailed(asset).decimals();
   }
 
   /**
@@ -205,7 +189,7 @@ contract BaseUniswapAdapter {
    * @return address of the aToken
    */
   function getAToken(address asset) internal view returns (address) {
-    ReserveLogic.ReserveData memory reserve = pool.getReserveData(asset);
+    ReserveLogic.ReserveData memory reserve = POOL.getReserveData(asset);
     return reserve.aTokenAddress;
   }
 
@@ -213,19 +197,19 @@ contract BaseUniswapAdapter {
    * @dev Take action with the swap left overs as configured in the parameters
    * @param asset address of the asset
    * @param reservedAmount Amount reserved to be used by the contract to repay the flash loan
-   * @param leftOverAction Flag indicating what to do with the left over balance from the swap:
+   * @param leftOverAction enum indicating what to do with the left over balance from the swap:
    *     (0) Deposit back
    *     (1) Direct transfer to user
    * @param user address
    */
-  function sendLeftOver(address asset, uint256 reservedAmount, uint256 leftOverAction, address user) internal {
+  function sendLeftovers(address asset, uint256 reservedAmount, LeftoverAction leftOverAction, address user) internal {
     uint256 balance = IERC20(asset).balanceOf(address(this));
     uint256 assetLeftOver = balance.sub(reservedAmount);
 
     if (assetLeftOver > 0) {
-      if (leftOverAction == 0) {
-        IERC20(asset).approve(address(pool), balance);
-        pool.deposit(asset, assetLeftOver, user, 0);
+      if (leftOverAction == LeftoverAction.DEPOSIT) {
+        IERC20(asset).approve(address(POOL), balance);
+        POOL.deposit(asset, assetLeftOver, user, 0);
       } else {
         IERC20(asset).transfer(user, assetLeftOver);
       }
@@ -249,7 +233,7 @@ contract BaseUniswapAdapter {
     IERC20(reserveAToken).safeTransferFrom(user, address(this), amount);
 
     // withdraw reserve
-    pool.withdraw(reserve, amount);
+    POOL.withdraw(reserve, amount, address(this));
   }
 
   /**
@@ -266,6 +250,6 @@ contract BaseUniswapAdapter {
     pullAToken(reserve, user, flashLoanDebt);
 
     // Repay flashloan
-    IERC20(reserve).approve(address(pool), flashLoanDebt);
+    IERC20(reserve).approve(address(POOL), flashLoanDebt);
   }
 }

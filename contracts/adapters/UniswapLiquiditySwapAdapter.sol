@@ -16,11 +16,11 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
   constructor(
-    ILendingPoolAddressesProvider _addressesProvider,
-    IUniswapV2Router02 _uniswapRouter
+    ILendingPoolAddressesProvider addressesProvider,
+    IUniswapV2Router02 uniswapRouter
   )
   public
-  BaseUniswapAdapter(_addressesProvider, _uniswapRouter)
+  BaseUniswapAdapter(addressesProvider, uniswapRouter)
   {}
 
   /**
@@ -31,32 +31,34 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param assets Address to be swapped
    * @param amounts Amount of the reserve to be swapped
    * @param premiums Fee of the flash loan
+   * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
-   *   address assetToSwapTo Address of the reserve to be swapped to and deposited
-   *   address user The address of the user
+   *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
    *   uint256 slippage The max slippage percentage allowed for the swap
    */
   function executeOperation(
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
+    address initiator,
     bytes calldata params
   ) external override returns (bool) {
-    (
-      address assetToSwapTo,
-      address user,
-      uint256 slippage
-    ) = abi.decode(params, (address, address, uint256));
+    require(msg.sender == address(POOL), "CALLER_MUST_BE_LENDING_POOL");
+
+    (address[] memory assetToSwapToList, uint256 slippage) = abi.decode(params, (address[], uint256));
     require(slippage < MAX_SLIPPAGE_PERCENT && slippage >= MIN_SLIPPAGE_PERCENT, 'SLIPPAGE_OUT_OF_RANGE');
+    require(assetToSwapToList.length == assets.length, 'INCONSISTENT_PARAMS');
 
-    uint256 receivedAmount = swapExactTokensForTokens(assets[0], assetToSwapTo, amounts[0], slippage);
+    for (uint256 i = 0; i < assets.length; i++) {
+      uint256 receivedAmount = swapExactTokensForTokens(assets[i], assetToSwapToList[i], amounts[i], slippage);
 
-    // Deposit new reserve
-    IERC20(assetToSwapTo).approve(address(pool), receivedAmount);
-    pool.deposit(assetToSwapTo, receivedAmount, user, 0);
+      // Deposit new reserve
+      IERC20(assetToSwapToList[i]).approve(address(POOL), receivedAmount);
+      POOL.deposit(assetToSwapToList[i], receivedAmount, initiator, 0);
 
-    uint256 flashLoanDebt = amounts[0].add(premiums[0]);
-    pullATokenAndRepayFlashLoan(assets[0], user, flashLoanDebt);
+      uint256 flashLoanDebt = amounts[i].add(premiums[i]);
+      pullATokenAndRepayFlashLoan(assets[i], initiator, flashLoanDebt);
+    }
 
     return true;
   }
@@ -66,25 +68,35 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * This method can be used when the user has no debts.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
    * perform the swap.
-   * @param assetToSwapFrom Address of the underlying asset to be swap from
-   * @param assetToSwapTo Address of the underlying asset to be swap to and deposited
-   * @param amountToSwap How much `assetToSwapFrom` needs to be swapped
-   * @param user Address that will be pulling the swapped funds
+   * @param assetToSwapFromList List of addresses of the underlying asset to be swap from
+   * @param assetToSwapToList List of addresses of the underlying asset to be swap to and deposited
+   * @param amountToSwapList List of amounts to be swapped
    * @param slippage The max slippage percentage allowed for the swap
    */
   function swapAndDeposit(
-    address assetToSwapFrom,
-    address assetToSwapTo,
-    uint256 amountToSwap,
-    address user,
+    address[] calldata assetToSwapFromList,
+    address[] calldata assetToSwapToList,
+    uint256[] calldata amountToSwapList,
     uint256 slippage
   ) external {
-    pullAToken(assetToSwapFrom, user, amountToSwap);
+    require(
+      assetToSwapFromList.length == assetToSwapToList.length && assetToSwapFromList.length == amountToSwapList.length,
+      'INCONSISTENT_PARAMS'
+    );
 
-    uint256 receivedAmount = swapExactTokensForTokens(assetToSwapFrom, assetToSwapTo, amountToSwap, slippage);
+    for (uint256 i = 0; i < assetToSwapFromList.length; i++) {
+      pullAToken(assetToSwapFromList[i], msg.sender, amountToSwapList[i]);
 
-    // Deposit new reserve
-    IERC20(assetToSwapTo).approve(address(pool), receivedAmount);
-    pool.deposit(assetToSwapTo, receivedAmount, user, 0);
+      uint256 receivedAmount = swapExactTokensForTokens(
+        assetToSwapFromList[i],
+        assetToSwapToList[i],
+        amountToSwapList[i],
+        slippage
+      );
+
+      // Deposit new reserve
+      IERC20(assetToSwapToList[i]).approve(address(POOL), receivedAmount);
+      POOL.deposit(assetToSwapToList[i], receivedAmount, msg.sender, 0);
+    }
   }
 }
