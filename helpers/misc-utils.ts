@@ -3,8 +3,10 @@ import BN = require('bn.js');
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 import {WAD} from './constants';
-import {Wallet} from 'ethers';
+import {Wallet, ContractTransaction} from 'ethers';
 import {BuidlerRuntimeEnvironment} from '@nomiclabs/buidler/types';
+import path from 'path';
+import fs from 'fs';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -39,4 +41,24 @@ export const advanceBlock = async (timestamp: number) =>
 export const increaseTime = async (secondsToIncrease: number) => {
   await BRE.ethers.provider.send('evm_increaseTime', [secondsToIncrease]);
   await BRE.ethers.provider.send('evm_mine', []);
+};
+
+export const waitForTx = async (tx: ContractTransaction) => await tx.wait(1);
+
+export const filterMapBy = (raw: {[key: string]: any}, fn: (key: string) => boolean) =>
+  Object.keys(raw)
+    .filter(fn)
+    .reduce<{[key: string]: any}>((obj, key) => {
+      obj[key] = raw[key];
+      return obj;
+    }, {});
+
+export const chunk = <T>(arr: Array<T>, chunkSize: number): Array<Array<T>> => {
+  return arr.reduce(
+    (prevVal: any, currVal: any, currIndx: number, array: Array<T>) =>
+      !(currIndx % chunkSize)
+        ? prevVal.concat([array.slice(currIndx, currIndx + chunkSize)])
+        : prevVal,
+    []
+  );
 };

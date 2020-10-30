@@ -1,23 +1,27 @@
-import {
-  MAX_UINT_AMOUNT,
-  ZERO_ADDRESS,
-  getATokenDomainSeparatorPerNetwork,
-} from '../helpers/constants';
+import {MAX_UINT_AMOUNT, ZERO_ADDRESS} from '../helpers/constants';
+import {BUIDLEREVM_CHAINID} from '../helpers/buidler-constants';
 import {buildPermitParams, getSignatureFromTypedData} from '../helpers/contracts-helpers';
 import {expect} from 'chai';
 import {ethers} from 'ethers';
 import {eEthereumNetwork} from '../helpers/types';
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {BRE} from '../helpers/misc-utils';
-import {waitForTx} from './__setup.spec';
-import {BUIDLEREVM_CHAINID} from '../helpers/buidler-constants';
+import {
+  ConfigNames,
+  getATokenDomainSeparatorPerNetwork,
+  loadPoolConfig,
+} from '../helpers/configuration';
+import {waitForTx} from '../helpers/misc-utils';
 
 const {parseEther} = ethers.utils;
 
 makeSuite('AToken: Permit', (testEnv: TestEnv) => {
+  const poolConfig = loadPoolConfig(ConfigNames.Commons);
+
   it('Checks the domain separator', async () => {
     const DOMAIN_SEPARATOR_ENCODED = getATokenDomainSeparatorPerNetwork(
-      eEthereumNetwork.buidlerevm
+      eEthereumNetwork.buidlerevm,
+      poolConfig
     );
 
     const {aDai} = testEnv;
@@ -28,10 +32,11 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Get aDAI for tests', async () => {
-    const {dai, deployer, pool} = testEnv;
+    const {dai, pool, deployer} = testEnv;
 
     await dai.mint(parseEther('20000'));
     await dai.approve(pool.address, parseEther('20000'));
+
     await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
   });
 

@@ -1,4 +1,9 @@
 import BigNumber from 'bignumber.js';
+import {MockTokenMap} from './contracts-helpers';
+
+export interface SymbolMap<T> {
+  [symbol: string]: T;
+}
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -6,6 +11,12 @@ export enum eEthereumNetwork {
   ropsten = 'ropsten',
   main = 'main',
   coverage = 'coverage',
+}
+
+export enum EthereumNetworkNames {
+  kovan = 'kovan',
+  ropsten = 'ropsten',
+  main = 'main',
 }
 
 export enum AavePools {
@@ -33,7 +44,6 @@ export enum eContractid {
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
-  MockSwapAdapter = 'MockSwapAdapter',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
@@ -43,6 +53,10 @@ export enum eContractid {
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
+  FeeProvider = 'FeeProvider',
+  TokenDistributor = 'TokenDistributor',
+  StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
+  ATokensAndRatesHelper = 'ATokensAndRatesHelper',
 }
 
 export enum ProtocolErrors {
@@ -77,6 +91,8 @@ export enum ProtocolErrors {
   REQUESTED_AMOUNT_TOO_SMALL = '25', // 'The requested amount is too small for a FlashLoan.'
   INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26', // 'The actual balance of the protocol is inconsistent'
   CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The actual balance of the protocol is inconsistent'
+  BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '54', // User borrows on behalf, but allowance are too small
+  INVALID_FLASH_LOAN_EXECUTOR_RETURN = '60', // The flash loan received returned 0 (EOA)
 
   // require error messages - aToken
   CALLER_MUST_BE_LENDING_POOL = '28', // 'The caller of this function must be a lending pool'
@@ -92,6 +108,7 @@ export enum ProtocolErrors {
 
   //require error messages - LendingPoolAddressesProviderRegistry
   PROVIDER_NOT_REGISTERED = '37', // 'Provider is not registered'
+  INVALID_ADDRESSES_PROVIDER_ID = '68',
 
   //return error messages - LendingPoolCollateralManager
   HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '38', // 'Health factor is not below the threshold'
@@ -102,6 +119,12 @@ export enum ProtocolErrors {
   INVALID_FLASHLOAN_MODE = '43', //Invalid flashloan mode
 
   IS_PAUSED = '58', // Pool is paused
+
+  INVALID_LTV = '70',
+  INVALID_LIQ_THRESHOLD = '71',
+  INVALID_LIQ_BONUS = '72',
+  INVALID_DECIMALS = '73',
+  INVALID_RESERVE_FACTOR = '74',
 
   // old
 
@@ -119,6 +142,9 @@ export type tBigNumberTokenBigUnits = BigNumber;
 export type tStringTokenSmallUnits = string; // 1 wei, or 1 basic unit of USDC, or 1 basic unit of DAI
 export type tBigNumberTokenSmallUnits = BigNumber;
 
+export interface iAssetCommon<T> {
+  [key: string]: T;
+}
 export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
@@ -154,7 +180,6 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iAavePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'WETH'
   | 'DAI'
   | 'TUSD'
   | 'USDC'
@@ -193,7 +218,7 @@ export type iAaveSecondPoolAssets<T> = Pick<
   | 'UNI_LINK_ETH'
 >;
 
-export type iMultiPoolsAssets<T> = iAavePoolAssets<T> | iAaveSecondPoolAssets<T>;
+export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T> | iAaveSecondPoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
 
@@ -271,3 +296,76 @@ export enum RateMode {
   Stable = '1',
   Variable = '2',
 }
+
+export interface ObjectString {
+  [key: string]: string;
+}
+
+export enum EthereumNetwork {
+  kovan = 'kovan',
+  ropsten = 'ropsten',
+  development = 'development',
+  main = 'main',
+  coverage = 'soliditycoverage',
+}
+
+export interface IProtocolGlobalConfig {
+  OptimalUtilizationRate: BigNumber;
+  ExcessUtilizationRate: BigNumber;
+  ApprovalAmountLendingPoolCore: string;
+  TokenDistributorPercentageBase: string;
+  MockUsdPriceInWei: string;
+  EthereumAddress: tEthereumAddress;
+  UsdAddress: tEthereumAddress;
+  NilAddress: tEthereumAddress;
+  OneAddress: tEthereumAddress;
+  AaveReferral: string;
+}
+
+export interface IMocksConfig {
+  ChainlinkAggregatorPrices: iAssetBase<string>;
+  AllAssetsInitialPrices: iAssetBase<string>;
+}
+
+export interface ILendingRateOracleRatesCommon {
+  [token: string]: ILendingRate;
+}
+
+export interface ILendingRate {
+  borrowRate: string;
+}
+
+export interface ICommonConfiguration {
+  ConfigName: string;
+  ProviderId: number;
+  ReserveSymbols: string[];
+  ProtocolGlobalParams: IProtocolGlobalConfig;
+  Mocks: IMocksConfig;
+  ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
+  LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
+  LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
+  TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
+  ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+  FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
+  ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
+  AaveAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
+  AaveAdminIndex: number;
+  ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+  ATokenDomainSeparator: iParamsPerNetwork<string>;
+  ProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+}
+
+export interface IAaveConfiguration extends ICommonConfiguration {
+  ReservesConfig: iAavePoolAssets<IReserveParams>;
+}
+
+export interface IUniswapConfiguration extends ICommonConfiguration {
+  ReservesConfig: iAaveSecondPoolAssets<IReserveParams>;
+}
+
+export interface ITokenAddress {
+  [token: string]: tEthereumAddress;
+}
+
+export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration | IUniswapConfiguration;

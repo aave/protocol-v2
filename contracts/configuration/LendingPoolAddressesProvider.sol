@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {Ownable} from '@openzeppelin/contracts/access/Ownable.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {
-  InitializableAdminUpgradeabilityProxy
-} from '../libraries/openzeppelin-upgradeability/InitializableAdminUpgradeabilityProxy.sol';
+  InitializableImmutableAdminUpgradeabilityProxy
+} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 
@@ -19,23 +19,47 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   mapping(bytes32 => address) private _addresses;
 
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';
-  bytes32 private constant LENDING_POOL_CORE = 'LENDING_POOL_CORE';
   bytes32 private constant LENDING_POOL_CONFIGURATOR = 'LENDING_POOL_CONFIGURATOR';
   bytes32 private constant AAVE_ADMIN = 'AAVE_ADMIN';
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
-  bytes32 private constant LENDING_POOL_FLASHLOAN_PROVIDER = 'FLASHLOAN_PROVIDER';
-  bytes32 private constant DATA_PROVIDER = 'DATA_PROVIDER';
-  bytes32 private constant ETHEREUM_ADDRESS = 'ETHEREUM_ADDRESS';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
-  bytes32 private constant WALLET_BALANCE_PROVIDER = 'WALLET_BALANCE_PROVIDER';
+
+  /**
+   * @dev Sets an address for an id, allowing to cover it or not with a proxy
+   * @param id The id
+   * @param newAddress The address to set, pass address(0) if a proxy is needed
+   * @param implementationAddress The address of the implementation if we want it covered by a proxy
+   * address(0) if we don't want a proxy covering
+   */
+  function setAddress(
+    bytes32 id,
+    address newAddress,
+    address implementationAddress
+  ) external override onlyOwner {
+    if (implementationAddress != address(0)) {
+      _updateImpl(id, implementationAddress);
+      emit AddressSet(id, implementationAddress, true);
+    } else {
+      _addresses[id] = newAddress;
+      emit AddressSet(id, newAddress, false);
+    }
+  }
+
+  /**
+   * @dev Returns an address by id
+   * @return The address
+   */
+  function getAddress(bytes32 id) public override view returns (address) {
+    return _addresses[id];
+  }
 
   /**
    * @dev returns the address of the LendingPool proxy
    * @return the lending pool proxy address
    **/
   function getLendingPool() external override view returns (address) {
-    return _addresses[LENDING_POOL];
+    return getAddress(LENDING_POOL);
   }
 
   /**
@@ -52,7 +76,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @return the lending pool configurator proxy address
    **/
   function getLendingPoolConfigurator() external override view returns (address) {
-    return _addresses[LENDING_POOL_CONFIGURATOR];
+    return getAddress(LENDING_POOL_CONFIGURATOR);
   }
 
   /**
@@ -72,7 +96,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    **/
 
   function getLendingPoolCollateralManager() external override view returns (address) {
-    return _addresses[LENDING_POOL_COLLATERAL_MANAGER];
+    return getAddress(LENDING_POOL_COLLATERAL_MANAGER);
   }
 
   /**
@@ -90,7 +114,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    **/
 
   function getAaveAdmin() external override view returns (address) {
-    return _addresses[AAVE_ADMIN];
+    return getAddress(AAVE_ADMIN);
   }
 
   function setAaveAdmin(address aaveAdmin) external override onlyOwner {
@@ -99,7 +123,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   function getPriceOracle() external override view returns (address) {
-    return _addresses[PRICE_ORACLE];
+    return getAddress(PRICE_ORACLE);
   }
 
   function setPriceOracle(address priceOracle) external override onlyOwner {
@@ -108,7 +132,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   function getLendingRateOracle() external override view returns (address) {
-    return _addresses[LENDING_RATE_ORACLE];
+    return getAddress(LENDING_RATE_ORACLE);
   }
 
   function setLendingRateOracle(address lendingRateOracle) external override onlyOwner {
@@ -124,14 +148,14 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function _updateImpl(bytes32 id, address newAddress) internal {
     address payable proxyAddress = payable(_addresses[id]);
 
-    InitializableAdminUpgradeabilityProxy proxy = InitializableAdminUpgradeabilityProxy(
-      proxyAddress
-    );
+
+      InitializableImmutableAdminUpgradeabilityProxy proxy
+     = InitializableImmutableAdminUpgradeabilityProxy(proxyAddress);
     bytes memory params = abi.encodeWithSignature('initialize(address)', address(this));
 
     if (proxyAddress == address(0)) {
-      proxy = new InitializableAdminUpgradeabilityProxy();
-      proxy.initialize(newAddress, address(this), params);
+      proxy = new InitializableImmutableAdminUpgradeabilityProxy(address(this));
+      proxy.initialize(newAddress, params);
       _addresses[id] = address(proxy);
       emit ProxyCreated(id, address(proxy));
     } else {

@@ -2,9 +2,16 @@ version: '3.5'
 
 services:
   contracts-env:
+    env_file:
+      - .env
     build:
       context: ./
     working_dir: /src
     command: npm run run-env
     volumes:
       - ./:/src
+    environment:
+      MNEMONIC: ${MNEMONIC}
+      ETHERSCAN_KEY: ${ETHERSCAN_KEY}
+      INFURA_KEY: ${INFURA_KEY}
+      ETHERSCAN_NETWORK: ${ETHERSCAN_NETWORK}

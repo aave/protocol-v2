@@ -54,19 +54,13 @@ library WadRayMath {
    * @return the result of a*b, in wad
    **/
   function wadMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0) {
+    if (a == 0 || b == 0) {
       return 0;
     }
 
-    uint256 result = a * b;
+    require(a <= (type(uint256).max - halfWAD) / b, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result / a == b, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfWAD;
-
-    require(result >= halfWAD, Errors.ADDITION_OVERFLOW);
-
-    return result / WAD;
+    return (a * b + halfWAD) / WAD;
   }
 
   /**
@@ -77,18 +71,11 @@ library WadRayMath {
    **/
   function wadDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.DIVISION_BY_ZERO);
-
     uint256 halfB = b / 2;
 
-    uint256 result = a * WAD;
+    require(a <= (type(uint256).max - halfB) / WAD, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result / WAD == a, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfB;
-
-    require(result >= halfB, Errors.ADDITION_OVERFLOW);
-
-    return result / b;
+    return (a * WAD + halfB) / b;
   }
 
   /**
@@ -98,19 +85,13 @@ library WadRayMath {
    * @return the result of a*b, in ray
    **/
   function rayMul(uint256 a, uint256 b) internal pure returns (uint256) {
-    if (a == 0) {
+    if (a == 0 || b == 0) {
       return 0;
     }
 
-    uint256 result = a * b;
+    require(a <= (type(uint256).max - halfRAY) / b, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result / a == b, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfRAY;
-
-    require(result >= halfRAY, Errors.ADDITION_OVERFLOW);
-
-    return result / RAY;
+    return (a * b + halfRAY) / RAY;
   }
 
   /**
@@ -121,18 +102,11 @@ library WadRayMath {
    **/
   function rayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.DIVISION_BY_ZERO);
-
     uint256 halfB = b / 2;
 
-    uint256 result = a * RAY;
+    require(a <= (type(uint256).max - halfB) / RAY, Errors.MULTIPLICATION_OVERFLOW);
 
-    require(result / RAY == a, Errors.MULTIPLICATION_OVERFLOW);
-
-    result += halfB;
-
-    require(result >= halfB, Errors.ADDITION_OVERFLOW);
-
-    return result / b;
+    return (a * RAY + halfB) / b;
   }
 
   /**

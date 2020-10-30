@@ -17,22 +17,17 @@ import {
 } from './utils/calculations';
 import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/helpers';
 
-import {
-  convertToCurrencyDecimals,
-  getAToken,
-  getMintableErc20,
-} from '../../helpers/contracts-helpers';
+import {convertToCurrencyDecimals} from '../../helpers/contracts-helpers';
+import {getAToken, getMintableErc20} from '../../helpers/contracts-getters';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
-import {BRE, increaseTime, timeLatest} from '../../helpers/misc-utils';
+import {BRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';
 
 import chai from 'chai';
 import {ReserveData, UserReserveData} from './utils/interfaces';
-import {waitForTx} from '../__setup.spec';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
-import { time } from 'console';
 
 const {expect} = chai;
 
@@ -236,7 +231,7 @@ export const withdraw = async (
 
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await pool.connect(user.signer).withdraw(reserve, amountToWithdraw)
+      await pool.connect(user.signer).withdraw(reserve, amountToWithdraw, user.address)
     );
 
     const {
@@ -274,8 +269,10 @@ export const withdraw = async (
     //   );
     // });
   } else if (expectedResult === 'revert') {
-    await expect(pool.connect(user.signer).withdraw(reserve, amountToWithdraw), revertMessage).to.be
-      .reverted;
+    await expect(
+      pool.connect(user.signer).withdraw(reserve, amountToWithdraw, user.address),
+      revertMessage
+    ).to.be.reverted;
   }
 };
 
@@ -736,11 +733,11 @@ export const getContractsData = async (
   testEnv: TestEnv,
   sender?: string
 ) => {
-  const {pool} = testEnv;
+  const {pool, helpersContract} = testEnv;
 
   const [userData, reserveData, timestamp] = await Promise.all([
-    getUserData(pool, reserve, user, sender || user),
-    getReserveData(pool, reserve),
+    getUserData(pool, helpersContract, reserve, user, sender || user),
+    getReserveData(helpersContract, reserve),
     timeLatest(),
   ]);
 

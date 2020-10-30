@@ -1,70 +1,59 @@
 import rawBRE from '@nomiclabs/buidler';
 import {MockContract} from 'ethereum-waffle';
 import {
+  insertContractAddressInDb,
+  getEthersSigners,
+  registerContractInJsonDb,
+} from '../helpers/contracts-helpers';
+import {
   deployLendingPoolAddressesProvider,
-  deployMintableErc20,
+  deployMintableERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  getLendingPoolConfiguratorProxy,
-  deployMockAggregator,
   deployChainlinkProxyPriceProvider,
-  deployLendingRateOracle,
-  deployDefaultReserveInterestRateStrategy,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  getLendingPool,
-  insertContractAddressInDb,
   deployAaveProtocolTestHelpers,
-  getEthersSigners,
-  registerContractInJsonDb,
-  deployStableDebtToken,
-  deployVariableDebtToken,
-  deployGenericAToken,
-  deployMockSwapAdapter,
-} from '../helpers/contracts-helpers';
-import {LendingPoolAddressesProvider} from '../types/LendingPoolAddressesProvider';
-import {ContractTransaction, Signer} from 'ethers';
-import {
-  TokenContractId,
-  eContractid,
-  iAssetBase,
-  tEthereumAddress,
-  iAssetAggregatorBase,
-  IMarketRates,
-  iMultiPoolsAssets,
-  AavePools,
-  IReserveParams,
-} from '../helpers/types';
-import {MintableErc20} from '../types/MintableErc20';
-import {
-  MOCK_USD_PRICE_IN_WEI,
-  ALL_ASSETS_INITIAL_PRICES,
-  USD_ADDRESS,
-  MOCK_CHAINLINK_AGGREGATORS_PRICES,
-  LENDING_RATE_ORACLE_RATES_COMMON,
-  getReservesConfigByPool,
-  getFeeDistributionParamsCommon,
-  ZERO_ADDRESS,
-} from '../helpers/constants';
-import {PriceOracle} from '../types/PriceOracle';
-import {MockAggregator} from '../types/MockAggregator';
-import {LendingRateOracle} from '../types/LendingRateOracle';
-import {LendingPool} from '../types/LendingPool';
-import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
+  deployLendingRateOracle,
+  deployStableAndVariableTokensHelper,
+  deployATokensAndRatesHelper,
+} from '../helpers/contracts-deployments';
+import {Signer} from 'ethers';
+import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
+import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
+import {getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
-import path from 'path';
-import fs from 'fs';
 
-['misc'].forEach((folder) => {
-  const tasksPath = path.join(__dirname, '../', 'tasks', folder);
-  fs.readdirSync(tasksPath).forEach((task) => require(`${tasksPath}/${task}`));
-});
+import {
+  setInitialAssetPricesInOracle,
+  deployAllMockAggregators,
+  setInitialMarketRatesInRatesOracleByHelper,
+} from '../helpers/oracles-helpers';
+import {waitForTx} from '../helpers/misc-utils';
+import {
+  initReservesByHelper,
+  enableReservesToBorrowByHelper,
+  enableReservesAsCollateralByHelper,
+} from '../helpers/init-helpers';
+import {AaveConfig} from '../config/aave';
+import {ZERO_ADDRESS} from '../helpers/constants';
+import {
+  getLendingPool,
+  getLendingPoolConfiguratorProxy,
+  getPairsTokenAggregator,
+} from '../helpers/contracts-getters';
+
+const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
+const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
+const USD_ADDRESS = AaveConfig.ProtocolGlobalParams.UsdAddress;
+const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.ChainlinkAggregatorPrices;
+const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
-  const tokens: {[symbol: string]: MockContract | MintableErc20} = {};
+  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
@@ -82,7 +71,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
       decimals = 18;
     }
 
-    tokens[tokenSymbol] = await deployMintableErc20([
+    tokens[tokenSymbol] = await deployMintableERC20([
       tokenSymbol,
       tokenSymbol,
       configData ? configData.reserveDecimals : 18,
@@ -92,265 +81,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
 
   return tokens;
 };
-
-const setInitialAssetPricesInOracle = async (
-  prices: iAssetBase<tEthereumAddress>,
-  assetsAddresses: iAssetBase<tEthereumAddress>,
-  priceOracleInstance: PriceOracle
-) => {
-  for (const [assetSymbol, price] of Object.entries(prices) as [string, string][]) {
-    const assetAddressIndex = Object.keys(assetsAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, assetAddress] = (Object.entries(assetsAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-    await waitForTx(await priceOracleInstance.setAssetPrice(assetAddress, price));
-  }
-};
-
-const deployAllMockAggregators = async (initialPrices: iAssetAggregatorBase<string>) => {
-  const aggregators: {[tokenSymbol: string]: MockAggregator} = {};
-  for (const tokenContractName of Object.keys(initialPrices)) {
-    if (tokenContractName !== 'ETH') {
-      const priceIndex = Object.keys(initialPrices).findIndex(
-        (value) => value === tokenContractName
-      );
-      const [, price] = (Object.entries(initialPrices) as [string, string][])[priceIndex];
-      aggregators[tokenContractName] = await deployMockAggregator(price);
-    }
-  }
-  return aggregators;
-};
-
-const getPairsTokenAggregator = (
-  allAssetsAddresses: {
-    [tokenSymbol: string]: tEthereumAddress;
-  },
-  aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
-): [string[], string[]] => {
-  const {ETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
-
-  const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
-    if (tokenSymbol !== 'ETH') {
-      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
-        (value) => value === tokenSymbol
-      );
-      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
-        string,
-        tEthereumAddress
-      ][])[aggregatorAddressIndex];
-      return [tokenAddress, aggregatorAddress];
-    }
-  });
-
-  const mappedPairs = pairs.map(([asset]) => asset);
-  const mappedAggregators = pairs.map(([, source]) => source);
-
-  return [mappedPairs, mappedAggregators];
-};
-
-const setInitialMarketRatesInRatesOracle = async (
-  marketRates: iMultiPoolsAssets<IMarketRates>,
-  assetsAddresses: {[x: string]: tEthereumAddress},
-  lendingRateOracleInstance: LendingRateOracle
-) => {
-  for (const [assetSymbol, {borrowRate}] of Object.entries(marketRates) as [
-    string,
-    IMarketRates
-  ][]) {
-    const assetAddressIndex = Object.keys(assetsAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, assetAddress] = (Object.entries(assetsAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-    await lendingRateOracleInstance.setMarketBorrowRate(assetAddress, borrowRate);
-  }
-};
-
-const initReserves = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPoolAddressesProvider: LendingPoolAddressesProvider,
-  lendingPool: LendingPool,
-  lendingPoolConfigurator: LendingPoolConfigurator,
-  aavePool: AavePools,
-  incentivesController: tEthereumAddress
-) => {
-  if (aavePool !== AavePools.proto && aavePool !== AavePools.secondary) {
-    console.log(`Invalid Aave pool ${aavePool}`);
-    process.exit(1);
-  }
-
-  for (let [assetSymbol, {reserveDecimals}] of Object.entries(reservesParams) as [
-    string,
-    IReserveParams
-  ][]) {
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-
-    const {isActive: reserveInitialized} = await lendingPool.getReserveConfigurationData(
-      tokenAddress
-    );
-
-    if (reserveInitialized) {
-      console.log(`Reserve ${assetSymbol} is already active, skipping configuration`);
-      continue;
-    }
-
-    try {
-      const reserveParamIndex = Object.keys(reservesParams).findIndex(
-        (value) => value === assetSymbol
-      );
-      const [
-        ,
-        {
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        },
-      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      const rateStrategyContract = await deployDefaultReserveInterestRateStrategy([
-        lendingPoolAddressesProvider.address,
-        baseVariableBorrowRate,
-        variableRateSlope1,
-        variableRateSlope2,
-        stableRateSlope1,
-        stableRateSlope2,
-      ]);
-
-      const stableDebtToken = await deployStableDebtToken([
-        `Aave stable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `stableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        tokenAddress,
-        lendingPool.address,
-        incentivesController,
-      ]);
-
-      const variableDebtToken = await deployVariableDebtToken([
-        `Aave variable debt bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `variableDebt${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        tokenAddress,
-        lendingPool.address,
-        incentivesController,
-      ]);
-
-      const aToken = await deployGenericAToken([
-        lendingPool.address,
-        tokenAddress,
-        ZERO_ADDRESS,
-        `Aave interest bearing ${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        `a${assetSymbol === 'WETH' ? 'ETH' : assetSymbol}`,
-        incentivesController,
-      ]);
-
-      if (process.env.POOL === AavePools.secondary) {
-        if (assetSymbol.search('UNI') === -1) {
-          assetSymbol = `Uni${assetSymbol}`;
-        } else {
-          assetSymbol = assetSymbol.replace(/_/g, '').replace('UNI', 'Uni');
-        }
-      }
-
-      await lendingPoolConfigurator.initReserve(
-        tokenAddress,
-        aToken.address,
-        stableDebtToken.address,
-        variableDebtToken.address,
-        reserveDecimals,
-        rateStrategyContract.address
-      );
-    } catch (e) {
-      console.log(`Reserve initialization for ${assetSymbol} failed with error ${e}. Skipped.`);
-    }
-  }
-};
-
-const enableReservesToBorrow = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPool: LendingPool,
-  lendingPoolConfigurator: LendingPoolConfigurator
-) => {
-  for (const [assetSymbol, {borrowingEnabled, stableBorrowRateEnabled}] of Object.entries(
-    reservesParams
-  ) as [string, IReserveParams][]) {
-    if (!borrowingEnabled) continue;
-    try {
-      const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-        (value) => value === assetSymbol
-      );
-      const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-        assetAddressIndex
-      ];
-      const {
-        borrowingEnabled: borrowingAlreadyEnabled,
-      } = await lendingPool.getReserveConfigurationData(tokenAddress);
-
-      if (borrowingAlreadyEnabled) {
-        console.log(`Reserve ${assetSymbol} is already enabled for borrowing, skipping`);
-        continue;
-      }
-
-      await lendingPoolConfigurator.enableBorrowingOnReserve(tokenAddress, stableBorrowRateEnabled);
-    } catch (e) {
-      console.log(
-        `Enabling reserve for borrowings for ${assetSymbol} failed with error ${e}. Skipped.`
-      );
-    }
-  }
-};
-
-const enableReservesAsCollateral = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
-  lendingPool: LendingPool,
-  lendingPoolConfigurator: LendingPoolConfigurator
-) => {
-  for (const [
-    assetSymbol,
-    {baseLTVAsCollateral, liquidationBonus, liquidationThreshold},
-  ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
-    if (baseLTVAsCollateral === '-1') continue;
-
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-    const {
-      usageAsCollateralEnabled: alreadyEnabled,
-    } = await lendingPool.getReserveConfigurationData(tokenAddress);
-
-    if (alreadyEnabled) {
-      console.log(`Reserve ${assetSymbol} is already enabled as collateral, skipping`);
-      continue;
-    }
-
-    try {
-      await lendingPoolConfigurator.enableReserveAsCollateral(
-        tokenAddress,
-        baseLTVAsCollateral,
-        liquidationThreshold,
-        liquidationBonus
-      );
-    } catch (e) {
-      console.log(
-        `Enabling reserve as collateral for ${assetSymbol} failed with error ${e}. Skipped.`
-      );
-    }
-  }
-};
-
-export const waitForTx = async (tx: ContractTransaction) => await tx.wait();
 
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');
@@ -368,16 +98,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const lendingPoolImpl = await deployLendingPool();
 
-  console.log('Deployed lending pool, address:', lendingPoolImpl.address);
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
-  console.log('Added pool to addresses provider');
-
   const address = await addressesProvider.getLendingPool();
-  console.log('Address is ', address);
   const lendingPoolProxy = await getLendingPool(address);
-
-  console.log('implementation set, address:', lendingPoolProxy.address);
 
   await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
@@ -392,6 +116,14 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     eContractid.LendingPoolConfigurator,
     lendingPoolConfiguratorProxy.address
   );
+
+  // Deploy deployment helpers
+  await deployStableAndVariableTokensHelper([lendingPoolProxy.address, addressesProvider.address]);
+  await deployATokensAndRatesHelper([
+    lendingPoolProxy.address,
+    addressesProvider.address,
+    lendingPoolConfiguratorProxy.address,
+  ]);
 
   const fallbackOracle = await deployPriceOracle();
   await waitForTx(await fallbackOracle.setEthUsdPrice(MOCK_USD_PRICE_IN_WEI));
@@ -461,10 +193,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const allReservesAddresses = {
     ...tokensAddressesWithoutUsd,
   };
-  await setInitialMarketRatesInRatesOracle(
+  await setInitialMarketRatesInRatesOracleByHelper(
     LENDING_RATE_ORACLE_RATES_COMMON,
     allReservesAddresses,
-    lendingRateOracle
+    lendingRateOracle,
+    aaveAdmin
   );
 
   const {
@@ -479,27 +212,24 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const reservesParams = getReservesConfigByPool(AavePools.proto);
 
+  const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
+
+  await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+  const admin = await deployer.getAddress();
+
   console.log('Initialize configuration');
-  await initReserves(
+  await initReservesByHelper(reservesParams, protoPoolReservesAddresses, admin, ZERO_ADDRESS);
+  await enableReservesToBorrowByHelper(
     reservesParams,
     protoPoolReservesAddresses,
-    addressesProvider,
-    lendingPoolProxy,
-    lendingPoolConfiguratorProxy,
-    AavePools.proto,
-    ZERO_ADDRESS
+    testHelpers,
+    admin
   );
-  await enableReservesToBorrow(
+  await enableReservesAsCollateralByHelper(
     reservesParams,
     protoPoolReservesAddresses,
-    lendingPoolProxy,
-    lendingPoolConfiguratorProxy
-  );
-  await enableReservesAsCollateral(
-    reservesParams,
-    protoPoolReservesAddresses,
-    lendingPoolProxy,
-    lendingPoolConfiguratorProxy
+    testHelpers,
+    admin
   );
 
   const collateralManager = await deployLendingPoolCollateralManager();
@@ -510,14 +240,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);
 
-  const mockSwapAdapter = await deployMockSwapAdapter(addressesProvider.address);
-  await insertContractAddressInDb(eContractid.MockSwapAdapter, mockSwapAdapter.address);
-
   await deployWalletBalancerProvider(addressesProvider.address);
-
-  const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
-
-  await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
 
   console.timeEnd('setup');
 };

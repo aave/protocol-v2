@@ -5,7 +5,6 @@ import {
   MAX_UINT_AMOUNT,
   OPTIMAL_UTILIZATION_RATE,
   EXCESS_UTILIZATION_RATE,
-  ZERO_ADDRESS,
 } from '../../../helpers/constants';
 import {IReserveParams, iAavePoolAssets, RateMode, tEthereumAddress} from '../../../helpers/types';
 import './math';
@@ -318,7 +317,6 @@ export const calcExpectedReserveDataAfterBorrow = (
   expectedReserveData.lastUpdateTimestamp = txTimestamp;
 
   if (borrowRateMode == RateMode.Stable) {
-    
     expectedReserveData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt;
 
     const expectedVariableDebtAfterTx = expectedReserveData.scaledVariableDebt.rayMul(
@@ -392,7 +390,6 @@ export const calcExpectedReserveDataAfterBorrow = (
       expectedReserveData.totalLiquidity
     );
   } else {
-
     expectedReserveData.principalStableDebt = reserveDataBeforeAction.principalStableDebt;
 
     const totalStableDebtAfterTx = calcExpectedStableDebtTokenBalance(
@@ -605,7 +602,6 @@ export const calcExpectedUserDataAfterBorrow = (
   const amountBorrowedBN = new BigNumber(amountBorrowed);
 
   if (interestRateMode == RateMode.Stable) {
-    
     const stableDebtUntilTx = calcExpectedStableDebtTokenBalance(
       userDataBeforeAction.principalStableDebt,
       userDataBeforeAction.stableBorrowRate,
@@ -631,9 +627,7 @@ export const calcExpectedUserDataAfterBorrow = (
     );
 
     expectedUserData.scaledVariableDebt = userDataBeforeAction.scaledVariableDebt;
-
   } else {
-
     expectedUserData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt.plus(
       amountBorrowedBN.rayDiv(expectedDataAfterAction.variableBorrowIndex)
     );
@@ -1158,11 +1152,12 @@ const calcLinearInterest = (
   currentTimestamp: BigNumber,
   lastUpdateTimestamp: BigNumber
 ) => {
-  const timeDifference = currentTimestamp.minus(lastUpdateTimestamp).wadToRay();
+  const timeDifference = currentTimestamp.minus(lastUpdateTimestamp);
 
-  const timeDelta = timeDifference.rayDiv(new BigNumber(ONE_YEAR).wadToRay());
-
-  const cumulatedInterest = rate.rayMul(timeDelta).plus(RAY);
+  const cumulatedInterest = rate
+    .multipliedBy(timeDifference)
+    .dividedBy(new BigNumber(ONE_YEAR))
+    .plus(RAY);
 
   return cumulatedInterest;
 };

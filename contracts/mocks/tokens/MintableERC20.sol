@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.6.8;
 
-import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
 
 /**
  * @title ERC20Mintable
@@ -22,7 +22,7 @@ contract MintableERC20 is ERC20 {
    * @return A boolean that indicates if the operation was successful.
    */
   function mint(uint256 value) public returns (bool) {
-    _mint(msg.sender, value);
+    _mint(_msgSender(), value);
     return true;
   }
 }

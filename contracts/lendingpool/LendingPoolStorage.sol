@@ -18,22 +18,11 @@ contract LendingPoolStorage {
   // debt token address => user who gives allowance => user who receives allowance => amount
   mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
 
-  address[] internal _reservesList;
+  // the list of the available reserves, structured as a mapping for gas savings reasons
+  mapping(uint256 => address) internal _reservesList;
+
+  uint256 internal _reservesCount;
 
   bool internal _flashLiquidationLocked;
   bool internal _paused;
-
-  /**
-   * @dev returns the list of the initialized reserves
-   **/
-  function getReservesList() external view returns (address[] memory) {
-    return _reservesList;
-  }
-
-  /**
-   * @dev returns the addresses provider
-   **/
-  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
-    return _addressesProvider;
-  }
 }
