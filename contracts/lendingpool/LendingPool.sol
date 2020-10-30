@@ -595,6 +595,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       }
       emit FlashLoan(
         receiverAddress,
+        msg.sender,
         vars.currentAsset,
         vars.currentAmount,
         vars.currentPremium,

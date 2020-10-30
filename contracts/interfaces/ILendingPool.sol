@@ -99,6 +99,7 @@ interface ILendingPool {
   /**
    * @dev emitted when a flashloan is executed
    * @param target the address of the flashLoanReceiver
+   * @param initiator the address initiating the flash loan
    * @param asset the address of the asset being flashborrowed
    * @param amount the amount requested
    * @param premium the total fee on the amount
@@ -106,6 +107,7 @@ interface ILendingPool {
    **/
   event FlashLoan(
     address indexed target,
+    address initiator,
     address asset,
     uint256 amount,
     uint256 premium,
