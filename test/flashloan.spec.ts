@@ -50,7 +50,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       _mockFlashLoanReceiver.address,
       [weth.address],
       [ethers.utils.parseEther('0.8')],
-      0,
+      [0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
@@ -80,7 +80,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       _mockFlashLoanReceiver.address,
       [weth.address],
       ['1000720000000000000'],
-      0,
+      [0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
@@ -112,7 +112,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [ethers.utils.parseEther('0.8')],
-          0,
+          [0],
           caller.address,
           '0x10',
           '0'
@@ -133,7 +133,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [ethers.utils.parseEther('0.8')],
-          0,
+          [0],
           caller.address,
           '0x10',
           '0'
@@ -154,12 +154,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [ethers.utils.parseEther('0.8')],
-          4,
+          [4],
           caller.address,
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(LP_INVALID_FLASHLOAN_MODE);
+    ).to.be.reverted;
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes WETH flashloan with mode = 2, does not return the funds. A variable loan for caller is created', async () => {
@@ -183,7 +183,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         [ethers.utils.parseEther('0.8')],
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -208,7 +208,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         ['1004415000000000000'], //slightly higher than the available liquidity
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -226,7 +226,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         deployer.address,
         [weth.address],
         ['1000000000000000000'],
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -258,7 +258,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       _mockFlashLoanReceiver.address,
       [usdc.address],
       [flashloanAmount],
-      0,
+      [0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
@@ -301,7 +301,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [usdc.address],
           [flashloanAmount],
-          2,
+          [2],
           caller.address,
           '0x10',
           '0'
@@ -332,7 +332,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [usdc.address],
         [flashloanAmount],
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -372,7 +372,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [flashAmount],
-          0,
+          [0],
           caller.address,
           '0x10',
           '0'
@@ -395,7 +395,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         [flashAmount],
-        1,
+        [1],
         caller.address,
         '0x10',
         '0'
@@ -438,7 +438,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [flashAmount],
-          1,
+          [1],
           onBehalfOf.address,
           '0x10',
           '0'
@@ -457,7 +457,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     // Deposited for onBehalfOf user already, delegate borrow allowance
     await pool
       .connect(onBehalfOf.signer)
-      .delegateBorrowAllowance(weth.address, caller.address, 1, flashAmount);
+      .delegateBorrowAllowance([weth.address], caller.address, [1], [flashAmount]);
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
@@ -467,7 +467,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         [flashAmount],
-        1,
+        [1],
         onBehalfOf.address,
         '0x10',
         '0'

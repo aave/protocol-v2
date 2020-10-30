@@ -115,7 +115,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     // user tries to burn
     await expect(
-      pool.connect(users[0].signer).withdraw(dai.address, amountDAItoDeposit)
+      pool.connect(users[0].signer).withdraw(dai.address, amountDAItoDeposit, users[0].address)
     ).to.revertedWith(P_IS_PAUSED);
 
     // Configurator unpauses the pool
@@ -132,7 +132,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     // Try to execute liquidation
     await expect(
-      pool.connect(user.signer).delegateBorrowAllowance(dai.address, toUser.address, '1', '1')
+      pool.connect(user.signer).delegateBorrowAllowance([dai.address], toUser.address, ['1'], ['1'])
     ).revertedWith(P_IS_PAUSED);
 
     // Unpause the pool
@@ -190,7 +190,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [flashAmount],
-          1,
+          [1],
           caller.address,
           '0x10',
           '0'

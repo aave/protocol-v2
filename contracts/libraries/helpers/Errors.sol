@@ -89,6 +89,8 @@ library Errors {
   string public constant RC_INVALID_DECIMALS = '70';
   string public constant RC_INVALID_RESERVE_FACTOR = '71';
   string public constant LPAPR_INVALID_ADDRESSES_PROVIDER_ID = '72';
+  string public constant VL_INCONSISTENT_FLASHLOAN_PARAMS = '73';
+  string public constant LP_INCONSISTENT_PARAMS_LENGTH = '74';
 
   enum CollateralManagerErrors {
     NO_ERROR,
