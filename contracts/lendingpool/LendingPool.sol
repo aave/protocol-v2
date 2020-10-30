@@ -120,8 +120,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev withdraws the _reserves of user.
    * @param asset the address of the reserve
    * @param amount the underlying amount to be redeemed
+   * @param to address that will receive the underlying
    **/
-  function withdraw(address asset, uint256 amount) external override {
+  function withdraw(
+    address asset,
+    uint256 amount,
+    address to
+  ) external override {
     _whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
@@ -155,9 +160,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
     }
 
-    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, amountToWithdraw);
+    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
   }
 
   /**
@@ -892,7 +897,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     //caching the current stable borrow rate
     uint256 currentStableRate = 0;
-    
+
     bool isFirstBorrowing = false;
     if (
       ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE
