@@ -157,7 +157,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(INVALID_FLASHLOAN_MODE);
+    ).to.be.reverted;
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes WETH flashloan with mode = 2, does not return the funds. A variable loan for caller is created', async () => {

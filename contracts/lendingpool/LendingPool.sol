@@ -20,7 +20,6 @@ import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol'
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
-import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -120,8 +119,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev withdraws the _reserves of user.
    * @param asset the address of the reserve
    * @param amount the underlying amount to be redeemed
+   * @param to address that will receive the underlying
    **/
-  function withdraw(address asset, uint256 amount) external override {
+  function withdraw(
+    address asset,
+    uint256 amount,
+    address to
+  ) external override {
     _whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
@@ -155,9 +159,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
     }
 
-    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, amountToWithdraw);
+    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
   }
 
   /**
@@ -352,7 +356,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
 
-    emit Swap(asset, msg.sender);
+    emit Swap(asset, msg.sender, rateMode);
   }
 
   /**
@@ -538,7 +542,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     //execute action of the receiver
     require(
-      vars.receiver.executeOperation(assets, amounts, premiums, params),
+      vars.receiver.executeOperation(assets, amounts, premiums, msg.sender, params),
       Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
@@ -891,32 +895,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    uint256 reserveId = reserve.id;
-    if (!userConfig.isBorrowing(reserveId)) {
-      userConfig.setBorrowing(reserveId, true);
-    }
-
     reserve.updateState();
 
     //caching the current stable borrow rate
     uint256 currentStableRate = 0;
 
+    bool isFirstBorrowing = false;
     if (
       ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE
     ) {
       currentStableRate = reserve.currentStableBorrowRate;
 
-      IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+      isFirstBorrowing = IStableDebtToken(reserve.stableDebtTokenAddress).mint(
         vars.onBehalfOf,
         vars.amount,
         currentStableRate
       );
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
+      isFirstBorrowing = IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
         vars.onBehalfOf,
         vars.amount,
         reserve.variableBorrowIndex
       );
+    }
+
+    if (isFirstBorrowing) {
+      userConfig.setBorrowing(reserve.id, true);
     }
 
     reserve.updateInterestRates(
