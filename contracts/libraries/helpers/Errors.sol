@@ -80,7 +80,7 @@ library Errors {
   string public constant LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61';
   string public constant LP_REENTRANCY_NOT_ALLOWED = '62';
   string public constant LP_CALLER_MUST_BE_AN_ATOKEN = '63';
-  string public constant P_IS_PAUSED = '64'; // 'Pool is paused'
+  string public constant LP_IS_PAUSED = '64'; // 'Pool is paused'
   string public constant LP_NO_MORE_RESERVES_ALLOWED = '65';
   string public constant LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN = '66';
   string public constant RC_INVALID_LTV = '67';

@@ -64,7 +64,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - The contract must not be paused.
    */
   function _whenNotPaused() internal view {
-    require(!_paused, Errors.P_IS_PAUSED);
+    require(!_paused, Errors.LP_IS_PAUSED);
   }
 
   function getRevision() internal override pure returns (uint256) {

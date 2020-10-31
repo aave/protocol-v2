@@ -21,7 +21,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     INVALID_HF,
     LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER,
     LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED,
-    P_IS_PAUSED,
+    LP_IS_PAUSED,
   } = ProtocolErrors;
 
   it('LIQUIDATION - Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {

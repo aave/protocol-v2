@@ -135,7 +135,7 @@ export enum ProtocolErrors {
   LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61',
   LP_REENTRANCY_NOT_ALLOWED = '62',
   LP_CALLER_MUST_BE_AN_ATOKEN = '63',
-  P_IS_PAUSED = '64', // 'Pool is paused'
+  LP_IS_PAUSED = '64', // 'Pool is paused'
   LP_NO_MORE_RESERVES_ALLOWED = '65',
   LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN = '66',
   RC_INVALID_LTV = '67',
