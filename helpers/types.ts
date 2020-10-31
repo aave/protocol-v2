@@ -74,7 +74,7 @@ export enum eContractid {
 export enum ProtocolErrors {
   VL_AMOUNT_NOT_GREATER_THAN_0 = '1', // 'Amount must be greater than 0'
   VL_NO_ACTIVE_RESERVE = '2', // 'Action requires an active reserve'
-  VL_NO_UNFREEZED_RESERVE = '3', // 'Action requires an unfreezed reserve'
+  VL_RESERVE_FROZEN = '3', // 'Action requires an unfrozen reserve'
   VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH = '4', // 'The current liquidity is not enough'
   VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE = '5', // 'User cannot withdraw more than the available balance'
   VL_TRANSFER_NOT_ALLOWED = '6', // 'Transfer cannot be allowed.'

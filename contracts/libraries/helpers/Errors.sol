@@ -19,7 +19,7 @@ pragma solidity ^0.6.8;
 library Errors {
   string public constant VL_AMOUNT_NOT_GREATER_THAN_0 = '1'; // 'Amount must be greater than 0'
   string public constant VL_NO_ACTIVE_RESERVE = '2'; // 'Action requires an active reserve'
-  string public constant VL_NO_UNFREEZED_RESERVE = '3'; // 'Action requires an unfreezed reserve'
+  string public constant VL_RESERVE_FROZEN = '3'; // 'Action cannot be performed because the reserve is frozen'
   string public constant VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH = '4'; // 'The current liquidity is not enough'
   string public constant VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE = '5'; // 'User cannot withdraw more than the available balance'
   string public constant VL_TRANSFER_NOT_ALLOWED = '6'; // 'Transfer cannot be allowed.'
@@ -102,6 +102,6 @@ library Errors {
     NO_ACTIVE_RESERVE,
     HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
     INVALID_EQUAL_ASSETS_TO_SWAP,
-    NO_UNFREEZED_RESERVE
+    FROZEN_RESERVE
   }
 }

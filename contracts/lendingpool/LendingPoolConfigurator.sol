@@ -100,16 +100,16 @@ contract LendingPoolConfigurator is VersionedInitializable {
   event ReserveDeactivated(address indexed asset);
 
   /**
-   * @dev emitted when a reserve is freezed
+   * @dev emitted when a reserve is frozen
    * @param asset the address of the reserve
    **/
-  event ReserveFreezed(address indexed asset);
+  event ReserveFrozen(address indexed asset);
 
   /**
-   * @dev emitted when a reserve is unfreezed
+   * @dev emitted when a reserve is unfrozen
    * @param asset the address of the reserve
    **/
-  event ReserveUnfreezed(address indexed asset);
+  event ReserveUnfrozen(address indexed asset);
 
   /**
    * @dev emitted when a reserve loan to value is updated
@@ -462,7 +462,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev freezes a reserve. A freezed reserve doesn't accept any new deposit, borrow or rate swap, but can accept repayments, liquidations, rate rebalances and redeems
+   * @dev freezes a reserve. A frozen reserve doesn't accept any new deposit, borrow or rate swap, but can accept repayments, liquidations, rate rebalances and redeems
    * @param asset the address of the reserve
    **/
   function freezeReserve(address asset) external onlyAaveAdmin {
@@ -472,7 +472,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     pool.setConfiguration(asset, currentConfig.data);
 
-    emit ReserveFreezed(asset);
+    emit ReserveFrozen(asset);
   }
 
   /**
@@ -486,7 +486,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     pool.setConfiguration(asset, currentConfig.data);
 
-    emit ReserveUnfreezed(asset);
+    emit ReserveUnfrozen(asset);
   }
 
   /**
