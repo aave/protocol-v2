@@ -242,7 +242,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Deactivates the ETH reserve as collateral', async () => {
     const {configurator, helpersContract, weth} = testEnv;
-    await configurator.disableReserveAsCollateral(weth.address);
+    await configurator.configureReserveAsCollateral(weth.address, 0, 0, 0);
+
     const {
       decimals,
       ltv,
@@ -260,15 +261,15 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(isFrozen).to.be.equal(false);
     expect(decimals).to.be.equal(18);
     expect(ltv).to.be.equal(0);
-    expect(liquidationThreshold).to.be.equal(8000);
-    expect(liquidationBonus).to.be.equal(10500);
+    expect(liquidationThreshold).to.be.equal(0);
+    expect(liquidationBonus).to.be.equal(0);
     expect(stableBorrowRateEnabled).to.be.equal(true);
     expect(reserveFactor).to.be.equal(0);
   });
 
   it('Activates the ETH reserve as collateral', async () => {
     const {configurator, helpersContract, weth} = testEnv;
-    await configurator.enableReserveAsCollateral(weth.address, '7500', '8000', '10500');
+    await configurator.configureReserveAsCollateral(weth.address, '7500', '8000', '10500');
 
     const {
       decimals,
@@ -293,20 +294,12 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(0);
   });
 
-  it('Check the onlyAaveAdmin on disableReserveAsCollateral ', async () => {
-    const {configurator, users, weth} = testEnv;
-    await expect(
-      configurator.connect(users[2].signer).disableReserveAsCollateral(weth.address),
-      LPC_CALLER_NOT_AAVE_ADMIN
-    ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
-  });
-
-  it('Check the onlyAaveAdmin on enableReserveAsCollateral ', async () => {
+  it('Check the onlyAaveAdmin on configureReserveAsCollateral ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator
         .connect(users[2].signer)
-        .enableReserveAsCollateral(weth.address, '75', '80', '105'),
+        .configureReserveAsCollateral(weth.address, '7500', '8000', '10500'),
       LPC_CALLER_NOT_AAVE_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
   });

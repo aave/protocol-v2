@@ -97,7 +97,7 @@ contract ATokensAndRatesHelper is Ownable {
     require(liquidationBonuses.length == tokens.length);
 
     for (uint256 i = 0; i < tokens.length; i++) {
-      LendingPoolConfigurator(poolConfigurator).enableReserveAsCollateral(
+      LendingPoolConfigurator(poolConfigurator).configureReserveAsCollateral(
         tokens[i],
         baseLTVs[i],
         liquidationThresholds[i],

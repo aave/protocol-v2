@@ -199,7 +199,7 @@ library ValidationLogic {
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
           amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
-        Errors.VL_CALLATERAL_SAME_AS_BORROWING_CURRENCY
+        Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
       vars.availableLiquidity = IERC20(asset).balanceOf(reserve.aTokenAddress);
@@ -285,7 +285,7 @@ library ValidationLogic {
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
           stableDebt.add(variableDebt) > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
-        Errors.VL_CALLATERAL_SAME_AS_BORROWING_CURRENCY
+        Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
       revert(Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED);
