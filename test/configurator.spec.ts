@@ -241,7 +241,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Deactivates the ETH reserve as collateral', async () => {
-    
     const {configurator, helpersContract, weth} = testEnv;
     await configurator.configureReserveAsCollateral(weth.address, 0, 0, 0);
 
@@ -295,12 +294,12 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(0);
   });
 
-  it('Check the onlyAaveAdmin on enableReserveAsCollateral ', async () => {
+  it('Check the onlyAaveAdmin on configureReserveAsCollateral ', async () => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator
         .connect(users[2].signer)
-        .configureReserveAsCollateral(weth.address, '75', '80', '105'),
+        .configureReserveAsCollateral(weth.address, '7500', '8000', '10500'),
       CALLER_NOT_AAVE_ADMIN
     ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
   });
