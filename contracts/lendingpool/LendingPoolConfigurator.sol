@@ -15,7 +15,6 @@ import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detai
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -367,8 +366,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
     uint256 liquidationThreshold,
     uint256 liquidationBonus
   ) external onlyAaveAdmin {
-    console.log('Liq threshold %s, liq bonus %s', liquidationThreshold, liquidationBonus);
-
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     //validation of the parameters: the LTV can
@@ -376,21 +373,15 @@ contract LendingPoolConfigurator is VersionedInitializable {
     //(otherwise a loan against the asset would cause instantaneous liquidation)
     require(ltv <= liquidationThreshold, Errors.INVALID_CONFIGURATION);
 
-    console.log('Liq threshold %s, liq bonus %s', liquidationThreshold, liquidationBonus);
-
-    if (liquidationThreshold > 0) {
+    if (liquidationThreshold != 0) {
       //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
-      //collateral than needed to repay the debt
+      //collateral than needed to cover the debt
       require(liquidationBonus > PercentageMath.PERCENTAGE_FACTOR, Errors.INVALID_CONFIGURATION);
     } else {
       require(liquidationBonus == 0, Errors.INVALID_CONFIGURATION);
-    }
-
-    //if the liquidation threshold is being set to 0,
-    // the reserve is being disabled as collateral. To do so,
-    //we need to ensure no liquidity is deposited
-    if (liquidationThreshold == 0) {
-      console.log('Checking no liquidity for the asset');
+      //if the liquidation threshold is being set to 0,
+      // the reserve is being disabled as collateral. To do so,
+      //we need to ensure no liquidity is deposited
       _checkNoLiquidity(asset);
     }
 
@@ -634,9 +625,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
     ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
     uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
-
-    console.log('Available liquidity %s', availableLiquidity);
-    console.log('liq rate %s', reserveData.currentLiquidityRate);
 
     require(
       availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
