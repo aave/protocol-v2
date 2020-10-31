@@ -33,7 +33,10 @@ import {
   LendingRateOracleFactory,
   MintableErc20Factory,
   MockAggregatorFactory,
+  MockATokenFactory,
   MockFlashLoanReceiverFactory,
+  MockStableDebtTokenFactory,
+  MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
   StableDebtTokenFactory,
@@ -42,6 +45,8 @@ import {
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
+import {MockStableDebtToken} from '../types/MockStableDebtToken';
+import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -369,6 +374,39 @@ export const deployATokensAndRatesHelper = async (
 ) =>
   withSaveAndVerify(
     await new ATokensAndRatesHelperFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ATokensAndRatesHelper,
+    args,
+    verify
+  );
+
+export const deployMockStableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ATokensAndRatesHelper,
+    args,
+    verify
+  );
+
+export const deployMockVariableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ATokensAndRatesHelper,
+    args,
+    verify
+  );
+
+export const deployMockAToken = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.ATokensAndRatesHelper,
     args,
     verify

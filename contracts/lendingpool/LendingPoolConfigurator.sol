@@ -191,7 +191,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev only the lending pool manager can call functions affected by this modifier
    **/
   modifier onlyAaveAdmin {
-    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.CALLER_NOT_AAVE_ADMIN);
+    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.LPC_CALLER_NOT_AAVE_ADMIN);
     _;
   }
 
@@ -225,23 +225,23 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     require(
       address(pool) == ITokenConfiguration(aTokenImpl).POOL(),
-      Errors.INVALID_ATOKEN_POOL_ADDRESS
+      Errors.LPC_INVALID_ATOKEN_POOL_ADDRESS
     );
     require(
       address(pool) == ITokenConfiguration(stableDebtTokenImpl).POOL(),
-      Errors.INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS
+      Errors.LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS
     );
     require(
       address(pool) == ITokenConfiguration(variableDebtTokenImpl).POOL(),
-      Errors.INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS
+      Errors.LPC_INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS
     );
     require(
       asset == ITokenConfiguration(stableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
-      Errors.INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
+      Errors.LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
     );
     require(
       asset == ITokenConfiguration(variableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
-      Errors.INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
+      Errors.LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
     );
 
     address aTokenProxyAddress = _initTokenWithProxy(aTokenImpl, underlyingAssetDecimals);
@@ -371,14 +371,17 @@ contract LendingPoolConfigurator is VersionedInitializable {
     //validation of the parameters: the LTV can
     //only be lower or equal than the liquidation threshold
     //(otherwise a loan against the asset would cause instantaneous liquidation)
-    require(ltv <= liquidationThreshold, Errors.INVALID_CONFIGURATION);
+    require(ltv <= liquidationThreshold, Errors.LPC_INVALID_CONFIGURATION);
 
     if (liquidationThreshold != 0) {
       //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
       //collateral than needed to cover the debt
-      require(liquidationBonus > PercentageMath.PERCENTAGE_FACTOR, Errors.INVALID_CONFIGURATION);
+      require(
+        liquidationBonus > PercentageMath.PERCENTAGE_FACTOR,
+        Errors.LPC_INVALID_CONFIGURATION
+      );
     } else {
-      require(liquidationBonus == 0, Errors.INVALID_CONFIGURATION);
+      require(liquidationBonus == 0, Errors.LPC_INVALID_CONFIGURATION);
       //if the liquidation threshold is being set to 0,
       // the reserve is being disabled as collateral. To do so,
       //we need to ensure no liquidity is deposited
@@ -628,7 +631,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     require(
       availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
-      Errors.RESERVE_LIQUIDITY_NOT_0
+      Errors.LPC_RESERVE_LIQUIDITY_NOT_0
     );
   }
 }

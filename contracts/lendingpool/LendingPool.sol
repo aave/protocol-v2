@@ -52,7 +52,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function _onlyLendingPoolConfigurator() internal view {
     require(
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
-      Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
+      Errors.LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
   }
 
@@ -64,7 +64,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - The contract must not be paused.
    */
   function _whenNotPaused() internal view {
-    require(!_paused, Errors.IS_PAUSED);
+    require(!_paused, Errors.P_IS_PAUSED);
   }
 
   function getRevision() internal override pure returns (uint256) {
@@ -200,7 +200,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 countAssets = assets.length;
     require(
       countAssets == interestRateModes.length && countAssets == amounts.length,
-      Errors.INCONSISTENT_PARAMS_LENGTH
+      Errors.LP_INCONSISTENT_PARAMS_LENGTH
     );
 
     for (uint256 i = 0; i < countAssets; i++) {
@@ -236,7 +236,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _borrowAllowance[debtToken][onBehalfOf][msg
         .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
         amount,
-        Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH
+        Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH
       );
     }
     _executeBorrow(
@@ -411,7 +411,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
         currentLiquidityRate <=
         maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
-      Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
     );
 
     reserve.updateState();
@@ -486,7 +486,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         receiveAToken
       )
     );
-    require(success, Errors.LIQUIDATION_CALL_FAILED);
+    require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
@@ -552,7 +552,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     //execute action of the receiver
     require(
       vars.receiver.executeOperation(assets, amounts, premiums, msg.sender, params),
-      Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
+      Errors.LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
@@ -586,7 +586,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
           _borrowAllowance[vars.debtToken][onBehalfOf][msg.sender] = _borrowAllowance[vars
             .debtToken][onBehalfOf][msg.sender]
-            .sub(vars.currentAmount, Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
+            .sub(vars.currentAmount, Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
         }
 
         //if the user didn't choose to return the funds, the system checks if there
@@ -776,7 +776,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override {
     _whenNotPaused();
 
-    require(msg.sender == _reserves[asset].aTokenAddress, Errors.CALLER_MUST_BE_AN_ATOKEN);
+    require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
     ValidationLogic.validateTransfer(
       from,
@@ -969,7 +969,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function _addReserveToList(address asset) internal {
     uint256 reservesCount = _reservesCount;
 
-    require(reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
+    require(reservesCount < MAX_NUMBER_RESERVES, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
     bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
 
