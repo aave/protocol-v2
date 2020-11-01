@@ -18,6 +18,7 @@ certora-test:
   image: openjdk:13
   before_script:
     - echo "export PATH=$PATH:~/.local/bin"
+    - whereis sudo
     - sudo apt-get update || sudo apt-get update
     - sudo apt-get install -y software-properties-common
     - sudo apt-get install python3-pip
