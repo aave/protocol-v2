@@ -32,5 +32,5 @@ certora-test:
     - chmod +x solc-static-linux
     - mv solc-static-linux /usr/bin/solc
   script:
-    - certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --solc solc6.8 --verify StableDebtTokenHarness:specs/StableDebtToken spec --settings -assumeUnwindCond --cache StableDebtToken --staging
+    - certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --solc solc6.8 --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond --cache StableDebtToken --staging
 
