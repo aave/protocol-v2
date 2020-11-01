@@ -15,11 +15,10 @@ test:
 
 certora-test:
   stage: test
-  image: openjdk:15-jdk
+  image: python:latest
   before_script:
     - apt-get update || apt-get update
     - apt-get install -y software-properties-common
-    - apt-get install python3-pip
     - pip3 install certora-cli-beta==0.4.1
     - wget https://github.com/ethereum/solidity/releases/download/v0.6.8/solc-static-linux
     - chmod +x solc-static-linux
