@@ -17,7 +17,7 @@ certora-test:
   stage: test
   image: python:latest
   before_script:
-    - echo "export PATH=$PATH:~/.local/bin" >> "$BASH_ENV"
+    - echo export PATH=$PATH:~/.local/bin
     - apt-get update || apt-get update
     - apt-get install -y software-properties-common
     - pip3 install certora-cli-beta==0.4.1
