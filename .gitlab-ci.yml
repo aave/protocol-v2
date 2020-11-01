@@ -20,6 +20,7 @@ certora-test:
     - echo export PATH=$PATH:~/.local/bin
     - apt-get update || apt-get update
     - apt-get install -y software-properties-common
+    - apt-get install openjdk-13-jdk
     - pip3 install certora-cli-beta==0.4.1
     - wget https://github.com/ethereum/solidity/releases/download/v0.6.8/solc-static-linux
     - chmod +x solc-static-linux
