@@ -15,7 +15,9 @@ test:
 
 certora-test:
   stage: test
-  image: openjdk:15-jdk
+  image: openjdk:15.0-jdk-buster
+  tags:
+    - linux
   before_script:
     - echo "export PATH=$PATH:~/.local/bin"
     - whereis sudo
