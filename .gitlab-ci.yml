@@ -17,7 +17,7 @@ certora-test:
   stage: test
   image: openjdk:13
   before_script:
-    - echo "export PATH=$PATH:~/.local/bin" >> $BASH_ENV
+    - echo "export PATH=$PATH:~/.local/bin"
     - sudo apt-get update || sudo apt-get update
     - sudo apt-get install -y software-properties-common
     - sudo apt-get install python3-pip
