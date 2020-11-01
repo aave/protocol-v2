@@ -23,8 +23,8 @@ certora-test:
     - apt-get install curl
     - curl -O https://download.java.net/java/GA/jdk13/5b8a42f3905b406298b72d750b6919f6/33/GPL/openjdk-13_linux-x64_bin.tar.gz
     - tar xvf openjdk-13_linux-x64_bin.tar.gz
-    - mv jdk-13 ~/usr/lib/
-    - export JAVA_HOME=~/usr/lib/jdk-13
+    - mkdir --parents ~/java; mv jdk-13 $_
+    - export JAVA_HOME=~/java/jdk-13
     - export PATH=$PATH:$JAVA_HOME/bin
     - pip3 install certora-cli-beta==0.4.1
     - wget https://github.com/ethereum/solidity/releases/download/v0.6.8/solc-static-linux
