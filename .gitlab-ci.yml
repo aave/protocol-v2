@@ -15,8 +15,6 @@ test:
 
 certora-test:
   stage: test
-  variables:
-    - PATH: "$PATH:~/.local/bin"
   image: ubuntu:18.04
   before_script:
     - apt-get update || apt-get update
