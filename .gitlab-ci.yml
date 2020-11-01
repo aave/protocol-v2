@@ -19,6 +19,8 @@ certora-test:
   tags:
     - linux
   before_script:
+    - wget http://security.ubuntu.com/ubuntu/pool/main/a/apt/apt_2.1.11_amd64.deb -O apt.deb
+    - pkexec dpkg -i apt.deb
     - echo "export PATH=$PATH:~/.local/bin"
     - apt-get update || sudo apt-get update
     - apt-get install -y software-properties-common
