@@ -20,17 +20,11 @@ certora-test:
     - export PATH=$PATH:~/.local/bin
     - apt-get update || apt-get update
     - apt-get install -y software-properties-common
-    - apt-get install curl
-    - curl -O https://download.java.net/java/GA/jdk13/5b8a42f3905b406298b72d750b6919f6/33/GPL/openjdk-13_linux-x64_bin.tar.gz
-    - tar xvf openjdk-13_linux-x64_bin.tar.gz
-    - mkdir --parents ~/java; mv jdk-13 $_
-    - export JAVA_HOME=~/java/jdk-13
-    - export PATH=$PATH:$JAVA_HOME/bin
-    - whereis java
     - pip3 install certora-cli-beta==0.4.1
     - wget https://github.com/ethereum/solidity/releases/download/v0.6.8/solc-static-linux
     - chmod +x solc-static-linux
     - mv solc-static-linux /usr/bin/solc
+    - export PATH=$PATH:/usr/bin/solc/solc-static-linux
   script:
     - certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --solc solc6.8 --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond --cache StableDebtToken --staging
 
