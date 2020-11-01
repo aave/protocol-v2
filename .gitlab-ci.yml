@@ -26,6 +26,7 @@ certora-test:
     - mkdir --parents ~/java; mv jdk-13 $_
     - export JAVA_HOME=~/java/jdk-13
     - export PATH=$PATH:$JAVA_HOME/bin
+    - whereis java
     - pip3 install certora-cli-beta==0.4.1
     - wget https://github.com/ethereum/solidity/releases/download/v0.6.8/solc-static-linux
     - chmod +x solc-static-linux
