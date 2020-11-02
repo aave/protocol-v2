@@ -107,6 +107,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
+      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
     }
 
     //transfer to the aToken contract
@@ -157,6 +158,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (amountToWithdraw == userBalance) {
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
+      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
     }
 
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
@@ -793,11 +795,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       if (balanceFromBefore.sub(amount) == 0) {
         UserConfiguration.Map storage fromConfig = _usersConfig[from];
         fromConfig.setUsingAsCollateral(reserveId, false);
+        emit ReserveUsedAsCollateralDisabled(asset, from);
       }
 
       if (balanceToBefore == 0 && amount != 0) {
         UserConfiguration.Map storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
+        emit ReserveUsedAsCollateralEnabled(asset, to);
       }
     }
   }
