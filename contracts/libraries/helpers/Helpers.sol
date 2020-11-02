@@ -27,7 +27,7 @@ library Helpers {
     );
   }
 
-  function getUserCurrentDebtViaMemory(address user, ReserveLogic.ReserveData memory reserve)
+  function getUserCurrentDebtMemory(address user, ReserveLogic.ReserveData memory reserve)
     internal
     view
     returns (uint256, uint256)

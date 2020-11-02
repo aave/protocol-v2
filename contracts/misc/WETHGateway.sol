@@ -2,8 +2,8 @@
 pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
-import {IWETH} from '../interfaces/IWETH.sol';
-import {IWETHGateway} from '../interfaces/IWETHGateway.sol';
+import {IWETH} from './interfaces/IWETH.sol';
+import {IWETHGateway} from './interfaces/IWETHGateway.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
@@ -87,7 +87,7 @@ contract WETHGateway is IWETHGateway {
   ) external override payable {
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     require(address(pool) != address(0));
-    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebtViaMemory(
+    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebtMemory(
       onBehalfOf,
       pool.getReserveData(address(WETH))
     );
