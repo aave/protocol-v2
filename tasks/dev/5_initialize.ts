@@ -79,6 +79,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
 
+    const lendingPoolAddress = await addressesProvider.getLendingPool();
     const wethAddress = await getWethAddress(poolConfig);
-    await deployWETHGateway([wethAddress]);
+    await deployWETHGateway([wethAddress, lendingPoolAddress]);
   });

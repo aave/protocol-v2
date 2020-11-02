@@ -18,7 +18,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const user = users[1];
 
     // Deposit with native ETH
-    await wethGateway.connect(user.signer).depositETH(pool.address, user.address, '0', {value: depositSize});
+    await wethGateway.connect(user.signer).depositETH(user.address, '0', {value: depositSize});
 
     const aTokensBalance = await aWETH.balanceOf(user.address);
 
@@ -46,7 +46,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
 
     // Partial Withdraw and send native Ether to user
     const {gasUsed: withdrawGas} = await waitForTx(
-      await wethGateway.connect(user.signer).withdrawETH(pool.address, partialWithdraw, user.address)
+      await wethGateway.connect(user.signer).withdrawETH(partialWithdraw, user.address)
     );
 
     const afterPartialEtherBalance = await user.signer.getBalance();
@@ -80,7 +80,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
 
     // Full withdraw
     const {gasUsed: withdrawGas} = await waitForTx(
-      await wethGateway.connect(user.signer).withdrawETH(pool.address, MAX_UINT_AMOUNT, user.address)
+      await wethGateway.connect(user.signer).withdrawETH(MAX_UINT_AMOUNT, user.address)
     );
 
     const afterFullEtherBalance = await user.signer.getBalance();
@@ -105,7 +105,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const stableDebtToken = await getStableDebtToken(stableDebtTokenAddress);
 
     // Deposit with native ETH
-    await wethGateway.connect(user.signer).depositETH(pool.address, user.address, '0', {value: depositSize});
+    await wethGateway.connect(user.signer).depositETH(user.address, '0', {value: depositSize});
 
     const aTokensBalance = await aWETH.balanceOf(user.address);
 
@@ -125,7 +125,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     await waitForTx(
       await wethGateway
         .connect(user.signer)
-        .repayETH(pool.address, MAX_UINT_AMOUNT, '1', user.address, {value: repaySize})
+        .repayETH(MAX_UINT_AMOUNT, '1', user.address, {value: repaySize})
     );
 
     const debtBalanceAfterRepay = await stableDebtToken.balanceOf(user.address);
@@ -145,7 +145,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const varDebtToken = await getVariableDebtToken(variableDebtTokenAddress);
 
     // Deposit with native ETH
-    await wethGateway.connect(user.signer).depositETH(pool.address, user.address, '0', {value: depositSize});
+    await wethGateway.connect(user.signer).depositETH(user.address, '0', {value: depositSize});
 
     const aTokensBalance = await aWETH.balanceOf(user.address);
 
@@ -166,7 +166,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     await waitForTx(
       await wethGateway
         .connect(user.signer)
-        .repayETH(pool.address, partialPayment, '2', user.address, {value: partialPayment})
+        .repayETH(partialPayment, '2', user.address, {value: partialPayment})
     );
 
     const debtBalanceAfterPartialRepay = await varDebtToken.balanceOf(user.address);
@@ -176,7 +176,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     await waitForTx(
       await wethGateway
         .connect(user.signer)
-        .repayETH(pool.address, MAX_UINT_AMOUNT, '2', user.address, {value: repaySize})
+        .repayETH(MAX_UINT_AMOUNT, '2', user.address, {value: repaySize})
     );
     const debtBalanceAfterFullRepay = await varDebtToken.balanceOf(user.address);
     expect(debtBalanceAfterFullRepay).to.be.eq(zero);

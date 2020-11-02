@@ -153,18 +153,30 @@
     "buidlerevm": {
       "address": "0xa4bcDF64Cdd5451b6ac3743B414124A6299B65FF",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x3eb4217Fa94b39b98D8f1Cc34E7c1F40E29C9F68",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "LendingPoolAddressesProviderRegistry": {
     "buidlerevm": {
       "address": "0x5A0773Ff307Bf7C71a832dBB5312237fD3437f9F",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0xCE43E55eC6A758BEDFBa593520D73ced43D9ef3f",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "ReserveLogic": {
     "buidlerevm": {
       "address": "0xFAe0fd738dAbc8a0426F47437322b6d026A9FD95",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x027fB58038dB299199413aA05004362a21946FD9",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
   "GenericLogic": {

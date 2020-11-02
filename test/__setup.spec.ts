@@ -108,8 +108,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
-  const address = await addressesProvider.getLendingPool();
-  const lendingPoolProxy = await getLendingPool(address);
+  const lendingPoolAddress = await addressesProvider.getLendingPool();
+  const lendingPoolProxy = await getLendingPool(lendingPoolAddress);
 
   await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
@@ -250,7 +250,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await deployWalletBalancerProvider(addressesProvider.address);
 
-  await deployWETHGateway([mockTokens.WETH.address]);
+  await deployWETHGateway([mockTokens.WETH.address, lendingPoolAddress]);
 
   console.timeEnd('setup');
 };

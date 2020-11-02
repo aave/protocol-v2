@@ -51,7 +51,9 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       await deployWalletBalancerProvider(addressesProvider.address, verify);
 
       const wethAddress = await getWethAddress(poolConfig);
-      await deployWETHGateway([wethAddress]);
+      const lendingPoolAddress = await addressesProvider.getLendingPool();
+
+      await deployWETHGateway([wethAddress, lendingPoolAddress]);
     } catch (err) {
       console.error(err);
       exit(1);

@@ -16,46 +16,38 @@ contract WETHGateway is IWETHGateway {
   using UserConfiguration for UserConfiguration.Map;
 
   IWETH public immutable WETH;
+  ILendingPool public immutable POOL;
 
   /**
    * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
    * @param _WETH Address of the Wrapped Ether contract
+   * @param _POOL Address of the LendingPool contract
    **/
-  constructor(address _WETH) public {
+  constructor(address _WETH, address _POOL) public {
+    require(_WETH != address(0), '_WETH not 0 address');
+    require(_POOL != address(0), '_POOL not 0 address');
     WETH = IWETH(_WETH);
+    POOL = ILendingPool(_POOL);
+    IWETH(_WETH).approve(_POOL, uint256(-1));
   }
 
   /**
    * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (aTokens)
    * is minted.
-   * @param pool lending pool address to deposit
    * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
-  function depositETH(
-    ILendingPool pool,
-    address onBehalfOf,
-    uint16 referralCode
-  ) external override payable {
-    require(address(pool) != address(0));
+  function depositETH(address onBehalfOf, uint16 referralCode) external override payable {
     WETH.deposit{value: msg.value}();
-    WETH.approve(address(pool), msg.value);
-    pool.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
+    POOL.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
   }
 
   /**
    * @dev withdraws the WETH _reserves of msg.sender.
-   * @param pool lending pool address to withdraw
-   * @param amount amount of aWETH to burn and withdraw ETH asset
-   * @param onBehalfOf address of the user who will receive the ETH withdrawal
+   * @param amount address of the user who will receive the aTokens representing the deposit
    */
-  function withdrawETH(
-    ILendingPool pool,
-    uint256 amount,
-    address onBehalfOf
-  ) external override {
-    require(address(pool) != address(0));
-    uint256 userBalance = IAToken(pool.getReserveData(address(WETH)).aTokenAddress).balanceOf(
+  function withdrawETH(uint256 amount, address onBehalfOf) external override {
+    uint256 userBalance = IAToken(POOL.getReserveData(address(WETH)).aTokenAddress).balanceOf(
       msg.sender
     );
     uint256 amountToWithdraw = amount;
@@ -64,12 +56,12 @@ contract WETHGateway is IWETHGateway {
     if (amount == type(uint256).max) {
       amountToWithdraw = userBalance;
     }
-    IAToken(pool.getReserveData(address(WETH)).aTokenAddress).transferFrom(
+    IAToken(POOL.getReserveData(address(WETH)).aTokenAddress).transferFrom(
       msg.sender,
       address(this),
       amountToWithdraw
     );
-    pool.withdraw(address(WETH), amountToWithdraw, address(this));
+    POOL.withdraw(address(WETH), amountToWithdraw, address(this));
     WETH.withdraw(amountToWithdraw);
     safeTransferETH(onBehalfOf, amountToWithdraw);
   }
@@ -81,15 +73,13 @@ contract WETHGateway is IWETHGateway {
    * @param onBehalfOf the address for which msg.sender is repaying
    */
   function repayETH(
-    ILendingPool pool,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
   ) external override payable {
-    require(address(pool) != address(0));
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebtMemory(
       onBehalfOf,
-      pool.getReserveData(address(WETH))
+      POOL.getReserveData(address(WETH))
     );
 
     uint256 paybackAmount = ReserveLogic.InterestRateMode(rateMode) ==
@@ -102,8 +92,7 @@ contract WETHGateway is IWETHGateway {
     }
     require(msg.value >= paybackAmount, 'msg.value is less than repayment amount');
     WETH.deposit{value: paybackAmount}();
-    WETH.approve(address(pool), msg.value);
-    pool.repay(address(WETH), msg.value, rateMode, onBehalfOf);
+    POOL.repay(address(WETH), msg.value, rateMode, onBehalfOf);
 
     // refund remaining dust eth
     if (msg.value > paybackAmount) safeTransferETH(msg.sender, msg.value - paybackAmount);

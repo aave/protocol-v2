@@ -421,7 +421,10 @@ export const deployATokensAndRatesHelper = async (
     verify
   );
 
-export const deployWETHGateway = async (args: [tEthereumAddress], verify?: boolean) =>
+export const deployWETHGateway = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
   withSaveAndVerify(
     await new WethGatewayFactory(await getFirstSigner()).deploy(...args),
     eContractid.WETHGateway,
