@@ -48,7 +48,10 @@
     "dev:deployExample": "buidler deploy-Example",
     "dev:prettier": "prettier --write .",
     "ci:test": "npm run compile && npm run types-gen && npm run test",
-    "ci:clean": "rm -rf ./artifacts ./cache ./types"
+    "ci:clean": "rm -rf ./artifacts ./cache ./types",
+    "print-contracts:kovan": "npm run buidler:kovan -- print-contracts",
+    "print-contracts:main": "npm run buidler:main -- print-contracts",
+    "print-contracts:ropsten": "npm run buidler:main -- print-contracts"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",

@@ -5,8 +5,7 @@ import FileSync from 'lowdb/adapters/FileSync';
 import {WAD} from './constants';
 import {Wallet, ContractTransaction} from 'ethers';
 import {BuidlerRuntimeEnvironment} from '@nomiclabs/buidler/types';
-import path from 'path';
-import fs from 'fs';
+import {createBrotliCompress} from 'zlib';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -61,4 +60,27 @@ export const chunk = <T>(arr: Array<T>, chunkSize: number): Array<Array<T>> => {
         : prevVal,
     []
   );
+};
+
+interface DbEntry {
+  [network: string]: {
+    deployer: string;
+    address: string;
+  };
+}
+
+export const printContracts = () => {
+  const network = BRE.network.name;
+  const db = getDb();
+  console.log('Contracts deployed at', network);
+  console.log('---------------------------------');
+
+  const entries = Object.entries<DbEntry>(db.getState()).filter(([_k, value]) => !!value[network]);
+
+  const contractsPrint = entries.map(
+    ([key, value]: [string, DbEntry]) => `${key}: ${value[network].address}`
+  );
+
+  console.log('N# Contracts:', entries.length);
+  console.log(contractsPrint.join('\n'), '\n');
 };

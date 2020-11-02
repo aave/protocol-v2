@@ -385,7 +385,7 @@ export const deployMockStableDebtToken = async (
 ) =>
   withSaveAndVerify(
     await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.ATokensAndRatesHelper,
+    eContractid.MockStableDebtToken,
     args,
     verify
   );
@@ -396,7 +396,7 @@ export const deployMockVariableDebtToken = async (
 ) =>
   withSaveAndVerify(
     await new MockVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.ATokensAndRatesHelper,
+    eContractid.MockVariableDebtToken,
     args,
     verify
   );
@@ -407,7 +407,7 @@ export const deployMockAToken = async (
 ) =>
   withSaveAndVerify(
     await new MockATokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.ATokensAndRatesHelper,
+    eContractid.MockAToken,
     args,
     verify
   );
