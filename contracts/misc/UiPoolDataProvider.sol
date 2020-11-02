@@ -72,15 +72,20 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.baseData.aTokenAddress
       );
-      reserveData.totalBorrowsStable = IERC20Detailed(reserveData.baseData.stableDebtTokenAddress)
+      reserveData.totalPrincipalStableDebt = IERC20Detailed(
+        reserveData
+          .baseData
+          .stableDebtTokenAddress
+      )
         .totalSupply();
-      reserveData.totalBorrowsVariable = IERC20Detailed(
+      reserveData.totalScaledVariableDebt = IERC20Detailed(
         reserveData
           .baseData
           .variableDebtTokenAddress
       )
         .totalSupply();
-      uint256 totalBorrows = reserveData.totalBorrowsStable + reserveData.totalBorrowsVariable;
+      uint256 totalBorrows = reserveData.totalPrincipalStableDebt +
+        reserveData.totalScaledVariableDebt;
       reserveData.utilizationRate = totalBorrows == 0
         ? 0
         : totalBorrows.rayDiv(totalBorrows + reserveData.availableLiquidity);
@@ -117,24 +122,24 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       if (user != address(0)) {
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
-        userReservesData[i].principalATokenBalance = IAToken(reserveData.baseData.aTokenAddress)
+        userReservesData[i].scaledATokenBalance = IAToken(reserveData.baseData.aTokenAddress)
           .scaledBalanceOf(user);
         userReservesData[i].usageAsCollateralEnabledOnUser = userConfig.isUsingAsCollateral(i);
 
         if (userConfig.isBorrowing(i)) {
-          userReservesData[i].principalVariableBorrows = IVariableDebtToken(
+          userReservesData[i].scaledVariableDebt = IVariableDebtToken(
             reserveData
               .baseData
               .variableDebtTokenAddress
           )
             .scaledBalanceOf(user);
-          userReservesData[i].principalStableBorrows = IStableDebtToken(
+          userReservesData[i].principalStableDebt = IStableDebtToken(
             reserveData
               .baseData
               .stableDebtTokenAddress
           )
             .principalBalanceOf(user);
-          if (userReservesData[i].principalStableBorrows != 0) {
+          if (userReservesData[i].principalStableDebt != 0) {
             userReservesData[i].stableBorrowRate = IStableDebtToken(
               reserveData
                 .baseData

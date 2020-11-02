@@ -22,8 +22,8 @@ interface IUiPoolDataProvider {
     bool isFreezed;
     ReserveLogic.ReserveData baseData;
     uint256 availableLiquidity;
-    uint256 totalBorrowsStable;
-    uint256 totalBorrowsVariable;
+    uint256 totalPrincipalStableDebt;
+    uint256 totalScaledVariableDebt;
     uint256 utilizationRate;
     uint256 priceInEth;
     uint256 variableRateSlope1;
@@ -39,11 +39,11 @@ interface IUiPoolDataProvider {
 
   struct UserReserveData {
     address underlyingAsset;
-    uint256 principalATokenBalance;
+    uint256 scaledATokenBalance;
     bool usageAsCollateralEnabledOnUser;
     uint256 stableBorrowRate;
-    uint256 principalVariableBorrows;
-    uint256 principalStableBorrows;
+    uint256 scaledVariableDebt;
+    uint256 principalStableDebt;
     uint256 stableBorrowLastUpdateTimestamp;
   }
 
