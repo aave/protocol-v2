@@ -52,10 +52,6 @@ contract DelegationAwareAToken is AToken {
     )
   {}
 
-  function getRevision() internal override pure returns (uint256) {
-    return 0x1;
-  }
-
   function initialize(
     uint8 _underlyingAssetDecimals,
     string calldata _tokenName,
