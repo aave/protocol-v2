@@ -44,7 +44,7 @@ export interface TestEnv {
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
-  lend: MintableERC20;
+  aave: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
 }
@@ -68,7 +68,7 @@ const testEnv: TestEnv = {
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
-  lend: {} as MintableERC20,
+  aave: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
 } as TestEnv;
@@ -107,14 +107,14 @@ export async function initializeMakeSuite() {
 
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
-  const lendAddress = reservesTokens.find((token) => token.symbol === 'LEND')?.tokenAddress;
+  const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
   if (!aDaiAddress || !aWEthAddress) {
     console.log(`atoken-modifiers.spec: aTokens not correctly initialized`);
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress || !lendAddress || !wethAddress) {
+  if (!daiAddress || !usdcAddress || !aaveAddress || !wethAddress) {
     console.log(`atoken-modifiers.spec: USDC or DAI not correctly initialized`);
     process.exit(1);
   }
@@ -124,7 +124,7 @@ export async function initializeMakeSuite() {
 
   testEnv.dai = await getMintableErc20(daiAddress);
   testEnv.usdc = await getMintableErc20(usdcAddress);
-  testEnv.lend = await getMintableErc20(lendAddress);
+  testEnv.aave = await getMintableErc20(aaveAddress);
   testEnv.weth = await getMintableErc20(wethAddress);
 }
 

@@ -6,7 +6,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
   TUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),
   USDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
-  LEND: oneEther.multipliedBy('0.00003620948469').toFixed(),
+  AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),
   BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
   USDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
   SUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),
@@ -83,7 +83,7 @@ export const CommonsConfig: ICommonConfiguration = {
     BAT: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    LEND: {
+    AAVE: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     LINK: {
@@ -171,7 +171,7 @@ export const CommonsConfig: ICommonConfiguration = {
       USDC: '0x672c1C0d1130912D83664011E7960a42E8cA05D5',
       USDT: '0xCC833A6522721B3252e7578c5BCAF65738B75Fc3',
       SUSD: '0xa353F8b083F7575cfec443b5ad585D42f652E9F7',
-      LEND: '0xdce38940264dfbc01ad1486c21764948e511947e',
+      AAVE: '0xd04647B7CB523bb9f26730E9B6dE1174db7591Ad',
       BAT: '0x2c8d01771CCDca47c103194C5860dbEA2fE61626',
       REP: '0x09F4A94F44c29d4967C761bBdB89f5bD3E2c09E6',
       MKR: '0x14D7714eC44F44ECD0098B39e642b246fB2c38D0',
@@ -196,7 +196,7 @@ export const CommonsConfig: ICommonConfiguration = {
       USDC: '0xe1480303dde539e2c241bdc527649f37c9cbef7d',
       USDT: '0xc08fe0c4d97ccda6b40649c6da621761b628c288',
       SUSD: '0xe054b4aee7ac7645642dd52f1c892ff0128c98f0',
-      LEND: '0xf7b4834fe443d1E04D757b4b089b35F5A90F2847',
+      AAVE: '',
       BAT: '0xafd8186c962daf599f171b8600f3e19af7b52c92',
       REP: '0xa949ee9ba80c0f381481f2eab538bc5547a5ac67',
       MKR: '0x811B1f727F8F4aE899774B568d2e72916D91F392',
@@ -221,7 +221,7 @@ export const CommonsConfig: ICommonConfiguration = {
       USDC: '0xdE54467873c3BCAA76421061036053e371721708',
       USDT: '0xa874fe207DF445ff19E7482C746C4D3fD0CB9AcE',
       SUSD: '0x6d626Ff97f0E89F6f983dE425dc5B24A18DE26Ea',
-      LEND: '0x1EeaF25f2ECbcAf204ECADc8Db7B0db9DA845327',
+      AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
       BAT: '0x9b4e2579895efa2b4765063310Dc4109a7641129',
       REP: '0xb8b513d9cf440C1b6f5C7142120d611C94fC220c',
       MKR: '0xda3d675d50ff6c555973c4f0424964e1f6a4e7d3',

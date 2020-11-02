@@ -34,6 +34,7 @@
     "uniswap:main:full:migration": "npm run buidler:main -- uniswap:full --verify",
     "test-repay-with-collateral": "buidler test test/__setup.spec.ts test/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "buidler test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
+    "test-liquidate-underlying": "buidler test test/__setup.spec.ts test/liquidation-underlying.spec.ts",
     "test-transfers": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts",
     "test-flash": "buidler test test/__setup.spec.ts test/flashloan.spec.ts",
     "test-liquidate": "buidler test test/__setup.spec.ts test/liquidation-atoken.spec.ts",

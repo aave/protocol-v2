@@ -380,25 +380,25 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
   });
 
-  it('User 4 deposits 1000 LEND - drops HF, liquidates the LEND, which results on a lower amount being liquidated', async () => {
-    const {lend, usdc, users, pool, oracle, helpersContract} = testEnv;
+  it('User 4 deposits 10 AAVE - drops HF, liquidates the AAVE, which results on a lower amount being liquidated', async () => {
+    const {aave, usdc, users, pool, oracle, helpersContract} = testEnv;
 
     const depositor = users[3];
     const borrower = users[4];
     const liquidator = users[5];
 
-    //mints LEND to borrower
-    await lend.connect(borrower.signer).mint(await convertToCurrencyDecimals(lend.address, '1000'));
+    //mints AAVE to borrower
+    await aave.connect(borrower.signer).mint(await convertToCurrencyDecimals(aave.address, '10'));
 
     //approve protocol to access the borrower wallet
-    await lend.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await aave.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //borrower deposits 1000 LEND
-    const amountLENDtoDeposit = await convertToCurrencyDecimals(lend.address, '1000');
+    //borrower deposits 10 AAVE
+    const amountToDeposit = await convertToCurrencyDecimals(aave.address, '10');
 
     await pool
       .connect(borrower.signer)
-      .deposit(lend.address, amountLENDtoDeposit, borrower.address, '0');
+      .deposit(aave.address, amountToDeposit, borrower.address, '0');
     const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
     //drops HF below 1
@@ -421,19 +421,19 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
-    const lendReserveDataBefore = await helpersContract.getReserveData(lend.address);
+    const aaveReserveDataBefore = await helpersContract.getReserveData(aave.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
       .div(2)
       .decimalPlaces(0, BigNumber.ROUND_DOWN)
       .toFixed(0);
 
-    const collateralPrice = await oracle.getAssetPrice(lend.address);
+    const collateralPrice = await oracle.getAssetPrice(aave.address);
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     await pool
       .connect(liquidator.signer)
-      .liquidationCall(lend.address, usdc.address, borrower.address, amountToLiquidate, false);
+      .liquidationCall(aave.address, usdc.address, borrower.address, amountToLiquidate, false);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       usdc.address,
@@ -443,17 +443,17 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const usdcReserveDataAfter = await helpersContract.getReserveData(usdc.address);
-    const lendReserveDataAfter = await helpersContract.getReserveData(lend.address);
+    const aaveReserveDataAfter = await helpersContract.getReserveData(aave.address);
 
-    const lendConfiguration = await helpersContract.getReserveConfigurationData(lend.address);
-    const collateralDecimals = lendConfiguration.decimals.toString();
-    const liquidationBonus = lendConfiguration.liquidationBonus.toString();
+    const aaveConfiguration = await helpersContract.getReserveConfigurationData(aave.address);
+    const collateralDecimals = aaveConfiguration.decimals.toString();
+    const liquidationBonus = aaveConfiguration.liquidationBonus.toString();
 
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(usdc.address)
     ).decimals.toString();
 
-    const expectedCollateralLiquidated = oneEther.multipliedBy('1000');
+    const expectedCollateralLiquidated = oneEther.multipliedBy('10');
 
     const expectedPrincipal = new BigNumber(collateralPrice.toString())
       .times(expectedCollateralLiquidated)
@@ -484,8 +484,8 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       'Invalid principal available liquidity'
     );
 
-    expect(lendReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
-      new BigNumber(lendReserveDataBefore.availableLiquidity.toString())
+    expect(aaveReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
+      new BigNumber(aaveReserveDataBefore.availableLiquidity.toString())
         .minus(expectedCollateralLiquidated)
         .toFixed(0),
       'Invalid collateral available liquidity'

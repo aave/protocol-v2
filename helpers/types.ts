@@ -171,7 +171,7 @@ export interface iAssetBase<T> {
   USDC: T;
   USDT: T;
   SUSD: T;
-  LEND: T;
+  AAVE: T;
   BAT: T;
   REP: T;
   MKR: T;
@@ -204,7 +204,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'USDC'
   | 'USDT'
   | 'SUSD'
-  | 'LEND'
+  | 'AAVE'
   | 'BAT'
   | 'REP'
   | 'MKR'
@@ -245,7 +245,7 @@ export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
 export enum TokenContractId {
   DAI = 'DAI',
-  LEND = 'LEND',
+  AAVE = 'AAVE',
   TUSD = 'TUSD',
   BAT = 'BAT',
   WETH = 'WETH',
