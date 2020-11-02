@@ -92,12 +92,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         ,
         reserveData.averageStableRate,
         reserveData.stableDebtLastUpdateTimestamp
-      ) = IStableDebtToken(reserveData.baseData.stableDebtTokenAddress).getSupplyData();
-      reserveData.totalScaledVariableDebt = IVariableDebtToken(
-        reserveData
-          .baseData
-          .variableDebtTokenAddress
-      )
+      ) = IStableDebtToken(reserveData.stableDebtTokenAddress).getSupplyData();
+      reserveData.totalScaledVariableDebt = IVariableDebtToken(reserveData.variableDebtTokenAddress)
         .scaledTotalSupply();
 
       // reserve configuration
@@ -132,7 +128,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       if (user != address(0)) {
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
-        userReservesData[i].principalATokenBalance = IAToken(reserveData.aTokenAddress)
+        userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
           .scaledBalanceOf(user);
         userReservesData[i].usageAsCollateralEnabledOnUser = userConfig.isUsingAsCollateral(i);
 
