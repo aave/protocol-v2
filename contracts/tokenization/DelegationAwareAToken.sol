@@ -17,8 +17,8 @@ interface IDelegationToken {
  * @title Aave AToken with delegation capabilities
  *
  * @dev Implementation of the interest bearing token for the Aave protocol. This version of the aToken
- * adds a function which gives the Aave protocol the ability to delegate voting power of underlying assets
- * that are compatible with the Compound delegation interface
+ * adds a function which gives the Aave protocol the ability to delegate voting power of the underlying asset.
+ * The underlying asset needs to be compatible with the COMP delegation interface
  * @author Aave
  */
 contract DelegationAwareAToken is AToken {
