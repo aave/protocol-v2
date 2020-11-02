@@ -42,13 +42,13 @@ library MathUtils {
    * @param lastUpdateTimestamp the timestamp of the last update of the interest
    * @return the interest rate compounded during the timeDelta, in ray
    **/
-  function calculateCompoundedInterest(uint256 rate, uint40 lastUpdateTimestamp)
-    internal
-    view
-    returns (uint256)
-  {
+  function calculateCompoundedInterest(
+    uint256 rate,
+    uint40 lastUpdateTimestamp,
+    uint256 currentTimestamp
+  ) internal pure returns (uint256) {
     //solium-disable-next-line
-    uint256 exp = block.timestamp.sub(uint256(lastUpdateTimestamp));
+    uint256 exp = currentTimestamp.sub(uint256(lastUpdateTimestamp));
 
     if (exp == 0) {
       return WadRayMath.ray();
@@ -67,5 +67,18 @@ library MathUtils {
     uint256 thirdTerm = exp.mul(expMinusOne).mul(expMinusTwo).mul(basePowerThree) / 6;
 
     return WadRayMath.ray().add(ratePerSecond.mul(exp)).add(secondTerm).add(thirdTerm);
+  }
+
+  /**
+   * @dev calculates the compounded interest between the timestamp of the last update and the current block timestamp
+   * @param rate the interest rate (in ray)
+   * @param lastUpdateTimestamp the timestamp from which the interest accumulation needs to be calculated
+   **/
+  function calculateCompoundedInterest(uint256 rate, uint40 lastUpdateTimestamp)
+    internal
+    view
+    returns (uint256)
+  {
+    return calculateCompoundedInterest(rate, lastUpdateTimestamp, block.timestamp);
   }
 }

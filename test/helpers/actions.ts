@@ -17,11 +17,8 @@ import {
 } from './utils/calculations';
 import {getReserveAddressFromSymbol, getReserveData, getUserData} from './utils/helpers';
 
-import {
-  convertToCurrencyDecimals,
-  getAToken,
-  getMintableErc20,
-} from '../../helpers/contracts-helpers';
+import {convertToCurrencyDecimals} from '../../helpers/contracts-helpers';
+import {getAToken, getMintableErc20} from '../../helpers/contracts-getters';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
 import {BRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';
@@ -31,7 +28,6 @@ import {ReserveData, UserReserveData} from './utils/interfaces';
 import {ContractReceipt} from 'ethers';
 import {AToken} from '../../types/AToken';
 import {RateMode, tEthereumAddress} from '../../helpers/types';
-import {time} from 'console';
 
 const {expect} = chai;
 
@@ -235,7 +231,7 @@ export const withdraw = async (
 
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await pool.connect(user.signer).withdraw(reserve, amountToWithdraw)
+      await pool.connect(user.signer).withdraw(reserve, amountToWithdraw, user.address)
     );
 
     const {
@@ -273,15 +269,17 @@ export const withdraw = async (
     //   );
     // });
   } else if (expectedResult === 'revert') {
-    await expect(pool.connect(user.signer).withdraw(reserve, amountToWithdraw), revertMessage).to.be
-      .reverted;
+    await expect(
+      pool.connect(user.signer).withdraw(reserve, amountToWithdraw, user.address),
+      revertMessage
+    ).to.be.reverted;
   }
 };
 
 export const delegateBorrowAllowance = async (
-  reserveSymbol: string,
-  amount: string,
-  interestRateMode: string,
+  reserveSymbols: string[],
+  amounts: string[],
+  interestRateModes: string[],
   user: SignerWithAddress,
   receiver: tEthereumAddress,
   expectedResult: string,
@@ -290,20 +288,32 @@ export const delegateBorrowAllowance = async (
 ) => {
   const {pool} = testEnv;
 
-  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
-  const amountToDelegate = await convertToCurrencyDecimals(reserve, amount);
+  const reserves: tEthereumAddress[] = [];
+  const amountsToDelegate: tEthereumAddress[] = [];
+  for (const reserveSymbol of reserveSymbols) {
+    const newLength = reserves.push(await getReserveAddressFromSymbol(reserveSymbol));
+    amountsToDelegate.push(
+      await (
+        await convertToCurrencyDecimals(reserves[newLength - 1], amounts[newLength - 1])
+      ).toString()
+    );
+  }
 
   const delegateAllowancePromise = pool
     .connect(user.signer)
-    .delegateBorrowAllowance(reserve, receiver, interestRateMode, amountToDelegate.toString());
+    .delegateBorrowAllowance(reserves, receiver, interestRateModes, amountsToDelegate);
   if (expectedResult === 'revert') {
     await expect(delegateAllowancePromise, revertMessage).to.be.reverted;
     return;
   } else {
     await delegateAllowancePromise;
-    expect(
-      (await pool.getBorrowAllowance(user.address, receiver, reserve, interestRateMode)).toString()
-    ).to.be.equal(amountToDelegate.toString(), 'borrowAllowance are set incorrectly');
+    for (const [i, reserve] of reserves.entries()) {
+      expect(
+        (
+          await pool.getBorrowAllowance(user.address, receiver, reserve, interestRateModes[i])
+        ).toString()
+      ).to.be.equal(amountsToDelegate[i], 'borrowAllowance are set incorrectly');
+    }
   }
 };
 

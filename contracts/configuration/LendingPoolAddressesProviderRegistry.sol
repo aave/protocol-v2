@@ -20,7 +20,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   /**
    * @dev returns if an addressesProvider is registered or not
    * @param provider the addresses provider
-   * @return true if the addressesProvider is registered, false otherwise
+   * @return The id of the addresses provider or 0 if the addresses provider not registered
    **/
   function isAddressesProviderRegistered(address provider)
     external
@@ -33,7 +33,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev returns the list of active addressesProviders
-   * @return the list of addressesProviders
+   * @return the list of addressesProviders, potentially containing address(0) elements
    **/
   function getAddressesProvidersList() external override view returns (address[] memory) {
     address[] memory addressesProvidersList = _addressesProvidersList;
@@ -56,7 +56,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be registered
    **/
   function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
-    require(id != 0, Errors.INVALID_ADDRESSES_PROVIDER_ID);
+    require(id != 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);
 
     _addressesProviders[provider] = id;
     _addToAddressesProvidersList(provider);
@@ -68,7 +68,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider the pool address to be unregistered
    **/
   function unregisterAddressesProvider(address provider) external override onlyOwner {
-    require(_addressesProviders[provider] > 0, Errors.PROVIDER_NOT_REGISTERED);
+    require(_addressesProviders[provider] > 0, Errors.LPAPR_PROVIDER_NOT_REGISTERED);
     _addressesProviders[provider] = 0;
     emit AddressesProviderUnregistered(provider);
   }
@@ -91,7 +91,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev Returns the id on an `addressesProvider` or address(0) if not registered
-   * @return The id or address(0)
+   * @return The id or 0 if the addresses provider is not registered
    */
   function getAddressesProviderIdByAddress(address addressesProvider)
     external

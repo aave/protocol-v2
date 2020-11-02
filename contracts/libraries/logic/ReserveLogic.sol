@@ -133,7 +133,7 @@ library ReserveLogic {
     require(
       ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode) ||
         ReserveLogic.InterestRateMode.VARIABLE == ReserveLogic.InterestRateMode(interestRateMode),
-      Errors.INVALID_INTEREST_RATE_MODE_SELECTED
+      Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
     );
     return
       ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode)
@@ -151,12 +151,14 @@ library ReserveLogic {
       .scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
+    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
 
     (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
       reserve,
       scaledVariableDebt,
       previousLiquidityIndex,
-      previousVariableBorrowIndex
+      previousVariableBorrowIndex,
+      lastUpdatedTimestamp
     );
 
     _mintToTreasury(
@@ -164,7 +166,8 @@ library ReserveLogic {
       scaledVariableDebt,
       previousVariableBorrowIndex,
       newLiquidityIndex,
-      newVariableBorrowIndex
+      newVariableBorrowIndex,
+      lastUpdatedTimestamp
     );
   }
 
@@ -185,7 +188,7 @@ library ReserveLogic {
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
     result = result.rayMul(reserve.liquidityIndex);
-    require(result < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
+    require(result < (1 << 128), Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
     reserve.liquidityIndex = uint128(result);
   }
@@ -203,7 +206,7 @@ library ReserveLogic {
     address variableDebtTokenAddress,
     address interestRateStrategyAddress
   ) external {
-    require(reserve.aTokenAddress == address(0), Errors.RESERVE_ALREADY_INITIALIZED);
+    require(reserve.aTokenAddress == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
     if (reserve.liquidityIndex == 0) {
       //if the reserve has not been initialized yet
       reserve.liquidityIndex = uint128(WadRayMath.ray());
@@ -318,7 +321,8 @@ library ReserveLogic {
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
-    uint256 newVariableBorrowIndex
+    uint256 newVariableBorrowIndex,
+    uint40 timestamp
   ) internal {
     MintToTreasuryLocalVars memory vars;
 
@@ -345,7 +349,8 @@ library ReserveLogic {
     //calculate the stable debt until the last timestamp update
     vars.cumulatedStableInterest = MathUtils.calculateCompoundedInterest(
       vars.avgStableRate,
-      vars.stableSupplyUpdatedTimestamp
+      vars.stableSupplyUpdatedTimestamp,
+      timestamp
     );
 
     vars.previousStableDebt = vars.principalStableDebt.rayMul(vars.cumulatedStableInterest);
@@ -375,10 +380,9 @@ library ReserveLogic {
     ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 liquidityIndex,
-    uint256 variableBorrowIndex
+    uint256 variableBorrowIndex,
+    uint40 timestamp
   ) internal returns (uint256, uint256) {
-    uint40 timestamp = reserve.lastUpdateTimestamp;
-
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     uint256 newLiquidityIndex = liquidityIndex;
@@ -391,7 +395,7 @@ library ReserveLogic {
         timestamp
       );
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
-      require(newLiquidityIndex < (1 << 128), Errors.LIQUIDITY_INDEX_OVERFLOW);
+      require(newLiquidityIndex < (1 << 128), Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
       reserve.liquidityIndex = uint128(newLiquidityIndex);
 
@@ -403,7 +407,7 @@ library ReserveLogic {
           timestamp
         );
         newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
-        require(newVariableBorrowIndex < (1 << 128), Errors.VARIABLE_BORROW_INDEX_OVERFLOW);
+        require(newVariableBorrowIndex < (1 << 128), Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW);
         reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
       }
     }

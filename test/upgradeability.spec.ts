@@ -1,26 +1,32 @@
 import {expect} from 'chai';
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {ProtocolErrors, eContractid} from '../helpers/types';
-import {
-  deployGenericAToken,
-  getAToken,
-  deployContract,
-  getContract,
-} from '../helpers/contracts-helpers';
+import {deployContract, getContract} from '../helpers/contracts-helpers';
 import {MockAToken} from '../types/MockAToken';
 import {MockStableDebtToken} from '../types/MockStableDebtToken';
 import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 import {ZERO_ADDRESS} from '../helpers/constants';
+import {
+  getAToken,
+  getMockStableDebtToken,
+  getMockVariableDebtToken,
+  getVariableDebtToken,
+} from '../helpers/contracts-getters';
+import {
+  deployMockAToken,
+  deployMockStableDebtToken,
+  deployMockVariableDebtToken,
+} from '../helpers/contracts-deployments';
 
 makeSuite('Upgradeability', (testEnv: TestEnv) => {
-  const {CALLER_NOT_AAVE_ADMIN} = ProtocolErrors;
+  const {LPC_CALLER_NOT_AAVE_ADMIN} = ProtocolErrors;
   let newATokenAddress: string;
   let newStableTokenAddress: string;
   let newVariableTokenAddress: string;
 
   before('deploying instances', async () => {
     const {dai, pool} = testEnv;
-    const aTokenInstance = await deployContract<MockAToken>(eContractid.MockAToken, [
+    const aTokenInstance = await deployMockAToken([
       pool.address,
       dai.address,
       ZERO_ADDRESS,
@@ -29,27 +35,21 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
     ]);
 
-    const stableDebtTokenInstance = await deployContract<MockStableDebtToken>(
-      eContractid.MockStableDebtToken,
-      [
-        pool.address,
-        dai.address,
-        'Aave stable debt bearing DAI updated',
-        'stableDebtDAI',
-        ZERO_ADDRESS,
-      ]
-    );
+    const stableDebtTokenInstance = await deployMockStableDebtToken([
+      pool.address,
+      dai.address,
+      'Aave stable debt bearing DAI updated',
+      'stableDebtDAI',
+      ZERO_ADDRESS,
+    ]);
 
-    const variableDebtTokenInstance = await deployContract<MockVariableDebtToken>(
-      eContractid.MockVariableDebtToken,
-      [
-        pool.address,
-        dai.address,
-        'Aave variable debt bearing DAI updated',
-        'variableDebtDAI',
-        ZERO_ADDRESS,
-      ]
-    );
+    const variableDebtTokenInstance = await deployMockVariableDebtToken([
+      pool.address,
+      dai.address,
+      'Aave variable debt bearing DAI updated',
+      'variableDebtDAI',
+      ZERO_ADDRESS,
+    ]);
 
     newATokenAddress = aTokenInstance.address;
     newVariableTokenAddress = variableDebtTokenInstance.address;
@@ -61,7 +61,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     await expect(
       configurator.connect(users[1].signer).updateAToken(dai.address, newATokenAddress)
-    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
+    ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Upgrades the DAI Atoken implementation ', async () => {
@@ -83,7 +83,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       configurator
         .connect(users[1].signer)
         .updateStableDebtToken(dai.address, newStableTokenAddress)
-    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
+    ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Upgrades the DAI stable debt token implementation ', async () => {
@@ -95,10 +95,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const {stableDebtTokenAddress} = await helpersContract.getReserveTokensAddresses(dai.address);
 
-    const debtToken = await getContract<MockStableDebtToken>(
-      eContractid.MockStableDebtToken,
-      stableDebtTokenAddress
-    );
+    const debtToken = await getMockStableDebtToken(stableDebtTokenAddress);
 
     const tokenName = await debtToken.name();
 
@@ -112,7 +109,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       configurator
         .connect(users[1].signer)
         .updateVariableDebtToken(dai.address, newVariableTokenAddress)
-    ).to.be.revertedWith(CALLER_NOT_AAVE_ADMIN);
+    ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
   });
 
   it('Upgrades the DAI variable debt token implementation ', async () => {
@@ -124,10 +121,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const {variableDebtTokenAddress} = await helpersContract.getReserveTokensAddresses(dai.address);
 
-    const debtToken = await getContract<MockStableDebtToken>(
-      eContractid.MockStableDebtToken,
-      variableDebtTokenAddress
-    );
+    const debtToken = await getMockVariableDebtToken(variableDebtTokenAddress);
 
     const tokenName = await debtToken.name();
 

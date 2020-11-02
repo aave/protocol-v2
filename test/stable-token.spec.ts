@@ -3,9 +3,10 @@ import {makeSuite, TestEnv} from './helpers/make-suite';
 import {ProtocolErrors, eContractid} from '../helpers/types';
 import {getContract} from '../helpers/contracts-helpers';
 import {StableDebtToken} from '../types/StableDebtToken';
+import {getStableDebtToken} from '../helpers/contracts-getters';
 
 makeSuite('Stable debt token tests', (testEnv: TestEnv) => {
-  const {CALLER_MUST_BE_LENDING_POOL} = ProtocolErrors;
+  const {AT_CALLER_MUST_BE_LENDING_POOL} = ProtocolErrors;
 
   it('Tries to invoke mint not being the LendingPool', async () => {
     const {deployer, pool, dai, helpersContract} = testEnv;
@@ -13,13 +14,10 @@ makeSuite('Stable debt token tests', (testEnv: TestEnv) => {
     const daiStableDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
       .stableDebtTokenAddress;
 
-    const stableDebtContract = await getContract<StableDebtToken>(
-      eContractid.StableDebtToken,
-      daiStableDebtTokenAddress
-    );
+    const stableDebtContract = await getStableDebtToken(daiStableDebtTokenAddress);
 
     await expect(stableDebtContract.mint(deployer.address, '1', '1')).to.be.revertedWith(
-      CALLER_MUST_BE_LENDING_POOL
+      AT_CALLER_MUST_BE_LENDING_POOL
     );
   });
 
@@ -29,13 +27,13 @@ makeSuite('Stable debt token tests', (testEnv: TestEnv) => {
     const daiStableDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
       .stableDebtTokenAddress;
 
-    const stableDebtContract = await getContract<StableDebtToken>(
-      eContractid.StableDebtToken,
-      daiStableDebtTokenAddress
-    );
+    const stableDebtContract = await getStableDebtToken(daiStableDebtTokenAddress);
 
+    const name = await stableDebtContract.name();
+
+    expect(name).to.be.equal('Aave stable debt bearing DAI');
     await expect(stableDebtContract.burn(deployer.address, '1')).to.be.revertedWith(
-      CALLER_MUST_BE_LENDING_POOL
+      AT_CALLER_MUST_BE_LENDING_POOL
     );
   });
 });

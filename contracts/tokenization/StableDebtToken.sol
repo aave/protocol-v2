@@ -97,7 +97,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     address user,
     uint256 amount,
     uint256 rate
-  ) external override onlyLendingPool {
+  ) external override onlyLendingPool returns (bool) {
     MintLocalVars memory vars;
 
     //cumulates the user debt
@@ -142,12 +142,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     emit Mint(
       user,
       amount,
-      previousBalance,
       currentBalance,
       balanceIncrease,
       vars.newStableRate,
-      vars.currentAvgStableRate
+      vars.currentAvgStableRate,
+      vars.nextSupply
     );
+
+    return currentBalance == 0;
   }
 
   /**
@@ -164,16 +166,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     uint256 previousSupply = totalSupply();
     uint256 newStableRate = 0;
+    uint256 nextSupply = 0;
 
     //since the total supply and each single user debt accrue separately,
     //there might be accumulation errors so that the last borrower repaying
     //might actually try to repay more than the available debt supply.
     //in this case we simply set the total supply and the avg stable rate to 0
     if (previousSupply <= amount) {
-      newStableRate = _avgStableRate = 0;
+      _avgStableRate = 0;
       _totalSupply = 0;
     } else {
-      uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
+      nextSupply = _totalSupply = previousSupply.sub(amount);
       newStableRate = _avgStableRate = _avgStableRate
         .rayMul(previousSupply.wadToRay())
         .sub(_usersData[user].rayMul(amount.wadToRay()))
@@ -199,7 +202,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(user, address(0), amount);
 
-    emit Burn(user, amount, previousBalance, currentBalance, balanceIncrease, newStableRate);
+    emit Burn(user, amount, currentBalance, balanceIncrease, newStableRate, nextSupply);
   }
 
   /**
@@ -286,7 +289,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param avgRate the average rate at which calculate the total supply
    * @return The debt balance of the user since the last burn/mint action
    **/
-  function _calcTotalSupply(uint256 avgRate) internal view returns (uint256) {
+  function _calcTotalSupply(uint256 avgRate) internal virtual view returns (uint256) {
     uint256 principalSupply = super.totalSupply();
 
     if (principalSupply == 0) {

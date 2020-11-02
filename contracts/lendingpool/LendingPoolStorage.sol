@@ -23,6 +23,5 @@ contract LendingPoolStorage {
 
   uint256 internal _reservesCount;
 
-  bool internal _flashLiquidationLocked;
   bool internal _paused;
 }

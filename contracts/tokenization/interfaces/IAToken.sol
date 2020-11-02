@@ -54,8 +54,6 @@ interface IAToken is IERC20, IScaledBalanceToken {
     uint256 value
   ) external;
 
-  function isTransferAllowed(address user, uint256 amount) external view returns (bool);
-
   /**
    * @dev transfer the amount of the underlying asset to the user
    * @param user address of the user
