@@ -72,20 +72,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.baseData.aTokenAddress
       );
-      reserveData.totalPrincipalStableDebt = IERC20Detailed(
-        reserveData
-          .baseData
-          .stableDebtTokenAddress
-      )
+      reserveData.totalStableDebt = IERC20Detailed(reserveData.baseData.stableDebtTokenAddress)
         .totalSupply();
-      reserveData.totalScaledVariableDebt = IERC20Detailed(
-        reserveData
-          .baseData
-          .variableDebtTokenAddress
-      )
+      reserveData.totalVariableDebt = IERC20Detailed(reserveData.baseData.variableDebtTokenAddress)
         .totalSupply();
-      uint256 totalBorrows = reserveData.totalPrincipalStableDebt +
-        reserveData.totalScaledVariableDebt;
+      uint256 totalBorrows = reserveData.totalStableDebt + reserveData.totalVariableDebt;
       reserveData.utilizationRate = totalBorrows == 0
         ? 0
         : totalBorrows.rayDiv(totalBorrows + reserveData.availableLiquidity);
@@ -105,7 +96,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       ) = reserveData.baseData.configuration.getParamsMemory();
       (
         reserveData.isActive,
-        reserveData.isFreezed,
+        reserveData.isFrozen,
         reserveData.borrowingEnabled,
         reserveData.stableBorrowRateEnabled
       ) = reserveData.baseData.configuration.getFlagsMemory();
