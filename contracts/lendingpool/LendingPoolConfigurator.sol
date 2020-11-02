@@ -188,10 +188,10 @@ contract LendingPoolConfigurator is VersionedInitializable {
   ILendingPool internal pool;
 
   /**
-   * @dev only the lending pool manager can call functions affected by this modifier
+   * @dev only the aave admin can call functions affected by this modifier
    **/
   modifier onlyAaveAdmin {
-    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.LPC_CALLER_NOT_AAVE_ADMIN);
+    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.CALLER_NOT_AAVE_ADMIN);
     _;
   }
 
