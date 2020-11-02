@@ -17,38 +17,38 @@ interface IStableDebtToken {
    * @dev emitted when new stable debt is minted
    * @param user the address of the user
    * @param amount the amount minted
-   * @param previousBalance the previous balance of the user
    * @param currentBalance the current balance of the user
-   * @param balanceIncrease the debt increase since the last update
+   * @param balanceIncrease the the increase in balance since the last action of the user
    * @param newRate the rate of the debt after the minting
    * @param avgStableRate the new average stable rate after the minting
+   * @param newTotalSupply the new total supply of the stable debt token after the action
    **/
   event Mint(
     address indexed user,
     uint256 amount,
-    uint256 previousBalance,
     uint256 currentBalance,
     uint256 balanceIncrease,
     uint256 newRate,
-    uint256 avgStableRate
+    uint256 avgStableRate,
+    uint256 newTotalSupply
   );
 
   /**
    * @dev emitted when new stable debt is burned
    * @param user the address of the user
    * @param amount the amount minted
-   * @param previousBalance the previous balance of the user
    * @param currentBalance the current balance of the user
-   * @param balanceIncrease the debt increase since the last update
+   * @param balanceIncrease the the increase in balance since the last action of the user
    * @param avgStableRate the new average stable rate after the minting
+   * @param newTotalSupply the new total supply of the stable debt token after the action
    **/
   event Burn(
     address indexed user,
     uint256 amount,
-    uint256 previousBalance,
     uint256 currentBalance,
     uint256 balanceIncrease,
-    uint256 avgStableRate
+    uint256 avgStableRate,
+    uint256 newTotalSupply
   );
 
   /**
