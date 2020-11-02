@@ -9,7 +9,6 @@ import {
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
   getLendingPoolAddressesProviderRegistry,
-  getWETH,
   getWETHMocked,
   getWETHGateway,
 } from '../../helpers/contracts-getters';

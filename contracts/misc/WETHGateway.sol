@@ -5,56 +5,56 @@ pragma experimental ABIEncoderV2;
 import {IWETH} from './interfaces/IWETH.sol';
 import {IWETHGateway} from './interfaces/IWETHGateway.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
-import '@nomiclabs/buidler/console.sol';
 
 contract WETHGateway is IWETHGateway {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
   IWETH public immutable WETH;
-  ILendingPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
   /**
    * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
    * @param _WETH Address of the Wrapped Ether contract
-   * @param _ADDRESSES_PROVIDER Address of the LendingPoolAddressesProvider contract
    **/
-  constructor(address _WETH, address _ADDRESSES_PROVIDER) public {
+  constructor(address _WETH) public {
     WETH = IWETH(_WETH);
-    ADDRESSES_PROVIDER = ILendingPoolAddressesProvider(_ADDRESSES_PROVIDER);
-    IWETH(_WETH).approve(
-      address(ILendingPool(ILendingPoolAddressesProvider(_ADDRESSES_PROVIDER).getLendingPool())),
-      uint256(-1)
-    );
   }
 
   /**
    * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (aTokens)
    * is minted.
+   * @param pool lending pool address to deposit
    * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
-  function depositETH(address onBehalfOf, uint16 referralCode) external override payable {
-    ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
+  function depositETH(
+    ILendingPool pool,
+    address onBehalfOf,
+    uint16 referralCode
+  ) external override payable {
     require(address(pool) != address(0));
     WETH.deposit{value: msg.value}();
+    WETH.approve(address(pool), msg.value);
     pool.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
   }
 
   /**
    * @dev withdraws the WETH _reserves of msg.sender.
-   * @param amount address of the user who will receive the aTokens representing the deposit
+   * @param pool lending pool address to withdraw
+   * @param amount amount of aWETH to burn and withdraw ETH asset
+   * @param onBehalfOf address of the user who will receive the ETH withdrawal
    */
-  function withdrawETH(uint256 amount, address onBehalfOf) external override {
-    ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
+  function withdrawETH(
+    ILendingPool pool,
+    uint256 amount,
+    address onBehalfOf
+  ) external override {
     require(address(pool) != address(0));
-
     uint256 userBalance = IAToken(pool.getReserveData(address(WETH)).aTokenAddress).balanceOf(
       msg.sender
     );
@@ -81,11 +81,11 @@ contract WETHGateway is IWETHGateway {
    * @param onBehalfOf the address for which msg.sender is repaying
    */
   function repayETH(
+    ILendingPool pool,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
   ) external override payable {
-    ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     require(address(pool) != address(0));
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebtMemory(
       onBehalfOf,
@@ -102,6 +102,7 @@ contract WETHGateway is IWETHGateway {
     }
     require(msg.value >= paybackAmount, 'msg.value is less than repayment amount');
     WETH.deposit{value: paybackAmount}();
+    WETH.approve(address(pool), msg.value);
     pool.repay(address(WETH), msg.value, rateMode, onBehalfOf);
 
     // refund remaining dust eth

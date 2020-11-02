@@ -421,10 +421,7 @@ export const deployATokensAndRatesHelper = async (
     verify
   );
 
-export const deployWETHGateway = async (
-  args: [tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
+export const deployWETHGateway = async (args: [tEthereumAddress], verify?: boolean) =>
   withSaveAndVerify(
     await new WethGatewayFactory(await getFirstSigner()).deploy(...args),
     eContractid.WETHGateway,
@@ -440,14 +437,6 @@ export const deployMockStableDebtToken = async (
     await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.ATokensAndRatesHelper,
     args,
-    verify
-  );
-
-export const deployWETH = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new Weth9Factory(await getFirstSigner()).deploy(),
-    eContractid.WETH,
-    [],
     verify
   );
 

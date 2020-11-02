@@ -250,7 +250,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await deployWalletBalancerProvider(addressesProvider.address);
 
-  await deployWETHGateway([mockTokens.WETH.address, addressesProvider.address]);
+  await deployWETHGateway([mockTokens.WETH.address]);
 
   console.timeEnd('setup');
 };

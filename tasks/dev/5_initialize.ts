@@ -22,12 +22,7 @@ import {
 } from '../../helpers/init-helpers';
 import {getAllTokenAddresses} from '../../helpers/mock-helpers';
 import {ZERO_ADDRESS} from '../../helpers/constants';
-import {
-  getAllMockedTokens,
-  getLendingPool,
-  getLendingPoolConfiguratorProxy,
-  getLendingPoolAddressesProvider,
-} from '../../helpers/contracts-getters';
+import {getAllMockedTokens, getLendingPoolAddressesProvider} from '../../helpers/contracts-getters';
 import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 
 task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -38,8 +33,6 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     const poolConfig = loadPoolConfig(pool);
 
     const mockTokens = await getAllMockedTokens();
-    const lendingPoolProxy = await getLendingPool();
-    const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy();
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
@@ -87,5 +80,5 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
 
     const wethAddress = await getWethAddress(poolConfig);
-    await deployWETHGateway([wethAddress, addressesProvider.address]);
+    await deployWETHGateway([wethAddress]);
   });

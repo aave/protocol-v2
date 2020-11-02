@@ -15,7 +15,7 @@ import {ZERO_ADDRESS} from './constants';
 import {BRE} from './misc-utils';
 import {tEthereumAddress} from './types';
 import {getParamPerNetwork} from './contracts-helpers';
-import {deployWETH} from './contracts-deployments';
+import {deployWETHMocked} from './contracts-deployments';
 
 export enum ConfigNames {
   Commons = 'Commons',
@@ -88,6 +88,9 @@ export const getWethAddress = async (config: ICommonConfiguration) => {
   if (wethAddress) {
     return wethAddress;
   }
-  const weth = await deployWETH();
+  if (currentNetwork.includes('main')) {
+    throw new Error('WETH not set at mainnet configuration.');
+  }
+  const weth = await deployWETHMocked();
   return weth.address;
 };

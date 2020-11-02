@@ -15,11 +15,7 @@ import {
   enableReservesAsCollateralByHelper,
 } from '../../helpers/init-helpers';
 import {exit} from 'process';
-import {
-  getLendingPool,
-  getLendingPoolConfiguratorProxy,
-  getLendingPoolAddressesProvider,
-} from '../../helpers/contracts-getters';
+import {getLendingPoolAddressesProvider} from '../../helpers/contracts-getters';
 import {ZERO_ADDRESS} from '../../helpers/constants';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -33,8 +29,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
 
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
-      const lendingPoolProxy = await getLendingPool();
-      const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy();
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
@@ -57,7 +51,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       await deployWalletBalancerProvider(addressesProvider.address, verify);
 
       const wethAddress = await getWethAddress(poolConfig);
-      await deployWETHGateway([wethAddress, addressesProvider.address]);
+      await deployWETHGateway([wethAddress]);
     } catch (err) {
       console.error(err);
       exit(1);
