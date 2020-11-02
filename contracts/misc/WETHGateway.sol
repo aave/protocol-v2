@@ -11,6 +11,7 @@ import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
+import '@nomiclabs/buidler/console.sol';
 
 contract WETHGateway is IWETHGateway {
   using ReserveConfiguration for ReserveConfiguration.Map;
@@ -50,7 +51,7 @@ contract WETHGateway is IWETHGateway {
    * @dev withdraws the WETH _reserves of msg.sender.
    * @param amount address of the user who will receive the aTokens representing the deposit
    */
-  function withdrawETH(uint256 amount) external override {
+  function withdrawETH(uint256 amount, address onBehalfOf) external override {
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     require(address(pool) != address(0));
 
@@ -68,9 +69,9 @@ contract WETHGateway is IWETHGateway {
       address(this),
       amountToWithdraw
     );
-    pool.withdraw(address(WETH), amountToWithdraw);
+    pool.withdraw(address(WETH), amountToWithdraw, address(this));
     WETH.withdraw(amountToWithdraw);
-    safeTransferETH(msg.sender, amountToWithdraw);
+    safeTransferETH(onBehalfOf, amountToWithdraw);
   }
 
   /**

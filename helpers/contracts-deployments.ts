@@ -33,7 +33,10 @@ import {
   LendingRateOracleFactory,
   MintableErc20Factory,
   MockAggregatorFactory,
+  MockATokenFactory,
   MockFlashLoanReceiverFactory,
+  MockStableDebtTokenFactory,
+  MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
   StableDebtTokenFactory,
@@ -45,6 +48,8 @@ import {
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
+import {MockStableDebtToken} from '../types/MockStableDebtToken';
+import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -143,7 +148,6 @@ export const deployAaveLibraries = async (
   return {
     ['__$5201a97c05ba6aa659e2f36a933dd51801$__']: validationLogic.address,
     ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: reserveLogic.address,
-    ['__$4c26be947d349222af871a3168b3fe584b$__']: genericLogic.address,
   };
 };
 
@@ -389,6 +393,17 @@ export const deployWETHGateway = async (
     verify
   );
 
+export const deployMockStableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ATokensAndRatesHelper,
+    args,
+    verify
+  );
+
 export const deployWETH = async (verify?: boolean) =>
   withSaveAndVerify(
     await new Weth9Factory(await getFirstSigner()).deploy(),
@@ -402,5 +417,27 @@ export const deployWETHMocked = async (verify?: boolean) =>
     await new Weth9MockedFactory(await getFirstSigner()).deploy(),
     eContractid.WETHMocked,
     [],
+    verify
+  );
+
+export const deployMockVariableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ATokensAndRatesHelper,
+    args,
+    verify
+  );
+
+export const deployMockAToken = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockATokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ATokensAndRatesHelper,
+    args,
     verify
   );

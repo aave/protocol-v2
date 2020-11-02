@@ -46,7 +46,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
 
     // Partial Withdraw and send native Ether to user
     const {gasUsed: withdrawGas} = await waitForTx(
-      await wethGateway.connect(user.signer).withdrawETH(partialWithdraw)
+      await wethGateway.connect(user.signer).withdrawETH(partialWithdraw, user.address)
     );
 
     const afterPartialEtherBalance = await user.signer.getBalance();
@@ -80,7 +80,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
 
     // Full withdraw
     const {gasUsed: withdrawGas} = await waitForTx(
-      await wethGateway.connect(user.signer).withdrawETH(MAX_UINT_AMOUNT)
+      await wethGateway.connect(user.signer).withdrawETH(MAX_UINT_AMOUNT, user.address)
     );
 
     const afterFullEtherBalance = await user.signer.getBalance();
