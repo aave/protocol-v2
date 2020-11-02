@@ -172,7 +172,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     //might actually try to repay more than the available debt supply.
     //in this case we simply set the total supply and the avg stable rate to 0
     if (previousSupply <= amount) {
-      newStableRate = _avgStableRate = 0;
+      _avgStableRate = 0;
       _totalSupply = 0;
     } else {
       uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
