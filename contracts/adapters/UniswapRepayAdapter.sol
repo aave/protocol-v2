@@ -20,6 +20,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     LeftoverAction leftOverAction;
     uint256[] repayAmounts;
     uint256[] rateModes;
+    PermitParams permitParams;
   }
 
   constructor(
@@ -46,6 +47,10 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *     (1) Direct transfer to user
    *   uint256[] repayAmounts List of amounts of debt to be repaid
    *   uint256[] rateModes List of the rate modes of the debt to be repaid
+   *   uint256[] deadline List of deadlines for the permit signature
+   *   uint8[] v List of v param for the permit signature
+   *   bytes32[] r List of r param for the permit signature
+   *   bytes32[] s List of s param for the permit signature
    */
   function executeOperation(
     address[] calldata assets,
@@ -61,7 +66,11 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     require(
       assets.length == decodedParams.assetToSwapToList.length
       && assets.length == decodedParams.repayAmounts.length
-      && assets.length == decodedParams.rateModes.length,
+      && assets.length == decodedParams.rateModes.length
+      && assets.length == decodedParams.permitParams.deadline.length
+      && assets.length == decodedParams.permitParams.v.length
+      && assets.length == decodedParams.permitParams.r.length
+      && assets.length == decodedParams.permitParams.s.length,
       'INCONSISTENT_PARAMS');
 
     for (uint256 i = 0; i < assets.length; i++) {
@@ -73,7 +82,13 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         decodedParams.rateModes[i],
         initiator,
         decodedParams.leftOverAction,
-        premiums[i]
+        premiums[i],
+        PermitSignature(
+          decodedParams.permitParams.deadline[i],
+          decodedParams.permitParams.v[i],
+          decodedParams.permitParams.r[i],
+          decodedParams.permitParams.s[i]
+        )
       );
     }
 
@@ -91,6 +106,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param initiator Address of the user
    * @param leftOverAction enum indicating what to do with the left over balance from the swap
    * @param premium Fee of the flash loan
+   * @param permitSignature struct containing the permit signature
    */
   function _swapAndRepay(
     address assetFrom,
@@ -100,7 +116,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 rateMode,
     address initiator,
     LeftoverAction leftOverAction,
-    uint256 premium
+    uint256 premium,
+    PermitSignature memory permitSignature
   ) internal {
     swapTokensForExactTokens(assetFrom, assetTo, amount, repayAmount);
 
@@ -109,7 +126,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     POOL.repay(assetTo, repayAmount, rateMode, initiator);
 
     uint256 flashLoanDebt = amount.add(premium);
-    pullATokenAndRepayFlashLoan(assetFrom, initiator, flashLoanDebt);
+    pullATokenAndRepayFlashLoan(assetFrom, initiator, flashLoanDebt, permitSignature);
 
     // Take care of reserve leftover from the swap
     sendLeftovers(assetFrom, flashLoanDebt, leftOverAction, initiator);
@@ -124,6 +141,10 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *     (1) Direct transfer to user
    *   uint256[] repayAmounts List of amounts of debt to be repaid
    *   uint256[] rateModes List of the rate modes of the debt to be repaid
+   *   uint256[] deadline List of deadlines for the permit signature
+   *   uint8[] v List of v param for the permit signature
+   *   bytes32[] r List of r param for the permit signature
+   *   bytes32[] s List of s param for the permit signature
    * @return RepayParams struct containing decoded params
    */
   function _decodeParams(bytes memory params) internal returns (RepayParams memory) {
@@ -131,9 +152,24 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       address[] memory assetToSwapToList,
       LeftoverAction leftOverAction,
       uint256[] memory repayAmounts,
-      uint256[] memory rateModes
-    ) = abi.decode(params, (address[], LeftoverAction, uint256[], uint256[]));
+      uint256[] memory rateModes,
+      uint256[] memory deadline,
+      uint8[] memory v,
+      bytes32[] memory r,
+      bytes32[] memory s
+    ) = abi.decode(params, (address[], LeftoverAction, uint256[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
 
-    return RepayParams(assetToSwapToList, leftOverAction, repayAmounts, rateModes);
+    return RepayParams(
+      assetToSwapToList,
+        leftOverAction,
+        repayAmounts,
+        rateModes,
+        PermitParams(
+          deadline,
+          v,
+          r,
+          s
+        )
+    );
   }
 }

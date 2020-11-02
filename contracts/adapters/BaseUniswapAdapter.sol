@@ -12,6 +12,7 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
+import {IERC20WithPermit} from '../interfaces/IERC20WithPermit.sol';
 
 /**
  * @title BaseUniswapAdapter
@@ -24,6 +25,20 @@ contract BaseUniswapAdapter {
   using SafeERC20 for IERC20;
 
   enum LeftoverAction {DEPOSIT, TRANSFER}
+
+  struct PermitParams {
+    uint256[] deadline;
+    uint8[] v;
+    bytes32[] r;
+    bytes32[] s;
+  }
+
+  struct PermitSignature {
+    uint256 deadline;
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
 
   // Max slippage percent allow by param
   uint256 public constant MAX_SLIPPAGE_PERCENT = 3000; // 30%
@@ -221,13 +236,27 @@ contract BaseUniswapAdapter {
    * @param reserve address of the asset
    * @param user address
    * @param amount of tokens to be transferred to the contract
+   * @param permitSignature struct containing the permit signature
    */
   function pullAToken(
     address reserve,
     address user,
-    uint256 amount
+    uint256 amount,
+    PermitSignature memory permitSignature
   ) internal {
     address reserveAToken = getAToken(reserve);
+
+    if (_usePermit(permitSignature)) {
+      IERC20WithPermit(reserveAToken).permit(
+        user,
+        address(this),
+        amount,
+        permitSignature.deadline,
+        permitSignature.v,
+        permitSignature.r,
+        permitSignature.s
+      );
+    }
 
     // transfer from user to adapter
     IERC20(reserveAToken).safeTransferFrom(user, address(this), amount);
@@ -241,15 +270,28 @@ contract BaseUniswapAdapter {
    * @param reserve address of the asset
    * @param user address
    * @param flashLoanDebt need to be repaid
+   * @param permitSignature struct containing the permit signature
    */
   function pullATokenAndRepayFlashLoan(
     address reserve,
     address user,
-    uint256 flashLoanDebt
+    uint256 flashLoanDebt,
+    PermitSignature memory permitSignature
   ) internal {
-    pullAToken(reserve, user, flashLoanDebt);
+    pullAToken(reserve, user, flashLoanDebt, permitSignature);
 
     // Repay flashloan
     IERC20(reserve).approve(address(POOL), flashLoanDebt);
+  }
+
+  /**
+   * @dev Tells if the permit method should be called by inspecting if there is a valid signature.
+   * If signature params are set to 0, then permit won't be called.
+   * @param signature struct containing the permit signature
+   * @return whether or not permit should be called
+   */
+  function _usePermit(PermitSignature memory signature) internal pure returns (bool) {
+    return !(uint256(signature.deadline) == uint256(signature.v) &&
+      uint256(signature.deadline) == 0);
   }
 }
