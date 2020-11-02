@@ -23,6 +23,7 @@ import {
   ATokensAndRatesHelperFactory,
   ChainlinkProxyPriceProviderFactory,
   DefaultReserveInterestRateStrategyFactory,
+  DelegationAwareATokenFactory,
   InitializableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
@@ -307,6 +308,32 @@ export const deployGenericAToken = async (
   ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
   return withSaveAndVerify(
     await new ATokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AToken,
+    args,
+    verify
+  );
+};
+
+export const deployDelegationAwareAToken = async (
+  [poolAddress, underlyingAssetAddress, name, symbol, incentivesController]: [
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    tEthereumAddress
+  ],
+  verify: boolean
+) => {
+  const args: [
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    tEthereumAddress
+  ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
+  return withSaveAndVerify(
+    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.AToken,
     args,
     verify
