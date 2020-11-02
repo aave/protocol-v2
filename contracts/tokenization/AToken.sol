@@ -13,7 +13,7 @@ import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 /**
  * @title Aave ERC20 AToken
  *
- * @dev Implementation of the interest bearing token for the DLP protocol.
+ * @dev Implementation of the interest bearing token for the Aave protocol.
  * @author Aave
  */
 contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
@@ -40,7 +40,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   bytes32 public DOMAIN_SEPARATOR;
 
   modifier onlyLendingPool {
-    require(_msgSender() == address(POOL), Errors.CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(POOL), Errors.AT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 
@@ -100,7 +100,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 index
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.INVALID_BURN_AMOUNT);
+    require(amountScaled != 0, Errors.AT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
     //transfers the underlying to the target
@@ -108,7 +108,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
-    emit Burn(_msgSender(), receiverOfUnderlying, amount, index);
+    emit Burn(user, receiverOfUnderlying, amount, index);
   }
 
   /**
@@ -127,7 +127,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 previousBalance = super.balanceOf(user);
 
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.INVALID_MINT_AMOUNT);
+    require(amountScaled != 0, Errors.AT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
     //transfer event to track balances

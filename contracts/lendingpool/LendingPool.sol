@@ -20,7 +20,6 @@ import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol'
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
-import {ISwapAdapter} from '../interfaces/ISwapAdapter.sol';
 import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -53,7 +52,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function _onlyLendingPoolConfigurator() internal view {
     require(
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
-      Errors.CALLER_NOT_LENDING_POOL_CONFIGURATOR
+      Errors.LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
   }
 
@@ -65,7 +64,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - The contract must not be paused.
    */
   function _whenNotPaused() internal view {
-    require(!_paused, Errors.IS_PAUSED);
+    require(!_paused, Errors.LP_IS_PAUSED);
   }
 
   function getRevision() internal override pure returns (uint256) {
@@ -120,8 +119,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev withdraws the _reserves of user.
    * @param asset the address of the reserve
    * @param amount the underlying amount to be redeemed
+   * @param to address that will receive the underlying
    **/
-  function withdraw(address asset, uint256 amount) external override {
+  function withdraw(
+    address asset,
+    uint256 amount,
+    address to
+  ) external override {
     _whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
@@ -155,9 +159,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
     }
 
-    IAToken(aToken).burn(msg.sender, msg.sender, amountToWithdraw, reserve.liquidityIndex);
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, amountToWithdraw);
+    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
   }
 
   /**
@@ -179,23 +183,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Sets allowance to borrow on a certain type of debt asset for a certain user address
-   * @param asset The underlying asset of the debt token
+   * @dev Sets allowance to borrow on a certain type of debt assets for a certain user address
+   * @param assets The underlying asset of each debt token
    * @param user The user to give allowance to
-   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
-   * @param amount Allowance amount to borrow
+   * @param interestRateModes Types of debt: 1 for stable, 2 for variable
+   * @param amounts Allowance amounts to borrow
    **/
   function delegateBorrowAllowance(
-    address asset,
+    address[] calldata assets,
     address user,
-    uint256 interestRateMode,
-    uint256 amount
+    uint256[] calldata interestRateModes,
+    uint256[] calldata amounts
   ) external override {
     _whenNotPaused();
-    address debtToken = _reserves[asset].getDebtTokenAddress(interestRateMode);
 
-    _borrowAllowance[debtToken][msg.sender][user] = amount;
-    emit BorrowAllowanceDelegated(asset, msg.sender, user, interestRateMode, amount);
+    uint256 countAssets = assets.length;
+    require(
+      countAssets == interestRateModes.length && countAssets == amounts.length,
+      Errors.LP_INCONSISTENT_PARAMS_LENGTH
+    );
+
+    for (uint256 i = 0; i < countAssets; i++) {
+      address debtToken = _reserves[assets[i]].getDebtTokenAddress(interestRateModes[i]);
+      _borrowAllowance[debtToken][msg.sender][user] = amounts[i];
+    }
+
+    emit BorrowAllowanceDelegated(msg.sender, user, assets, interestRateModes, amounts);
   }
 
   /**
@@ -223,7 +236,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _borrowAllowance[debtToken][onBehalfOf][msg
         .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
         amount,
-        Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH
+        Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH
       );
     }
     _executeBorrow(
@@ -352,7 +365,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
 
-    emit Swap(asset, msg.sender);
+    emit Swap(asset, msg.sender, rateMode);
   }
 
   /**
@@ -398,7 +411,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
         currentLiquidityRate <=
         maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
-      Errors.INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
     );
 
     reserve.updateState();
@@ -473,7 +486,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         receiveAToken
       )
     );
-    require(success, Errors.LIQUIDATION_CALL_FAILED);
+    require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
@@ -486,13 +499,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   struct FlashLoanLocalVars {
     IFlashLoanReceiver receiver;
     address oracle;
-    ReserveLogic.InterestRateMode debtMode;
     uint256 i;
     address currentAsset;
     address currentATokenAddress;
     uint256 currentAmount;
     uint256 currentPremium;
     uint256 currentAmountPlusPremium;
+    address debtToken;
   }
 
   /**
@@ -502,7 +515,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
    * @param assets The addresss of the assets being flashborrowed
    * @param amounts The amounts requested for this flashloan for each asset
-   * @param mode Type of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
+   * @param modes Types of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
    * @param onBehalfOf If mode is not 0, then the address to take the debt onBehalfOf. The onBehalfOf address must already have approved `msg.sender` to incur the debt on their behalf.
    * @param params Variadic packed params to pass to the receiver as extra information
    * @param referralCode Referral code of the flash loan
@@ -511,7 +524,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address receiverAddress,
     address[] calldata assets,
     uint256[] calldata amounts,
-    uint256 mode,
+    uint256[] calldata modes,
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
@@ -520,13 +533,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     FlashLoanLocalVars memory vars;
 
-    ValidationLogic.validateFlashloan(assets, amounts, mode);
+    ValidationLogic.validateFlashloan(assets, amounts);
 
     address[] memory aTokenAddresses = new address[](assets.length);
     uint256[] memory premiums = new uint256[](assets.length);
 
     vars.receiver = IFlashLoanReceiver(receiverAddress);
-    vars.debtMode = ReserveLogic.InterestRateMode(mode);
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
@@ -539,8 +551,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     //execute action of the receiver
     require(
-      vars.receiver.executeOperation(assets, amounts, premiums, params),
-      Errors.INVALID_FLASH_LOAN_EXECUTOR_RETURN
+      vars.receiver.executeOperation(assets, amounts, premiums, msg.sender, params),
+      Errors.LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
@@ -548,10 +560,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.currentAmount = amounts[vars.i];
       vars.currentPremium = premiums[vars.i];
       vars.currentATokenAddress = aTokenAddresses[vars.i];
-
       vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
 
-      if (vars.debtMode == ReserveLogic.InterestRateMode.NONE) {
+      if (ReserveLogic.InterestRateMode(modes[vars.i]) == ReserveLogic.InterestRateMode.NONE) {
         _reserves[vars.currentAsset].updateState();
         _reserves[vars.currentAsset].cumulateToLiquidityIndex(
           IERC20(vars.currentATokenAddress).totalSupply(),
@@ -571,13 +582,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         );
       } else {
         if (msg.sender != onBehalfOf) {
-          address debtToken = _reserves[vars.currentAsset].getDebtTokenAddress(mode);
+          vars.debtToken = _reserves[vars.currentAsset].getDebtTokenAddress(modes[vars.i]);
 
-          _borrowAllowance[debtToken][onBehalfOf][msg
-            .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
-            vars.currentAmount,
-            Errors.BORROW_ALLOWANCE_ARE_NOT_ENOUGH
-          );
+          _borrowAllowance[vars.debtToken][onBehalfOf][msg.sender] = _borrowAllowance[vars
+            .debtToken][onBehalfOf][msg.sender]
+            .sub(vars.currentAmount, Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
         }
 
         //if the user didn't choose to return the funds, the system checks if there
@@ -588,14 +597,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
             msg.sender,
             onBehalfOf,
             vars.currentAmount,
-            mode,
+            modes[vars.i],
             vars.currentATokenAddress,
             referralCode,
             false
           )
         );
       }
-      emit FlashLoan(receiverAddress, mode, onBehalfOf, assets, amounts, premiums, referralCode);
+      emit FlashLoan(
+        receiverAddress,
+        msg.sender,
+        vars.currentAsset,
+        vars.currentAmount,
+        vars.currentPremium,
+        referralCode
+      );
     }
   }
 
@@ -691,7 +707,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @return the reserve normalized income
    */
-  function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
+  function getReserveNormalizedIncome(address asset)
+    external
+    virtual
+    override
+    view
+    returns (uint256)
+  {
     return _reserves[asset].getNormalizedIncome();
   }
 
@@ -754,7 +776,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override {
     _whenNotPaused();
 
-    require(msg.sender == _reserves[asset].aTokenAddress, Errors.CALLER_MUST_BE_AN_ATOKEN);
+    require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
     ValidationLogic.validateTransfer(
       from,
@@ -875,6 +897,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
 
     ValidationLogic.validateBorrow(
+      vars.asset,
       reserve,
       vars.onBehalfOf,
       vars.amount,
@@ -888,32 +911,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    uint256 reserveId = reserve.id;
-    if (!userConfig.isBorrowing(reserveId)) {
-      userConfig.setBorrowing(reserveId, true);
-    }
-
     reserve.updateState();
 
     //caching the current stable borrow rate
     uint256 currentStableRate = 0;
 
+    bool isFirstBorrowing = false;
     if (
       ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE
     ) {
       currentStableRate = reserve.currentStableBorrowRate;
 
-      IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+      isFirstBorrowing = IStableDebtToken(reserve.stableDebtTokenAddress).mint(
         vars.onBehalfOf,
         vars.amount,
         currentStableRate
       );
     } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
+      isFirstBorrowing = IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
         vars.onBehalfOf,
         vars.amount,
         reserve.variableBorrowIndex
       );
+    }
+
+    if (isFirstBorrowing) {
+      userConfig.setBorrowing(reserve.id, true);
     }
 
     reserve.updateInterestRates(
@@ -946,7 +969,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function _addReserveToList(address asset) internal {
     uint256 reservesCount = _reservesCount;
 
-    require(reservesCount < MAX_NUMBER_RESERVES, Errors.NO_MORE_RESERVES_ALLOWED);
+    require(reservesCount < MAX_NUMBER_RESERVES, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
     bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
 

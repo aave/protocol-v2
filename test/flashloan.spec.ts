@@ -8,21 +8,23 @@ import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
 import {ProtocolErrors, eContractid} from '../helpers/types';
 import {VariableDebtToken} from '../types/VariableDebtToken';
 import {StableDebtToken} from '../types/StableDebtToken';
-import {getMockFlashLoanReceiver} from '../helpers/contracts-getters';
+import {
+  getMockFlashLoanReceiver,
+  getStableDebtToken,
+  getVariableDebtToken,
+} from '../helpers/contracts-getters';
 
 const {expect} = require('chai');
 
 makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
   const {
-    COLLATERAL_BALANCE_IS_0,
-    REQUESTED_AMOUNT_TOO_SMALL,
+    VL_COLLATERAL_BALANCE_IS_0,
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
-    INVALID_FLASHLOAN_MODE,
+    LP_INVALID_FLASHLOAN_MODE,
     SAFEERC20_LOWLEVEL_CALL,
-    IS_PAUSED,
-    INVALID_FLASH_LOAN_EXECUTOR_RETURN,
-    BORROW_ALLOWANCE_ARE_NOT_ENOUGH,
+    LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN,
+    LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH,
   } = ProtocolErrors;
 
   before(async () => {
@@ -48,7 +50,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       _mockFlashLoanReceiver.address,
       [weth.address],
       [ethers.utils.parseEther('0.8')],
-      0,
+      [0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
@@ -78,7 +80,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       _mockFlashLoanReceiver.address,
       [weth.address],
       ['1000720000000000000'],
-      0,
+      [0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
@@ -110,7 +112,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [ethers.utils.parseEther('0.8')],
-          0,
+          [0],
           caller.address,
           '0x10',
           '0'
@@ -131,12 +133,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [ethers.utils.parseEther('0.8')],
-          0,
+          [0],
           caller.address,
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(INVALID_FLASH_LOAN_EXECUTOR_RETURN);
+    ).to.be.revertedWith(LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN);
   });
 
   it('Takes a WETH flashloan with an invalid mode. (revert expected)', async () => {
@@ -152,12 +154,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [ethers.utils.parseEther('0.8')],
-          4,
+          [4],
           caller.address,
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(INVALID_FLASHLOAN_MODE);
+    ).to.be.reverted;
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes WETH flashloan with mode = 2, does not return the funds. A variable loan for caller is created', async () => {
@@ -181,7 +183,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         [ethers.utils.parseEther('0.8')],
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -190,10 +192,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       weth.address
     );
 
-    const wethDebtToken = await getContract<VariableDebtToken>(
-      eContractid.VariableDebtToken,
-      variableDebtTokenAddress
-    );
+    const wethDebtToken = await getVariableDebtToken(variableDebtTokenAddress);
 
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
@@ -209,7 +208,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         ['1004415000000000000'], //slightly higher than the available liquidity
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -227,7 +226,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         deployer.address,
         [weth.address],
         ['1000000000000000000'],
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -259,7 +258,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       _mockFlashLoanReceiver.address,
       [usdc.address],
       [flashloanAmount],
-      0,
+      [0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
@@ -302,12 +301,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [usdc.address],
           [flashloanAmount],
-          2,
+          [2],
           caller.address,
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(COLLATERAL_BALANCE_IS_0);
+    ).to.be.revertedWith(VL_COLLATERAL_BALANCE_IS_0);
   });
 
   it('Caller deposits 5 WETH as collateral, Takes a USDC flashloan with mode = 2, does not return the funds. A loan for caller is created', async () => {
@@ -333,7 +332,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [usdc.address],
         [flashloanAmount],
-        2,
+        [2],
         caller.address,
         '0x10',
         '0'
@@ -342,10 +341,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       usdc.address
     );
 
-    const usdcDebtToken = await getContract<VariableDebtToken>(
-      eContractid.VariableDebtToken,
-      variableDebtTokenAddress
-    );
+    const usdcDebtToken = await getVariableDebtToken(variableDebtTokenAddress);
 
     const callerDebt = await usdcDebtToken.balanceOf(caller.address);
 
@@ -376,7 +372,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [flashAmount],
-          0,
+          [0],
           caller.address,
           '0x10',
           '0'
@@ -399,7 +395,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         [flashAmount],
-        1,
+        [1],
         caller.address,
         '0x10',
         '0'
@@ -407,10 +403,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const {stableDebtTokenAddress} = await helpersContract.getReserveTokensAddresses(weth.address);
 
-    const wethDebtToken = await getContract<StableDebtToken>(
-      eContractid.VariableDebtToken,
-      stableDebtTokenAddress
-    );
+    const wethDebtToken = await getStableDebtToken(stableDebtTokenAddress);
 
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
@@ -445,12 +438,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [flashAmount],
-          1,
+          [1],
           onBehalfOf.address,
           '0x10',
           '0'
         )
-    ).to.be.revertedWith(BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
+    ).to.be.revertedWith(LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
   });
 
   it('Caller takes a WETH flashloan with mode = 1 onBehalfOf user with allowance. A loan for onBehalfOf is creatd.', async () => {
@@ -464,7 +457,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     // Deposited for onBehalfOf user already, delegate borrow allowance
     await pool
       .connect(onBehalfOf.signer)
-      .delegateBorrowAllowance(weth.address, caller.address, 1, flashAmount);
+      .delegateBorrowAllowance([weth.address], caller.address, [1], [flashAmount]);
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
@@ -474,7 +467,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         [flashAmount],
-        1,
+        [1],
         onBehalfOf.address,
         '0x10',
         '0'
@@ -482,10 +475,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const {stableDebtTokenAddress} = await helpersContract.getReserveTokensAddresses(weth.address);
 
-    const wethDebtToken = await getContract<StableDebtToken>(
-      eContractid.VariableDebtToken,
-      stableDebtTokenAddress
-    );
+    const wethDebtToken = await getStableDebtToken(stableDebtTokenAddress);
 
     const onBehalfOfDebt = await wethDebtToken.balanceOf(onBehalfOf.address);
 

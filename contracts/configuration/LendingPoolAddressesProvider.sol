@@ -19,16 +19,11 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   mapping(bytes32 => address) private _addresses;
 
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';
-  bytes32 private constant LENDING_POOL_CORE = 'LENDING_POOL_CORE';
   bytes32 private constant LENDING_POOL_CONFIGURATOR = 'LENDING_POOL_CONFIGURATOR';
   bytes32 private constant AAVE_ADMIN = 'AAVE_ADMIN';
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
-  bytes32 private constant LENDING_POOL_FLASHLOAN_PROVIDER = 'FLASHLOAN_PROVIDER';
-  bytes32 private constant DATA_PROVIDER = 'DATA_PROVIDER';
-  bytes32 private constant ETHEREUM_ADDRESS = 'ETHEREUM_ADDRESS';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
-  bytes32 private constant WALLET_BALANCE_PROVIDER = 'WALLET_BALANCE_PROVIDER';
 
   /**
    * @dev Sets an address for an id, allowing to cover it or not with a proxy
