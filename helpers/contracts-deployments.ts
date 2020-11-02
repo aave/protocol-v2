@@ -32,6 +32,7 @@ import {
   LendingPoolFactory,
   LendingPoolLibraryAddresses,
   LendingRateOracleFactory,
+  MintableDelegationErc20Factory,
   MintableErc20Factory,
   MockAggregatorFactory,
   MockATokenFactory,
@@ -48,6 +49,7 @@ import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contr
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
 import {MockStableDebtToken} from '../types/MockStableDebtToken';
 import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
+import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -255,6 +257,16 @@ export const deployMintableERC20 = async (
     verify
   );
 
+export const deployMintableDelegationERC20 = async (
+  args: [string, string, string],
+  verify?: boolean
+): Promise<MintableDelegationErc20> =>
+  withSaveAndVerify(
+    await new MintableDelegationErc20Factory(await getFirstSigner()).deploy(...args),
+    eContractid.MintableDelegationERC20,
+    args,
+    verify
+  );
 export const deployDefaultReserveInterestRateStrategy = async (
   args: [tEthereumAddress, string, string, string, string, string],
   verify: boolean
