@@ -753,7 +753,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev returns the addresses provider
    **/
-  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
+  function getAddressesProvider() external override view returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
   }
 
