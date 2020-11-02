@@ -155,7 +155,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x93503511f3dA00Bf39449ad3d21EdDc235dad44b",
+      "address": "0x4d9b0B189D8382cE39B905E0a1Edc285D18aa69b",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
@@ -165,7 +165,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x181ac33E6845DE403b11e6d74aa31709bfF2453d",
+      "address": "0x52e7AbE89c7479BA50F9f0E3517aB99EA5d9696F",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
@@ -175,7 +175,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x8768B04B74B7469B8d2A0C353Ce33EDe702f04A2",
+      "address": "0x5FCEC698A187eb16F23a90bA745C5d894437529f",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
@@ -185,7 +185,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xA27e5AD016Ae1cDAdC468cB065948Af571605C3D",
+      "address": "0x8F0224d4988c10A5Aa6A6CaecF640259b361959d",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
@@ -195,7 +195,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x03B07749992f723C7A12803283a961202E9D0037",
+      "address": "0x125B7eaB5865743615DE727CC811115A6d1F0de1",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
@@ -205,7 +205,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x0135203da2217cc272D001a0a5b44455789dEdA1"
+      "address": "0x04F571451E55fFB4C76551cB6347282284E290e4"
     }
   },
   "LendingPoolConfigurator": {
@@ -213,7 +213,7 @@
       "address": "0x6642B57e4265BAD868C17Fc1d1F4F88DBBA04Aa8"
     },
     "kovan": {
-      "address": "0xa3cE4D195041471a61d90a6CAcfb4cc0A69B87d5"
+      "address": "0xF5E4C55A26C32b640DE7c97eA92Ad62D99B371F3"
     }
   },
   "StableAndVariableTokensHelper": {
@@ -222,7 +222,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xDF1a93a18C19CE8b6AEB4fc784361d29C9552634",
+      "address": "0x222C3f139a93629f6473155e3c41cbc4D815D443",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
@@ -232,7 +232,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xFb60263fBb9327edA69B316F2e4542BC046a2E2F",
+      "address": "0xdF99b3caEdad1558FeE0ac38a8b7ec2fca1d761F",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
@@ -265,7 +265,7 @@
       "address": "0xf4830d6b1D70C8595d3BD8A63f9ed9F636DB9ef2"
     },
     "kovan": {
-      "address": "0xA36229958Ef76a170ff5BE9130ec14b153b82396",
+      "address": "0x607b84e528C2A46218bf868Baf3927645389CD30",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     }
   },
