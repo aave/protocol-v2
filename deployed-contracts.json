@@ -276,5 +276,17 @@
       "address": "0xf784709d2317D872237C4bC22f867d1BAe2913AB",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
+  },
+  "MintableDelegationERC20": {
+    "buidlerevm": {
+      "address": "0x77B0b5636fEA30eA79BB65AeCCdb599997A849A8",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    }
+  },
+  "AToken": {
+    "buidlerevm": {
+      "address": "0x78Ee8Fb9fE5abD5e347Fc94c2fb85596d1f60e3c",
+      "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    }
   }
 }

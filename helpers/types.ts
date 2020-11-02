@@ -28,6 +28,7 @@ export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
   MintableERC20 = 'MintableERC20',
+  MintableDelegationERC20 = 'MintableDelegationERC20',
   LendingPoolAddressesProviderRegistry = 'LendingPoolAddressesProviderRegistry',
   LendingPoolParametersProvider = 'LendingPoolParametersProvider',
   LendingPoolConfigurator = 'LendingPoolConfigurator',
@@ -47,6 +48,7 @@ export enum eContractid {
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
+  DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
   AaveProtocolTestHelpers = 'AaveProtocolTestHelpers',
@@ -75,6 +77,10 @@ export enum eContractid {
  *  - P = Pausable
  */
 export enum ProtocolErrors {
+  //common errors
+  CALLER_NOT_AAVE_ADMIN = '33', // 'The caller must be the aave admin'
+
+  //contract specific errors
   VL_AMOUNT_NOT_GREATER_THAN_0 = '1', // 'Amount must be greater than 0'
   VL_NO_ACTIVE_RESERVE = '2', // 'Action requires an active reserve'
   VL_RESERVE_FROZEN = '3', // 'Action requires an unfrozen reserve'
@@ -107,7 +113,6 @@ export enum ProtocolErrors {
   AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
   AT_TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
   RL_RESERVE_ALREADY_INITIALIZED = '32', // 'Reserve has already been initialized'
-  LPC_CALLER_NOT_AAVE_ADMIN = '33', // 'The caller must be the aave admin'
   LPC_RESERVE_LIQUIDITY_NOT_0 = '34', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_ATOKEN_POOL_ADDRESS = '35', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS = '36', // 'The liquidity of the reserve needs to be 0'

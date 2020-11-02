@@ -17,6 +17,10 @@ pragma solidity ^0.6.8;
  *  - P = Pausable
  */
 library Errors {
+  //common errors
+  string public constant CALLER_NOT_AAVE_ADMIN = '33'; // 'The caller must be the aave admin'
+
+  //contract specific errors
   string public constant VL_AMOUNT_NOT_GREATER_THAN_0 = '1'; // 'Amount must be greater than 0'
   string public constant VL_NO_ACTIVE_RESERVE = '2'; // 'Action requires an active reserve'
   string public constant VL_RESERVE_FROZEN = '3'; // 'Action cannot be performed because the reserve is frozen'
@@ -49,7 +53,6 @@ library Errors {
   string public constant AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
   string public constant AT_TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
   string public constant RL_RESERVE_ALREADY_INITIALIZED = '32'; // 'Reserve has already been initialized'
-  string public constant LPC_CALLER_NOT_AAVE_ADMIN = '33'; // 'The caller must be the aave admin'
   string public constant LPC_RESERVE_LIQUIDITY_NOT_0 = '34'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_ATOKEN_POOL_ADDRESS = '35'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS = '36'; // 'The liquidity of the reserve needs to be 0'

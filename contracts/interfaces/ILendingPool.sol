@@ -4,6 +4,7 @@ pragma solidity ^0.6.8;
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
 
 pragma experimental ABIEncoderV2;
 
@@ -367,6 +368,8 @@ interface ILendingPool {
   ) external;
 
   function getReservesList() external view returns (address[] memory);
+
+  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 
   /**
    * @dev Set the _pause state
