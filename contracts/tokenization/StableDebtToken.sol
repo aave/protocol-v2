@@ -144,9 +144,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       amount,
       previousBalance,
       currentBalance,
-      balanceIncrease,
       vars.newStableRate,
-      vars.currentAvgStableRate
+      vars.currentAvgStableRate,
+      vars.nextSupply
     );
 
     return currentBalance == 0;
@@ -166,6 +166,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     uint256 previousSupply = totalSupply();
     uint256 newStableRate = 0;
+    uint256 nextSupply = 0;
 
     //since the total supply and each single user debt accrue separately,
     //there might be accumulation errors so that the last borrower repaying
@@ -175,7 +176,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _avgStableRate = 0;
       _totalSupply = 0;
     } else {
-      uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
+      nextSupply = _totalSupply = previousSupply.sub(amount);
       newStableRate = _avgStableRate = _avgStableRate
         .rayMul(previousSupply.wadToRay())
         .sub(_usersData[user].rayMul(amount.wadToRay()))
@@ -201,7 +202,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(user, address(0), amount);
 
-    emit Burn(user, amount, previousBalance, currentBalance, balanceIncrease, newStableRate);
+    emit Burn(user, amount, previousBalance, currentBalance, newStableRate, nextSupply);
   }
 
   /**
