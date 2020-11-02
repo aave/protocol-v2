@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IUiPoolDataProvider} from './IUiPoolDataProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {IERC20Detailed} from '../interfaces/IERC20Detailed.sol';
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
@@ -87,14 +87,14 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
       );
-      reserveData.totalBorrowsStable = IERC20Detailed(reserveData.stableDebtTokenAddress)
-        .totalSupply();
-      reserveData.totalBorrowsVariable = IERC20Detailed(reserveData.variableDebtTokenAddress)
-        .totalSupply();
-      uint256 totalBorrows = reserveData.totalBorrowsStable + reserveData.totalBorrowsVariable;
-      reserveData.utilizationRate = totalBorrows == 0
-        ? 0
-        : totalBorrows.rayDiv(totalBorrows + reserveData.availableLiquidity);
+      (
+        reserveData.totalPrincipalStableDebt,
+        ,
+        reserveData.averageStableRate,
+        reserveData.stableDebtLastUpdateTimestamp
+      ) = IStableDebtToken(reserveData.stableDebtTokenAddress).getSupplyData();
+      reserveData.totalScaledVariableDebt = IVariableDebtToken(reserveData.variableDebtTokenAddress)
+        .scaledTotalSupply();
 
       // reserve configuration
 
@@ -111,7 +111,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       ) = baseData.configuration.getParamsMemory();
       (
         reserveData.isActive,
-        reserveData.isFreezed,
+        reserveData.isFrozen,
         reserveData.borrowingEnabled,
         reserveData.stableBorrowRateEnabled
       ) = baseData.configuration.getFlagsMemory();
@@ -128,22 +128,22 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       if (user != address(0)) {
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
-        userReservesData[i].principalATokenBalance = IAToken(reserveData.aTokenAddress)
+        userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
           .scaledBalanceOf(user);
         userReservesData[i].usageAsCollateralEnabledOnUser = userConfig.isUsingAsCollateral(i);
 
         if (userConfig.isBorrowing(i)) {
-          userReservesData[i].principalVariableBorrows = IVariableDebtToken(
+          userReservesData[i].scaledVariableDebt = IVariableDebtToken(
             reserveData
               .variableDebtTokenAddress
           )
             .scaledBalanceOf(user);
-          userReservesData[i].principalStableBorrows = IStableDebtToken(
+          userReservesData[i].principalStableDebt = IStableDebtToken(
             reserveData
               .stableDebtTokenAddress
           )
             .principalBalanceOf(user);
-          if (userReservesData[i].principalStableBorrows != 0) {
+          if (userReservesData[i].principalStableDebt != 0) {
             userReservesData[i].stableBorrowRate = IStableDebtToken(
               reserveData
                 .stableDebtTokenAddress
