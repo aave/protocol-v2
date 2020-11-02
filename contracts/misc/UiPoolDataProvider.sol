@@ -72,9 +72,17 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.baseData.aTokenAddress
       );
-      reserveData.totalStableDebt = IERC20Detailed(reserveData.baseData.stableDebtTokenAddress)
-        .totalSupply();
-      reserveData.totalVariableDebt = IERC20Detailed(reserveData.baseData.variableDebtTokenAddress)
+      (, reserveData.totalStableDebt, ) = IStableDebtToken(
+        reserveData
+          .baseData
+          .stableDebtTokenAddress
+      )
+        .getSupplyData();
+      reserveData.totalVariableDebt = IVariableDebtToken(
+        reserveData
+          .baseData
+          .variableDebtTokenAddress
+      )
         .totalSupply();
       uint256 totalBorrows = reserveData.totalStableDebt + reserveData.totalVariableDebt;
       reserveData.utilizationRate = totalBorrows == 0
