@@ -22,9 +22,10 @@ interface IUiPoolDataProvider {
     bool isFrozen;
     ReserveLogic.ReserveData baseData;
     uint256 availableLiquidity;
-    uint256 totalStableDebt;
-    uint256 totalVariableDebt;
-    uint256 utilizationRate;
+    uint256 totalPrincipalStableDebt;
+    uint256 averageStableRate;
+    uint256 stableDebtLastUpdateTimestamp;
+    uint256 totalScaledVariableDebt;
     uint256 priceInEth;
     uint256 variableRateSlope1;
     uint256 variableRateSlope2;
