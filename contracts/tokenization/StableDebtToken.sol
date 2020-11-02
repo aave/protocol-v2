@@ -142,8 +142,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     emit Mint(
       user,
       amount,
-      previousBalance,
       currentBalance,
+      balanceIncrease,
       vars.newStableRate,
       vars.currentAvgStableRate,
       vars.nextSupply
@@ -202,7 +202,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(user, address(0), amount);
 
-    emit Burn(user, amount, previousBalance, currentBalance, newStableRate, nextSupply);
+    emit Burn(user, amount, currentBalance, balanceIncrease, newStableRate, nextSupply);
   }
 
   /**
