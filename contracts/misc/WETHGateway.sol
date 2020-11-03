@@ -117,7 +117,7 @@ contract WETHGateway is IWETHGateway {
   /**
    * @dev Revert fallback calls
    */
-  fallback() external {
-    revert('Fallback not allowed');
+  fallback() external payable {
+    require(false, 'Fallback not allowed');
   }
 }
