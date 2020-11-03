@@ -181,4 +181,18 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const debtBalanceAfterFullRepay = await varDebtToken.balanceOf(user.address);
     expect(debtBalanceAfterFullRepay).to.be.eq(zero);
   });
+
+  it('Should revert if receive function receives Ether', async () => {
+    const {users, wethGateway} = testEnv;
+    const user = users[0];
+    const amount = parseEther('1');
+
+    await expect(
+      user.signer.sendTransaction({to: wethGateway.address, value: amount})
+    ).to.be.revertedWith('Receive not allowed');
+
+    await expect(user.signer.sendTransaction({to: wethGateway.address})).to.be.revertedWith(
+      'Fallback not allowed'
+    );
+  });
 });

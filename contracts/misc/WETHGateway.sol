@@ -20,15 +20,13 @@ contract WETHGateway is IWETHGateway {
 
   /**
    * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
-   * @param _WETH Address of the Wrapped Ether contract
-   * @param _POOL Address of the LendingPool contract
+   * @param weth Address of the Wrapped Ether contract
+   * @param pool Address of the LendingPool contract
    **/
-  constructor(address _WETH, address _POOL) public {
-    require(_WETH != address(0), '_WETH not 0 address');
-    require(_POOL != address(0), '_POOL not 0 address');
-    WETH = IWETH(_WETH);
-    POOL = ILendingPool(_POOL);
-    IWETH(_WETH).approve(_POOL, uint256(-1));
+  constructor(address weth, address pool) public {
+    WETH = IWETH(weth);
+    POOL = ILendingPool(pool);
+    IWETH(weth).approve(pool, uint256(-1));
   }
 
   /**
@@ -44,9 +42,10 @@ contract WETHGateway is IWETHGateway {
 
   /**
    * @dev withdraws the WETH _reserves of msg.sender.
-   * @param amount address of the user who will receive the aTokens representing the deposit
+   * @param amount amount of aWETH to withdraw and receive native ETH
+   * @param to address of the user who will receive native ETH
    */
-  function withdrawETH(uint256 amount, address onBehalfOf) external override {
+  function withdrawETH(uint256 amount, address to) external override {
     uint256 userBalance = IAToken(POOL.getReserveData(address(WETH)).aTokenAddress).balanceOf(
       msg.sender
     );
@@ -63,7 +62,7 @@ contract WETHGateway is IWETHGateway {
     );
     POOL.withdraw(address(WETH), amountToWithdraw, address(this));
     WETH.withdraw(amountToWithdraw);
-    safeTransferETH(onBehalfOf, amountToWithdraw);
+    safeTransferETH(to, amountToWithdraw);
   }
 
   /**
@@ -112,6 +111,13 @@ contract WETHGateway is IWETHGateway {
    * @dev Only WETH contract is allowed to transfer ETH here. Prevent other addresses to send Ether to this contract.
    */
   receive() external payable {
-    assert(msg.sender == address(WETH));
+    require(msg.sender == address(WETH), 'Receive not allowed');
+  }
+
+  /**
+   * @dev Revert fallback calls
+   */
+  fallback() external {
+    revert('Fallback not allowed');
   }
 }
