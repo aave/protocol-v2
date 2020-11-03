@@ -62,6 +62,7 @@ export enum eContractid {
   WETHGateway = 'WETHGateway',
   WETH = 'WETH',
   WETHMocked = 'WETHMocked',
+  SelfdestructTransferMock = 'SelfdestructTransferMock',
 }
 
 /*

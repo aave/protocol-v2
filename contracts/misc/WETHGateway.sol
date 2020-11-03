@@ -10,14 +10,16 @@ import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
-contract WETHGateway is IWETHGateway {
+contract WETHGateway is IWETHGateway, Ownable {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
-  IWETH public immutable WETH;
-  ILendingPool public immutable POOL;
-  IAToken public immutable aWETH;
+  IWETH internal immutable WETH;
+  ILendingPool internal immutable POOL;
+  IAToken internal immutable aWETH;
 
   /**
    * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
@@ -59,7 +61,7 @@ contract WETHGateway is IWETHGateway {
     aWETH.transferFrom(msg.sender, address(this), amountToWithdraw);
     POOL.withdraw(address(WETH), amountToWithdraw, address(this));
     WETH.withdraw(amountToWithdraw);
-    safeTransferETH(to, amountToWithdraw);
+    _safeTransferETH(to, amountToWithdraw);
   }
 
   /**
@@ -91,7 +93,7 @@ contract WETHGateway is IWETHGateway {
     POOL.repay(address(WETH), msg.value, rateMode, onBehalfOf);
 
     // refund remaining dust eth
-    if (msg.value > paybackAmount) safeTransferETH(msg.sender, msg.value - paybackAmount);
+    if (msg.value > paybackAmount) _safeTransferETH(msg.sender, msg.value - paybackAmount);
   }
 
   /**
@@ -99,9 +101,55 @@ contract WETHGateway is IWETHGateway {
    * @param to recipient of the transfer
    * @param value the amount to send
    */
-  function safeTransferETH(address to, uint256 value) internal {
+  function _safeTransferETH(address to, uint256 value) internal {
     (bool success, ) = to.call{value: value}(new bytes(0));
     require(success, 'ETH_TRANSFER_FAILED');
+  }
+
+  /**
+   * @dev transfer ERC20 from the utility contract, for ERC20 recovery in case of stuck tokens due
+   * direct transfers to the contract address.
+   * @param token token to transfer
+   * @param to recipient of the transfer
+   * @param amount amount to send
+   */
+  function emergencyTokenTransfer(
+    address token,
+    address to,
+    uint256 amount
+  ) external onlyOwner {
+    IERC20(token).transfer(to, amount);
+  }
+
+  /**
+   * @dev transfer native Ether from the utility contract, for native Ether recovery in case of stuck Ether
+   * due selfdestructs, transfer ether to pre-computated contract address before deployment or bad contract behaviour.
+   * @param to recipient of the transfer
+   * @param amount amount to send
+   */
+  function emergencyEtherTransfer(address to, uint256 amount) external onlyOwner {
+    _safeTransferETH(to, amount);
+  }
+
+  /**
+   * @dev Get WETH address used by WETHGateway
+   */
+  function getWETHAddress() external view returns (address) {
+    return address(WETH);
+  }
+
+  /**
+   * @dev Get aWETH address used by WETHGateway
+   */
+  function getAWETHAddress() external view returns (address) {
+    return address(aWETH);
+  }
+
+  /**
+   * @dev Get LendingPool address used by WETHGateway
+   */
+  function getLendingPoolAddress() external view returns (address) {
+    return address(POOL);
   }
 
   /**

@@ -1,11 +1,13 @@
 import {MAX_UINT_AMOUNT} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite, TestEnv} from './helpers/make-suite';
-import {parseEther} from 'ethers/lib/utils';
+import {formatEther, parseEther, parseUnits} from 'ethers/lib/utils';
 import {BRE, waitForTx} from '../helpers/misc-utils';
 import {BigNumber} from 'ethers';
 import {getStableDebtToken, getVariableDebtToken} from '../helpers/contracts-getters';
 import {WethGateway} from '../types/WethGateway';
+import {use} from 'chai';
+import {deploySelfdestructTransferMock} from '../helpers/contracts-deployments';
 
 const {expect} = require('chai');
 
@@ -183,27 +185,123 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     expect(debtBalanceAfterFullRepay).to.be.eq(zero);
   });
 
-  it('Should revert if receive or fallback functions receives Ether', async () => {
+  it('Should revert if receiver function receives Ether if not WETH', async () => {
     const {users, wethGateway} = testEnv;
     const user = users[0];
     const amount = parseEther('1');
 
     // Call receiver function (empty data + value)
     await expect(
-      user.signer.sendTransaction({to: wethGateway.address, value: amount})
+      user.signer.sendTransaction({
+        to: wethGateway.address,
+        value: amount,
+        gasLimit: BRE.network.config.gas,
+      })
     ).to.be.revertedWith('Receive not allowed');
+  });
 
+  it('Should revert if fallback functions is called with Ether', async () => {
+    const {users, wethGateway} = testEnv;
+    const user = users[0];
+    const amount = parseEther('1');
     const fakeABI = ['function wantToCallFallback()'];
     const abiCoder = new BRE.ethers.utils.Interface(fakeABI);
     const fakeMethodEncoded = abiCoder.encodeFunctionData('wantToCallFallback', []);
 
     // Call fallback function with value
     await expect(
-      user.signer.sendTransaction({to: wethGateway.address, data: fakeMethodEncoded, value: amount})
-    ).to.be.reverted;
+      user.signer.sendTransaction({
+        to: wethGateway.address,
+        data: fakeMethodEncoded,
+        value: amount,
+        gasLimit: BRE.network.config.gas,
+      })
+    ).to.be.revertedWith('Fallback not allowed');
+  });
+
+  it('Should revert if fallback functions is called', async () => {
+    const {users, wethGateway} = testEnv;
+    const user = users[0];
+
+    const fakeABI = ['function wantToCallFallback()'];
+    const abiCoder = new BRE.ethers.utils.Interface(fakeABI);
+    const fakeMethodEncoded = abiCoder.encodeFunctionData('wantToCallFallback', []);
 
     // Call fallback function without value
-    await expect(user.signer.sendTransaction({to: wethGateway.address, data: fakeMethodEncoded})).to
-      .be.reverted;
+    await expect(
+      user.signer.sendTransaction({
+        to: wethGateway.address,
+        data: fakeMethodEncoded,
+        gasLimit: BRE.network.config.gas,
+      })
+    ).to.be.revertedWith('Fallback not allowed');
+  });
+
+  it('Getters should retrieve correct state', async () => {
+    const {aWETH, weth, pool, wethGateway} = testEnv;
+
+    const WETHAddress = await wethGateway.getWETHAddress();
+    const aWETHAddress = await wethGateway.getAWETHAddress();
+    const poolAddress = await wethGateway.getLendingPoolAddress();
+
+    expect(WETHAddress).to.be.equal(weth.address);
+    expect(aWETHAddress).to.be.equal(aWETH.address);
+    expect(poolAddress).to.be.equal(pool.address);
+  });
+
+  it('Owner can do emergency token recovery', async () => {
+    const {users, dai, wethGateway, deployer} = testEnv;
+    const user = users[0];
+    const amount = parseEther('1');
+
+    await dai.connect(user.signer).mint(amount);
+    const daiBalanceAfterMint = await dai.balanceOf(user.address);
+
+    await dai.connect(user.signer).transfer(wethGateway.address, amount);
+    const daiBalanceAfterBadTransfer = await dai.balanceOf(user.address);
+    expect(daiBalanceAfterBadTransfer).to.be.eq(
+      daiBalanceAfterMint.sub(amount),
+      'User should have lost the funds here.'
+    );
+
+    await wethGateway
+      .connect(deployer.signer)
+      .emergencyTokenTransfer(dai.address, user.address, amount);
+    const daiBalanceAfterRecovery = await dai.balanceOf(user.address);
+
+    expect(daiBalanceAfterRecovery).to.be.eq(
+      daiBalanceAfterMint,
+      'User should recover the funds due emergency token transfer'
+    );
+  });
+
+  xit('Owner can do emergency native ETH recovery', async () => {
+    const {users, wethGateway, deployer} = testEnv;
+    const user = users[0];
+    const amount = parseEther('1');
+
+    const selfdestructContract = await deploySelfdestructTransferMock();
+
+    const userBalancePriorCall = await user.signer.getBalance();
+    const callTx = await selfdestructContract.destroyAndTransfer(wethGateway.address, {
+      value: amount,
+    });
+    const {gasUsed} = await waitForTx(callTx);
+    const gasFees = gasUsed.mul(callTx.gasPrice);
+    const userBalanceAfterCall = await user.signer.getBalance();
+    console.log(formatEther(userBalanceAfterCall));
+
+    expect(userBalanceAfterCall).to.be.eq(userBalancePriorCall.sub(amount).sub(gasFees), '');
+    'User should have lost the funds';
+
+    await wethGateway.connect(deployer.signer).emergencyEtherTransfer(user.address, amount);
+
+    const userBalanceAfterRecovery = await user.signer.getBalance();
+
+    console.log(formatEther(userBalanceAfterCall));
+    expect(userBalanceAfterRecovery).to.be.eq(
+      userBalancePriorCall.sub(gasFees),
+      'User should recover the funds due emergency eth transfer'
+    );
   });
 });

@@ -41,6 +41,7 @@ import {
   MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
+  SelfdestructTransferFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
@@ -53,6 +54,7 @@ import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTo
 import {MockStableDebtToken} from '../types/MockStableDebtToken';
 import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
+import {SelfdestructTransfer} from '../types/SelfdestructTransfer';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -470,5 +472,13 @@ export const deployMockAToken = async (
     await new MockATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.ATokensAndRatesHelper,
     args,
+    verify
+  );
+
+export const deploySelfdestructTransferMock = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new SelfdestructTransferFactory(await getFirstSigner()).deploy(),
+    eContractid.SelfdestructTransferMock,
+    [],
     verify
   );
