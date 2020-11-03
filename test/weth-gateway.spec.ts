@@ -183,11 +183,12 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     expect(debtBalanceAfterFullRepay).to.be.eq(zero);
   });
 
-  xit('Should revert if receive function receives Ether', async () => {
+  it('Should revert if receive or fallback functions receives Ether', async () => {
     const {users, wethGateway} = testEnv;
     const user = users[0];
     const amount = parseEther('1');
 
+    // Call receiver function (empty data + value)
     await expect(
       user.signer.sendTransaction({to: wethGateway.address, value: amount})
     ).to.be.revertedWith('Receive not allowed');
@@ -196,9 +197,12 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const abiCoder = new BRE.ethers.utils.Interface(fakeABI);
     const fakeMethodEncoded = abiCoder.encodeFunctionData('wantToCallFallback', []);
 
+    // Call fallback function with value
     await expect(
       user.signer.sendTransaction({to: wethGateway.address, data: fakeMethodEncoded, value: amount})
-    ).to.be.revertedWith('Fallback not allowed');
+    ).to.be.reverted;
+
+    // Call fallback function without value
     await expect(user.signer.sendTransaction({to: wethGateway.address, data: fakeMethodEncoded})).to
       .be.reverted;
   });
