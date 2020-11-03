@@ -903,7 +903,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       _borrowAllowance[debtToken][vars.onBehalfOf][msg.sender] = _borrowAllowance[debtToken][vars
         .onBehalfOf][msg.sender]
-        .sub(vars.amount, Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
+        .sub(vars.amount, Errors.LP_BORROW_ALLOWANCE_NOT_ENOUGH);
     }
 
     reserve.updateState();
