@@ -79,7 +79,7 @@ library Errors {
   string public constant AT_INVALID_MINT_AMOUNT = '56'; //invalid amount to mint
   string public constant LP_FAILED_REPAY_WITH_COLLATERAL = '57';
   string public constant AT_INVALID_BURN_AMOUNT = '58'; //invalid amount to burn
-  string public constant LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '59'; // User borrows on behalf, but allowance are too small
+  string public constant LP_BORROW_ALLOWANCE_NOT_ENOUGH = '59'; // User borrows on behalf, but allowance are too small
   string public constant LP_FAILED_COLLATERAL_SWAP = '60';
   string public constant LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61';
   string public constant LP_REENTRANCY_NOT_ALLOWED = '62';
