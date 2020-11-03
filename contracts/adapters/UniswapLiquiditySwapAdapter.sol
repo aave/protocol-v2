@@ -17,7 +17,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
   struct SwapParams {
     address[] assetToSwapToList;
-    uint256 slippage;
+    uint256[] minAmountsToReceive;
     PermitParams permitParams;
   }
 
@@ -40,7 +40,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
-   *   uint256 slippage The max slippage percentage allowed for the swap
+   *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -58,12 +58,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     SwapParams memory decodedParams = _decodeParams(params);
 
     require(
-      decodedParams.slippage < MAX_SLIPPAGE_PERCENT && decodedParams.slippage >= MIN_SLIPPAGE_PERCENT,
-      'SLIPPAGE_OUT_OF_RANGE'
-    );
-
-    require(
-      decodedParams.assetToSwapToList.length == assets.length
+      assets.length == decodedParams.assetToSwapToList.length
+      && assets.length == decodedParams.minAmountsToReceive.length
       && assets.length == decodedParams.permitParams.deadline.length
       && assets.length == decodedParams.permitParams.v.length
       && assets.length == decodedParams.permitParams.r.length
@@ -76,7 +72,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         assets[i],
         decodedParams.assetToSwapToList[i],
         amounts[i],
-        decodedParams.slippage
+        decodedParams.minAmountsToReceive[i]
       );
 
       // Deposit new reserve
@@ -108,7 +104,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param assetToSwapFromList List of addresses of the underlying asset to be swap from
    * @param assetToSwapToList List of addresses of the underlying asset to be swap to and deposited
    * @param amountToSwapList List of amounts to be swapped
-   * @param slippage The max slippage percentage allowed for the swap
+   * @param minAmountsToReceive List of min amounts to be received from the swap
+   * @param permitParams List of struct containing the permit signatures
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -118,12 +115,13 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     address[] calldata assetToSwapFromList,
     address[] calldata assetToSwapToList,
     uint256[] calldata amountToSwapList,
-    uint256 slippage,
+    uint256[] calldata minAmountsToReceive,
     PermitSignature[] calldata permitParams
   ) external {
     require(
       assetToSwapFromList.length == assetToSwapToList.length
       && assetToSwapFromList.length == amountToSwapList.length
+      && assetToSwapFromList.length == minAmountsToReceive.length
       && assetToSwapFromList.length == permitParams.length,
       'INCONSISTENT_PARAMS'
     );
@@ -140,7 +138,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         assetToSwapFromList[i],
         assetToSwapToList[i],
         amountToSwapList[i],
-        slippage
+        minAmountsToReceive[i]
       );
 
       // Deposit new reserve
@@ -153,7 +151,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
  * @dev Decodes debt information encoded in flashloan params
  * @param params Additional variadic field to include extra params. Expected parameters:
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
-   *   uint256 slippage The max slippage percentage allowed for the swap
+   *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
@@ -164,13 +162,13 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   function _decodeParams(bytes memory params) internal returns (SwapParams memory) {
     (
       address[] memory assetToSwapToList,
-      uint256 slippage,
+      uint256[] memory minAmountsToReceive,
       uint256[] memory deadline,
       uint8[] memory v,
       bytes32[] memory r,
       bytes32[] memory s
-    ) = abi.decode(params, (address[], uint256, uint256[], uint8[], bytes32[], bytes32[]));
+    ) = abi.decode(params, (address[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
 
-    return SwapParams(assetToSwapToList, slippage, PermitParams(deadline, v, r, s));
+    return SwapParams(assetToSwapToList, minAmountsToReceive, PermitParams(deadline, v, r, s));
   }
 }

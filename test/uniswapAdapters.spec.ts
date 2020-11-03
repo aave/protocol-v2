@@ -126,12 +126,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
-        // 0,5% slippage
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
-            50,
+            [expectedDaiAmount],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -224,10 +223,9 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
-        // 0,5% slippage
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
-          [[dai.address], 50, [deadline], [v], [r], [s]]
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          [[dai.address], [expectedDaiAmount], [deadline], [v], [r], [s]]
         );
 
         await expect(
@@ -290,12 +288,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
-        // 0,5% slippage
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
-            50,
+            [expectedDaiAmount],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -318,10 +315,10 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params2 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
-            50,
+            [expectedDaiAmount],
             [0, 0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -344,10 +341,10 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params3 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
-            50,
+            [expectedDaiAmount],
             [0],
             [0, 0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -370,10 +367,10 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params4 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
-            50,
+            [expectedDaiAmount],
             [0],
             [0],
             [
@@ -399,10 +396,10 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params5 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
-            50,
+            [expectedDaiAmount],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -423,6 +420,32 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               [0],
               userAddress,
               params5,
+              0
+            )
+        ).to.be.revertedWith('INCONSISTENT_PARAMS');
+
+        const params6 = ethers.utils.defaultAbiCoder.encode(
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          [
+            [dai.address, weth.address],
+            [expectedDaiAmount, expectedDaiAmount],
+            [0],
+            [0],
+            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          ]
+        );
+
+        await expect(
+          pool
+            .connect(user)
+            .flashLoan(
+              uniswapLiquiditySwapAdapter.address,
+              [weth.address],
+              [flashloanAmount.toString()],
+              [0],
+              userAddress,
+              params6,
               0
             )
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
@@ -450,12 +473,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
-        // 0,5% slippage
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
-            50,
+            [expectedDaiAmount],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -531,12 +553,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(amountUSDCtoSwap.toString()).div(1.0009).toFixed(0);
 
-        // 0,5% slippage
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
-            50,
+            [expectedDaiAmount],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -574,15 +595,12 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(aDaiBalance).to.be.eq(expectedDaiAmount);
       });
 
-      it('should revert if slippage param is not inside limits', async () => {
-        const {users, pool, weth, oracle, dai, aWETH, uniswapLiquiditySwapAdapter} = testEnv;
+      it('should revert when min amount to receive exceeds the max slippage amount', async () => {
+        const {users, weth, oracle, dai, aWETH, pool, uniswapLiquiditySwapAdapter} = testEnv;
         const user = users[0].signer;
         const userAddress = users[0].address;
 
         const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
-
-        await weth.connect(user).mint(amountWETHtoSwap);
-        await weth.connect(user).transfer(uniswapLiquiditySwapAdapter.address, amountWETHtoSwap);
 
         const daiPrice = await oracle.getAssetPrice(dai.address);
         const expectedDaiAmount = await convertToCurrencyDecimals(
@@ -590,33 +608,21 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
         );
 
-        await mockUniswapRouter.connect(user).setAmountToReturn(expectedDaiAmount);
+        await mockUniswapRouter.setAmountToReturn(expectedDaiAmount);
+        const smallExpectedDaiAmount = expectedDaiAmount.div(2);
 
         // User will swap liquidity 10 aEth to aDai
         const liquidityToSwap = parseEther('10');
         await aWETH.connect(user).approve(uniswapLiquiditySwapAdapter.address, liquidityToSwap);
+
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
-        // 30% slippage
-        const params1 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+        const params = ethers.utils.defaultAbiCoder.encode(
+          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
-            3000,
-            [0],
-            [0],
-            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ]
-        );
-
-        // 0,05% slippage
-        const params2 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
-          [
-            [dai.address],
-            5,
+            [smallExpectedDaiAmount],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -633,23 +639,10 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               [flashloanAmount.toString()],
               [0],
               userAddress,
-              params1,
+              params,
               0
             )
-        ).to.be.revertedWith('SLIPPAGE_OUT_OF_RANGE');
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapLiquiditySwapAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params2,
-              0
-            )
-        ).to.be.revertedWith('SLIPPAGE_OUT_OF_RANGE');
+        ).to.be.revertedWith('minAmountOut exceed max slippage');
       });
     });
 
@@ -690,16 +683,20 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
 
         await expect(
-          uniswapLiquiditySwapAdapter
-            .connect(user)
-            .swapAndDeposit([weth.address], [dai.address], [amountWETHtoSwap], 50, [
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address],
+            [dai.address],
+            [amountWETHtoSwap],
+            [expectedDaiAmount],
+            [
               {
                 deadline: 0,
                 v: 0,
                 r: '0x0000000000000000000000000000000000000000000000000000000000000000',
                 s: '0x0000000000000000000000000000000000000000000000000000000000000000',
               },
-            ])
+            ]
+          )
         )
           .to.emit(uniswapLiquiditySwapAdapter, 'Swapped')
           .withArgs(weth.address, dai.address, amountWETHtoSwap.toString(), expectedDaiAmount);
@@ -763,16 +760,20 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
         await expect(
-          uniswapLiquiditySwapAdapter
-            .connect(user)
-            .swapAndDeposit([weth.address], [dai.address], [amountWETHtoSwap], 50, [
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address],
+            [dai.address],
+            [amountWETHtoSwap],
+            [expectedDaiAmount],
+            [
               {
                 deadline,
                 v,
                 r,
                 s,
               },
-            ])
+            ]
+          )
         )
           .to.emit(uniswapLiquiditySwapAdapter, 'Swapped')
           .withArgs(weth.address, dai.address, amountWETHtoSwap.toString(), expectedDaiAmount);
@@ -795,35 +796,65 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
       });
 
       it('should revert if inconsistent params', async () => {
-        const {users, weth, dai, uniswapLiquiditySwapAdapter} = testEnv;
+        const {users, weth, dai, uniswapLiquiditySwapAdapter, oracle} = testEnv;
         const user = users[0].signer;
 
         const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const expectedDaiAmount = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
+        );
 
         await expect(
-          uniswapLiquiditySwapAdapter
-            .connect(user)
-            .swapAndDeposit([weth.address, dai.address], [dai.address], [amountWETHtoSwap], 50, [
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address, dai.address],
+            [dai.address],
+            [amountWETHtoSwap],
+            [expectedDaiAmount],
+            [
               {
                 deadline: 0,
                 v: 0,
                 r: '0x0000000000000000000000000000000000000000000000000000000000000000',
                 s: '0x0000000000000000000000000000000000000000000000000000000000000000',
               },
-            ])
+            ]
+          )
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         await expect(
-          uniswapLiquiditySwapAdapter
-            .connect(user)
-            .swapAndDeposit([weth.address], [dai.address, weth.address], [amountWETHtoSwap], 50, [
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address],
+            [dai.address, weth.address],
+            [amountWETHtoSwap],
+            [expectedDaiAmount],
+            [
               {
                 deadline: 0,
                 v: 0,
                 r: '0x0000000000000000000000000000000000000000000000000000000000000000',
                 s: '0x0000000000000000000000000000000000000000000000000000000000000000',
               },
-            ])
+            ]
+          )
+        ).to.be.revertedWith('INCONSISTENT_PARAMS');
+
+        await expect(
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address],
+            [dai.address],
+            [amountWETHtoSwap, amountWETHtoSwap],
+            [expectedDaiAmount],
+            [
+              {
+                deadline: 0,
+                v: 0,
+                r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              },
+            ]
+          )
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         await expect(
@@ -832,24 +863,65 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .swapAndDeposit(
               [weth.address],
               [dai.address],
-              [amountWETHtoSwap, amountWETHtoSwap],
-              50,
-              [
-                {
-                  deadline: 0,
-                  v: 0,
-                  r: '0x0000000000000000000000000000000000000000000000000000000000000000',
-                  s: '0x0000000000000000000000000000000000000000000000000000000000000000',
-                },
-              ]
+              [amountWETHtoSwap],
+              [expectedDaiAmount],
+              []
             )
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         await expect(
-          uniswapLiquiditySwapAdapter
-            .connect(user)
-            .swapAndDeposit([weth.address], [dai.address], [amountWETHtoSwap], 50, [])
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address],
+            [dai.address],
+            [amountWETHtoSwap],
+            [expectedDaiAmount, expectedDaiAmount],
+            [
+              {
+                deadline: 0,
+                v: 0,
+                r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              },
+            ]
+          )
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
+      });
+
+      it('should revert when min amount to receive exceeds the max slippage amount', async () => {
+        const {users, weth, oracle, dai, aWETH, uniswapLiquiditySwapAdapter} = testEnv;
+        const user = users[0].signer;
+
+        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
+
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const expectedDaiAmount = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
+        );
+
+        await mockUniswapRouter.setAmountToReturn(expectedDaiAmount);
+        const smallExpectedDaiAmount = expectedDaiAmount.div(2);
+
+        // User will swap liquidity 10 aEth to aDai
+        const liquidityToSwap = parseEther('10');
+        await aWETH.connect(user).approve(uniswapLiquiditySwapAdapter.address, liquidityToSwap);
+
+        await expect(
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address],
+            [dai.address],
+            [amountWETHtoSwap],
+            [smallExpectedDaiAmount],
+            [
+              {
+                deadline: 0,
+                v: 0,
+                r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              },
+            ]
+          )
+        ).to.be.revertedWith('minAmountOut exceed max slippage');
       });
     });
   });

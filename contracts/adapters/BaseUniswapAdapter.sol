@@ -40,10 +40,8 @@ contract BaseUniswapAdapter {
     bytes32 s;
   }
 
-  // Max slippage percent allow by param
+  // Max slippage percent allowed
   uint256 public constant MAX_SLIPPAGE_PERCENT = 3000; // 30%
-  // Min slippage percent allow by param
-  uint256 public constant MIN_SLIPPAGE_PERCENT = 10; // 0,1%
 
   ILendingPool public immutable POOL;
   IPriceOracleGetter public immutable ORACLE;
@@ -100,18 +98,18 @@ contract BaseUniswapAdapter {
   }
 
   /**
-   * @dev Swaps an `amountToSwap` of an asset to another
+   * @dev Swaps an exact `amountToSwap` of an asset to another
    * @param assetToSwapFrom Origin asset
    * @param assetToSwapTo Destination asset
    * @param amountToSwap Exact amount of `assetToSwapFrom` to be swapped
-   * @param slippage the max slippage percentage allowed for the swap
+   * @param minAmountOut the min amount of `assetToSwapTo` to be received from the swap
    * @return the amount received from the swap
    */
   function swapExactTokensForTokens(
     address assetToSwapFrom,
     address assetToSwapTo,
     uint256 amountToSwap,
-    uint256 slippage
+    uint256 minAmountOut
   )
     internal
     returns (uint256)
@@ -122,17 +120,19 @@ contract BaseUniswapAdapter {
     uint256 fromAssetPrice = _getPrice(assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
-    uint256 amountOutMin = amountToSwap
+    uint256 expectedMinAmountOut = amountToSwap
     .mul(fromAssetPrice.mul(10**toAssetDecimals))
     .div(toAssetPrice.mul(10**fromAssetDecimals))
-    .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(slippage));
+    .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(MAX_SLIPPAGE_PERCENT));
+
+    require(expectedMinAmountOut < minAmountOut, 'minAmountOut exceed max slippage');
 
     IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), amountToSwap);
 
     address[] memory path = new address[](2);
     path[0] = assetToSwapFrom;
     path[1] = assetToSwapTo;
-    uint256[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(amountToSwap, amountOutMin, path, address(this), block.timestamp);
+    uint256[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(amountToSwap, minAmountOut, path, address(this), block.timestamp);
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
 
@@ -146,7 +146,7 @@ contract BaseUniswapAdapter {
    * @param assetToSwapTo Destination asset
    * @param maxAmountToSwap Max amount of `assetToSwapFrom` allowed to be swapped
    * @param amountToReceive Exact amount of `assetToSwapTo` to receive
-   * @return the amount received from the swap
+   * @return the amount swapped
    */
   function swapTokensForExactTokens(
     address assetToSwapFrom,
@@ -179,7 +179,7 @@ contract BaseUniswapAdapter {
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
 
-    return amounts[1];
+    return amounts[0];
   }
 
   /**
