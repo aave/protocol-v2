@@ -275,33 +275,36 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     );
   });
 
-  xit('Owner can do emergency native ETH recovery', async () => {
+  it('Owner can do emergency native ETH recovery', async () => {
     const {users, wethGateway, deployer} = testEnv;
     const user = users[0];
     const amount = parseEther('1');
+    const userBalancePriorCall = await user.signer.getBalance();
 
+    // Deploy contract with payable selfdestruct contract
     const selfdestructContract = await deploySelfdestructTransferMock();
 
-    const userBalancePriorCall = await user.signer.getBalance();
-    const callTx = await selfdestructContract.destroyAndTransfer(wethGateway.address, {
-      value: amount,
-    });
+    // Selfdestruct the mock, pointing to WETHGateway address
+    const callTx = await selfdestructContract
+      .connect(user.signer)
+      .destroyAndTransfer(wethGateway.address, {value: amount});
     const {gasUsed} = await waitForTx(callTx);
     const gasFees = gasUsed.mul(callTx.gasPrice);
     const userBalanceAfterCall = await user.signer.getBalance();
-    console.log(formatEther(userBalanceAfterCall));
 
     expect(userBalanceAfterCall).to.be.eq(userBalancePriorCall.sub(amount).sub(gasFees), '');
     'User should have lost the funds';
 
+    // Recover the funds from the contract and sends back to the user
     await wethGateway.connect(deployer.signer).emergencyEtherTransfer(user.address, amount);
 
     const userBalanceAfterRecovery = await user.signer.getBalance();
+    const wethGatewayAfterRecovery = await BRE.ethers.provider.getBalance(wethGateway.address);
 
-    console.log(formatEther(userBalanceAfterCall));
     expect(userBalanceAfterRecovery).to.be.eq(
       userBalancePriorCall.sub(gasFees),
-      'User should recover the funds due emergency eth transfer'
+      'User should recover the funds due emergency eth transfer.'
     );
+    expect(wethGatewayAfterRecovery).to.be.eq('0', 'WETHGateway ether balance should be zero.');
   });
 });
