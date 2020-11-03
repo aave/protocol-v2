@@ -138,7 +138,7 @@ export enum ProtocolErrors {
   AT_INVALID_MINT_AMOUNT = '56', //invalid amount to mint
   LP_FAILED_REPAY_WITH_COLLATERAL = '57',
   AT_INVALID_BURN_AMOUNT = '58', //invalid amount to burn
-  LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '59', // User borrows on behalf, but allowance are too small
+  LP_BORROW_ALLOWANCE_NOT_ENOUGH = '59', // User borrows on behalf, but allowance are too small
   LP_FAILED_COLLATERAL_SWAP = '60',
   LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61',
   LP_REENTRANCY_NOT_ALLOWED = '62',
