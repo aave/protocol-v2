@@ -122,23 +122,6 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await configurator.setPoolPause(false);
   });
 
-  it('DelegateBorrowAllowance', async () => {
-    const {pool, dai, users, configurator} = testEnv;
-
-    const user = users[1];
-    const toUser = users[2];
-    // Pause the pool
-    await configurator.setPoolPause(true);
-
-    // Try to execute liquidation
-    await expect(
-      pool.connect(user.signer).delegateBorrowAllowance([dai.address], toUser.address, ['1'], ['1'])
-    ).revertedWith(LP_IS_PAUSED);
-
-    // Unpause the pool
-    await configurator.setPoolPause(false);
-  });
-
   it('Borrow', async () => {
     const {pool, dai, users, configurator} = testEnv;
 
