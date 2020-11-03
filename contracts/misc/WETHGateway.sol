@@ -17,6 +17,7 @@ contract WETHGateway is IWETHGateway {
 
   IWETH public immutable WETH;
   ILendingPool public immutable POOL;
+  IAToken public immutable aWETH;
 
   /**
    * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
@@ -24,8 +25,10 @@ contract WETHGateway is IWETHGateway {
    * @param pool Address of the LendingPool contract
    **/
   constructor(address weth, address pool) public {
+    ILendingPool poolInstance = ILendingPool(pool);
     WETH = IWETH(weth);
-    POOL = ILendingPool(pool);
+    POOL = poolInstance;
+    aWETH = IAToken(poolInstance.getReserveData(weth).aTokenAddress);
     IWETH(weth).approve(pool, uint256(-1));
   }
 
@@ -46,20 +49,14 @@ contract WETHGateway is IWETHGateway {
    * @param to address of the user who will receive native ETH
    */
   function withdrawETH(uint256 amount, address to) external override {
-    uint256 userBalance = IAToken(POOL.getReserveData(address(WETH)).aTokenAddress).balanceOf(
-      msg.sender
-    );
+    uint256 userBalance = aWETH.balanceOf(msg.sender);
     uint256 amountToWithdraw = amount;
 
     // if amount is equal to uint(-1), the user wants to redeem everything
     if (amount == type(uint256).max) {
       amountToWithdraw = userBalance;
     }
-    IAToken(POOL.getReserveData(address(WETH)).aTokenAddress).transferFrom(
-      msg.sender,
-      address(this),
-      amountToWithdraw
-    );
+    aWETH.transferFrom(msg.sender, address(this), amountToWithdraw);
     POOL.withdraw(address(WETH), amountToWithdraw, address(this));
     WETH.withdraw(amountToWithdraw);
     safeTransferETH(to, amountToWithdraw);
