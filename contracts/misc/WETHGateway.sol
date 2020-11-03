@@ -123,7 +123,7 @@ contract WETHGateway is IWETHGateway, Ownable {
 
   /**
    * @dev transfer native Ether from the utility contract, for native Ether recovery in case of stuck Ether
-   * due selfdestructs, transfer ether to pre-computated contract address before deployment or bad contract behaviour.
+   * due selfdestructs or transfer ether to pre-computated contract address before deployment.
    * @param to recipient of the transfer
    * @param amount amount to send
    */
