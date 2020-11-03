@@ -6,17 +6,17 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {MintableERC20} from '../tokens/MintableERC20.sol';
 
 contract MockUniswapV2Router02 is IUniswapV2Router02 {
-  uint256 internal _amountToReturn;
-  uint256 internal _amountToSwap;
+  mapping(address => uint256) internal _amountToReturn;
+  mapping(address => uint256) internal _amountToSwap;
   mapping(address => mapping(address => mapping(uint256 => uint256))) internal _amountsIn;
   mapping(address => mapping(address => mapping(uint256 => uint256))) internal _amountsOut;
 
-  function setAmountToReturn(uint256 amount) public {
-    _amountToReturn = amount;
+  function setAmountToReturn(address reserve, uint256 amount) public {
+    _amountToReturn[reserve] = amount;
   }
 
-  function setAmountToSwap(uint256 amount) public {
-    _amountToSwap = amount;
+  function setAmountToSwap(address reserve, uint256 amount) public {
+    _amountToSwap[reserve] = amount;
   }
 
   function swapExactTokensForTokens(
@@ -28,29 +28,29 @@ contract MockUniswapV2Router02 is IUniswapV2Router02 {
   ) external override returns (uint256[] memory amounts) {
     IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
 
-    MintableERC20(path[1]).mint(_amountToReturn);
-    IERC20(path[1]).transfer(to, _amountToReturn);
+    MintableERC20(path[1]).mint(_amountToReturn[path[0]]);
+    IERC20(path[1]).transfer(to, _amountToReturn[path[0]]);
 
     amounts = new uint[](path.length);
     amounts[0] = amountIn;
-    amounts[1] = _amountToReturn;
+    amounts[1] = _amountToReturn[path[0]];
   }
 
   function swapTokensForExactTokens(
-    uint /* amountOut */,
+    uint amountOut,
     uint /* amountInMax */,
     address[] calldata path,
     address to,
     uint /* deadline */
   ) external override returns (uint256[] memory amounts) {
-    IERC20(path[0]).transferFrom(msg.sender, address(this), _amountToSwap);
+    IERC20(path[0]).transferFrom(msg.sender, address(this), _amountToSwap[path[0]]);
 
-    MintableERC20(path[1]).mint(_amountToReturn);
-    IERC20(path[1]).transfer(to, _amountToReturn);
+    MintableERC20(path[1]).mint(amountOut);
+    IERC20(path[1]).transfer(to, amountOut);
 
     amounts = new uint[](path.length);
-    amounts[0] = _amountToSwap;
-    amounts[1] = _amountToReturn;
+    amounts[0] = _amountToSwap[path[0]];
+    amounts[1] = amountOut;
   }
 
   function setAmountOut(uint amountIn, address reserveIn, address reserveOut, uint amountOut) public {

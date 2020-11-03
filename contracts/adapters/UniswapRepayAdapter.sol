@@ -147,7 +147,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   bytes32[] s List of s param for the permit signature
    * @return RepayParams struct containing decoded params
    */
-  function _decodeParams(bytes memory params) internal returns (RepayParams memory) {
+  function _decodeParams(bytes memory params) internal pure returns (RepayParams memory) {
     (
       address[] memory assetToSwapToList,
       LeftoverAction leftOverAction,

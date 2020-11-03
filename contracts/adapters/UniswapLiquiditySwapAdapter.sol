@@ -159,7 +159,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   bytes32[] s List of s param for the permit signature
  * @return SwapParams struct containing decoded params
  */
-  function _decodeParams(bytes memory params) internal returns (SwapParams memory) {
+  function _decodeParams(bytes memory params) internal pure returns (SwapParams memory) {
     (
       address[] memory assetToSwapToList,
       uint256[] memory minAmountsToReceive,
