@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {oneRay} from '../helpers/constants';
+import {oneRay, ZERO_ADDRESS} from '../helpers/constants';
 import {IAaveConfiguration, EthereumNetwork, eEthereumNetwork} from '../helpers/types';
 
 import {CommonsConfig} from './commons';
@@ -76,9 +76,9 @@ export const AaveConfig: IAaveConfiguration = {
       ZRX: '0xD0d76886cF8D952ca26177EB7CfDf83bad08C00C',
       SNX: '0x7FDb81B0b8a010dd4FFc57C3fecbf145BA8Bd947',
       BUSD: '0x4c6E1EFC12FDfD568186b7BAEc0A43fFfb4bCcCf',
-      REN: '',
-      YFI: '',
-      UNI: '',
+      REN: ZERO_ADDRESS,
+      YFI: '0x28a8cdD5f533aaC3053d4E97980A7f1e174Db902',
+      UNI: '0x3ad51f7e8B088D32fB1E9DD205Ae4AEFAA5F7169',
     },
     [EthereumNetwork.ropsten]: {
       WETH: '0xc778417e063141139fce010982780140aa0cd5ab',
@@ -98,9 +98,9 @@ export const AaveConfig: IAaveConfiguration = {
       ZRX: '0x02d7055704EfF050323A2E5ee4ba05DB2A588959',
       SNX: '0xF80Aa7e2Fda4DA065C55B8061767F729dA1476c7',
       BUSD: '0xFA6adcFf6A90c11f31Bc9bb59eC0a6efB38381C6',
-      REN: '',
-      YFI: '',
-      UNI: '',
+      REN: ZERO_ADDRESS,
+      YFI: '0xcAE8C8ee90791af9BB66879FD9493e13abBe4b0e',
+      UNI: ZERO_ADDRESS,
     },
     [EthereumNetwork.main]: {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
