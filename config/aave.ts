@@ -54,6 +54,7 @@ export const AaveConfig: IAaveConfiguration = {
     UNI: strategyUNI,
     BUSD: stablecoinStrategyBUSD,
     REN: strategyREN,
+    ENJ: strategyREN,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -76,9 +77,10 @@ export const AaveConfig: IAaveConfiguration = {
       ZRX: '0xD0d76886cF8D952ca26177EB7CfDf83bad08C00C',
       SNX: '0x7FDb81B0b8a010dd4FFc57C3fecbf145BA8Bd947',
       BUSD: '0x4c6E1EFC12FDfD568186b7BAEc0A43fFfb4bCcCf',
-      REN: ZERO_ADDRESS,
-      YFI: '0x28a8cdD5f533aaC3053d4E97980A7f1e174Db902',
-      UNI: '0x3ad51f7e8B088D32fB1E9DD205Ae4AEFAA5F7169',
+      REN: '0x5eebf65A6746eed38042353Ba84c8e37eD58Ac6f',
+      YFI: '0xb7c325266ec274fEb1354021D27FA3E3379D840d',
+      UNI: '0x075A36BA8846C6B6F53644fDd3bf17E5151789DC',
+      ENJ: '0xC64f90Cd7B564D3ab580eb20a102A8238E218be2',
     },
     [EthereumNetwork.ropsten]: {
       WETH: '0xc778417e063141139fce010982780140aa0cd5ab',
@@ -99,8 +101,9 @@ export const AaveConfig: IAaveConfiguration = {
       SNX: '0xF80Aa7e2Fda4DA065C55B8061767F729dA1476c7',
       BUSD: '0xFA6adcFf6A90c11f31Bc9bb59eC0a6efB38381C6',
       REN: ZERO_ADDRESS,
-      YFI: '0xcAE8C8ee90791af9BB66879FD9493e13abBe4b0e',
+      YFI: ZERO_ADDRESS,
       UNI: ZERO_ADDRESS,
+      ENJ: ZERO_ADDRESS,
     },
     [EthereumNetwork.main]: {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
@@ -123,6 +126,7 @@ export const AaveConfig: IAaveConfiguration = {
       REN: '0x408e41876cCCDC0F92210600ef50372656052a38',
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       UNI: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+      ENJ: '0xF629cBd94d3791C9250152BD8dfBDF380E2a3B9c',
     },
   },
 };

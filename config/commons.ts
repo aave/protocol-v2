@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import {zeroPad} from 'ethers/lib/utils';
 import {oneEther, oneRay, RAY, ZERO_ADDRESS} from '../helpers/constants';
 import {ICommonConfiguration, EthereumNetwork, eEthereumNetwork} from '../helpers/types';
 
@@ -24,6 +25,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   REN: oneEther.multipliedBy('0.00065133').toFixed(),
   UNI: oneEther.multipliedBy('0.00536479').toFixed(),
+  ENJ: oneEther.multipliedBy('0.00029560').toFixed(),
   UNI_DAI_ETH: oneEther.multipliedBy('2.1').toFixed(),
   UNI_USDC_ETH: oneEther.multipliedBy('2.1').toFixed(),
   UNI_SETH_ETH: oneEther.multipliedBy('2.1').toFixed(),
@@ -197,6 +199,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0xe45f3ed2218E7e411bf8DFdE66069e57F46b26eF',
       REN: ZERO_ADDRESS,
       UNI: ZERO_ADDRESS,
+      ENJ: '0xfaDbe2ee798889F02d1d39eDaD98Eff4c7fe95D4',
       UNI_DAI_ETH: '0x0338C40020Bf886c11406115fD1ba205Ef1D9Ff9',
       UNI_USDC_ETH: '0x7f5E5D34591e9a70D187BBA94260C30B92aC0961',
       UNI_SETH_ETH: '0xc5F1eA001c1570783b3af418fa775237Eb129EDC',
@@ -225,6 +228,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: ZERO_ADDRESS,
       REN: ZERO_ADDRESS,
       UNI: ZERO_ADDRESS,
+      ENJ: ZERO_ADDRESS,
       UNI_DAI_ETH: '0x16048819e3f77b7112eB033624A0bA9d33743028',
       UNI_USDC_ETH: '0x6952A2678D574073DB97963886c2F38CD09C8Ba3',
       UNI_SETH_ETH: '0x23Ee5188806BD2D31103368B0EA0259bc6706Af1',
@@ -253,6 +257,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       REN: '0x3147D7203354Dc06D9fd350c7a2437bcA92387a4',
       UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e',
+      ENJ: '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B',
       UNI_DAI_ETH: '0x1bAB293850289Bf161C5DA79ff3d1F02A950555b',
       UNI_USDC_ETH: '0x444315Ee92F2bb3579293C17B07194227fA99bF0',
       UNI_SETH_ETH: '0x517D40E49660c7705b2e99eEFA6d7B0E9Ba5BF10',
