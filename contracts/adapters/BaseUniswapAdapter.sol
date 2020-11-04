@@ -42,6 +42,10 @@ contract BaseUniswapAdapter {
 
   // Max slippage percent allowed
   uint256 public constant MAX_SLIPPAGE_PERCENT = 3000; // 30%
+  // FLash Loan fee set in lending pool
+  uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
+  // USD oracle asset address
+  address public constant USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
 
   ILendingPool public immutable POOL;
   IPriceOracleGetter public immutable ORACLE;
@@ -56,24 +60,39 @@ contract BaseUniswapAdapter {
   }
 
   /**
- * @dev Given an input asset amount, returns the maximum output amount of the other asset
+ * @dev Given an input asset amount, returns the maximum output amount of the other asset and the prices
  * @param amountIn Amount of reserveIn
  * @param reserveIn Address of the asset to be swap from
  * @param reserveOut Address of the asset to be swap to
- * @return uint256 amountOut
+ * @return uint256 Amount out fo the reserveOut
+ * @return uint256 The price of out amount denominated in the reserveIn currency (18 decimals)
+ * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
+ * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
  */
-  function getAmountOut(uint256 amountIn, address reserveIn, address reserveOut)
-  public
-  view
-  returns (uint256)
+  function getAmountsOut(uint256 amountIn, address reserveIn, address reserveOut)
+    external
+    view
+    returns (uint256, uint256, uint256, uint256)
   {
-    address[] memory path = new address[](2);
-    path[0] = reserveIn;
-    path[1] = reserveOut;
+    // Subtract flash loan fee
+    uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
 
-    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsOut(amountIn, path);
+    uint256 amountOut = _getAmountsOut(reserveIn, reserveOut, finalAmountIn);
 
-    return amounts[1];
+    uint256 reserveInDecimals = _getDecimals(reserveIn);
+    uint256 reserveOutDecimals = _getDecimals(reserveOut);
+
+    uint256 outPerInPrice = finalAmountIn
+      .mul(10**18)
+      .mul(10**reserveOutDecimals)
+      .div(amountOut.mul(10**reserveInDecimals));
+
+    return (
+      amountOut,
+      outPerInPrice,
+      _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
+      _calcUsdValue(reserveOut, amountOut, reserveOutDecimals)
+    );
   }
 
   /**
@@ -84,9 +103,9 @@ contract BaseUniswapAdapter {
    * @return uint256 amountIn
    */
   function getAmountIn(uint256 amountOut, address reserveIn, address reserveOut)
-  public
-  view
-  returns (uint256)
+    external
+    view
+    returns (uint256)
   {
     address[] memory path = new address[](2);
     path[0] = reserveIn;
@@ -293,5 +312,40 @@ contract BaseUniswapAdapter {
   function _usePermit(PermitSignature memory signature) internal pure returns (bool) {
     return !(uint256(signature.deadline) == uint256(signature.v) &&
       uint256(signature.deadline) == 0);
+  }
+
+  /**
+   * @dev Calculates the value denominated in USD
+   * @param reserve Address of the reserve
+   * @param amount Amount of the reserve
+   * @param decimals Decimals of the reserve
+   * @return whether or not permit should be called
+   */
+  function _calcUsdValue(address reserve, uint256 amount, uint256 decimals) internal view returns (uint256) {
+    uint256 ethUsdPrice = _getPrice(USD_ADDRESS);
+    uint256 reservePrice = _getPrice(reserve);
+
+    return amount
+    .mul(reservePrice)
+    .div(10**decimals)
+    .mul(ethUsdPrice)
+    .div(10**18);
+  }
+
+  /**
+   * @dev Given an input asset amount, returns the maximum output amount of the other asset
+   * @param reserveIn Address of the asset to be swap from
+   * @param reserveOut Address of the asset to be swap to
+   * @param amountIn Amount of reserveIn
+   * @return the output amount
+   */
+  function _getAmountsOut(address reserveIn, address reserveOut, uint256 amountIn) internal view returns (uint256) {
+    address[] memory path = new address[](2);
+    path[0] = reserveIn;
+    path[1] = reserveOut;
+
+    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsOut(amountIn, path);
+
+    return amounts[1];
   }
 }
