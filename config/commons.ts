@@ -278,7 +278,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]:
       '0x95b73a72c6ecf4ccbbba5178800023260bad8e75cdccdb8e4827a2977a37c820',
     [eEthereumNetwork.buidlerevm]:
-      '0xb2330c7bbc626184eddb8c084eaff33898393166dc493ce4251c287ddbe95b1a',
+      '0x92d0d54f437b6e70937ecba8ac80fc3b6767cf26bc725820e937d5a78427c2d1',
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
