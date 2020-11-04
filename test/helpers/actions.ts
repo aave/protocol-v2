@@ -302,7 +302,7 @@ export const delegateBorrowAllowance = async (
   const reserveData = await pool.getReserveData(reserveAddress);
 
   const debtToken =
-    interestRateMode === 'stable'
+    interestRateMode === '1'
       ? await getStableDebtToken(reserveData.stableDebtTokenAddress)
       : await getVariableDebtToken(reserveData.variableDebtTokenAddress);
 
@@ -310,15 +310,15 @@ export const delegateBorrowAllowance = async (
     .connect(user.signer)
     .approveDelegation(receiver, amountToDelegate);
 
-  if (expectedResult === 'revert') {
-    await expect(delegateAllowancePromise, revertMessage).to.be.reverted;
+  if (expectedResult === 'revert' && revertMessage) {
+    await expect(delegateAllowancePromise, revertMessage).to.be.revertedWith(revertMessage);
     return;
   } else {
     await delegateAllowancePromise;
     const allowance = await debtToken.borrowAllowance(user.address, receiver);
     expect(allowance.toString()).to.be.equal(
       amountToDelegate,
-      'borrowAllowance are set incorrectly'
+      'borrowAllowance is set incorrectly'
     );
   }
 };

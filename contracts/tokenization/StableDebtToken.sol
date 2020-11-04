@@ -5,7 +5,6 @@ import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
-import '@nomiclabs/buidler/console.sol';
 
 /**
  * @title contract StableDebtToken
@@ -106,8 +105,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     if (user != onBehalfOf) {
       _decreaseBorrowAllowance(onBehalfOf, user, amount);
     }
-
-    console.log('Invoked mint for %s and %s', user, onBehalfOf);
 
     //cumulates the user debt
     (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(onBehalfOf);
