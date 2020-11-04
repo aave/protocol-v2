@@ -87,6 +87,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
+  const mockTokenAddress = Object.keys(mockTokens).reduce<{[key: string]: string}>((acc, key) => {
+    acc[key] = mockTokens[key].address;
+    return acc;
+  }, {});
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
   await waitForTx(await addressesProvider.setAaveAdmin(aaveAdmin));
@@ -147,7 +151,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       ZRX: mockTokens.ZRX.address,
       SNX: mockTokens.SNX.address,
       BUSD: mockTokens.BUSD.address,
-
+      YFI: mockTokens.BUSD.address,
+      REN: mockTokens.REN.address,
+      UNI: mockTokens.UNI.address,
       USD: USD_ADDRESS,
 
       UNI_DAI_ETH: mockTokens.UNI_DAI_ETH.address,

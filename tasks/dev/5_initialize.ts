@@ -37,7 +37,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     const addressesProvider = await getLendingPoolAddressesProvider();
 
     const protoPoolReservesAddresses = <{[symbol: string]: tEthereumAddress}>(
-      filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI'))
+      filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI_'))
     );
 
     const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);

@@ -127,7 +127,7 @@ export const getLendingRateOracle = async (address?: tEthereumAddress) =>
   );
 
 export const getMockedTokens = async (config: PoolConfiguration) => {
-  const tokenSymbols = config.ReserveSymbols;
+  const tokenSymbols = Object.keys(config.ReservesConfig);
   const db = getDb();
   const tokens: MockTokenMap = await tokenSymbols.reduce<Promise<MockTokenMap>>(
     async (acc, tokenSymbol) => {

@@ -381,7 +381,7 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
 
   const configData = config.ReservesConfig;
 
-  for (const tokenSymbol of Object.keys(config.ReserveSymbols)) {
+  for (const tokenSymbol of Object.keys(configData)) {
     tokens[tokenSymbol] = await deployMintableERC20(
       [
         tokenSymbol,

@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {oneEther, oneRay, RAY} from '../helpers/constants';
+import {oneEther, oneRay, RAY, ZERO_ADDRESS} from '../helpers/constants';
 import {ICommonConfiguration, EthereumNetwork, eEthereumNetwork} from '../helpers/types';
 
 const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
@@ -21,6 +21,9 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
   WETH: oneEther.toFixed(),
   USD: '5848466240000000',
+  YFI: oneEther.multipliedBy('22.407436').toFixed(),
+  REN: oneEther.multipliedBy('0.00065133').toFixed(),
+  UNI: oneEther.multipliedBy('0.00536479').toFixed(),
   UNI_DAI_ETH: oneEther.multipliedBy('2.1').toFixed(),
   UNI_USDC_ETH: oneEther.multipliedBy('2.1').toFixed(),
   UNI_SETH_ETH: oneEther.multipliedBy('2.1').toFixed(),
@@ -35,7 +38,6 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 export const CommonsConfig: ICommonConfiguration = {
   ConfigName: 'Commons',
   ProviderId: 0,
-  ReserveSymbols: [],
   ProtocolGlobalParams: {
     OptimalUtilizationRate: new BigNumber(0.8).times(RAY),
     ExcessUtilizationRate: new BigNumber(0.2).times(RAY),
@@ -108,6 +110,15 @@ export const CommonsConfig: ICommonConfiguration = {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     SNX: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    YFI: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    REN: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    UNI: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     BUSD: {
@@ -183,6 +194,9 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0x775E76cca1B5bc903c9a8C6f77416A35E5744664',
       BUSD: '0x63294A05C9a81b1A40CAD3f2ff30617111630393',
       USD: '0xD21912D8762078598283B14cbA40Cb4bFCb87581',
+      YFI: '0xe45f3ed2218E7e411bf8DFdE66069e57F46b26eF',
+      REN: ZERO_ADDRESS,
+      UNI: ZERO_ADDRESS,
       UNI_DAI_ETH: '0x0338C40020Bf886c11406115fD1ba205Ef1D9Ff9',
       UNI_USDC_ETH: '0x7f5E5D34591e9a70D187BBA94260C30B92aC0961',
       UNI_SETH_ETH: '0xc5F1eA001c1570783b3af418fa775237Eb129EDC',
@@ -208,6 +222,9 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0xA95674a8Ed9aa9D2E445eb0024a9aa05ab44f6bf',
       BUSD: '0x0A32D96Ff131cd5c3E0E5AAB645BF009Eda61564',
       USD: '0x8468b2bDCE073A157E560AA4D9CcF6dB1DB98507',
+      YFI: ZERO_ADDRESS,
+      REN: ZERO_ADDRESS,
+      UNI: ZERO_ADDRESS,
       UNI_DAI_ETH: '0x16048819e3f77b7112eB033624A0bA9d33743028',
       UNI_USDC_ETH: '0x6952A2678D574073DB97963886c2F38CD09C8Ba3',
       UNI_SETH_ETH: '0x23Ee5188806BD2D31103368B0EA0259bc6706Af1',
@@ -233,6 +250,9 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0xE23d1142dE4E83C08bb048bcab54d50907390828',
       BUSD: '0x5d4BB541EED49D0290730b4aB332aA46bd27d888',
       USD: '0x59b826c214aBa7125bFA52970d97736c105Cc375',
+      YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
+      REN: '0x3147D7203354Dc06D9fd350c7a2437bcA92387a4',
+      UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e',
       UNI_DAI_ETH: '0x1bAB293850289Bf161C5DA79ff3d1F02A950555b',
       UNI_USDC_ETH: '0x444315Ee92F2bb3579293C17B07194227fA99bF0',
       UNI_SETH_ETH: '0x517D40E49660c7705b2e99eEFA6d7B0E9Ba5BF10',
@@ -253,7 +273,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]:
       '0x95b73a72c6ecf4ccbbba5178800023260bad8e75cdccdb8e4827a2977a37c820',
     [eEthereumNetwork.buidlerevm]:
-      '0x76cbbf8aa4b11a7c207dd79ccf8c394f59475301598c9a083f8258b4fafcfa86',
+      '0xb2330c7bbc626184eddb8c084eaff33898393166dc493ce4251c287ddbe95b1a',
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',

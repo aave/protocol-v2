@@ -187,8 +187,10 @@ export interface iAssetBase<T> {
   ZRX: T;
   SNX: T;
   BUSD: T;
-
+  YFI: T;
+  UNI: T;
   USD: T;
+  REN: T;
 
   UNI_DAI_ETH: T;
   UNI_USDC_ETH: T;
@@ -221,6 +223,9 @@ export type iAavePoolAssets<T> = Pick<
   | 'SNX'
   | 'BUSD'
   | 'WETH'
+  | 'YFI'
+  | 'UNI'
+  | 'REN'
 >;
 
 export type iUniAssets<T> = Pick<
@@ -264,9 +269,12 @@ export enum TokenContractId {
   KNC = 'KNC',
   MANA = 'MANA',
   REP = 'REP',
+  REN = 'REN',
   SNX = 'SNX',
   BUSD = 'BUSD',
   USD = 'USD',
+  YFI = 'YFI',
+  UNI = 'UNI',
   UNI_DAI_ETH = 'UNI_DAI_ETH',
   UNI_USDC_ETH = 'UNI_USDC_ETH',
   UNI_SETH_ETH = 'UNI_SETH_ETH',
@@ -362,7 +370,6 @@ export interface ILendingRate {
 export interface ICommonConfiguration {
   ConfigName: string;
   ProviderId: number;
-  ReserveSymbols: string[];
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
