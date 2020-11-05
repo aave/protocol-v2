@@ -5,7 +5,12 @@ import {
   deployLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-deployments';
 import {waitForTx} from '../../helpers/misc-utils';
-import {ConfigNames, loadPoolConfig, getGenesisAaveAdmin} from '../../helpers/configuration';
+import {
+  ConfigNames,
+  loadPoolConfig,
+  getGenesisPoolAdmin,
+  getEmergencyAdmin,
+} from '../../helpers/configuration';
 import {eEthereumNetwork} from '../../helpers/types';
 import {getLendingPoolAddressesProviderRegistry} from '../../helpers/contracts-getters';
 
@@ -24,7 +29,11 @@ task(
     const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
     // Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
-    await waitForTx(await addressesProvider.setAaveAdmin(await getGenesisAaveAdmin(poolConfig)));
+    await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
+    const admin = await getEmergencyAdmin(poolConfig);
+    console.log('Admin is ', admin);
+
+    await waitForTx(await addressesProvider.setEmergencyAdmin(admin));
 
     // If no provider registry is set, deploy lending pool address provider registry and register the address provider
     const addressesProviderRegistry = !providerRegistryAddress

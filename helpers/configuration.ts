@@ -63,16 +63,29 @@ export const getFeeDistributionParamsCommon = (
   };
 };
 
-export const getGenesisAaveAdmin = async (config: ICommonConfiguration) => {
+export const getGenesisPoolAdmin = async (config: ICommonConfiguration) => {
   const currentNetwork = BRE.network.name;
-  const targetAddress = getParamPerNetwork(config.AaveAdmin, <eEthereumNetwork>currentNetwork);
+  const targetAddress = getParamPerNetwork(config.PoolAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
   const addressList = await Promise.all(
     (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
-  const addressIndex = config.AaveAdminIndex;
+  const addressIndex = config.PoolAdminIndex;
+  return addressList[addressIndex];
+};
+
+export const getEmergencyAdmin = async (config: ICommonConfiguration) => {
+  const currentNetwork = BRE.network.name;
+  const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eEthereumNetwork>currentNetwork);
+  if (targetAddress) {
+    return targetAddress;
+  }
+  const addressList = await Promise.all(
+    (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
+  const addressIndex = config.EmergencyAdminIndex;
   return addressList[addressIndex];
 };
 

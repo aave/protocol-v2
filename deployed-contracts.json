@@ -157,31 +157,31 @@
   },
   "LendingPoolAddressesProviderRegistry": {
     "buidlerevm": {
-      "address": "0x5A0773Ff307Bf7C71a832dBB5312237fD3437f9F",
+      "address": "0x18b9306737eaf6E8FC8e737F488a1AE077b18053",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "ReserveLogic": {
     "buidlerevm": {
-      "address": "0x78Ee8Fb9fE5abD5e347Fc94c2fb85596d1f60e3c",
+      "address": "0x920d847fE49E54C19047ba8bc236C45A8068Bca7",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "GenericLogic": {
     "buidlerevm": {
-      "address": "0x920d847fE49E54C19047ba8bc236C45A8068Bca7",
+      "address": "0xA4765Ff72A9F3CfE73089bb2c3a41B838DF71574",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "ValidationLogic": {
     "buidlerevm": {
-      "address": "0xA4765Ff72A9F3CfE73089bb2c3a41B838DF71574",
+      "address": "0x35c1419Da7cf0Ff885B8Ef8EA9242FEF6800c99b",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "LendingPool": {
     "buidlerevm": {
-      "address": "0x35c1419Da7cf0Ff885B8Ef8EA9242FEF6800c99b",
+      "address": "0xe2607EabC87fd0A4856840bF23da8458cDF0434F",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
@@ -192,59 +192,59 @@
   },
   "StableAndVariableTokensHelper": {
     "buidlerevm": {
-      "address": "0x0C6c3C47A1f650809B0D1048FDf9603e09473D7E",
+      "address": "0x06bA8d8af0dF898D0712DffFb0f862cC51AF45c2",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "ATokensAndRatesHelper": {
     "buidlerevm": {
-      "address": "0x920d847fE49E54C19047ba8bc236C45A8068Bca7",
+      "address": "0xA4765Ff72A9F3CfE73089bb2c3a41B838DF71574",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "PriceOracle": {
     "buidlerevm": {
-      "address": "0xb682dEEf4f8e298d86bFc3e21f50c675151FB974",
+      "address": "0x1750499D05Ed1674d822430FB960d5F6731fDf64",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "MockAggregator": {
     "buidlerevm": {
-      "address": "0x3D8FFB457fedDFBc760F3F243283F52692b579B1",
+      "address": "0xEC1C93A9f6a9e18E97784c76aC52053587FcDB89",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "ChainlinkProxyPriceProvider": {
     "buidlerevm": {
-      "address": "0xEC1C93A9f6a9e18E97784c76aC52053587FcDB89",
+      "address": "0x7B6C3e5486D9e6959441ab554A889099eed76290",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "LendingRateOracle": {
     "buidlerevm": {
-      "address": "0xAF6BA11790D1942625C0c2dA07da19AB63845cfF",
+      "address": "0xD83D2773a7873ae2b5f8Fb92097e20a8C64F691E",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "AaveProtocolTestHelpers": {
     "buidlerevm": {
-      "address": "0xf4830d6b1D70C8595d3BD8A63f9ed9F636DB9ef2"
+      "address": "0xd5C35F41baD857A2D4F34D7554E78d0391BAcEDF"
     }
   },
   "LendingPoolCollateralManager": {
     "buidlerevm": {
-      "address": "0x8D0206fEBEB380486729b64bB4cfEDC5b354a6D6",
+      "address": "0x3c5408De7435Dfa3eB2aF2Edf5E39385f68F69b2",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "MockFlashLoanReceiver": {
     "buidlerevm": {
-      "address": "0xfC88832bac6AbdF216BC5A67be68E9DE94aD5ba2"
+      "address": "0x1256eBA4d0a7A38D10BaF4F61775ba491Ce7EE25"
     }
   },
   "WalletBalanceProvider": {
     "buidlerevm": {
-      "address": "0x1256eBA4d0a7A38D10BaF4F61775ba491Ce7EE25",
+      "address": "0x77B0b5636fEA30eA79BB65AeCCdb599997A849A8",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
@@ -268,13 +268,13 @@
   },
   "MintableDelegationERC20": {
     "buidlerevm": {
-      "address": "0x77B0b5636fEA30eA79BB65AeCCdb599997A849A8",
+      "address": "0x78Ee8Fb9fE5abD5e347Fc94c2fb85596d1f60e3c",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   },
   "AToken": {
     "buidlerevm": {
-      "address": "0x78Ee8Fb9fE5abD5e347Fc94c2fb85596d1f60e3c",
+      "address": "0x920d847fE49E54C19047ba8bc236C45A8068Bca7",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     }
   }

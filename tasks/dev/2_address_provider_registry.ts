@@ -16,7 +16,7 @@ task(
     const admin = await (await localBRE.ethers.getSigners())[0].getAddress();
 
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
-    await waitForTx(await addressesProvider.setAaveAdmin(admin));
+    await waitForTx(await addressesProvider.setPoolAdmin(admin));
 
     const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry(verify);
     await waitForTx(

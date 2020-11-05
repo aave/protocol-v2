@@ -118,15 +118,23 @@ export const CommonsConfig: ICommonConfiguration = {
   // COMMON PROTOCOL ADDRESSES ACROSS POOLS
   // ----------------
 
-  // If lendingPoolManagerAddress is set, will take priority over lendingPoolManagerAddressIndex
-  AaveAdmin: {
+  // If PoolAdmin/emergencyAdmin is set, will take priority over PoolAdminIndex/emergencyAdminIndex
+  PoolAdmin: {
     [eEthereumNetwork.coverage]: undefined,
     [eEthereumNetwork.buidlerevm]: undefined,
     [eEthereumNetwork.kovan]: undefined,
     [eEthereumNetwork.ropsten]: undefined,
     [eEthereumNetwork.main]: undefined,
   },
-  AaveAdminIndex: 0,
+  PoolAdminIndex: 0,
+  EmergencyAdmin: {
+    [eEthereumNetwork.coverage]: undefined,
+    [eEthereumNetwork.buidlerevm]: undefined,
+    [eEthereumNetwork.kovan]: undefined,
+    [eEthereumNetwork.ropsten]: undefined,
+    [eEthereumNetwork.main]: undefined,
+  },
+  EmergencyAdminIndex: 1,
   ProviderRegistry: {
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',

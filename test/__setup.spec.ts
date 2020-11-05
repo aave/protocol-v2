@@ -24,7 +24,7 @@ import {
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {getReservesConfigByPool} from '../helpers/configuration';
+import {getEmergencyAdmin, getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
 
 import {
@@ -32,7 +32,7 @@ import {
   deployAllMockAggregators,
   setInitialMarketRatesInRatesOracleByHelper,
 } from '../helpers/oracles-helpers';
-import {waitForTx} from '../helpers/misc-utils';
+import {BRE, waitForTx} from '../helpers/misc-utils';
 import {
   initReservesByHelper,
   enableReservesToBorrowByHelper,
@@ -89,7 +89,14 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const mockTokens = await deployAllMockTokens(deployer);
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
-  await waitForTx(await addressesProvider.setAaveAdmin(aaveAdmin));
+  await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
+
+  //setting users[1] as emergency admin, which is in position 2 in the BRE addresses list
+  const addressList = await Promise.all(
+    (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
+
+  await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
 
   const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry();
   await waitForTx(
