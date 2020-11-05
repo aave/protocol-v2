@@ -52,12 +52,13 @@ import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contr
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
 import {readArtifact as buidlerReadArtifact} from '@nomiclabs/buidler/plugins';
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
     return buidlerReadArtifact(DRE.config.paths.artifacts, id);
   }
-  return DRE.artifacts.readArtifact(id);
+  return (DRE as HardhatRuntimeEnvironment).artifacts.readArtifact(id);
 };
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(

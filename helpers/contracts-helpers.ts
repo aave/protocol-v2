@@ -125,13 +125,13 @@ export const getParamPerNetwork = <T>(
       return coverage;
     case eEthereumNetwork.buidlerevm:
       return buidlerevm;
+    case eEthereumNetwork.hardhat:
+      return buidlerevm;
     case eEthereumNetwork.kovan:
       return kovan;
     case eEthereumNetwork.ropsten:
       return ropsten;
     case eEthereumNetwork.main:
-      return main;
-    default:
       return main;
   }
 };

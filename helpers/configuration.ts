@@ -87,11 +87,13 @@ export const getWethAddress = async (config: ICommonConfiguration) => {
   const currentNetwork = DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WETH, <eEthereumNetwork>currentNetwork);
   if (wethAddress) {
+    console.log('here', wethAddress);
     return wethAddress;
   }
   if (currentNetwork.includes('main')) {
     throw new Error('WETH not set at mainnet configuration.');
   }
   const weth = await deployWETHMocked();
+  console.log('here2');
   return weth.address;
 };

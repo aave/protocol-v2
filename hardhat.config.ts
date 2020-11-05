@@ -23,7 +23,6 @@ const MNEMONIC = process.env.MNEMONIC || '';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  console.log('NOT SKPP');
   ['misc', 'migrations', 'dev', 'full'].forEach((folder) => {
     const tasksPath = path.join(__dirname, 'tasks', folder);
     fs.readdirSync(tasksPath)
