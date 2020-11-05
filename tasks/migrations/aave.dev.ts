@@ -1,17 +1,14 @@
 import {task} from 'hardhat/config';
 import {checkVerification} from '../../helpers/etherscan-verification';
-console.log('ji');
 import {ConfigNames} from '../../helpers/configuration';
-console.log('pi');
 import {printContracts} from '../../helpers/misc-utils';
-console.log('i');
 
 task('aave:dev', 'Deploy development enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     const POOL_NAME = ConfigNames.Aave;
 
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {

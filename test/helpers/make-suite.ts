@@ -1,4 +1,4 @@
-import {evmRevert, evmSnapshot, BRE} from '../../helpers/misc-utils';
+import {evmRevert, evmSnapshot, DRE} from '../../helpers/misc-utils';
 import {Signer} from 'ethers';
 import {
   getLendingPool,
@@ -59,7 +59,7 @@ export interface TestEnv {
 
 let buidlerevmSnapshotId: string = '0x1';
 const setBuidlerevmSnapshotId = (id: string) => {
-  if (BRE.network.name === 'hardhat') {
+  if (DRE.network.name === 'hardhat') {
     buidlerevmSnapshotId = id;
   }
 };

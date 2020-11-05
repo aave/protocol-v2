@@ -10,7 +10,7 @@ task('aave:full', 'Deploy development enviroment')
     const POOL_NAME = ConfigNames.Aave;
     const network = <EthereumNetworkNames>localBRE.network.name;
 
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {

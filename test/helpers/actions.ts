@@ -21,7 +21,7 @@ import {convertToCurrencyDecimals} from '../../helpers/contracts-helpers';
 import {getAToken, getMintableErc20} from '../../helpers/contracts-getters';
 import {MAX_UINT_AMOUNT, ONE_YEAR} from '../../helpers/constants';
 import {SignerWithAddress, TestEnv} from './make-suite';
-import {BRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';
+import {DRE, increaseTime, timeLatest, waitForTx} from '../../helpers/misc-utils';
 
 import chai from 'chai';
 import {ReserveData, UserReserveData} from './utils/interfaces';
@@ -729,9 +729,9 @@ export const getTxCostAndTimestamp = async (tx: ContractReceipt) => {
   if (!tx.blockNumber || !tx.transactionHash || !tx.cumulativeGasUsed) {
     throw new Error('No tx blocknumber');
   }
-  const txTimestamp = new BigNumber((await BRE.ethers.provider.getBlock(tx.blockNumber)).timestamp);
+  const txTimestamp = new BigNumber((await DRE.ethers.provider.getBlock(tx.blockNumber)).timestamp);
 
-  const txInfo = await BRE.ethers.provider.getTransaction(tx.transactionHash);
+  const txInfo = await DRE.ethers.provider.getTransaction(tx.transactionHash);
   const txCost = new BigNumber(tx.cumulativeGasUsed.toString()).multipliedBy(
     txInfo.gasPrice.toString()
   );

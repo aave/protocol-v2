@@ -24,7 +24,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({verify, pool}, localBRE) => {
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
     const poolConfig = loadPoolConfig(pool);
     const {
       Mocks: {ChainlinkAggregatorPrices, AllAssetsInitialPrices},

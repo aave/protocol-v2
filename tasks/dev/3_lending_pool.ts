@@ -17,7 +17,7 @@ import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 task('dev:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 

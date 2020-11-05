@@ -1,10 +1,11 @@
 import path from 'path';
 import fs from 'fs';
-import {usePlugin} from '@nomiclabs/buidler/config';
+import {usePlugin, task} from '@nomiclabs/buidler/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
 import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
+import {setDRE} from './helpers/misc-utils';
 
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');
@@ -22,15 +23,12 @@ const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 
-// Prevent to load scripts before compilation and typechain
-if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full'].forEach((folder) => {
-    const tasksPath = path.join(__dirname, 'tasks', folder);
-    fs.readdirSync(tasksPath)
-      .filter((pth) => pth.includes('.ts'))
-      .forEach((task) => require(`${tasksPath}/${task}`));
-  });
-}
+task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).setAction(
+  async (_, _DRE) => {
+    setDRE(_DRE);
+    return _DRE;
+  }
+);
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {

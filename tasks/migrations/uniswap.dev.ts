@@ -7,7 +7,7 @@ task('uniswap:dev', 'Deploy development enviroment')
   .setAction(async ({verify}, localBRE) => {
     const POOL_NAME = ConfigNames.Uniswap;
 
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {
