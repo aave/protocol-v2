@@ -59,6 +59,10 @@ export enum eContractid {
   TokenDistributor = 'TokenDistributor',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
+  WETHGateway = 'WETHGateway',
+  WETH = 'WETH',
+  WETHMocked = 'WETHMocked',
+  SelfdestructTransferMock = 'SelfdestructTransferMock',
 }
 
 /*
@@ -176,7 +180,7 @@ export interface iAssetBase<T> {
   USDC: T;
   USDT: T;
   SUSD: T;
-  LEND: T;
+  AAVE: T;
   BAT: T;
   REP: T;
   MKR: T;
@@ -187,8 +191,11 @@ export interface iAssetBase<T> {
   ZRX: T;
   SNX: T;
   BUSD: T;
-
+  YFI: T;
+  UNI: T;
   USD: T;
+  REN: T;
+  ENJ: T;
 
   UNI_DAI_ETH: T;
   UNI_USDC_ETH: T;
@@ -209,7 +216,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'USDC'
   | 'USDT'
   | 'SUSD'
-  | 'LEND'
+  | 'AAVE'
   | 'BAT'
   | 'REP'
   | 'MKR'
@@ -221,6 +228,10 @@ export type iAavePoolAssets<T> = Pick<
   | 'SNX'
   | 'BUSD'
   | 'WETH'
+  | 'YFI'
+  | 'UNI'
+  | 'REN'
+  | 'ENJ'
 >;
 
 export type iUniAssets<T> = Pick<
@@ -250,7 +261,7 @@ export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
 export enum TokenContractId {
   DAI = 'DAI',
-  LEND = 'LEND',
+  AAVE = 'AAVE',
   TUSD = 'TUSD',
   BAT = 'BAT',
   WETH = 'WETH',
@@ -264,9 +275,13 @@ export enum TokenContractId {
   KNC = 'KNC',
   MANA = 'MANA',
   REP = 'REP',
+  REN = 'REN',
   SNX = 'SNX',
   BUSD = 'BUSD',
   USD = 'USD',
+  YFI = 'YFI',
+  UNI = 'UNI',
+  ENJ = 'ENJ',
   UNI_DAI_ETH = 'UNI_DAI_ETH',
   UNI_USDC_ETH = 'UNI_USDC_ETH',
   UNI_SETH_ETH = 'UNI_SETH_ETH',
@@ -362,7 +377,6 @@ export interface ILendingRate {
 export interface ICommonConfiguration {
   ConfigName: string;
   ProviderId: number;
-  ReserveSymbols: string[];
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
@@ -378,6 +392,7 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   ProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+  WETH: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

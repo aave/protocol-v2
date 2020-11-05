@@ -136,13 +136,13 @@
       ]
     },
     {
-      "description": "User 1 Deposits 1000 LEND, disables WETH as collateral. Should revert as 1000 LEND are not enough to cover the debt (revert expected)",
+      "description": "User 1 Deposits 1000 AAVE, disables WETH as collateral. Should revert as 1000 AAVE are not enough to cover the debt (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LEND",
-            "amount": "1000",
+            "reserve": "AAVE",
+            "amount": "10",
             "user": "1"
           },
           "expected": "success"
@@ -150,7 +150,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LEND",
+            "reserve": "AAVE",
             "user": "1"
           },
           "expected": "success"
@@ -158,9 +158,9 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LEND",
+            "reserve": "AAVE",
 
-            "amount": "1000",
+            "amount": "10",
             "user": "1"
           },
           "expected": "success"
@@ -178,13 +178,13 @@
       ]
     },
     {
-      "description": "User 1 Deposits 64000 more LEND (enough to cover the DAI debt), disables WETH as collateral",
+      "description": "User 1 Deposits 640 more AAVE (enough to cover the DAI debt), disables WETH as collateral",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LEND",
-            "amount": "64000",
+            "reserve": "AAVE",
+            "amount": "640",
             "user": "1"
           },
           "expected": "success"
@@ -192,9 +192,9 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LEND",
+            "reserve": "AAVE",
 
-            "amount": "64000",
+            "amount": "640",
             "user": "1"
           },
           "expected": "success"
@@ -212,12 +212,12 @@
       ]
     },
     {
-      "description": "User 1 disables LEND as collateral (revert expected)",
+      "description": "User 1 disables AAVE as collateral (revert expected)",
       "actions": [
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "LEND",
+            "reserve": "AAVE",
 
             "user": "1",
             "useAsCollateral": "false"

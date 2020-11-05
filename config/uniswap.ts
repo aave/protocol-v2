@@ -12,18 +12,6 @@ export const UniswapConfig: IUniswapConfiguration = {
   ...CommonsConfig,
   ConfigName: 'Uniswap',
   ProviderId: 2,
-  ReserveSymbols: [
-    'WETH',
-    'DAI',
-    'USDC',
-    'USDT',
-    'UNI_DAI_ETH',
-    'UNI_USDC_ETH',
-    'UNI_SETH_ETH',
-    'UNI_LINK_ETH',
-    'UNI_MKR_ETH',
-    'UNI_LEND_ETH',
-  ],
   ReservesConfig: {
     WETH: {
       baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),

@@ -21,7 +21,7 @@ import {
 } from '../../helpers/contracts-getters';
 
 task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
-  .addOptionalParam('verify', 'Verify contracts at Etherscan')
+  .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({verify, pool}, localBRE) => {
     await localBRE.run('set-bre');

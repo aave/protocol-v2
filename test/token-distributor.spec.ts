@@ -126,7 +126,7 @@
 //             .toFixed()
 //         );
 //       } else {
-//         // 1 ether received from "burning" DAI and 264 LEND wei received from the 34% of the 777 LEND amount sent to the token distributor
+//         // 1 ether received from "burning" DAI and 264 AAVE wei received from the 34% of the 777 AAVE amount sent to the token distributor
 //         expect(recipientBurnBalanceAfter).to.be.equal('1000000000000000264');
 //       }
 //     }
@@ -177,7 +177,7 @@
 //         new BigNumber(ethBalancesBefore.receivers[index]).plus(ethAmountToReceiver).toFixed()
 //       );
 //     } else {
-//       // 1 ether received from "burning" DAI, 1 ether from ETH and 264 LEND wei received from the 34% of the 777 LEND amount sent to the token distributor
+//       // 1 ether received from "burning" DAI, 1 ether from ETH and 264 AAVE wei received from the 34% of the 777 AAVE amount sent to the token distributor
 //       expect(recipientBurnBalanceAfter).to.be.equal('2000000000000000264');
 //     }
 //   }
@@ -248,9 +248,9 @@
 //   //   );
 //   // });
 
-//   // it('Mints and transfers LEND to the TokenDistributor', async () => {
+//   // it('Mints and transfers AAVE to the TokenDistributor', async () => {
 //   //   await testAndExecMintAndTransferTokens(
-//   //     _tokenInstances.LEND,
+//   //     _tokenInstances.AAVE,
 //   //     _lendDistributionParams.amountToDistribute,
 //   //     _depositorAddress,
 //   //     _tokenDistributorInstance.address
@@ -259,8 +259,8 @@
 
 //   // it('distribute() for the receivers', async () => {
 //   //   await testAndExecDistributeToken(
-//   //     [_tokenInstances.DAI, _tokenInstances.LEND],
-//   //     _tokenInstances.LEND,
+//   //     [_tokenInstances.DAI, _tokenInstances.AAVE],
+//   //     _tokenInstances.AAVE,
 //   //     _tokenDistributorInstance,
 //   //     [_daiDistributionParams, _lendDistributionParams]
 //   //   );
@@ -269,7 +269,7 @@
 //   // it('Distributes the ETH to the receivers', async () => {
 //   //   await testAndExecDistributeEth(
 //   //     _tokenDistributorInstance,
-//   //     _tokenInstances.LEND,
+//   //     _tokenInstances.AAVE,
 //   //     _ethDistributionParams,
 //   //     _web3
 //   //   );
