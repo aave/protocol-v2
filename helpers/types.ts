@@ -80,7 +80,7 @@ export enum eContractid {
  */
 export enum ProtocolErrors {
   //common errors
-  CALLER_NOT_AAVE_ADMIN = '33', // 'The caller must be the aave admin'
+  CALLER_NOT_POOL_ADMIN = '33', // 'The caller must be the pool admin'
 
   //contract specific errors
   VL_AMOUNT_NOT_GREATER_THAN_0 = '1', // 'Amount must be greater than 0'
@@ -109,7 +109,7 @@ export enum ProtocolErrors {
   LP_NOT_ENOUGH_LIQUIDITY_TO_BORROW = '24', // 'There is not enough liquidity available to borrow'
   LP_REQUESTED_AMOUNT_TOO_SMALL = '25', // 'The requested amount is too small for a FlashLoan.'
   LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26', // 'The actual balance of the protocol is inconsistent'
-  LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The actual balance of the protocol is inconsistent'
+  LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The caller is not the lending pool configurator'
   LP_INCONSISTENT_FLASHLOAN_PARAMS = '28',
   AT_CALLER_MUST_BE_LENDING_POOL = '29', // 'The caller of this function must be a lending pool'
   AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
@@ -122,6 +122,7 @@ export enum ProtocolErrors {
   LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '38', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '39', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_ADDRESSES_PROVIDER_ID = '40', // 'The liquidity of the reserve needs to be 0'
+  LPC_CALLER_NOT_EMERGENCY_ADMIN = '76', // 'The caller must be the emergencya admin'
   LPAPR_PROVIDER_NOT_REGISTERED = '41', // 'Provider is not registered'
   LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '42', // 'Health factor is not below the threshold'
   LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED = '43', // 'The collateral chosen cannot be liquidated'
@@ -388,8 +389,10 @@ export interface ICommonConfiguration {
   ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
-  AaveAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
-  AaveAdminIndex: number;
+  PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
+  PoolAdminIndex: number;
+  EmergencyAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
+  EmergencyAdminIndex: number;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;

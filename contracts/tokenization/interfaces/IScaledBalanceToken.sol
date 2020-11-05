@@ -3,27 +3,6 @@ pragma solidity ^0.6.8;
 
 interface IScaledBalanceToken {
   /**
-   * @dev emitted after the mint action
-   * @param from the address performing the mint
-   * @param value the amount to be minted
-   * @param index the last index of the reserve
-   **/
-  event Mint(address indexed from, uint256 value, uint256 index);
-
-  /**
-   * @dev mints aTokens to user
-   * only lending pools can call this function
-   * @param user the address receiving the minted tokens
-   * @param amount the amount of tokens to mint
-   * @param index the liquidity index
-   */
-  function mint(
-    address user,
-    uint256 amount,
-    uint256 index
-  ) external returns (bool);
-
-  /**
    * @dev returns the principal balance of the user. The principal balance is the last
    * updated stored balance, which does not consider the perpetually accruing interest.
    * @param user the address of the user

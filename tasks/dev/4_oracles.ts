@@ -42,7 +42,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       return prev;
     }, defaultTokenList);
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const admin = await addressesProvider.getAaveAdmin();
+    const admin = await addressesProvider.getPoolAdmin();
 
     const fallbackOracle = await deployPriceOracle(verify);
     await waitForTx(await fallbackOracle.setEthUsdPrice(MockUsdPriceInWei));

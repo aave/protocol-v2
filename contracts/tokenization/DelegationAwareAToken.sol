@@ -25,10 +25,10 @@ contract DelegationAwareAToken is AToken {
   /**
    * @dev only the aave admin can call this function
    **/
-  modifier onlyAaveAdmin {
+  modifier onlyPoolAdmin {
     require(
-      _msgSender() == ILendingPool(POOL).getAddressesProvider().getAaveAdmin(),
-      Errors.CALLER_NOT_AAVE_ADMIN
+      _msgSender() == ILendingPool(POOL).getAddressesProvider().getPoolAdmin(),
+      Errors.CALLER_NOT_POOL_ADMIN
     );
     _;
   }
@@ -66,7 +66,7 @@ contract DelegationAwareAToken is AToken {
    * @dev delegates voting power of the underlying asset to a specific address
    * @param delegatee the address that will receive the delegation
    **/
-  function delegateUnderlyingTo(address delegatee) external onlyAaveAdmin {
+  function delegateUnderlyingTo(address delegatee) external onlyPoolAdmin {
     IDelegationToken(UNDERLYING_ASSET_ADDRESS).delegate(delegatee);
   }
 }

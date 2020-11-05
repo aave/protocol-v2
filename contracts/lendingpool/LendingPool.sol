@@ -167,53 +167,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the borrow allowance of the user
-   * @param asset The underlying asset of the debt token
-   * @param fromUser The user to giving allowance
-   * @param toUser The user to give allowance to
-   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
-   * @return the current allowance of toUser
-   **/
-  function getBorrowAllowance(
-    address fromUser,
-    address toUser,
-    address asset,
-    uint256 interestRateMode
-  ) external override view returns (uint256) {
-    return
-      _borrowAllowance[_reserves[asset].getDebtTokenAddress(interestRateMode)][fromUser][toUser];
-  }
-
-  /**
-   * @dev Sets allowance to borrow on a certain type of debt assets for a certain user address
-   * @param assets The underlying asset of each debt token
-   * @param user The user to give allowance to
-   * @param interestRateModes Types of debt: 1 for stable, 2 for variable
-   * @param amounts Allowance amounts to borrow
-   **/
-  function delegateBorrowAllowance(
-    address[] calldata assets,
-    address user,
-    uint256[] calldata interestRateModes,
-    uint256[] calldata amounts
-  ) external override {
-    _whenNotPaused();
-
-    uint256 countAssets = assets.length;
-    require(
-      countAssets == interestRateModes.length && countAssets == amounts.length,
-      Errors.LP_INCONSISTENT_PARAMS_LENGTH
-    );
-
-    for (uint256 i = 0; i < countAssets; i++) {
-      address debtToken = _reserves[assets[i]].getDebtTokenAddress(interestRateModes[i]);
-      _borrowAllowance[debtToken][msg.sender][user] = amounts[i];
-    }
-
-    emit BorrowAllowanceDelegated(msg.sender, user, assets, interestRateModes, amounts);
-  }
-
-  /**
    * @dev Allows users to borrow a specific amount of the reserve currency, provided that the borrower
    * already deposited enough collateral.
    * @param asset the address of the reserve
@@ -339,6 +292,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
         msg.sender,
+        msg.sender,
         stableDebt,
         reserve.variableBorrowIndex
       );
@@ -350,6 +304,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         reserve.variableBorrowIndex
       );
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+        msg.sender,
         msg.sender,
         variableDebt,
         reserve.currentStableBorrowRate
@@ -411,6 +366,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IStableDebtToken(address(stableDebtToken)).burn(user, stableBorrowBalance);
     IStableDebtToken(address(stableDebtToken)).mint(
+      user,
       user,
       stableBorrowBalance,
       reserve.currentStableBorrowRate
@@ -898,14 +854,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    if (vars.onBehalfOf != msg.sender) {
-      address debtToken = reserve.getDebtTokenAddress(vars.interestRateMode);
-
-      _borrowAllowance[debtToken][vars.onBehalfOf][msg.sender] = _borrowAllowance[debtToken][vars
-        .onBehalfOf][msg.sender]
-        .sub(vars.amount, Errors.LP_BORROW_ALLOWANCE_NOT_ENOUGH);
-    }
-
     reserve.updateState();
 
     //caching the current stable borrow rate
@@ -918,12 +866,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       currentStableRate = reserve.currentStableBorrowRate;
 
       isFirstBorrowing = IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+        vars.user,
         vars.onBehalfOf,
         vars.amount,
         currentStableRate
       );
     } else {
       isFirstBorrowing = IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
+        vars.user,
         vars.onBehalfOf,
         vars.amount,
         reserve.variableBorrowIndex

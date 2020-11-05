@@ -34,7 +34,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
 
-      const admin = await addressesProvider.getAaveAdmin();
+      const admin = await addressesProvider.getPoolAdmin();
       if (!reserveAssets) {
         throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
       }

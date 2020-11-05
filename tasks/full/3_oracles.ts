@@ -33,7 +33,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         Object.keys(ReserveAssets[network]).includes(key)
       );
       const addressesProvider = await getLendingPoolAddressesProvider();
-      const admin = await addressesProvider.getAaveAdmin();
+      const admin = await addressesProvider.getPoolAdmin();
 
       const fallbackOracle = await getParamPerNetwork(FallbackOracle, network);
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);

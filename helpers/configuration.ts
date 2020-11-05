@@ -58,23 +58,36 @@ export const getFeeDistributionParamsCommon = (
   receiver: tEthereumAddress
 ): iBasicDistributionParams => {
   const receivers = [receiver, ZERO_ADDRESS];
-  const percentages = ['2000', '8000'];
+  const percentages = ['200:0', '8000'];
   return {
     receivers,
     percentages,
   };
 };
 
-export const getGenesisAaveAdmin = async (config: ICommonConfiguration) => {
+export const getGenesisPoolAdmin = async (config: ICommonConfiguration) => {
   const currentNetwork = DRE.network.name;
-  const targetAddress = getParamPerNetwork(config.AaveAdmin, <eEthereumNetwork>currentNetwork);
+  const targetAddress = getParamPerNetwork(config.PoolAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
   const addressList = await Promise.all(
     (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
-  const addressIndex = config.AaveAdminIndex;
+  const addressIndex = config.PoolAdminIndex;
+  return addressList[addressIndex];
+};
+
+export const getEmergencyAdmin = async (config: ICommonConfiguration) => {
+  const currentNetwork = DRE.network.name;
+  const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eEthereumNetwork>currentNetwork);
+  if (targetAddress) {
+    return targetAddress;
+  }
+  const addressList = await Promise.all(
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
+  const addressIndex = config.EmergencyAdminIndex;
   return addressList[addressIndex];
 };
 
