@@ -109,7 +109,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const outPerInPrice = amountToSwap
           .mul(parseEther('1'))
-          .mul('1000000')
+          .mul('1000000') // usdc 6 decimals
           .div(expectedUSDCAmount.mul(parseEther('1')));
 
         const lendUsdValue = amountIn
@@ -120,7 +120,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const usdcUsdValue = expectedUSDCAmount
           .mul(usdcPrice)
-          .div('1000000')
+          .div('1000000') // usdc 6 decimals
           .mul(usdPrice)
           .div(parseEther('1'));
 
@@ -144,17 +144,97 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
       });
     });
 
-    describe('getAmountIn', () => {
+    describe('getAmountsIn', () => {
       it('should return the estimated required amountIn for the asset swap', async () => {
-        const {weth, dai, uniswapLiquiditySwapAdapter} = testEnv;
+        const {weth, dai, uniswapLiquiditySwapAdapter, oracle} = testEnv;
+
         const amountIn = parseEther('1');
-        const amountOut = parseEther('2');
+        const flashloanPremium = amountIn.mul(9).div(10000);
+        const amountToSwap = amountIn.sub(flashloanPremium);
+
+        const wethPrice = await oracle.getAssetPrice(weth.address);
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const usdPrice = await oracle.getAssetPrice(USD_ADDRESS);
+
+        const amountOut = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountIn.toString()).div(daiPrice.toString()).toFixed(0)
+        );
+
+        const inPerOutPrice = amountOut
+          .mul(parseEther('1'))
+          .mul(parseEther('1'))
+          .div(amountToSwap.mul(parseEther('1')));
+
+        const ethUsdValue = amountToSwap
+          .mul(wethPrice)
+          .div(parseEther('1'))
+          .mul(usdPrice)
+          .div(parseEther('1'));
+        const daiUsdValue = amountOut
+          .mul(daiPrice)
+          .div(parseEther('1'))
+          .mul(usdPrice)
+          .div(parseEther('1'));
 
         await mockUniswapRouter.setAmountIn(amountOut, weth.address, dai.address, amountIn);
 
-        expect(
-          await uniswapLiquiditySwapAdapter.getAmountIn(amountOut, weth.address, dai.address)
-        ).to.be.eq(amountIn);
+        const result = await uniswapLiquiditySwapAdapter.getAmountsIn(
+          amountOut,
+          weth.address,
+          dai.address
+        );
+
+        expect(result['0']).to.be.eq(amountToSwap);
+        expect(result['1']).to.be.eq(inPerOutPrice);
+        expect(result['2']).to.be.eq(ethUsdValue);
+        expect(result['3']).to.be.eq(daiUsdValue);
+      });
+      it('should work correctly with different decimals', async () => {
+        const {lend, usdc, uniswapLiquiditySwapAdapter, oracle} = testEnv;
+
+        const amountIn = parseEther('10');
+        const flashloanPremium = amountIn.mul(9).div(10000);
+        const amountToSwap = amountIn.sub(flashloanPremium);
+
+        const lendPrice = await oracle.getAssetPrice(lend.address);
+        const usdcPrice = await oracle.getAssetPrice(usdc.address);
+        const usdPrice = await oracle.getAssetPrice(USD_ADDRESS);
+
+        const amountOut = await convertToCurrencyDecimals(
+          usdc.address,
+          new BigNumber(amountToSwap.toString()).div(usdcPrice.toString()).toFixed(0)
+        );
+
+        const inPerOutPrice = amountOut
+          .mul(parseEther('1'))
+          .mul(parseEther('1'))
+          .div(amountToSwap.mul('1000000')); // usdc 6 decimals
+
+        const lendUsdValue = amountToSwap
+          .mul(lendPrice)
+          .div(parseEther('1'))
+          .mul(usdPrice)
+          .div(parseEther('1'));
+
+        const usdcUsdValue = amountOut
+          .mul(usdcPrice)
+          .div('1000000') // usdc 6 decimals
+          .mul(usdPrice)
+          .div(parseEther('1'));
+
+        await mockUniswapRouter.setAmountIn(amountOut, lend.address, usdc.address, amountIn);
+
+        const result = await uniswapLiquiditySwapAdapter.getAmountsIn(
+          amountOut,
+          lend.address,
+          usdc.address
+        );
+
+        expect(result['0']).to.be.eq(amountToSwap);
+        expect(result['1']).to.be.eq(inPerOutPrice);
+        expect(result['2']).to.be.eq(lendUsdValue);
+        expect(result['3']).to.be.eq(usdcUsdValue);
       });
     });
   });

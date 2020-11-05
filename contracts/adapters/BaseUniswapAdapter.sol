@@ -40,6 +40,13 @@ contract BaseUniswapAdapter {
     bytes32 s;
   }
 
+  struct AmountCalc {
+    uint256 calculatedAmount;
+    uint256 relativePrice;
+    uint256 amountInUsd;
+    uint256 amountOutUsd;
+  }
+
   // Max slippage percent allowed
   uint256 public constant MAX_SLIPPAGE_PERCENT = 3000; // 30%
   // FLash Loan fee set in lending pool
@@ -64,7 +71,7 @@ contract BaseUniswapAdapter {
  * @param amountIn Amount of reserveIn
  * @param reserveIn Address of the asset to be swap from
  * @param reserveOut Address of the asset to be swap to
- * @return uint256 Amount out fo the reserveOut
+ * @return uint256 Amount out of the reserveOut
  * @return uint256 The price of out amount denominated in the reserveIn currency (18 decimals)
  * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
  * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
@@ -74,46 +81,39 @@ contract BaseUniswapAdapter {
     view
     returns (uint256, uint256, uint256, uint256)
   {
-    // Subtract flash loan fee
-    uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
-
-    uint256 amountOut = _getAmountsOut(reserveIn, reserveOut, finalAmountIn);
-
-    uint256 reserveInDecimals = _getDecimals(reserveIn);
-    uint256 reserveOutDecimals = _getDecimals(reserveOut);
-
-    uint256 outPerInPrice = finalAmountIn
-      .mul(10**18)
-      .mul(10**reserveOutDecimals)
-      .div(amountOut.mul(10**reserveInDecimals));
+    AmountCalc memory results = _getAmountsOut(reserveIn, reserveOut, amountIn);
 
     return (
-      amountOut,
-      outPerInPrice,
-      _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
-      _calcUsdValue(reserveOut, amountOut, reserveOutDecimals)
+      results.calculatedAmount,
+      results.relativePrice,
+      results.amountInUsd,
+      results.amountOutUsd
     );
   }
 
   /**
-   * @dev Returns the minimum input asset amount required to buy the given output asset amount
+   * @dev Returns the minimum input asset amount required to buy the given output asset amount and the prices
    * @param amountOut Amount of reserveOut
    * @param reserveIn Address of the asset to be swap from
    * @param reserveOut Address of the asset to be swap to
-   * @return uint256 amountIn
+   * @return uint256 Amount in of the reserveIn
+   * @return uint256 The price of in amount denominated in the reserveOut currency (18 decimals)
+   * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
+   * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
    */
-  function getAmountIn(uint256 amountOut, address reserveIn, address reserveOut)
+  function getAmountsIn(uint256 amountOut, address reserveIn, address reserveOut)
     external
     view
-    returns (uint256)
+    returns (uint256, uint256, uint256, uint256)
   {
-    address[] memory path = new address[](2);
-    path[0] = reserveIn;
-    path[1] = reserveOut;
+    AmountCalc memory results = _getAmountsIn(reserveIn, reserveOut, amountOut);
 
-    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, path);
-
-    return amounts[0];
+    return (
+      results.calculatedAmount,
+      results.relativePrice,
+      results.amountInUsd,
+      results.amountOutUsd
+    );
   }
 
   /**
@@ -337,15 +337,72 @@ contract BaseUniswapAdapter {
    * @param reserveIn Address of the asset to be swap from
    * @param reserveOut Address of the asset to be swap to
    * @param amountIn Amount of reserveIn
-   * @return the output amount
+   * @return Struct containing the following information:
+   *   uint256 Amount out of the reserveOut
+   *   uint256 The price of out amount denominated in the reserveIn currency (18 decimals)
+   *   uint256 In amount of reserveIn value denominated in USD (8 decimals)
+   *   uint256 Out amount of reserveOut value denominated in USD (8 decimals)
    */
-  function _getAmountsOut(address reserveIn, address reserveOut, uint256 amountIn) internal view returns (uint256) {
+  function _getAmountsOut(address reserveIn, address reserveOut, uint256 amountIn) internal view returns (AmountCalc memory) {
+    // Subtract flash loan fee
+    uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
+
     address[] memory path = new address[](2);
     path[0] = reserveIn;
     path[1] = reserveOut;
 
-    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsOut(amountIn, path);
+    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, path);
 
-    return amounts[1];
+    uint256 reserveInDecimals = _getDecimals(reserveIn);
+    uint256 reserveOutDecimals = _getDecimals(reserveOut);
+
+    uint256 outPerInPrice = finalAmountIn
+    .mul(10**18)
+    .mul(10**reserveOutDecimals)
+    .div(amounts[1].mul(10**reserveInDecimals));
+
+    return AmountCalc(
+      amounts[1],
+      outPerInPrice,
+      _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
+      _calcUsdValue(reserveOut, amounts[1], reserveOutDecimals)
+    );
+  }
+
+  /**
+   * @dev Returns the minimum input asset amount required to buy the given output asset amount
+   * @param reserveIn Address of the asset to be swap from
+   * @param reserveOut Address of the asset to be swap to
+   * @param amountOut Amount of reserveOut
+   * @return Struct containing the following information:
+   *   uint256 Amount in of the reserveIn
+   *   uint256 The price of in amount denominated in the reserveOut currency (18 decimals)
+   *   uint256 In amount of reserveIn value denominated in USD (8 decimals)
+   *   uint256 Out amount of reserveOut value denominated in USD (8 decimals)
+   */
+  function _getAmountsIn(address reserveIn, address reserveOut, uint256 amountOut) internal view returns (AmountCalc memory) {
+    address[] memory path = new address[](2);
+    path[0] = reserveIn;
+    path[1] = reserveOut;
+
+    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, path);
+
+    // Subtract flash loan fee
+    uint256 finalAmountIn = amounts[0].sub(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
+
+    uint256 reserveInDecimals = _getDecimals(reserveIn);
+    uint256 reserveOutDecimals = _getDecimals(reserveOut);
+
+    uint256 inPerOutPrice = amountOut
+    .mul(10**18)
+    .mul(10**reserveInDecimals)
+    .div(finalAmountIn.mul(10**reserveOutDecimals));
+
+    return AmountCalc(
+      finalAmountIn,
+      inPerOutPrice,
+      _calcUsdValue(reserveIn, finalAmountIn, reserveInDecimals),
+      _calcUsdValue(reserveOut, amountOut, reserveOutDecimals)
+    );
   }
 }
