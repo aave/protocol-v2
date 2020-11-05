@@ -48,7 +48,7 @@
     "dev:deployment": "hardhat dev-deployment",
     "dev:deployExample": "hardhat deploy-Example",
     "dev:prettier": "prettier --write .",
-    "ci:test": "npm run compile && npm run types-gen && npm run test",
+    "ci:test": "npm run compile && npm run test",
     "ci:clean": "rm -rf ./artifacts ./cache ./types",
     "print-contracts:kovan": "npm run hardhat:kovan -- print-contracts",
     "print-contracts:main": "npm run hardhat:main -- print-contracts",
