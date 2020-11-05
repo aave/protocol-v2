@@ -124,7 +124,7 @@ contract BaseUniswapAdapter {
    * @param minAmountOut the min amount of `assetToSwapTo` to be received from the swap
    * @return the amount received from the swap
    */
-  function swapExactTokensForTokens(
+  function _swapExactTokensForTokens(
     address assetToSwapFrom,
     address assetToSwapTo,
     uint256 amountToSwap,
@@ -167,7 +167,7 @@ contract BaseUniswapAdapter {
    * @param amountToReceive Exact amount of `assetToSwapTo` to receive
    * @return the amount swapped
    */
-  function swapTokensForExactTokens(
+  function _swapTokensForExactTokens(
     address assetToSwapFrom,
     address assetToSwapTo,
     uint256 maxAmountToSwap,
@@ -222,7 +222,7 @@ contract BaseUniswapAdapter {
    * @dev Get the aToken associated to the asset
    * @return address of the aToken
    */
-  function getAToken(address asset) internal view returns (address) {
+  function _getAToken(address asset) internal view returns (address) {
     ReserveLogic.ReserveData memory reserve = POOL.getReserveData(asset);
     return reserve.aTokenAddress;
   }
@@ -236,7 +236,7 @@ contract BaseUniswapAdapter {
    *     (1) Direct transfer to user
    * @param user address
    */
-  function sendLeftovers(address asset, uint256 reservedAmount, LeftoverAction leftOverAction, address user) internal {
+  function _sendLeftovers(address asset, uint256 reservedAmount, LeftoverAction leftOverAction, address user) internal {
     uint256 balance = IERC20(asset).balanceOf(address(this));
     uint256 assetLeftOver = balance.sub(reservedAmount);
 
@@ -253,18 +253,18 @@ contract BaseUniswapAdapter {
   /**
    * @dev Pull the ATokens from the user
    * @param reserve address of the asset
+   * @param reserveAToken address of the aToken of the reserve
    * @param user address
    * @param amount of tokens to be transferred to the contract
    * @param permitSignature struct containing the permit signature
    */
-  function pullAToken(
+  function _pullAToken(
     address reserve,
+    address reserveAToken,
     address user,
     uint256 amount,
     PermitSignature memory permitSignature
   ) internal {
-    address reserveAToken = getAToken(reserve);
-
     if (_usePermit(permitSignature)) {
       IERC20WithPermit(reserveAToken).permit(
         user,
@@ -282,25 +282,6 @@ contract BaseUniswapAdapter {
 
     // withdraw reserve
     POOL.withdraw(reserve, amount, address(this));
-  }
-
-  /**
-   * @dev Pull the ATokens from the user and use them to repay the flashloan
-   * @param reserve address of the asset
-   * @param user address
-   * @param flashLoanDebt need to be repaid
-   * @param permitSignature struct containing the permit signature
-   */
-  function pullATokenAndRepayFlashLoan(
-    address reserve,
-    address user,
-    uint256 flashLoanDebt,
-    PermitSignature memory permitSignature
-  ) internal {
-    pullAToken(reserve, user, flashLoanDebt, permitSignature);
-
-    // Repay flashloan
-    IERC20(reserve).approve(address(POOL), flashLoanDebt);
   }
 
   /**

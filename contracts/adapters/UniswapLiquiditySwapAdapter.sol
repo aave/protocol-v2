@@ -18,6 +18,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   struct SwapParams {
     address[] assetToSwapToList;
     uint256[] minAmountsToReceive;
+    bool[] swapAllBalance;
     PermitParams permitParams;
   }
 
@@ -41,6 +42,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
    *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
+   *   bool[] swapAllBalance Flag indicating if all the user balance should be swapped
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -60,6 +62,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     require(
       assets.length == decodedParams.assetToSwapToList.length
       && assets.length == decodedParams.minAmountsToReceive.length
+      && assets.length == decodedParams.swapAllBalance.length
       && assets.length == decodedParams.permitParams.deadline.length
       && assets.length == decodedParams.permitParams.v.length
       && assets.length == decodedParams.permitParams.r.length
@@ -68,22 +71,14 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     );
 
     for (uint256 i = 0; i < assets.length; i++) {
-      uint256 receivedAmount = swapExactTokensForTokens(
+      _swapLiquidity(
         assets[i],
         decodedParams.assetToSwapToList[i],
         amounts[i],
-        decodedParams.minAmountsToReceive[i]
-      );
-
-      // Deposit new reserve
-      IERC20(decodedParams.assetToSwapToList[i]).approve(address(POOL), receivedAmount);
-      POOL.deposit(decodedParams.assetToSwapToList[i], receivedAmount, initiator, 0);
-
-      uint256 flashLoanDebt = amounts[i].add(premiums[i]);
-      pullATokenAndRepayFlashLoan(
-        assets[i],
+        premiums[i],
         initiator,
-        flashLoanDebt,
+        decodedParams.minAmountsToReceive[i],
+        decodedParams.swapAllBalance[i],
         PermitSignature(
           decodedParams.permitParams.deadline[i],
           decodedParams.permitParams.v[i],
@@ -103,7 +98,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * perform the swap.
    * @param assetToSwapFromList List of addresses of the underlying asset to be swap from
    * @param assetToSwapToList List of addresses of the underlying asset to be swap to and deposited
-   * @param amountToSwapList List of amounts to be swapped
+   * @param amountToSwapList List of amounts to be swapped. If the amount exceeds the balance, the total balance is used for the swap
    * @param minAmountsToReceive List of min amounts to be received from the swap
    * @param permitParams List of struct containing the permit signatures
    *   uint256[] deadline List of deadlines for the permit signature
@@ -127,17 +122,23 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     );
 
     for (uint256 i = 0; i < assetToSwapFromList.length; i++) {
-      pullAToken(
+      address aToken = _getAToken(assetToSwapFromList[i]);
+
+      uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(msg.sender);
+      uint256 amountToSwap = amountToSwapList[i] > aTokenInitiatorBalance ? aTokenInitiatorBalance : amountToSwapList[i];
+
+      _pullAToken(
         assetToSwapFromList[i],
+        aToken,
         msg.sender,
-        amountToSwapList[i],
+        amountToSwap,
         permitParams[i]
       );
 
-      uint256 receivedAmount = swapExactTokensForTokens(
+      uint256 receivedAmount = _swapExactTokensForTokens(
         assetToSwapFromList[i],
         assetToSwapToList[i],
-        amountToSwapList[i],
+        amountToSwap,
         minAmountsToReceive[i]
       );
 
@@ -148,11 +149,60 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   }
 
   /**
+   * @dev Swaps an `amountToSwap` of an asset to another and deposits the funds on behalf of the initiator.
+   * @param assetFrom Address of the underlying asset to be swap from
+   * @param assetTo Address of the underlying asset to be swap to and deposited
+   * @param amount Amount from flashloan
+   * @param premium Premium of the flashloan
+   * @param minAmountToReceive Min amount to be received from the swap
+   * @param swapAllBalance Flag indicating if all the user balance should be swapped
+   * @param permitSignature List of struct containing the permit signature
+   */
+  function _swapLiquidity(
+    address assetFrom,
+    address assetTo,
+    uint256 amount,
+    uint256 premium,
+    address initiator,
+    uint256 minAmountToReceive,
+    bool swapAllBalance,
+    PermitSignature memory permitSignature
+  ) internal {
+    address aToken = _getAToken(assetFrom);
+
+    uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(initiator);
+    uint256 amountToSwap = swapAllBalance ? aTokenInitiatorBalance.sub(premium) : amount;
+
+    uint256 receivedAmount = _swapExactTokensForTokens(
+      assetFrom,
+      assetTo,
+      amountToSwap,
+      minAmountToReceive
+    );
+
+    // Deposit new reserve
+    IERC20(assetTo).approve(address(POOL), receivedAmount);
+    POOL.deposit(assetTo, receivedAmount, initiator, 0);
+
+    uint256 flashLoanDebt = amount.add(premium);
+    uint256 amountToPull = swapAllBalance ? aTokenInitiatorBalance : flashLoanDebt;
+
+    _pullATokenAndRepayFlashLoan(
+      assetFrom,
+      aToken,
+      initiator,
+      amountToPull,
+      flashLoanDebt,
+      permitSignature
+    );
+  }
+
+  /**
  * @dev Decodes debt information encoded in flashloan params
  * @param params Additional variadic field to include extra params. Expected parameters:
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
    *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
-   *   uint256[] deadline List of deadlines for the permit signature
+   *   bool[] swapAllBalance Flag indicating if all the user balance should be swapped
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -163,12 +213,36 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     (
       address[] memory assetToSwapToList,
       uint256[] memory minAmountsToReceive,
+      bool[] memory swapAllBalance,
       uint256[] memory deadline,
       uint8[] memory v,
       bytes32[] memory r,
       bytes32[] memory s
-    ) = abi.decode(params, (address[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
+    ) = abi.decode(params, (address[], uint256[], bool[], uint256[], uint8[], bytes32[], bytes32[]));
 
-    return SwapParams(assetToSwapToList, minAmountsToReceive, PermitParams(deadline, v, r, s));
+    return SwapParams(assetToSwapToList, minAmountsToReceive, swapAllBalance, PermitParams(deadline, v, r, s));
+  }
+
+  /**
+  * @dev Pull the ATokens from the user and use them to repay the flashloan
+  * @param reserve address of the asset
+  * @param reserveAToken address of the aToken of the reserve
+  * @param user address
+  * @param amountToPull amount to be pulled from the user
+  * @param flashLoanDebt need to be repaid
+  * @param permitSignature struct containing the permit signature
+  */
+  function _pullATokenAndRepayFlashLoan(
+    address reserve,
+    address reserveAToken,
+    address user,
+    uint256 amountToPull,
+    uint256 flashLoanDebt,
+    PermitSignature memory permitSignature
+  ) internal {
+    _pullAToken(reserve, reserveAToken, user, amountToPull, permitSignature);
+
+    // Repay flashloan
+    IERC20(reserve).approve(address(POOL), flashLoanDebt);
   }
 }

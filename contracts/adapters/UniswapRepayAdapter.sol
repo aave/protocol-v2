@@ -119,17 +119,17 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 premium,
     PermitSignature memory permitSignature
   ) internal {
-    swapTokensForExactTokens(assetFrom, assetTo, amount, repayAmount);
+    _swapTokensForExactTokens(assetFrom, assetTo, amount, repayAmount);
 
     // Repay debt
     IERC20(assetTo).approve(address(POOL), repayAmount);
     POOL.repay(assetTo, repayAmount, rateMode, initiator);
 
     uint256 flashLoanDebt = amount.add(premium);
-    pullATokenAndRepayFlashLoan(assetFrom, initiator, flashLoanDebt, permitSignature);
+    _pullATokenAndRepayFlashLoan(assetFrom, initiator, flashLoanDebt, permitSignature);
 
     // Take care of reserve leftover from the swap
-    sendLeftovers(assetFrom, flashLoanDebt, leftOverAction, initiator);
+    _sendLeftovers(assetFrom, flashLoanDebt, leftOverAction, initiator);
   }
 
   /**
@@ -161,15 +161,35 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
     return RepayParams(
       assetToSwapToList,
-        leftOverAction,
-        repayAmounts,
-        rateModes,
-        PermitParams(
-          deadline,
-          v,
-          r,
-          s
-        )
+      leftOverAction,
+      repayAmounts,
+      rateModes,
+      PermitParams(
+        deadline,
+        v,
+        r,
+        s
+      )
     );
+  }
+
+  /**
+   * @dev Pull the ATokens from the user and use them to repay the flashloan
+   * @param reserve address of the asset
+   * @param user address
+   * @param flashLoanDebt need to be repaid
+   * @param permitSignature struct containing the permit signature
+   */
+  function _pullATokenAndRepayFlashLoan(
+    address reserve,
+    address user,
+    uint256 flashLoanDebt,
+    PermitSignature memory permitSignature
+  ) internal {
+    address reserveAToken = _getAToken(reserve);
+    _pullAToken(reserve, reserveAToken, user, flashLoanDebt, permitSignature);
+
+    // Repay flashloan
+    IERC20(reserve).approve(address(POOL), flashLoanDebt);
   }
 }

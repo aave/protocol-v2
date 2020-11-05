@@ -301,10 +301,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
             [expectedDaiAmount],
+            [0],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -411,10 +412,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           .toFixed(0);
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, dai.address],
             [expectedDaiAmountForEth, expectedDaiAmountForUsdc],
+            [0, 0],
             [0, 0],
             [0, 0],
             [
@@ -572,10 +574,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         );
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, dai.address],
             [expectedDaiAmountForEth, expectedDaiAmountForUsdc],
+            [0, 0],
             [deadline, deadline],
             [aWETHv, aUsdcv],
             [aWETHr, aUsdcr],
@@ -673,8 +676,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
-          [[dai.address], [expectedDaiAmount], [deadline], [v], [r], [s]]
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          [[dai.address], [expectedDaiAmount], [0], [deadline], [v], [r], [s]]
         );
 
         await expect(
@@ -738,10 +741,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
             [expectedDaiAmount],
+            [0],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -764,10 +768,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params2 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
             [expectedDaiAmount],
+            [0, 0],
             [0, 0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -790,10 +795,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params3 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
             [expectedDaiAmount],
+            [0, 0],
             [0],
             [0, 0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -816,10 +822,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params4 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
             [expectedDaiAmount],
+            [0],
             [0],
             [0],
             [
@@ -845,10 +852,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params5 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
             [expectedDaiAmount],
+            [0],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -874,10 +882,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
 
         const params6 = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address, weth.address],
             [expectedDaiAmount, expectedDaiAmount],
+            [0],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -895,6 +904,33 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               [0],
               userAddress,
               params6,
+              0
+            )
+        ).to.be.revertedWith('INCONSISTENT_PARAMS');
+
+        const params7 = ethers.utils.defaultAbiCoder.encode(
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          [
+            [dai.address],
+            [expectedDaiAmount],
+            [0, 0],
+            [0],
+            [0],
+            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          ]
+        );
+
+        await expect(
+          pool
+            .connect(user)
+            .flashLoan(
+              uniswapLiquiditySwapAdapter.address,
+              [weth.address],
+              [flashloanAmount.toString()],
+              [0],
+              userAddress,
+              params7,
               0
             )
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
@@ -923,10 +959,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
             [expectedDaiAmount],
+            [0],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -1003,10 +1040,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const flashloanAmount = new BigNumber(amountUSDCtoSwap.toString()).div(1.0009).toFixed(0);
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
             [expectedDaiAmount],
+            [0],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -1068,10 +1106,11 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
         const params = ethers.utils.defaultAbiCoder.encode(
-          ['address[]', 'uint256[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
           [
             [dai.address],
             [smallExpectedDaiAmount],
+            [0],
             [0],
             [0],
             ['0x0000000000000000000000000000000000000000000000000000000000000000'],
@@ -1092,6 +1131,81 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               0
             )
         ).to.be.revertedWith('minAmountOut exceed max slippage');
+      });
+
+      it('should correctly swap tokens all the balance', async () => {
+        const {users, weth, oracle, dai, aDai, aWETH, pool, uniswapLiquiditySwapAdapter} = testEnv;
+        const user = users[0].signer;
+        const userAddress = users[0].address;
+
+        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
+
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const expectedDaiAmount = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
+        );
+
+        await mockUniswapRouter.setAmountToReturn(weth.address, expectedDaiAmount);
+
+        // Remove other balance
+        await aWETH.connect(user).transfer(users[1].address, parseEther('90'));
+        const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
+
+        // User will swap liquidity 10 aEth to aDai
+        const liquidityToSwap = parseEther('10');
+        expect(userAEthBalanceBefore).to.be.eq(liquidityToSwap);
+        await aWETH.connect(user).approve(uniswapLiquiditySwapAdapter.address, liquidityToSwap);
+
+        const params = ethers.utils.defaultAbiCoder.encode(
+          ['address[]', 'uint256[]', 'bool[]', 'uint256[]', 'uint8[]', 'bytes32[]', 'bytes32[]'],
+          [
+            [dai.address],
+            [expectedDaiAmount],
+            [1],
+            [0],
+            [0],
+            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+            ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          ]
+        );
+
+        // Flashloan + premium > aToken balance. Then it will only swap the balance
+        const flashloanFee = liquidityToSwap.mul(9).div(10000);
+        const swappedAmount = liquidityToSwap.sub(flashloanFee);
+
+        await expect(
+          pool
+            .connect(user)
+            .flashLoan(
+              uniswapLiquiditySwapAdapter.address,
+              [weth.address],
+              [liquidityToSwap.toString()],
+              [0],
+              userAddress,
+              params,
+              0
+            )
+        )
+          .to.emit(uniswapLiquiditySwapAdapter, 'Swapped')
+          .withArgs(weth.address, dai.address, swappedAmount.toString(), expectedDaiAmount);
+
+        const adapterWethBalance = await weth.balanceOf(uniswapLiquiditySwapAdapter.address);
+        const adapterDaiBalance = await dai.balanceOf(uniswapLiquiditySwapAdapter.address);
+        const adapterDaiAllowance = await dai.allowance(
+          uniswapLiquiditySwapAdapter.address,
+          userAddress
+        );
+        const userADaiBalance = await aDai.balanceOf(userAddress);
+        const userAEthBalance = await aWETH.balanceOf(userAddress);
+        const adapterAEthBalance = await aWETH.balanceOf(uniswapLiquiditySwapAdapter.address);
+
+        expect(adapterWethBalance).to.be.eq(Zero);
+        expect(adapterDaiBalance).to.be.eq(Zero);
+        expect(adapterDaiAllowance).to.be.eq(Zero);
+        expect(userADaiBalance).to.be.eq(expectedDaiAmount);
+        expect(userAEthBalance).to.be.eq(Zero);
+        expect(adapterAEthBalance).to.be.eq(Zero);
       });
     });
 
@@ -1606,6 +1720,72 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(userAEthBalance).to.be.gte(userAEthBalanceBefore.sub(amountWETHtoSwap));
         expect(userAUsdcBalance).to.be.lt(userAUsdcBalanceBefore);
         expect(userAUsdcBalance).to.be.gte(userAUsdcBalanceBefore.sub(amountUSDCtoSwap));
+      });
+
+      it('should correctly swap all the balance when using a bigger amount', async () => {
+        const {users, weth, oracle, dai, aDai, aWETH, uniswapLiquiditySwapAdapter} = testEnv;
+        const user = users[0].signer;
+        const userAddress = users[0].address;
+
+        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
+
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const expectedDaiAmount = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
+        );
+
+        await mockUniswapRouter.setAmountToReturn(weth.address, expectedDaiAmount);
+
+        // Remove other balance
+        await aWETH.connect(user).transfer(users[1].address, parseEther('90'));
+        const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
+
+        // User will swap liquidity 10 aEth to aDai
+        const liquidityToSwap = parseEther('10');
+        expect(userAEthBalanceBefore).to.be.eq(liquidityToSwap);
+
+        // User will swap liquidity 10 aEth to aDai
+        await aWETH.connect(user).approve(uniswapLiquiditySwapAdapter.address, liquidityToSwap);
+
+        // Only has 10 atokens, so all the balance will be swapped
+        const bigAmountToSwap = parseEther('100');
+
+        await expect(
+          uniswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            [weth.address],
+            [dai.address],
+            [bigAmountToSwap],
+            [expectedDaiAmount],
+            [
+              {
+                deadline: 0,
+                v: 0,
+                r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+                s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              },
+            ]
+          )
+        )
+          .to.emit(uniswapLiquiditySwapAdapter, 'Swapped')
+          .withArgs(weth.address, dai.address, amountWETHtoSwap.toString(), expectedDaiAmount);
+
+        const adapterWethBalance = await weth.balanceOf(uniswapLiquiditySwapAdapter.address);
+        const adapterDaiBalance = await dai.balanceOf(uniswapLiquiditySwapAdapter.address);
+        const adapterDaiAllowance = await dai.allowance(
+          uniswapLiquiditySwapAdapter.address,
+          userAddress
+        );
+        const userADaiBalance = await aDai.balanceOf(userAddress);
+        const userAEthBalance = await aWETH.balanceOf(userAddress);
+        const adapterAEthBalance = await aWETH.balanceOf(uniswapLiquiditySwapAdapter.address);
+
+        expect(adapterWethBalance).to.be.eq(Zero);
+        expect(adapterDaiBalance).to.be.eq(Zero);
+        expect(adapterDaiAllowance).to.be.eq(Zero);
+        expect(userADaiBalance).to.be.eq(expectedDaiAmount);
+        expect(userAEthBalance).to.be.eq(Zero);
+        expect(adapterAEthBalance).to.be.eq(Zero);
       });
     });
   });
