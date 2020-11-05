@@ -454,10 +454,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const flashAmount = ethers.utils.parseEther('0.8');
 
+    const reserveData = await pool.getReserveData(weth.address);
+
+    const stableDebtToken = await getVariableDebtToken(reserveData.stableDebtTokenAddress);
+
     // Deposited for onBehalfOf user already, delegate borrow allowance
-    await pool
-      .connect(onBehalfOf.signer)
-      .delegateBorrowAllowance([weth.address], caller.address, [1], [flashAmount]);
+    await stableDebtToken.connect(onBehalfOf.signer).approveDelegation(caller.address, flashAmount);
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 

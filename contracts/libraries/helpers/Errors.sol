@@ -19,6 +19,7 @@ pragma solidity ^0.6.8;
 library Errors {
   //common errors
   string public constant CALLER_NOT_POOL_ADMIN = '33'; // 'The caller must be the pool admin'
+  string public constant BORROW_ALLOWANCE_NOT_ENOUGH = '59'; // User borrows on behalf, but allowance are too small
 
   //contract specific errors
   string public constant VL_AMOUNT_NOT_GREATER_THAN_0 = '1'; // 'Amount must be greater than 0'
@@ -80,7 +81,6 @@ library Errors {
   string public constant AT_INVALID_MINT_AMOUNT = '56'; //invalid amount to mint
   string public constant LP_FAILED_REPAY_WITH_COLLATERAL = '57';
   string public constant AT_INVALID_BURN_AMOUNT = '58'; //invalid amount to burn
-  string public constant LP_BORROW_ALLOWANCE_NOT_ENOUGH = '59'; // User borrows on behalf, but allowance are too small
   string public constant LP_FAILED_COLLATERAL_SWAP = '60';
   string public constant LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61';
   string public constant LP_REENTRANCY_NOT_ALLOWED = '62';

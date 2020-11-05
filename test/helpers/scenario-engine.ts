@@ -121,9 +121,9 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
         }
 
         await delegateBorrowAllowance(
-          [reserve],
-          [amount],
-          [rateMode],
+          reserve,
+          amount,
+          rateMode,
           user,
           toUser,
           expected,
