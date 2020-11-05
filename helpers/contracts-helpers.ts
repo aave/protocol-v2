@@ -13,7 +13,7 @@ import {
   iParamsPerPool,
 } from './types';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {Artifact} from '@nomiclabs/buidler/types';
+import {Artifact} from 'hardhat/types';
 import {verifyContract} from './etherscan-verification';
 import {getIErc20Detailed} from './contracts-getters';
 
@@ -21,7 +21,7 @@ export type MockTokenMap = {[symbol: string]: MintableERC20};
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = BRE.network.name;
-  if (currentNetwork !== 'buidlerevm' && !currentNetwork.includes('coverage')) {
+  if (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage')) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
     console.log(`tx: ${contractInstance.deployTransaction.hash}`);

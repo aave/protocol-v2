@@ -1,4 +1,4 @@
-import rawBRE from '@nomiclabs/buidler';
+import rawBRE from 'hardhat';
 import {MockContract} from 'ethereum-waffle';
 import {
   insertContractAddressInDb,

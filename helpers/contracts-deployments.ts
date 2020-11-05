@@ -12,7 +12,6 @@ import {
 } from './types';
 
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {MockContract} from 'ethereum-waffle';
 import {getReservesConfigByPool} from './configuration';
 import {getFirstSigner} from './contracts-getters';
@@ -45,16 +44,12 @@ import {
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
-  Weth9Factory,
   Weth9MockedFactory,
   WethGatewayFactory,
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
-import {MockStableDebtToken} from '../types/MockStableDebtToken';
-import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
-import {SelfdestructTransfer} from '../types/SelfdestructTransfer';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -89,10 +84,7 @@ export const deployReserveLogicLibrary = async (verify?: boolean) =>
   );
 
 export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolean) => {
-  const genericLogicArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.GenericLogic
-  );
+  const genericLogicArtifact = await BRE.artifacts.readArtifact(eContractid.GenericLogic);
 
   const linkedGenericLogicByteCode = linkBytecode(genericLogicArtifact, {
     [eContractid.ReserveLogic]: reserveLogic.address,
@@ -112,10 +104,7 @@ export const deployValidationLogic = async (
   genericLogic: Contract,
   verify?: boolean
 ) => {
-  const validationLogicArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.ValidationLogic
-  );
+  const validationLogicArtifact = await BRE.artifacts.readArtifact(eContractid.ValidationLogic);
 
   const linkedValidationLogicByteCode = linkBytecode(validationLogicArtifact, {
     [eContractid.ReserveLogic]: reserveLogic.address,

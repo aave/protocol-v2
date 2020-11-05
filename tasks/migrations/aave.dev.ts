@@ -1,7 +1,10 @@
-import {task} from '@nomiclabs/buidler/config';
+import {task} from 'hardhat/config';
 import {checkVerification} from '../../helpers/etherscan-verification';
+console.log('ji');
 import {ConfigNames} from '../../helpers/configuration';
+console.log('pi');
 import {printContracts} from '../../helpers/misc-utils';
+console.log('i');
 
 task('aave:dev', 'Deploy development enviroment')
   .addOptionalParam('verify', 'Verify contracts at Etherscan')
