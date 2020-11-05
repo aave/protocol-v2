@@ -9,7 +9,7 @@ task(
   'dev:deploy-address-provider',
   'Deploy address provider, registry and fee provider for dev enviroment'
 )
-  .addOptionalParam('verify', 'Verify contracts at Etherscan')
+  .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     await localBRE.run('set-bre');
 

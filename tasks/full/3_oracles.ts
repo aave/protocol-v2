@@ -26,12 +26,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         ProtocolGlobalParams: {UsdAddress},
         LendingRateOracleRatesCommon,
         ReserveAssets,
-        ReserveSymbols,
         FallbackOracle,
         ChainlinkAggregator,
       } = poolConfig as ICommonConfiguration;
       const lendingRateOracles = filterMapBy(LendingRateOracleRatesCommon, (key) =>
-        ReserveSymbols.includes(key)
+        Object.keys(ReserveAssets[network]).includes(key)
       );
       const addressesProvider = await getLendingPoolAddressesProvider();
       const admin = await addressesProvider.getAaveAdmin();

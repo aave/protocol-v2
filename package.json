@@ -20,6 +20,7 @@
     "aave:docker:full:migration": "npm run buidler:docker -- aave:full",
     "aave:kovan:dev:migration": "npm run buidler:kovan -- aave:dev --verify",
     "aave:kovan:full:migration": "npm run buidler:kovan -- aave:full --verify",
+    "aave:kovan:full:initialize": "npm run buidler:kovan -- full:initialize-lending-pool --verify --pool Aave",
     "aave:ropsten:dev:migration": "npm run buidler:ropsten -- aave:dev --verify",
     "aave:ropsten:full:migration": "npm run buidler:ropsten -- aave:full --verify",
     "aave:main:dev:migration": "npm run buidler:main -- aave:dev --verify",
@@ -34,6 +35,7 @@
     "uniswap:main:full:migration": "npm run buidler:main -- uniswap:full --verify",
     "test-repay-with-collateral": "buidler test test/__setup.spec.ts test/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "buidler test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
+    "test-liquidate-underlying": "buidler test test/__setup.spec.ts test/liquidation-underlying.spec.ts",
     "test-transfers": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts",
     "test-flash": "buidler test test/__setup.spec.ts test/flashloan.spec.ts",
     "test-liquidate": "buidler test test/__setup.spec.ts test/liquidation-atoken.spec.ts",
@@ -42,12 +44,16 @@
     "test-permit": "buidler test test/__setup.spec.ts test/atoken-permit.spec.ts",
     "test-stable-and-atokens": "buidler test test/__setup.spec.ts test/atoken-transfer.spec.ts test/stable-token.spec.ts",
     "test-subgraph:scenarios": "buidler --network buidlerevm_docker test test/__setup.spec.ts test/subgraph-scenarios.spec.ts",
+    "test-weth": "buidler test test/__setup.spec.ts test/weth-gateway.spec.ts",
     "dev:coverage": "buidler coverage --network coverage",
     "dev:deployment": "buidler dev-deployment",
     "dev:deployExample": "buidler deploy-Example",
     "dev:prettier": "prettier --write .",
     "ci:test": "npm run compile && npm run types-gen && npm run test",
-    "ci:clean": "rm -rf ./artifacts ./cache ./types"
+    "ci:clean": "rm -rf ./artifacts ./cache ./types",
+    "print-contracts:kovan": "npm run buidler:kovan -- print-contracts",
+    "print-contracts:main": "npm run buidler:main -- print-contracts",
+    "print-contracts:ropsten": "npm run buidler:main -- print-contracts"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
