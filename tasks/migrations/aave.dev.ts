@@ -30,7 +30,7 @@ task('aave:dev', 'Deploy development enviroment')
     await localBRE.run('dev:deploy-oracles', {verify, pool: POOL_NAME});
 
     console.log('5. Initialize lending pool');
-    await localBRE.run('dev:initialize-lending-pool', {verify});
+    await localBRE.run('dev:initialize-lending-pool', {verify, pool: POOL_NAME});
 
     console.log('\nFinished migration');
     printContracts();

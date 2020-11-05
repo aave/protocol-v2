@@ -96,7 +96,10 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const userGlobalData = await pool.getUserAccountData(borrower.address);
 
-    expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(oneEther, INVALID_HF);
+    expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(
+      oneEther.toString(),
+      INVALID_HF
+    );
   });
 
   it('LIQUIDATION - Tries to liquidate a different currency than the loan principal', async () => {

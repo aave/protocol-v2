@@ -72,7 +72,6 @@ contract MockFlashLoanReceiver is FlashLoanReceiverBase {
         ? _amountToApprove
         : amounts[i].add(premiums[i]);
       //execution does not fail - mint tokens and return them to the _destination
-      //note: if the reserve is eth, the mock contract must receive at least _fee ETH before calling executeOperation
 
       token.mint(premiums[i]);
 

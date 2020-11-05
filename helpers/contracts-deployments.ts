@@ -41,15 +41,20 @@ import {
   MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
+  SelfdestructTransferFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
+  Weth9Factory,
+  Weth9MockedFactory,
+  WethGatewayFactory,
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
 import {MockStableDebtToken} from '../types/MockStableDebtToken';
 import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
+import {SelfdestructTransfer} from '../types/SelfdestructTransfer';
 
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -418,6 +423,17 @@ export const deployATokensAndRatesHelper = async (
     verify
   );
 
+export const deployWETHGateway = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new WethGatewayFactory(await getFirstSigner()).deploy(...args),
+    eContractid.WETHGateway,
+    args,
+    verify
+  );
+
 export const deployMockStableDebtToken = async (
   args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
   verify?: boolean
@@ -426,6 +442,14 @@ export const deployMockStableDebtToken = async (
     await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockStableDebtToken,
     args,
+    verify
+  );
+
+export const deployWETHMocked = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new Weth9MockedFactory(await getFirstSigner()).deploy(),
+    eContractid.WETHMocked,
+    [],
     verify
   );
 
@@ -448,5 +472,13 @@ export const deployMockAToken = async (
     await new MockATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockAToken,
     args,
+    verify
+  );
+
+export const deploySelfdestructTransferMock = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new SelfdestructTransferFactory(await getFirstSigner()).deploy(),
+    eContractid.SelfdestructTransferMock,
+    [],
     verify
   );

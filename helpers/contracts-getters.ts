@@ -16,9 +16,13 @@ import {
   MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
+  SelfdestructTransferFactory,
   StableAndVariableTokensHelperFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
+  Weth9Factory,
+  Weth9MockedFactory,
+  WethGatewayFactory,
 } from '../types';
 import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
 import {MockTokenMap} from './contracts-helpers';
@@ -226,6 +230,19 @@ export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getWETHGateway = async (address?: tEthereumAddress) =>
+  await WethGatewayFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.WETHGateway}.${BRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getWETHMocked = async (address?: tEthereumAddress) =>
+  await Weth9MockedFactory.connect(
+    address || (await getDb().get(`${eContractid.WETHMocked}.${BRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
 export const getMockAToken = async (address?: tEthereumAddress) =>
   await MockATokenFactory.connect(
     address || (await getDb().get(`${eContractid.MockAToken}.${BRE.network.name}`).value()).address,
@@ -239,9 +256,18 @@ export const getMockVariableDebtToken = async (address?: tEthereumAddress) =>
         .address,
     await getFirstSigner()
   );
+
 export const getMockStableDebtToken = async (address?: tEthereumAddress) =>
   await MockStableDebtTokenFactory.connect(
     address ||
       (await getDb().get(`${eContractid.MockStableDebtToken}.${BRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getSelfdestructTransferMock = async (address?: tEthereumAddress) =>
+  await SelfdestructTransferFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.SelfdestructTransferMock}.${BRE.network.name}`).value())
+        .address,
     await getFirstSigner()
   );

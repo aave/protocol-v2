@@ -20,6 +20,8 @@ import {
   deployLendingRateOracle,
   deployStableAndVariableTokensHelper,
   deployATokensAndRatesHelper,
+  deployWETHGateway,
+  deployWETHMocked,
 } from '../helpers/contracts-deployments';
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
@@ -45,6 +47,7 @@ import {
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
 } from '../helpers/contracts-getters';
+import {Weth9Mocked} from '../types/Weth9Mocked';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -53,12 +56,17 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.ChainlinkAggregatorPr
 const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
-  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
+  const tokens: {[symbol: string]: MockContract | MintableERC20 | Weth9Mocked} = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
+    if (tokenSymbol === 'WETH') {
+      tokens[tokenSymbol] = await deployWETHMocked();
+      await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
+      continue;
+    }
     let decimals = 18;
 
     let configData = (<any>protoConfigData)[tokenSymbol];
@@ -104,8 +112,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
-  const address = await addressesProvider.getLendingPool();
-  const lendingPoolProxy = await getLendingPool(address);
+  const lendingPoolAddress = await addressesProvider.getLendingPool();
+  const lendingPoolProxy = await getLendingPool(lendingPoolAddress);
 
   await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
@@ -248,6 +256,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);
 
   await deployWalletBalancerProvider(addressesProvider.address);
+
+  await deployWETHGateway([mockTokens.WETH.address, lendingPoolAddress]);
 
   console.timeEnd('setup');
 };
