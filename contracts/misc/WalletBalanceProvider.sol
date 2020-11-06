@@ -25,7 +25,7 @@ contract WalletBalanceProvider {
   using ReserveConfiguration for ReserveConfiguration.Map;
 
   LendingPoolAddressesProvider internal immutable _provider;
-  address constant MOCK_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
+  address constant MOCK_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   constructor(LendingPoolAddressesProvider provider) public {
     _provider = provider;
@@ -69,11 +69,15 @@ contract WalletBalanceProvider {
 
     for (uint256 i = 0; i < users.length; i++) {
       for (uint256 j = 0; j < tokens.length; j++) {
-        uint256 _offset = i * tokens.length;
-        if (!tokens[j].isContract()) {
-          revert('INVALID_TOKEN');
+        uint256 offset = i * tokens.length;
+        if (tokens[j] == MOCK_ETH_ADDRESS) {
+          balances[offset + j] = users[i].balance; // ETH balance
         } else {
-          balances[_offset + j] = balanceOf(users[i], tokens[j]);
+          if (!tokens[j].isContract()) {
+            revert('INVALID_TOKEN');
+          } else {
+            balances[offset + j] = balanceOf(users[i], tokens[j]);
+          }
         }
       }
     }

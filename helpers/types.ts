@@ -1,6 +1,4 @@
 import BigNumber from 'bignumber.js';
-import {MockTokenMap} from './contracts-helpers';
-import {UiPoolDataProviderFactory} from '../types';
 
 export interface SymbolMap<T> {
   [symbol: string]: T;
