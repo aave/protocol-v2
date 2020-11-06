@@ -53,17 +53,6 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
     pool
   );
 
-export const getFeeDistributionParamsCommon = (
-  receiver: tEthereumAddress
-): iBasicDistributionParams => {
-  const receivers = [receiver, ZERO_ADDRESS];
-  const percentages = ['2000', '8000'];
-  return {
-    receivers,
-    percentages,
-  };
-};
-
 export const getGenesisPoolAdmin = async (config: ICommonConfiguration) => {
   const currentNetwork = DRE.network.name;
   const targetAddress = getParamPerNetwork(config.PoolAdmin, <eEthereumNetwork>currentNetwork);
