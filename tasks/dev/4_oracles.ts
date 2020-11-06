@@ -13,7 +13,7 @@ import {
 import {ICommonConfiguration, iAssetBase, TokenContractId} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 import {getAllAggregatorsAddresses, getAllTokenAddresses} from '../../helpers/mock-helpers';
-import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
+import {ConfigNames, loadPoolConfig, getWethAddress} from '../../helpers/configuration';
 import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
@@ -58,7 +58,10 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       allAggregatorsAddresses
     );
 
-    await deployChainlinkProxyPriceProvider([tokens, aggregators, fallbackOracle.address], verify);
+    await deployChainlinkProxyPriceProvider(
+      [tokens, aggregators, fallbackOracle.address, await getWethAddress(poolConfig)],
+      verify
+    );
     await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
     const lendingRateOracle = await deployLendingRateOracle(verify);

@@ -191,7 +191,7 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
   );
 
 export const deployChainlinkProxyPriceProvider = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress],
+  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(
