@@ -46,12 +46,13 @@ contract WalletBalanceProvider {
       - return 0 on non-contract address
     **/
   function balanceOf(address user, address token) public view returns (uint256) {
-    // check if token is actually a contract
-    if (token.isContract()) {
+    if (token == MOCK_ETH_ADDRESS) {
+      return user.balance; // ETH balance
+      // check if token is actually a contract
+    } else if (token.isContract()) {
       return IERC20(token).balanceOf(user);
-    } else {
-      return 0;
     }
+    revert('INVALID_TOKEN');
   }
 
   /**
@@ -69,16 +70,7 @@ contract WalletBalanceProvider {
 
     for (uint256 i = 0; i < users.length; i++) {
       for (uint256 j = 0; j < tokens.length; j++) {
-        uint256 offset = i * tokens.length;
-        if (tokens[j] == MOCK_ETH_ADDRESS) {
-          balances[offset + j] = users[i].balance; // ETH balance
-        } else {
-          if (!tokens[j].isContract()) {
-            revert('INVALID_TOKEN');
-          } else {
-            balances[offset + j] = balanceOf(users[i], tokens[j]);
-          }
-        }
+        balances[i * tokens.length + j] = balanceOf(users[i], tokens[j]);
       }
     }
 
@@ -113,9 +105,9 @@ contract WalletBalanceProvider {
         balances[j] = 0;
         continue;
       }
-      balances[j] = balanceOf(user, reserves[j]);
+      balances[j] = balanceOf(user, reservesWithEth[j]);
     }
 
-    return (reserves, balances);
+    return (reservesWithEth, balances);
   }
 }
