@@ -1,15 +1,11 @@
 import {MAX_UINT_AMOUNT} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite, TestEnv} from './helpers/make-suite';
-import {formatEther, parseEther, parseUnits} from 'ethers/lib/utils';
+import {parseEther} from 'ethers/lib/utils';
 import {DRE, waitForTx} from '../helpers/misc-utils';
 import {BigNumber} from 'ethers';
 import {getStableDebtToken, getVariableDebtToken} from '../helpers/contracts-getters';
-import {WethGateway} from '../types/WethGateway';
-import {use} from 'chai';
 import {deploySelfdestructTransferMock} from '../helpers/contracts-deployments';
-import {boolean} from '@nomiclabs/buidler/internal/core/params/argumentTypes';
-import {borrow} from './helpers/actions';
 
 const {expect} = require('chai');
 
