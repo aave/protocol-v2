@@ -7,7 +7,7 @@ import {
 import {setInitialMarketRatesInRatesOracleByHelper} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
-import {ConfigNames, loadPoolConfig} from '../../helpers/configuration';
+import {ConfigNames, loadPoolConfig, getWethAddress} from '../../helpers/configuration';
 import {exit} from 'process';
 import {
   getLendingPoolAddressesProvider,
@@ -46,7 +46,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
 
       const chainlinkProviderPriceProvider = await deployChainlinkProxyPriceProvider(
-        [tokens, aggregators, fallbackOracle],
+        [tokens, aggregators, fallbackOracle, await getWethAddress(poolConfig)],
         verify
       );
       await waitForTx(
