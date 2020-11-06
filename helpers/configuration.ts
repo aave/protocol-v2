@@ -58,7 +58,7 @@ export const getFeeDistributionParamsCommon = (
   receiver: tEthereumAddress
 ): iBasicDistributionParams => {
   const receivers = [receiver, ZERO_ADDRESS];
-  const percentages = ['200:0', '8000'];
+  const percentages = ['2000', '8000'];
   return {
     receivers,
     percentages,
@@ -100,13 +100,11 @@ export const getWethAddress = async (config: ICommonConfiguration) => {
   const currentNetwork = DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WETH, <eEthereumNetwork>currentNetwork);
   if (wethAddress) {
-    console.log('here', wethAddress);
     return wethAddress;
   }
   if (currentNetwork.includes('main')) {
     throw new Error('WETH not set at mainnet configuration.');
   }
   const weth = await deployWETHMocked();
-  console.log('here2');
   return weth.address;
 };
