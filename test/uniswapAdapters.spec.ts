@@ -15,7 +15,7 @@ import {
 import {MockUniswapV2Router02} from '../types/MockUniswapV2Router02';
 import {Zero} from '@ethersproject/constants';
 import BigNumber from 'bignumber.js';
-import {BRE, evmRevert, evmSnapshot} from '../helpers/misc-utils';
+import {DRE, evmRevert, evmSnapshot} from '../helpers/misc-utils';
 import {ethers} from 'ethers';
 import {eContractid} from '../helpers/types';
 import {AToken} from '../types/AToken';
@@ -94,13 +94,13 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(result['3']).to.be.eq(daiUsdValue);
       });
       it('should work correctly with different decimals', async () => {
-        const {lend, usdc, uniswapLiquiditySwapAdapter, oracle} = testEnv;
+        const {aave, usdc, uniswapLiquiditySwapAdapter, oracle} = testEnv;
 
         const amountIn = parseEther('10');
         const flashloanPremium = amountIn.mul(9).div(10000);
         const amountToSwap = amountIn.sub(flashloanPremium);
 
-        const lendPrice = await oracle.getAssetPrice(lend.address);
+        const aavePrice = await oracle.getAssetPrice(aave.address);
         const usdcPrice = await oracle.getAssetPrice(usdc.address);
         const usdPrice = await oracle.getAssetPrice(USD_ADDRESS);
 
@@ -114,8 +114,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           .mul('1000000') // usdc 6 decimals
           .div(expectedUSDCAmount.mul(parseEther('1')));
 
-        const lendUsdValue = amountIn
-          .mul(lendPrice)
+        const aaveUsdValue = amountIn
+          .mul(aavePrice)
           .div(parseEther('1'))
           .mul(usdPrice)
           .div(parseEther('1'));
@@ -128,20 +128,20 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         await mockUniswapRouter.setAmountOut(
           amountToSwap,
-          lend.address,
+          aave.address,
           usdc.address,
           expectedUSDCAmount
         );
 
         const result = await uniswapLiquiditySwapAdapter.getAmountsOut(
           amountIn,
-          lend.address,
+          aave.address,
           usdc.address
         );
 
         expect(result['0']).to.be.eq(expectedUSDCAmount);
         expect(result['1']).to.be.eq(outPerInPrice);
-        expect(result['2']).to.be.eq(lendUsdValue);
+        expect(result['2']).to.be.eq(aaveUsdValue);
         expect(result['3']).to.be.eq(usdcUsdValue);
       });
     });
@@ -193,13 +193,13 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(result['3']).to.be.eq(daiUsdValue);
       });
       it('should work correctly with different decimals', async () => {
-        const {lend, usdc, uniswapLiquiditySwapAdapter, oracle} = testEnv;
+        const {aave, usdc, uniswapLiquiditySwapAdapter, oracle} = testEnv;
 
         const amountIn = parseEther('10');
         const flashloanPremium = amountIn.mul(9).div(10000);
         const amountToSwap = amountIn.sub(flashloanPremium);
 
-        const lendPrice = await oracle.getAssetPrice(lend.address);
+        const aavePrice = await oracle.getAssetPrice(aave.address);
         const usdcPrice = await oracle.getAssetPrice(usdc.address);
         const usdPrice = await oracle.getAssetPrice(USD_ADDRESS);
 
@@ -213,8 +213,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           .mul(parseEther('1'))
           .div(amountToSwap.mul('1000000')); // usdc 6 decimals
 
-        const lendUsdValue = amountToSwap
-          .mul(lendPrice)
+        const aaveUsdValue = amountToSwap
+          .mul(aavePrice)
           .div(parseEther('1'))
           .mul(usdPrice)
           .div(parseEther('1'));
@@ -225,17 +225,17 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           .mul(usdPrice)
           .div(parseEther('1'));
 
-        await mockUniswapRouter.setAmountIn(amountOut, lend.address, usdc.address, amountIn);
+        await mockUniswapRouter.setAmountIn(amountOut, aave.address, usdc.address, amountIn);
 
         const result = await uniswapLiquiditySwapAdapter.getAmountsIn(
           amountOut,
-          lend.address,
+          aave.address,
           usdc.address
         );
 
         expect(result['0']).to.be.eq(amountToSwap);
         expect(result['1']).to.be.eq(inPerOutPrice);
-        expect(result['2']).to.be.eq(lendUsdValue);
+        expect(result['2']).to.be.eq(aaveUsdValue);
         expect(result['3']).to.be.eq(usdcUsdValue);
       });
     });
@@ -474,7 +474,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         } = testEnv;
         const user = users[0].signer;
         const userAddress = users[0].address;
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
 
         const ownerPrivateKey = require('../test-wallets.js').accounts[1].secretKey;
@@ -628,7 +628,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
         const nonce = (await aWETH._nonces(userAddress)).toNumber();
         const msgParams = buildPermitParams(
@@ -1209,7 +1209,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const liquidityToSwap = parseEther('10');
         expect(userAEthBalanceBefore).to.be.eq(liquidityToSwap);
 
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
         const nonce = (await aWETH._nonces(userAddress)).toNumber();
         const msgParams = buildPermitParams(
@@ -1373,7 +1373,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const liquidityToSwap = parseEther('10');
         const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
 
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
         const nonce = (await aWETH._nonces(userAddress)).toNumber();
         const msgParams = buildPermitParams(
@@ -1680,7 +1680,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         } = testEnv;
         const user = users[0].signer;
         const userAddress = users[0].address;
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
 
         const ownerPrivateKey = require('../test-wallets.js').accounts[1].secretKey;
@@ -1898,7 +1898,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Only has 10 atokens, so all the balance will be swapped
         const bigAmountToSwap = parseEther('100');
 
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
 
         const ownerPrivateKey = require('../test-wallets.js').accounts[1].secretKey;
@@ -1974,7 +1974,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
     describe('executeOperation', () => {
       beforeEach(async () => {
-        const {users, weth, dai, usdc, lend, pool, deployer} = testEnv;
+        const {users, weth, dai, usdc, aave, pool, deployer} = testEnv;
         const userAddress = users[0].address;
 
         // Provide liquidity
@@ -1982,7 +1982,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await dai.approve(pool.address, parseEther('20000'));
         await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
 
-        const usdcLiquidity = await convertToCurrencyDecimals(usdc.address, '20000');
+        const usdcLiquidity = await convertToCurrencyDecimals(usdc.address, '2000000');
         await usdc.mint(usdcLiquidity);
         await usdc.approve(pool.address, usdcLiquidity);
         await pool.deposit(usdc.address, usdcLiquidity, deployer.address, 0);
@@ -1991,18 +1991,22 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await weth.approve(pool.address, parseEther('100'));
         await pool.deposit(weth.address, parseEther('100'), deployer.address, 0);
 
-        await lend.mint(parseEther('1000000'));
-        await lend.approve(pool.address, parseEther('1000000'));
-        await pool.deposit(lend.address, parseEther('1000000'), deployer.address, 0);
+        await aave.mint(parseEther('1000000'));
+        await aave.approve(pool.address, parseEther('1000000'));
+        await pool.deposit(aave.address, parseEther('1000000'), deployer.address, 0);
 
         // Make a deposit for user
-        await weth.mint(parseEther('100'));
-        await weth.approve(pool.address, parseEther('100'));
-        await pool.deposit(weth.address, parseEther('100'), userAddress, 0);
+        await weth.mint(parseEther('1000'));
+        await weth.approve(pool.address, parseEther('1000'));
+        await pool.deposit(weth.address, parseEther('1000'), userAddress, 0);
 
-        await lend.mint(parseEther('1000000'));
-        await lend.approve(pool.address, parseEther('1000000'));
-        await pool.deposit(lend.address, parseEther('1000000'), userAddress, 0);
+        await aave.mint(parseEther('1000000'));
+        await aave.approve(pool.address, parseEther('1000000'));
+        await pool.deposit(aave.address, parseEther('1000000'), userAddress, 0);
+
+        await usdc.mint(usdcLiquidity);
+        await usdc.approve(pool.address, usdcLiquidity);
+        await pool.deposit(usdc.address, usdcLiquidity, userAddress, 0);
       });
 
       it('should correctly swap tokens and repay debt', async () => {
@@ -2133,7 +2137,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         // Subtract the FL fee from the amount to be swapped 0,09%
         const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
 
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
         const nonce = (await aWETH._nonces(userAddress)).toNumber();
         const msgParams = buildPermitParams(
@@ -2206,7 +2210,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           oracle,
           dai,
           uniswapRepayAdapter,
-          lend,
+          aave,
           usdc,
           helpersContract,
           aWETH,
@@ -2215,7 +2219,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const userAddress = users[0].address;
 
         const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
-        const amountLendToSwap = await convertToCurrencyDecimals(lend.address, '1');
+        const amountAaveToSwap = parseEther('1');
 
         const daiPrice = await oracle.getAssetPrice(dai.address);
         const expectedDaiAmountForEth = await convertToCurrencyDecimals(
@@ -2223,17 +2227,17 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
         );
 
-        const lendPrice = await oracle.getAssetPrice(lend.address);
+        const aavePrice = await oracle.getAssetPrice(aave.address);
         const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
-        const collateralDecimals = (await lend.decimals()).toString();
+        const collateralDecimals = (await aave.decimals()).toString();
         const principalDecimals = (await usdc.decimals()).toString();
 
-        const expectedUsdcAmountForLend = await convertToCurrencyDecimals(
+        const expectedUsdcAmountForAave = await convertToCurrencyDecimals(
           usdc.address,
-          new BigNumber(amountLendToSwap.toString())
+          new BigNumber(amountAaveToSwap.toString())
             .times(
-              new BigNumber(lendPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+              new BigNumber(aavePrice.toString()).times(new BigNumber(10).pow(principalDecimals))
             )
             .div(
               new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
@@ -2243,7 +2247,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         // Open user Debt
         await pool.connect(user).borrow(dai.address, expectedDaiAmountForEth, 1, 0, userAddress);
-        await pool.connect(user).borrow(usdc.address, expectedUsdcAmountForLend, 1, 0, userAddress);
+        await pool.connect(user).borrow(usdc.address, expectedUsdcAmountForAave, 1, 0, userAddress);
 
         const daiStableDebtTokenAddress = (
           await helpersContract.getReserveTokensAddresses(dai.address)
@@ -2270,26 +2274,26 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const wethFlashloanAmount = new BigNumber(amountWETHtoSwap.toString())
           .div(1.0009)
           .toFixed(0);
-        const lendFlashloanAmount = new BigNumber(amountLendToSwap.toString())
+        const aaveFlashloanAmount = new BigNumber(amountAaveToSwap.toString())
           .div(1.0009)
           .toFixed(0);
 
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, wethFlashloanAmount);
-        await mockUniswapRouter.connect(user).setAmountToSwap(lend.address, lendFlashloanAmount);
+        await mockUniswapRouter.connect(user).setAmountToSwap(aave.address, aaveFlashloanAmount);
 
         await aWETH.connect(user).approve(uniswapRepayAdapter.address, amountWETHtoSwap);
 
-        const lendData = await pool.getReserveData(lend.address);
-        const aLend = await getContract<AToken>(eContractid.AToken, lendData.aTokenAddress);
-        await aLend.connect(user).approve(uniswapRepayAdapter.address, amountLendToSwap);
+        const aaveData = await pool.getReserveData(aave.address);
+        const aAave = await getContract<AToken>(eContractid.AToken, aaveData.aTokenAddress);
+        await aAave.connect(user).approve(uniswapRepayAdapter.address, amountAaveToSwap);
 
         const aWETHBalanceBefore = await aWETH.balanceOf(userAddress);
-        const aLendBalanceBefore = await aLend.balanceOf(userAddress);
+        const aAaveBalanceBefore = await aAave.balanceOf(userAddress);
 
         const params = buildRepayAdapterParams(
           [dai.address, usdc.address],
           0,
-          [expectedDaiAmountForEth, expectedUsdcAmountForLend],
+          [expectedDaiAmountForEth, expectedUsdcAmountForAave],
           [1, 1],
           [0, 0],
           [0, 0],
@@ -2308,8 +2312,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           .connect(user)
           .flashLoan(
             uniswapRepayAdapter.address,
-            [weth.address, lend.address],
-            [wethFlashloanAmount.toString(), lendFlashloanAmount.toString()],
+            [weth.address, aave.address],
+            [wethFlashloanAmount.toString(), aaveFlashloanAmount.toString()],
             [0, 0],
             userAddress,
             params,
@@ -2321,16 +2325,16 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
         const userUsdcStableDebtAmount = await usdcStableDebtContract.balanceOf(userAddress);
         const aWETHBalance = await aWETH.balanceOf(userAddress);
-        const aLendBalance = await aLend.balanceOf(userAddress);
+        const aAaveBalance = await aAave.balanceOf(userAddress);
 
         expect(adapterWethBalance).to.be.eq(Zero);
         expect(adapterDaiBalance).to.be.eq(Zero);
         expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmountForEth);
         expect(userDaiStableDebtAmount).to.be.lt(expectedDaiAmountForEth);
-        expect(userUsdcStableDebtAmountBefore).to.be.gte(expectedUsdcAmountForLend);
-        expect(userUsdcStableDebtAmount).to.be.lt(expectedUsdcAmountForLend);
+        expect(userUsdcStableDebtAmountBefore).to.be.gte(expectedUsdcAmountForAave);
+        expect(userUsdcStableDebtAmount).to.be.lt(expectedUsdcAmountForAave);
         expect(aWETHBalance).to.be.lt(aWETHBalanceBefore);
-        expect(aLendBalance).to.be.lt(aLendBalanceBefore);
+        expect(aAaveBalance).to.be.lt(aAaveBalanceBefore);
       });
 
       it('should swap tokens and repay debt for multiple tokens using permit', async () => {
@@ -2341,14 +2345,14 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           oracle,
           dai,
           uniswapRepayAdapter,
-          lend,
+          aave,
           usdc,
           helpersContract,
           aWETH,
         } = testEnv;
         const user = users[0].signer;
         const userAddress = users[0].address;
-        const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
         const deadline = MAX_UINT_AMOUNT;
 
         const ownerPrivateKey = require('../test-wallets.js').accounts[1].secretKey;
@@ -2357,7 +2361,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         }
 
         const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
-        const amountLendToSwap = await convertToCurrencyDecimals(lend.address, '1');
+        const amountAaveToSwap = await convertToCurrencyDecimals(aave.address, '1');
 
         const daiPrice = await oracle.getAssetPrice(dai.address);
         const expectedDaiAmountForEth = await convertToCurrencyDecimals(
@@ -2365,17 +2369,17 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
         );
 
-        const lendPrice = await oracle.getAssetPrice(lend.address);
+        const aavePrice = await oracle.getAssetPrice(aave.address);
         const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
-        const collateralDecimals = (await lend.decimals()).toString();
+        const collateralDecimals = (await aave.decimals()).toString();
         const principalDecimals = (await usdc.decimals()).toString();
 
-        const expectedUsdcAmountForLend = await convertToCurrencyDecimals(
+        const expectedUsdcAmountForAave = await convertToCurrencyDecimals(
           usdc.address,
-          new BigNumber(amountLendToSwap.toString())
+          new BigNumber(amountAaveToSwap.toString())
             .times(
-              new BigNumber(lendPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+              new BigNumber(aavePrice.toString()).times(new BigNumber(10).pow(principalDecimals))
             )
             .div(
               new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
@@ -2385,7 +2389,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         // Open user Debt
         await pool.connect(user).borrow(dai.address, expectedDaiAmountForEth, 1, 0, userAddress);
-        await pool.connect(user).borrow(usdc.address, expectedUsdcAmountForLend, 1, 0, userAddress);
+        await pool.connect(user).borrow(usdc.address, expectedUsdcAmountForAave, 1, 0, userAddress);
 
         const daiStableDebtTokenAddress = (
           await helpersContract.getReserveTokensAddresses(dai.address)
@@ -2408,17 +2412,17 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const userDaiStableDebtAmountBefore = await daiStableDebtContract.balanceOf(userAddress);
         const userUsdcStableDebtAmountBefore = await usdcStableDebtContract.balanceOf(userAddress);
 
-        const lendData = await pool.getReserveData(lend.address);
-        const aLend = await getContract<AToken>(eContractid.AToken, lendData.aTokenAddress);
+        const aaveData = await pool.getReserveData(aave.address);
+        const aAave = await getContract<AToken>(eContractid.AToken, aaveData.aTokenAddress);
 
         const aWETHBalanceBefore = await aWETH.balanceOf(userAddress);
-        const aLendBalanceBefore = await aLend.balanceOf(userAddress);
+        const aAaveBalanceBefore = await aAave.balanceOf(userAddress);
 
         const wethFlashloanAmount = new BigNumber(amountWETHtoSwap.toString())
           .div(1.0009)
           .toFixed(0);
 
-        const lendFlashloanAmount = new BigNumber(amountLendToSwap.toString())
+        const aaveFlashloanAmount = new BigNumber(amountAaveToSwap.toString())
           .div(1.0009)
           .toFixed(0);
 
@@ -2439,44 +2443,44 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           aWethMsgParams
         );
 
-        const aLendNonce = (await aLend._nonces(userAddress)).toNumber();
-        const aLendMsgParams = buildPermitParams(
+        const aAaveNonce = (await aAave._nonces(userAddress)).toNumber();
+        const aAaveMsgParams = buildPermitParams(
           chainId,
-          aLend.address,
+          aAave.address,
           '1',
-          await aLend.name(),
+          await aAave.name(),
           userAddress,
           uniswapRepayAdapter.address,
-          aLendNonce,
+          aAaveNonce,
           deadline,
-          amountLendToSwap.toString()
+          amountAaveToSwap.toString()
         );
-        const {v: aLendv, r: aLendr, s: aLends} = getSignatureFromTypedData(
+        const {v: aAavev, r: aAaver, s: aAaves} = getSignatureFromTypedData(
           ownerPrivateKey,
-          aLendMsgParams
+          aAaveMsgParams
         );
 
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, wethFlashloanAmount);
-        await mockUniswapRouter.connect(user).setAmountToSwap(lend.address, lendFlashloanAmount);
+        await mockUniswapRouter.connect(user).setAmountToSwap(aave.address, aaveFlashloanAmount);
 
         const params = buildRepayAdapterParams(
           [dai.address, usdc.address],
           0,
-          [expectedDaiAmountForEth, expectedUsdcAmountForLend],
+          [expectedDaiAmountForEth, expectedUsdcAmountForAave],
           [1, 1],
-          [amountWETHtoSwap, amountLendToSwap],
+          [amountWETHtoSwap, amountAaveToSwap],
           [deadline, deadline],
-          [aWETHv, aLendv],
-          [aWETHr, aLendr],
-          [aWETHs, aLends]
+          [aWETHv, aAavev],
+          [aWETHr, aAaver],
+          [aWETHs, aAaves]
         );
 
         await pool
           .connect(user)
           .flashLoan(
             uniswapRepayAdapter.address,
-            [weth.address, lend.address],
-            [wethFlashloanAmount.toString(), lendFlashloanAmount.toString()],
+            [weth.address, aave.address],
+            [wethFlashloanAmount.toString(), aaveFlashloanAmount.toString()],
             [0, 0],
             userAddress,
             params,
@@ -2488,16 +2492,16 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
         const userUsdcStableDebtAmount = await usdcStableDebtContract.balanceOf(userAddress);
         const aWETHBalance = await aWETH.balanceOf(userAddress);
-        const aLendBalance = await aLend.balanceOf(userAddress);
+        const aAaveBalance = await aAave.balanceOf(userAddress);
 
         expect(adapterWethBalance).to.be.eq(Zero);
         expect(adapterDaiBalance).to.be.eq(Zero);
         expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmountForEth);
         expect(userDaiStableDebtAmount).to.be.lt(expectedDaiAmountForEth);
-        expect(userUsdcStableDebtAmountBefore).to.be.gte(expectedUsdcAmountForLend);
-        expect(userUsdcStableDebtAmount).to.be.lt(expectedUsdcAmountForLend);
+        expect(userUsdcStableDebtAmountBefore).to.be.gte(expectedUsdcAmountForAave);
+        expect(userUsdcStableDebtAmount).to.be.lt(expectedUsdcAmountForAave);
         expect(aWETHBalance).to.be.lt(aWETHBalanceBefore);
-        expect(aLendBalance).to.be.lt(aLendBalanceBefore);
+        expect(aAaveBalance).to.be.lt(aAaveBalanceBefore);
       });
 
       it('should revert if inconsistent params', async () => {
