@@ -1,12 +1,10 @@
 import {MAX_UINT_AMOUNT} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite, TestEnv} from './helpers/make-suite';
-import {formatEther, parseEther, parseUnits} from 'ethers/lib/utils';
+import {parseEther} from 'ethers/lib/utils';
 import {DRE, waitForTx} from '../helpers/misc-utils';
 import {BigNumber} from 'ethers';
 import {getStableDebtToken, getVariableDebtToken} from '../helpers/contracts-getters';
-import {WethGateway} from '../types/WethGateway';
-import {use} from 'chai';
 import {deploySelfdestructTransferMock} from '../helpers/contracts-deployments';
 
 const {expect} = require('chai');
@@ -180,6 +178,48 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
       await wethGateway
         .connect(user.signer)
         .repayETH(MAX_UINT_AMOUNT, '2', user.address, {value: repaySize})
+    );
+    const debtBalanceAfterFullRepay = await varDebtToken.balanceOf(user.address);
+    expect(debtBalanceAfterFullRepay).to.be.eq(zero);
+  });
+
+  it('Borrow ETH via delegateApprove ETH and repays back', async () => {
+    const {users, wethGateway, aWETH, weth, helpersContract} = testEnv;
+    const borrowSize = parseEther('1');
+    const user = users[2];
+    const {variableDebtTokenAddress} = await helpersContract.getReserveTokensAddresses(
+      weth.address
+    );
+    const varDebtToken = await getVariableDebtToken(variableDebtTokenAddress);
+
+    const priorDebtBalance = await varDebtToken.balanceOf(user.address);
+    expect(priorDebtBalance).to.be.eq(zero);
+
+    // Deposit WETH with native ETH
+    await wethGateway.connect(user.signer).depositETH(user.address, '0', {value: depositSize});
+
+    const aTokensBalance = await aWETH.balanceOf(user.address);
+
+    expect(aTokensBalance).to.be.gt(zero);
+    expect(aTokensBalance).to.be.gte(depositSize);
+
+    // Delegates borrowing power of WETH to WETHGateway
+    await waitForTx(
+      await varDebtToken.connect(user.signer).approveDelegation(wethGateway.address, borrowSize)
+    );
+
+    // Borrows ETH with WETH as collateral
+    await waitForTx(await wethGateway.connect(user.signer).borrowETH(borrowSize, '2', '0'));
+
+    const debtBalance = await varDebtToken.balanceOf(user.address);
+
+    expect(debtBalance).to.be.gt(zero);
+
+    // Full Repay WETH loan with native ETH
+    await waitForTx(
+      await wethGateway
+        .connect(user.signer)
+        .repayETH(MAX_UINT_AMOUNT, '2', user.address, {value: borrowSize.mul(2)})
     );
     const debtBalanceAfterFullRepay = await varDebtToken.balanceOf(user.address);
     expect(debtBalanceAfterFullRepay).to.be.eq(zero);
