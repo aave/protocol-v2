@@ -2,7 +2,7 @@ import {Contract, Signer, utils, ethers, BigNumberish} from 'ethers';
 import {signTypedData_v4} from 'eth-sig-util';
 import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
-import {getDb, BRE, waitForTx} from './misc-utils';
+import {getDb, DRE, waitForTx} from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -13,15 +13,16 @@ import {
   iParamsPerPool,
 } from './types';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {Artifact} from '@nomiclabs/buidler/types';
+import {Artifact} from 'hardhat/types';
+import {Artifact as BuidlerArtifact} from '@nomiclabs/buidler/types';
 import {verifyContract} from './etherscan-verification';
 import {getIErc20Detailed} from './contracts-getters';
 
 export type MockTokenMap = {[symbol: string]: MintableERC20};
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
-  const currentNetwork = BRE.network.name;
-  if (currentNetwork !== 'buidlerevm' && !currentNetwork.includes('coverage')) {
+  const currentNetwork = DRE.network.name;
+  if (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage')) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
     console.log(`tx: ${contractInstance.deployTransaction.hash}`);
@@ -43,19 +44,19 @@ export const registerContractInJsonDb = async (contractId: string, contractInsta
 
 export const insertContractAddressInDb = async (id: eContractid, address: tEthereumAddress) =>
   await getDb()
-    .set(`${id}.${BRE.network.name}`, {
+    .set(`${id}.${DRE.network.name}`, {
       address,
     })
     .write();
 
 export const getEthersSigners = async (): Promise<Signer[]> =>
-  await Promise.all(await BRE.ethers.getSigners());
+  await Promise.all(await DRE.ethers.getSigners());
 
 export const getEthersSignersAddresses = async (): Promise<tEthereumAddress[]> =>
-  await Promise.all((await BRE.ethers.getSigners()).map((signer) => signer.getAddress()));
+  await Promise.all((await DRE.ethers.getSigners()).map((signer) => signer.getAddress()));
 
 export const getCurrentBlock = async () => {
-  return BRE.ethers.provider.getBlockNumber();
+  return DRE.ethers.provider.getBlockNumber();
 };
 
 export const decodeAbiNumber = (data: string): number =>
@@ -65,7 +66,7 @@ export const deployContract = async <ContractType extends Contract>(
   contractName: string,
   args: any[]
 ): Promise<ContractType> => {
-  const contract = (await (await BRE.ethers.getContractFactory(contractName)).deploy(
+  const contract = (await (await DRE.ethers.getContractFactory(contractName)).deploy(
     ...args
   )) as ContractType;
   await waitForTx(contract.deployTransaction);
@@ -90,9 +91,9 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
 export const getContract = async <ContractType extends Contract>(
   contractName: string,
   address: string
-): Promise<ContractType> => (await BRE.ethers.getContractAt(contractName, address)) as ContractType;
+): Promise<ContractType> => (await DRE.ethers.getContractAt(contractName, address)) as ContractType;
 
-export const linkBytecode = (artifact: Artifact, libraries: any) => {
+export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: any) => {
   let bytecode = artifact.bytecode;
 
   for (const [fileName, fileReferences] of Object.entries(artifact.linkReferences)) {
@@ -124,13 +125,13 @@ export const getParamPerNetwork = <T>(
       return coverage;
     case eEthereumNetwork.buidlerevm:
       return buidlerevm;
+    case eEthereumNetwork.hardhat:
+      return buidlerevm;
     case eEthereumNetwork.kovan:
       return kovan;
     case eEthereumNetwork.ropsten:
       return ropsten;
     case eEthereumNetwork.main:
-      return main;
-    default:
       return main;
   }
 };

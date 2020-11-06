@@ -12,9 +12,10 @@ import {AaveConfig} from '../config/aave';
 import {UniswapConfig} from '../config/uniswap';
 import {CommonsConfig} from '../config/commons';
 import {ZERO_ADDRESS} from './constants';
-import {BRE} from './misc-utils';
+import {DRE} from './misc-utils';
 import {tEthereumAddress} from './types';
 import {getParamPerNetwork} from './contracts-helpers';
+import {deployWETHMocked} from './contracts-deployments';
 
 export enum ConfigNames {
   Commons = 'Commons',
@@ -52,27 +53,29 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
     pool
   );
 
-export const getFeeDistributionParamsCommon = (
-  receiver: tEthereumAddress
-): iBasicDistributionParams => {
-  const receivers = [receiver, ZERO_ADDRESS];
-  const percentages = ['2000', '8000'];
-  return {
-    receivers,
-    percentages,
-  };
-};
-
-export const getGenesisAaveAdmin = async (config: ICommonConfiguration) => {
-  const currentNetwork = BRE.network.name;
-  const targetAddress = getParamPerNetwork(config.AaveAdmin, <eEthereumNetwork>currentNetwork);
+export const getGenesisPoolAdmin = async (config: ICommonConfiguration) => {
+  const currentNetwork = DRE.network.name;
+  const targetAddress = getParamPerNetwork(config.PoolAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
   const addressList = await Promise.all(
-    (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
-  const addressIndex = config.AaveAdminIndex;
+  const addressIndex = config.PoolAdminIndex;
+  return addressList[addressIndex];
+};
+
+export const getEmergencyAdmin = async (config: ICommonConfiguration) => {
+  const currentNetwork = DRE.network.name;
+  const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eEthereumNetwork>currentNetwork);
+  if (targetAddress) {
+    return targetAddress;
+  }
+  const addressList = await Promise.all(
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
+  const addressIndex = config.EmergencyAdminIndex;
   return addressList[addressIndex];
 };
 
@@ -80,3 +83,16 @@ export const getATokenDomainSeparatorPerNetwork = (
   network: eEthereumNetwork,
   config: ICommonConfiguration
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
+
+export const getWethAddress = async (config: ICommonConfiguration) => {
+  const currentNetwork = DRE.network.name;
+  const wethAddress = getParamPerNetwork(config.WETH, <eEthereumNetwork>currentNetwork);
+  if (wethAddress) {
+    return wethAddress;
+  }
+  if (currentNetwork.includes('main')) {
+    throw new Error('WETH not set at mainnet configuration.');
+  }
+  const weth = await deployWETHMocked();
+  return weth.address;
+};

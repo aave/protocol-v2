@@ -4,9 +4,8 @@ import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 import {WAD} from './constants';
 import {Wallet, ContractTransaction} from 'ethers';
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {BuidlerRuntimeEnvironment} from '@nomiclabs/buidler/types';
-import path from 'path';
-import fs from 'fs';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -15,9 +14,11 @@ export const stringToBigNumber = (amount: string): BigNumber => new BigNumber(am
 
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
-export let BRE: BuidlerRuntimeEnvironment = {} as BuidlerRuntimeEnvironment;
-export const setBRE = (_BRE: BuidlerRuntimeEnvironment) => {
-  BRE = _BRE;
+export let DRE:
+  | HardhatRuntimeEnvironment
+  | BuidlerRuntimeEnvironment = {} as HardhatRuntimeEnvironment;
+export const setDRE = (_DRE: HardhatRuntimeEnvironment | BuidlerRuntimeEnvironment) => {
+  DRE = _DRE;
 };
 
 export const sleep = (milliseconds: number) => {
@@ -26,21 +27,21 @@ export const sleep = (milliseconds: number) => {
 
 export const createRandomAddress = () => Wallet.createRandom().address;
 
-export const evmSnapshot = async () => await BRE.ethereum.send('evm_snapshot', []);
+export const evmSnapshot = async () => await DRE.ethers.provider.send('evm_snapshot', []);
 
-export const evmRevert = async (id: string) => BRE.ethereum.send('evm_revert', [id]);
+export const evmRevert = async (id: string) => DRE.ethers.provider.send('evm_revert', [id]);
 
 export const timeLatest = async () => {
-  const block = await BRE.ethers.provider.getBlock('latest');
+  const block = await DRE.ethers.provider.getBlock('latest');
   return new BigNumber(block.timestamp);
 };
 
 export const advanceBlock = async (timestamp: number) =>
-  await BRE.ethers.provider.send('evm_mine', [timestamp]);
+  await DRE.ethers.provider.send('evm_mine', [timestamp]);
 
 export const increaseTime = async (secondsToIncrease: number) => {
-  await BRE.ethers.provider.send('evm_increaseTime', [secondsToIncrease]);
-  await BRE.ethers.provider.send('evm_mine', []);
+  await DRE.ethers.provider.send('evm_increaseTime', [secondsToIncrease]);
+  await DRE.ethers.provider.send('evm_mine', []);
 };
 
 export const waitForTx = async (tx: ContractTransaction) => await tx.wait(1);
@@ -61,4 +62,27 @@ export const chunk = <T>(arr: Array<T>, chunkSize: number): Array<Array<T>> => {
         : prevVal,
     []
   );
+};
+
+interface DbEntry {
+  [network: string]: {
+    deployer: string;
+    address: string;
+  };
+}
+
+export const printContracts = () => {
+  const network = DRE.network.name;
+  const db = getDb();
+  console.log('Contracts deployed at', network);
+  console.log('---------------------------------');
+
+  const entries = Object.entries<DbEntry>(db.getState()).filter(([_k, value]) => !!value[network]);
+
+  const contractsPrint = entries.map(
+    ([key, value]: [string, DbEntry]) => `${key}: ${value[network].address}`
+  );
+
+  console.log('N# Contracts:', entries.length);
+  console.log(contractsPrint.join('\n'), '\n');
 };

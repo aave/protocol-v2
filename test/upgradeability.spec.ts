@@ -19,7 +19,7 @@ import {
 } from '../helpers/contracts-deployments';
 
 makeSuite('Upgradeability', (testEnv: TestEnv) => {
-  const {LPC_CALLER_NOT_AAVE_ADMIN} = ProtocolErrors;
+  const {CALLER_NOT_POOL_ADMIN} = ProtocolErrors;
   let newATokenAddress: string;
   let newStableTokenAddress: string;
   let newVariableTokenAddress: string;
@@ -61,7 +61,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     await expect(
       configurator.connect(users[1].signer).updateAToken(dai.address, newATokenAddress)
-    ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
   it('Upgrades the DAI Atoken implementation ', async () => {
@@ -83,7 +83,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       configurator
         .connect(users[1].signer)
         .updateStableDebtToken(dai.address, newStableTokenAddress)
-    ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
   it('Upgrades the DAI stable debt token implementation ', async () => {
@@ -109,7 +109,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       configurator
         .connect(users[1].signer)
         .updateVariableDebtToken(dai.address, newVariableTokenAddress)
-    ).to.be.revertedWith(LPC_CALLER_NOT_AAVE_ADMIN);
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
   it('Upgrades the DAI variable debt token implementation ', async () => {

@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import {MockTokenMap} from './contracts-helpers';
 
 export interface SymbolMap<T> {
   [symbol: string]: T;
@@ -11,6 +10,7 @@ export enum eEthereumNetwork {
   ropsten = 'ropsten',
   main = 'main',
   coverage = 'coverage',
+  hardhat = 'hardhat',
 }
 
 export enum EthereumNetworkNames {
@@ -28,6 +28,7 @@ export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
   MintableERC20 = 'MintableERC20',
+  MintableDelegationERC20 = 'MintableDelegationERC20',
   LendingPoolAddressesProviderRegistry = 'LendingPoolAddressesProviderRegistry',
   LendingPoolParametersProvider = 'LendingPoolParametersProvider',
   LendingPoolConfigurator = 'LendingPoolConfigurator',
@@ -47,6 +48,7 @@ export enum eContractid {
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
+  DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
   AaveProtocolTestHelpers = 'AaveProtocolTestHelpers',
@@ -57,6 +59,11 @@ export enum eContractid {
   TokenDistributor = 'TokenDistributor',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
+  UiPoolDataProvider = 'UiPoolDataProvider',
+  WETHGateway = 'WETHGateway',
+  WETH = 'WETH',
+  WETHMocked = 'WETHMocked',
+  SelfdestructTransferMock = 'SelfdestructTransferMock',
   MockUniswapV2Router02 = 'MockUniswapV2Router02',
   UniswapLiquiditySwapAdapter = 'UniswapLiquiditySwapAdapter',
   UniswapRepayAdapter = 'UniswapRepayAdapter',
@@ -75,9 +82,13 @@ export enum eContractid {
  *  - P = Pausable
  */
 export enum ProtocolErrors {
+  //common errors
+  CALLER_NOT_POOL_ADMIN = '33', // 'The caller must be the pool admin'
+
+  //contract specific errors
   VL_AMOUNT_NOT_GREATER_THAN_0 = '1', // 'Amount must be greater than 0'
   VL_NO_ACTIVE_RESERVE = '2', // 'Action requires an active reserve'
-  VL_NO_UNFREEZED_RESERVE = '3', // 'Action requires an unfreezed reserve'
+  VL_RESERVE_FROZEN = '3', // 'Action requires an unfrozen reserve'
   VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH = '4', // 'The current liquidity is not enough'
   VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE = '5', // 'User cannot withdraw more than the available balance'
   VL_TRANSFER_NOT_ALLOWED = '6', // 'Transfer cannot be allowed.'
@@ -87,7 +98,7 @@ export enum ProtocolErrors {
   VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD = '10', // 'Health factor is lesser than the liquidation threshold'
   VL_COLLATERAL_CANNOT_COVER_NEW_BORROW = '11', // 'There is not enough collateral to cover a new borrow'
   VL_STABLE_BORROWING_NOT_ENABLED = '12', // stable borrowing not enabled
-  VL_CALLATERAL_SAME_AS_BORROWING_CURRENCY = '13', // collateral is (mostly) the same currency that is being borrowed
+  VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY = '13', // collateral is (mostly) the same currency that is being borrowed
   VL_AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE = '14', // 'The requested amount is greater than the max loan size in stable rate mode
   VL_NO_DEBT_OF_SELECTED_TYPE = '15', // 'for repayment of stable debt, the user needs to have stable debt, otherwise, he needs to have variable debt'
   VL_NO_EXPLICIT_AMOUNT_TO_REPAY_ON_BEHALF = '16', // 'To repay on behalf of an user an explicit amount to repay is needed'
@@ -101,13 +112,12 @@ export enum ProtocolErrors {
   LP_NOT_ENOUGH_LIQUIDITY_TO_BORROW = '24', // 'There is not enough liquidity available to borrow'
   LP_REQUESTED_AMOUNT_TOO_SMALL = '25', // 'The requested amount is too small for a FlashLoan.'
   LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26', // 'The actual balance of the protocol is inconsistent'
-  LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The actual balance of the protocol is inconsistent'
+  LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The caller is not the lending pool configurator'
   LP_INCONSISTENT_FLASHLOAN_PARAMS = '28',
   AT_CALLER_MUST_BE_LENDING_POOL = '29', // 'The caller of this function must be a lending pool'
   AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
   AT_TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
   RL_RESERVE_ALREADY_INITIALIZED = '32', // 'Reserve has already been initialized'
-  LPC_CALLER_NOT_AAVE_ADMIN = '33', // 'The caller must be the aave admin'
   LPC_RESERVE_LIQUIDITY_NOT_0 = '34', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_ATOKEN_POOL_ADDRESS = '35', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS = '36', // 'The liquidity of the reserve needs to be 0'
@@ -115,6 +125,7 @@ export enum ProtocolErrors {
   LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '38', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '39', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_ADDRESSES_PROVIDER_ID = '40', // 'The liquidity of the reserve needs to be 0'
+  LPC_CALLER_NOT_EMERGENCY_ADMIN = '76', // 'The caller must be the emergencya admin'
   LPAPR_PROVIDER_NOT_REGISTERED = '41', // 'Provider is not registered'
   LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '42', // 'Health factor is not below the threshold'
   LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED = '43', // 'The collateral chosen cannot be liquidated'
@@ -133,12 +144,12 @@ export enum ProtocolErrors {
   AT_INVALID_MINT_AMOUNT = '56', //invalid amount to mint
   LP_FAILED_REPAY_WITH_COLLATERAL = '57',
   AT_INVALID_BURN_AMOUNT = '58', //invalid amount to burn
-  LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '59', // User borrows on behalf, but allowance are too small
+  LP_BORROW_ALLOWANCE_NOT_ENOUGH = '59', // User borrows on behalf, but allowance are too small
   LP_FAILED_COLLATERAL_SWAP = '60',
   LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61',
   LP_REENTRANCY_NOT_ALLOWED = '62',
   LP_CALLER_MUST_BE_AN_ATOKEN = '63',
-  P_IS_PAUSED = '64', // 'Pool is paused'
+  LP_IS_PAUSED = '64', // 'Pool is paused'
   LP_NO_MORE_RESERVES_ALLOWED = '65',
   LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN = '66',
   RC_INVALID_LTV = '67',
@@ -174,7 +185,7 @@ export interface iAssetBase<T> {
   USDC: T;
   USDT: T;
   SUSD: T;
-  LEND: T;
+  AAVE: T;
   BAT: T;
   REP: T;
   MKR: T;
@@ -185,8 +196,11 @@ export interface iAssetBase<T> {
   ZRX: T;
   SNX: T;
   BUSD: T;
-
+  YFI: T;
+  UNI: T;
   USD: T;
+  REN: T;
+  ENJ: T;
 
   UNI_DAI_ETH: T;
   UNI_USDC_ETH: T;
@@ -207,7 +221,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'USDC'
   | 'USDT'
   | 'SUSD'
-  | 'LEND'
+  | 'AAVE'
   | 'BAT'
   | 'REP'
   | 'MKR'
@@ -219,6 +233,10 @@ export type iAavePoolAssets<T> = Pick<
   | 'SNX'
   | 'BUSD'
   | 'WETH'
+  | 'YFI'
+  | 'UNI'
+  | 'REN'
+  | 'ENJ'
 >;
 
 export type iUniAssets<T> = Pick<
@@ -248,7 +266,7 @@ export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
 export enum TokenContractId {
   DAI = 'DAI',
-  LEND = 'LEND',
+  AAVE = 'AAVE',
   TUSD = 'TUSD',
   BAT = 'BAT',
   WETH = 'WETH',
@@ -262,9 +280,13 @@ export enum TokenContractId {
   KNC = 'KNC',
   MANA = 'MANA',
   REP = 'REP',
+  REN = 'REN',
   SNX = 'SNX',
   BUSD = 'BUSD',
   USD = 'USD',
+  YFI = 'YFI',
+  UNI = 'UNI',
+  ENJ = 'ENJ',
   UNI_DAI_ETH = 'UNI_DAI_ETH',
   UNI_USDC_ETH = 'UNI_USDC_ETH',
   UNI_SETH_ETH = 'UNI_SETH_ETH',
@@ -301,6 +323,7 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.kovan]: T;
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
+  [eEthereumNetwork.hardhat]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -360,7 +383,6 @@ export interface ILendingRate {
 export interface ICommonConfiguration {
   ConfigName: string;
   ProviderId: number;
-  ReserveSymbols: string[];
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
@@ -370,12 +392,15 @@ export interface ICommonConfiguration {
   ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
-  AaveAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
-  AaveAdminIndex: number;
+  PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
+  PoolAdminIndex: number;
+  EmergencyAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
+  EmergencyAdminIndex: number;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   ProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+  WETH: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

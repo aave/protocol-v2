@@ -15,14 +15,11 @@ contract LendingPoolStorage {
 
   mapping(address => ReserveLogic.ReserveData) internal _reserves;
   mapping(address => UserConfiguration.Map) internal _usersConfig;
-  // debt token address => user who gives allowance => user who receives allowance => amount
-  mapping(address => mapping(address => mapping(address => uint256))) internal _borrowAllowance;
 
   // the list of the available reserves, structured as a mapping for gas savings reasons
   mapping(uint256 => address) internal _reservesList;
 
   uint256 internal _reservesCount;
 
-  bool internal _flashLiquidationLocked;
   bool internal _paused;
 }

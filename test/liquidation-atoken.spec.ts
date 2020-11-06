@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 
-import {BRE} from '../helpers/misc-utils';
+import {DRE} from '../helpers/misc-utils';
 import {oneEther} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
@@ -21,7 +21,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     INVALID_HF,
     LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER,
     LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED,
-    P_IS_PAUSED,
+    LP_IS_PAUSED,
   } = ProtocolErrors;
 
   it('LIQUIDATION - Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
@@ -96,7 +96,10 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const userGlobalData = await pool.getUserAccountData(borrower.address);
 
-    expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(oneEther, INVALID_HF);
+    expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(
+      oneEther.toString(),
+      INVALID_HF
+    );
   });
 
   it('LIQUIDATION - Tries to liquidate a different currency than the loan principal', async () => {
@@ -182,7 +185,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     }
 
     const txTimestamp = new BigNumber(
-      (await BRE.ethers.provider.getBlock(tx.blockNumber)).timestamp
+      (await DRE.ethers.provider.getBlock(tx.blockNumber)).timestamp
     );
 
     const variableDebtBeforeTx = calcExpectedVariableDebtTokenBalance(

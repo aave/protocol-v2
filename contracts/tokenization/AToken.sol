@@ -13,7 +13,7 @@ import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 /**
  * @title Aave ERC20 AToken
  *
- * @dev Implementation of the interest bearing token for the DLP protocol.
+ * @dev Implementation of the interest bearing token for the Aave protocol.
  * @author Aave
  */
 contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
@@ -108,7 +108,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     //transfer event to track balances
     emit Transfer(user, address(0), amount);
-    emit Burn(_msgSender(), receiverOfUnderlying, amount, index);
+    emit Burn(user, receiverOfUnderlying, amount, index);
   }
 
   /**

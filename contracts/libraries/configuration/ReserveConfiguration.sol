@@ -259,7 +259,7 @@ library ReserveConfiguration {
   /**
    * @dev gets the configuration flags of the reserve
    * @param self the reserve configuration
-   * @return the state flags representing active, freezed, borrowing enabled, stableRateBorrowing enabled
+   * @return the state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
    **/
   function getFlags(ReserveConfiguration.Map storage self)
     internal
@@ -336,7 +336,7 @@ library ReserveConfiguration {
   /**
    * @dev gets the configuration flags of the reserve from a memory object
    * @param self the reserve configuration
-   * @return the state flags representing active, freezed, borrowing enabled, stableRateBorrowing enabled
+   * @return the state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
    **/
   function getFlagsMemory(ReserveConfiguration.Map memory self)
     internal

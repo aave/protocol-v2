@@ -34,11 +34,11 @@ library ValidationLogic {
    * @param amount the amount to be deposited
    */
   function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
-    (bool isActive, bool isFreezed, , ) = reserve.configuration.getFlags();
+    (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
 
     require(amount > 0, Errors.VL_AMOUNT_NOT_GREATER_THAN_0);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
-    require(!isFreezed, Errors.VL_NO_UNFREEZED_RESERVE);
+    require(!isFrozen, Errors.VL_RESERVE_FROZEN);
   }
 
   /**
@@ -97,7 +97,7 @@ library ValidationLogic {
     ReserveLogic.InterestRateMode rateMode;
     bool healthFactorBelowThreshold;
     bool isActive;
-    bool isFreezed;
+    bool isFrozen;
     bool borrowingEnabled;
     bool stableRateBorrowingEnabled;
   }
@@ -133,15 +133,12 @@ library ValidationLogic {
   ) external view {
     ValidateBorrowLocalVars memory vars;
 
-    (
-      vars.isActive,
-      vars.isFreezed,
-      vars.borrowingEnabled,
-      vars.stableRateBorrowingEnabled
-    ) = reserve.configuration.getFlags();
+    (vars.isActive, vars.isFrozen, vars.borrowingEnabled, vars.stableRateBorrowingEnabled) = reserve
+      .configuration
+      .getFlags();
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
-    require(!vars.isFreezed, Errors.VL_NO_UNFREEZED_RESERVE);
+    require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
 
     require(vars.borrowingEnabled, Errors.VL_BORROWING_NOT_ENABLED);
 
@@ -202,7 +199,7 @@ library ValidationLogic {
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
           amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
-        Errors.VL_CALLATERAL_SAME_AS_BORROWING_CURRENCY
+        Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
       vars.availableLiquidity = IERC20(asset).balanceOf(reserve.aTokenAddress);
@@ -266,10 +263,10 @@ library ValidationLogic {
     uint256 variableDebt,
     ReserveLogic.InterestRateMode currentRateMode
   ) external view {
-    (bool isActive, bool isFreezed, , bool stableRateEnabled) = reserve.configuration.getFlags();
+    (bool isActive, bool isFrozen, , bool stableRateEnabled) = reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
-    require(!isFreezed, Errors.VL_NO_UNFREEZED_RESERVE);
+    require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
     if (currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
       require(stableDebt > 0, Errors.VL_NO_STABLE_RATE_LOAN_IN_RESERVE);
@@ -288,7 +285,7 @@ library ValidationLogic {
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
           stableDebt.add(variableDebt) > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
-        Errors.VL_CALLATERAL_SAME_AS_BORROWING_CURRENCY
+        Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
       revert(Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED);

@@ -21,7 +21,7 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
       addressesProvider.setLendingPoolImpl,
       addressesProvider.setLendingPoolConfiguratorImpl,
       addressesProvider.setLendingPoolCollateralManager,
-      addressesProvider.setAaveAdmin,
+      addressesProvider.setPoolAdmin,
       addressesProvider.setPriceOracle,
       addressesProvider.setLendingRateOracle,
     ]) {

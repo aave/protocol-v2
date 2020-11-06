@@ -13,6 +13,7 @@ import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {ITokenConfiguration} from '../tokenization/interfaces/ITokenConfiguration.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
+import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 /**
@@ -56,24 +57,18 @@ contract LendingPoolConfigurator is VersionedInitializable {
   event BorrowingDisabledOnReserve(address indexed asset);
 
   /**
-   * @dev emitted when a reserve is enabled as collateral.
+   * @dev emitted when a a reserve collateralization risk parameters are updated.
    * @param asset the address of the reserve
    * @param ltv the loan to value of the asset when used as collateral
    * @param liquidationThreshold the threshold at which loans using this asset as collateral will be considered undercollateralized
    * @param liquidationBonus the bonus liquidators receive to liquidate this asset
    **/
-  event ReserveEnabledAsCollateral(
+  event CollateralConfigurationChanged(
     address indexed asset,
     uint256 ltv,
     uint256 liquidationThreshold,
     uint256 liquidationBonus
   );
-
-  /**
-   * @dev emitted when a reserve is disabled as collateral
-   * @param asset the address of the reserve
-   **/
-  event ReserveDisabledAsCollateral(address indexed asset);
 
   /**
    * @dev emitted when stable rate borrowing is enabled on a reserve
@@ -100,16 +95,16 @@ contract LendingPoolConfigurator is VersionedInitializable {
   event ReserveDeactivated(address indexed asset);
 
   /**
-   * @dev emitted when a reserve is freezed
+   * @dev emitted when a reserve is frozen
    * @param asset the address of the reserve
    **/
-  event ReserveFreezed(address indexed asset);
+  event ReserveFrozen(address indexed asset);
 
   /**
-   * @dev emitted when a reserve is unfreezed
+   * @dev emitted when a reserve is unfrozen
    * @param asset the address of the reserve
    **/
-  event ReserveUnfreezed(address indexed asset);
+  event ReserveUnfrozen(address indexed asset);
 
   /**
    * @dev emitted when a reserve loan to value is updated
@@ -193,10 +188,21 @@ contract LendingPoolConfigurator is VersionedInitializable {
   ILendingPool internal pool;
 
   /**
-   * @dev only the lending pool manager can call functions affected by this modifier
+   * @dev only the pool admin can call functions affected by this modifier
    **/
-  modifier onlyAaveAdmin {
-    require(addressesProvider.getAaveAdmin() == msg.sender, Errors.LPC_CALLER_NOT_AAVE_ADMIN);
+  modifier onlyPoolAdmin {
+    require(addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+    _;
+  }
+
+  /**
+   * @dev only the emergency admin can call functions affected by this modifier
+   **/
+  modifier onlyEmergencyAdmin {
+    require(
+      addressesProvider.getEmergencyAdmin() == msg.sender,
+      Errors.LPC_CALLER_NOT_EMERGENCY_ADMIN
+    );
     _;
   }
 
@@ -225,7 +231,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     address variableDebtTokenImpl,
     uint8 underlyingAssetDecimals,
     address interestRateStrategyAddress
-  ) public onlyAaveAdmin {
+  ) public onlyPoolAdmin {
     address asset = ITokenConfiguration(aTokenImpl).UNDERLYING_ASSET_ADDRESS();
 
     require(
@@ -292,7 +298,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve to be updated
    * @param implementation the address of the new aToken implementation
    **/
-  function updateAToken(address asset, address implementation) external onlyAaveAdmin {
+  function updateAToken(address asset, address implementation) external onlyPoolAdmin {
     ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
     _upgradeTokenImplementation(asset, reserveData.aTokenAddress, implementation);
@@ -305,7 +311,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve to be updated
    * @param implementation the address of the new aToken implementation
    **/
-  function updateStableDebtToken(address asset, address implementation) external onlyAaveAdmin {
+  function updateStableDebtToken(address asset, address implementation) external onlyPoolAdmin {
     ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
     _upgradeTokenImplementation(asset, reserveData.stableDebtTokenAddress, implementation);
@@ -318,7 +324,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve to be updated
    * @param implementation the address of the new aToken implementation
    **/
-  function updateVariableDebtToken(address asset, address implementation) external onlyAaveAdmin {
+  function updateVariableDebtToken(address asset, address implementation) external onlyPoolAdmin {
     ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
 
     _upgradeTokenImplementation(asset, reserveData.variableDebtTokenAddress, implementation);
@@ -333,7 +339,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    **/
   function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled)
     external
-    onlyAaveAdmin
+    onlyPoolAdmin
   {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
@@ -349,7 +355,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev disables borrowing on a reserve
    * @param asset the address of the reserve
    **/
-  function disableBorrowingOnReserve(address asset) external onlyAaveAdmin {
+  function disableBorrowingOnReserve(address asset) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(false);
@@ -359,19 +365,39 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev enables a reserve to be used as collateral
+   * @dev configures the reserve collateralization parameters
    * @param asset the address of the reserve
    * @param ltv the loan to value of the asset when used as collateral
    * @param liquidationThreshold the threshold at which loans using this asset as collateral will be considered undercollateralized
    * @param liquidationBonus the bonus liquidators receive to liquidate this asset
    **/
-  function enableReserveAsCollateral(
+  function configureReserveAsCollateral(
     address asset,
     uint256 ltv,
     uint256 liquidationThreshold,
     uint256 liquidationBonus
-  ) external onlyAaveAdmin {
+  ) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+
+    //validation of the parameters: the LTV can
+    //only be lower or equal than the liquidation threshold
+    //(otherwise a loan against the asset would cause instantaneous liquidation)
+    require(ltv <= liquidationThreshold, Errors.LPC_INVALID_CONFIGURATION);
+
+    if (liquidationThreshold != 0) {
+      //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
+      //collateral than needed to cover the debt
+      require(
+        liquidationBonus > PercentageMath.PERCENTAGE_FACTOR,
+        Errors.LPC_INVALID_CONFIGURATION
+      );
+    } else {
+      require(liquidationBonus == 0, Errors.LPC_INVALID_CONFIGURATION);
+      //if the liquidation threshold is being set to 0,
+      // the reserve is being disabled as collateral. To do so,
+      //we need to ensure no liquidity is deposited
+      _checkNoLiquidity(asset);
+    }
 
     currentConfig.setLtv(ltv);
     currentConfig.setLiquidationThreshold(liquidationThreshold);
@@ -379,28 +405,14 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     pool.setConfiguration(asset, currentConfig.data);
 
-    emit ReserveEnabledAsCollateral(asset, ltv, liquidationThreshold, liquidationBonus);
-  }
-
-  /**
-   * @dev disables a reserve as collateral
-   * @param asset the address of the reserve
-   **/
-  function disableReserveAsCollateral(address asset) external onlyAaveAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
-
-    currentConfig.setLtv(0);
-
-    pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveDisabledAsCollateral(asset);
+    emit CollateralConfigurationChanged(asset, ltv, liquidationThreshold, liquidationBonus);
   }
 
   /**
    * @dev enable stable rate borrowing on a reserve
    * @param asset the address of the reserve
    **/
-  function enableReserveStableRate(address asset) external onlyAaveAdmin {
+  function enableReserveStableRate(address asset) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setStableRateBorrowingEnabled(true);
@@ -414,7 +426,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev disable stable rate borrowing on a reserve
    * @param asset the address of the reserve
    **/
-  function disableReserveStableRate(address asset) external onlyAaveAdmin {
+  function disableReserveStableRate(address asset) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setStableRateBorrowingEnabled(false);
@@ -428,7 +440,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev activates a reserve
    * @param asset the address of the reserve
    **/
-  function activateReserve(address asset) external onlyAaveAdmin {
+  function activateReserve(address asset) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setActive(true);
@@ -442,15 +454,8 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev deactivates a reserve
    * @param asset the address of the reserve
    **/
-  function deactivateReserve(address asset) external onlyAaveAdmin {
-    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
-
-    uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
-
-    require(
-      availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
-      Errors.LPC_RESERVE_LIQUIDITY_NOT_0
-    );
+  function deactivateReserve(address asset) external onlyPoolAdmin {
+    _checkNoLiquidity(asset);
 
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
@@ -462,31 +467,31 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev freezes a reserve. A freezed reserve doesn't accept any new deposit, borrow or rate swap, but can accept repayments, liquidations, rate rebalances and redeems
+   * @dev freezes a reserve. A frozen reserve doesn't accept any new deposit, borrow or rate swap, but can accept repayments, liquidations, rate rebalances and redeems
    * @param asset the address of the reserve
    **/
-  function freezeReserve(address asset) external onlyAaveAdmin {
+  function freezeReserve(address asset) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setFrozen(true);
 
     pool.setConfiguration(asset, currentConfig.data);
 
-    emit ReserveFreezed(asset);
+    emit ReserveFrozen(asset);
   }
 
   /**
    * @dev unfreezes a reserve
    * @param asset the address of the reserve
    **/
-  function unfreezeReserve(address asset) external onlyAaveAdmin {
+  function unfreezeReserve(address asset) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setFrozen(false);
 
     pool.setConfiguration(asset, currentConfig.data);
 
-    emit ReserveUnfreezed(asset);
+    emit ReserveUnfrozen(asset);
   }
 
   /**
@@ -494,7 +499,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param ltv the new value for the loan to value
    **/
-  function setLtv(address asset, uint256 ltv) external onlyAaveAdmin {
+  function setLtv(address asset, uint256 ltv) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setLtv(ltv);
@@ -509,7 +514,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param reserveFactor the new reserve factor of the reserve
    **/
-  function setReserveFactor(address asset, uint256 reserveFactor) external onlyAaveAdmin {
+  function setReserveFactor(address asset, uint256 reserveFactor) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setReserveFactor(reserveFactor);
@@ -524,7 +529,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param threshold the new value for the liquidation threshold
    **/
-  function setLiquidationThreshold(address asset, uint256 threshold) external onlyAaveAdmin {
+  function setLiquidationThreshold(address asset, uint256 threshold) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setLiquidationThreshold(threshold);
@@ -539,7 +544,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param bonus the new value for the liquidation bonus
    **/
-  function setLiquidationBonus(address asset, uint256 bonus) external onlyAaveAdmin {
+  function setLiquidationBonus(address asset, uint256 bonus) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setLiquidationBonus(bonus);
@@ -554,7 +559,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    * @param decimals the new number of decimals
    **/
-  function setReserveDecimals(address asset, uint256 decimals) external onlyAaveAdmin {
+  function setReserveDecimals(address asset, uint256 decimals) external onlyPoolAdmin {
     ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setDecimals(decimals);
@@ -571,7 +576,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    **/
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
-    onlyAaveAdmin
+    onlyPoolAdmin
   {
     pool.setReserveInterestRateStrategyAddress(asset, rateStrategyAddress);
     emit ReserveInterestRateStrategyChanged(asset, rateStrategyAddress);
@@ -626,7 +631,18 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @dev pauses or unpauses LendingPool actions
    * @param val the boolean value to set the current pause state of LendingPool
    **/
-  function setPoolPause(bool val) external onlyAaveAdmin {
+  function setPoolPause(bool val) external onlyEmergencyAdmin {
     pool.setPause(val);
+  }
+
+  function _checkNoLiquidity(address asset) internal view {
+    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
+
+    uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
+
+    require(
+      availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
+      Errors.LPC_RESERVE_LIQUIDITY_NOT_0
+    );
   }
 }

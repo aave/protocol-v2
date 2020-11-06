@@ -1,4 +1,4 @@
-import {task} from '@nomiclabs/buidler/config';
+import {task} from 'hardhat/config';
 import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 import {
   deployATokensAndRatesHelper,
@@ -17,7 +17,7 @@ import {
 task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 
