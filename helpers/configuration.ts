@@ -12,7 +12,7 @@ import {AaveConfig} from '../config/aave';
 import {UniswapConfig} from '../config/uniswap';
 import {CommonsConfig} from '../config/commons';
 import {ZERO_ADDRESS} from './constants';
-import {BRE} from './misc-utils';
+import {DRE} from './misc-utils';
 import {tEthereumAddress} from './types';
 import {getParamPerNetwork} from './contracts-helpers';
 import {deployWETHMocked} from './contracts-deployments';
@@ -65,26 +65,26 @@ export const getFeeDistributionParamsCommon = (
 };
 
 export const getGenesisPoolAdmin = async (config: ICommonConfiguration) => {
-  const currentNetwork = BRE.network.name;
+  const currentNetwork = DRE.network.name;
   const targetAddress = getParamPerNetwork(config.PoolAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
   const addressList = await Promise.all(
-    (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
   const addressIndex = config.PoolAdminIndex;
   return addressList[addressIndex];
 };
 
 export const getEmergencyAdmin = async (config: ICommonConfiguration) => {
-  const currentNetwork = BRE.network.name;
+  const currentNetwork = DRE.network.name;
   const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
   const addressList = await Promise.all(
-    (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
   const addressIndex = config.EmergencyAdminIndex;
   return addressList[addressIndex];
@@ -96,7 +96,7 @@ export const getATokenDomainSeparatorPerNetwork = (
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
 
 export const getWethAddress = async (config: ICommonConfiguration) => {
-  const currentNetwork = BRE.network.name;
+  const currentNetwork = DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WETH, <eEthereumNetwork>currentNetwork);
   if (wethAddress) {
     return wethAddress;
