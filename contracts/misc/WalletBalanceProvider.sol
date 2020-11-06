@@ -6,7 +6,7 @@ pragma experimental ABIEncoderV2;
 import {Address} from '../dependencies/openzeppelin/contracts/Address.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
@@ -24,10 +24,10 @@ contract WalletBalanceProvider {
   using SafeERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
 
-  LendingPoolAddressesProvider internal immutable _provider;
+  ILendingPoolAddressesProvider internal immutable _provider;
   address constant MOCK_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-  constructor(LendingPoolAddressesProvider provider) public {
+  constructor(ILendingPoolAddressesProvider provider) public {
     _provider = provider;
   }
 
