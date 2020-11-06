@@ -1,18 +1,16 @@
 import path from 'path';
 import fs from 'fs';
-import {usePlugin, task} from '@nomiclabs/buidler/config';
+import {HardhatUserConfig} from 'hardhat/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
 import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
-import {setDRE} from './helpers/misc-utils';
 
-usePlugin('@nomiclabs/buidler-ethers');
-usePlugin('buidler-typechain');
-usePlugin('solidity-coverage');
-usePlugin('@nomiclabs/buidler-waffle');
-usePlugin('@nomiclabs/buidler-etherscan');
-usePlugin('buidler-gas-reporter');
+import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-waffle';
+import '@nomiclabs/hardhat-etherscan';
+import 'hardhat-gas-reporter';
+import 'hardhat-typechain';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
@@ -23,12 +21,19 @@ const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 
-task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).setAction(
-  async (_, _DRE) => {
-    setDRE(_DRE);
-    return _DRE;
-  }
-);
+// Prevent to load scripts before compilation and typechain
+if (!SKIP_LOAD) {
+  ['misc', 'migrations', 'dev', 'full'].forEach((folder) => {
+    const tasksPath = path.join(__dirname, 'tasks', folder);
+    fs.readdirSync(tasksPath)
+      .filter((pth) => pth.includes('.ts'))
+      .forEach((task) => {
+        require(`${tasksPath}/${task}`);
+      });
+  });
+}
+
+require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {
@@ -46,20 +51,21 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
   };
 };
 
-const buidlerConfig: any = {
-  solc: {
+const buidlerConfig: HardhatUserConfig = {
+  solidity: {
     version: '0.6.8',
-    optimizer: {enabled: true, runs: 200},
-    evmVersion: 'istanbul',
+    settings: {
+      optimizer: {enabled: true, runs: 200},
+      evmVersion: 'istanbul',
+    },
   },
   typechain: {
     outDir: 'types',
-    target: 'ethers-v4',
+    target: 'ethers-v5',
   },
   etherscan: {
     apiKey: ETHERSCAN_KEY,
   },
-  defaultNetwork: 'buidlerevm',
   mocha: {
     timeout: 0,
   },
@@ -71,7 +77,7 @@ const buidlerConfig: any = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
-    buidlerevm: {
+    hardhat: {
       hardfork: 'istanbul',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,

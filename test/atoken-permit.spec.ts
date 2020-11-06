@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {ethers} from 'ethers';
 import {eEthereumNetwork} from '../helpers/types';
 import {makeSuite, TestEnv} from './helpers/make-suite';
-import {BRE} from '../helpers/misc-utils';
+import {DRE} from '../helpers/misc-utils';
 import {
   ConfigNames,
   getATokenDomainSeparatorPerNetwork,
@@ -47,7 +47,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
 
     const tokenName = await aDai.name();
 
-    const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+    const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
     const expiration = 0;
     const nonce = (await aDai._nonces(owner.address)).toNumber();
     const permitAmount = ethers.utils.parseEther('2').toString();
@@ -92,7 +92,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
     const owner = deployer;
     const spender = users[1];
 
-    const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+    const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
     const deadline = MAX_UINT_AMOUNT;
     const nonce = (await aDai._nonces(owner.address)).toNumber();
     const permitAmount = parseEther('2').toString();
@@ -134,7 +134,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
     const owner = deployer;
     const spender = users[1];
 
-    const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+    const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
     const deadline = MAX_UINT_AMOUNT;
     const nonce = (await aDai._nonces(owner.address)).toNumber();
     const permitAmount = '0';
@@ -180,7 +180,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
     const owner = deployer;
     const spender = users[1];
 
-    const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+    const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
     const deadline = MAX_UINT_AMOUNT;
     const nonce = 1000;
     const permitAmount = '0';
@@ -215,7 +215,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
     const owner = deployer;
     const spender = users[1];
 
-    const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+    const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
     const expiration = '1';
     const nonce = (await aDai._nonces(owner.address)).toNumber();
     const permitAmount = '0';
@@ -250,7 +250,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
     const owner = deployer;
     const spender = users[1];
 
-    const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+    const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
     const deadline = MAX_UINT_AMOUNT;
     const nonce = (await aDai._nonces(owner.address)).toNumber();
     const permitAmount = '0';
@@ -285,7 +285,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
     const owner = deployer;
     const spender = users[1];
 
-    const chainId = BRE.network.config.chainId || BUIDLEREVM_CHAINID;
+    const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
     const expiration = MAX_UINT_AMOUNT;
     const nonce = (await aDai._nonces(owner.address)).toNumber();
     const permitAmount = '0';

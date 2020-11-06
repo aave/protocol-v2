@@ -1,5 +1,5 @@
 import {Contract} from 'ethers';
-import {BRE} from './misc-utils';
+import {DRE} from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -9,10 +9,10 @@ import {
   iMultiPoolsAssets,
   IReserveParams,
   PoolConfiguration,
+  eEthereumNetwork,
 } from './types';
 
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {readArtifact} from '@nomiclabs/buidler/plugins';
 import {MockContract} from 'ethereum-waffle';
 import {getReservesConfigByPool} from './configuration';
 import {getFirstSigner} from './contracts-getters';
@@ -45,17 +45,21 @@ import {
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
-  Weth9Factory,
   Weth9MockedFactory,
   WethGatewayFactory,
 } from '../types';
 import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
-import {MockStableDebtToken} from '../types/MockStableDebtToken';
-import {MockVariableDebtToken} from '../types/MockVariableDebtToken';
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
-import {SelfdestructTransfer} from '../types/SelfdestructTransfer';
+import {readArtifact as buidlerReadArtifact} from '@nomiclabs/buidler/plugins';
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
 
+const readArtifact = async (id: string) => {
+  if (DRE.network.name === eEthereumNetwork.buidlerevm) {
+    return buidlerReadArtifact(DRE.config.paths.artifacts, id);
+  }
+  return (DRE as HardhatRuntimeEnvironment).artifacts.readArtifact(id);
+};
 export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
   withSaveAndVerify(
     await new LendingPoolAddressesProviderFactory(await getFirstSigner()).deploy(),
@@ -89,16 +93,13 @@ export const deployReserveLogicLibrary = async (verify?: boolean) =>
   );
 
 export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolean) => {
-  const genericLogicArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.GenericLogic
-  );
+  const genericLogicArtifact = await readArtifact(eContractid.GenericLogic);
 
   const linkedGenericLogicByteCode = linkBytecode(genericLogicArtifact, {
     [eContractid.ReserveLogic]: reserveLogic.address,
   });
 
-  const genericLogicFactory = await BRE.ethers.getContractFactory(
+  const genericLogicFactory = await DRE.ethers.getContractFactory(
     genericLogicArtifact.abi,
     linkedGenericLogicByteCode
   );
@@ -112,17 +113,14 @@ export const deployValidationLogic = async (
   genericLogic: Contract,
   verify?: boolean
 ) => {
-  const validationLogicArtifact = await readArtifact(
-    BRE.config.paths.artifacts,
-    eContractid.ValidationLogic
-  );
+  const validationLogicArtifact = await readArtifact(eContractid.ValidationLogic);
 
   const linkedValidationLogicByteCode = linkBytecode(validationLogicArtifact, {
     [eContractid.ReserveLogic]: reserveLogic.address,
     [eContractid.GenericLogic]: genericLogic.address,
   });
 
-  const validationLogicFactory = await BRE.ethers.getContractFactory(
+  const validationLogicFactory = await DRE.ethers.getContractFactory(
     validationLogicArtifact.abi,
     linkedValidationLogicByteCode
   );
@@ -191,7 +189,7 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
   );
 
 export const deployChainlinkProxyPriceProvider = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress],
+  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(

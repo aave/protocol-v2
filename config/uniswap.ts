@@ -146,6 +146,7 @@ export const UniswapConfig: IUniswapConfiguration = {
   },
   ChainlinkAggregator: {
     [eEthereumNetwork.buidlerevm]: {},
+    [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       DAI: '0x6F47077D3B6645Cb6fb7A29D280277EC1e5fFD90',
@@ -182,6 +183,7 @@ export const UniswapConfig: IUniswapConfiguration = {
     },
   },
   ReserveAssets: {
+    [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {

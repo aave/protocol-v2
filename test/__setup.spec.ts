@@ -1,4 +1,4 @@
-import rawBRE from '@nomiclabs/buidler';
+import rawBRE from 'hardhat';
 import {MockContract} from 'ethereum-waffle';
 import {
   insertContractAddressInDb,
@@ -34,7 +34,7 @@ import {
   deployAllMockAggregators,
   setInitialMarketRatesInRatesOracleByHelper,
 } from '../helpers/oracles-helpers';
-import {BRE, waitForTx} from '../helpers/misc-utils';
+import {DRE, waitForTx} from '../helpers/misc-utils';
 import {
   initReservesByHelper,
   enableReservesToBorrowByHelper,
@@ -103,9 +103,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const addressesProvider = await deployLendingPoolAddressesProvider();
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
-  //setting users[1] as emergency admin, which is in position 2 in the BRE addresses list
+  //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
   const addressList = await Promise.all(
-    (await BRE.ethers.getSigners()).map((signer) => signer.getAddress())
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
 
   await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
@@ -205,6 +205,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     tokens,
     aggregators,
     fallbackOracle.address,
+    mockTokens.WETH.address
   ]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
@@ -270,7 +271,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 };
 
 before(async () => {
-  await rawBRE.run('set-bre');
+  await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
   console.log('-> Deploying test environment...');
   await buildTestEnv(deployer, secondaryWallet);

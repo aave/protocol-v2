@@ -58,6 +58,7 @@ export const AaveConfig: IAaveConfiguration = {
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
+    [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       AAVE: '0xB597cd8D3217ea6477232F9217fa70837ff667Af',

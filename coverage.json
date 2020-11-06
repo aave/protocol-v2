@@ -107,7 +107,7 @@
         "loc": {"start": {"line": 82, "column": 2}, "end": {"line": 85, "column": 2}}
       },
       "7": {
-        "name": "getAaveAdmin",
+        "name": "getPoolAdmin",
         "line": 92,
         "loc": {"start": {"line": 92, "column": 2}, "end": {"line": 94, "column": 2}}
       },
