@@ -96,7 +96,7 @@ contract WalletBalanceProvider {
 
     uint256[] memory balances = new uint256[](reservesWithEth.length);
 
-    for (uint256 j = 0; j < reservesWithEth.length; j++) {
+    for (uint256 j = 0; j < reserves.length; j++) {
       ReserveConfiguration.Map memory configuration = pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
@@ -107,6 +107,7 @@ contract WalletBalanceProvider {
       }
       balances[j] = balanceOf(user, reservesWithEth[j]);
     }
+    balances[reservesWithEth.length] = balanceOf(user, MOCK_ETH_ADDRESS);
 
     return (reservesWithEth, balances);
   }
