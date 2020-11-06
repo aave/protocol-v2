@@ -7,6 +7,8 @@ import {eEthereumNetwork} from './helpers/types';
 import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
 import {setDRE} from './helpers/misc-utils';
 
+require('dotenv').config();
+
 usePlugin('@nomiclabs/buidler-ethers');
 usePlugin('buidler-typechain');
 usePlugin('solidity-coverage');

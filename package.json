@@ -52,7 +52,8 @@
     "ci:clean": "rm -rf ./artifacts ./cache ./types",
     "print-contracts:kovan": "npm run hardhat:kovan -- print-contracts",
     "print-contracts:main": "npm run hardhat:main -- print-contracts",
-    "print-contracts:ropsten": "npm run hardhat:main -- print-contracts"
+    "print-contracts:ropsten": "npm run hardhat:main -- print-contracts",
+    "dev:deployUIProvider": "npm run buidler:kovan deploy-UiPoolDataProvider"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
@@ -78,6 +79,7 @@
     "chai": "4.2.0",
     "chai-bignumber": "3.0.0",
     "chai-bn": "^0.2.1",
+    "dotenv": "^8.2.0",
     "eth-sig-util": "2.5.3",
     "ethereum-waffle": "3.0.2",
     "ethereumjs-util": "7.0.2",

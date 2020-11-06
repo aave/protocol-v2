@@ -25,6 +25,7 @@ contract WalletBalanceProvider {
   using ReserveConfiguration for ReserveConfiguration.Map;
 
   LendingPoolAddressesProvider internal immutable _provider;
+  address constant MOCK_ETH_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
   constructor(LendingPoolAddressesProvider provider) public {
     _provider = provider;
@@ -91,11 +92,16 @@ contract WalletBalanceProvider {
     ILendingPool pool = ILendingPool(_provider.getLendingPool());
 
     address[] memory reserves = pool.getReservesList();
+    address[] memory reservesWithEth = new address[](reserves.length + 1);
+    for (uint256 i = 0; i < reserves.length; i++) {
+      reservesWithEth[i] = reserves[i];
+    }
+    reservesWithEth[reserves.length] = MOCK_ETH_ADDRESS;
 
-    uint256[] memory balances = new uint256[](reserves.length);
+    uint256[] memory balances = new uint256[](reservesWithEth.length);
 
-    for (uint256 j = 0; j < reserves.length; j++) {
-      ReserveConfiguration.Map memory configuration = pool.getConfiguration(reserves[j]);
+    for (uint256 j = 0; j < reservesWithEth.length; j++) {
+      ReserveConfiguration.Map memory configuration = pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
 
