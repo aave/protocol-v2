@@ -2,7 +2,7 @@ import {exit} from 'process';
 import fs from 'fs';
 import globby from 'globby';
 import {file} from 'tmp-promise';
-import {BRE} from './misc-utils';
+import {DRE} from './misc-utils';
 
 const listSolidityFiles = (dir: string) => globby(`${dir}/**/*.sol`);
 
@@ -14,7 +14,7 @@ const fatalErrors = [
 export const SUPPORTED_ETHERSCAN_NETWORKS = ['main', 'ropsten', 'kovan'];
 
 export const getEtherscanPath = async (contractName: string) => {
-  const paths = await listSolidityFiles(BRE.config.paths.sources);
+  const paths = await listSolidityFiles(DRE.config.paths.sources);
   const path = paths.find((p) => p.includes(contractName));
   if (!path) {
     throw new Error(
@@ -35,7 +35,7 @@ export const verifyContract = async (
   constructorArguments: (string | string[])[],
   libraries?: string
 ) => {
-  const currentNetwork = BRE.network.name;
+  const currentNetwork = DRE.network.name;
 
   if (!process.env.ETHERSCAN_KEY) {
     throw Error('Missing process.env.ETHERSCAN_KEY.');
@@ -82,7 +82,7 @@ export const runTaskWithRetry = async (
 
   try {
     if (times) {
-      await BRE.run(task, params);
+      await DRE.run(task, params);
       cleanup();
     } else {
       cleanup();
@@ -107,7 +107,7 @@ export const runTaskWithRetry = async (
 };
 
 export const checkVerification = () => {
-  const currentNetwork = BRE.network.name;
+  const currentNetwork = DRE.network.name;
   if (!process.env.ETHERSCAN_KEY) {
     console.error('Missing process.env.ETHERSCAN_KEY.');
     exit(3);

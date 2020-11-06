@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 
-import {BRE} from '../helpers/misc-utils';
+import {DRE} from '../helpers/misc-utils';
 import {oneEther} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite} from './helpers/make-suite';
@@ -185,7 +185,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     }
 
     const txTimestamp = new BigNumber(
-      (await BRE.ethers.provider.getBlock(tx.blockNumber)).timestamp
+      (await DRE.ethers.provider.getBlock(tx.blockNumber)).timestamp
     );
 
     const variableDebtBeforeTx = calcExpectedVariableDebtTokenBalance(

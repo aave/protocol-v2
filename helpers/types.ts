@@ -11,6 +11,7 @@ export enum eEthereumNetwork {
   ropsten = 'ropsten',
   main = 'main',
   coverage = 'coverage',
+  hardhat = 'hardhat',
 }
 
 export enum EthereumNetworkNames {
@@ -319,6 +320,7 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.kovan]: T;
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
+  [eEthereumNetwork.hardhat]: T;
 }
 
 export interface iParamsPerPool<T> {

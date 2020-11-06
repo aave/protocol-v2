@@ -5,7 +5,7 @@ import {expect} from 'chai';
 import {ethers} from 'ethers';
 import {eEthereumNetwork, ProtocolErrors} from '../helpers/types';
 import {makeSuite, TestEnv} from './helpers/make-suite';
-import {BRE} from '../helpers/misc-utils';
+import {DRE} from '../helpers/misc-utils';
 import {
   ConfigNames,
   getATokenDomainSeparatorPerNetwork,

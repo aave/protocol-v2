@@ -2,7 +2,7 @@ import {MAX_UINT_AMOUNT} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {makeSuite, TestEnv} from './helpers/make-suite';
 import {formatEther, parseEther, parseUnits} from 'ethers/lib/utils';
-import {BRE, waitForTx} from '../helpers/misc-utils';
+import {DRE, waitForTx} from '../helpers/misc-utils';
 import {BigNumber} from 'ethers';
 import {getStableDebtToken, getVariableDebtToken} from '../helpers/contracts-getters';
 import {WethGateway} from '../types/WethGateway';
@@ -195,7 +195,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
       user.signer.sendTransaction({
         to: wethGateway.address,
         value: amount,
-        gasLimit: BRE.network.config.gas,
+        gasLimit: DRE.network.config.gas,
       })
     ).to.be.revertedWith('Receive not allowed');
   });
@@ -205,7 +205,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const user = users[0];
     const amount = parseEther('1');
     const fakeABI = ['function wantToCallFallback()'];
-    const abiCoder = new BRE.ethers.utils.Interface(fakeABI);
+    const abiCoder = new DRE.ethers.utils.Interface(fakeABI);
     const fakeMethodEncoded = abiCoder.encodeFunctionData('wantToCallFallback', []);
 
     // Call fallback function with value
@@ -214,7 +214,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
         to: wethGateway.address,
         data: fakeMethodEncoded,
         value: amount,
-        gasLimit: BRE.network.config.gas,
+        gasLimit: DRE.network.config.gas,
       })
     ).to.be.revertedWith('Fallback not allowed');
   });
@@ -224,7 +224,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const user = users[0];
 
     const fakeABI = ['function wantToCallFallback()'];
-    const abiCoder = new BRE.ethers.utils.Interface(fakeABI);
+    const abiCoder = new DRE.ethers.utils.Interface(fakeABI);
     const fakeMethodEncoded = abiCoder.encodeFunctionData('wantToCallFallback', []);
 
     // Call fallback function without value
@@ -232,7 +232,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
       user.signer.sendTransaction({
         to: wethGateway.address,
         data: fakeMethodEncoded,
-        gasLimit: BRE.network.config.gas,
+        gasLimit: DRE.network.config.gas,
       })
     ).to.be.revertedWith('Fallback not allowed');
   });
@@ -299,7 +299,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     await wethGateway.connect(deployer.signer).emergencyEtherTransfer(user.address, amount);
 
     const userBalanceAfterRecovery = await user.signer.getBalance();
-    const wethGatewayAfterRecovery = await BRE.ethers.provider.getBalance(wethGateway.address);
+    const wethGatewayAfterRecovery = await DRE.ethers.provider.getBalance(wethGateway.address);
 
     expect(userBalanceAfterRecovery).to.be.eq(
       userBalancePriorCall.sub(gasFees),

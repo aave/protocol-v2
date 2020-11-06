@@ -1,4 +1,4 @@
-import {evmRevert, evmSnapshot, BRE} from '../../helpers/misc-utils';
+import {evmRevert, evmSnapshot, DRE} from '../../helpers/misc-utils';
 import {Signer} from 'ethers';
 import {
   getLendingPool,
@@ -27,7 +27,6 @@ import {PriceOracle} from '../../types/PriceOracle';
 import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
 import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
 import {getEthersSigners} from '../../helpers/contracts-helpers';
-import {Weth9} from '../../types/Weth9';
 import {Weth9Mocked} from '../../types/Weth9Mocked';
 import {WethGateway} from '../../types/WethGateway';
 import {solidity} from 'ethereum-waffle';
@@ -60,7 +59,7 @@ export interface TestEnv {
 
 let buidlerevmSnapshotId: string = '0x1';
 const setBuidlerevmSnapshotId = (id: string) => {
-  if (BRE.network.name === 'buidlerevm') {
+  if (DRE.network.name === 'hardhat') {
     buidlerevmSnapshotId = id;
   }
 };
