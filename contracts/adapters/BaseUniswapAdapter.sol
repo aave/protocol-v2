@@ -27,6 +27,7 @@ contract BaseUniswapAdapter {
   enum LeftoverAction {DEPOSIT, TRANSFER}
 
   struct PermitParams {
+    uint256[] amount;
     uint256[] deadline;
     uint8[] v;
     bytes32[] r;
@@ -34,6 +35,7 @@ contract BaseUniswapAdapter {
   }
 
   struct PermitSignature {
+    uint256 amount;
     uint256 deadline;
     uint8 v;
     bytes32 r;
@@ -269,7 +271,7 @@ contract BaseUniswapAdapter {
       IERC20WithPermit(reserveAToken).permit(
         user,
         address(this),
-        amount,
+        permitSignature.amount,
         permitSignature.deadline,
         permitSignature.v,
         permitSignature.r,

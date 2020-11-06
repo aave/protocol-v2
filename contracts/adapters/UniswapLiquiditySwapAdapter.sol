@@ -43,6 +43,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
    *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
    *   bool[] swapAllBalance Flag indicating if all the user balance should be swapped
+   *   uint256[] permitAmount List of amounts for the permit signature
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -63,6 +64,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       assets.length == decodedParams.assetToSwapToList.length
       && assets.length == decodedParams.minAmountsToReceive.length
       && assets.length == decodedParams.swapAllBalance.length
+      && assets.length == decodedParams.permitParams.amount.length
       && assets.length == decodedParams.permitParams.deadline.length
       && assets.length == decodedParams.permitParams.v.length
       && assets.length == decodedParams.permitParams.r.length
@@ -80,6 +82,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         decodedParams.minAmountsToReceive[i],
         decodedParams.swapAllBalance[i],
         PermitSignature(
+          decodedParams.permitParams.amount[i],
           decodedParams.permitParams.deadline[i],
           decodedParams.permitParams.v[i],
           decodedParams.permitParams.r[i],
@@ -101,10 +104,11 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param amountToSwapList List of amounts to be swapped. If the amount exceeds the balance, the total balance is used for the swap
    * @param minAmountsToReceive List of min amounts to be received from the swap
    * @param permitParams List of struct containing the permit signatures
-   *   uint256[] deadline List of deadlines for the permit signature
-   *   uint8[] v List of v param for the permit signature
-   *   bytes32[] r List of r param for the permit signature
-   *   bytes32[] s List of s param for the permit signature
+   *   uint256 permitAmount Amount for the permit signature
+   *   uint256 deadline Deadline for the permit signature
+   *   uint8 v param for the permit signature
+   *   bytes32 r param for the permit signature
+   *   bytes32 s param for the permit signature
    */
   function swapAndDeposit(
     address[] calldata assetToSwapFromList,
@@ -203,6 +207,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
    *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
    *   bool[] swapAllBalance Flag indicating if all the user balance should be swapped
+   *   uint256[] permitAmount List of amounts for the permit signature
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -214,13 +219,14 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       address[] memory assetToSwapToList,
       uint256[] memory minAmountsToReceive,
       bool[] memory swapAllBalance,
+      uint256[] memory permitAmount,
       uint256[] memory deadline,
       uint8[] memory v,
       bytes32[] memory r,
       bytes32[] memory s
-    ) = abi.decode(params, (address[], uint256[], bool[], uint256[], uint8[], bytes32[], bytes32[]));
+    ) = abi.decode(params, (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
 
-    return SwapParams(assetToSwapToList, minAmountsToReceive, swapAllBalance, PermitParams(deadline, v, r, s));
+    return SwapParams(assetToSwapToList, minAmountsToReceive, swapAllBalance, PermitParams(permitAmount, deadline, v, r, s));
   }
 
   /**

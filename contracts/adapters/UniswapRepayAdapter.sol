@@ -47,6 +47,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *     (1) Direct transfer to user
    *   uint256[] repayAmounts List of amounts of debt to be repaid
    *   uint256[] rateModes List of the rate modes of the debt to be repaid
+   *   uint256[] permitAmount List of amounts for the permit signature
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -67,6 +68,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       assets.length == decodedParams.assetToSwapToList.length
       && assets.length == decodedParams.repayAmounts.length
       && assets.length == decodedParams.rateModes.length
+      && assets.length == decodedParams.permitParams.amount.length
       && assets.length == decodedParams.permitParams.deadline.length
       && assets.length == decodedParams.permitParams.v.length
       && assets.length == decodedParams.permitParams.r.length
@@ -84,6 +86,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         decodedParams.leftOverAction,
         premiums[i],
         PermitSignature(
+          decodedParams.permitParams.amount[i],
           decodedParams.permitParams.deadline[i],
           decodedParams.permitParams.v[i],
           decodedParams.permitParams.r[i],
@@ -141,6 +144,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *     (1) Direct transfer to user
    *   uint256[] repayAmounts List of amounts of debt to be repaid
    *   uint256[] rateModes List of the rate modes of the debt to be repaid
+   *   uint256[] permitAmount List of amounts for the permit signature
    *   uint256[] deadline List of deadlines for the permit signature
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
@@ -153,11 +157,12 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       LeftoverAction leftOverAction,
       uint256[] memory repayAmounts,
       uint256[] memory rateModes,
+      uint256[] memory permitAmount,
       uint256[] memory deadline,
       uint8[] memory v,
       bytes32[] memory r,
       bytes32[] memory s
-    ) = abi.decode(params, (address[], LeftoverAction, uint256[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
+    ) = abi.decode(params, (address[], LeftoverAction, uint256[], uint256[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
 
     return RepayParams(
       assetToSwapToList,
@@ -165,6 +170,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       repayAmounts,
       rateModes,
       PermitParams(
+        permitAmount,
         deadline,
         v,
         r,
