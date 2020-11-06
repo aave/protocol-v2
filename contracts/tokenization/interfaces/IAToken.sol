@@ -6,6 +6,27 @@ import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 
 interface IAToken is IERC20, IScaledBalanceToken {
   /**
+   * @dev emitted after the mint action
+   * @param from the address performing the mint
+   * @param value the amount to be minted
+   * @param index the last index of the reserve
+   **/
+  event Mint(address indexed from, uint256 value, uint256 index);
+
+  /**
+   * @dev mints aTokens to user
+   * only lending pools can call this function
+   * @param user the address receiving the minted tokens
+   * @param amount the amount of tokens to mint
+   * @param index the liquidity index
+   */
+  function mint(
+    address user,
+    uint256 amount,
+    uint256 index
+  ) external returns (bool);
+
+  /**
    * @dev emitted after aTokens are burned
    * @param from the address performing the redeem
    * @param value the amount to be redeemed

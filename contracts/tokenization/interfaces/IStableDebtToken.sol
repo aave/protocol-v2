@@ -15,7 +15,8 @@ pragma solidity ^0.6.8;
 interface IStableDebtToken {
   /**
    * @dev emitted when new stable debt is minted
-   * @param user the address of the user
+   * @param user the address of the user who triggered the minting
+   * @param onBehalfOf the address of the user
    * @param amount the amount minted
    * @param currentBalance the current balance of the user
    * @param balanceIncrease the the increase in balance since the last action of the user
@@ -25,6 +26,7 @@ interface IStableDebtToken {
    **/
   event Mint(
     address indexed user,
+    address indexed onBehalfOf,
     uint256 amount,
     uint256 currentBalance,
     uint256 balanceIncrease,
@@ -60,6 +62,7 @@ interface IStableDebtToken {
    **/
   function mint(
     address user,
+    address onBehalfOf,
     uint256 amount,
     uint256 rate
   ) external returns (bool);

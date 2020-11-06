@@ -107,6 +107,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
+      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
     }
 
     //transfer to the aToken contract
@@ -157,58 +158,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (amountToWithdraw == userBalance) {
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
+      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
     }
 
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
-  }
-
-  /**
-   * @dev returns the borrow allowance of the user
-   * @param asset The underlying asset of the debt token
-   * @param fromUser The user to giving allowance
-   * @param toUser The user to give allowance to
-   * @param interestRateMode Type of debt: 1 for stable, 2 for variable
-   * @return the current allowance of toUser
-   **/
-  function getBorrowAllowance(
-    address fromUser,
-    address toUser,
-    address asset,
-    uint256 interestRateMode
-  ) external override view returns (uint256) {
-    return
-      _borrowAllowance[_reserves[asset].getDebtTokenAddress(interestRateMode)][fromUser][toUser];
-  }
-
-  /**
-   * @dev Sets allowance to borrow on a certain type of debt assets for a certain user address
-   * @param assets The underlying asset of each debt token
-   * @param user The user to give allowance to
-   * @param interestRateModes Types of debt: 1 for stable, 2 for variable
-   * @param amounts Allowance amounts to borrow
-   **/
-  function delegateBorrowAllowance(
-    address[] calldata assets,
-    address user,
-    uint256[] calldata interestRateModes,
-    uint256[] calldata amounts
-  ) external override {
-    _whenNotPaused();
-
-    uint256 countAssets = assets.length;
-    require(
-      countAssets == interestRateModes.length && countAssets == amounts.length,
-      Errors.LP_INCONSISTENT_PARAMS_LENGTH
-    );
-
-    for (uint256 i = 0; i < countAssets; i++) {
-      address debtToken = _reserves[assets[i]].getDebtTokenAddress(interestRateModes[i]);
-      _borrowAllowance[debtToken][msg.sender][user] = amounts[i];
-    }
-
-    emit BorrowAllowanceDelegated(msg.sender, user, assets, interestRateModes, amounts);
   }
 
   /**
@@ -230,15 +185,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _whenNotPaused();
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
-    if (onBehalfOf != msg.sender) {
-      address debtToken = reserve.getDebtTokenAddress(interestRateMode);
-
-      _borrowAllowance[debtToken][onBehalfOf][msg
-        .sender] = _borrowAllowance[debtToken][onBehalfOf][msg.sender].sub(
-        amount,
-        Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH
-      );
-    }
     _executeBorrow(
       ExecuteBorrowParams(
         asset,
@@ -346,6 +292,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
         msg.sender,
+        msg.sender,
         stableDebt,
         reserve.variableBorrowIndex
       );
@@ -357,6 +304,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         reserve.variableBorrowIndex
       );
       IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+        msg.sender,
         msg.sender,
         variableDebt,
         reserve.currentStableBorrowRate
@@ -418,6 +366,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IStableDebtToken(address(stableDebtToken)).burn(user, stableBorrowBalance);
     IStableDebtToken(address(stableDebtToken)).mint(
+      user,
       user,
       stableBorrowBalance,
       reserve.currentStableBorrowRate
@@ -581,14 +530,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           vars.currentAmountPlusPremium
         );
       } else {
-        if (msg.sender != onBehalfOf) {
-          vars.debtToken = _reserves[vars.currentAsset].getDebtTokenAddress(modes[vars.i]);
-
-          _borrowAllowance[vars.debtToken][onBehalfOf][msg.sender] = _borrowAllowance[vars
-            .debtToken][onBehalfOf][msg.sender]
-            .sub(vars.currentAmount, Errors.LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH);
-        }
-
         //if the user didn't choose to return the funds, the system checks if there
         //is enough collateral and eventually open a position
         _executeBorrow(
@@ -753,7 +694,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev returns the addresses provider
    **/
-  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider) {
+  function getAddressesProvider() external override view returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
   }
 
@@ -793,11 +734,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       if (balanceFromBefore.sub(amount) == 0) {
         UserConfiguration.Map storage fromConfig = _usersConfig[from];
         fromConfig.setUsingAsCollateral(reserveId, false);
+        emit ReserveUsedAsCollateralDisabled(asset, from);
       }
 
       if (balanceToBefore == 0 && amount != 0) {
         UserConfiguration.Map storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
+        emit ReserveUsedAsCollateralEnabled(asset, to);
       }
     }
   }
@@ -923,12 +866,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       currentStableRate = reserve.currentStableBorrowRate;
 
       isFirstBorrowing = IStableDebtToken(reserve.stableDebtTokenAddress).mint(
+        vars.user,
         vars.onBehalfOf,
         vars.amount,
         currentStableRate
       );
     } else {
       isFirstBorrowing = IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
+        vars.user,
         vars.onBehalfOf,
         vars.amount,
         reserve.variableBorrowIndex

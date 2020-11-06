@@ -1,16 +1,14 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "es2019",
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "outDir": "dist",
-    "resolveJsonModule": true,
-    "downlevelIteration": true
+    "outDir": "dist"
   },
-  "include": ["./**/*"],
+  "include": ["./scripts", "./test"],
   "files": [
-    "./buidler.config.ts",
+    "./hardhat.config.ts",
     "node_modules/@nomiclabs/buidler-ethers/src/type-extensions.d.ts",
     "node_modules/buidler-typechain/src/type-extensions.d.ts",
     "node_modules/@nomiclabs/buidler-waffle/src/type-extensions.d.ts",

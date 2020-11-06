@@ -10,7 +10,7 @@ import {
 } from '../../../helpers/contracts-getters';
 import {tEthereumAddress} from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
-import {getDb, BRE} from '../../../helpers/misc-utils';
+import {getDb, DRE} from '../../../helpers/misc-utils';
 import {AaveProtocolTestHelpers} from '../../../types/AaveProtocolTestHelpers';
 
 export const getReserveData = async (
@@ -104,7 +104,7 @@ export const getUserData = async (
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
   const token = await getMintableErc20(
-    (await getDb().get(`${symbol}.${BRE.network.name}`).value()).address
+    (await getDb().get(`${symbol}.${DRE.network.name}`).value()).address
   );
 
   if (!token) {

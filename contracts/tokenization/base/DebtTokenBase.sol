@@ -15,9 +15,17 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
  */
 
 abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
+  event BorrowAllowanceDelegated(
+    address indexed fromUser,
+    address indexed toUser,
+    address asset,
+    uint256 amount
+  );
+
   address public immutable UNDERLYING_ASSET_ADDRESS;
   ILendingPool public immutable POOL;
-  mapping(address => uint256) internal _usersData;
+
+  mapping(address => mapping(address => uint256)) internal _borrowAllowances;
 
   /**
    * @dev Only lending pool can call functions marked by this modifier
@@ -56,6 +64,28 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
     _setName(name);
     _setSymbol(symbol);
     _setDecimals(decimals);
+  }
+
+  /**
+   * @dev delegates borrowing power to a user on the specific debt token
+   * @param delegatee the address receiving the delegated borrowing power
+   * @param amount the maximum amount being delegated. Delegation will still
+   * respect the liquidation constraints (even if delegated, a delegatee cannot
+   * force a delegator HF to go below 1)
+   **/
+  function approveDelegation(address delegatee, uint256 amount) external {
+    _borrowAllowances[_msgSender()][delegatee] = amount;
+    emit BorrowAllowanceDelegated(_msgSender(), delegatee, UNDERLYING_ASSET_ADDRESS, amount);
+  }
+
+  /**
+   * @dev returns the borrow allowance of the user
+   * @param fromUser The user to giving allowance
+   * @param toUser The user to give allowance to
+   * @return the current allowance of toUser
+   **/
+  function borrowAllowance(address fromUser, address toUser) external view returns (uint256) {
+    return _borrowAllowances[fromUser][toUser];
   }
 
   /**
@@ -117,5 +147,20 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
     spender;
     subtractedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
+  }
+
+  function _decreaseBorrowAllowance(
+    address delegator,
+    address delegatee,
+    uint256 amount
+  ) internal {
+    uint256 newAllowance = _borrowAllowances[delegator][delegatee].sub(
+      amount,
+      Errors.BORROW_ALLOWANCE_NOT_ENOUGH
+    );
+
+    _borrowAllowances[delegator][delegatee] = newAllowance;
+
+    emit BorrowAllowanceDelegated(delegator, delegatee, UNDERLYING_ASSET_ADDRESS, newAllowance);
   }
 }

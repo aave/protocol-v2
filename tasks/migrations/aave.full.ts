@@ -1,7 +1,8 @@
-import {task} from '@nomiclabs/buidler/config';
+import {task} from 'hardhat/config';
 import {checkVerification} from '../../helpers/etherscan-verification';
 import {ConfigNames} from '../../helpers/configuration';
 import {EthereumNetworkNames} from '../../helpers/types';
+import {printContracts} from '../../helpers/misc-utils';
 
 task('aave:full', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -9,7 +10,7 @@ task('aave:full', 'Deploy development enviroment')
     const POOL_NAME = ConfigNames.Aave;
     const network = <EthereumNetworkNames>localBRE.network.name;
 
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {
@@ -28,4 +29,5 @@ task('aave:full', 'Deploy development enviroment')
     await localBRE.run('full:initialize-lending-pool', {verify, pool: POOL_NAME});
 
     console.log('\nFinished migrations');
+    printContracts();
   });

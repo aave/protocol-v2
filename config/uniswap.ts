@@ -12,18 +12,6 @@ export const UniswapConfig: IUniswapConfiguration = {
   ...CommonsConfig,
   ConfigName: 'Uniswap',
   ProviderId: 2,
-  ReserveSymbols: [
-    'WETH',
-    'DAI',
-    'USDC',
-    'USDT',
-    'UNI_DAI_ETH',
-    'UNI_USDC_ETH',
-    'UNI_SETH_ETH',
-    'UNI_LINK_ETH',
-    'UNI_MKR_ETH',
-    'UNI_LEND_ETH',
-  ],
   ReservesConfig: {
     WETH: {
       baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
@@ -158,6 +146,7 @@ export const UniswapConfig: IUniswapConfiguration = {
   },
   ChainlinkAggregator: {
     [eEthereumNetwork.buidlerevm]: {},
+    [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       DAI: '0x6F47077D3B6645Cb6fb7A29D280277EC1e5fFD90',
@@ -194,6 +183,7 @@ export const UniswapConfig: IUniswapConfiguration = {
     },
   },
   ReserveAssets: {
+    [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {

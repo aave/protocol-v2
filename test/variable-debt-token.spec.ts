@@ -15,9 +15,9 @@ makeSuite('Variable debt token tests', (testEnv: TestEnv) => {
 
     const variableDebtContract = await getVariableDebtToken(daiVariableDebtTokenAddress);
 
-    await expect(variableDebtContract.mint(deployer.address, '1', '1')).to.be.revertedWith(
-      AT_CALLER_MUST_BE_LENDING_POOL
-    );
+    await expect(
+      variableDebtContract.mint(deployer.address, deployer.address, '1', '1')
+    ).to.be.revertedWith(AT_CALLER_MUST_BE_LENDING_POOL);
   });
 
   it('Tries to invoke burn not being the LendingPool', async () => {

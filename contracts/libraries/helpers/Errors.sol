@@ -17,6 +17,11 @@ pragma solidity ^0.6.8;
  *  - P = Pausable
  */
 library Errors {
+  //common errors
+  string public constant CALLER_NOT_POOL_ADMIN = '33'; // 'The caller must be the pool admin'
+  string public constant BORROW_ALLOWANCE_NOT_ENOUGH = '59'; // User borrows on behalf, but allowance are too small
+
+  //contract specific errors
   string public constant VL_AMOUNT_NOT_GREATER_THAN_0 = '1'; // 'Amount must be greater than 0'
   string public constant VL_NO_ACTIVE_RESERVE = '2'; // 'Action requires an active reserve'
   string public constant VL_RESERVE_FROZEN = '3'; // 'Action cannot be performed because the reserve is frozen'
@@ -43,13 +48,12 @@ library Errors {
   string public constant LP_NOT_ENOUGH_LIQUIDITY_TO_BORROW = '24'; // 'There is not enough liquidity available to borrow'
   string public constant LP_REQUESTED_AMOUNT_TOO_SMALL = '25'; // 'The requested amount is too small for a FlashLoan.'
   string public constant LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26'; // 'The actual balance of the protocol is inconsistent'
-  string public constant LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The actual balance of the protocol is inconsistent'
+  string public constant LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The caller of the function is not the lending pool configurator'
   string public constant LP_INCONSISTENT_FLASHLOAN_PARAMS = '28';
   string public constant AT_CALLER_MUST_BE_LENDING_POOL = '29'; // 'The caller of this function must be a lending pool'
   string public constant AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
   string public constant AT_TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
   string public constant RL_RESERVE_ALREADY_INITIALIZED = '32'; // 'Reserve has already been initialized'
-  string public constant LPC_CALLER_NOT_AAVE_ADMIN = '33'; // 'The caller must be the aave admin'
   string public constant LPC_RESERVE_LIQUIDITY_NOT_0 = '34'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_ATOKEN_POOL_ADDRESS = '35'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS = '36'; // 'The liquidity of the reserve needs to be 0'
@@ -58,6 +62,7 @@ library Errors {
   string public constant LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '39'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_ADDRESSES_PROVIDER_ID = '40'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_CONFIGURATION = '75'; // 'Invalid risk parameters for the reserve'
+  string public constant LPC_CALLER_NOT_EMERGENCY_ADMIN = '76'; // 'The caller must be the emergency admin'
   string public constant LPAPR_PROVIDER_NOT_REGISTERED = '41'; // 'Provider is not registered'
   string public constant LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD = '42'; // 'Health factor is not below the threshold'
   string public constant LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED = '43'; // 'The collateral chosen cannot be liquidated'
@@ -76,7 +81,6 @@ library Errors {
   string public constant AT_INVALID_MINT_AMOUNT = '56'; //invalid amount to mint
   string public constant LP_FAILED_REPAY_WITH_COLLATERAL = '57';
   string public constant AT_INVALID_BURN_AMOUNT = '58'; //invalid amount to burn
-  string public constant LP_BORROW_ALLOWANCE_ARE_NOT_ENOUGH = '59'; // User borrows on behalf, but allowance are too small
   string public constant LP_FAILED_COLLATERAL_SWAP = '60';
   string public constant LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61';
   string public constant LP_REENTRANCY_NOT_ALLOWED = '62';

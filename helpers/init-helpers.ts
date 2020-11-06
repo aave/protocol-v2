@@ -24,7 +24,7 @@ export const initReservesByHelper = async (
   const addressProvider = await getLendingPoolAddressesProvider();
 
   // Set aTokenAndRatesDeployer as temporal admin
-  await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
+  await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
   const tokensChunks = 4;
@@ -140,7 +140,7 @@ export const initReservesByHelper = async (
   }
 
   // Set deployer back as admin
-  await waitForTx(await addressProvider.setAaveAdmin(admin));
+  await waitForTx(await addressProvider.setPoolAdmin(admin));
 };
 
 export const getPairsTokenAggregator = (
@@ -207,7 +207,7 @@ export const enableReservesToBorrowByHelper = async (
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
-    await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
+    await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
     // Deploy init per chunks
     const stableChunks = 20;
@@ -233,7 +233,7 @@ export const enableReservesToBorrowByHelper = async (
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
     // Set deployer back as admin
-    await waitForTx(await addressProvider.setAaveAdmin(admin));
+    await waitForTx(await addressProvider.setPoolAdmin(admin));
   }
 };
 
@@ -280,7 +280,7 @@ export const enableReservesAsCollateralByHelper = async (
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
-    await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
+    await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
     // Deploy init per chunks
     const enableChunks = 20;
@@ -304,6 +304,6 @@ export const enableReservesAsCollateralByHelper = async (
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
     // Set deployer back as admin
-    await waitForTx(await addressProvider.setAaveAdmin(admin));
+    await waitForTx(await addressProvider.setPoolAdmin(admin));
   }
 };
