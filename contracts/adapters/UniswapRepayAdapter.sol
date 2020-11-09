@@ -7,6 +7,7 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 /**
  * @title UniswapRepayAdapter
@@ -20,6 +21,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     LeftoverAction leftOverAction;
     uint256 repayAmount;
     uint256 rateMode;
+    bool repayAllDebt;
     PermitSignature permitSignature;
   }
 
@@ -47,6 +49,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *     (1) Direct transfer to user
    *   uint256 repayAmount Amount of debt to be repaid
    *   uint256 rateMode Rate modes of the debt to be repaid
+   *   bool repayAllDebt Flag indicating if all the debt should be repaid
    *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
    *   uint8 v V param for the permit signature
@@ -72,6 +75,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         decodedParams.rateMode,
         initiator,
         decodedParams.leftOverAction,
+        decodedParams.repayAllDebt,
         premiums[0],
         decodedParams.permitSignature
       );
@@ -100,9 +104,21 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 rateMode,
     address initiator,
     LeftoverAction leftOverAction,
+    bool repayAllDebt,
     uint256 premium,
     PermitSignature memory permitSignature
   ) internal {
+
+    if (repayAllDebt) {
+      ReserveLogic.ReserveData memory reserveDebtData = _getReserveData(assetTo);
+
+      address debtToken = ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE
+        ? reserveDebtData.stableDebtTokenAddress
+        : reserveDebtData.variableDebtTokenAddress;
+
+      repayAmount = IERC20(debtToken).balanceOf(initiator);
+    }
+
     _swapTokensForExactTokens(assetFrom, assetTo, amount, repayAmount);
 
     // Repay debt
@@ -110,7 +126,12 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     POOL.repay(assetTo, repayAmount, rateMode, initiator);
 
     uint256 flashLoanDebt = amount.add(premium);
-    _pullATokenAndRepayFlashLoan(assetFrom, initiator, flashLoanDebt, permitSignature);
+
+    ReserveLogic.ReserveData memory reserveData = _getReserveData(assetFrom);
+    _pullAToken(assetFrom, reserveData.aTokenAddress, initiator, flashLoanDebt, permitSignature);
+
+    // Repay flashloan
+    IERC20(assetFrom).approve(address(POOL), flashLoanDebt);
 
     // Take care of reserve leftover from the swap
     _sendLeftovers(assetFrom, flashLoanDebt, leftOverAction, initiator);
@@ -125,6 +146,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *     (1) Direct transfer to user
    *   uint256 repayAmount Amount of debt to be repaid
    *   uint256 rateMode Rate modes of the debt to be repaid
+   *   bool repayAllDebt Flag indicating if all the debt should be repaid
    *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
    *   uint8 v V param for the permit signature
@@ -138,18 +160,20 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       LeftoverAction leftOverAction,
       uint256 repayAmount,
       uint256 rateMode,
+      bool repayAllDebt,
       uint256 permitAmount,
       uint256 deadline,
       uint8 v,
       bytes32 r,
       bytes32 s
-    ) = abi.decode(params, (address, LeftoverAction, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32));
+    ) = abi.decode(params, (address, LeftoverAction, uint256, uint256, bool, uint256, uint256, uint8, bytes32, bytes32));
 
     return RepayParams(
       assetToSwapTo,
       leftOverAction,
       repayAmount,
       rateMode,
+      repayAllDebt,
       PermitSignature(
         permitAmount,
         deadline,
@@ -158,25 +182,5 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         s
       )
     );
-  }
-
-  /**
-   * @dev Pull the ATokens from the user and use them to repay the flashloan
-   * @param reserve address of the asset
-   * @param user address
-   * @param flashLoanDebt need to be repaid
-   * @param permitSignature struct containing the permit signature
-   */
-  function _pullATokenAndRepayFlashLoan(
-    address reserve,
-    address user,
-    uint256 flashLoanDebt,
-    PermitSignature memory permitSignature
-  ) internal {
-    address reserveAToken = _getAToken(reserve);
-    _pullAToken(reserve, reserveAToken, user, flashLoanDebt, permitSignature);
-
-    // Repay flashloan
-    IERC20(reserve).approve(address(POOL), flashLoanDebt);
   }
 }

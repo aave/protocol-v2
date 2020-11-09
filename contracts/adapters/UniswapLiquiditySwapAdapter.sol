@@ -126,7 +126,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     );
 
     for (uint256 i = 0; i < assetToSwapFromList.length; i++) {
-      address aToken = _getAToken(assetToSwapFromList[i]);
+      address aToken = _getReserveData(assetToSwapFromList[i]).aTokenAddress;
 
       uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(msg.sender);
       uint256 amountToSwap = amountToSwapList[i] > aTokenInitiatorBalance ? aTokenInitiatorBalance : amountToSwapList[i];
@@ -172,7 +172,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     bool swapAllBalance,
     PermitSignature memory permitSignature
   ) internal {
-    address aToken = _getAToken(assetFrom);
+    address aToken = _getReserveData(assetFrom).aTokenAddress;
 
     uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(initiator);
     uint256 amountToSwap = swapAllBalance ? aTokenInitiatorBalance.sub(premium) : amount;

@@ -224,9 +224,8 @@ contract BaseUniswapAdapter {
    * @dev Get the aToken associated to the asset
    * @return address of the aToken
    */
-  function _getAToken(address asset) internal view returns (address) {
-    ReserveLogic.ReserveData memory reserve = POOL.getReserveData(asset);
-    return reserve.aTokenAddress;
+  function _getReserveData(address asset) internal view returns (ReserveLogic.ReserveData memory) {
+    return POOL.getReserveData(asset);
   }
 
   /**

@@ -244,6 +244,7 @@ export const buildRepayAdapterParams = (
   leftoverAction: BigNumberish,
   repayAmount: BigNumberish,
   rateMode: BigNumberish,
+  repayAllDebt: BigNumberish,
   permitAmount: BigNumberish,
   deadline: BigNumberish,
   v: BigNumberish,
@@ -256,12 +257,24 @@ export const buildRepayAdapterParams = (
       'uint256',
       'uint256',
       'uint256',
+      'bool',
       'uint256',
       'uint256',
       'uint8',
       'bytes32',
       'bytes32',
     ],
-    [assetToSwapTo, leftoverAction, repayAmount, rateMode, permitAmount, deadline, v, r, s]
+    [
+      assetToSwapTo,
+      leftoverAction,
+      repayAmount,
+      rateMode,
+      repayAllDebt,
+      permitAmount,
+      deadline,
+      v,
+      r,
+      s,
+    ]
   );
 };
