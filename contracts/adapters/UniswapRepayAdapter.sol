@@ -16,11 +16,11 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
   struct RepayParams {
-    address[] assetToSwapToList;
+    address assetToSwapTo;
     LeftoverAction leftOverAction;
-    uint256[] repayAmounts;
-    uint256[] rateModes;
-    PermitParams permitParams;
+    uint256 repayAmount;
+    uint256 rateMode;
+    PermitSignature permitSignature;
   }
 
   constructor(
@@ -41,17 +41,17 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param premiums Fee of the flash loan
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
-   *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and repay
+   *   address Address of the reserve to be swapped to and repay
    *   uint256 leftOverAction Flag indicating what to do with the left over balance from the swap:
    *     (0) Deposit back
    *     (1) Direct transfer to user
-   *   uint256[] repayAmounts List of amounts of debt to be repaid
-   *   uint256[] rateModes List of the rate modes of the debt to be repaid
-   *   uint256[] permitAmount List of amounts for the permit signature
-   *   uint256[] deadline List of deadlines for the permit signature
-   *   uint8[] v List of v param for the permit signature
-   *   bytes32[] r List of r param for the permit signature
-   *   bytes32[] s List of s param for the permit signature
+   *   uint256 repayAmount Amount of debt to be repaid
+   *   uint256 rateMode Rate modes of the debt to be repaid
+   *   uint256 permitAmount Amount for the permit signature
+   *   uint256 deadline Deadline for the permit signature
+   *   uint8 v V param for the permit signature
+   *   bytes32 r R param for the permit signature
+   *   bytes32 s S param for the permit signature
    */
   function executeOperation(
     address[] calldata assets,
@@ -64,36 +64,17 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
     RepayParams memory decodedParams = _decodeParams(params);
 
-    require(
-      assets.length == decodedParams.assetToSwapToList.length
-      && assets.length == decodedParams.repayAmounts.length
-      && assets.length == decodedParams.rateModes.length
-      && assets.length == decodedParams.permitParams.amount.length
-      && assets.length == decodedParams.permitParams.deadline.length
-      && assets.length == decodedParams.permitParams.v.length
-      && assets.length == decodedParams.permitParams.r.length
-      && assets.length == decodedParams.permitParams.s.length,
-      'INCONSISTENT_PARAMS');
-
-    for (uint256 i = 0; i < assets.length; i++) {
       _swapAndRepay(
-        assets[i],
-        decodedParams.assetToSwapToList[i],
-        amounts[i],
-        decodedParams.repayAmounts[i],
-        decodedParams.rateModes[i],
+        assets[0],
+        decodedParams.assetToSwapTo,
+        amounts[0],
+        decodedParams.repayAmount,
+        decodedParams.rateMode,
         initiator,
         decodedParams.leftOverAction,
-        premiums[i],
-        PermitSignature(
-          decodedParams.permitParams.amount[i],
-          decodedParams.permitParams.deadline[i],
-          decodedParams.permitParams.v[i],
-          decodedParams.permitParams.r[i],
-          decodedParams.permitParams.s[i]
-        )
+        premiums[0],
+        decodedParams.permitSignature
       );
-    }
 
     return true;
   }
@@ -138,38 +119,38 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   /**
    * @dev Decodes debt information encoded in flashloan params
    * @param params Additional variadic field to include extra params. Expected parameters:
-   *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and repay
+   *   address Address of the reserve to be swapped to and repay
    *   uint256 leftOverAction Flag indicating what to do with the left over balance from the swap:
    *     (0) Deposit back
    *     (1) Direct transfer to user
-   *   uint256[] repayAmounts List of amounts of debt to be repaid
-   *   uint256[] rateModes List of the rate modes of the debt to be repaid
-   *   uint256[] permitAmount List of amounts for the permit signature
-   *   uint256[] deadline List of deadlines for the permit signature
-   *   uint8[] v List of v param for the permit signature
-   *   bytes32[] r List of r param for the permit signature
-   *   bytes32[] s List of s param for the permit signature
+   *   uint256 repayAmount Amount of debt to be repaid
+   *   uint256 rateMode Rate modes of the debt to be repaid
+   *   uint256 permitAmount Amount for the permit signature
+   *   uint256 deadline Deadline for the permit signature
+   *   uint8 v V param for the permit signature
+   *   bytes32 r R param for the permit signature
+   *   bytes32 s S param for the permit signature
    * @return RepayParams struct containing decoded params
    */
   function _decodeParams(bytes memory params) internal pure returns (RepayParams memory) {
     (
-      address[] memory assetToSwapToList,
+      address assetToSwapTo,
       LeftoverAction leftOverAction,
-      uint256[] memory repayAmounts,
-      uint256[] memory rateModes,
-      uint256[] memory permitAmount,
-      uint256[] memory deadline,
-      uint8[] memory v,
-      bytes32[] memory r,
-      bytes32[] memory s
-    ) = abi.decode(params, (address[], LeftoverAction, uint256[], uint256[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
+      uint256 repayAmount,
+      uint256 rateMode,
+      uint256 permitAmount,
+      uint256 deadline,
+      uint8 v,
+      bytes32 r,
+      bytes32 s
+    ) = abi.decode(params, (address, LeftoverAction, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32));
 
     return RepayParams(
-      assetToSwapToList,
+      assetToSwapTo,
       leftOverAction,
-      repayAmounts,
-      rateModes,
-      PermitParams(
+      repayAmount,
+      rateMode,
+      PermitSignature(
         permitAmount,
         deadline,
         v,

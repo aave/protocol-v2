@@ -240,28 +240,28 @@ export const buildLiquiditySwapParams = (
 };
 
 export const buildRepayAdapterParams = (
-  assetToSwapToList: tEthereumAddress[],
+  assetToSwapTo: tEthereumAddress,
   leftoverAction: BigNumberish,
-  repayAmounts: BigNumberish[],
-  rateModes: BigNumberish[],
-  permitAmounts: BigNumberish[],
-  deadlines: BigNumberish[],
-  v: BigNumberish[],
-  r: (string | Buffer)[],
-  s: (string | Buffer)[]
+  repayAmount: BigNumberish,
+  rateMode: BigNumberish,
+  permitAmount: BigNumberish,
+  deadline: BigNumberish,
+  v: BigNumberish,
+  r: string | Buffer,
+  s: string | Buffer
 ) => {
   return ethers.utils.defaultAbiCoder.encode(
     [
-      'address[]',
+      'address',
       'uint256',
-      'uint256[]',
-      'uint256[]',
-      'uint256[]',
-      'uint256[]',
-      'uint8[]',
-      'bytes32[]',
-      'bytes32[]',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint8',
+      'bytes32',
+      'bytes32',
     ],
-    [assetToSwapToList, leftoverAction, repayAmounts, rateModes, permitAmounts, deadlines, v, r, s]
+    [assetToSwapTo, leftoverAction, repayAmount, rateMode, permitAmount, deadline, v, r, s]
   );
 };

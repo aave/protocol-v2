@@ -1959,7 +1959,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
     });
   });
 
-  describe('UniswapRepayAdapter', () => {
+  describe.only('UniswapRepayAdapter', () => {
     describe('constructor', () => {
       it('should deploy with correct parameters', async () => {
         const {addressesProvider} = testEnv;
@@ -2055,15 +2055,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, flashloanAmount);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          expectedDaiAmount,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
         );
 
         await expect(
@@ -2162,15 +2162,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, flashloanAmount);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           0,
-          [expectedDaiAmount],
-          [1],
-          [liquidityToSwap],
-          [deadline],
-          [v],
-          [r],
-          [s]
+          expectedDaiAmount,
+          1,
+          liquidityToSwap,
+          deadline,
+          v,
+          r,
+          s
         );
 
         await expect(
@@ -2202,547 +2202,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(userAEthBalance).to.be.gte(userAEthBalanceBefore.sub(liquidityToSwap));
       });
 
-      it('should correctly swap tokens and repay debt for multiple tokens', async () => {
-        const {
-          users,
-          pool,
-          weth,
-          oracle,
-          dai,
-          uniswapRepayAdapter,
-          aave,
-          usdc,
-          helpersContract,
-          aWETH,
-        } = testEnv;
-        const user = users[0].signer;
-        const userAddress = users[0].address;
-
-        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
-        const amountAaveToSwap = parseEther('1');
-
-        const daiPrice = await oracle.getAssetPrice(dai.address);
-        const expectedDaiAmountForEth = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
-        );
-
-        const aavePrice = await oracle.getAssetPrice(aave.address);
-        const usdcPrice = await oracle.getAssetPrice(usdc.address);
-
-        const collateralDecimals = (await aave.decimals()).toString();
-        const principalDecimals = (await usdc.decimals()).toString();
-
-        const expectedUsdcAmountForAave = await convertToCurrencyDecimals(
-          usdc.address,
-          new BigNumber(amountAaveToSwap.toString())
-            .times(
-              new BigNumber(aavePrice.toString()).times(new BigNumber(10).pow(principalDecimals))
-            )
-            .div(
-              new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
-            )
-            .toFixed(0)
-        );
-
-        // Open user Debt
-        await pool.connect(user).borrow(dai.address, expectedDaiAmountForEth, 1, 0, userAddress);
-        await pool.connect(user).borrow(usdc.address, expectedUsdcAmountForAave, 1, 0, userAddress);
-
-        const daiStableDebtTokenAddress = (
-          await helpersContract.getReserveTokensAddresses(dai.address)
-        ).stableDebtTokenAddress;
-
-        const daiStableDebtContract = await getContract<StableDebtToken>(
-          eContractid.StableDebtToken,
-          daiStableDebtTokenAddress
-        );
-
-        const usdcStableDebtTokenAddress = (
-          await helpersContract.getReserveTokensAddresses(usdc.address)
-        ).stableDebtTokenAddress;
-
-        const usdcStableDebtContract = await getContract<StableDebtToken>(
-          eContractid.StableDebtToken,
-          usdcStableDebtTokenAddress
-        );
-
-        const userDaiStableDebtAmountBefore = await daiStableDebtContract.balanceOf(userAddress);
-        const userUsdcStableDebtAmountBefore = await usdcStableDebtContract.balanceOf(userAddress);
-
-        // Subtract the FL fee from the amount to be swapped 0,09%
-        const wethFlashloanAmount = new BigNumber(amountWETHtoSwap.toString())
-          .div(1.0009)
-          .toFixed(0);
-        const aaveFlashloanAmount = new BigNumber(amountAaveToSwap.toString())
-          .div(1.0009)
-          .toFixed(0);
-
-        await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, wethFlashloanAmount);
-        await mockUniswapRouter.connect(user).setAmountToSwap(aave.address, aaveFlashloanAmount);
-
-        await aWETH.connect(user).approve(uniswapRepayAdapter.address, amountWETHtoSwap);
-
-        const aaveData = await pool.getReserveData(aave.address);
-        const aAave = await getContract<AToken>(eContractid.AToken, aaveData.aTokenAddress);
-        await aAave.connect(user).approve(uniswapRepayAdapter.address, amountAaveToSwap);
-
-        const aWETHBalanceBefore = await aWETH.balanceOf(userAddress);
-        const aAaveBalanceBefore = await aAave.balanceOf(userAddress);
-
-        const params = buildRepayAdapterParams(
-          [dai.address, usdc.address],
-          0,
-          [expectedDaiAmountForEth, expectedUsdcAmountForAave],
-          [1, 1],
-          [0, 0],
-          [0, 0],
-          [0, 0],
-          [
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-          ],
-          [
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-          ]
-        );
-
-        await pool
-          .connect(user)
-          .flashLoan(
-            uniswapRepayAdapter.address,
-            [weth.address, aave.address],
-            [wethFlashloanAmount.toString(), aaveFlashloanAmount.toString()],
-            [0, 0],
-            userAddress,
-            params,
-            0
-          );
-
-        const adapterWethBalance = await weth.balanceOf(uniswapRepayAdapter.address);
-        const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
-        const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
-        const userUsdcStableDebtAmount = await usdcStableDebtContract.balanceOf(userAddress);
-        const aWETHBalance = await aWETH.balanceOf(userAddress);
-        const aAaveBalance = await aAave.balanceOf(userAddress);
-
-        expect(adapterWethBalance).to.be.eq(Zero);
-        expect(adapterDaiBalance).to.be.eq(Zero);
-        expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmountForEth);
-        expect(userDaiStableDebtAmount).to.be.lt(expectedDaiAmountForEth);
-        expect(userUsdcStableDebtAmountBefore).to.be.gte(expectedUsdcAmountForAave);
-        expect(userUsdcStableDebtAmount).to.be.lt(expectedUsdcAmountForAave);
-        expect(aWETHBalance).to.be.lt(aWETHBalanceBefore);
-        expect(aAaveBalance).to.be.lt(aAaveBalanceBefore);
-      });
-
-      it('should swap tokens and repay debt for multiple tokens using permit', async () => {
-        const {
-          users,
-          pool,
-          weth,
-          oracle,
-          dai,
-          uniswapRepayAdapter,
-          aave,
-          usdc,
-          helpersContract,
-          aWETH,
-        } = testEnv;
-        const user = users[0].signer;
-        const userAddress = users[0].address;
-        const chainId = DRE.network.config.chainId || BUIDLEREVM_CHAINID;
-        const deadline = MAX_UINT_AMOUNT;
-
-        const ownerPrivateKey = require('../test-wallets.js').accounts[1].secretKey;
-        if (!ownerPrivateKey) {
-          throw new Error('INVALID_OWNER_PK');
-        }
-
-        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
-        const amountAaveToSwap = await convertToCurrencyDecimals(aave.address, '1');
-
-        const daiPrice = await oracle.getAssetPrice(dai.address);
-        const expectedDaiAmountForEth = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
-        );
-
-        const aavePrice = await oracle.getAssetPrice(aave.address);
-        const usdcPrice = await oracle.getAssetPrice(usdc.address);
-
-        const collateralDecimals = (await aave.decimals()).toString();
-        const principalDecimals = (await usdc.decimals()).toString();
-
-        const expectedUsdcAmountForAave = await convertToCurrencyDecimals(
-          usdc.address,
-          new BigNumber(amountAaveToSwap.toString())
-            .times(
-              new BigNumber(aavePrice.toString()).times(new BigNumber(10).pow(principalDecimals))
-            )
-            .div(
-              new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
-            )
-            .toFixed(0)
-        );
-
-        // Open user Debt
-        await pool.connect(user).borrow(dai.address, expectedDaiAmountForEth, 1, 0, userAddress);
-        await pool.connect(user).borrow(usdc.address, expectedUsdcAmountForAave, 1, 0, userAddress);
-
-        const daiStableDebtTokenAddress = (
-          await helpersContract.getReserveTokensAddresses(dai.address)
-        ).stableDebtTokenAddress;
-
-        const daiStableDebtContract = await getContract<StableDebtToken>(
-          eContractid.StableDebtToken,
-          daiStableDebtTokenAddress
-        );
-
-        const usdcStableDebtTokenAddress = (
-          await helpersContract.getReserveTokensAddresses(usdc.address)
-        ).stableDebtTokenAddress;
-
-        const usdcStableDebtContract = await getContract<StableDebtToken>(
-          eContractid.StableDebtToken,
-          usdcStableDebtTokenAddress
-        );
-
-        const userDaiStableDebtAmountBefore = await daiStableDebtContract.balanceOf(userAddress);
-        const userUsdcStableDebtAmountBefore = await usdcStableDebtContract.balanceOf(userAddress);
-
-        const aaveData = await pool.getReserveData(aave.address);
-        const aAave = await getContract<AToken>(eContractid.AToken, aaveData.aTokenAddress);
-
-        const aWETHBalanceBefore = await aWETH.balanceOf(userAddress);
-        const aAaveBalanceBefore = await aAave.balanceOf(userAddress);
-
-        const wethFlashloanAmount = new BigNumber(amountWETHtoSwap.toString())
-          .div(1.0009)
-          .toFixed(0);
-
-        const aaveFlashloanAmount = new BigNumber(amountAaveToSwap.toString())
-          .div(1.0009)
-          .toFixed(0);
-
-        const aWethNonce = (await aWETH._nonces(userAddress)).toNumber();
-        const aWethMsgParams = buildPermitParams(
-          chainId,
-          aWETH.address,
-          '1',
-          await aWETH.name(),
-          userAddress,
-          uniswapRepayAdapter.address,
-          aWethNonce,
-          deadline,
-          amountWETHtoSwap.toString()
-        );
-        const {v: aWETHv, r: aWETHr, s: aWETHs} = getSignatureFromTypedData(
-          ownerPrivateKey,
-          aWethMsgParams
-        );
-
-        const aAaveNonce = (await aAave._nonces(userAddress)).toNumber();
-        const aAaveMsgParams = buildPermitParams(
-          chainId,
-          aAave.address,
-          '1',
-          await aAave.name(),
-          userAddress,
-          uniswapRepayAdapter.address,
-          aAaveNonce,
-          deadline,
-          amountAaveToSwap.toString()
-        );
-        const {v: aAavev, r: aAaver, s: aAaves} = getSignatureFromTypedData(
-          ownerPrivateKey,
-          aAaveMsgParams
-        );
-
-        await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, wethFlashloanAmount);
-        await mockUniswapRouter.connect(user).setAmountToSwap(aave.address, aaveFlashloanAmount);
-
-        const params = buildRepayAdapterParams(
-          [dai.address, usdc.address],
-          0,
-          [expectedDaiAmountForEth, expectedUsdcAmountForAave],
-          [1, 1],
-          [amountWETHtoSwap, amountAaveToSwap],
-          [deadline, deadline],
-          [aWETHv, aAavev],
-          [aWETHr, aAaver],
-          [aWETHs, aAaves]
-        );
-
-        await pool
-          .connect(user)
-          .flashLoan(
-            uniswapRepayAdapter.address,
-            [weth.address, aave.address],
-            [wethFlashloanAmount.toString(), aaveFlashloanAmount.toString()],
-            [0, 0],
-            userAddress,
-            params,
-            0
-          );
-
-        const adapterWethBalance = await weth.balanceOf(uniswapRepayAdapter.address);
-        const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
-        const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
-        const userUsdcStableDebtAmount = await usdcStableDebtContract.balanceOf(userAddress);
-        const aWETHBalance = await aWETH.balanceOf(userAddress);
-        const aAaveBalance = await aAave.balanceOf(userAddress);
-
-        expect(adapterWethBalance).to.be.eq(Zero);
-        expect(adapterDaiBalance).to.be.eq(Zero);
-        expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmountForEth);
-        expect(userDaiStableDebtAmount).to.be.lt(expectedDaiAmountForEth);
-        expect(userUsdcStableDebtAmountBefore).to.be.gte(expectedUsdcAmountForAave);
-        expect(userUsdcStableDebtAmount).to.be.lt(expectedUsdcAmountForAave);
-        expect(aWETHBalance).to.be.lt(aWETHBalanceBefore);
-        expect(aAaveBalance).to.be.lt(aAaveBalanceBefore);
-      });
-
-      it('should revert if inconsistent params', async () => {
-        const {users, pool, weth, aWETH, oracle, dai, uniswapRepayAdapter} = testEnv;
-        const user = users[0].signer;
-        const userAddress = users[0].address;
-
-        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
-
-        const daiPrice = await oracle.getAssetPrice(dai.address);
-        const expectedDaiAmount = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
-        );
-
-        // Open user Debt
-        await pool.connect(user).borrow(dai.address, expectedDaiAmount, 1, 0, userAddress);
-
-        const liquidityToSwap = amountWETHtoSwap;
-        await aWETH.connect(user).approve(uniswapRepayAdapter.address, liquidityToSwap);
-
-        // Subtract the FL fee from the amount to be swapped 0,09%
-        const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
-
-        await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, flashloanAmount);
-
-        const params1 = buildRepayAdapterParams(
-          [dai.address, weth.address],
-          0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params1,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-
-        const params2 = buildRepayAdapterParams(
-          [dai.address],
-          0,
-          [expectedDaiAmount, expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params2,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-
-        const params3 = buildRepayAdapterParams(
-          [dai.address],
-          0,
-          [expectedDaiAmount],
-          [1, 1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params3,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-
-        const params4 = buildRepayAdapterParams(
-          [dai.address],
-          0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0, 0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params4,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-
-        const params5 = buildRepayAdapterParams(
-          [dai.address],
-          0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0, 0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params5,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-
-        const params6 = buildRepayAdapterParams(
-          [dai.address],
-          0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          [
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-          ],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params6,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-
-        const params7 = buildRepayAdapterParams(
-          [dai.address],
-          0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          [
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-            '0x0000000000000000000000000000000000000000000000000000000000000000',
-          ]
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params7,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-
-        const params8 = buildRepayAdapterParams(
-          [dai.address],
-          0,
-          [expectedDaiAmount],
-          [1],
-          [0, 0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params8,
-              0
-            )
-        ).to.be.revertedWith('INCONSISTENT_PARAMS');
-      });
-
       it('should revert if caller not lending pool', async () => {
         const {users, pool, weth, aWETH, oracle, dai, uniswapRepayAdapter} = testEnv;
         const user = users[0].signer;
@@ -2768,15 +2227,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, flashloanAmount);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          expectedDaiAmount,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
         );
 
         await expect(
@@ -2820,15 +2279,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, flashloanAmount);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          expectedDaiAmount,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
         );
 
         await expect(
@@ -2871,15 +2330,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, flashloanAmount);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          expectedDaiAmount,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
         );
 
         await expect(
@@ -2922,15 +2381,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, flashloanAmount);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          expectedDaiAmount,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
         );
 
         await expect(
@@ -3000,15 +2459,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, actualWEthSwapped);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           0,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          expectedDaiAmount,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
         );
 
         await expect(
@@ -3097,15 +2556,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const wethBalanceBefore = await weth.balanceOf(userAddress);
 
         const params = buildRepayAdapterParams(
-          [dai.address],
+          dai.address,
           1,
-          [expectedDaiAmount],
-          [1],
-          [0],
-          [0],
-          [0],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          expectedDaiAmount,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
         );
 
         await expect(
