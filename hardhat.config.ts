@@ -8,7 +8,7 @@ import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants'
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
-import '@nomiclabs/hardhat-etherscan';
+import 'temp-hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 
