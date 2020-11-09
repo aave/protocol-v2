@@ -97,6 +97,22 @@ contract WETHGateway is IWETHGateway, Ownable {
   }
 
   /**
+   * @dev borrow WETH, unwraps to ETH and send both the ETH and DebtTokens to msg.sender, via `approveDelegation` and onBehalf argument in `LendingPool.borrow`.
+   * @param amount the amount of ETH to borrow
+   * @param interesRateMode the interest rate mode
+   * @param referralCode integrators are assigned a referral code and can potentially receive rewards
+   */
+  function borrowETH(
+    uint256 amount,
+    uint256 interesRateMode,
+    uint16 referralCode
+  ) external override {
+    POOL.borrow(address(WETH), amount, interesRateMode, referralCode, msg.sender);
+    WETH.withdraw(amount);
+    _safeTransferETH(msg.sender, amount);
+  }
+
+  /**
    * @dev transfer ETH to an address, revert if it fails.
    * @param to recipient of the transfer
    * @param value the amount to send

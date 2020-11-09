@@ -11,4 +11,10 @@ interface IWETHGateway {
     uint256 rateMode,
     address onBehalfOf
   ) external payable;
+
+  function borrowETH(
+    uint256 amount,
+    uint256 interesRateMode,
+    uint16 referralCode
+  ) external;
 }

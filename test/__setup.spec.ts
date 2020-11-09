@@ -205,7 +205,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     tokens,
     aggregators,
     fallbackOracle.address,
-    mockTokens.WETH.address
+    mockTokens.WETH.address,
   ]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
