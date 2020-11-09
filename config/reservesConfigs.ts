@@ -16,20 +16,6 @@ export const strategyBase: IReserveParams = {
   reserveDecimals: '18',
 };
 
-export const stablecoinStrategyCentralized: IReserveParams = {
-  baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.06).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
-  baseLTVAsCollateral: '7500',
-  liquidationThreshold: '8000',
-  liquidationBonus: '10500',
-  borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
-  reserveDecimals: '6',
-};
-
 export const stablecoinStrategyBase: IReserveParams = {
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
@@ -44,20 +30,24 @@ export const stablecoinStrategyBase: IReserveParams = {
   reserveDecimals: '18',
 };
 
-export const stablecoinStrategyDAI: IReserveParams = {
-  ...stablecoinStrategyBase,
+export const stablecoinStrategyCentralized: IReserveParams = {
+  baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0.06).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseLTVAsCollateral: '7500',
+  liquidationThreshold: '8000',
+  liquidationBonus: '10500',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: true,
+  reserveDecimals: '6',
 };
 
-export const stablecoinStrategyTUSD: IReserveParams = {
-  ...stablecoinStrategyCentralized,
-  baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(1.5).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.14).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
-  borrowingEnabled: true,
-  stableBorrowRateEnabled: false,
-  reserveDecimals: '18',
+export const strategyGovernanceTokens: IReserveParams = {
+  ...strategyBase,
+  baseLTVAsCollateral: '4000',
+  liquidationBonus: '11500',
 };
 
 export const stablecoinStrategyBUSD: IReserveParams = {
@@ -73,20 +63,65 @@ export const stablecoinStrategyBUSD: IReserveParams = {
   stableRateSlope1: new BigNumber(0.14).multipliedBy(oneRay).toFixed(),
   stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
 };
-export const stablecoinStrategyUSDC: IReserveParams = {
-  ...stablecoinStrategyBase,
-  variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
-  reserveDecimals: '6',
+
+export const strategyAAVE: IReserveParams = {
+  ...strategyBase,
+  baseLTVAsCollateral: '5000',
+  liquidationThreshold: '6500',
+  liquidationBonus: '11000',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
 };
 
-export const stablecoinStrategyUSDT: IReserveParams = {
+export const stablecoinStrategyDAI: IReserveParams = {
   ...stablecoinStrategyBase,
-  baseLTVAsCollateral: '-1',
+};
+
+export const strategyENJ: IReserveParams = {
+  ...strategyBase,
+  baseLTVAsCollateral: '5500',
+  stableBorrowRateEnabled: false,
+};
+
+export const strategyKNC: IReserveParams = {
+  ...strategyBase,
+  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
+};
+
+export const strategyLINK: IReserveParams = {
+  ...strategyBase,
+  baseLTVAsCollateral: '6500',
   liquidationThreshold: '7000',
-  liquidationBonus: '0',
+};
+
+export const strategyMANA: IReserveParams = {
+  ...strategyBase,
+  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.5).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+};
+
+export const strategyMKR: IReserveParams = {
+  ...strategyBase,
+  baseLTVAsCollateral: '3500',
+};
+
+export const strategyREN: IReserveParams = {
+  ...strategyBase,
+  baseLTVAsCollateral: '5000',
+  liquidationThreshold: '6500',
+  liquidationBonus: '11000',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+};
+
+export const strategyREP: IReserveParams = {
+  ...strategyBase,
+  baseLTVAsCollateral: '3500',
+  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
   borrowingEnabled: false,
-  stableBorrowRateEnabled: true,
-  reserveDecimals: '6',
 };
 
 export const stablecoinStrategySUSD: IReserveParams = {
@@ -103,34 +138,47 @@ export const stablecoinStrategySUSD: IReserveParams = {
   reserveDecimals: '18',
 };
 
-export const strategyAAVE: IReserveParams = {
+export const strategySNX: IReserveParams = {
   ...strategyBase,
-  baseLTVAsCollateral: '5000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
-  borrowingEnabled: false,
+  baseLTVAsCollateral: '1500',
+  liquidationThreshold: '4000',
+  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.12).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
+  stableBorrowRateEnabled: false,
+};
+
+export const stablecoinStrategyTUSD: IReserveParams = {
+  ...stablecoinStrategyCentralized,
+  baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(1.5).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0.14).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
 };
 
-export const strategyWETH: IReserveParams = {
-  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
-  baseLTVAsCollateral: '7500',
-  liquidationThreshold: '8000',
-  liquidationBonus: '10500',
-  borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
-  reserveDecimals: '18',
+export const strategyUNI: IReserveParams = {
+  ...strategyGovernanceTokens,
+  stableBorrowRateEnabled: false,
 };
 
-export const strategyLINK: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '6500',
+export const stablecoinStrategyUSDC: IReserveParams = {
+  ...stablecoinStrategyBase,
+  variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  reserveDecimals: '6',
+};
+
+export const stablecoinStrategyUSDT: IReserveParams = {
+  ...stablecoinStrategyBase,
+  baseLTVAsCollateral: '-1',
   liquidationThreshold: '7000',
+  liquidationBonus: '0',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: true,
+  reserveDecimals: '6',
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -147,66 +195,20 @@ export const strategyWBTC: IReserveParams = {
   reserveDecimals: '8',
 };
 
-export const strategyKNC: IReserveParams = {
-  ...strategyBase,
+export const strategyWETH: IReserveParams = {
+  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
-};
-
-export const strategyREP: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '3500',
-  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
-  borrowingEnabled: false,
-};
-
-export const strategyMKR: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '3500',
-};
-
-export const strategyMANA: IReserveParams = {
-  ...strategyBase,
-  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.5).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
-};
-
-export const strategySNX: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '1500',
-  liquidationThreshold: '4000',
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.12).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
-  stableBorrowRateEnabled: false,
-};
-
-export const strategyENJ: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '5500',
-  stableBorrowRateEnabled: false,
-};
-
-export const strategyREN: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '5000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
+  baseLTVAsCollateral: '7500',
+  liquidationThreshold: '8000',
+  liquidationBonus: '10500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: false,
+  stableBorrowRateEnabled: true,
+  reserveDecimals: '18',
 };
 
-export const strategyGovernanceTokens: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '4000',
-  liquidationBonus: '11500',
-};
 export const strategyYFI: IReserveParams = {
   ...strategyGovernanceTokens,
-};
-
-export const strategyUNI: IReserveParams = {
-  ...strategyGovernanceTokens,
-  stableBorrowRateEnabled: false,
 };
