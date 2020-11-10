@@ -1,6 +1,6 @@
 import {eContractid, iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
-import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
+import {AaveProtocolDataProvider} from '../types/AaveProtocolDataProvider';
 import {
   deployATokensAndRatesHelper,
   deployStableAndVariableTokensHelper,
@@ -182,7 +182,7 @@ export const getPairsTokenAggregator = (
 export const enableReservesToBorrowByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers,
+  helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
   const addressProvider = await getLendingPoolAddressesProvider();
@@ -249,7 +249,7 @@ export const enableReservesToBorrowByHelper = async (
 export const enableReservesAsCollateralByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers,
+  helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
   const addressProvider = await getLendingPoolAddressesProvider();

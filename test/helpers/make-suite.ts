@@ -3,7 +3,7 @@ import {Signer} from 'ethers';
 import {
   getLendingPool,
   getLendingPoolAddressesProvider,
-  getAaveProtocolTestHelpers,
+  getAaveProtocolDataProvider,
   getAToken,
   getMintableErc20,
   getLendingPoolConfiguratorProxy,
@@ -14,7 +14,7 @@ import {
 } from '../../helpers/contracts-getters';
 import {tEthereumAddress} from '../../helpers/types';
 import {LendingPool} from '../../types/LendingPool';
-import {AaveProtocolTestHelpers} from '../../types/AaveProtocolTestHelpers';
+import {AaveProtocolDataProvider} from '../../types/AaveProtocolDataProvider';
 import {MintableErc20 as MintableERC20} from '../../types/MintableErc20';
 import {AToken} from '../../types/AToken';
 import {LendingPoolConfigurator} from '../../types/LendingPoolConfigurator';
@@ -45,7 +45,7 @@ export interface TestEnv {
   pool: LendingPool;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
-  helpersContract: AaveProtocolTestHelpers;
+  helpersContract: AaveProtocolDataProvider;
   weth: Weth9Mocked;
   aWETH: AToken;
   dai: MintableERC20;
@@ -69,7 +69,7 @@ const testEnv: TestEnv = {
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
   configurator: {} as LendingPoolConfigurator,
-  helpersContract: {} as AaveProtocolTestHelpers,
+  helpersContract: {} as AaveProtocolDataProvider,
   oracle: {} as PriceOracle,
   weth: {} as Weth9Mocked,
   aWETH: {} as AToken,
@@ -104,7 +104,7 @@ export async function initializeMakeSuite() {
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
   testEnv.registry = await getLendingPoolAddressesProviderRegistry();
 
-  testEnv.helpersContract = await getAaveProtocolTestHelpers();
+  testEnv.helpersContract = await getAaveProtocolDataProvider();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
 
