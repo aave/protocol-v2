@@ -107,7 +107,7 @@ contract WalletBalanceProvider {
       }
       balances[j] = balanceOf(user, reservesWithEth[j]);
     }
-    balances[reservesWithEth.length] = balanceOf(user, MOCK_ETH_ADDRESS);
+    balances[reserves.length] = balanceOf(user, MOCK_ETH_ADDRESS);
 
     return (reservesWithEth, balances);
   }
