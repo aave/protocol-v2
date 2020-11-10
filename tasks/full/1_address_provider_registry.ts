@@ -58,7 +58,6 @@ task(
     const lendingRateOracle = getParamPerNetwork(poolConfig.LendingRateOracle, network);
 
     if (lendingRateOracle && lendingRateOracle !== '') {
-      await waitForTx(await addressesProvider.setLendingRateOracle(proxyProvider));
+      await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle));
     }
-
   });

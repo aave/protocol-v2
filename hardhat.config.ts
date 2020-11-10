@@ -24,7 +24,7 @@ const MNEMONIC = process.env.MNEMONIC || '';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full'].forEach((folder) => {
+  ['misc', 'migrations', 'dev', 'full', 'verifications'].forEach((folder) => {
     const tasksPath = path.join(__dirname, 'tasks', folder);
     fs.readdirSync(tasksPath)
       .filter((pth) => pth.includes('.ts'))
