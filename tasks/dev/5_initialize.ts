@@ -3,7 +3,7 @@ import {
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  deployAaveProtocolTestHelpers,
+  deployAaveProtocolDataProvider,
   deployWETHGateway,
 } from '../../helpers/contracts-deployments';
 import {
@@ -41,7 +41,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI_'))
     );
 
-    const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
+    const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
 
     const reservesParams = getReservesConfigByPool(AavePools.proto);
 
@@ -77,7 +77,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     await deployWalletBalancerProvider(addressesProvider.address, verify);
 
-    await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+    await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
 
     const lendingPoolAddress = await addressesProvider.getLendingPool();
     const wethAddress = await getWethAddress(poolConfig);

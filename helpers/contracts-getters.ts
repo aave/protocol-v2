@@ -1,5 +1,5 @@
 import {
-  AaveProtocolTestHelpersFactory,
+  AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
   DefaultReserveInterestRateStrategyFactory,
@@ -100,10 +100,10 @@ export const getIErc20Detailed = async (address: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getAaveProtocolTestHelpers = async (address?: tEthereumAddress) =>
-  await AaveProtocolTestHelpersFactory.connect(
+export const getAaveProtocolDataProvider = async (address?: tEthereumAddress) =>
+  await AaveProtocolDataProviderFactory.connect(
     address ||
-      (await getDb().get(`${eContractid.AaveProtocolTestHelpers}.${DRE.network.name}`).value())
+      (await getDb().get(`${eContractid.AaveProtocolDataProvider}.${DRE.network.name}`).value())
         .address,
     await getFirstSigner()
   );

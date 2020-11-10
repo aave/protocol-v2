@@ -3,7 +3,7 @@ import {task} from 'hardhat/config';
 import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
 import {ZERO_ADDRESS} from '../../helpers/constants';
 import {
-  getAaveProtocolTestHelpers,
+  getAaveProtocolDataProvider,
   getAddressById,
   getLendingPool,
   getLendingPoolAddressesProvider,
@@ -43,7 +43,7 @@ task('full:verify', 'Deploy oracles for dev enviroment')
       const lendingPoolImpl = await getLendingPoolImpl();
       const lendingPoolConfiguratorImpl = await getLendingPoolConfiguratorImpl();
       const lendingPoolCollateralManagerImpl = await getLendingPoolCollateralManagerImpl();
-      const testHelpers = await getAaveProtocolTestHelpers();
+      const dataProvider = await getAaveProtocolDataProvider();
       const walletProvider = await getWalletProvider();
       const wethGateway = await getWETHGateway();
 
@@ -68,8 +68,8 @@ task('full:verify', 'Deploy oracles for dev enviroment')
       await verifyContract(lendingPoolCollateralManagerImpl.address, []);
 
       // Test helpers
-      console.log('\n- Verifying  Aave Helpers...\n');
-      await verifyContract(testHelpers.address, [addressesProvider.address]);
+      console.log('\n- Verifying  Aave  Provider Helpers...\n');
+      await verifyContract(dataProvider.address, [addressesProvider.address]);
 
       // Wallet balance provider
       console.log('\n- Verifying  Wallet Balance Provider...\n');
