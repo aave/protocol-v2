@@ -13,6 +13,7 @@ import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
+import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 
 /**
  * @title ReserveLogic library
@@ -27,6 +28,9 @@ library ValidationLogic {
   using SafeERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
+
+  uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
+  uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
 
   /**
    * @dev validates a deposit.
@@ -297,6 +301,42 @@ library ValidationLogic {
     } else {
       revert(Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED);
     }
+  }
+
+  function validateRebalanceStableBorrowRate(
+    ReserveLogic.ReserveData storage reserve,
+    address reserveAddress,
+    IERC20 stableDebtToken,
+    IERC20 variableDebtToken,
+    address aTokenAddress) external {
+
+    //if the usage ratio is below 95%, no rebalances are needed
+    uint256 totalDebt = stableDebtToken
+      .totalSupply()
+      .add(variableDebtToken.totalSupply())
+      .wadToRay();
+    uint256 availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress).wadToRay();
+    uint256 usageRatio = totalDebt == 0
+      ? 0
+      : totalDebt.rayDiv(availableLiquidity.add(totalDebt));
+
+    //if the liquidity rate is below REBALANCE_UP_THRESHOLD of the max variable APR at 95% usage,
+    //then we allow rebalancing of the stable rate positions.
+
+    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+    uint256 maxVariableBorrowRate = IReserveInterestRateStrategy(
+      reserve
+        .interestRateStrategyAddress
+    )
+      .getMaxVariableBorrowRate();
+
+    require(
+      usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
+        currentLiquidityRate <=
+        maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
+      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+    );
+
   }
 
   /**
