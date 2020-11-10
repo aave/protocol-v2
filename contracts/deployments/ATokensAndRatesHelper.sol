@@ -6,7 +6,6 @@ import {LendingPool} from '../lendingpool/LendingPool.sol';
 import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
 import {LendingPoolConfigurator} from '../lendingpool/LendingPoolConfigurator.sol';
 import {AToken} from '../tokenization/AToken.sol';
-import {DelegationAwareAToken} from '../tokenization/DelegationAwareAToken.sol';
 import {
   DefaultReserveInterestRateStrategy
 } from '../lendingpool/DefaultReserveInterestRateStrategy.sol';
@@ -38,20 +37,8 @@ contract ATokensAndRatesHelper is Ownable {
     require(tokens.length == symbols.length, 't Arrays not same length');
     require(rates.length == symbols.length, 'r Arrays not same length');
     for (uint256 i = 0; i < tokens.length; i++) {
-      address aToken;
-      if (keccak256(bytes(symbols[i])) == keccak256(bytes('UNI'))) {
-        aToken = address(
-          new DelegationAwareAToken(
-            LendingPool(pool),
-            tokens[i],
-            address(0),
-            StringLib.concat('Aave interest bearing ', symbols[i]),
-            StringLib.concat('a', symbols[i]),
-            incentivesController
-          )
-        );
-      } else {
-        aToken = address(
+      emit deployedContracts(
+        address(
           new AToken(
             LendingPool(pool),
             tokens[i],
@@ -60,10 +47,7 @@ contract ATokensAndRatesHelper is Ownable {
             StringLib.concat('a', symbols[i]),
             incentivesController
           )
-        );
-      }
-      emit deployedContracts(
-        aToken,
+        ),
         address(
           new DefaultReserveInterestRateStrategy(
             LendingPoolAddressesProvider(addressesProvider),

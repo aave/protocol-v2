@@ -112,7 +112,6 @@ export const initReservesByHelper = async (
       rawInsertContractAddressInDb(`strategy${symbols[index]}`, event?.args?.strategy);
     });
 
-    console.log(tx2.events);
     console.log(`  - Deployed aToken, DebtTokens and Strategy for: ${symbols.join(', ')} `);
     const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
     const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];

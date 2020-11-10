@@ -15,7 +15,7 @@ import 'hardhat-typechain';
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const DEFAULT_GAS_MUL = 2;
-const DEFAULT_GAS_PRICE = 1000000000;
+const DEFAULT_GAS_PRICE = 2000000000;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
