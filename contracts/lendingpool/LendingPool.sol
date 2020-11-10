@@ -25,7 +25,6 @@ import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
-import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
 
 /**
  * @title LendingPool contract
@@ -39,8 +38,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using SafeERC20 for IERC20;
 
   //main configuration parameters
-  uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
-  uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 2500;
   uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
   uint256 public constant MAX_NUMBER_RESERVES = 128;
@@ -333,42 +330,23 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
     address aTokenAddress = reserve.aTokenAddress;
 
-    uint256 stableBorrowBalance = IERC20(stableDebtToken).balanceOf(user);
+    uint256 stableDebt = IERC20(stableDebtToken).balanceOf(user);
 
-    //if the usage ratio is below 95%, no rebalances are needed
-    uint256 totalBorrows = stableDebtToken
-      .totalSupply()
-      .add(variableDebtToken.totalSupply())
-      .wadToRay();
-    uint256 availableLiquidity = IERC20(asset).balanceOf(aTokenAddress).wadToRay();
-    uint256 usageRatio = totalBorrows == 0
-      ? 0
-      : totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
-
-    //if the liquidity rate is below REBALANCE_UP_THRESHOLD of the max variable APR at 95% usage,
-    //then we allow rebalancing of the stable rate positions.
-
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
-    uint256 maxVariableBorrowRate = IReserveInterestRateStrategy(
-      reserve
-        .interestRateStrategyAddress
-    )
-      .getMaxVariableBorrowRate();
-
-    require(
-      usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
-        currentLiquidityRate <=
-        maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
-      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+    ValidationLogic.validateRebalanceStableBorrowRate(
+      reserve,
+      asset,
+      stableDebtToken,
+      variableDebtToken,
+      aTokenAddress
     );
 
     reserve.updateState();
 
-    IStableDebtToken(address(stableDebtToken)).burn(user, stableBorrowBalance);
+    IStableDebtToken(address(stableDebtToken)).burn(user, stableDebt);
     IStableDebtToken(address(stableDebtToken)).mint(
       user,
       user,
-      stableBorrowBalance,
+      stableDebt,
       reserve.currentStableBorrowRate
     );
 
