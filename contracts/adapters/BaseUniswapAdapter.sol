@@ -24,8 +24,6 @@ contract BaseUniswapAdapter {
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
-  enum LeftoverAction {DEPOSIT, TRANSFER}
-
   struct PermitParams {
     uint256[] amount;
     uint256[] deadline;
@@ -226,29 +224,6 @@ contract BaseUniswapAdapter {
    */
   function _getReserveData(address asset) internal view returns (ReserveLogic.ReserveData memory) {
     return POOL.getReserveData(asset);
-  }
-
-  /**
-   * @dev Take action with the swap left overs as configured in the parameters
-   * @param asset address of the asset
-   * @param reservedAmount Amount reserved to be used by the contract to repay the flash loan
-   * @param leftOverAction enum indicating what to do with the left over balance from the swap:
-   *     (0) Deposit back
-   *     (1) Direct transfer to user
-   * @param user address
-   */
-  function _sendLeftovers(address asset, uint256 reservedAmount, LeftoverAction leftOverAction, address user) internal {
-    uint256 balance = IERC20(asset).balanceOf(address(this));
-    uint256 assetLeftOver = balance.sub(reservedAmount);
-
-    if (assetLeftOver > 0) {
-      if (leftOverAction == LeftoverAction.DEPOSIT) {
-        IERC20(asset).approve(address(POOL), balance);
-        POOL.deposit(asset, assetLeftOver, user, 0);
-      } else {
-        IERC20(asset).transfer(user, assetLeftOver);
-      }
-    }
   }
 
   /**

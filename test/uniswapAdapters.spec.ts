@@ -2056,7 +2056,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           expectedDaiAmount,
           1,
           0,
@@ -2164,7 +2163,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           expectedDaiAmount,
           1,
           0,
@@ -2230,7 +2228,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           expectedDaiAmount,
           1,
           0,
@@ -2283,7 +2280,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           expectedDaiAmount,
           1,
           0,
@@ -2335,7 +2331,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           expectedDaiAmount,
           1,
           0,
@@ -2387,7 +2382,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           expectedDaiAmount,
           1,
           0,
@@ -2413,7 +2407,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         ).to.be.revertedWith('maxAmountToSwap exceed max slippage');
       });
 
-      it('should swap tokens, repay debt and deposit in pool the left over', async () => {
+      it('should swap, repay debt and pull the needed ATokens leaving no leftovers', async () => {
         const {
           users,
           pool,
@@ -2466,7 +2460,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           expectedDaiAmount,
           1,
           0,
@@ -2497,7 +2490,9 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
         const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
         const userAEthBalance = await aWETH.balanceOf(userAddress);
+        const adapterAEthBalance = await aWETH.balanceOf(uniswapRepayAdapter.address);
 
+        expect(adapterAEthBalance).to.be.eq(Zero);
         expect(adapterWethBalance).to.be.eq(Zero);
         expect(adapterDaiBalance).to.be.eq(Zero);
         expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmount);
@@ -2507,103 +2502,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(userAEthBalance).to.be.gte(
           userAEthBalanceBefore.sub(liquidityToSwap).add(leftOverWeth.toString())
         );
-      });
-
-      it('should swap tokens, repay debt and transfer to user the left over', async () => {
-        const {
-          users,
-          pool,
-          weth,
-          aWETH,
-          oracle,
-          dai,
-          uniswapRepayAdapter,
-          helpersContract,
-        } = testEnv;
-        const user = users[0].signer;
-        const userAddress = users[0].address;
-
-        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
-
-        const daiPrice = await oracle.getAssetPrice(dai.address);
-        const expectedDaiAmount = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
-        );
-
-        // Open user Debt
-        await pool.connect(user).borrow(dai.address, expectedDaiAmount, 1, 0, userAddress);
-
-        const daiStableDebtTokenAddress = (
-          await helpersContract.getReserveTokensAddresses(dai.address)
-        ).stableDebtTokenAddress;
-
-        const daiStableDebtContract = await getContract<StableDebtToken>(
-          eContractid.StableDebtToken,
-          daiStableDebtTokenAddress
-        );
-
-        const userDaiStableDebtAmountBefore = await daiStableDebtContract.balanceOf(userAddress);
-
-        const liquidityToSwap = amountWETHtoSwap;
-        await aWETH.connect(user).approve(uniswapRepayAdapter.address, liquidityToSwap);
-        const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
-
-        // Subtract the FL fee from the amount to be swapped 0,09%
-        const flashloanAmount = new BigNumber(liquidityToSwap.toString()).div(1.0009).toFixed(0);
-
-        const actualWEthSwapped = new BigNumber(flashloanAmount.toString())
-          .multipliedBy(0.995)
-          .toFixed(0);
-
-        const leftOverWeth = new BigNumber(flashloanAmount).minus(actualWEthSwapped);
-
-        await mockUniswapRouter.connect(user).setAmountToSwap(weth.address, actualWEthSwapped);
-
-        const wethBalanceBefore = await weth.balanceOf(userAddress);
-
-        const params = buildRepayAdapterParams(
-          dai.address,
-          1,
-          expectedDaiAmount,
-          1,
-          0,
-          0,
-          0,
-          0,
-          '0x0000000000000000000000000000000000000000000000000000000000000000',
-          '0x0000000000000000000000000000000000000000000000000000000000000000'
-        );
-
-        await expect(
-          pool
-            .connect(user)
-            .flashLoan(
-              uniswapRepayAdapter.address,
-              [weth.address],
-              [flashloanAmount.toString()],
-              [0],
-              userAddress,
-              params,
-              0
-            )
-        )
-          .to.emit(uniswapRepayAdapter, 'Swapped')
-          .withArgs(weth.address, dai.address, actualWEthSwapped.toString(), expectedDaiAmount);
-
-        const adapterWethBalance = await weth.balanceOf(uniswapRepayAdapter.address);
-        const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
-        const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
-        const userAEthBalance = await aWETH.balanceOf(userAddress);
-        const wethBalance = await weth.balanceOf(userAddress);
-
-        expect(adapterWethBalance).to.be.eq(Zero);
-        expect(adapterDaiBalance).to.be.eq(Zero);
-        expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmount);
-        expect(userDaiStableDebtAmount).to.be.lt(expectedDaiAmount);
-        expect(userAEthBalance).to.be.lt(userAEthBalanceBefore);
-        expect(userAEthBalance).to.be.gt(userAEthBalanceBefore.sub(liquidityToSwap));
-        expect(wethBalance).to.be.eq(wethBalanceBefore.add(leftOverWeth.toString()));
       });
 
       it('should correctly swap tokens and repay the whole stable debt', async () => {
@@ -2657,7 +2555,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           amountToRepay,
           1,
           1,
@@ -2684,7 +2581,9 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
         const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
         const userAEthBalance = await aWETH.balanceOf(userAddress);
+        const adapterAEthBalance = await aWETH.balanceOf(uniswapRepayAdapter.address);
 
+        expect(adapterAEthBalance).to.be.eq(Zero);
         expect(adapterWethBalance).to.be.eq(Zero);
         expect(adapterDaiBalance).to.be.eq(Zero);
         expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmount);
@@ -2746,7 +2645,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const params = buildRepayAdapterParams(
           dai.address,
-          0,
           amountToRepay,
           2,
           1,
@@ -2773,7 +2671,9 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
         const userDaiVariableDebtAmount = await daiVariableDebtContract.balanceOf(userAddress);
         const userAEthBalance = await aWETH.balanceOf(userAddress);
+        const adapterAEthBalance = await aWETH.balanceOf(uniswapRepayAdapter.address);
 
+        expect(adapterAEthBalance).to.be.eq(Zero);
         expect(adapterWethBalance).to.be.eq(Zero);
         expect(adapterDaiBalance).to.be.eq(Zero);
         expect(userDaiVariableDebtAmountBefore).to.be.gte(expectedDaiAmount);

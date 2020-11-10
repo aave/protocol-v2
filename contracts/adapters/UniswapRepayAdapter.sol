@@ -18,7 +18,6 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
   struct RepayParams {
     address assetToSwapTo;
-    LeftoverAction leftOverAction;
     uint256 repayAmount;
     uint256 rateMode;
     bool repayAllDebt;
@@ -44,9 +43,6 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address Address of the reserve to be swapped to and repay
-   *   uint256 leftOverAction Flag indicating what to do with the left over balance from the swap:
-   *     (0) Deposit back
-   *     (1) Direct transfer to user
    *   uint256 repayAmount Amount of debt to be repaid
    *   uint256 rateMode Rate modes of the debt to be repaid
    *   bool repayAllDebt Flag indicating if all the debt should be repaid
@@ -74,7 +70,6 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         decodedParams.repayAmount,
         decodedParams.rateMode,
         initiator,
-        decodedParams.leftOverAction,
         decodedParams.repayAllDebt,
         premiums[0],
         decodedParams.permitSignature
@@ -84,7 +79,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   }
 
   /**
-   * @dev Perform the swap, the repay of the debt and send back the left overs
+   * @dev Perform the swap and the repay of the debt
    *
    * @param assetFrom Address of token to be swapped
    * @param assetTo Address of token to be received
@@ -92,7 +87,6 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @param repayAmount Amount of the debt to be repaid
    * @param rateMode Rate mode of the debt to be repaid
    * @param initiator Address of the user
-   * @param leftOverAction enum indicating what to do with the left over balance from the swap
    * @param premium Fee of the flash loan
    * @param permitSignature struct containing the permit signature
    */
@@ -103,12 +97,10 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 repayAmount,
     uint256 rateMode,
     address initiator,
-    LeftoverAction leftOverAction,
     bool repayAllDebt,
     uint256 premium,
     PermitSignature memory permitSignature
   ) internal {
-
     if (repayAllDebt) {
       ReserveLogic.ReserveData memory reserveDebtData = _getReserveData(assetTo);
 
@@ -119,31 +111,26 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       repayAmount = IERC20(debtToken).balanceOf(initiator);
     }
 
-    _swapTokensForExactTokens(assetFrom, assetTo, amount, repayAmount);
+    uint256 amountSwapped = _swapTokensForExactTokens(assetFrom, assetTo, amount, repayAmount);
 
     // Repay debt
     IERC20(assetTo).approve(address(POOL), repayAmount);
     POOL.repay(assetTo, repayAmount, rateMode, initiator);
 
     uint256 flashLoanDebt = amount.add(premium);
+    uint256 amountToPull = flashLoanDebt.sub(amount.sub(amountSwapped));
 
     ReserveLogic.ReserveData memory reserveData = _getReserveData(assetFrom);
-    _pullAToken(assetFrom, reserveData.aTokenAddress, initiator, flashLoanDebt, permitSignature);
+    _pullAToken(assetFrom, reserveData.aTokenAddress, initiator, amountToPull, permitSignature);
 
     // Repay flashloan
     IERC20(assetFrom).approve(address(POOL), flashLoanDebt);
-
-    // Take care of reserve leftover from the swap
-    _sendLeftovers(assetFrom, flashLoanDebt, leftOverAction, initiator);
   }
 
   /**
    * @dev Decodes debt information encoded in flashloan params
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address Address of the reserve to be swapped to and repay
-   *   uint256 leftOverAction Flag indicating what to do with the left over balance from the swap:
-   *     (0) Deposit back
-   *     (1) Direct transfer to user
    *   uint256 repayAmount Amount of debt to be repaid
    *   uint256 rateMode Rate modes of the debt to be repaid
    *   bool repayAllDebt Flag indicating if all the debt should be repaid
@@ -157,7 +144,6 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   function _decodeParams(bytes memory params) internal pure returns (RepayParams memory) {
     (
       address assetToSwapTo,
-      LeftoverAction leftOverAction,
       uint256 repayAmount,
       uint256 rateMode,
       bool repayAllDebt,
@@ -166,11 +152,10 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       uint8 v,
       bytes32 r,
       bytes32 s
-    ) = abi.decode(params, (address, LeftoverAction, uint256, uint256, bool, uint256, uint256, uint8, bytes32, bytes32));
+    ) = abi.decode(params, (address, uint256, uint256, bool, uint256, uint256, uint8, bytes32, bytes32));
 
     return RepayParams(
       assetToSwapTo,
-      leftOverAction,
       repayAmount,
       rateMode,
       repayAllDebt,
