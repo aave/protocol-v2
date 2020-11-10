@@ -389,6 +389,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
       asset,
+      useAsCollateral,
       _reserves,
       _usersConfig[msg.sender],
       _reservesList,

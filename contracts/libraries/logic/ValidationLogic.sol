@@ -304,6 +304,7 @@ library ValidationLogic {
   function validateSetUseReserveAsCollateral(
     ReserveLogic.ReserveData storage reserve,
     address reserveAddress,
+    bool useAsCollateral,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
     mapping(uint256 => address) storage reserves,
@@ -315,6 +316,7 @@ library ValidationLogic {
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
     require(
+      useAsCollateral ||
       GenericLogic.balanceDecreaseAllowed(
         reserveAddress,
         msg.sender,
