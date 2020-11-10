@@ -53,7 +53,9 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
     pool
   );
 
-export const getGenesisPoolAdmin = async (config: ICommonConfiguration) => {
+export const getGenesisPoolAdmin = async (
+  config: ICommonConfiguration
+): Promise<tEthereumAddress> => {
   const currentNetwork = DRE.network.name;
   const targetAddress = getParamPerNetwork(config.PoolAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {
@@ -66,7 +68,9 @@ export const getGenesisPoolAdmin = async (config: ICommonConfiguration) => {
   return addressList[addressIndex];
 };
 
-export const getEmergencyAdmin = async (config: ICommonConfiguration) => {
+export const getEmergencyAdmin = async (
+  config: ICommonConfiguration
+): Promise<tEthereumAddress> => {
   const currentNetwork = DRE.network.name;
   const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eEthereumNetwork>currentNetwork);
   if (targetAddress) {

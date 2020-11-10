@@ -49,6 +49,13 @@ export const insertContractAddressInDb = async (id: eContractid, address: tEther
     })
     .write();
 
+export const rawInsertContractAddressInDb = async (id: string, address: tEthereumAddress) =>
+  await getDb()
+    .set(`${id}.${DRE.network.name}`, {
+      address,
+    })
+    .write();
+
 export const getEthersSigners = async (): Promise<Signer[]> =>
   await Promise.all(await DRE.ethers.getSigners());
 
@@ -83,7 +90,7 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (verify) {
-    await verifyContract(id, instance.address, args);
+    await verifyContract(instance.address, args);
   }
   return instance;
 };

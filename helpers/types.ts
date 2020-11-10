@@ -64,6 +64,9 @@ export enum eContractid {
   WETH = 'WETH',
   WETHMocked = 'WETHMocked',
   SelfdestructTransferMock = 'SelfdestructTransferMock',
+  LendingPoolImpl = 'LendingPoolImpl',
+  LendingPoolConfiguratorImpl = 'LendingPoolConfiguratorImpl',
+  LendingPoolCollateralManagerImpl = 'LendingPoolCollateralManagerImpl',
 }
 
 /*

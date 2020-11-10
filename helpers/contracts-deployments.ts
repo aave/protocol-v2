@@ -48,7 +48,12 @@ import {
   Weth9MockedFactory,
   WethGatewayFactory,
 } from '../types';
-import {withSaveAndVerify, registerContractInJsonDb, linkBytecode} from './contracts-helpers';
+import {
+  withSaveAndVerify,
+  registerContractInJsonDb,
+  linkBytecode,
+  insertContractAddressInDb,
+} from './contracts-helpers';
 import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
 import {readArtifact as buidlerReadArtifact} from '@nomiclabs/buidler/plugins';
@@ -76,13 +81,21 @@ export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolea
     verify
   );
 
-export const deployLendingPoolConfigurator = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new LendingPoolConfiguratorFactory(await getFirstSigner()).deploy(),
+export const deployLendingPoolConfigurator = async (verify?: boolean) => {
+  const lendingPoolConfiguratorImpl = await new LendingPoolConfiguratorFactory(
+    await getFirstSigner()
+  ).deploy();
+  await insertContractAddressInDb(
+    eContractid.LendingPoolConfiguratorImpl,
+    lendingPoolConfiguratorImpl.address
+  );
+  return withSaveAndVerify(
+    lendingPoolConfiguratorImpl,
     eContractid.LendingPoolConfigurator,
     [],
     verify
   );
+};
 
 export const deployReserveLogicLibrary = async (verify?: boolean) =>
   withSaveAndVerify(
@@ -156,12 +169,9 @@ export const deployAaveLibraries = async (
 
 export const deployLendingPool = async (verify?: boolean) => {
   const libraries = await deployAaveLibraries(verify);
-  return withSaveAndVerify(
-    await new LendingPoolFactory(libraries, await getFirstSigner()).deploy(),
-    eContractid.LendingPool,
-    [],
-    verify
-  );
+  const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
+  await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
+  return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPool, [], verify);
 };
 
 export const deployPriceOracle = async (verify?: boolean) =>
@@ -200,8 +210,15 @@ export const deployChainlinkProxyPriceProvider = async (
   );
 
 export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
+  const collateralManagerImpl = await new LendingPoolCollateralManagerFactory(
+    await getFirstSigner()
+  ).deploy();
+  await insertContractAddressInDb(
+    eContractid.LendingPoolCollateralManagerImpl,
+    collateralManagerImpl.address
+  );
   return withSaveAndVerify(
-    await new LendingPoolCollateralManagerFactory(await getFirstSigner()).deploy(),
+    collateralManagerImpl,
     eContractid.LendingPoolCollateralManager,
     [],
     verify
