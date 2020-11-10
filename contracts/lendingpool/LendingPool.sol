@@ -901,7 +901,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reserves[asset].id = uint8(reservesCount);
       _reservesList[reservesCount] = asset;
 
-      _reservesCount++;
+      _reservesCount = reservesCount + 1;
     }
   }
 }
