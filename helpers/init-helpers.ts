@@ -1,4 +1,4 @@
-import {iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
+import {eContractid, iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
 import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
 import {
@@ -11,6 +11,7 @@ import {
   getLendingPoolAddressesProvider,
   getStableAndVariableTokensHelper,
 } from './contracts-getters';
+import {insertContractAddressInDb, rawInsertContractAddressInDb} from './contracts-helpers';
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -89,12 +90,15 @@ export const initReservesByHelper = async (
       reservesDecimals.push(reserveDecimals);
     }
 
-    // Deploy stable and variable deployers
+    // Deploy stable and variable deployers and save implementations
     const tx1 = await waitForTx(
       await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
     );
-
-    // Deploy atokens and rate strategies
+    tx1.events?.forEach((event, index) => {
+      rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
+      rawInsertContractAddressInDb(`variableDebt${symbols[index]}`, event?.args?.variableToken);
+    });
+    // Deploy atokens and rate strategies and save implementations
     const tx2 = await waitForTx(
       await atokenAndRatesDeployer.initDeployment(
         tokens,
@@ -103,6 +107,12 @@ export const initReservesByHelper = async (
         incentivesController
       )
     );
+    tx2.events?.forEach((event, index) => {
+      rawInsertContractAddressInDb(`a${symbols[index]}`, event?.args?.aToken);
+      rawInsertContractAddressInDb(`strategy${symbols[index]}`, event?.args?.strategy);
+    });
+
+    console.log(tx2.events);
     console.log(`  - Deployed aToken, DebtTokens and Strategy for: ${symbols.join(', ')} `);
     const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
     const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];

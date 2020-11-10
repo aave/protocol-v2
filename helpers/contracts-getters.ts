@@ -320,3 +320,6 @@ export const getLendingPoolCollateralManager = async (address?: tEthereumAddress
         .address,
     await getFirstSigner()
   );
+
+export const getAddressById = async (id: string) =>
+  (await getDb().get(`${id}.${DRE.network.name}`).value()).address;

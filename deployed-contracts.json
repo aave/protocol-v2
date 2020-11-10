@@ -411,7 +411,7 @@
       "address": "0x93472C0e03215F9c33DA240Eb16703C8244eAa8c"
     },
     "kovan": {
-      "address": "0x1e20D68372F8Da94BB10aE7331eeCBf6293c3093",
+      "address": "0x27d7b683f24855302280cEb615c7217e628A852A",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -601,6 +601,366 @@
   "LendingPoolCollateralManagerImpl": {
     "kovan": {
       "address": "0xca67A1eAE05B38Ce57AfE463f4508Ffe0133301D"
+    }
+  },
+  "stableDebtAAVE": {
+    "kovan": {
+      "address": "0x6cFE6fF6c6DA0Dd45a222978c3b6e5d715f6d93e"
+    }
+  },
+  "variableDebtAAVE": {
+    "kovan": {
+      "address": "0x8ff5c2a96b461d2a09D8cBa9FA4e33ddBB76D108"
+    }
+  },
+  "stableDebtBAT": {
+    "kovan": {
+      "address": "0xC634A578Db77b918d3300813f278c069083d2A04"
+    }
+  },
+  "variableDebtBAT": {
+    "kovan": {
+      "address": "0x06fb5D970337A5fb806c4bbf809000937641F153"
+    }
+  },
+  "stableDebtBUSD": {
+    "kovan": {
+      "address": "0x5388ac78373B8cAC36828586989a57F34Cd4c539"
+    }
+  },
+  "variableDebtBUSD": {
+    "kovan": {
+      "address": "0xe299F63Ef26a266DEDeb0cc4ea7E2ec54e7c8577"
+    }
+  },
+  "stableDebtDAI": {
+    "kovan": {
+      "address": "0x4A3FE592f8b7EBE734D8f0b8Eb8C17b309c6b031"
+    }
+  },
+  "variableDebtDAI": {
+    "kovan": {
+      "address": "0xC7ad3d6f83963B6242799CDD620e61F25B5001B6"
+    }
+  },
+  "aAAVE": {
+    "kovan": {
+      "address": "0x514F7Eefa7cA326aAaEE6AD87613f2C27e0A2711"
+    }
+  },
+  "strategyAAVE": {
+    "kovan": {
+      "address": "0x630163545489cE3CB86559Debb7a4504f4905ba2"
+    }
+  },
+  "aBAT": {
+    "kovan": {
+      "address": "0x764730c91Ac0D9777cfC26B2bF1D3e6322503867"
+    }
+  },
+  "strategyBAT": {
+    "kovan": {
+      "address": "0x5075aaE8c154F4B3d3806bd095E8c7bD4087e78a"
+    }
+  },
+  "aBUSD": {
+    "kovan": {
+      "address": "0x55716479180c1Fe2AD441E794858968acC6beAdB"
+    }
+  },
+  "strategyBUSD": {
+    "kovan": {
+      "address": "0x2b85a6f4E3C3a699B9584149233DDb7735D5d451"
+    }
+  },
+  "aDAI": {
+    "kovan": {
+      "address": "0x95D314e003D3aEbC59Fe25884A81C72562E7E630"
+    }
+  },
+  "strategyDAI": {
+    "kovan": {
+      "address": "0xbf761b4454f1636bF63E77a49d234Bb411979797"
+    }
+  },
+  "stableDebtENJ": {
+    "kovan": {
+      "address": "0xfF308EB66F2dD66945b19606b2E240836234f228"
+    }
+  },
+  "variableDebtENJ": {
+    "kovan": {
+      "address": "0x0e8f6A87269FEdf0f7347065483CD4F00e651a5b"
+    }
+  },
+  "stableDebtKNC": {
+    "kovan": {
+      "address": "0x8DFce79F6728e4B1617bA1A5B726E4d4146bB627"
+    }
+  },
+  "variableDebtKNC": {
+    "kovan": {
+      "address": "0x040066C1d19Ea626F214951db0F16Eea893C815E"
+    }
+  },
+  "stableDebtLINK": {
+    "kovan": {
+      "address": "0xE419fCF929D3F9E15055c195f92a55386F8CEB0D"
+    }
+  },
+  "variableDebtLINK": {
+    "kovan": {
+      "address": "0x9026CC095f011277aEFF76BF4F7Fdd6ccE86c04E"
+    }
+  },
+  "stableDebtMANA": {
+    "kovan": {
+      "address": "0x232F9362ff263C71798161965261134754Ce2791"
+    }
+  },
+  "variableDebtMANA": {
+    "kovan": {
+      "address": "0x1a9ff3fa8FFE12268389Bef6a3EAD60E5E18a7B5"
+    }
+  },
+  "aENJ": {
+    "kovan": {
+      "address": "0x193Cd957999ddBE6D6dF972960664897f6976Dc6"
+    }
+  },
+  "strategyENJ": {
+    "kovan": {
+      "address": "0x1D5644113937A3E92e5141fF35c978Dd098F3D17"
+    }
+  },
+  "aKNC": {
+    "kovan": {
+      "address": "0x72b899E953E0f9ADA655c909Fa5363EC43E71B72"
+    }
+  },
+  "strategyKNC": {
+    "kovan": {
+      "address": "0x302499C2773D70D3D94bE2679Acc85805F83129D"
+    }
+  },
+  "aLINK": {
+    "kovan": {
+      "address": "0x43fAbE3FB84921753dB0bCBF5DA55914D69D62FD"
+    }
+  },
+  "strategyLINK": {
+    "kovan": {
+      "address": "0x64d675E9c64290C0d3b5E80ABfc0D8c70d03Aa35"
+    }
+  },
+  "aMANA": {
+    "kovan": {
+      "address": "0x5FFf5493E4c0a1120325554A3537E9a5C0347B3e"
+    }
+  },
+  "strategyMANA": {
+    "kovan": {
+      "address": "0xF0EFD4B771A423b4dbf408F4be0a724E49ecd2Db"
+    }
+  },
+  "stableDebtMKR": {
+    "kovan": {
+      "address": "0x92528A78E3c2533b1f8e9272B6955Ac36027892a"
+    }
+  },
+  "variableDebtMKR": {
+    "kovan": {
+      "address": "0x4b98ef27fF61Ca44570B3710AE0114D7ca0e4cd8"
+    }
+  },
+  "stableDebtREN": {
+    "kovan": {
+      "address": "0x80F95C1a659DB64A0b282a60Fa02bedb3a76eAcA"
+    }
+  },
+  "variableDebtREN": {
+    "kovan": {
+      "address": "0x7757c7bf09Fa7F7B1c4bA41D195EC7930e7be896"
+    }
+  },
+  "stableDebtREP": {
+    "kovan": {
+      "address": "0x32940613eF33db42E19A936797FddB9d3Efc285f"
+    }
+  },
+  "variableDebtREP": {
+    "kovan": {
+      "address": "0x285bb65bC1fe6103455fb14DB96C04Ca6e0A4ceC"
+    }
+  },
+  "stableDebtSNX": {
+    "kovan": {
+      "address": "0xE2019f9F10D0d5448d82631126BFA94F015044BA"
+    }
+  },
+  "variableDebtSNX": {
+    "kovan": {
+      "address": "0x5c3f7E555dc9086C99A1f548fd90eCFdB5939296"
+    }
+  },
+  "aMKR": {
+    "kovan": {
+      "address": "0x723348D18f6E8fdd6F075Cd3E9063ADed173292C"
+    }
+  },
+  "strategyMKR": {
+    "kovan": {
+      "address": "0x7C805E7581303233645FBA6c4a6fefE448296415"
+    }
+  },
+  "aREN": {
+    "kovan": {
+      "address": "0x2Af6c0df39BB9A81ec7201526C0dfEa3e221c381"
+    }
+  },
+  "strategyREN": {
+    "kovan": {
+      "address": "0x75Fb4c8816002cA80c34241dEB7aAE738554be40"
+    }
+  },
+  "aREP": {
+    "kovan": {
+      "address": "0xb4AE74454bB76c1E7bB0CEB100ED2107fBba36b8"
+    }
+  },
+  "strategyREP": {
+    "kovan": {
+      "address": "0x8C95F49Ef82909F94cE920De5cc5917b081223F3"
+    }
+  },
+  "aSNX": {
+    "kovan": {
+      "address": "0x481fC92dDd4927386ACbFbDAAE4F71243B129aC8"
+    }
+  },
+  "strategySNX": {
+    "kovan": {
+      "address": "0x8A9C286D4Ad3569acD21d36d805BC47895a499aC"
+    }
+  },
+  "stableDebtSUSD": {
+    "kovan": {
+      "address": "0x23c62B9d362C8641b42477E61C54f060295eA91d"
+    }
+  },
+  "variableDebtSUSD": {
+    "kovan": {
+      "address": "0x75702D996A755Bb7ed5798DFfdb9CC8C4DB66d49"
+    }
+  },
+  "stableDebtTUSD": {
+    "kovan": {
+      "address": "0xd5ca6aeCccBFFf08BA307EFc6812E761dE925081"
+    }
+  },
+  "variableDebtTUSD": {
+    "kovan": {
+      "address": "0x3e4d1a670045290531B2B7fb8D8b83F43a388e53"
+    }
+  },
+  "stableDebtUNI": {
+    "kovan": {
+      "address": "0x6c705087c7a652d44d38dD0d94f78Ad73F639C88"
+    }
+  },
+  "variableDebtUNI": {
+    "kovan": {
+      "address": "0xf4379e2B872D66354bC26b45e36D3b6F88DD3248"
+    }
+  },
+  "stableDebtUSDC": {
+    "kovan": {
+      "address": "0xE831BF5E1Fb9235776B448E03dAb5871B5234E93"
+    }
+  },
+  "variableDebtUSDC": {
+    "kovan": {
+      "address": "0xE74249cFDAdc21e5d7104DfaD8D5c7d1CB80b10a"
+    }
+  },
+  "aSUSD": {
+    "kovan": {
+      "address": "0xEE5Ab1E35Eb00a0288A259675Ed9C3EF766c1feC"
+    }
+  },
+  "strategySUSD": {
+    "kovan": {
+      "address": "0x7864220AAaA91417B2c5bF3acEd8c7525D6549d4"
+    }
+  },
+  "aTUSD": {
+    "kovan": {
+      "address": "0x2e93685ca52F996330B3d4C1686118C40A8fe395"
+    }
+  },
+  "strategyTUSD": {
+    "kovan": {
+      "address": "0xF88720ea7f42ce1F8C5e73FfE7eee446279b9Ce8"
+    }
+  },
+  "aUNI": {
+    "kovan": {
+      "address": "0x2052e836F0fB11556bDb42Cb18b6D37B4bbc7C9a"
+    }
+  },
+  "strategyUNI": {
+    "kovan": {
+      "address": "0x4ef0e554181062308A3E0Ae360C1AdE04DcCa4dD"
+    }
+  },
+  "aUSDC": {
+    "kovan": {
+      "address": "0x64ea2A40805812f9f7E512DAe7Ef56E0C73F68EF"
+    }
+  },
+  "strategyUSDC": {
+    "kovan": {
+      "address": "0x846DfbAFAE686fe3490Fd2FECCEA563536094178"
+    }
+  },
+  "stableDebtUSDT": {
+    "kovan": {
+      "address": "0x3cb517109d68514D9B8Ef7223D62cA5018c518F4"
+    }
+  },
+  "variableDebtUSDT": {
+    "kovan": {
+      "address": "0x8fc8A6362b9c7132857284072B71cd5fbde9c690"
+    }
+  },
+  "stableDebtWBTC": {
+    "kovan": {
+      "address": "0x2Da22F17A6C75124ad10d6e311d23dd76bfc1025"
+    }
+  },
+  "variableDebtWBTC": {
+    "kovan": {
+      "address": "0xA1b3Dd550C33c33Cd3aAe3429f5c7F7a959df8ab"
+    }
+  },
+  "stableDebtWETH": {
+    "kovan": {
+      "address": "0x0BCBB0BE9192AFace3a5C668686bD31Ef6f84dFe"
+    }
+  },
+  "variableDebtWETH": {
+    "kovan": {
+      "address": "0x097bDAc44BfFeA314590383F67D2046461a14Ac0"
+    }
+  },
+  "stableDebtYFI": {
+    "kovan": {
+      "address": "0xad470b75F1430faF195c3059EC7A4bb23D279C05"
+    }
+  },
+  "variableDebtYFI": {
+    "kovan": {
+      "address": "0x77f8AcD9E8CdDEB8d885E657C003404cc8C1a6B4"
     }
   }
 }

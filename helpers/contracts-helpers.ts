@@ -49,6 +49,13 @@ export const insertContractAddressInDb = async (id: eContractid, address: tEther
     })
     .write();
 
+export const rawInsertContractAddressInDb = async (id: string, address: tEthereumAddress) =>
+  await getDb()
+    .set(`${id}.${DRE.network.name}`, {
+      address,
+    })
+    .write();
+
 export const getEthersSigners = async (): Promise<Signer[]> =>
   await Promise.all(await DRE.ethers.getSigners());
 
