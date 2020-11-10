@@ -365,11 +365,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev configures the reserve collateralization parameters
+   * @dev configures the reserve collateralization parameters.
+   * all the values are expressed in percentages with two decimals of precision. A valid value is 10000, which means 100.00%
    * @param asset the address of the reserve
    * @param ltv the loan to value of the asset when used as collateral
    * @param liquidationThreshold the threshold at which loans using this asset as collateral will be considered undercollateralized
-   * @param liquidationBonus the bonus liquidators receive to liquidate this asset
+   * @param liquidationBonus the bonus liquidators receive to liquidate this asset. The values is always above 100%. A value of 105%
+   * means the liquidator will receive a 5% bonus
    **/
   function configureReserveAsCollateral(
     address asset,

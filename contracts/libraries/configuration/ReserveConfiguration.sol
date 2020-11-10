@@ -86,7 +86,7 @@ library ReserveConfiguration {
   }
 
   /**
-   * @dev gets the Loan to Value of the reserve
+   * @dev gets the liquidation threshold of the reserve
    * @param self the reserve configuration
    * @return the liquidation threshold
    **/
