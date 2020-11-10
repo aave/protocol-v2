@@ -44,6 +44,22 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
   /**
+  * @dev functions marked by this modifier can only be called when the protocol is not paused
+  **/
+  modifier whenNotPaused() {
+    _whenNotPaused();
+    _;
+  }
+
+  /**
+  * @dev functions marked by this modifier can only be called by the LendingPoolConfigurator
+  **/
+  modifier onlyLendingPoolConfigurator() {
+    _onlyLendingPoolConfigurator();
+    _;
+  }
+
+  /**
    * @dev only lending pools configurator can use functions affected by this modifier
    **/
   function _onlyLendingPoolConfigurator() internal view {
@@ -89,8 +105,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -123,8 +138,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     address to
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
+
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
@@ -178,8 +193,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     _executeBorrow(
@@ -209,8 +223,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
 
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
@@ -266,8 +279,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve on which the user borrowed
    * @param rateMode the rate mode that the user wants to swap
    **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override {
-    _whenNotPaused();
+  function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
+
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -321,8 +334,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @param user the address of the user to be rebalanced
    **/
-  function rebalanceStableBorrowRate(address asset, address user) external override {
-    _whenNotPaused();
+  function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
 
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
@@ -360,8 +372,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @param useAsCollateral true if the user wants to use the deposit as collateral, false otherwise.
    **/
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
-    _whenNotPaused();
+  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override whenNotPaused {
+
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
@@ -399,8 +411,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address user,
     uint256 purchaseAmount,
     bool receiveAToken
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
@@ -456,8 +467,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
 
     FlashLoanLocalVars memory vars;
 
@@ -693,8 +703,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     uint256 balanceFromBefore,
     uint256 balanceToBefore
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
 
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
@@ -743,8 +752,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external override {
-    _onlyLendingPoolConfigurator();
+  ) external override onlyLendingPoolConfigurator {
+
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
@@ -762,8 +771,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
+    onlyLendingPoolConfigurator
   {
-    _onlyLendingPoolConfigurator();
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
@@ -772,8 +781,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @param configuration the configuration map
    **/
-  function setConfiguration(address asset, uint256 configuration) external override {
-    _onlyLendingPoolConfigurator();
+  function setConfiguration(address asset, uint256 configuration) external override onlyLendingPoolConfigurator {
     _reserves[asset].configuration.data = configuration;
   }
 
@@ -781,8 +789,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Set the _pause state
    * @param val the boolean value to set the current pause state of LendingPool
    */
-  function setPause(bool val) external override {
-    _onlyLendingPoolConfigurator();
+  function setPause(bool val) external override onlyLendingPoolConfigurator {
 
     _paused = val;
     if (_paused) {
