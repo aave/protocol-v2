@@ -365,11 +365,13 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev configures the reserve collateralization parameters
+   * @dev configures the reserve collateralization parameters.
+   * all the values are expressed in percentages with two decimals of precision. A valid value is 10000, which means 100.00%
    * @param asset the address of the reserve
    * @param ltv the loan to value of the asset when used as collateral
    * @param liquidationThreshold the threshold at which loans using this asset as collateral will be considered undercollateralized
-   * @param liquidationBonus the bonus liquidators receive to liquidate this asset
+   * @param liquidationBonus the bonus liquidators receive to liquidate this asset. The values is always above 100%. A value of 105%
+   * means the liquidator will receive a 5% bonus
    **/
   function configureReserveAsCollateral(
     address asset,
@@ -386,11 +388,14 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     if (liquidationThreshold != 0) {
       //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
-      //collateral than needed to cover the debt
-      require(
-        liquidationBonus > PercentageMath.PERCENTAGE_FACTOR,
-        Errors.LPC_INVALID_CONFIGURATION
-      );
+      //collateral than needed to cover the debt.
+      uint256 absoluteBonus = liquidationBonus.sub(PercentageMath.PERCENTAGE_FACTOR, Errors.LPC_INVALID_CONFIGURATION);
+      require(absoluteBonus > 0, Errors.LPC_INVALID_CONFIGURATION);
+
+      //we also need to require that the liq threshold is lower or equal than the liquidation bonus, to ensure that
+      //there is always enough margin for liquidators to receive the bonus.
+      require(liquidationThreshold.add(absoluteBonus) <= PercentageMath.PERCENTAGE_FACTOR, Errors.LPC_INVALID_CONFIGURATION);
+
     } else {
       require(liquidationBonus == 0, Errors.LPC_INVALID_CONFIGURATION);
       //if the liquidation threshold is being set to 0,

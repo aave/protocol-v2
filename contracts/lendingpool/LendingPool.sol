@@ -25,7 +25,7 @@ import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
-import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
+import {Address} from '../dependencies/openzeppelin/contracts/Address.sol';
 
 /**
  * @title LendingPool contract
@@ -39,12 +39,26 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using SafeERC20 for IERC20;
 
   //main configuration parameters
-  uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
-  uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
   uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 2500;
   uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
   uint256 public constant MAX_NUMBER_RESERVES = 128;
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
+
+  /**
+   * @dev functions marked by this modifier can only be called when the protocol is not paused
+   **/
+  modifier whenNotPaused() {
+    _whenNotPaused();
+    _;
+  }
+
+  /**
+   * @dev functions marked by this modifier can only be called by the LendingPoolConfigurator
+   **/
+  modifier onlyLendingPoolConfigurator() {
+    _onlyLendingPoolConfigurator();
+    _;
+  }
 
   /**
    * @dev only lending pools configurator can use functions affected by this modifier
@@ -92,8 +106,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -126,8 +139,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     address to
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
@@ -181,8 +193,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     _executeBorrow(
@@ -212,9 +223,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external override {
-    _whenNotPaused();
-
+  ) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -269,8 +278,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve on which the user borrowed
    * @param rateMode the rate mode that the user wants to swap
    **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override {
-    _whenNotPaused();
+  function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -324,51 +332,30 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @param user the address of the user to be rebalanced
    **/
-  function rebalanceStableBorrowRate(address asset, address user) external override {
-    _whenNotPaused();
-
+  function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
     IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
     address aTokenAddress = reserve.aTokenAddress;
 
-    uint256 stableBorrowBalance = IERC20(stableDebtToken).balanceOf(user);
+    uint256 stableDebt = IERC20(stableDebtToken).balanceOf(user);
 
-    //if the usage ratio is below 95%, no rebalances are needed
-    uint256 totalBorrows = stableDebtToken
-      .totalSupply()
-      .add(variableDebtToken.totalSupply())
-      .wadToRay();
-    uint256 availableLiquidity = IERC20(asset).balanceOf(aTokenAddress).wadToRay();
-    uint256 usageRatio = totalBorrows == 0
-      ? 0
-      : totalBorrows.rayDiv(availableLiquidity.add(totalBorrows));
-
-    //if the liquidity rate is below REBALANCE_UP_THRESHOLD of the max variable APR at 95% usage,
-    //then we allow rebalancing of the stable rate positions.
-
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
-    uint256 maxVariableBorrowRate = IReserveInterestRateStrategy(
-      reserve
-        .interestRateStrategyAddress
-    )
-      .getMaxVariableBorrowRate();
-
-    require(
-      usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
-        currentLiquidityRate <=
-        maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
-      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+    ValidationLogic.validateRebalanceStableBorrowRate(
+      reserve,
+      asset,
+      stableDebtToken,
+      variableDebtToken,
+      aTokenAddress
     );
 
     reserve.updateState();
 
-    IStableDebtToken(address(stableDebtToken)).burn(user, stableBorrowBalance);
+    IStableDebtToken(address(stableDebtToken)).burn(user, stableDebt);
     IStableDebtToken(address(stableDebtToken)).mint(
       user,
       user,
-      stableBorrowBalance,
+      stableDebt,
       reserve.currentStableBorrowRate
     );
 
@@ -382,8 +369,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @param useAsCollateral true if the user wants to use the deposit as collateral, false otherwise.
    **/
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
-    _whenNotPaused();
+  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
+    external
+    override
+    whenNotPaused
+  {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
@@ -421,8 +411,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address user,
     uint256 purchaseAmount,
     bool receiveAToken
-  ) external override {
-    _whenNotPaused();
+  ) external override whenNotPaused {
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
@@ -478,9 +467,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
-  ) external override {
-    _whenNotPaused();
-
+  ) external override whenNotPaused {
     FlashLoanLocalVars memory vars;
 
     ValidationLogic.validateFlashloan(assets, amounts);
@@ -715,9 +702,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     uint256 balanceFromBefore,
     uint256 balanceToBefore
-  ) external override {
-    _whenNotPaused();
-
+  ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
     ValidationLogic.validateTransfer(
@@ -765,8 +750,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external override {
-    _onlyLendingPoolConfigurator();
+  ) external override onlyLendingPoolConfigurator {
+    require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
@@ -784,8 +769,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
+    onlyLendingPoolConfigurator
   {
-    _onlyLendingPoolConfigurator();
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
@@ -794,8 +779,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset the address of the reserve
    * @param configuration the configuration map
    **/
-  function setConfiguration(address asset, uint256 configuration) external override {
-    _onlyLendingPoolConfigurator();
+  function setConfiguration(address asset, uint256 configuration)
+    external
+    override
+    onlyLendingPoolConfigurator
+  {
     _reserves[asset].configuration.data = configuration;
   }
 
@@ -803,9 +791,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Set the _pause state
    * @param val the boolean value to set the current pause state of LendingPool
    */
-  function setPause(bool val) external override {
-    _onlyLendingPoolConfigurator();
-
+  function setPause(bool val) external override onlyLendingPoolConfigurator {
     _paused = val;
     if (_paused) {
       emit Paused();
@@ -923,7 +909,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _reserves[asset].id = uint8(reservesCount);
       _reservesList[reservesCount] = asset;
 
-      _reservesCount++;
+      _reservesCount = reservesCount + 1;
     }
   }
 }

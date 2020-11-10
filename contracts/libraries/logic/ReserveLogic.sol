@@ -76,7 +76,7 @@ library ReserveLogic {
   /**
    * @dev returns the ongoing normalized income for the reserve.
    * a value of 1e27 means there is no income. As time passes, the income is accrued.
-   * A value of 2*1e27 means for each unit of assset two units of income have been accrued.
+   * A value of 2*1e27 means for each unit of asset one unit of income has been accrued.
    * @param reserve the reserve object
    * @return the normalized income. expressed in ray
    **/
@@ -185,15 +185,9 @@ library ReserveLogic {
     address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
-    if (reserve.liquidityIndex == 0) {
-      //if the reserve has not been initialized yet
-      reserve.liquidityIndex = uint128(WadRayMath.ray());
-    }
-
-    if (reserve.variableBorrowIndex == 0) {
-      reserve.variableBorrowIndex = uint128(WadRayMath.ray());
-    }
-
+   
+    reserve.liquidityIndex = uint128(WadRayMath.ray());
+    reserve.variableBorrowIndex = uint128(WadRayMath.ray());
     reserve.aTokenAddress = aTokenAddress;
     reserve.stableDebtTokenAddress = stableDebtTokenAddress;
     reserve.variableDebtTokenAddress = variableDebtTokenAddress;

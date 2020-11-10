@@ -96,6 +96,8 @@ library Errors {
   string public constant LPAPR_INVALID_ADDRESSES_PROVIDER_ID = '72';
   string public constant VL_INCONSISTENT_FLASHLOAN_PARAMS = '73';
   string public constant LP_INCONSISTENT_PARAMS_LENGTH = '74';
+  string public constant UL_INVALID_INDEX = '77';
+  string public constant LP_NOT_CONTRACT = '78';
 
   enum CollateralManagerErrors {
     NO_ERROR,
