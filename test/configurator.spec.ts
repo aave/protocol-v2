@@ -48,16 +48,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(RC_INVALID_LIQ_BONUS);
   });
 
-  it('Reverts trying to set an invalid reserve decimals', async () => {
-    const {configurator, weth} = testEnv;
-
-    const invalidDecimals = 256;
-
-    await expect(configurator.setReserveDecimals(weth.address, invalidDecimals)).to.be.revertedWith(
-      RC_INVALID_DECIMALS
-    );
-  });
-
   it('Reverts trying to set an invalid reserve factor', async () => {
     const {configurator, weth} = testEnv;
 
@@ -504,14 +494,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
-  });
-
-  it('Check the onlyAaveAdmin on setReserveDecimals', async () => {
-    const {configurator, users, weth} = testEnv;
-    await expect(
-      configurator.connect(users[2].signer).setReserveDecimals(weth.address, '80'),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });

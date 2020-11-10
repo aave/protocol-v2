@@ -555,21 +555,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev updates the reserve decimals
-   * @param asset the address of the reserve
-   * @param decimals the new number of decimals
-   **/
-  function setReserveDecimals(address asset, uint256 decimals) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
-
-    currentConfig.setDecimals(decimals);
-
-    pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveDecimalsChanged(asset, decimals);
-  }
-
-  /**
    * @dev sets the interest rate strategy of a reserve
    * @param asset the address of the reserve
    * @param rateStrategyAddress the new address of the interest strategy contract
