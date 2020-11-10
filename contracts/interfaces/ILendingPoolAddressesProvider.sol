@@ -20,7 +20,11 @@ interface ILendingPoolAddressesProvider {
 
   function setAddress(
     bytes32 id,
-    address newAddress,
+    address newAddress
+  ) external;
+
+  function setAddressAsProxy(
+    bytes32 id,
     address impl
   ) external;
 
