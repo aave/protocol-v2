@@ -25,6 +25,7 @@ import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {Address} from '../dependencies/openzeppelin/contracts/Address.sol';
 
 /**
  * @title LendingPool contract
@@ -744,6 +745,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address variableDebtAddress,
     address interestRateStrategyAddress
   ) external override {
+    require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     _onlyLendingPoolConfigurator();
     _reserves[asset].init(
       aTokenAddress,
