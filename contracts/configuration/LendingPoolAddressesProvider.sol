@@ -28,24 +28,30 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
 
   /**
-   * @dev Sets an address for an id, allowing to cover it or not with a proxy
+   * @dev Sets an address for an id by updating a proxy implementation
    * @param id The id
-   * @param newAddress The address to set, pass address(0) if a proxy is needed
    * @param implementationAddress The address of the implementation if we want it covered by a proxy
    * address(0) if we don't want a proxy covering
    */
-  function setAddress(
+  function setAddressAsProxy(
     bytes32 id,
-    address newAddress,
     address implementationAddress
   ) external override onlyOwner {
-    if (implementationAddress != address(0)) {
-      _updateImpl(id, implementationAddress);
-      emit AddressSet(id, implementationAddress, true);
-    } else {
-      _addresses[id] = newAddress;
-      emit AddressSet(id, newAddress, false);
-    }
+    _updateImpl(id, implementationAddress);
+    emit AddressSet(id, implementationAddress, true);
+  }
+
+  /**
+   * @dev Sets an address for an id replacing the address saved in the addresses map
+   * @param id The id
+   * @param newAddress The address to set, pass address(0) if a proxy is needed
+   */
+  function setAddress(
+    bytes32 id,
+    address newAddress
+  ) external override onlyOwner {
+    _addresses[id] = newAddress;
+    emit AddressSet(id, newAddress, false);
   }
 
   /**

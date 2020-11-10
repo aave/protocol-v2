@@ -222,7 +222,22 @@
             "user": "1",
             "useAsCollateral": "false"
           },
-          "expected": "User deposit is already being used as collateral"
+          "expected": "revert"
+        }
+      ]
+    },
+    {
+      "description": "User 1 reenables WETH as collateral",
+      "actions": [
+        {
+          "name": "setUseAsCollateral",
+          "args": {
+            "reserve": "WETH",
+
+            "user": "1",
+            "useAsCollateral": "true"
+          },
+          "expected": "success"
         }
       ]
     }

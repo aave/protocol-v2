@@ -20,13 +20,16 @@ task('aave:full', 'Deploy development enviroment')
     console.log('Migration started\n');
 
     console.log('1. Deploy address provider');
-    await localBRE.run('full:deploy-address-provider', {verify, pool: POOL_NAME});
+    await localBRE.run('full:deploy-address-provider', {pool: POOL_NAME});
 
     console.log('2. Deploy lending pool');
-    await localBRE.run('full:deploy-lending-pool', {verify});
+    await localBRE.run('full:deploy-lending-pool');
 
     console.log('3. Initialize lending pool');
-    await localBRE.run('full:initialize-lending-pool', {verify, pool: POOL_NAME});
+    await localBRE.run('full:initialize-lending-pool', {pool: POOL_NAME});
+
+    console.log('4. Veryfing contracts');
+    await localBRE.run('full:verify', {verify, all: true, pool: POOL_NAME});
 
     console.log('\nFinished migrations');
     printContracts();

@@ -53,7 +53,10 @@
     "print-contracts:kovan": "npm run hardhat:kovan -- print-contracts",
     "print-contracts:main": "npm run hardhat:main -- print-contracts",
     "print-contracts:ropsten": "npm run hardhat:main -- print-contracts",
-    "dev:deployUIProvider": "npm run buidler:kovan deploy-UiPoolDataProvider"
+    "dev:deployUIProvider": "npm run hardhat:kovan deploy-UiPoolDataProvider",
+    "kovan:verify": "npm run hardhat:kovan full:verify -- --all --verify --pool Aave",
+    "ropsten:verify": "npm run hardhat:ropsten full:verify -- --all --verify --pool Aave",
+    "mainnet:verify": "npm run hardhat:main full:verify -- --all --verify --pool Aave"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
@@ -61,7 +64,6 @@
     "@nomiclabs/buidler-etherscan": "^2.1.0",
     "@nomiclabs/buidler-waffle": "2.0.0",
     "@nomiclabs/hardhat-ethers": "^2.0.0",
-    "@nomiclabs/hardhat-etherscan": "^2.0.0",
     "@nomiclabs/hardhat-waffle": "^2.0.0",
     "@openzeppelin/contracts": "3.1.0",
     "@typechain/ethers-v4": "1.0.0",
@@ -74,7 +76,6 @@
     "@types/mocha": "7.0.2",
     "@types/node": "14.0.5",
     "bignumber.js": "9.0.0",
-    "buidler-gas-reporter": "^0.1.4",
     "buidler-typechain": "0.1.1",
     "chai": "4.2.0",
     "chai-bignumber": "3.0.0",
@@ -94,6 +95,7 @@
     "prettier-plugin-solidity": "^1.0.0-alpha.53",
     "pretty-quick": "^2.0.1",
     "solidity-coverage": "0.7.10",
+    "temp-hardhat-etherscan": "^2.0.2",
     "ts-generator": "0.0.8",
     "ts-node": "^8.10.2",
     "tslint": "^6.1.2",

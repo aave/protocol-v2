@@ -36,7 +36,7 @@ library ValidationLogic {
   function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
 
-    require(amount > 0, Errors.VL_AMOUNT_NOT_GREATER_THAN_0);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
   }
@@ -62,7 +62,7 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
-    require(amount > 0, Errors.VL_AMOUNT_NOT_GREATER_THAN_0);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
 
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
@@ -139,6 +139,7 @@ library ValidationLogic {
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
 
     require(vars.borrowingEnabled, Errors.VL_BORROWING_NOT_ENABLED);
 
@@ -232,7 +233,7 @@ library ValidationLogic {
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
-    require(amountSent > 0, Errors.VL_AMOUNT_NOT_GREATER_THAN_0);
+    require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
     require(
       (stableDebt > 0 &&
@@ -304,6 +305,7 @@ library ValidationLogic {
   function validateSetUseReserveAsCollateral(
     ReserveLogic.ReserveData storage reserve,
     address reserveAddress,
+    bool useAsCollateral,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
     mapping(uint256 => address) storage reserves,
@@ -315,6 +317,7 @@ library ValidationLogic {
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
     require(
+      useAsCollateral ||
       GenericLogic.balanceDecreaseAllowed(
         reserveAddress,
         msg.sender,

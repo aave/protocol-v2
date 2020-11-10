@@ -8,13 +8,14 @@ import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants'
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
-import '@nomiclabs/hardhat-etherscan';
+import 'temp-hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
-const DEFAULT_GAS_PRICE = 10;
+const DEFAULT_GAS_MUL = 2;
+const DEFAULT_GAS_PRICE = 2000000000;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
@@ -40,7 +41,8 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
     url: `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
     hardfork: HARDFORK,
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-    gasMultiplier: DEFAULT_GAS_PRICE,
+    gasMultiplier: DEFAULT_GAS_MUL,
+    gasPrice: DEFAULT_GAS_PRICE,
     chainId: networkId,
     accounts: {
       mnemonic: MNEMONIC,

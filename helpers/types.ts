@@ -51,7 +51,7 @@ export enum eContractid {
   DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
-  AaveProtocolTestHelpers = 'AaveProtocolTestHelpers',
+  AaveProtocolDataProvider = 'AaveProtocolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
@@ -64,6 +64,9 @@ export enum eContractid {
   WETH = 'WETH',
   WETHMocked = 'WETHMocked',
   SelfdestructTransferMock = 'SelfdestructTransferMock',
+  LendingPoolImpl = 'LendingPoolImpl',
+  LendingPoolConfiguratorImpl = 'LendingPoolConfiguratorImpl',
+  LendingPoolCollateralManagerImpl = 'LendingPoolCollateralManagerImpl',
   MockUniswapV2Router02 = 'MockUniswapV2Router02',
   UniswapLiquiditySwapAdapter = 'UniswapLiquiditySwapAdapter',
   UniswapRepayAdapter = 'UniswapRepayAdapter',
@@ -86,7 +89,7 @@ export enum ProtocolErrors {
   CALLER_NOT_POOL_ADMIN = '33', // 'The caller must be the pool admin'
 
   //contract specific errors
-  VL_AMOUNT_NOT_GREATER_THAN_0 = '1', // 'Amount must be greater than 0'
+  VL_INVALID_AMOUNT = '1', // 'Amount must be greater than 0'
   VL_NO_ACTIVE_RESERVE = '2', // 'Action requires an active reserve'
   VL_RESERVE_FROZEN = '3', // 'Action requires an unfrozen reserve'
   VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH = '4', // 'The current liquidity is not enough'

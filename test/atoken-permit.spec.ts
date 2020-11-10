@@ -20,7 +20,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
 
   it('Checks the domain separator', async () => {
     const DOMAIN_SEPARATOR_ENCODED = getATokenDomainSeparatorPerNetwork(
-      eEthereumNetwork.buidlerevm,
+      eEthereumNetwork.hardhat,
       poolConfig
     );
 

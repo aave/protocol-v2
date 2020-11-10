@@ -3,7 +3,7 @@ import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
-  deployAaveProtocolTestHelpers,
+  deployAaveProtocolDataProvider,
   deployWETHGateway,
 } from '../../helpers/contracts-deployments';
 import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
@@ -32,7 +32,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
-      const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
+      const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
 
       const admin = await addressesProvider.getPoolAdmin();
       if (!reserveAssets) {
