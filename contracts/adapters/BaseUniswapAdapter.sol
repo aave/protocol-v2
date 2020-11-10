@@ -24,14 +24,6 @@ contract BaseUniswapAdapter {
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
-  struct PermitParams {
-    uint256[] amount;
-    uint256[] deadline;
-    uint8[] v;
-    bytes32[] r;
-    bytes32[] s;
-  }
-
   struct PermitSignature {
     uint256 amount;
     uint256 deadline;
@@ -140,9 +132,9 @@ contract BaseUniswapAdapter {
     uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
     uint256 expectedMinAmountOut = amountToSwap
-    .mul(fromAssetPrice.mul(10**toAssetDecimals))
-    .div(toAssetPrice.mul(10**fromAssetDecimals))
-    .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(MAX_SLIPPAGE_PERCENT));
+      .mul(fromAssetPrice.mul(10**toAssetDecimals))
+      .div(toAssetPrice.mul(10**fromAssetDecimals))
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(MAX_SLIPPAGE_PERCENT));
 
     require(expectedMinAmountOut < minAmountOut, 'minAmountOut exceed max slippage');
 
@@ -183,9 +175,9 @@ contract BaseUniswapAdapter {
     uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
     uint256 expectedMaxAmountToSwap = amountToReceive
-    .mul(toAssetPrice.mul(10**fromAssetDecimals))
-    .div(fromAssetPrice.mul(10**toAssetDecimals))
-    .percentMul(PercentageMath.PERCENTAGE_FACTOR.add(MAX_SLIPPAGE_PERCENT));
+      .mul(toAssetPrice.mul(10**fromAssetDecimals))
+      .div(fromAssetPrice.mul(10**toAssetDecimals))
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR.add(MAX_SLIPPAGE_PERCENT));
 
     require(maxAmountToSwap < expectedMaxAmountToSwap, 'maxAmountToSwap exceed max slippage');
 
@@ -267,8 +259,7 @@ contract BaseUniswapAdapter {
    * @return whether or not permit should be called
    */
   function _usePermit(PermitSignature memory signature) internal pure returns (bool) {
-    return !(uint256(signature.deadline) == uint256(signature.v) &&
-      uint256(signature.deadline) == 0);
+    return !(uint256(signature.deadline) == uint256(signature.v) && uint256(signature.deadline) == 0);
   }
 
   /**
@@ -283,10 +274,10 @@ contract BaseUniswapAdapter {
     uint256 reservePrice = _getPrice(reserve);
 
     return amount
-    .mul(reservePrice)
-    .div(10**decimals)
-    .mul(ethUsdPrice)
-    .div(10**18);
+      .mul(reservePrice)
+      .div(10**decimals)
+      .mul(ethUsdPrice)
+      .div(10**18);
   }
 
   /**
@@ -314,9 +305,9 @@ contract BaseUniswapAdapter {
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
     uint256 outPerInPrice = finalAmountIn
-    .mul(10**18)
-    .mul(10**reserveOutDecimals)
-    .div(amounts[1].mul(10**reserveInDecimals));
+      .mul(10**18)
+      .mul(10**reserveOutDecimals)
+      .div(amounts[1].mul(10**reserveInDecimals));
 
     return AmountCalc(
       amounts[1],
@@ -351,9 +342,9 @@ contract BaseUniswapAdapter {
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
     uint256 inPerOutPrice = amountOut
-    .mul(10**18)
-    .mul(10**reserveInDecimals)
-    .div(finalAmountIn.mul(10**reserveOutDecimals));
+      .mul(10**18)
+      .mul(10**reserveInDecimals)
+      .div(finalAmountIn.mul(10**reserveOutDecimals));
 
     return AmountCalc(
       finalAmountIn,

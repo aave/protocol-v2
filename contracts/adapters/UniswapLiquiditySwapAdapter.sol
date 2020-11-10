@@ -15,6 +15,14 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
  **/
 contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
+  struct PermitParams {
+    uint256[] amount;
+    uint256[] deadline;
+    uint8[] v;
+    bytes32[] r;
+    bytes32[] s;
+  }
+
   struct SwapParams {
     address[] assetToSwapToList;
     uint256[] minAmountsToReceive;
@@ -26,8 +34,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     ILendingPoolAddressesProvider addressesProvider,
     IUniswapV2Router02 uniswapRouter
   )
-  public
-  BaseUniswapAdapter(addressesProvider, uniswapRouter)
+    public
+    BaseUniswapAdapter(addressesProvider, uniswapRouter)
   {}
 
   /**
@@ -191,19 +199,15 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 flashLoanDebt = amount.add(premium);
     uint256 amountToPull = swapAllBalance ? aTokenInitiatorBalance : flashLoanDebt;
 
-    _pullATokenAndRepayFlashLoan(
-      assetFrom,
-      aToken,
-      initiator,
-      amountToPull,
-      flashLoanDebt,
-      permitSignature
-    );
+    _pullAToken(assetFrom, aToken, initiator, amountToPull, permitSignature);
+
+    // Repay flashloan
+    IERC20(assetFrom).approve(address(POOL), flashLoanDebt);
   }
 
   /**
- * @dev Decodes debt information encoded in flashloan params
- * @param params Additional variadic field to include extra params. Expected parameters:
+   * @dev Decodes debt information encoded in flashloan params
+   * @param params Additional variadic field to include extra params. Expected parameters:
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
    *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
    *   bool[] swapAllBalance Flag indicating if all the user balance should be swapped
@@ -212,8 +216,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
    *   bytes32[] s List of s param for the permit signature
- * @return SwapParams struct containing decoded params
- */
+   * @return SwapParams struct containing decoded params
+   */
   function _decodeParams(bytes memory params) internal pure returns (SwapParams memory) {
     (
       address[] memory assetToSwapToList,
@@ -227,28 +231,5 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     ) = abi.decode(params, (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
 
     return SwapParams(assetToSwapToList, minAmountsToReceive, swapAllBalance, PermitParams(permitAmount, deadline, v, r, s));
-  }
-
-  /**
-  * @dev Pull the ATokens from the user and use them to repay the flashloan
-  * @param reserve address of the asset
-  * @param reserveAToken address of the aToken of the reserve
-  * @param user address
-  * @param amountToPull amount to be pulled from the user
-  * @param flashLoanDebt need to be repaid
-  * @param permitSignature struct containing the permit signature
-  */
-  function _pullATokenAndRepayFlashLoan(
-    address reserve,
-    address reserveAToken,
-    address user,
-    uint256 amountToPull,
-    uint256 flashLoanDebt,
-    PermitSignature memory permitSignature
-  ) internal {
-    _pullAToken(reserve, reserveAToken, user, amountToPull, permitSignature);
-
-    // Repay flashloan
-    IERC20(reserve).approve(address(POOL), flashLoanDebt);
   }
 }

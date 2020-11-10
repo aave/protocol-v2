@@ -28,8 +28,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     ILendingPoolAddressesProvider addressesProvider,
     IUniswapV2Router02 uniswapRouter
   )
-  public
-  BaseUniswapAdapter(addressesProvider, uniswapRouter)
+    public
+    BaseUniswapAdapter(addressesProvider, uniswapRouter)
   {}
 
   /**
