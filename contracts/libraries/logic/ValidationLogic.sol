@@ -63,8 +63,14 @@ library ValidationLogic {
     address oracle
   ) external view {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
-
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
+
+    (bool isActive,, , ) = reservesData[reserveAddress].configuration.getFlags();
+    require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+  
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
+    require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+
 
     require(
       GenericLogic.balanceDecreaseAllowed(
