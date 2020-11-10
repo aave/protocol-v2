@@ -388,11 +388,14 @@ contract LendingPoolConfigurator is VersionedInitializable {
 
     if (liquidationThreshold != 0) {
       //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
-      //collateral than needed to cover the debt
-      require(
-        liquidationBonus > PercentageMath.PERCENTAGE_FACTOR,
-        Errors.LPC_INVALID_CONFIGURATION
-      );
+      //collateral than needed to cover the debt.
+      uint256 absoluteBonus = liquidationBonus.sub(PercentageMath.PERCENTAGE_FACTOR, Errors.LPC_INVALID_CONFIGURATION);
+      require(absoluteBonus > 0, Errors.LPC_INVALID_CONFIGURATION);
+
+      //we also need to require that the liq threshold is lower or equal than the liquidation bonus, to ensure that
+      //there is always enough margin for liquidators to receive the bonus.
+      require(liquidationThreshold.add(absoluteBonus) <= PercentageMath.PERCENTAGE_FACTOR, Errors.LPC_INVALID_CONFIGURATION);
+
     } else {
       require(liquidationBonus == 0, Errors.LPC_INVALID_CONFIGURATION);
       //if the liquidation threshold is being set to 0,
