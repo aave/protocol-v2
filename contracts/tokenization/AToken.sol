@@ -175,6 +175,8 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     //being a normal transfer, the Transfer() and BalanceTransfer() are emitted
     //so no need to emit a specific event here
     _transfer(from, to, value, false);
+
+    emit Transfer(from, to, value);
   }
 
   /**
