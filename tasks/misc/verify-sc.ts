@@ -9,7 +9,6 @@ interface VerifyParams {
 }
 
 task('verify-sc', 'Inits the DRE, to have access to all the plugins')
-  .addParam('contractName', 'Name of the Solidity smart contract')
   .addParam('address', 'Ethereum address of the smart contract')
   .addOptionalParam(
     'libraries',
@@ -20,16 +19,11 @@ task('verify-sc', 'Inits the DRE, to have access to all the plugins')
     'arguments for contract constructor',
     []
   )
-  .setAction(
-    async (
-      {contractName, address, constructorArguments = [], libraries}: VerifyParams,
-      localBRE
-    ) => {
-      await localBRE.run('set-DRE');
+  .setAction(async ({address, constructorArguments = [], libraries}: VerifyParams, localBRE) => {
+    await localBRE.run('set-DRE');
 
-      checkVerification();
+    checkVerification();
 
-      const result = await verifyContract(contractName, address, constructorArguments, libraries);
-      return result;
-    }
-  );
+    const result = await verifyContract(address, constructorArguments, libraries);
+    return result;
+  });

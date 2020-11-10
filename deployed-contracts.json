@@ -251,7 +251,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x688C81eC2A0Be6F287fD8C9c343D299c03A34804",
+      "address": "0x8C7ECfD09Ef1F4e5558cB8ccC96e75f2F224caE8",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -265,7 +265,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xf189cC1eD07cEFB6e61082104e12673E133163f5",
+      "address": "0x9227414C87834383Ca84fad024AE32523Ef10F9F",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -279,7 +279,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x757855037B01c45832f8d662D217C766Ba4e8e74",
+      "address": "0x84EE313786A3198dD8c339708101FD44a1446871",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -293,7 +293,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xBc013D1412E0F4acacAa64CDc1c93e8A3Ecd8fF4",
+      "address": "0xB05737274337dCBCCC9c62A4A2b210882d7b9811",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -307,7 +307,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xba681EfB276237903df60ef92D564610A393Dbd6",
+      "address": "0x88cF7D778AC89282dDd4641a842Feaaad112e302",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -321,7 +321,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x59525b17808F0a7eFe62303ca46e596A5a602683"
+      "address": "0xD115B2Bd4B65F74f4ED61de653d0E76D1f3a9B65"
     },
     "hardhat": {
       "address": "0x813F07B2100e59ba6555d0D6dBA2660c68514665"
@@ -332,7 +332,7 @@
       "address": "0xdbaA15927b1463EdD14Cf51D082BD7703Fd1C238"
     },
     "kovan": {
-      "address": "0x0a9bc0ce44e6473a1B0e30b54b7227de6E75Fd83"
+      "address": "0xD73c368707D7AD80B4f0C33A5AeD0EA1f5D5F40C"
     },
     "hardhat": {
       "address": "0xdbaA15927b1463EdD14Cf51D082BD7703Fd1C238"
@@ -344,7 +344,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x882AD7981FE3d63200A23F5d009A1d0488b5ea7e",
+      "address": "0x9C983988764D9AE64565844C2A0349ECE513BACC",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -358,7 +358,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0x20Bfad73e3A8aA9161b5c553f7825002a175DB23",
+      "address": "0x29f853B79829EB9Aa8DB8D42f2398A0b89B5404B",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -411,7 +411,7 @@
       "address": "0x93472C0e03215F9c33DA240Eb16703C8244eAa8c"
     },
     "kovan": {
-      "address": "0xe875775D75F384944E77086Ea54bAD008ea8004A",
+      "address": "0x1e20D68372F8Da94BB10aE7331eeCBf6293c3093",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -424,7 +424,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xc072D8A233C8C52239dcD6ab39954240a0699055",
+      "address": "0xca67A1eAE05B38Ce57AfE463f4508Ffe0133301D",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -446,7 +446,7 @@
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
     },
     "kovan": {
-      "address": "0xf896A27CDd4E3bC101aCEa86cc1cE6b7C91AEFA1",
+      "address": "0xA7Ba135e916BFdAE50D2cD446F02c675121E4372",
       "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
@@ -488,6 +488,10 @@
     "buidlerevm": {
       "address": "0x0Cf45557d25a4e4c0F1aC65EF6c48ae67c61a0E6",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "kovan": {
+      "address": "0x459ddF0837bf703E4F165F380835baF2D24Ffc11",
+      "deployer": "0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F"
     },
     "hardhat": {
       "address": "0x7fAeC7791277Ff512c41CA903c177B2Ed952dDAc",
@@ -582,6 +586,21 @@
     "hardhat": {
       "address": "0x53369fd4680FfE3DfF39Fc6DDa9CfbfD43daeA2E",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    }
+  },
+  "LendingPoolImpl": {
+    "kovan": {
+      "address": "0x74E26a9131209c5F6aa8461128b416379ec6C9B7"
+    }
+  },
+  "LendingPoolConfiguratorImpl": {
+    "kovan": {
+      "address": "0xD98d801Cd300BA85Bc3ac2d911b687EA464f2cD1"
+    }
+  },
+  "LendingPoolCollateralManagerImpl": {
+    "kovan": {
+      "address": "0xca67A1eAE05B38Ce57AfE463f4508Ffe0133301D"
     }
   }
 }

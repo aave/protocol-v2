@@ -53,7 +53,10 @@
     "print-contracts:kovan": "npm run hardhat:kovan -- print-contracts",
     "print-contracts:main": "npm run hardhat:main -- print-contracts",
     "print-contracts:ropsten": "npm run hardhat:main -- print-contracts",
-    "dev:deployUIProvider": "npm run buidler:kovan deploy-UiPoolDataProvider"
+    "dev:deployUIProvider": "npm run hardhat:kovan deploy-UiPoolDataProvider",
+    "kovan:verify": "npm run hardhat:kovan full:verify -- --all --verify --pool Aave",
+    "ropsten:verify": "npm run hardhat:ropsten full:verify -- --all --verify --pool Aave",
+    "mainnet:verify": "npm run hardhat:main full:verify -- --all --verify --pool Aave"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",

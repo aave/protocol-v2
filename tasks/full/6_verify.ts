@@ -1,0 +1,135 @@
+import {task} from 'hardhat/config';
+import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
+import {
+  getAaveProtocolTestHelpers,
+  getLendingPool,
+  getLendingPoolAddressesProvider,
+  getLendingPoolAddressesProviderRegistry,
+  getLendingPoolCollateralManager,
+  getLendingPoolCollateralManagerImpl,
+  getLendingPoolConfiguratorImpl,
+  getLendingPoolConfiguratorProxy,
+  getLendingPoolImpl,
+  getWalletProvider,
+  getWETHGateway,
+} from '../../helpers/contracts-getters';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
+import {verifyContract} from '../../helpers/etherscan-verification';
+import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
+
+task('full:verify', 'Deploy oracles for dev enviroment')
+  .addFlag('verify', 'Verify proxy contracts at Etherscan')
+  .addFlag('all', 'Verify all contracts at Etherscan')
+  .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
+  .setAction(async ({verify, all, pool}, localDRE) => {
+    await localDRE.run('set-DRE');
+    const network = localDRE.network.name as eEthereumNetwork;
+    const poolConfig = loadPoolConfig(pool);
+    const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
+
+    const addressesProvider = await getLendingPoolAddressesProvider();
+    const addressesProviderRegistry = await getLendingPoolAddressesProviderRegistry();
+    const lendingPoolProxy = await getLendingPool();
+    const lendingPoolConfigurator = await getLendingPoolConfiguratorProxy();
+    const lendingPoolCollateralManager = await getLendingPoolCollateralManager();
+
+    if (!verify) {
+      return;
+    }
+    if (all) {
+      const lendingPoolImpl = await getLendingPoolImpl();
+      const lendingPoolConfiguratorImpl = await getLendingPoolConfiguratorImpl();
+      const lendingPoolCollateralManagerImpl = await getLendingPoolCollateralManagerImpl();
+      const testHelpers = await getAaveProtocolTestHelpers();
+      const walletProvider = await getWalletProvider();
+      const wethGateway = await getWETHGateway();
+
+      // Address Provider
+      console.log('\n- Verifying address provider...\n');
+      await verifyContract(addressesProvider.address, []);
+
+      // Address Provider Registry
+      console.log('\n- Verifying address provider registry...\n');
+      await verifyContract(addressesProviderRegistry.address, []);
+
+      // Lending Pool implementation
+      console.log('\n- Verifying LendingPool Implementation...\n');
+      await verifyContract(lendingPoolImpl.address, []);
+
+      // Lending Pool Configurator implementation
+      console.log('\n- Verifying LendingPool Configurator Implementation...\n');
+      await verifyContract(lendingPoolConfiguratorImpl.address, []);
+
+      // Lending Pool Collateral Manager implementation
+      console.log('\n- Verifying LendingPool Collateral Manager Implementation...\n');
+      await verifyContract(lendingPoolCollateralManagerImpl.address, []);
+
+      // Test helpers
+      console.log('\n- Verifying  Aave Helpers...\n');
+      await verifyContract(testHelpers.address, [addressesProvider.address]);
+
+      // Wallet balance provider
+      console.log('\n- Verifying  Wallet Balance Provider...\n');
+      await verifyContract(walletProvider.address, [addressesProvider.address]);
+
+      // WETHGateway
+      console.log('\n- Verifying  WETHGateway...\n');
+      await verifyContract(wethGateway.address, [
+        await getWethAddress(poolConfig),
+        lendingPoolProxy.address,
+      ]);
+    }
+    // Lending Pool proxy
+    console.log('\n- Verifying  Lending Pool Proxy...\n');
+    await verifyContract(lendingPoolProxy.address, [addressesProvider.address]);
+
+    // LendingPool Conf proxy
+    console.log('\n- Verifying  Lending Pool Configurator Proxy...\n');
+    await verifyContract(lendingPoolConfigurator.address, [addressesProvider.address]);
+
+    // Proxy collateral manager
+    console.log('\n- Verifying  Lending Pool Collateral Manager Proxy...\n');
+    await verifyContract(lendingPoolCollateralManager.address, []);
+
+    // Stable token
+    const DAI = getParamPerNetwork(ReserveAssets, network).DAI;
+    const USDC = getParamPerNetwork(ReserveAssets, network).USDC;
+
+    const {
+      stableDebtTokenAddress,
+      variableDebtTokenAddress,
+      aTokenAddress,
+      interestRateStrategyAddress,
+    } = await lendingPoolProxy.getReserveData(DAI);
+    const {stableDebtTokenAddress: usdStable} = await lendingPoolProxy.getReserveData(USDC);
+    const {
+      baseVariableBorrowRate,
+      variableRateSlope1,
+      variableRateSlope2,
+      stableRateSlope1,
+      stableRateSlope2,
+    } = ReservesConfig.DAI;
+
+    // Proxy Stable Debt
+    console.log('\n- Verifying DAI Stable Debt Token proxy...\n');
+    await verifyContract(stableDebtTokenAddress, [lendingPoolConfigurator.address]);
+
+    // Proxy Variable Debt
+    console.log('\n- Verifying DAI Variable Debt Token proxy...\n');
+    await verifyContract(variableDebtTokenAddress, [lendingPoolConfigurator.address]);
+
+    // Proxy aToken
+    console.log('\n- Verifying aDAI Token proxy...\n');
+    await verifyContract(aTokenAddress, [lendingPoolConfigurator.address]);
+
+    // Strategy Rate
+    console.log('\n- Verifying Strategy rate...\n');
+    await verifyContract(interestRateStrategyAddress, [
+      addressesProvider.address,
+      baseVariableBorrowRate,
+      variableRateSlope1,
+      variableRateSlope2,
+      stableRateSlope1,
+      stableRateSlope2,
+    ]);
+  });

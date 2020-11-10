@@ -83,7 +83,7 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (verify) {
-    await verifyContract(id, instance.address, args);
+    await verifyContract(instance.address, args);
   }
   return instance;
 };
