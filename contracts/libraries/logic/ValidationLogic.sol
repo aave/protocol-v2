@@ -303,12 +303,24 @@ library ValidationLogic {
     }
   }
 
+  /**
+   * @dev validates a stable borrow rate rebalance
+   * @param reserve the reserve state on which the user is getting rebalanced
+   * @param reserveAddress the address of the reserve
+   * @param stableDebtToken the stable debt token instance
+   * @param variableDebtToken the variable debt token instance
+   * @param aTokenAddress the address of the aToken contract
+   */
   function validateRebalanceStableBorrowRate(
     ReserveLogic.ReserveData storage reserve,
     address reserveAddress,
     IERC20 stableDebtToken,
     IERC20 variableDebtToken,
-    address aTokenAddress) external {
+    address aTokenAddress) external view {
+
+    (bool isActive,,, ) = reserve.configuration.getFlags();
+
+    require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
     //if the usage ratio is below 95%, no rebalances are needed
     uint256 totalDebt = stableDebtToken

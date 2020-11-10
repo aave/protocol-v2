@@ -334,6 +334,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ValidationLogic.validateRebalanceStableBorrowRate(
       reserve,
+      asset,
       stableDebtToken,
       variableDebtToken,
       aTokenAddress
