@@ -135,7 +135,7 @@ export const stablecoinStrategySUSD: IReserveParams = {
   liquidationBonus: '0',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
-  reserveDecimals: '6',
+  reserveDecimals: '18',
 };
 
 export const strategySNX: IReserveParams = {
