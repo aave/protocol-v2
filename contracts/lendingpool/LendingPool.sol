@@ -429,10 +429,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
-    if (returnCode != 0) {
-      //error found
-      revert(string(abi.encodePacked(returnMessage)));
-    }
+    require(returnCode == 0, string(abi.encodePacked(returnMessage)));
   }
 
   struct FlashLoanLocalVars {
