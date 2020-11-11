@@ -54,9 +54,12 @@
     "print-contracts:main": "npm run hardhat:main -- print-contracts",
     "print-contracts:ropsten": "npm run hardhat:main -- print-contracts",
     "dev:deployUIProvider": "npm run hardhat:kovan deploy-UiPoolDataProvider",
-    "kovan:verify": "npm run hardhat:kovan full:verify -- --all --verify --pool Aave",
-    "ropsten:verify": "npm run hardhat:ropsten full:verify -- --all --verify --pool Aave",
-    "mainnet:verify": "npm run hardhat:main full:verify -- --all --verify --pool Aave"
+    "kovan:verify": "npm run hardhat:kovan verify:general -- --all --pool Aave",
+    "ropsten:verify": "npm run hardhat:ropsten verify:general -- --all --pool Aave",
+    "mainnet:verify": "npm run hardhat:main verify:general -- --all --pool Aave",
+    "kovan:verify:tokens": "npm run hardhat:kovan verify:tokens -- --pool Aave",
+    "ropsten:verify:tokens": "npm run hardhat:ropsten verify:tokens -- --pool Aave",
+    "mainnet:verify:tokens": "npm run hardhat:main verify:tokens -- --pool Aave"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",

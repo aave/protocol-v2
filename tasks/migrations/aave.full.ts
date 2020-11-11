@@ -28,9 +28,14 @@ task('aave:full', 'Deploy development enviroment')
     console.log('3. Initialize lending pool');
     await localBRE.run('full:initialize-lending-pool', {pool: POOL_NAME});
 
-    console.log('4. Veryfing contracts');
-    await localBRE.run('full:verify', {verify, all: true, pool: POOL_NAME});
+    if (verify) {
+      printContracts();
+      console.log('4. Veryfing contracts');
+      await localBRE.run('verify:general', {all: true, pool: POOL_NAME});
 
+      console.log('5. Veryfing aTokens and debtTokens');
+      await localBRE.run('verify:tokens', {pool: POOL_NAME});
+    }
     console.log('\nFinished migrations');
     printContracts();
   });
