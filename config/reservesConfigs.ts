@@ -176,7 +176,7 @@ export const stablecoinStrategyUSDT: IReserveParams = {
   baseLTVAsCollateral: '-1',
   liquidationThreshold: '7000',
   liquidationBonus: '0',
-  borrowingEnabled: false,
+  borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
 };
