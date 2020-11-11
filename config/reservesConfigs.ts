@@ -13,7 +13,7 @@ export const strategyBase: IReserveParams = {
   liquidationBonus: '11000',
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
-  reserveDecimals: '18',
+  reserveDecimals: '18'
 };
 
 export const stablecoinStrategyBase: IReserveParams = {
