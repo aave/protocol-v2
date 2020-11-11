@@ -729,13 +729,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev avoids direct transfers of ETH
-   **/
-  receive() external payable {
-    revert();
-  }
-
-  /**
    * @dev initializes a reserve
    * @param asset the address of the reserve
    * @param aTokenAddress the address of the overlying aToken contract
