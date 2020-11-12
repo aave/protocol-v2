@@ -20,61 +20,61 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   LendingPool private originalPool;
 
   function deposit(
-    address asset,
+    address reserve,
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
   ) external override {
-    originalPool.deposit(asset, amount, onBehalfOf, referralCode);
+    originalPool.deposit(reserve, amount, onBehalfOf, referralCode);
   }
 
   function withdraw(
-    address asset,
+    address reserve,
     uint256 amount,
     address to
   ) external override {
-    originalPool.withdraw(asset, amount, to);
+    originalPool.withdraw(reserve, amount, to);
   }
 
   function borrow(
-    address asset,
+    address reserve,
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
   ) external override {
-    originalPool.borrow(asset, amount, interestRateMode, referralCode, onBehalfOf);
+    originalPool.borrow(reserve, amount, interestRateMode, referralCode, onBehalfOf);
   }
 
   function repay(
-    address asset,
+    address reserve,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
   ) external override {
-    originalPool.repay(asset, amount, rateMode, onBehalfOf);
+    originalPool.repay(reserve, amount, rateMode, onBehalfOf);
   }
 
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override {
-    originalPool.swapBorrowRateMode(asset, rateMode);
+  function swapBorrowRateMode(address reserve, uint256 rateMode) external override {
+    originalPool.swapBorrowRateMode(reserve, rateMode);
   }
 
-  function rebalanceStableBorrowRate(address asset, address user) external override {
-    originalPool.rebalanceStableBorrowRate(asset, user);
+  function rebalanceStableBorrowRate(address reserve, address user) external override {
+    originalPool.rebalanceStableBorrowRate(reserve, user);
   }
 
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
-    originalPool.setUserUseReserveAsCollateral(asset, useAsCollateral);
+  function setUserUseReserveAsCollateral(address reserve, bool useAsCollateral) external override {
+    originalPool.setUserUseReserveAsCollateral(reserve, useAsCollateral);
   }
 
   function liquidationCall(
     address collateral,
-    address asset,
+    address reserve,
     address user,
     uint256 purchaseAmount,
     bool receiveAToken
   ) external override {
-    originalPool.liquidationCall(collateral, asset, user, purchaseAmount, receiveAToken);
+    originalPool.liquidationCall(collateral, reserve, user, purchaseAmount, receiveAToken);
   }
 
   function getReservesList() external override view returns (address[] memory) {
@@ -116,14 +116,14 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   }
 
   function initReserve(
-    address asset,
+    address reserve,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
   ) external override {
     originalPool.initReserve(
-      asset,
+      reserve,
       aTokenAddress,
       stableDebtAddress,
       variableDebtAddress,
@@ -131,24 +131,24 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     );
   }
 
-  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
+  function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
     external
     override
   {
-    originalPool.setReserveInterestRateStrategyAddress(asset, rateStrategyAddress);
+    originalPool.setReserveInterestRateStrategyAddress(reserve, rateStrategyAddress);
   }
 
-  function setConfiguration(address asset, uint256 configuration) external override {
-    originalPool.setConfiguration(asset, configuration);
+  function setConfiguration(address reserve, uint256 configuration) external override {
+    originalPool.setConfiguration(reserve, configuration);
   }
 
-  function getConfiguration(address asset)
+  function getConfiguration(address reserve)
     external
     override
     view
     returns (ReserveConfiguration.Map memory)
   {
-    return originalPool.getConfiguration(asset);
+    return originalPool.getConfiguration(reserve);
   }
 
   mapping(uint256 => uint256) private reserveNormalizedIncome;
