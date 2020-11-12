@@ -166,7 +166,7 @@ library ReserveLogic {
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
     result = result.rayMul(reserve.liquidityIndex);
-    require(result < (1 << 128), Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+    require(result < type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
     reserve.liquidityIndex = uint128(result);
   }
@@ -247,9 +247,9 @@ library ReserveLogic {
       vars.avgStableRate,
       reserve.configuration.getReserveFactor()
     );
-    require(vars.newLiquidityRate < (1 << 128), 'ReserveLogic: Liquidity rate overflow');
-    require(vars.newStableRate < (1 << 128), 'ReserveLogic: Stable borrow rate overflow');
-    require(vars.newVariableRate < (1 << 128), 'ReserveLogic: Variable borrow rate overflow');
+    require(vars.newLiquidityRate < type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
+    require(vars.newStableRate < type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
+    require(vars.newVariableRate < type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
 
     reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
     reserve.currentStableBorrowRate = uint128(vars.newStableRate);
@@ -367,7 +367,7 @@ library ReserveLogic {
         timestamp
       );
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
-      require(newLiquidityIndex < (1 << 128), Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+      require(newLiquidityIndex < type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
       reserve.liquidityIndex = uint128(newLiquidityIndex);
 
@@ -379,7 +379,7 @@ library ReserveLogic {
           timestamp
         );
         newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
-        require(newVariableBorrowIndex < (1 << 128), Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW);
+        require(newVariableBorrowIndex < type(uint128).max, Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW);
         reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
       }
     }
