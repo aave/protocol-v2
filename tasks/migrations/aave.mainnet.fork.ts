@@ -20,9 +20,6 @@ task('aave:full:fork', 'Deploy development enviroment')
       checkVerification();
     }
     console.log('- Setting up Tenderly provider');
-    DRE.ethers.provider = new DRE.ethers.providers.Web3Provider(
-      DRE.tenderlyRPC as ExternalProvider
-    );
 
     //Set the ethers provider to the one we initialized so it targets the correct backend
     console.log('Migration started\n');

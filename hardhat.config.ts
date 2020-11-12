@@ -75,8 +75,8 @@ const buidlerConfig = {
     timeout: 0,
   },
   tenderly: {
-    // project: process.env.TENDERLY_PROJECT,
-    //username: process.env.TENDERLY_USERNAME,
+    project: process.env.TENDERLY_PROJECT,
+    username: process.env.TENDERLY_USERNAME,
     forkNetwork: '1', //Network id of the network we want to fork
   },
   networks: {

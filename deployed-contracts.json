@@ -257,6 +257,10 @@
     "hardhat": {
       "address": "0xFAe0fd738dAbc8a0426F47437322b6d026A9FD95",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "tenderlyMain": {
+      "address": "0x011BA4E28C3448513D853599131AcB9A24Cb8E11",
+      "deployer": "0xb2E51BBCB2453701e5aB9bf95Ea9A4eb2D329090"
     }
   },
   "LendingPoolAddressesProviderRegistry": {
@@ -271,6 +275,10 @@
     "hardhat": {
       "address": "0x12080583C4F0211eC382d33a273E6D0f9fAb0F75",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "tenderlyMain": {
+      "address": "0x239acf3cD92161Db147389A57cbFaeb0985d5e3A",
+      "deployer": "0xf2F8D0753A4E35B097c871D1ED488B7926D3097a"
     }
   },
   "ReserveLogic": {
@@ -285,6 +293,10 @@
     "hardhat": {
       "address": "0x2cBbbBE1B75Ad7848F0844215816F551f429c64f",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "tenderlyMain": {
+      "address": "0xB7Ea702FC07e976b19ED67060099FdF8A34950e2",
+      "deployer": "0x859cFCC3ae5f43221eC254E70D13239046A170f3"
     }
   },
   "GenericLogic": {
@@ -299,6 +311,10 @@
     "hardhat": {
       "address": "0xbAc762e2000b6815268587b081Fd17aC25519aD5",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "tenderlyMain": {
+      "address": "0xBECF925e9EB6C026635A2D9216d964D4E12070f7",
+      "deployer": "0x859cFCC3ae5f43221eC254E70D13239046A170f3"
     }
   },
   "ValidationLogic": {
@@ -313,6 +329,10 @@
     "hardhat": {
       "address": "0xa43Ba00FCA75B805D17f67F9433b971E9a398690",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "tenderlyMain": {
+      "address": "0x997502540DcB6F2fa31B79cda650bf7810AA53ce",
+      "deployer": "0x802750DB4D80361475353FC88F72F5ed8a86c71F"
     }
   },
   "LendingPool": {
@@ -326,6 +346,10 @@
     "hardhat": {
       "address": "0xAa7BC1924711B77A0F3Aaebdd550BfeDDDbaf3cd",
       "deployer": "0xc783df8a850f42e7F7e57013759C285caa701eB6"
+    },
+    "tenderlyMain": {
+      "address": "0x433Ce38A0154061684db57853f232beDfEC44ac2",
+      "deployer": "0xb2E51BBCB2453701e5aB9bf95Ea9A4eb2D329090"
     }
   },
   "LendingPoolConfigurator": {
@@ -595,6 +619,9 @@
     },
     "hardhat": {
       "address": "0xAa7BC1924711B77A0F3Aaebdd550BfeDDDbaf3cd"
+    },
+    "tenderlyMain": {
+      "address": "0x433Ce38A0154061684db57853f232beDfEC44ac2"
     }
   },
   "LendingPoolConfiguratorImpl": {
