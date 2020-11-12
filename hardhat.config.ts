@@ -18,6 +18,7 @@ const DEFAULT_GAS_MUL = 2;
 const DEFAULT_GAS_PRICE = 2000000000;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';
+const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
@@ -38,7 +39,9 @@ require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {
-    url: `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
+    url: ALCHEMY_KEY
+      ? `https://eth-${networkName}.alchemyapi.io/v2/${ALCHEMY_KEY}`
+      : `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
     hardfork: HARDFORK,
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
     gasMultiplier: DEFAULT_GAS_MUL,
@@ -53,7 +56,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
   };
 };
 
-const buidlerConfig: HardhatUserConfig = {
+const buidlerConfig = {
   solidity: {
     version: '0.6.8',
     settings: {
@@ -70,6 +73,11 @@ const buidlerConfig: HardhatUserConfig = {
   },
   mocha: {
     timeout: 0,
+  },
+  tenderly: {
+    project: process.env.TENDERLY_PROJECT,
+    username: process.env.TENDERLY_USERNAME,
+    forkNetwork: '1', //Network id of the network we want to fork
   },
   networks: {
     coverage: {
