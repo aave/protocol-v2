@@ -122,7 +122,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
 
-    require(vars.newStableRate < (1 << 128), 'Debt token: stable rate overflow');
+    require(vars.newStableRate < type(uint128).max, 'Debt token: stable rate overflow');
     _usersStableRate[onBehalfOf] = vars.newStableRate;
 
     //updating the user and supply timestamp
