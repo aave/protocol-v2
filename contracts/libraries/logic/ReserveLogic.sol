@@ -247,9 +247,9 @@ library ReserveLogic {
       vars.avgStableRate,
       reserve.configuration.getReserveFactor()
     );
-    require(vars.newLiquidityRate < type(uint128).max, 'ReserveLogic: Liquidity rate overflow');
-    require(vars.newStableRate < type(uint128).max, 'ReserveLogic: Stable borrow rate overflow');
-    require(vars.newVariableRate < type(uint128).max, 'ReserveLogic: Variable borrow rate overflow');
+    require(vars.newLiquidityRate < type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
+    require(vars.newStableRate < type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
+    require(vars.newVariableRate < type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
 
     reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
     reserve.currentStableBorrowRate = uint128(vars.newStableRate);
