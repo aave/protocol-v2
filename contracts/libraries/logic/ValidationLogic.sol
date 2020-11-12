@@ -13,6 +13,7 @@ import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
+import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 
 /**
  * @title ReserveLogic library
@@ -28,6 +29,9 @@ library ValidationLogic {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 
+  uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
+  uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
+
   /**
    * @dev validates a deposit.
    * @param reserve the reserve state on which the user is depositing
@@ -36,7 +40,7 @@ library ValidationLogic {
   function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
 
-    require(amount > 0, Errors.VL_AMOUNT_NOT_GREATER_THAN_0);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
   }
@@ -62,9 +66,12 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
-    require(amount > 0, Errors.VL_AMOUNT_NOT_GREATER_THAN_0);
 
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
+
+    (bool isActive,, , ) = reservesData[reserveAddress].configuration.getFlags();
+    require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
     require(
       GenericLogic.balanceDecreaseAllowed(
@@ -139,6 +146,7 @@ library ValidationLogic {
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
 
     require(vars.borrowingEnabled, Errors.VL_BORROWING_NOT_ENABLED);
 
@@ -232,7 +240,7 @@ library ValidationLogic {
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
-    require(amountSent > 0, Errors.VL_AMOUNT_NOT_GREATER_THAN_0);
+    require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
     require(
       (stableDebt > 0 &&
@@ -293,6 +301,54 @@ library ValidationLogic {
   }
 
   /**
+   * @dev validates a stable borrow rate rebalance
+   * @param reserve the reserve state on which the user is getting rebalanced
+   * @param reserveAddress the address of the reserve
+   * @param stableDebtToken the stable debt token instance
+   * @param variableDebtToken the variable debt token instance
+   * @param aTokenAddress the address of the aToken contract
+   */
+  function validateRebalanceStableBorrowRate(
+    ReserveLogic.ReserveData storage reserve,
+    address reserveAddress,
+    IERC20 stableDebtToken,
+    IERC20 variableDebtToken,
+    address aTokenAddress) external view {
+
+    (bool isActive,,, ) = reserve.configuration.getFlags();
+
+    require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+
+    //if the usage ratio is below 95%, no rebalances are needed
+    uint256 totalDebt = stableDebtToken
+      .totalSupply()
+      .add(variableDebtToken.totalSupply())
+      .wadToRay();
+    uint256 availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress).wadToRay();
+    uint256 usageRatio = totalDebt == 0
+      ? 0
+      : totalDebt.rayDiv(availableLiquidity.add(totalDebt));
+
+    //if the liquidity rate is below REBALANCE_UP_THRESHOLD of the max variable APR at 95% usage,
+    //then we allow rebalancing of the stable rate positions.
+
+    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+    uint256 maxVariableBorrowRate = IReserveInterestRateStrategy(
+      reserve
+        .interestRateStrategyAddress
+    )
+      .getMaxVariableBorrowRate();
+
+    require(
+      usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
+        currentLiquidityRate <=
+        maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
+      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
+    );
+
+  }
+
+  /**
    * @dev validates the choice of a user of setting (or not) an asset as collateral
    * @param reserve the state of the reserve that the user is enabling or disabling as collateral
    * @param reserveAddress the address of the reserve
@@ -304,6 +360,7 @@ library ValidationLogic {
   function validateSetUseReserveAsCollateral(
     ReserveLogic.ReserveData storage reserve,
     address reserveAddress,
+    bool useAsCollateral,
     mapping(address => ReserveLogic.ReserveData) storage reservesData,
     UserConfiguration.Map storage userConfig,
     mapping(uint256 => address) storage reserves,
@@ -315,6 +372,7 @@ library ValidationLogic {
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
     require(
+      useAsCollateral ||
       GenericLogic.balanceDecreaseAllowed(
         reserveAddress,
         msg.sender,

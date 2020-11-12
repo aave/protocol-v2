@@ -2,9 +2,10 @@
 pragma solidity ^0.6.8;
 
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
-import {
-  InitializableImmutableAdminUpgradeabilityProxy
-} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
+
+// Prettier ignore to prevent buidler flatter bug
+// prettier-ignore
+import {InitializableImmutableAdminUpgradeabilityProxy} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 
@@ -20,30 +21,37 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
 
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';
   bytes32 private constant LENDING_POOL_CONFIGURATOR = 'LENDING_POOL_CONFIGURATOR';
-  bytes32 private constant AAVE_ADMIN = 'AAVE_ADMIN';
+  bytes32 private constant POOL_ADMIN = 'POOL_ADMIN';
+  bytes32 private constant EMERGENCY_ADMIN = 'EMERGENCY_ADMIN';
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
 
   /**
-   * @dev Sets an address for an id, allowing to cover it or not with a proxy
+   * @dev Sets an address for an id by updating a proxy implementation
    * @param id The id
-   * @param newAddress The address to set, pass address(0) if a proxy is needed
    * @param implementationAddress The address of the implementation if we want it covered by a proxy
    * address(0) if we don't want a proxy covering
    */
-  function setAddress(
+  function setAddressAsProxy(
     bytes32 id,
-    address newAddress,
     address implementationAddress
   ) external override onlyOwner {
-    if (implementationAddress != address(0)) {
-      _updateImpl(id, implementationAddress);
-      emit AddressSet(id, implementationAddress, true);
-    } else {
-      _addresses[id] = newAddress;
-      emit AddressSet(id, newAddress, false);
-    }
+    _updateImpl(id, implementationAddress);
+    emit AddressSet(id, implementationAddress, true);
+  }
+
+  /**
+   * @dev Sets an address for an id replacing the address saved in the addresses map
+   * @param id The id
+   * @param newAddress The address to set, pass address(0) if a proxy is needed
+   */
+  function setAddress(
+    bytes32 id,
+    address newAddress
+  ) external override onlyOwner {
+    _addresses[id] = newAddress;
+    emit AddressSet(id, newAddress, false);
   }
 
   /**
@@ -113,13 +121,22 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * hence the upgradable proxy pattern is not used
    **/
 
-  function getAaveAdmin() external override view returns (address) {
-    return getAddress(AAVE_ADMIN);
+  function getPoolAdmin() external override view returns (address) {
+    return getAddress(POOL_ADMIN);
   }
 
-  function setAaveAdmin(address aaveAdmin) external override onlyOwner {
-    _addresses[AAVE_ADMIN] = aaveAdmin;
-    emit AaveAdminUpdated(aaveAdmin);
+  function setPoolAdmin(address admin) external override onlyOwner {
+    _addresses[POOL_ADMIN] = admin;
+    emit ConfigurationAdminUpdated(admin);
+  }
+
+  function getEmergencyAdmin() external override view returns (address) {
+    return getAddress(EMERGENCY_ADMIN);
+  }
+
+  function setEmergencyAdmin(address emergencyAdmin) external override onlyOwner {
+    _addresses[EMERGENCY_ADMIN] = emergencyAdmin;
+    emit EmergencyAdminUpdated(emergencyAdmin);
   }
 
   function getPriceOracle() external override view returns (address) {

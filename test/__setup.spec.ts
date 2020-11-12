@@ -1,4 +1,4 @@
-import rawBRE from '@nomiclabs/buidler';
+import rawBRE from 'hardhat';
 import {MockContract} from 'ethereum-waffle';
 import {
   insertContractAddressInDb,
@@ -16,15 +16,17 @@ import {
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  deployAaveProtocolTestHelpers,
+  deployAaveProtocolDataProvider,
   deployLendingRateOracle,
   deployStableAndVariableTokensHelper,
   deployATokensAndRatesHelper,
+  deployWETHGateway,
+  deployWETHMocked,
 } from '../helpers/contracts-deployments';
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {getReservesConfigByPool} from '../helpers/configuration';
+import {getEmergencyAdmin, getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
 
 import {
@@ -32,7 +34,7 @@ import {
   deployAllMockAggregators,
   setInitialMarketRatesInRatesOracleByHelper,
 } from '../helpers/oracles-helpers';
-import {waitForTx} from '../helpers/misc-utils';
+import {DRE, waitForTx} from '../helpers/misc-utils';
 import {
   initReservesByHelper,
   enableReservesToBorrowByHelper,
@@ -45,6 +47,7 @@ import {
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
 } from '../helpers/contracts-getters';
+import {Weth9Mocked} from '../types/Weth9Mocked';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -53,12 +56,17 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.ChainlinkAggregatorPr
 const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
-  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
+  const tokens: {[symbol: string]: MockContract | MintableERC20 | Weth9Mocked} = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
   const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
+    if (tokenSymbol === 'WETH') {
+      tokens[tokenSymbol] = await deployWETHMocked();
+      await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
+      continue;
+    }
     let decimals = 18;
 
     let configData = (<any>protoConfigData)[tokenSymbol];
@@ -87,9 +95,20 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
+  const mockTokenAddress = Object.keys(mockTokens).reduce<{[key: string]: string}>((acc, key) => {
+    acc[key] = mockTokens[key].address;
+    return acc;
+  }, {});
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
-  await waitForTx(await addressesProvider.setAaveAdmin(aaveAdmin));
+  await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
+
+  //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
+  const addressList = await Promise.all(
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
+
+  await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
 
   const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry();
   await waitForTx(
@@ -100,8 +119,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
-  const address = await addressesProvider.getLendingPool();
-  const lendingPoolProxy = await getLendingPool(address);
+  const lendingPoolAddress = await addressesProvider.getLendingPool();
+  const lendingPoolProxy = await getLendingPool(lendingPoolAddress);
 
   await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
@@ -136,7 +155,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       USDC: mockTokens.USDC.address,
       USDT: mockTokens.USDT.address,
       SUSD: mockTokens.SUSD.address,
-      LEND: mockTokens.LEND.address,
+      AAVE: mockTokens.AAVE.address,
       BAT: mockTokens.BAT.address,
       REP: mockTokens.REP.address,
       MKR: mockTokens.MKR.address,
@@ -147,7 +166,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       ZRX: mockTokens.ZRX.address,
       SNX: mockTokens.SNX.address,
       BUSD: mockTokens.BUSD.address,
-
+      YFI: mockTokens.BUSD.address,
+      REN: mockTokens.REN.address,
+      UNI: mockTokens.UNI.address,
+      ENJ: mockTokens.ENJ.address,
       USD: USD_ADDRESS,
 
       UNI_DAI_ETH: mockTokens.UNI_DAI_ETH.address,
@@ -183,6 +205,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     tokens,
     aggregators,
     fallbackOracle.address,
+    mockTokens.WETH.address,
   ]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
@@ -212,9 +235,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const reservesParams = getReservesConfigByPool(AavePools.proto);
 
-  const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address);
+  const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address);
 
-  await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+  await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
   const admin = await deployer.getAddress();
 
   console.log('Initialize configuration');
@@ -242,11 +265,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await deployWalletBalancerProvider(addressesProvider.address);
 
+  await deployWETHGateway([mockTokens.WETH.address, lendingPoolAddress]);
+
   console.timeEnd('setup');
 };
 
 before(async () => {
-  await rawBRE.run('set-bre');
+  await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
   console.log('-> Deploying test environment...');
   await buildTestEnv(deployer, secondaryWallet);

@@ -57,6 +57,13 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     bool receiveAToken
   );
 
+  /**
+   * @dev emitted when a user disables a reserve as collateral
+   * @param reserve the address of the reserve
+   * @param user the address of the user
+   **/
+  event ReserveUsedAsCollateralDisabled(address indexed reserve, address indexed user);
+
   struct LiquidationCallLocalVars {
     uint256 userCollateralBalance;
     uint256 userStableDebt;
@@ -120,7 +127,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       user,
       _reserves,
-      _usersConfig[user],
+      userConfig,
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
@@ -244,6 +251,14 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
         vars.maxCollateralToLiquidate,
         collateralReserve.liquidityIndex
       );
+    }
+
+    //if the collateral being liquidated is equal to the user balance,
+    //we set the currency as not being used as collateral anymore
+
+    if (vars.maxCollateralToLiquidate == vars.userCollateralBalance) {
+      userConfig.setUsingAsCollateral(collateralReserve.id, false);
+      emit ReserveUsedAsCollateralDisabled(collateral, user);
     }
 
     //transfers the principal currency to the aToken

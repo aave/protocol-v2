@@ -6,7 +6,7 @@ pragma experimental ABIEncoderV2;
 import {Address} from '../dependencies/openzeppelin/contracts/Address.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
@@ -24,9 +24,10 @@ contract WalletBalanceProvider {
   using SafeERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
 
-  LendingPoolAddressesProvider internal immutable _provider;
+  ILendingPoolAddressesProvider internal immutable _provider;
+  address constant MOCK_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
-  constructor(LendingPoolAddressesProvider provider) public {
+  constructor(ILendingPoolAddressesProvider provider) public {
     _provider = provider;
   }
 
@@ -45,12 +46,13 @@ contract WalletBalanceProvider {
       - return 0 on non-contract address
     **/
   function balanceOf(address user, address token) public view returns (uint256) {
-    // check if token is actually a contract
-    if (token.isContract()) {
+    if (token == MOCK_ETH_ADDRESS) {
+      return user.balance; // ETH balance
+      // check if token is actually a contract
+    } else if (token.isContract()) {
       return IERC20(token).balanceOf(user);
-    } else {
-      return 0;
     }
+    revert('INVALID_TOKEN');
   }
 
   /**
@@ -68,12 +70,7 @@ contract WalletBalanceProvider {
 
     for (uint256 i = 0; i < users.length; i++) {
       for (uint256 j = 0; j < tokens.length; j++) {
-        uint256 _offset = i * tokens.length;
-        if (!tokens[j].isContract()) {
-          revert('INVALID_TOKEN');
-        } else {
-          balances[_offset + j] = balanceOf(users[i], tokens[j]);
-        }
+        balances[i * tokens.length + j] = balanceOf(users[i], tokens[j]);
       }
     }
 
@@ -91,11 +88,16 @@ contract WalletBalanceProvider {
     ILendingPool pool = ILendingPool(_provider.getLendingPool());
 
     address[] memory reserves = pool.getReservesList();
+    address[] memory reservesWithEth = new address[](reserves.length + 1);
+    for (uint256 i = 0; i < reserves.length; i++) {
+      reservesWithEth[i] = reserves[i];
+    }
+    reservesWithEth[reserves.length] = MOCK_ETH_ADDRESS;
 
-    uint256[] memory balances = new uint256[](reserves.length);
+    uint256[] memory balances = new uint256[](reservesWithEth.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      ReserveConfiguration.Map memory configuration = pool.getConfiguration(reserves[j]);
+      ReserveConfiguration.Map memory configuration = pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
 
@@ -103,9 +105,10 @@ contract WalletBalanceProvider {
         balances[j] = 0;
         continue;
       }
-      balances[j] = balanceOf(user, reserves[j]);
+      balances[j] = balanceOf(user, reservesWithEth[j]);
     }
+    balances[reserves.length] = balanceOf(user, MOCK_ETH_ADDRESS);
 
-    return (reserves, balances);
+    return (reservesWithEth, balances);
   }
 }

@@ -11,7 +11,7 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 
-contract AaveProtocolTestHelpers {
+contract AaveProtocolDataProvider {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
 

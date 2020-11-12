@@ -16,9 +16,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
 
-  uint256 private _avgStableRate;
-  mapping(address => uint40) _timestamps;
-  uint40 _totalSupplyTimestamp;
+  uint256 internal _avgStableRate;
+  mapping(address => uint40) internal _timestamps;
+  mapping(address => uint256) internal _usersStableRate;
+  uint40 internal _totalSupplyTimestamp;
 
   constructor(
     address pool,
@@ -58,7 +59,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the stable rate of user
    **/
   function getUserStableRate(address user) external virtual override view returns (uint256) {
-    return _usersData[user];
+    return _usersStableRate[user];
   }
 
   /**
@@ -67,7 +68,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    **/
   function balanceOf(address account) public virtual override view returns (uint256) {
     uint256 accountBalance = super.balanceOf(account);
-    uint256 stableRate = _usersData[account];
+    uint256 stableRate = _usersStableRate[account];
     if (accountBalance == 0) {
       return 0;
     }
@@ -95,17 +96,18 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    **/
   function mint(
     address user,
+    address onBehalfOf,
     uint256 amount,
     uint256 rate
   ) external override onlyLendingPool returns (bool) {
     MintLocalVars memory vars;
 
+    if (user != onBehalfOf) {
+      _decreaseBorrowAllowance(onBehalfOf, user, amount);
+    }
+
     //cumulates the user debt
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(user);
+    (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(onBehalfOf);
 
     //accrueing the interest accumulation to the stored total supply and caching it
     vars.previousSupply = totalSupply();
@@ -115,17 +117,17 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     vars.amountInRay = amount.wadToRay();
 
     //calculates the new stable rate for the user
-    vars.newStableRate = _usersData[user]
+    vars.newStableRate = _usersStableRate[onBehalfOf]
       .rayMul(currentBalance.wadToRay())
       .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
 
     require(vars.newStableRate < (1 << 128), 'Debt token: stable rate overflow');
-    _usersData[user] = vars.newStableRate;
+    _usersStableRate[onBehalfOf] = vars.newStableRate;
 
     //updating the user and supply timestamp
     //solium-disable-next-line
-    _totalSupplyTimestamp = _timestamps[user] = uint40(block.timestamp);
+    _totalSupplyTimestamp = _timestamps[onBehalfOf] = uint40(block.timestamp);
 
     //calculates the updated average stable rate
     vars.currentAvgStableRate = _avgStableRate = vars
@@ -134,19 +136,20 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       .add(rate.rayMul(vars.amountInRay))
       .rayDiv(vars.nextSupply.wadToRay());
 
-    _mint(user, amount.add(balanceIncrease), vars.previousSupply);
+    _mint(onBehalfOf, amount.add(balanceIncrease), vars.previousSupply);
 
     // transfer event to track balances
-    emit Transfer(address(0), user, amount);
+    emit Transfer(address(0), onBehalfOf, amount);
 
     emit Mint(
       user,
+      onBehalfOf,
       amount,
-      previousBalance,
       currentBalance,
       balanceIncrease,
       vars.newStableRate,
-      vars.currentAvgStableRate
+      vars.currentAvgStableRate,
+      vars.nextSupply
     );
 
     return currentBalance == 0;
@@ -158,32 +161,37 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param amount the amount of debt tokens to mint
    **/
   function burn(address user, uint256 amount) external override onlyLendingPool {
-    (
-      uint256 previousBalance,
-      uint256 currentBalance,
-      uint256 balanceIncrease
-    ) = _calculateBalanceIncrease(user);
+    (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(user);
 
     uint256 previousSupply = totalSupply();
     uint256 newStableRate = 0;
+    uint256 nextSupply = 0;
+    uint256 userStableRate = _usersStableRate[user];
 
     //since the total supply and each single user debt accrue separately,
     //there might be accumulation errors so that the last borrower repaying
     //might actually try to repay more than the available debt supply.
     //in this case we simply set the total supply and the avg stable rate to 0
     if (previousSupply <= amount) {
-      newStableRate = _avgStableRate = 0;
+      _avgStableRate = 0;
       _totalSupply = 0;
     } else {
-      uint256 nextSupply = _totalSupply = previousSupply.sub(amount);
-      newStableRate = _avgStableRate = _avgStableRate
-        .rayMul(previousSupply.wadToRay())
-        .sub(_usersData[user].rayMul(amount.wadToRay()))
-        .rayDiv(nextSupply.wadToRay());
+      nextSupply = _totalSupply = previousSupply.sub(amount);
+      uint256 firstTerm = _avgStableRate.rayMul(previousSupply.wadToRay());
+      uint256 secondTerm = userStableRate.rayMul(amount.wadToRay());
+
+      //for the same reason described above, when the last user is repaying it might
+      //happen that user rate * user balance > avg rate * total supply. In that case,
+      //we simply set the avg rate to 0
+      if (secondTerm >= firstTerm) {
+        newStableRate = _avgStableRate = _totalSupply = 0;
+      } else {
+        newStableRate = _avgStableRate = firstTerm.sub(secondTerm).rayDiv(nextSupply.wadToRay());
+      }
     }
 
     if (amount == currentBalance) {
-      _usersData[user] = 0;
+      _usersStableRate[user] = 0;
       _timestamps[user] = 0;
     } else {
       //solium-disable-next-line
@@ -201,7 +209,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // transfer event to track balances
     emit Transfer(user, address(0), amount);
 
-    emit Burn(user, amount, previousBalance, currentBalance, balanceIncrease, newStableRate);
+    emit Burn(user, amount, currentBalance, balanceIncrease, newStableRate, nextSupply);
   }
 
   /**

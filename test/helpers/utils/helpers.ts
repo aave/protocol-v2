@@ -10,11 +10,11 @@ import {
 } from '../../../helpers/contracts-getters';
 import {tEthereumAddress} from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
-import {getDb, BRE} from '../../../helpers/misc-utils';
-import {AaveProtocolTestHelpers} from '../../../types/AaveProtocolTestHelpers';
+import {getDb, DRE} from '../../../helpers/misc-utils';
+import {AaveProtocolDataProvider} from '../../../types/AaveProtocolDataProvider';
 
 export const getReserveData = async (
-  helper: AaveProtocolTestHelpers,
+  helper: AaveProtocolDataProvider,
   reserve: tEthereumAddress
 ): Promise<ReserveData> => {
   const [reserveData, tokenAddresses, rateOracle, token] = await Promise.all([
@@ -74,7 +74,7 @@ export const getReserveData = async (
 
 export const getUserData = async (
   pool: LendingPool,
-  helper: AaveProtocolTestHelpers,
+  helper: AaveProtocolDataProvider,
   reserve: string,
   user: tEthereumAddress,
   sender?: tEthereumAddress
@@ -104,7 +104,7 @@ export const getUserData = async (
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
   const token = await getMintableErc20(
-    (await getDb().get(`${symbol}.${BRE.network.name}`).value()).address
+    (await getDb().get(`${symbol}.${DRE.network.name}`).value()).address
   );
 
   if (!token) {
@@ -116,7 +116,7 @@ export const getReserveAddressFromSymbol = async (symbol: string) => {
 const getATokenUserData = async (
   reserve: string,
   user: string,
-  helpersContract: AaveProtocolTestHelpers
+  helpersContract: AaveProtocolDataProvider
 ) => {
   const aTokenAddress: string = (await helpersContract.getReserveTokensAddresses(reserve))
     .aTokenAddress;

@@ -18,11 +18,13 @@ import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
   using SafeERC20 for IERC20;
 
+  event WethSet(address indexed weth);
   event AssetSourceUpdated(address indexed asset, address indexed source);
   event FallbackOracleUpdated(address indexed fallbackOracle);
 
   mapping(address => IChainlinkAggregator) private assetsSources;
   IPriceOracleGetter private _fallbackOracle;
+  address public immutable WETH;
 
   /// @notice Constructor
   /// @param assets The addresses of the assets
@@ -32,10 +34,13 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
   constructor(
     address[] memory assets,
     address[] memory sources,
-    address fallbackOracle
+    address fallbackOracle,
+    address weth
   ) public {
     _setFallbackOracle(fallbackOracle);
     _setAssetsSources(assets, sources);
+    WETH = weth;
+    emit WethSet(weth);
   }
 
   /// @notice External function called by the Aave governance to set or replace sources of assets
@@ -77,8 +82,10 @@ contract ChainlinkProxyPriceProvider is IPriceOracleGetter, Ownable {
   /// @param asset The asset address
   function getAssetPrice(address asset) public override view returns (uint256) {
     IChainlinkAggregator source = assetsSources[asset];
-    // If there is no registered source for the asset, call the fallbackOracle
-    if (address(source) == address(0)) {
+
+    if (asset == WETH) {
+      return 1 ether;
+    } else if (address(source) == address(0)) {
       return _fallbackOracle.getAssetPrice(asset);
     } else {
       int256 price = IChainlinkAggregator(source).latestAnswer();

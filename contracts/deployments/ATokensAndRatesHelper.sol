@@ -36,7 +36,6 @@ contract ATokensAndRatesHelper is Ownable {
   ) external onlyOwner {
     require(tokens.length == symbols.length, 't Arrays not same length');
     require(rates.length == symbols.length, 'r Arrays not same length');
-
     for (uint256 i = 0; i < tokens.length; i++) {
       emit deployedContracts(
         address(

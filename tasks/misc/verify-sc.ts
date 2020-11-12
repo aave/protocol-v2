@@ -1,4 +1,4 @@
-import {task} from '@nomiclabs/buidler/config';
+import {task} from 'hardhat/config';
 import {verifyContract, checkVerification} from '../../helpers/etherscan-verification';
 
 interface VerifyParams {
@@ -8,8 +8,7 @@ interface VerifyParams {
   libraries: string;
 }
 
-task('verify-sc', 'Inits the BRE, to have access to all the plugins')
-  .addParam('contractName', 'Name of the Solidity smart contract')
+task('verify-sc', 'Inits the DRE, to have access to all the plugins')
   .addParam('address', 'Ethereum address of the smart contract')
   .addOptionalParam(
     'libraries',
@@ -20,16 +19,11 @@ task('verify-sc', 'Inits the BRE, to have access to all the plugins')
     'arguments for contract constructor',
     []
   )
-  .setAction(
-    async (
-      {contractName, address, constructorArguments = [], libraries}: VerifyParams,
-      localBRE
-    ) => {
-      await localBRE.run('set-bre');
+  .setAction(async ({address, constructorArguments = [], libraries}: VerifyParams, localBRE) => {
+    await localBRE.run('set-DRE');
 
-      checkVerification();
+    checkVerification();
 
-      const result = await verifyContract(contractName, address, constructorArguments, libraries);
-      return result;
-    }
-  );
+    const result = await verifyContract(address, constructorArguments, libraries);
+    return result;
+  });

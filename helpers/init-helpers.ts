@@ -1,6 +1,6 @@
-import {iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
+import {eContractid, iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
 import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
-import {AaveProtocolTestHelpers} from '../types/AaveProtocolTestHelpers';
+import {AaveProtocolDataProvider} from '../types/AaveProtocolDataProvider';
 import {
   deployATokensAndRatesHelper,
   deployStableAndVariableTokensHelper,
@@ -11,6 +11,7 @@ import {
   getLendingPoolAddressesProvider,
   getStableAndVariableTokensHelper,
 } from './contracts-getters';
+import {insertContractAddressInDb, rawInsertContractAddressInDb} from './contracts-helpers';
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -24,7 +25,7 @@ export const initReservesByHelper = async (
   const addressProvider = await getLendingPoolAddressesProvider();
 
   // Set aTokenAndRatesDeployer as temporal admin
-  await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
+  await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
   const tokensChunks = 4;
@@ -89,12 +90,15 @@ export const initReservesByHelper = async (
       reservesDecimals.push(reserveDecimals);
     }
 
-    // Deploy stable and variable deployers
+    // Deploy stable and variable deployers and save implementations
     const tx1 = await waitForTx(
       await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
     );
-
-    // Deploy atokens and rate strategies
+    tx1.events?.forEach((event, index) => {
+      rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
+      rawInsertContractAddressInDb(`variableDebt${symbols[index]}`, event?.args?.variableToken);
+    });
+    // Deploy atokens and rate strategies and save implementations
     const tx2 = await waitForTx(
       await atokenAndRatesDeployer.initDeployment(
         tokens,
@@ -103,6 +107,11 @@ export const initReservesByHelper = async (
         incentivesController
       )
     );
+    tx2.events?.forEach((event, index) => {
+      rawInsertContractAddressInDb(`a${symbols[index]}`, event?.args?.aToken);
+      rawInsertContractAddressInDb(`strategy${symbols[index]}`, event?.args?.strategy);
+    });
+
     console.log(`  - Deployed aToken, DebtTokens and Strategy for: ${symbols.join(', ')} `);
     const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
     const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
@@ -140,7 +149,7 @@ export const initReservesByHelper = async (
   }
 
   // Set deployer back as admin
-  await waitForTx(await addressProvider.setAaveAdmin(admin));
+  await waitForTx(await addressProvider.setPoolAdmin(admin));
 };
 
 export const getPairsTokenAggregator = (
@@ -173,7 +182,7 @@ export const getPairsTokenAggregator = (
 export const enableReservesToBorrowByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers,
+  helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
   const addressProvider = await getLendingPoolAddressesProvider();
@@ -207,7 +216,7 @@ export const enableReservesToBorrowByHelper = async (
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
-    await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
+    await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
     // Deploy init per chunks
     const stableChunks = 20;
@@ -233,14 +242,14 @@ export const enableReservesToBorrowByHelper = async (
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
     // Set deployer back as admin
-    await waitForTx(await addressProvider.setAaveAdmin(admin));
+    await waitForTx(await addressProvider.setPoolAdmin(admin));
   }
 };
 
 export const enableReservesAsCollateralByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: {[symbol: string]: tEthereumAddress},
-  helpers: AaveProtocolTestHelpers,
+  helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
   const addressProvider = await getLendingPoolAddressesProvider();
@@ -280,7 +289,7 @@ export const enableReservesAsCollateralByHelper = async (
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
-    await waitForTx(await addressProvider.setAaveAdmin(atokenAndRatesDeployer.address));
+    await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
     // Deploy init per chunks
     const enableChunks = 20;
@@ -304,6 +313,6 @@ export const enableReservesAsCollateralByHelper = async (
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
     // Set deployer back as admin
-    await waitForTx(await addressProvider.setAaveAdmin(admin));
+    await waitForTx(await addressProvider.setPoolAdmin(admin));
   }
 };

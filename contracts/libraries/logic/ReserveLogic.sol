@@ -76,7 +76,7 @@ library ReserveLogic {
   /**
    * @dev returns the ongoing normalized income for the reserve.
    * a value of 1e27 means there is no income. As time passes, the income is accrued.
-   * A value of 2*1e27 means for each unit of assset two units of income have been accrued.
+   * A value of 2*1e27 means for each unit of asset one unit of income has been accrued.
    * @param reserve the reserve object
    * @return the normalized income. expressed in ray
    **/
@@ -117,28 +117,6 @@ library ReserveLogic {
       .rayMul(reserve.variableBorrowIndex);
 
     return cumulated;
-  }
-
-  /**
-   * @dev returns an address of the debt token used for particular interest rate mode on asset.
-   * @param reserve the reserve object
-   * @param interestRateMode - STABLE or VARIABLE from ReserveLogic.InterestRateMode enum
-   * @return an address of the corresponding debt token from reserve configuration
-   **/
-  function getDebtTokenAddress(ReserveLogic.ReserveData storage reserve, uint256 interestRateMode)
-    external
-    view
-    returns (address)
-  {
-    require(
-      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode) ||
-        ReserveLogic.InterestRateMode.VARIABLE == ReserveLogic.InterestRateMode(interestRateMode),
-      Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
-    );
-    return
-      ReserveLogic.InterestRateMode.STABLE == ReserveLogic.InterestRateMode(interestRateMode)
-        ? reserve.stableDebtTokenAddress
-        : reserve.variableDebtTokenAddress;
   }
 
   /**
@@ -207,15 +185,9 @@ library ReserveLogic {
     address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
-    if (reserve.liquidityIndex == 0) {
-      //if the reserve has not been initialized yet
-      reserve.liquidityIndex = uint128(WadRayMath.ray());
-    }
-
-    if (reserve.variableBorrowIndex == 0) {
-      reserve.variableBorrowIndex = uint128(WadRayMath.ray());
-    }
-
+   
+    reserve.liquidityIndex = uint128(WadRayMath.ray());
+    reserve.variableBorrowIndex = uint128(WadRayMath.ray());
     reserve.aTokenAddress = aTokenAddress;
     reserve.stableDebtTokenAddress = stableDebtTokenAddress;
     reserve.variableDebtTokenAddress = variableDebtTokenAddress;

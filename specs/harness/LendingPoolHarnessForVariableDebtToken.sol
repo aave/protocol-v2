@@ -8,6 +8,9 @@ import {UserConfiguration} from '../../contracts/libraries/configuration/UserCon
 import {ReserveLogic} from '../../contracts/libraries/logic/ReserveLogic.sol';
 import {ILendingPool} from '../../contracts/interfaces/ILendingPool.sol';
 import {LendingPool} from '../../contracts/lendingpool/LendingPool.sol';
+import {
+  ILendingPoolAddressesProvider
+} from '../../contracts/interfaces/ILendingPoolAddressesProvider.sol';
 
 /*
 Certora: Harness that delegates calls to the original LendingPool.
@@ -24,27 +27,13 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   ) external override {
     originalPool.deposit(asset, amount, onBehalfOf, referralCode);
   }
-	
-   function withdraw(address reserve, uint256 amount, address to) external override {
-	originalPool.withdraw(reserve, amount, to);
-  }
 
-  function getBorrowAllowance(
-    address fromUser,
-    address toUser,
+  function withdraw(
     address asset,
-    uint256 interestRateMode
-  ) external override view returns (uint256) {
-    return originalPool.getBorrowAllowance(fromUser, toUser, asset, interestRateMode);
-  }
-
-  function delegateBorrowAllowance(
-    address asset,
-    address user,
-    uint256 interestRateMode,
-    uint256 amount
+    uint256 amount,
+    address to
   ) external override {
-    originalPool.delegateBorrowAllowance(asset, user, interestRateMode, amount);
+    originalPool.withdraw(asset, amount, to);
   }
 
   function borrow(
@@ -193,12 +182,12 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     address receiver,
     address[] calldata assets,
     uint256[] calldata amounts,
-    uint256 mode,
+    uint256[] calldata modes,
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
   ) external override {
-    originalPool.flashLoan(receiver, assets, amounts, mode, onBehalfOf, params, referralCode);
+    originalPool.flashLoan(receiver, assets, amounts, modes, onBehalfOf, params, referralCode);
   }
 
   function finalizeTransfer(
@@ -210,5 +199,9 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     uint256 balanceToBefore
   ) external override {
     originalPool.finalizeTransfer(asset, from, to, amount, balanceFromAfter, balanceToBefore);
+  }
+
+  function getAddressesProvider() external override view returns (ILendingPoolAddressesProvider) {
+    return originalPool.getAddressesProvider();
   }
 }

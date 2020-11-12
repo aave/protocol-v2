@@ -55,17 +55,22 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    **/
   function mint(
     address user,
+    address onBehalfOf,
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool returns (bool) {
-    uint256 previousBalance = super.balanceOf(user);
+    if (user != onBehalfOf) {
+      _decreaseBorrowAllowance(onBehalfOf, user, amount);
+    }
+
+    uint256 previousBalance = super.balanceOf(onBehalfOf);
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.AT_INVALID_MINT_AMOUNT);
 
-    _mint(user, amountScaled);
+    _mint(onBehalfOf, amountScaled);
 
-    emit Transfer(address(0), user, amount);
-    emit Mint(user, amount, index);
+    emit Transfer(address(0), onBehalfOf, amount);
+    emit Mint(user, onBehalfOf, amount, index);
 
     return previousBalance == 0;
   }

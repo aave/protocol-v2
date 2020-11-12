@@ -1,4 +1,4 @@
-import {task} from '@nomiclabs/buidler/config';
+import {task} from 'hardhat/config';
 import {checkVerification} from '../../helpers/etherscan-verification';
 import {ConfigNames} from '../../helpers/configuration';
 
@@ -7,7 +7,7 @@ task('uniswap:full', 'Deploy development enviroment')
   .setAction(async ({verify}, localBRE) => {
     const POOL_NAME = ConfigNames.Uniswap;
 
-    await localBRE.run('set-bre');
+    await localBRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {

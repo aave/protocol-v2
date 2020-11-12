@@ -1,11 +1,17 @@
-import {task} from '@nomiclabs/buidler/config';
+import {task} from 'hardhat/config';
 import {
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
-  deployAaveProtocolTestHelpers,
+  deployAaveProtocolDataProvider,
+  deployWETHGateway,
 } from '../../helpers/contracts-deployments';
-import {getReservesConfigByPool} from '../../helpers/configuration';
+import {
+  ConfigNames,
+  getReservesConfigByPool,
+  getWethAddress,
+  loadPoolConfig,
+} from '../../helpers/configuration';
 
 import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
@@ -16,35 +22,30 @@ import {
 } from '../../helpers/init-helpers';
 import {getAllTokenAddresses} from '../../helpers/mock-helpers';
 import {ZERO_ADDRESS} from '../../helpers/constants';
-import {
-  getAllMockedTokens,
-  getLendingPool,
-  getLendingPoolConfiguratorProxy,
-  getLendingPoolAddressesProvider,
-} from '../../helpers/contracts-getters';
+import {getAllMockedTokens, getLendingPoolAddressesProvider} from '../../helpers/contracts-getters';
 import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
 
 task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
-  .addOptionalParam('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({verify}, localBRE) => {
-    await localBRE.run('set-bre');
+  .addFlag('verify', 'Verify contracts at Etherscan')
+  .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
+  .setAction(async ({verify, pool}, localBRE) => {
+    await localBRE.run('set-DRE');
+    const poolConfig = loadPoolConfig(pool);
 
     const mockTokens = await getAllMockedTokens();
-    const lendingPoolProxy = await getLendingPool();
-    const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy();
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 
     const protoPoolReservesAddresses = <{[symbol: string]: tEthereumAddress}>(
-      filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI'))
+      filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI_'))
     );
 
-    const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
+    const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
 
     const reservesParams = getReservesConfigByPool(AavePools.proto);
 
-    const admin = await addressesProvider.getAaveAdmin();
+    const admin = await addressesProvider.getPoolAdmin();
 
     await initReservesByHelper(reservesParams, protoPoolReservesAddresses, admin, ZERO_ADDRESS);
     await enableReservesToBorrowByHelper(
@@ -76,5 +77,9 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     await deployWalletBalancerProvider(addressesProvider.address, verify);
 
-    await insertContractAddressInDb(eContractid.AaveProtocolTestHelpers, testHelpers.address);
+    await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
+
+    const lendingPoolAddress = await addressesProvider.getLendingPool();
+    const wethAddress = await getWethAddress(poolConfig);
+    await deployWETHGateway([wethAddress, lendingPoolAddress]);
   });

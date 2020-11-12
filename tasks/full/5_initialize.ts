@@ -1,11 +1,12 @@
-import {task} from '@nomiclabs/buidler/config';
+import {task} from 'hardhat/config';
 import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
-  deployAaveProtocolTestHelpers,
+  deployAaveProtocolDataProvider,
+  deployWETHGateway,
 } from '../../helpers/contracts-deployments';
-import {loadPoolConfig, ConfigNames} from '../../helpers/configuration';
+import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
 import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
 import {waitForTx} from '../../helpers/misc-utils';
 import {
@@ -14,11 +15,7 @@ import {
   enableReservesAsCollateralByHelper,
 } from '../../helpers/init-helpers';
 import {exit} from 'process';
-import {
-  getLendingPool,
-  getLendingPoolConfiguratorProxy,
-  getLendingPoolAddressesProvider,
-} from '../../helpers/contracts-getters';
+import {getLendingPoolAddressesProvider} from '../../helpers/contracts-getters';
 import {ZERO_ADDRESS} from '../../helpers/constants';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -26,20 +23,18 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({verify, pool}, localBRE) => {
     try {
-      await localBRE.run('set-bre');
+      await localBRE.run('set-DRE');
       const network = <eEthereumNetwork>localBRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
 
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
-      const lendingPoolProxy = await getLendingPool();
-      const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy();
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
-      const testHelpers = await deployAaveProtocolTestHelpers(addressesProvider.address, verify);
+      const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
 
-      const admin = await addressesProvider.getAaveAdmin();
+      const admin = await addressesProvider.getPoolAdmin();
       if (!reserveAssets) {
         throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
       }
@@ -54,6 +49,11 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       );
 
       await deployWalletBalancerProvider(addressesProvider.address, verify);
+
+      const wethAddress = await getWethAddress(poolConfig);
+      const lendingPoolAddress = await addressesProvider.getLendingPool();
+
+      await deployWETHGateway([wethAddress, lendingPoolAddress]);
     } catch (err) {
       console.error(err);
       exit(1);
