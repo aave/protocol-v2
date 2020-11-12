@@ -24,9 +24,9 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   ) external override {
     originalPool.deposit(asset, amount, onBehalfOf, referralCode);
   }
-
-  function withdraw(address asset, uint256 amount) external override {
-    originalPool.withdraw(asset, amount);
+	
+   function withdraw(address reserve, uint256 amount, address to) external override {
+	originalPool.withdraw(reserve, amount, to);
   }
 
   function getBorrowAllowance(
