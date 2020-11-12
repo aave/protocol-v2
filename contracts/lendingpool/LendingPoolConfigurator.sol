@@ -206,7 +206,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     _;
   }
 
-  uint256 public constant CONFIGURATOR_REVISION = 0x3;
+  uint256 internal constant CONFIGURATOR_REVISION = 0x3;
 
   function getRevision() internal override pure returns (uint256) {
     return CONFIGURATOR_REVISION;
