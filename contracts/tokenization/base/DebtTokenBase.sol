@@ -31,7 +31,7 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
    * @dev Only lending pool can call functions marked by this modifier
    **/
   modifier onlyLendingPool {
-    require(_msgSender() == address(POOL), Errors.AT_CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(POOL), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
 

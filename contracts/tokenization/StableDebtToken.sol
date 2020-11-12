@@ -123,7 +123,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
 
-    require(vars.newStableRate < type(uint128).max, Errors.AT_STABLE_DEBT_OVERFLOW);
+    require(vars.newStableRate < type(uint128).max, Errors.SDT_STABLE_DEBT_OVERFLOW);
     _usersStableRate[onBehalfOf] = vars.newStableRate;
 
     //updating the user and supply timestamp
@@ -343,7 +343,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 oldTotalSupply
   ) internal {
     uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.sub(amount, Errors.AT_BURN_EXCEEDS_BALANCE);
+    _balances[account] = oldAccountBalance.sub(amount, Errors.SDT_BURN_EXCEEDS_BALANCE);
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);

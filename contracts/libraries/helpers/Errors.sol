@@ -8,7 +8,10 @@ pragma solidity ^0.6.8;
  * @dev Error messages prefix glossary:
  *  - VL = ValidationLogic
  *  - MATH = Math libraries
- *  - AT = aToken or DebtTokens
+ *  - CT = Common errors between tokens (AToken, VariableDebtToken and StableDebtToken)
+ *  - AT = AToken
+ *  - SDT = StableDebtToken
+ *  - VDT = VariableDebtToken
  *  - LP = LendingPool
  *  - LPAPR = LendingPoolAddressesProviderRegistry
  *  - LPC = LendingPoolConfiguration
@@ -50,9 +53,9 @@ library Errors {
   string public constant LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26'; // 'The actual balance of the protocol is inconsistent'
   string public constant LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The caller of the function is not the lending pool configurator'
   string public constant LP_INCONSISTENT_FLASHLOAN_PARAMS = '28';
-  string public constant AT_CALLER_MUST_BE_LENDING_POOL = '29'; // 'The caller of this function must be a lending pool'
-  string public constant AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
-  string public constant AT_TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
+  string public constant CT_CALLER_MUST_BE_LENDING_POOL = '29'; // 'The caller of this function must be a lending pool'
+  string public constant CT_CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
+  string public constant CT_TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
   string public constant RL_RESERVE_ALREADY_INITIALIZED = '32'; // 'Reserve has already been initialized'
   string public constant LPC_RESERVE_LIQUIDITY_NOT_0 = '34'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_ATOKEN_POOL_ADDRESS = '35'; // 'The liquidity of the reserve needs to be 0'
@@ -78,9 +81,9 @@ library Errors {
   string public constant RL_LIQUIDITY_RATE_OVERFLOW = '53'; //  Liquidity rate overflows uint128
   string public constant RL_VARIABLE_BORROW_RATE_OVERFLOW = '54'; //  Variable borrow rate overflows uint128
   string public constant RL_STABLE_BORROW_RATE_OVERFLOW = '55'; //  Stable borrow rate overflows uint128
-  string public constant AT_INVALID_MINT_AMOUNT = '56'; //invalid amount to mint
+  string public constant CT_INVALID_MINT_AMOUNT = '56'; //invalid amount to mint
   string public constant LP_FAILED_REPAY_WITH_COLLATERAL = '57';
-  string public constant AT_INVALID_BURN_AMOUNT = '58'; //invalid amount to burn
+  string public constant CT_INVALID_BURN_AMOUNT = '58'; //invalid amount to burn
   string public constant LP_FAILED_COLLATERAL_SWAP = '60';
   string public constant LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61';
   string public constant LP_REENTRANCY_NOT_ALLOWED = '62';
@@ -98,8 +101,8 @@ library Errors {
   string public constant LP_INCONSISTENT_PARAMS_LENGTH = '74';
   string public constant UL_INVALID_INDEX = '77';
   string public constant LP_NOT_CONTRACT = '78';
-  string public constant AT_STABLE_DEBT_OVERFLOW = '79';
-  string public constant AT_BURN_EXCEEDS_BALANCE = '80';
+  string public constant SDT_STABLE_DEBT_OVERFLOW = '79';
+  string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
 
   enum CollateralManagerErrors {
     NO_ERROR,
