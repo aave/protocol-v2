@@ -10,6 +10,7 @@ services:
     command: npm run run-env
     volumes:
       - ./:/src
+      - $HOME/.tenderly/config.yaml:/root/.tenderly/config.yaml
     environment:
       MNEMONIC: ${MNEMONIC}
       ETHERSCAN_KEY: ${ETHERSCAN_KEY}

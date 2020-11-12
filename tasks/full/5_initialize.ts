@@ -54,6 +54,20 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const lendingPoolAddress = await addressesProvider.getLendingPool();
 
       await deployWETHGateway([wethAddress, lendingPoolAddress]);
+
+      //register the proxy price provider on the addressesProvider
+      const proxyProvider = getParamPerNetwork(poolConfig.ProxyPriceProvider, network);
+
+      if (proxyProvider && proxyProvider !== '') {
+        await waitForTx(await addressesProvider.setPriceOracle(proxyProvider));
+      }
+
+      //register the lending rate oracle
+      const lendingRateOracle = getParamPerNetwork(poolConfig.LendingRateOracle, network);
+
+      if (lendingRateOracle && lendingRateOracle !== '') {
+        await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle));
+      }
     } catch (err) {
       console.error(err);
       exit(1);

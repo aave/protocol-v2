@@ -124,7 +124,7 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(
-  {kovan, ropsten, main, buidlerevm, coverage}: iParamsPerNetwork<T>,
+  {kovan, ropsten, main, buidlerevm, coverage, tenderlyMain}: iParamsPerNetwork<T>,
   network: eEthereumNetwork
 ) => {
   switch (network) {
@@ -140,6 +140,8 @@ export const getParamPerNetwork = <T>(
       return ropsten;
     case eEthereumNetwork.main:
       return main;
+    case eEthereumNetwork.tenderlyMain:
+      return tenderlyMain;
   }
 };
 

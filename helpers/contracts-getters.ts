@@ -2,6 +2,7 @@ import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
+  ChainlinkProxyPriceProviderFactory,
   DefaultReserveInterestRateStrategyFactory,
   GenericLogicFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -23,12 +24,10 @@ import {
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
-  Weth9Factory,
   Weth9MockedFactory,
   WethGatewayFactory,
 } from '../types';
 import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
-import {UpgradeabilityProxy} from '../types/UpgradeabilityProxy';
 import {MockTokenMap} from './contracts-helpers';
 import {DRE, getDb} from './misc-utils';
 import {eContractid, PoolConfiguration, tEthereumAddress, TokenContractId} from './types';
@@ -323,3 +322,11 @@ export const getLendingPoolCollateralManager = async (address?: tEthereumAddress
 
 export const getAddressById = async (id: string) =>
   (await getDb().get(`${id}.${DRE.network.name}`).value()).address;
+
+export const getChainlinkPriceProvider = async (address?: tEthereumAddress) =>
+  await ChainlinkProxyPriceProviderFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.ChainlinkProxyPriceProvider}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );

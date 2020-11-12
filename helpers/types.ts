@@ -11,6 +11,7 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
+  tenderlyMain = 'tenderlyMain',
 }
 
 export enum EthereumNetworkNames {
@@ -324,6 +325,7 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
+  [eEthereumNetwork.tenderlyMain]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -352,6 +354,7 @@ export enum EthereumNetwork {
   development = 'development',
   main = 'main',
   coverage = 'soliditycoverage',
+  tenderlyMain = 'tenderlyMain',
 }
 
 export interface IProtocolGlobalConfig {

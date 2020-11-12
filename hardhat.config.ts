@@ -1,6 +1,5 @@
 import path from 'path';
 import fs from 'fs';
-import {HardhatUserConfig} from 'hardhat/config';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
@@ -11,6 +10,7 @@ import '@nomiclabs/hardhat-waffle';
 import 'temp-hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
+import '@tenderly/hardhat-tenderly';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
@@ -75,8 +75,8 @@ const buidlerConfig = {
     timeout: 0,
   },
   tenderly: {
-    project: process.env.TENDERLY_PROJECT,
-    username: process.env.TENDERLY_USERNAME,
+    // project: process.env.TENDERLY_PROJECT,
+    //username: process.env.TENDERLY_USERNAME,
     forkNetwork: '1', //Network id of the network we want to fork
   },
   networks: {
@@ -87,6 +87,7 @@ const buidlerConfig = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
+    tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     hardhat: {
       hardfork: 'istanbul',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

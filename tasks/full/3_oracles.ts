@@ -7,10 +7,18 @@ import {
 import {setInitialMarketRatesInRatesOracleByHelper} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
 import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
-import {ConfigNames, loadPoolConfig, getWethAddress} from '../../helpers/configuration';
+import {
+  ConfigNames,
+  loadPoolConfig,
+  getWethAddress,
+  getGenesisPoolAdmin,
+} from '../../helpers/configuration';
 import {exit} from 'process';
 import {
+  getAddressById,
+  getChainlinkPriceProvider,
   getLendingPoolAddressesProvider,
+  getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
 
@@ -33,8 +41,9 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         Object.keys(ReserveAssets[network]).includes(key)
       );
       const addressesProvider = await getLendingPoolAddressesProvider();
-      const admin = await addressesProvider.getPoolAdmin();
-
+      const admin = await getGenesisPoolAdmin(poolConfig);
+      const proxyPriceProviderAddress = getParamPerNetwork(poolConfig.ProxyPriceProvider, network);
+      const lendingRateOracleAddress = getParamPerNetwork(poolConfig.LendingRateOracle, network);
       const fallbackOracle = await getParamPerNetwork(FallbackOracle, network);
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
       const chainlinkAggregators = await getParamPerNetwork(ChainlinkAggregator, network);
@@ -45,24 +54,33 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       };
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
 
-      const chainlinkProviderPriceProvider = await deployChainlinkProxyPriceProvider(
-        [tokens, aggregators, fallbackOracle, await getWethAddress(poolConfig)],
-        verify
-      );
+      const chainlinkProviderPriceProvider = proxyPriceProviderAddress
+        ? await getChainlinkPriceProvider(proxyPriceProviderAddress)
+        : await deployChainlinkProxyPriceProvider(
+            [tokens, aggregators, fallbackOracle, await getWethAddress(poolConfig)],
+            verify
+          );
+
+      const lendingRateOracle = lendingRateOracleAddress
+        ? await getLendingRateOracle(lendingRateOracleAddress)
+        : await deployLendingRateOracle(verify);
+
+      const {USD, ...tokensAddressesWithoutUsd} = tokensToWatch;
+
+      if (!lendingRateOracleAddress) {
+        await setInitialMarketRatesInRatesOracleByHelper(
+          lendingRateOracles,
+          tokensAddressesWithoutUsd,
+          lendingRateOracle,
+          admin
+        );
+      }
+
+      // Register the proxy price provider on the addressesProvider
       await waitForTx(
         await addressesProvider.setPriceOracle(chainlinkProviderPriceProvider.address)
       );
-
-      const lendingRateOracle = await deployLendingRateOracle(verify);
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
-
-      const {USD, ...tokensAddressesWithoutUsd} = tokensToWatch;
-      await setInitialMarketRatesInRatesOracleByHelper(
-        lendingRateOracles,
-        tokensAddressesWithoutUsd,
-        lendingRateOracle,
-        admin
-      );
     } catch (err) {
       console.error(err);
       exit(1);

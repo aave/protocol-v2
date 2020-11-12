@@ -28,7 +28,9 @@ task(
 
     const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
     // Deploy address provider and set genesis manager
+    console.log('addres provider');
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
+
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     const admin = await getEmergencyAdmin(poolConfig);
     console.log('Admin is ', admin);
@@ -46,18 +48,4 @@ task(
         ProviderId
       )
     );
-
-    //register the proxy price provider on the addressesProvider
-    const proxyProvider = getParamPerNetwork(poolConfig.ProxyPriceProvider, network);
-
-    if (proxyProvider && proxyProvider !== '') {
-      await waitForTx(await addressesProvider.setPriceOracle(proxyProvider));
-    }
-
-    //register the lending rate oracle
-    const lendingRateOracle = getParamPerNetwork(poolConfig.LendingRateOracle, network);
-
-    if (lendingRateOracle && lendingRateOracle !== '') {
-      await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle));
-    }
   });
