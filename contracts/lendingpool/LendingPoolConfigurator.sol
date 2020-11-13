@@ -105,35 +105,14 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   event ReserveUnfrozen(address indexed asset);
-
-  /**
-   * @dev emitted when a reserve loan to value is updated
-   * @param asset the address of the reserve
-   * @param ltv the new value for the loan to value
-   **/
-  event ReserveBaseLtvChanged(address indexed asset, uint256 ltv);
-
+ 
   /**
    * @dev emitted when a reserve factor is updated
    * @param asset the address of the reserve
    * @param factor the new reserve factor
    **/
   event ReserveFactorChanged(address indexed asset, uint256 factor);
-
-  /**
-   * @dev emitted when a reserve liquidation threshold is updated
-   * @param asset the address of the reserve
-   * @param threshold the new value for the liquidation threshold
-   **/
-  event ReserveLiquidationThresholdChanged(address indexed asset, uint256 threshold);
-
-  /**
-   * @dev emitted when a reserve liquidation bonus is updated
-   * @param asset the address of the reserve
-   * @param bonus the new value for the liquidation bonus
-   **/
-  event ReserveLiquidationBonusChanged(address indexed asset, uint256 bonus);
-
+ 
   /**
    * @dev emitted when the reserve decimals are updated
    * @param asset the address of the reserve
@@ -500,21 +479,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev updates the ltv of a reserve
-   * @param asset the address of the reserve
-   * @param ltv the new value for the loan to value
-   **/
-  function setLtv(address asset, uint256 ltv) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
-
-    currentConfig.setLtv(ltv);
-
-    pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveBaseLtvChanged(asset, ltv);
-  }
-
-  /**
    * @dev updates the reserve factor of a reserve
    * @param asset the address of the reserve
    * @param reserveFactor the new reserve factor of the reserve
@@ -527,36 +491,6 @@ contract LendingPoolConfigurator is VersionedInitializable {
     pool.setConfiguration(asset, currentConfig.data);
 
     emit ReserveFactorChanged(asset, reserveFactor);
-  }
-
-  /**
-   * @dev updates the liquidation threshold of a reserve.
-   * @param asset the address of the reserve
-   * @param threshold the new value for the liquidation threshold
-   **/
-  function setLiquidationThreshold(address asset, uint256 threshold) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
-
-    currentConfig.setLiquidationThreshold(threshold);
-
-    pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveLiquidationThresholdChanged(asset, threshold);
-  }
-
-  /**
-   * @dev updates the liquidation bonus of a reserve
-   * @param asset the address of the reserve
-   * @param bonus the new value for the liquidation bonus
-   **/
-  function setLiquidationBonus(address asset, uint256 bonus) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
-
-    currentConfig.setLiquidationBonus(bonus);
-
-    pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveLiquidationBonusChanged(asset, bonus);
   }
 
   /**

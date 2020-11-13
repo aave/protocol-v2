@@ -20,34 +20,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     RC_INVALID_RESERVE_FACTOR,
   } = ProtocolErrors;
 
-  it('Reverts trying to set an invalid LTV', async () => {
-    const {configurator, weth} = testEnv;
-
-    const invalidLtv = 65536;
-
-    await expect(configurator.setLtv(weth.address, invalidLtv)).to.be.revertedWith(RC_INVALID_LTV);
-  });
-
-  it('Reverts trying to set an invalid liquidation threshold', async () => {
-    const {configurator, weth} = testEnv;
-
-    const invalidLiqThreshold = 65536;
-
-    await expect(
-      configurator.setLiquidationThreshold(weth.address, invalidLiqThreshold)
-    ).to.be.revertedWith(RC_INVALID_LIQ_THRESHOLD);
-  });
-
-  it('Reverts trying to set an invalid liquidation bonus', async () => {
-    const {configurator, weth} = testEnv;
-
-    const invalidLiqBonus = 65536;
-
-    await expect(
-      configurator.setLiquidationBonus(weth.address, invalidLiqBonus)
-    ).to.be.revertedWith(RC_INVALID_LIQ_BONUS);
-  });
-
   it('Reverts trying to set an invalid reserve factor', async () => {
     const {configurator, weth} = testEnv;
 
@@ -362,41 +334,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
-  it('Changes LTV of the reserve', async () => {
-    const {configurator, helpersContract, weth} = testEnv;
-    await configurator.setLtv(weth.address, '6000');
-    const {
-      decimals,
-      ltv,
-      liquidationBonus,
-      liquidationThreshold,
-      reserveFactor,
-      stableBorrowRateEnabled,
-      borrowingEnabled,
-      isActive,
-      isFrozen,
-    } = await helpersContract.getReserveConfigurationData(weth.address);
-
-    expect(borrowingEnabled).to.be.equal(true);
-    expect(isActive).to.be.equal(true);
-    expect(isFrozen).to.be.equal(false);
-    expect(decimals).to.be.equal(18);
-    expect(ltv).to.be.equal(6000);
-    expect(liquidationThreshold).to.be.equal(8000);
-    expect(liquidationBonus).to.be.equal(10500);
-    expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
-  });
-
-  it('Check the onlyAaveAdmin on setLtv', async () => {
-    const {configurator, users, weth} = testEnv;
-    await expect(
-      configurator.connect(users[2].signer).setLtv(weth.address, '75'),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
-  });
-
-  it('Changes the reserve factor of the reserve', async () => {
+  it('Changes the reserve factor of WETH', async () => {
     const {configurator, helpersContract, weth} = testEnv;
     await configurator.setReserveFactor(weth.address, '1000');
     const {
@@ -415,7 +353,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(isActive).to.be.equal(true);
     expect(isFrozen).to.be.equal(false);
     expect(decimals).to.be.equal(18);
-    expect(ltv).to.be.equal(6000);
+    expect(ltv).to.be.equal(7500);
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
@@ -426,82 +364,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const {configurator, users, weth} = testEnv;
     await expect(
       configurator.connect(users[2].signer).setReserveFactor(weth.address, '2000'),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
-  });
-
-  it('Changes liquidation threshold of the reserve', async () => {
-    const {configurator, helpersContract, weth} = testEnv;
-    await configurator.setLiquidationThreshold(weth.address, '7500');
-    const {
-      decimals,
-      ltv,
-      liquidationBonus,
-      liquidationThreshold,
-      reserveFactor,
-      stableBorrowRateEnabled,
-      borrowingEnabled,
-      isActive,
-      isFrozen,
-    } = await helpersContract.getReserveConfigurationData(weth.address);
-
-    expect(borrowingEnabled).to.be.equal(true);
-    expect(isActive).to.be.equal(true);
-    expect(isFrozen).to.be.equal(false);
-    expect(decimals).to.be.equal(18);
-    expect(ltv).to.be.equal(6000);
-    expect(liquidationThreshold).to.be.equal(7500);
-    expect(liquidationBonus).to.be.equal(10500);
-    expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(1000);
-  });
-
-  it('Check the onlyAaveAdmin on setLiquidationThreshold', async () => {
-    const {configurator, users, weth} = testEnv;
-    await expect(
-      configurator.connect(users[2].signer).setLiquidationThreshold(weth.address, '80'),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
-  });
-
-  it('Changes liquidation bonus of the reserve', async () => {
-    const {configurator, helpersContract, weth} = testEnv;
-    await configurator.setLiquidationBonus(weth.address, '11000');
-    const {
-      decimals,
-      ltv,
-      liquidationBonus,
-      liquidationThreshold,
-      reserveFactor,
-      stableBorrowRateEnabled,
-      borrowingEnabled,
-      isActive,
-      isFrozen,
-    } = await helpersContract.getReserveConfigurationData(weth.address);
-
-    expect(borrowingEnabled).to.be.equal(true);
-    expect(isActive).to.be.equal(true);
-    expect(isFrozen).to.be.equal(false);
-    expect(decimals).to.be.equal(18);
-    expect(ltv).to.be.equal(6000);
-    expect(liquidationThreshold).to.be.equal(7500);
-    expect(liquidationBonus).to.be.equal(11000);
-    expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(1000);
-  });
-
-  it('Check the onlyAaveAdmin on setLiquidationBonus', async () => {
-    const {configurator, users, weth} = testEnv;
-    await expect(
-      configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
-  });
-
-  it('Check the onlyAaveAdmin on setLiquidationBonus', async () => {
-    const {configurator, users, weth} = testEnv;
-    await expect(
-      configurator.connect(users[2].signer).setLiquidationBonus(weth.address, '80'),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
