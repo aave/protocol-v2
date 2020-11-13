@@ -101,6 +101,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 premium,
     PermitSignature memory permitSignature
   ) internal {
+    uint256 debtRepayAmount;
+
     if (repayAllDebt) {
       ReserveLogic.ReserveData memory reserveDebtData = _getReserveData(assetTo);
 
@@ -108,17 +110,19 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         ? reserveDebtData.stableDebtTokenAddress
         : reserveDebtData.variableDebtTokenAddress;
 
-      repayAmount = IERC20(debtToken).balanceOf(initiator);
+      debtRepayAmount = IERC20(debtToken).balanceOf(initiator);
+    } else {
+      debtRepayAmount = repayAmount;
     }
 
-    uint256 amountSwapped = _swapTokensForExactTokens(assetFrom, assetTo, amount, repayAmount);
+    uint256 amountSwapped = _swapTokensForExactTokens(assetFrom, assetTo, amount, debtRepayAmount);
 
     // Repay debt
-    IERC20(assetTo).approve(address(POOL), repayAmount);
-    POOL.repay(assetTo, repayAmount, rateMode, initiator);
+    IERC20(assetTo).approve(address(POOL), debtRepayAmount);
+    POOL.repay(assetTo, debtRepayAmount, rateMode, initiator);
 
     uint256 flashLoanDebt = amount.add(premium);
-    uint256 amountToPull = flashLoanDebt.sub(amount.sub(amountSwapped));
+    uint256 amountToPull = amountSwapped.add(premium);
 
     ReserveLogic.ReserveData memory reserveData = _getReserveData(assetFrom);
     _pullAToken(assetFrom, reserveData.aTokenAddress, initiator, amountToPull, permitSignature);
