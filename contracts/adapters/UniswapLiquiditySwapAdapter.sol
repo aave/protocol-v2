@@ -183,7 +183,9 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     address aToken = _getReserveData(assetFrom).aTokenAddress;
 
     uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(initiator);
-    uint256 amountToSwap = swapAllBalance ? aTokenInitiatorBalance.sub(premium) : amount;
+    uint256 amountToSwap = swapAllBalance && aTokenInitiatorBalance.sub(premium) <= amount
+      ? aTokenInitiatorBalance.sub(premium)
+      : amount;
 
     uint256 receivedAmount = _swapExactTokensForTokens(
       assetFrom,
@@ -197,7 +199,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     POOL.deposit(assetTo, receivedAmount, initiator, 0);
 
     uint256 flashLoanDebt = amount.add(premium);
-    uint256 amountToPull = swapAllBalance ? aTokenInitiatorBalance : flashLoanDebt;
+    uint256 amountToPull = amountToSwap.add(premium);
 
     _pullAToken(assetFrom, aToken, initiator, amountToPull, permitSignature);
 
