@@ -335,8 +335,8 @@ contract BaseUniswapAdapter {
 
     uint256[] memory amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, path);
 
-    // Subtract flash loan fee
-    uint256 finalAmountIn = amounts[0].sub(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
+    // Add flash loan fee
+    uint256 finalAmountIn = amounts[0].add(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
 
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);

@@ -152,7 +152,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const amountIn = parseEther('1');
         const flashloanPremium = amountIn.mul(9).div(10000);
-        const amountToSwap = amountIn.sub(flashloanPremium);
+        const amountToSwap = amountIn.add(flashloanPremium);
 
         const wethPrice = await oracle.getAssetPrice(weth.address);
         const daiPrice = await oracle.getAssetPrice(dai.address);
@@ -197,7 +197,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const amountIn = parseEther('10');
         const flashloanPremium = amountIn.mul(9).div(10000);
-        const amountToSwap = amountIn.sub(flashloanPremium);
+        const amountToSwap = amountIn.add(flashloanPremium);
 
         const aavePrice = await oracle.getAssetPrice(aave.address);
         const usdcPrice = await oracle.getAssetPrice(usdc.address);
@@ -241,7 +241,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
     });
   });
 
-  describe('UniswapLiquiditySwapAdapter', () => {
+  describe.only('UniswapLiquiditySwapAdapter', () => {
     describe('constructor', () => {
       it('should deploy with correct parameters', async () => {
         const {addressesProvider} = testEnv;
@@ -1959,7 +1959,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
     });
   });
 
-  describe('UniswapRepayAdapter', () => {
+  describe.only('UniswapRepayAdapter', () => {
     describe('constructor', () => {
       it('should deploy with correct parameters', async () => {
         const {addressesProvider} = testEnv;
