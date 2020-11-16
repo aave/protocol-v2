@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import {HardhatUserConfig} from 'hardhat/types';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
@@ -22,6 +23,7 @@ const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
+const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
@@ -40,7 +42,9 @@ require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {
     url: ALCHEMY_KEY
-      ? `https://eth-${networkName}.alchemyapi.io/v2/${ALCHEMY_KEY}`
+      ? `https://eth-${
+          networkName === 'main' ? 'mainnet' : networkName
+        }.alchemyapi.io/v2/${ALCHEMY_KEY}`
       : `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
     hardfork: HARDFORK,
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
@@ -56,7 +60,16 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
   };
 };
 
-const buidlerConfig = {
+const mainnetFork = MAINNET_FORK
+  ? {
+      blockNumber: 11268220,
+      url: ALCHEMY_KEY
+        ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
+        : `https://main.infura.io/v3/${INFURA_KEY}`,
+    }
+  : undefined;
+
+const buidlerConfig: HardhatUserConfig = {
   solidity: {
     version: '0.6.8',
     settings: {
@@ -75,8 +88,8 @@ const buidlerConfig = {
     timeout: 0,
   },
   tenderly: {
-    project: process.env.TENDERLY_PROJECT,
-    username: process.env.TENDERLY_USERNAME,
+    project: process.env.TENDERLY_PROJECT || '',
+    username: process.env.TENDERLY_USERNAME || '',
     forkNetwork: '1', //Network id of the network we want to fork
   },
   networks: {
@@ -100,6 +113,7 @@ const buidlerConfig = {
         privateKey: secretKey,
         balance,
       })),
+      forking: mainnetFork,
     },
     buidlerevm_docker: {
       hardfork: 'istanbul',

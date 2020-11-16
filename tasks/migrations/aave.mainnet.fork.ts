@@ -10,9 +10,6 @@ task('aave:full:fork', 'Deploy development enviroment')
   .setAction(async ({verify}, DRE) => {
     const POOL_NAME = ConfigNames.Aave;
     const network = <EthereumNetworkNames>DRE.network.name;
-    if (!network.includes('tenderly')) {
-      throw 'This task only supports tenderly networks: tenderlyMain, tenderlyKovan';
-    }
     await DRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
@@ -21,10 +18,12 @@ task('aave:full:fork', 'Deploy development enviroment')
     }
 
     // Set the ethers provider to the one we initialized so it targets the correct backend
-    console.log('- Setting up Tenderly provider');
-    await DRE.tenderlyRPC.initializeFork();
-    const provider = new DRE.ethers.providers.Web3Provider(DRE.tenderlyRPC as any);
-    DRE.ethers.provider = provider;
+    if (network.includes('tenderly')) {
+      console.log('- Setting up Tenderly provider');
+      await DRE.tenderlyRPC.initializeFork();
+      const provider = new DRE.ethers.providers.Web3Provider(DRE.tenderlyRPC as any);
+      DRE.ethers.provider = provider;
+    }
 
     console.log('Migration started\n');
 
