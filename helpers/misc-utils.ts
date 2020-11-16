@@ -6,6 +6,9 @@ import {WAD} from './constants';
 import {Wallet, ContractTransaction} from 'ethers';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {BuidlerRuntimeEnvironment} from '@nomiclabs/buidler/types';
+import {tEthereumAddress} from './types';
+import {isAddress} from 'ethers/lib/utils';
+import {isZeroAddress} from 'ethereumjs-util';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -85,4 +88,11 @@ export const printContracts = () => {
 
   console.log('N# Contracts:', entries.length);
   console.log(contractsPrint.join('\n'), '\n');
+};
+
+export const notFalsyOrZeroAddress = (address: tEthereumAddress | null | undefined): boolean => {
+  if (!address) {
+    return false;
+  }
+  return isAddress(address) && !isZeroAddress(address);
 };

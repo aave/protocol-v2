@@ -58,6 +58,7 @@ import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTo
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
 import {readArtifact as buidlerReadArtifact} from '@nomiclabs/buidler/plugins';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {verifyContract} from './etherscan-verification';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {

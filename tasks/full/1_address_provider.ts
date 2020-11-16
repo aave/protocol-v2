@@ -1,10 +1,10 @@
 import {task} from 'hardhat/config';
-import {getParamPerNetwork} from '../../helpers/contracts-helpers';
+import {getEthersSignersAddresses, getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-deployments';
-import {waitForTx} from '../../helpers/misc-utils';
+import {notFalsyOrZeroAddress, waitForTx} from '../../helpers/misc-utils';
 import {
   ConfigNames,
   loadPoolConfig,
@@ -22,25 +22,26 @@ task(
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({verify, pool}, localBRE) => {
     await localBRE.run('set-DRE');
+    console.log('addresses', await getEthersSignersAddresses());
     const network = <eEthereumNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const {ProviderId} = poolConfig;
 
     const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
     // Deploy address provider and set genesis manager
-    console.log('addres provider');
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
 
+    console.log('prox', addressesProvider.address);
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
-    const admin = await getEmergencyAdmin(poolConfig);
-    console.log('Admin is ', admin);
+    await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 
-    await waitForTx(await addressesProvider.setEmergencyAdmin(admin));
+    console.log('Pool Admin', await addressesProvider.getPoolAdmin());
+    console.log('Emergency Admin', await addressesProvider.getEmergencyAdmin());
 
     // If no provider registry is set, deploy lending pool address provider registry and register the address provider
-    const addressesProviderRegistry = !providerRegistryAddress
-      ? await deployLendingPoolAddressesProviderRegistry(verify)
-      : await getLendingPoolAddressesProviderRegistry(providerRegistryAddress);
+    const addressesProviderRegistry = notFalsyOrZeroAddress(providerRegistryAddress)
+      ? await getLendingPoolAddressesProviderRegistry(providerRegistryAddress)
+      : await deployLendingPoolAddressesProviderRegistry(verify);
 
     await waitForTx(
       await addressesProviderRegistry.registerAddressesProvider(

@@ -15,7 +15,7 @@ import '@tenderly/hardhat-tenderly';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
-const DEFAULT_GAS_MUL = 2;
+const DEFAULT_GAS_MUL = 5;
 const DEFAULT_GAS_PRICE = 2000000000;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';

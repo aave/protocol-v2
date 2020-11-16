@@ -6,13 +6,14 @@ import {
   iBasicDistributionParams,
   ICommonConfiguration,
   eEthereumNetwork,
+  IMarketRates,
 } from './types';
 import {getParamPerPool} from './contracts-helpers';
 import {AaveConfig} from '../config/aave';
 import {UniswapConfig} from '../config/uniswap';
 import {CommonsConfig} from '../config/commons';
 import {ZERO_ADDRESS} from './constants';
-import {DRE} from './misc-utils';
+import {DRE, filterMapBy} from './misc-utils';
 import {tEthereumAddress} from './types';
 import {getParamPerNetwork} from './contracts-helpers';
 import {deployWETHMocked} from './contracts-deployments';
@@ -99,4 +100,18 @@ export const getWethAddress = async (config: ICommonConfiguration) => {
   }
   const weth = await deployWETHMocked();
   return weth.address;
+};
+
+export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {
+  const {
+    ProtocolGlobalParams: {UsdAddress},
+    LendingRateOracleRatesCommon,
+    ReserveAssets,
+  } = poolConfig;
+
+  const MAINNET_FORK = process.env.MAINNET_FORK;
+  const network = MAINNET_FORK ? 'main' : DRE.network.name;
+  return filterMapBy(LendingRateOracleRatesCommon, (key) =>
+    Object.keys(ReserveAssets[network]).includes(key)
+  );
 };

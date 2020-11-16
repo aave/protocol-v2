@@ -47,9 +47,11 @@ task('aave:full:fork', 'Deploy development enviroment')
       console.log('5. Veryfing aTokens and debtTokens');
       await DRE.run('verify:tokens', {pool: POOL_NAME});
     }
-    const postDeployHead = DRE.tenderlyRPC.getHead();
-    console.log('HEAD', postDeployHead);
 
+    if (network.includes('tenderly')) {
+      const postDeployHead = DRE.tenderlyRPC.getHead();
+      console.log('Tenderly UUID', postDeployHead);
+    }
     console.log('\nFinished migrations');
     printContracts();
   });

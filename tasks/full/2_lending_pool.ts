@@ -1,5 +1,8 @@
 import {task} from 'hardhat/config';
-import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
+import {
+  getEthersSignersAddresses,
+  insertContractAddressInDb,
+} from '../../helpers/contracts-helpers';
 import {
   deployATokensAndRatesHelper,
   deployLendingPool,
@@ -20,15 +23,16 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
     try {
       await DRE.run('set-DRE');
 
+      console.log('addresses', await getEthersSignersAddresses());
       const addressesProvider = await getLendingPoolAddressesProvider();
 
       // Deploy lending pool
       const lendingPoolImpl = await deployLendingPool(verify);
 
-      console.log('setting up lending pool', addressesProvider);
+      console.log('set lend poool', addressesProvider.address);
       // Set lending pool impl to address provider
       await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
-      console.log('lending pool setted');
+      console.log('setted');
 
       const address = await addressesProvider.getLendingPool();
       const lendingPoolProxy = await getLendingPool(address);
@@ -38,13 +42,11 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
       // Deploy lending pool configurator
       const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator(verify);
 
-      console.log('set up x');
       // Set lending pool conf impl to Address Provider
       await waitForTx(
         await addressesProvider.setLendingPoolConfiguratorImpl(lendingPoolConfiguratorImpl.address)
       );
 
-      console.log('set up x');
       const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
         await addressesProvider.getLendingPoolConfigurator()
       );
@@ -58,13 +60,17 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
         [lendingPoolProxy.address, addressesProvider.address],
         verify
       );
-      console.log('set up x');
       await deployATokensAndRatesHelper(
         [lendingPoolProxy.address, addressesProvider.address, lendingPoolConfiguratorProxy.address],
         verify
       );
     } catch (error) {
-      const transactionLink = `https://dashboard.tenderly.co/fork/${DRE.tenderlyRPC.getFork()}/simulation/${DRE.tenderlyRPC.getHead()}`;
-      console.log(transactionLink);
+      if (DRE.network.name.includes('tenderly')) {
+        const transactionLink = `https://dashboard.tenderly.co/${DRE.config.tenderly.username}/${
+          DRE.config.tenderly.project
+        }/fork/${DRE.tenderlyRPC.getFork()}/simulation/${DRE.tenderlyRPC.getHead()}`;
+        console.error('Check tx error:', transactionLink);
+      }
+      throw error;
     }
   });
