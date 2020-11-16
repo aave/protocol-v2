@@ -54,12 +54,14 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       };
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
 
+      console.log('wha');
       const chainlinkProviderPriceProvider = proxyPriceProviderAddress
         ? await getChainlinkPriceProvider(proxyPriceProviderAddress)
         : await deployChainlinkProxyPriceProvider(
             [tokens, aggregators, fallbackOracle, await getWethAddress(poolConfig)],
             verify
           );
+      console.log('ppp');
 
       const lendingRateOracle = lendingRateOracleAddress
         ? await getLendingRateOracle(lendingRateOracleAddress)

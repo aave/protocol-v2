@@ -19,9 +19,13 @@ task('aave:full:fork', 'Deploy development enviroment')
     if (verify) {
       checkVerification();
     }
-    console.log('- Setting up Tenderly provider');
 
-    //Set the ethers provider to the one we initialized so it targets the correct backend
+    // Set the ethers provider to the one we initialized so it targets the correct backend
+    console.log('- Setting up Tenderly provider');
+    await DRE.tenderlyRPC.initializeFork();
+    const provider = new DRE.ethers.providers.Web3Provider(DRE.tenderlyRPC as any);
+    DRE.ethers.provider = provider;
+
     console.log('Migration started\n');
 
     console.log('1. Deploy address provider');
