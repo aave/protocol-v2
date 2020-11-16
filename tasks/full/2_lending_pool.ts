@@ -23,16 +23,13 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
     try {
       await DRE.run('set-DRE');
 
-      console.log('addresses', await getEthersSignersAddresses());
       const addressesProvider = await getLendingPoolAddressesProvider();
 
       // Deploy lending pool
       const lendingPoolImpl = await deployLendingPool(verify);
 
-      console.log('set lend poool', addressesProvider.address);
       // Set lending pool impl to address provider
       await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
-      console.log('setted');
 
       const address = await addressesProvider.getLendingPool();
       const lendingPoolProxy = await getLendingPool(address);

@@ -273,8 +273,15 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
-  console.log('-> Deploying test environment...');
-  await buildTestEnv(deployer, secondaryWallet);
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+
+  if (MAINNET_FORK) {
+    await rawBRE.run('aave:mainnet');
+  } else {
+    console.log('-> Deploying test environment...');
+    await buildTestEnv(deployer, secondaryWallet);
+  }
+
   await initializeMakeSuite();
   console.log('\n***************');
   console.log('Setup and snapshot finished');

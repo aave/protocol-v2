@@ -22,7 +22,7 @@ export type MockTokenMap = {[symbol: string]: MintableERC20};
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = DRE.network.name;
-  const MAINNET_FORK = process.env.MAINNET_FORK;
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
   if (MAINNET_FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
@@ -134,7 +134,7 @@ export const getParamPerNetwork = <T>(
   {kovan, ropsten, main, buidlerevm, coverage, tenderlyMain}: iParamsPerNetwork<T>,
   network: eEthereumNetwork
 ) => {
-  const MAINNET_FORK = process.env.MAINNET_FORK;
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
   if (MAINNET_FORK) {
     return main;
   }

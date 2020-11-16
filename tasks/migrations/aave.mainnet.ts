@@ -5,7 +5,7 @@ import {ConfigNames} from '../../helpers/configuration';
 import {EthereumNetworkNames} from '../../helpers/types';
 import {printContracts} from '../../helpers/misc-utils';
 
-task('aave:full:fork', 'Deploy development enviroment')
+task('aave:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, DRE) => {
     const POOL_NAME = ConfigNames.Aave;
@@ -17,7 +17,6 @@ task('aave:full:fork', 'Deploy development enviroment')
       checkVerification();
     }
 
-    // Set the ethers provider to the one we initialized so it targets the correct backend
     if (network.includes('tenderly')) {
       console.log('- Setting up Tenderly provider');
       await DRE.tenderlyRPC.initializeFork();
@@ -36,7 +35,10 @@ task('aave:full:fork', 'Deploy development enviroment')
     console.log('3. Deploy oracles');
     await DRE.run('full:deploy-oracles', {pool: POOL_NAME});
 
-    console.log('4. Initialize lending pool');
+    console.log('4. Deploy Data Provider');
+    await DRE.run('full:data-provider', {pool: POOL_NAME});
+
+    console.log('5. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', {pool: POOL_NAME});
 
     if (verify) {

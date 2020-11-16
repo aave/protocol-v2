@@ -20,10 +20,10 @@ task(
 )
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({verify, pool}, localBRE) => {
-    await localBRE.run('set-DRE');
-    console.log('addresses', await getEthersSignersAddresses());
-    const network = <eEthereumNetwork>localBRE.network.name;
+  .setAction(async ({verify, pool}, DRE) => {
+    await DRE.run('set-DRE');
+
+    const network = <eEthereumNetwork>DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const {ProviderId} = poolConfig;
 
@@ -31,7 +31,6 @@ task(
     // Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
 
-    console.log('prox', addressesProvider.address);
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 

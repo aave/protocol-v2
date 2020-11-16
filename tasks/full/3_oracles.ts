@@ -27,7 +27,6 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({verify, pool}, DRE) => {
     try {
-      console.log('addresses', await getEthersSignersAddresses());
       await DRE.run('set-DRE');
       const network = <eEthereumNetwork>DRE.network.name;
       const poolConfig = loadPoolConfig(pool);
@@ -64,12 +63,6 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       const {USD, ...tokensAddressesWithoutUsd} = tokensToWatch;
 
       if (!lendingRateOracleAddress) {
-        console.log(
-          lendingRateOracles,
-          tokensAddressesWithoutUsd,
-          lendingRateOracle.address,
-          aggregators
-        );
         await setInitialMarketRatesInRatesOracleByHelper(
           lendingRateOracles,
           tokensAddressesWithoutUsd,

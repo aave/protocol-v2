@@ -83,6 +83,8 @@ npm run aave:kovan:full:migration
 
 ### Mainnet fork deployment
 
+You can deploy Aave Protocol v2 in a forked Mainnet chain using Hardhat built-in feature:
+
 ```
 # In one terminal, run a hardhat note with mainnet fork enabled
 MAINNET_FORK=true npx hardhat node
@@ -95,4 +97,27 @@ docker-compose exec contracts-env bash
 
 # A new Bash terminal is prompted, connected to the container
 npm run aave:fork:main
+
+# Contracts are now deployed at Hardhat node with Mainnet fork.
+
+# You can interact with them via Hardhat console
+MAINNET_FORK=true npx hardhat console
+# Or your custom Hardhat task
+MAINNET_FORK=true npx hardhat your-custom-task
+
+```
+
+### Mainnet fork - Run the check list
+
+For testing the deployment scripts for Mainnet release, you can run the check-list tests in a Mainnet fork using Hardhat built-in feature:
+
+```
+# In another terminal, run docker-compose
+docker-compose up
+
+# Open another tab or terminal
+docker-compose exec contracts-env bash
+
+# A new Bash terminal is prompted, connected to the container
+npm run test:main:check-list
 ```

@@ -109,7 +109,7 @@ export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {
     ReserveAssets,
   } = poolConfig;
 
-  const MAINNET_FORK = process.env.MAINNET_FORK;
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
   const network = MAINNET_FORK ? 'main' : DRE.network.name;
   return filterMapBy(LendingRateOracleRatesCommon, (key) =>
     Object.keys(ReserveAssets[network]).includes(key)

@@ -106,14 +106,17 @@ export async function initializeMakeSuite() {
 
   testEnv.helpersContract = await getAaveProtocolDataProvider();
 
+  console.log('het cpmtra');
   const allTokens = await testEnv.helpersContract.getAllATokens();
-
+  console.log('tokann');
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
 
+  console.log('priah');
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
+  console.log('all tokan');
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
@@ -136,6 +139,7 @@ export async function initializeMakeSuite() {
   testEnv.aave = await getMintableErc20(aaveAddress);
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
+  console.log('laa');
 }
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {

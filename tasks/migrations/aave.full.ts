@@ -25,7 +25,10 @@ task('aave:full', 'Deploy development enviroment')
     console.log('2. Deploy lending pool');
     await localBRE.run('full:deploy-lending-pool');
 
-    console.log('3. Initialize lending pool');
+    console.log('3. Deploy data provider');
+    await localBRE.run('full:data-provider');
+
+    console.log('4. Initialize lending pool');
     await localBRE.run('full:initialize-lending-pool', {pool: POOL_NAME});
 
     if (verify) {
