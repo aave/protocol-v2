@@ -241,7 +241,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
     });
   });
 
-  describe.only('UniswapLiquiditySwapAdapter', () => {
+  describe('UniswapLiquiditySwapAdapter', () => {
     describe('constructor', () => {
       it('should deploy with correct parameters', async () => {
         const {addressesProvider} = testEnv;
@@ -1959,7 +1959,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
     });
   });
 
-  describe.only('UniswapRepayAdapter', () => {
+  describe('UniswapRepayAdapter', () => {
     describe('constructor', () => {
       it('should deploy with correct parameters', async () => {
         const {addressesProvider} = testEnv;
