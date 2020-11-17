@@ -3,16 +3,13 @@ import {
   iMultiPoolsAssets,
   IReserveParams,
   PoolConfiguration,
-  iBasicDistributionParams,
   ICommonConfiguration,
   eEthereumNetwork,
 } from './types';
 import {getParamPerPool} from './contracts-helpers';
-import {AaveConfig} from '../config/aave';
-import {UniswapConfig} from '../config/uniswap';
-import {CommonsConfig} from '../config/commons';
-import {ZERO_ADDRESS} from './constants';
-import {DRE} from './misc-utils';
+import AaveConfig from '../markets/aave';
+import {CommonsConfig} from '../markets/aave/commons';
+import {DRE, filterMapBy} from './misc-utils';
 import {tEthereumAddress} from './types';
 import {getParamPerNetwork} from './contracts-helpers';
 import {deployWETHMocked} from './contracts-deployments';
@@ -27,8 +24,6 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
   switch (configName) {
     case ConfigNames.Aave:
       return AaveConfig;
-    case ConfigNames.Uniswap:
-      return UniswapConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -45,9 +40,6 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
     {
       [AavePools.proto]: {
         ...AaveConfig.ReservesConfig,
-      },
-      [AavePools.secondary]: {
-        ...UniswapConfig.ReservesConfig,
       },
     },
     pool
@@ -99,4 +91,18 @@ export const getWethAddress = async (config: ICommonConfiguration) => {
   }
   const weth = await deployWETHMocked();
   return weth.address;
+};
+
+export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {
+  const {
+    ProtocolGlobalParams: {UsdAddress},
+    LendingRateOracleRatesCommon,
+    ReserveAssets,
+  } = poolConfig;
+
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+  const network = MAINNET_FORK ? 'main' : DRE.network.name;
+  return filterMapBy(LendingRateOracleRatesCommon, (key) =>
+    Object.keys(ReserveAssets[network]).includes(key)
+  );
 };

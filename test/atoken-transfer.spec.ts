@@ -4,7 +4,7 @@ import {expect} from 'chai';
 import {ethers} from 'ethers';
 import {RateMode, ProtocolErrors} from '../helpers/types';
 import {makeSuite, TestEnv} from './helpers/make-suite';
-import {CommonsConfig} from '../config/commons';
+import {CommonsConfig} from '../markets/aave/commons';
 
 const APPROVAL_AMOUNT_LENDING_POOL =
   CommonsConfig.ProtocolGlobalParams.ApprovalAmountLendingPoolCore;

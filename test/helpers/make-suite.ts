@@ -107,7 +107,6 @@ export async function initializeMakeSuite() {
   testEnv.helpersContract = await getAaveProtocolDataProvider();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
-
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
@@ -120,11 +119,9 @@ export async function initializeMakeSuite() {
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
   if (!aDaiAddress || !aWEthAddress) {
-    console.log(`atoken-modifiers.spec: aTokens not correctly initialized`);
     process.exit(1);
   }
   if (!daiAddress || !usdcAddress || !aaveAddress || !wethAddress) {
-    console.log(`atoken-modifiers.spec: USDC or DAI not correctly initialized`);
     process.exit(1);
   }
 

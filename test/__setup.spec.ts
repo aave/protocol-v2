@@ -12,7 +12,7 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  deployChainlinkProxyPriceProvider,
+  deployAaveOracle,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -26,7 +26,7 @@ import {
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {getEmergencyAdmin, getReservesConfigByPool} from '../helpers/configuration';
+import {getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
 
 import {
@@ -40,7 +40,7 @@ import {
   enableReservesToBorrowByHelper,
   enableReservesAsCollateralByHelper,
 } from '../helpers/init-helpers';
-import {AaveConfig} from '../config/aave';
+import AaveConfig from '../markets/aave';
 import {ZERO_ADDRESS} from '../helpers/constants';
 import {
   getLendingPool,
@@ -201,7 +201,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
 
-  const chainlinkProxyPriceProvider = await deployChainlinkProxyPriceProvider([
+  const aaveOracle = await deployAaveOracle([
     tokens,
     aggregators,
     fallbackOracle.address,
@@ -273,8 +273,15 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
-  console.log('-> Deploying test environment...');
-  await buildTestEnv(deployer, secondaryWallet);
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+
+  if (MAINNET_FORK) {
+    await rawBRE.run('aave:mainnet');
+  } else {
+    console.log('-> Deploying test environment...');
+    await buildTestEnv(deployer, secondaryWallet);
+  }
+
   await initializeMakeSuite();
   console.log('\n***************');
   console.log('Setup and snapshot finished');

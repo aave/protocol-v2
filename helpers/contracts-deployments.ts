@@ -21,7 +21,7 @@ import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
-  ChainlinkProxyPriceProviderFactory,
+  AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   DelegationAwareATokenFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -58,6 +58,7 @@ import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTo
 import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
 import {readArtifact as buidlerReadArtifact} from '@nomiclabs/buidler/plugins';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import {verifyContract} from './etherscan-verification';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -198,13 +199,13 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
     verify
   );
 
-export const deployChainlinkProxyPriceProvider = async (
+export const deployAaveOracle = async (
   args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new ChainlinkProxyPriceProviderFactory(await getFirstSigner()).deploy(...args),
-    eContractid.ChainlinkProxyPriceProvider,
+    await new AaveOracleFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AaveOracle,
     args,
     verify
   );

@@ -11,6 +11,7 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
+  tenderlyMain = 'tenderlyMain',
 }
 
 export enum EthereumNetworkNames {
@@ -40,7 +41,7 @@ export enum eContractid {
   Proxy = 'Proxy',
   MockAggregator = 'MockAggregator',
   LendingRateOracle = 'LendingRateOracle',
-  ChainlinkProxyPriceProvider = 'ChainlinkProxyPriceProvider',
+  AaveOracle = 'AaveOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
@@ -258,7 +259,7 @@ export type iAaveSecondPoolAssets<T> = Pick<
   | 'UNI_LINK_ETH'
 >;
 
-export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T> | iAaveSecondPoolAssets<T>;
+export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
 
@@ -324,11 +325,11 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
+  [eEthereumNetwork.tenderlyMain]: T;
 }
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
-  [AavePools.secondary]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -352,6 +353,7 @@ export enum EthereumNetwork {
   development = 'development',
   main = 'main',
   coverage = 'soliditycoverage',
+  tenderlyMain = 'tenderlyMain',
 }
 
 export interface IProtocolGlobalConfig {
@@ -389,7 +391,7 @@ export interface ICommonConfiguration {
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
-  ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+  AaveOracle: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
   PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;

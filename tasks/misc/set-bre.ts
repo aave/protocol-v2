@@ -1,3 +1,5 @@
+import {ExternalProvider} from '@ethersproject/providers';
+
 import {task} from 'hardhat/config';
 import {setDRE} from '../../helpers/misc-utils';
 
