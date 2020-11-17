@@ -1,17 +1,12 @@
-import {eContractid, iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
-import {LendingPoolConfigurator} from '../types/LendingPoolConfigurator';
+import {iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
 import {AaveProtocolDataProvider} from '../types/AaveProtocolDataProvider';
-import {
-  deployATokensAndRatesHelper,
-  deployStableAndVariableTokensHelper,
-} from './contracts-deployments';
 import {chunk, waitForTx} from './misc-utils';
 import {
   getATokensAndRatesHelper,
   getLendingPoolAddressesProvider,
   getStableAndVariableTokensHelper,
 } from './contracts-getters';
-import {insertContractAddressInDb, rawInsertContractAddressInDb} from './contracts-helpers';
+import {rawInsertContractAddressInDb} from './contracts-helpers';
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,

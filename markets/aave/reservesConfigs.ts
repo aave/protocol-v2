@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import {oneRay} from '../helpers/constants';
-import {IReserveParams} from '../helpers/types';
+import {oneRay} from '../../helpers/constants';
+import {IReserveParams} from '../../helpers/types';
 
 export const strategyBase: IReserveParams = {
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
@@ -121,7 +121,7 @@ export const strategyREP: IReserveParams = {
   baseLTVAsCollateral: '3500',
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
-  borrowingEnabled: false,
+  borrowingEnabled: true,
 };
 
 export const stablecoinStrategySUSD: IReserveParams = {
@@ -133,7 +133,7 @@ export const stablecoinStrategySUSD: IReserveParams = {
   baseLTVAsCollateral: '-1',
   liquidationThreshold: '0',
   liquidationBonus: '0',
-  borrowingEnabled: false,
+  borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
 };
@@ -176,7 +176,7 @@ export const stablecoinStrategyUSDT: IReserveParams = {
   baseLTVAsCollateral: '-1',
   liquidationThreshold: '7000',
   liquidationBonus: '0',
-  borrowingEnabled: false,
+  borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
 };

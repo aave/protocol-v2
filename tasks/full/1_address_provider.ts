@@ -1,10 +1,10 @@
 import {task} from 'hardhat/config';
-import {getParamPerNetwork} from '../../helpers/contracts-helpers';
+import {getEthersSignersAddresses, getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-deployments';
-import {waitForTx} from '../../helpers/misc-utils';
+import {notFalsyOrZeroAddress, waitForTx} from '../../helpers/misc-utils';
 import {
   ConfigNames,
   loadPoolConfig,
@@ -20,25 +20,27 @@ task(
 )
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({verify, pool}, localBRE) => {
-    await localBRE.run('set-DRE');
-    const network = <eEthereumNetwork>localBRE.network.name;
+  .setAction(async ({verify, pool}, DRE) => {
+    await DRE.run('set-DRE');
+
+    const network = <eEthereumNetwork>DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const {ProviderId} = poolConfig;
 
     const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
     // Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(verify);
-    await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
-    const admin = await getEmergencyAdmin(poolConfig);
-    console.log('Admin is ', admin);
 
-    await waitForTx(await addressesProvider.setEmergencyAdmin(admin));
+    await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
+    await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
+
+    console.log('Pool Admin', await addressesProvider.getPoolAdmin());
+    console.log('Emergency Admin', await addressesProvider.getEmergencyAdmin());
 
     // If no provider registry is set, deploy lending pool address provider registry and register the address provider
-    const addressesProviderRegistry = !providerRegistryAddress
-      ? await deployLendingPoolAddressesProviderRegistry(verify)
-      : await getLendingPoolAddressesProviderRegistry(providerRegistryAddress);
+    const addressesProviderRegistry = notFalsyOrZeroAddress(providerRegistryAddress)
+      ? await getLendingPoolAddressesProviderRegistry(providerRegistryAddress)
+      : await deployLendingPoolAddressesProviderRegistry(verify);
 
     await waitForTx(
       await addressesProviderRegistry.registerAddressesProvider(
@@ -46,19 +48,4 @@ task(
         ProviderId
       )
     );
-
-    //register the proxy price provider on the addressesProvider
-    const proxyProvider = getParamPerNetwork(poolConfig.ProxyPriceProvider, network);
-
-    if (proxyProvider && proxyProvider !== '') {
-      await waitForTx(await addressesProvider.setPriceOracle(proxyProvider));
-    }
-
-    //register the lending rate oracle
-    const lendingRateOracle = getParamPerNetwork(poolConfig.LendingRateOracle, network);
-
-    if (lendingRateOracle && lendingRateOracle !== '') {
-      await waitForTx(await addressesProvider.setLendingRateOracle(proxyProvider));
-    }
-
   });

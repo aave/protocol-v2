@@ -72,13 +72,13 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     uint256 actualAmountToLiquidate;
     uint256 liquidationRatio;
     uint256 maxAmountCollateralToLiquidate;
-    ReserveLogic.InterestRateMode borrowRateMode;
     uint256 userStableRate;
     uint256 maxCollateralToLiquidate;
     uint256 principalAmountNeeded;
     uint256 healthFactor;
     IAToken collateralAtoken;
     bool isCollateralEnabled;
+    ReserveLogic.InterestRateMode borrowRateMode;
     address principalAToken;
     uint256 errorCode;
     string errorMsg;

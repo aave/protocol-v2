@@ -2,6 +2,7 @@ import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
+  AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   GenericLogicFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -26,12 +27,10 @@ import {
   UniswapRepayAdapterFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
-  Weth9Factory,
   Weth9MockedFactory,
   WethGatewayFactory,
 } from '../types';
 import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
-import {UpgradeabilityProxy} from '../types/UpgradeabilityProxy';
 import {MockTokenMap} from './contracts-helpers';
 import {DRE, getDb} from './misc-utils';
 import {eContractid, PoolConfiguration, tEthereumAddress, TokenContractId} from './types';
@@ -326,6 +325,12 @@ export const getLendingPoolCollateralManager = async (address?: tEthereumAddress
 
 export const getAddressById = async (id: string) =>
   (await getDb().get(`${id}.${DRE.network.name}`).value()).address;
+
+export const getChainlinkPriceProvider = async (address?: tEthereumAddress) =>
+  await AaveOracleFactory.connect(
+    address || (await getDb().get(`${eContractid.AaveOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
 
 export const getMockUniswapRouter = async (address?: tEthereumAddress) =>
   await MockUniswapV2Router02Factory.connect(

@@ -11,6 +11,7 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
+  tenderlyMain = 'tenderlyMain',
 }
 
 export enum EthereumNetworkNames {
@@ -40,7 +41,7 @@ export enum eContractid {
   Proxy = 'Proxy',
   MockAggregator = 'MockAggregator',
   LendingRateOracle = 'LendingRateOracle',
-  ChainlinkProxyPriceProvider = 'ChainlinkProxyPriceProvider',
+  AaveOracle = 'AaveOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
@@ -117,9 +118,9 @@ export enum ProtocolErrors {
   LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26', // 'The actual balance of the protocol is inconsistent'
   LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27', // 'The caller is not the lending pool configurator'
   LP_INCONSISTENT_FLASHLOAN_PARAMS = '28',
-  AT_CALLER_MUST_BE_LENDING_POOL = '29', // 'The caller of this function must be a lending pool'
-  AT_CANNOT_GIVE_ALLVWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
-  AT_TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
+  CT_CALLER_MUST_BE_LENDING_POOL = '29', // 'The caller of this function must be a lending pool'
+  CT_CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30', // 'User cannot give allowance to himself'
+  CT_TRANSFER_AMOUNT_NOT_GT_0 = '31', // 'Transferred amount needs to be greater than zero'
   RL_RESERVE_ALREADY_INITIALIZED = '32', // 'Reserve has already been initialized'
   LPC_RESERVE_LIQUIDITY_NOT_0 = '34', // 'The liquidity of the reserve needs to be 0'
   LPC_INVALID_ATOKEN_POOL_ADDRESS = '35', // 'The liquidity of the reserve needs to be 0'
@@ -144,9 +145,9 @@ export enum ProtocolErrors {
   RL_LIQUIDITY_RATE_OVERFLOW = '53', //  Liquidity rate overflows uint128
   RL_VARIABLE_BORROW_RATE_OVERFLOW = '54', //  Variable borrow rate overflows uint128
   RL_STABLE_BORROW_RATE_OVERFLOW = '55', //  Stable borrow rate overflows uint128
-  AT_INVALID_MINT_AMOUNT = '56', //invalid amount to mint
+  CT_INVALID_MINT_AMOUNT = '56', //invalid amount to mint
   LP_FAILED_REPAY_WITH_COLLATERAL = '57',
-  AT_INVALID_BURN_AMOUNT = '58', //invalid amount to burn
+  CT_INVALID_BURN_AMOUNT = '58', //invalid amount to burn
   LP_BORROW_ALLOWANCE_NOT_ENOUGH = '59', // User borrows on behalf, but allowance are too small
   LP_FAILED_COLLATERAL_SWAP = '60',
   LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61',
@@ -261,7 +262,7 @@ export type iAaveSecondPoolAssets<T> = Pick<
   | 'UNI_LINK_ETH'
 >;
 
-export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T> | iAaveSecondPoolAssets<T>;
+export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
 
@@ -327,11 +328,11 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
+  [eEthereumNetwork.tenderlyMain]: T;
 }
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
-  [AavePools.secondary]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -355,6 +356,7 @@ export enum EthereumNetwork {
   development = 'development',
   main = 'main',
   coverage = 'soliditycoverage',
+  tenderlyMain = 'tenderlyMain',
 }
 
 export interface IProtocolGlobalConfig {
@@ -392,7 +394,7 @@ export interface ICommonConfiguration {
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
-  ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+  AaveOracle: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
   PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;

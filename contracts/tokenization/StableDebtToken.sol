@@ -5,6 +5,7 @@ import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title contract StableDebtToken
@@ -18,7 +19,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   uint256 internal _avgStableRate;
   mapping(address => uint40) internal _timestamps;
-  mapping(address => uint256) internal _usersData;
+  mapping(address => uint256) internal _usersStableRate;
   uint40 internal _totalSupplyTimestamp;
 
   constructor(
@@ -59,7 +60,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return the stable rate of user
    **/
   function getUserStableRate(address user) external virtual override view returns (uint256) {
-    return _usersData[user];
+    return _usersStableRate[user];
   }
 
   /**
@@ -68,7 +69,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    **/
   function balanceOf(address account) public virtual override view returns (uint256) {
     uint256 accountBalance = super.balanceOf(account);
-    uint256 stableRate = _usersData[account];
+    uint256 stableRate = _usersStableRate[account];
     if (accountBalance == 0) {
       return 0;
     }
@@ -117,13 +118,13 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     vars.amountInRay = amount.wadToRay();
 
     //calculates the new stable rate for the user
-    vars.newStableRate = _usersData[onBehalfOf]
+    vars.newStableRate = _usersStableRate[onBehalfOf]
       .rayMul(currentBalance.wadToRay())
       .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
 
-    require(vars.newStableRate < (1 << 128), 'Debt token: stable rate overflow');
-    _usersData[onBehalfOf] = vars.newStableRate;
+    require(vars.newStableRate < type(uint128).max, Errors.SDT_STABLE_DEBT_OVERFLOW);
+    _usersStableRate[onBehalfOf] = vars.newStableRate;
 
     //updating the user and supply timestamp
     //solium-disable-next-line
@@ -166,6 +167,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 previousSupply = totalSupply();
     uint256 newStableRate = 0;
     uint256 nextSupply = 0;
+    uint256 userStableRate = _usersStableRate[user];
 
     //since the total supply and each single user debt accrue separately,
     //there might be accumulation errors so that the last borrower repaying
@@ -176,14 +178,21 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _totalSupply = 0;
     } else {
       nextSupply = _totalSupply = previousSupply.sub(amount);
-      newStableRate = _avgStableRate = _avgStableRate
-        .rayMul(previousSupply.wadToRay())
-        .sub(_usersData[user].rayMul(amount.wadToRay()))
-        .rayDiv(nextSupply.wadToRay());
+      uint256 firstTerm = _avgStableRate.rayMul(previousSupply.wadToRay());
+      uint256 secondTerm = userStableRate.rayMul(amount.wadToRay());
+
+      //for the same reason described above, when the last user is repaying it might
+      //happen that user rate * user balance > avg rate * total supply. In that case,
+      //we simply set the avg rate to 0
+      if (secondTerm >= firstTerm) {
+        newStableRate = _avgStableRate = _totalSupply = 0;
+      } else {
+        newStableRate = _avgStableRate = firstTerm.sub(secondTerm).rayDiv(nextSupply.wadToRay());
+      }
     }
 
     if (amount == currentBalance) {
-      _usersData[user] = 0;
+      _usersStableRate[user] = 0;
       _timestamps[user] = 0;
     } else {
       //solium-disable-next-line
@@ -334,7 +343,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 oldTotalSupply
   ) internal {
     uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
+    _balances[account] = oldAccountBalance.sub(amount, Errors.SDT_BURN_EXCEEDS_BALANCE);
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);

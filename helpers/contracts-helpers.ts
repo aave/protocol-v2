@@ -22,7 +22,8 @@ export type MockTokenMap = {[symbol: string]: MintableERC20};
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = DRE.network.name;
-  if (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage')) {
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+  if (MAINNET_FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
     console.log(`tx: ${contractInstance.deployTransaction.hash}`);
@@ -89,6 +90,12 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
 ): Promise<ContractType> => {
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
+  if (DRE.network.name.includes('tenderly')) {
+    await (DRE as any).tenderlyRPC.verify({
+      name: id,
+      address: instance.address,
+    });
+  }
   if (verify) {
     await verifyContract(instance.address, args);
   }
@@ -124,9 +131,14 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(
-  {kovan, ropsten, main, buidlerevm, coverage}: iParamsPerNetwork<T>,
+  {kovan, ropsten, main, buidlerevm, coverage, tenderlyMain}: iParamsPerNetwork<T>,
   network: eEthereumNetwork
 ) => {
+  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+  if (MAINNET_FORK) {
+    return main;
+  }
+
   switch (network) {
     case eEthereumNetwork.coverage:
       return coverage;
@@ -140,15 +152,15 @@ export const getParamPerNetwork = <T>(
       return ropsten;
     case eEthereumNetwork.main:
       return main;
+    case eEthereumNetwork.tenderlyMain:
+      return tenderlyMain;
   }
 };
 
-export const getParamPerPool = <T>({proto, secondary}: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>({proto}: iParamsPerPool<T>, pool: AavePools) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
-    case AavePools.secondary:
-      return secondary;
     default:
       return proto;
   }

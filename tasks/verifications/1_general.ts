@@ -20,11 +20,10 @@ import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {verifyContract} from '../../helpers/etherscan-verification';
 import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
 
-task('full:verify', 'Deploy oracles for dev enviroment')
-  .addFlag('verify', 'Verify proxy contracts at Etherscan')
+task('verify:general', 'Deploy oracles for dev enviroment')
   .addFlag('all', 'Verify all contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({verify, all, pool}, localDRE) => {
+  .setAction(async ({all, pool}, localDRE) => {
     await localDRE.run('set-DRE');
     const network = localDRE.network.name as eEthereumNetwork;
     const poolConfig = loadPoolConfig(pool);
@@ -36,9 +35,6 @@ task('full:verify', 'Deploy oracles for dev enviroment')
     const lendingPoolConfigurator = await getLendingPoolConfiguratorProxy();
     const lendingPoolCollateralManager = await getLendingPoolCollateralManager();
 
-    if (!verify) {
-      return;
-    }
     if (all) {
       const lendingPoolImpl = await getLendingPoolImpl();
       const lendingPoolConfiguratorImpl = await getLendingPoolConfiguratorImpl();
