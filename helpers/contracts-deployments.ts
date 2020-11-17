@@ -21,7 +21,7 @@ import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
-  ChainlinkProxyPriceProviderFactory,
+  AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   DelegationAwareATokenFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -199,13 +199,13 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
     verify
   );
 
-export const deployChainlinkProxyPriceProvider = async (
+export const deployAaveOracle = async (
   args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new ChainlinkProxyPriceProviderFactory(await getFirstSigner()).deploy(...args),
-    eContractid.ChainlinkProxyPriceProvider,
+    await new AaveOracleFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AaveOracle,
     args,
     verify
   );

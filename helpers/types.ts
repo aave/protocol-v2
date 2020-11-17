@@ -41,7 +41,7 @@ export enum eContractid {
   Proxy = 'Proxy',
   MockAggregator = 'MockAggregator',
   LendingRateOracle = 'LendingRateOracle',
-  ChainlinkProxyPriceProvider = 'ChainlinkProxyPriceProvider',
+  AaveOracle = 'AaveOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
@@ -391,7 +391,7 @@ export interface ICommonConfiguration {
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
-  ChainlinkProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
+  AaveOracle: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
   PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;

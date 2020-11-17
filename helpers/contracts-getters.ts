@@ -2,7 +2,7 @@ import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
-  ChainlinkProxyPriceProviderFactory,
+  AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   GenericLogicFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -324,9 +324,7 @@ export const getAddressById = async (id: string) =>
   (await getDb().get(`${id}.${DRE.network.name}`).value()).address;
 
 export const getChainlinkPriceProvider = async (address?: tEthereumAddress) =>
-  await ChainlinkProxyPriceProviderFactory.connect(
-    address ||
-      (await getDb().get(`${eContractid.ChainlinkProxyPriceProvider}.${DRE.network.name}`).value())
-        .address,
+  await AaveOracleFactory.connect(
+    address || (await getDb().get(`${eContractid.AaveOracle}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );

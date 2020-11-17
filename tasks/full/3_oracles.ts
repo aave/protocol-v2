@@ -1,9 +1,6 @@
 import {task} from 'hardhat/config';
 import {getEthersSignersAddresses, getParamPerNetwork} from '../../helpers/contracts-helpers';
-import {
-  deployChainlinkProxyPriceProvider,
-  deployLendingRateOracle,
-} from '../../helpers/contracts-deployments';
+import {deployAaveOracle, deployLendingRateOracle} from '../../helpers/contracts-deployments';
 import {setInitialMarketRatesInRatesOracleByHelper} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
 import {waitForTx, filterMapBy, notFalsyOrZeroAddress} from '../../helpers/misc-utils';
@@ -53,7 +50,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
 
       const chainlinkProviderPriceProvider = notFalsyOrZeroAddress(proxyPriceProviderAddress)
         ? await getChainlinkPriceProvider(proxyPriceProviderAddress)
-        : await deployChainlinkProxyPriceProvider(
+        : await deployAaveOracle(
             [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
             verify
           );

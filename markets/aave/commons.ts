@@ -180,7 +180,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [EthereumNetwork.main]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
     [EthereumNetwork.tenderlyMain]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
   },
-  ChainlinkProxyPriceProvider: {
+  AaveOracle: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',

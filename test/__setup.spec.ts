@@ -12,7 +12,7 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  deployChainlinkProxyPriceProvider,
+  deployAaveOracle,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -201,7 +201,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
 
-  const chainlinkProxyPriceProvider = await deployChainlinkProxyPriceProvider([
+  const aaveOracle = await deployAaveOracle([
     tokens,
     aggregators,
     fallbackOracle.address,
