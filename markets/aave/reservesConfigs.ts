@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import {oneRay} from '../helpers/constants';
-import {IReserveParams} from '../helpers/types';
+import {oneRay} from '../../helpers/constants';
+import {IReserveParams} from '../../helpers/types';
 
 export const strategyBase: IReserveParams = {
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),

@@ -1,6 +1,5 @@
-import BigNumber from 'bignumber.js';
-import {oneRay, ZERO_ADDRESS} from '../helpers/constants';
-import {IAaveConfiguration, EthereumNetwork, eEthereumNetwork} from '../helpers/types';
+import {oneRay, ZERO_ADDRESS} from '../../helpers/constants';
+import {IAaveConfiguration, EthereumNetwork, eEthereumNetwork} from '../../helpers/types';
 
 import {CommonsConfig} from './commons';
 import {

@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
-import {zeroPad} from 'ethers/lib/utils';
-import {oneEther, oneRay, RAY, ZERO_ADDRESS} from '../helpers/constants';
-import {ICommonConfiguration, EthereumNetwork, eEthereumNetwork} from '../helpers/types';
+import {oneEther, oneRay, RAY, ZERO_ADDRESS} from '../../helpers/constants';
+import {ICommonConfiguration, EthereumNetwork, eEthereumNetwork} from '../../helpers/types';
 
 const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),

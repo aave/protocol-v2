@@ -259,7 +259,7 @@ export type iAaveSecondPoolAssets<T> = Pick<
   | 'UNI_LINK_ETH'
 >;
 
-export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T> | iAaveSecondPoolAssets<T>;
+export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
 
@@ -330,7 +330,6 @@ export interface iParamsPerNetwork<T> {
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
-  [AavePools.secondary]: T;
 }
 
 export interface iBasicDistributionParams {

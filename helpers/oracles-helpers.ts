@@ -13,7 +13,6 @@ import {MockAggregator} from '../types/MockAggregator';
 import {deployMockAggregator} from './contracts-deployments';
 import {chunk, waitForTx} from './misc-utils';
 import {getStableAndVariableTokensHelper} from './contracts-getters';
-import {stablecoinStrategyCentralized} from '../config/reservesConfigs';
 
 export const setInitialMarketRatesInRatesOracleByHelper = async (
   marketRates: iMultiPoolsAssets<IMarketRates>,

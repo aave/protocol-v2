@@ -26,7 +26,7 @@ import {
 import {Signer} from 'ethers';
 import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
 import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {getEmergencyAdmin, getReservesConfigByPool} from '../helpers/configuration';
+import {getReservesConfigByPool} from '../helpers/configuration';
 import {initializeMakeSuite} from './helpers/make-suite';
 
 import {
@@ -40,7 +40,7 @@ import {
   enableReservesToBorrowByHelper,
   enableReservesAsCollateralByHelper,
 } from '../helpers/init-helpers';
-import {AaveConfig} from '../config/aave';
+import AaveConfig from '../markets/aave';
 import {ZERO_ADDRESS} from '../helpers/constants';
 import {
   getLendingPool,
