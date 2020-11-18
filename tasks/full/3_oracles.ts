@@ -1,9 +1,9 @@
 import {task} from 'hardhat/config';
-import {getEthersSignersAddresses, getParamPerNetwork} from '../../helpers/contracts-helpers';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {deployAaveOracle, deployLendingRateOracle} from '../../helpers/contracts-deployments';
 import {setInitialMarketRatesInRatesOracleByHelper} from '../../helpers/oracles-helpers';
 import {ICommonConfiguration, eEthereumNetwork, SymbolMap} from '../../helpers/types';
-import {waitForTx, filterMapBy, notFalsyOrZeroAddress} from '../../helpers/misc-utils';
+import {waitForTx, notFalsyOrZeroAddress} from '../../helpers/misc-utils';
 import {
   ConfigNames,
   loadPoolConfig,
@@ -11,7 +11,6 @@ import {
   getGenesisPoolAdmin,
   getLendingRateOracles,
 } from '../../helpers/configuration';
-import {exit} from 'process';
 import {
   getChainlinkPriceProvider,
   getLendingPoolAddressesProvider,

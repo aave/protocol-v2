@@ -116,14 +116,6 @@ export const strategyREN: IReserveParams = {
   stableBorrowRateEnabled: false,
 };
 
-export const strategyREP: IReserveParams = {
-  ...strategyBase,
-  baseLTVAsCollateral: '3500',
-  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
-  borrowingEnabled: true,
-};
-
 export const stablecoinStrategySUSD: IReserveParams = {
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),

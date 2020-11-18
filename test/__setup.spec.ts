@@ -52,14 +52,13 @@ import {Weth9Mocked} from '../types/Weth9Mocked';
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
 const USD_ADDRESS = AaveConfig.ProtocolGlobalParams.UsdAddress;
-const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.ChainlinkAggregatorPrices;
+const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
 const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: {[symbol: string]: MockContract | MintableERC20 | Weth9Mocked} = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
-  const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
     if (tokenSymbol === 'WETH') {
@@ -70,10 +69,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
     let decimals = 18;
 
     let configData = (<any>protoConfigData)[tokenSymbol];
-
-    if (!configData) {
-      configData = (<any>secondaryConfigData)[tokenSymbol];
-    }
 
     if (!configData) {
       decimals = 18;
@@ -95,10 +90,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
-  const mockTokenAddress = Object.keys(mockTokens).reduce<{[key: string]: string}>((acc, key) => {
-    acc[key] = mockTokens[key].address;
-    return acc;
-  }, {});
 
   const addressesProvider = await deployLendingPoolAddressesProvider();
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
@@ -157,7 +148,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       SUSD: mockTokens.SUSD.address,
       AAVE: mockTokens.AAVE.address,
       BAT: mockTokens.BAT.address,
-      REP: mockTokens.REP.address,
       MKR: mockTokens.MKR.address,
       LINK: mockTokens.LINK.address,
       KNC: mockTokens.KNC.address,
@@ -171,13 +161,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       UNI: mockTokens.UNI.address,
       ENJ: mockTokens.ENJ.address,
       USD: USD_ADDRESS,
-
-      UNI_DAI_ETH: mockTokens.UNI_DAI_ETH.address,
-      UNI_USDC_ETH: mockTokens.UNI_USDC_ETH.address,
-      UNI_SETH_ETH: mockTokens.UNI_SETH_ETH.address,
-      UNI_LEND_ETH: mockTokens.UNI_LEND_ETH.address,
-      UNI_MKR_ETH: mockTokens.UNI_MKR_ETH.address,
-      UNI_LINK_ETH: mockTokens.UNI_LINK_ETH.address,
     },
     fallbackOracle
   );
@@ -198,15 +181,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     }),
     {}
   );
+  console.log(allTokenAddresses, allAggregatorsAddresses);
 
   const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
 
-  const aaveOracle = await deployAaveOracle([
-    tokens,
-    aggregators,
-    fallbackOracle.address,
-    mockTokens.WETH.address,
-  ]);
+  await deployAaveOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
   const lendingRateOracle = await deployLendingRateOracle();
@@ -223,16 +202,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     aaveAdmin
   );
 
-  const {
-    UNI_DAI_ETH,
-    UNI_USDC_ETH,
-    UNI_SETH_ETH,
-    UNI_LINK_ETH,
-    UNI_MKR_ETH,
-    UNI_LEND_ETH,
-    ...protoPoolReservesAddresses
-  } = <{[symbol: string]: tEthereumAddress}>allReservesAddresses;
-
   const reservesParams = getReservesConfigByPool(AavePools.proto);
 
   const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address);
@@ -241,16 +210,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const admin = await deployer.getAddress();
 
   console.log('Initialize configuration');
-  await initReservesByHelper(reservesParams, protoPoolReservesAddresses, admin, ZERO_ADDRESS);
-  await enableReservesToBorrowByHelper(
-    reservesParams,
-    protoPoolReservesAddresses,
-    testHelpers,
-    admin
-  );
+  await initReservesByHelper(reservesParams, allReservesAddresses, admin, ZERO_ADDRESS);
+  await enableReservesToBorrowByHelper(reservesParams, allReservesAddresses, testHelpers, admin);
   await enableReservesAsCollateralByHelper(
     reservesParams,
-    protoPoolReservesAddresses,
+    allReservesAddresses,
     testHelpers,
     admin
   );

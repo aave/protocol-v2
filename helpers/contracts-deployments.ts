@@ -377,16 +377,11 @@ export const deployAllMockTokens = async (verify?: boolean) => {
   const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
-  const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
     let decimals = '18';
 
     let configData = (<any>protoConfigData)[tokenSymbol];
-
-    if (!configData) {
-      configData = (<any>secondaryConfigData)[tokenSymbol];
-    }
 
     tokens[tokenSymbol] = await deployMintableERC20(
       [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
