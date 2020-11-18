@@ -1,35 +1,35 @@
-import {evmRevert, evmSnapshot, DRE} from '../../helpers/misc-utils';
-import {Signer} from 'ethers';
+import { evmRevert, evmSnapshot, DRE } from '../../helpers/misc-utils';
+import { Signer } from 'ethers';
 import {
   getLendingPool,
   getLendingPoolAddressesProvider,
   getAaveProtocolDataProvider,
   getAToken,
-  getMintableErc20,
+  getMintableERC20,
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
   getLendingPoolAddressesProviderRegistry,
   getWETHMocked,
   getWETHGateway,
 } from '../../helpers/contracts-getters';
-import {tEthereumAddress} from '../../helpers/types';
-import {LendingPool} from '../../types/LendingPool';
-import {AaveProtocolDataProvider} from '../../types/AaveProtocolDataProvider';
-import {MintableErc20 as MintableERC20} from '../../types/MintableErc20';
-import {AToken} from '../../types/AToken';
-import {LendingPoolConfigurator} from '../../types/LendingPoolConfigurator';
+import { tEthereumAddress } from '../../helpers/types';
+import { LendingPool } from '../../types/LendingPool';
+import { AaveProtocolDataProvider } from '../../types/AaveProtocolDataProvider';
+import { MintableERC20 } from '../../types/MintableERC20';
+import { AToken } from '../../types/AToken';
+import { LendingPoolConfigurator } from '../../types/LendingPoolConfigurator';
 
 import chai from 'chai';
 // @ts-ignore
 import bignumberChai from 'chai-bignumber';
-import {almostEqual} from './almost-equal';
-import {PriceOracle} from '../../types/PriceOracle';
-import {LendingPoolAddressesProvider} from '../../types/LendingPoolAddressesProvider';
-import {LendingPoolAddressesProviderRegistry} from '../../types/LendingPoolAddressesProviderRegistry';
-import {getEthersSigners} from '../../helpers/contracts-helpers';
-import {Weth9Mocked} from '../../types/Weth9Mocked';
-import {WethGateway} from '../../types/WethGateway';
-import {solidity} from 'ethereum-waffle';
+import { almostEqual } from './almost-equal';
+import { PriceOracle } from '../../types/PriceOracle';
+import { LendingPoolAddressesProvider } from '../../types/LendingPoolAddressesProvider';
+import { LendingPoolAddressesProviderRegistry } from '../../types/LendingPoolAddressesProviderRegistry';
+import { getEthersSigners } from '../../helpers/contracts-helpers';
+import { WETH9Mocked } from '../../types/WETH9Mocked';
+import { WETHGateway } from '../../types/WETHGateway';
+import { solidity } from 'ethereum-waffle';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -46,7 +46,7 @@ export interface TestEnv {
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolDataProvider;
-  weth: Weth9Mocked;
+  weth: WETH9Mocked;
   aWETH: AToken;
   dai: MintableERC20;
   aDai: AToken;
@@ -54,7 +54,7 @@ export interface TestEnv {
   aave: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
-  wethGateway: WethGateway;
+  wethGateway: WETHGateway;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -71,7 +71,7 @@ const testEnv: TestEnv = {
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolDataProvider,
   oracle: {} as PriceOracle,
-  weth: {} as Weth9Mocked,
+  weth: {} as WETH9Mocked,
   aWETH: {} as AToken,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
@@ -79,7 +79,7 @@ const testEnv: TestEnv = {
   aave: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
-  wethGateway: {} as WethGateway,
+  wethGateway: {} as WETHGateway,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -128,9 +128,9 @@ export async function initializeMakeSuite() {
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
 
-  testEnv.dai = await getMintableErc20(daiAddress);
-  testEnv.usdc = await getMintableErc20(usdcAddress);
-  testEnv.aave = await getMintableErc20(aaveAddress);
+  testEnv.dai = await getMintableERC20(daiAddress);
+  testEnv.usdc = await getMintableERC20(usdcAddress);
+  testEnv.aave = await getMintableERC20(aaveAddress);
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
 }

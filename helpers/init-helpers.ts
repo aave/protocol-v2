@@ -1,16 +1,17 @@
-import {iMultiPoolsAssets, IReserveParams, tEthereumAddress} from './types';
-import {AaveProtocolDataProvider} from '../types/AaveProtocolDataProvider';
-import {chunk, waitForTx} from './misc-utils';
+import { iMultiPoolsAssets, IReserveParams, tEthereumAddress } from './types';
+import { AaveProtocolDataProvider } from '../types/AaveProtocolDataProvider';
+import { chunk, waitForTx } from './misc-utils';
 import {
   getATokensAndRatesHelper,
   getLendingPoolAddressesProvider,
   getStableAndVariableTokensHelper,
 } from './contracts-getters';
-import {rawInsertContractAddressInDb} from './contracts-helpers';
+import { rawInsertContractAddressInDb } from './contracts-helpers';
+import { BigNumberish } from 'ethers';
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
+  tokenAddresses: { [symbol: string]: tEthereumAddress },
   admin: tEthereumAddress,
   incentivesController: tEthereumAddress
 ) => {
@@ -48,10 +49,16 @@ export const initReservesByHelper = async (
     // Prepare data
     const tokens: string[] = [];
     const symbols: string[] = [];
-    const strategyRates: string[][] = [];
+    const strategyRates: [
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish
+    ][] = [];
     const reservesDecimals: string[] = [];
 
-    for (let [assetSymbol, {reserveDecimals}] of reservesChunk) {
+    for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
       const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
         (value) => value === assetSymbol
       );
@@ -151,9 +158,9 @@ export const getPairsTokenAggregator = (
   allAssetsAddresses: {
     [tokenSymbol: string]: tEthereumAddress;
   },
-  aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
+  aggregatorsAddresses: { [tokenSymbol: string]: tEthereumAddress }
 ): [string[], string[]] => {
-  const {ETH, USD, WETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
+  const { ETH, USD, WETH, ...assetsAddressesWithoutEth } = allAssetsAddresses;
 
   const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
     if (tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH') {
@@ -176,7 +183,7 @@ export const getPairsTokenAggregator = (
 
 export const enableReservesToBorrowByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
+  tokenAddresses: { [symbol: string]: tEthereumAddress },
   helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
@@ -187,7 +194,7 @@ export const enableReservesToBorrowByHelper = async (
   const stableEnabled: boolean[] = [];
 
   // Prepare data
-  for (const [assetSymbol, {borrowingEnabled, stableBorrowRateEnabled}] of Object.entries(
+  for (const [assetSymbol, { borrowingEnabled, stableBorrowRateEnabled }] of Object.entries(
     reservesParams
   ) as [string, IReserveParams][]) {
     if (!borrowingEnabled) continue;
@@ -197,7 +204,7 @@ export const enableReservesToBorrowByHelper = async (
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
-    const {borrowingEnabled: borrowingAlreadyEnabled} = await helpers.getReserveConfigurationData(
+    const { borrowingEnabled: borrowingAlreadyEnabled } = await helpers.getReserveConfigurationData(
       tokenAddress
     );
 
@@ -226,7 +233,7 @@ export const enableReservesToBorrowByHelper = async (
           await atokenAndRatesDeployer.enableBorrowingOnReserves(
             chunkedTokens[chunkIndex],
             chunkedStableEnabled[chunkIndex],
-            {gasLimit: 12000000}
+            { gasLimit: 12000000 }
           )
         );
       } catch (error) {
@@ -243,7 +250,7 @@ export const enableReservesToBorrowByHelper = async (
 
 export const enableReservesAsCollateralByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: {[symbol: string]: tEthereumAddress},
+  tokenAddresses: { [symbol: string]: tEthereumAddress },
   helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
@@ -257,7 +264,7 @@ export const enableReservesAsCollateralByHelper = async (
 
   for (const [
     assetSymbol,
-    {baseLTVAsCollateral, liquidationBonus, liquidationThreshold},
+    { baseLTVAsCollateral, liquidationBonus, liquidationThreshold },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
     if (baseLTVAsCollateral === '-1') continue;
 
@@ -267,7 +274,7 @@ export const enableReservesAsCollateralByHelper = async (
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
-    const {usageAsCollateralEnabled: alreadyEnabled} = await helpers.getReserveConfigurationData(
+    const { usageAsCollateralEnabled: alreadyEnabled } = await helpers.getReserveConfigurationData(
       tokenAddress
     );
 
@@ -302,7 +309,7 @@ export const enableReservesAsCollateralByHelper = async (
           chunkedBase[chunkIndex],
           chunkedliquidationThresholds[chunkIndex],
           chunkedliquidationBonuses[chunkIndex],
-          {gasLimit: 12000000}
+          { gasLimit: 12000000 }
         )
       );
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);

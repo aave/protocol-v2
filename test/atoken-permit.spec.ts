@@ -1,38 +1,33 @@
-import {MAX_UINT_AMOUNT, ZERO_ADDRESS} from '../helpers/constants';
-import {BUIDLEREVM_CHAINID} from '../helpers/buidler-constants';
-import {buildPermitParams, getSignatureFromTypedData} from '../helpers/contracts-helpers';
-import {expect} from 'chai';
-import {ethers} from 'ethers';
-import {eEthereumNetwork} from '../helpers/types';
-import {makeSuite, TestEnv} from './helpers/make-suite';
-import {DRE} from '../helpers/misc-utils';
-import {
-  ConfigNames,
-  getATokenDomainSeparatorPerNetwork,
-  loadPoolConfig,
-} from '../helpers/configuration';
-import {waitForTx} from '../helpers/misc-utils';
+import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../helpers/constants';
+import { BUIDLEREVM_CHAINID } from '../helpers/buidler-constants';
+import { buildPermitParams, getSignatureFromTypedData } from '../helpers/contracts-helpers';
+import { expect } from 'chai';
+import { ethers } from 'ethers';
+import { makeSuite, TestEnv } from './helpers/make-suite';
+import { DRE } from '../helpers/misc-utils';
+import { waitForTx } from '../helpers/misc-utils';
+import { _TypedDataEncoder } from 'ethers/lib/utils';
 
-const {parseEther} = ethers.utils;
+const { parseEther } = ethers.utils;
 
 makeSuite('AToken: Permit', (testEnv: TestEnv) => {
-  const poolConfig = loadPoolConfig(ConfigNames.Commons);
-
   it('Checks the domain separator', async () => {
-    const DOMAIN_SEPARATOR_ENCODED = getATokenDomainSeparatorPerNetwork(
-      eEthereumNetwork.hardhat,
-      poolConfig
-    );
-
-    const {aDai} = testEnv;
-
+    const { aDai } = testEnv;
     const separator = await aDai.DOMAIN_SEPARATOR();
 
-    expect(separator).to.be.equal(DOMAIN_SEPARATOR_ENCODED, 'Invalid domain separator');
+    const domain = {
+      name: await aDai.name(),
+      version: '1',
+      chainId: DRE.network.config.chainId,
+      verifyingContract: aDai.address,
+    };
+    const domainSeparator = _TypedDataEncoder.hashDomain(domain);
+
+    expect(separator).to.be.equal(domainSeparator, 'Invalid domain separator');
   });
 
   it('Get aDAI for tests', async () => {
-    const {dai, pool, deployer} = testEnv;
+    const { dai, pool, deployer } = testEnv;
 
     await dai.mint(parseEther('20000'));
     await dai.approve(pool.address, parseEther('20000'));
@@ -41,7 +36,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Reverts submitting a permit with 0 expiration', async () => {
-    const {aDai, deployer, users} = testEnv;
+    const { aDai, deployer, users } = testEnv;
     const owner = deployer;
     const spender = users[1];
 
@@ -73,7 +68,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
       'INVALID_ALLOWANCE_BEFORE_PERMIT'
     );
 
-    const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
+    const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       aDai
@@ -88,7 +83,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Submits a permit with maximum expiration length', async () => {
-    const {aDai, deployer, users} = testEnv;
+    const { aDai, deployer, users } = testEnv;
     const owner = deployer;
     const spender = users[1];
 
@@ -118,7 +113,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
       'INVALID_ALLOWANCE_BEFORE_PERMIT'
     );
 
-    const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
+    const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await waitForTx(
       await aDai
@@ -130,7 +125,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Cancels the previous permit', async () => {
-    const {aDai, deployer, users} = testEnv;
+    const { aDai, deployer, users } = testEnv;
     const owner = deployer;
     const spender = users[1];
 
@@ -155,7 +150,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
       throw new Error('INVALID_OWNER_PK');
     }
 
-    const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
+    const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     expect((await aDai.allowance(owner.address, spender.address)).toString()).to.be.equal(
       ethers.utils.parseEther('2'),
@@ -176,7 +171,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Tries to submit a permit with invalid nonce', async () => {
-    const {aDai, deployer, users} = testEnv;
+    const { aDai, deployer, users } = testEnv;
     const owner = deployer;
     const spender = users[1];
 
@@ -201,7 +196,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
       throw new Error('INVALID_OWNER_PK');
     }
 
-    const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
+    const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       aDai
@@ -211,7 +206,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Tries to submit a permit with invalid expiration (previous to the current block)', async () => {
-    const {aDai, deployer, users} = testEnv;
+    const { aDai, deployer, users } = testEnv;
     const owner = deployer;
     const spender = users[1];
 
@@ -236,7 +231,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
       throw new Error('INVALID_OWNER_PK');
     }
 
-    const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
+    const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       aDai
@@ -246,7 +241,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Tries to submit a permit with invalid signature', async () => {
-    const {aDai, deployer, users} = testEnv;
+    const { aDai, deployer, users } = testEnv;
     const owner = deployer;
     const spender = users[1];
 
@@ -271,7 +266,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
       throw new Error('INVALID_OWNER_PK');
     }
 
-    const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
+    const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       aDai
@@ -281,7 +276,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
   });
 
   it('Tries to submit a permit with invalid owner', async () => {
-    const {aDai, deployer, users} = testEnv;
+    const { aDai, deployer, users } = testEnv;
     const owner = deployer;
     const spender = users[1];
 
@@ -306,7 +301,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
       throw new Error('INVALID_OWNER_PK');
     }
 
-    const {v, r, s} = getSignatureFromTypedData(ownerPrivateKey, msgParams);
+    const { v, r, s } = getSignatureFromTypedData(ownerPrivateKey, msgParams);
 
     await expect(
       aDai

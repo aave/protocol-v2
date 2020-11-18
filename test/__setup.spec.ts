@@ -1,5 +1,5 @@
 import rawBRE from 'hardhat';
-import {MockContract} from 'ethereum-waffle';
+import { MockContract } from 'ethereum-waffle';
 import {
   insertContractAddressInDb,
   getEthersSigners,
@@ -23,31 +23,31 @@ import {
   deployWETHGateway,
   deployWETHMocked,
 } from '../helpers/contracts-deployments';
-import {Signer} from 'ethers';
-import {TokenContractId, eContractid, tEthereumAddress, AavePools} from '../helpers/types';
-import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {getReservesConfigByPool} from '../helpers/configuration';
-import {initializeMakeSuite} from './helpers/make-suite';
+import { Signer } from 'ethers';
+import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../helpers/types';
+import { MintableERC20 } from '../types/MintableERC20';
+import { getReservesConfigByPool } from '../helpers/configuration';
+import { initializeMakeSuite } from './helpers/make-suite';
 
 import {
   setInitialAssetPricesInOracle,
   deployAllMockAggregators,
   setInitialMarketRatesInRatesOracleByHelper,
 } from '../helpers/oracles-helpers';
-import {DRE, waitForTx} from '../helpers/misc-utils';
+import { DRE, waitForTx } from '../helpers/misc-utils';
 import {
   initReservesByHelper,
   enableReservesToBorrowByHelper,
   enableReservesAsCollateralByHelper,
 } from '../helpers/init-helpers';
 import AaveConfig from '../markets/aave';
-import {ZERO_ADDRESS} from '../helpers/constants';
+import { ZERO_ADDRESS } from '../helpers/constants';
 import {
   getLendingPool,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
 } from '../helpers/contracts-getters';
-import {Weth9Mocked} from '../types/Weth9Mocked';
+import { WETH9Mocked } from '../types/WETH9Mocked';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -56,7 +56,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.AllAssetsInitialPrice
 const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
-  const tokens: {[symbol: string]: MockContract | MintableERC20 | Weth9Mocked} = {};
+  const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked } = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
 
@@ -168,20 +168,19 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const mockAggregators = await deployAllMockAggregators(MOCK_CHAINLINK_AGGREGATORS_PRICES);
 
   const allTokenAddresses = Object.entries(mockTokens).reduce(
-    (accum: {[tokenSymbol: string]: tEthereumAddress}, [tokenSymbol, tokenContract]) => ({
+    (accum: { [tokenSymbol: string]: tEthereumAddress }, [tokenSymbol, tokenContract]) => ({
       ...accum,
       [tokenSymbol]: tokenContract.address,
     }),
     {}
   );
   const allAggregatorsAddresses = Object.entries(mockAggregators).reduce(
-    (accum: {[tokenSymbol: string]: tEthereumAddress}, [tokenSymbol, aggregator]) => ({
+    (accum: { [tokenSymbol: string]: tEthereumAddress }, [tokenSymbol, aggregator]) => ({
       ...accum,
       [tokenSymbol]: aggregator.address,
     }),
     {}
   );
-  console.log(allTokenAddresses, allAggregatorsAddresses);
 
   const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
 
@@ -191,7 +190,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const lendingRateOracle = await deployLendingRateOracle();
   await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
 
-  const {USD, ...tokensAddressesWithoutUsd} = allTokenAddresses;
+  const { USD, ...tokensAddressesWithoutUsd } = allTokenAddresses;
   const allReservesAddresses = {
     ...tokensAddressesWithoutUsd,
   };

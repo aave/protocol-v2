@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import {oneEther, oneRay, RAY, ZERO_ADDRESS} from '../../helpers/constants';
-import {ICommonConfiguration, EthereumNetwork, eEthereumNetwork} from '../../helpers/types';
+import { oneEther, oneRay, RAY, ZERO_ADDRESS } from '../../helpers/constants';
+import { ICommonConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
 
 const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),
@@ -155,8 +155,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.kovan]: '0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a',
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
-    [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderlyMain]: '',
+    [eEthereumNetwork.main]: ZERO_ADDRESS,
+    [eEthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
   },
   TokenDistributor: {
     [eEthereumNetwork.coverage]: '',
@@ -171,8 +171,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [EthereumNetwork.kovan]: '0x276C4793F2EE3D5Bf18C5b879529dD4270BA4814',
-    [EthereumNetwork.ropsten]: '0x657372A559c30d236F011239fF9fbB6D76718271',
+    [EthereumNetwork.kovan]: '0xB8bE51E6563BB312Cbb2aa26e352516c25c26ac1',
+    [EthereumNetwork.ropsten]: ZERO_ADDRESS,
     [EthereumNetwork.main]: ZERO_ADDRESS,
     [EthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
   },
@@ -296,15 +296,6 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]:
       '0xbae024d959c6a022dc5ed37294cd39c141034b2ae5f02a955cce75c930a81bf5',
     [eEthereumNetwork.kovan]: '',
-    [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderlyMain]: '',
-  },
-  ProxyPriceProvider: {
-    [eEthereumNetwork.coverage]: '',
-    [eEthereumNetwork.hardhat]: '',
-    [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '0xB8bE51E6563BB312Cbb2aa26e352516c25c26ac1',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderlyMain]: '',
