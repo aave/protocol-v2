@@ -31,7 +31,7 @@ contract ATokensAndRatesHelper is Ownable {
   function initDeployment(
     address[] calldata tokens,
     string[] calldata symbols,
-    uint256[5][] calldata rates,
+    uint256[][6] calldata rates,
     address incentivesController
   ) external onlyOwner {
     require(tokens.length == symbols.length, 't Arrays not same length');
@@ -55,7 +55,8 @@ contract ATokensAndRatesHelper is Ownable {
             rates[i][1],
             rates[i][2],
             rates[i][3],
-            rates[i][4]
+            rates[i][4],
+            rates[i][5]
           )
         )
       );
