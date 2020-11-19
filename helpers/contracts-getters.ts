@@ -12,7 +12,7 @@ import {
   LendingPoolConfiguratorFactory,
   LendingPoolFactory,
   LendingRateOracleFactory,
-  MintableErc20Factory,
+  MintableERC20Factory,
   MockATokenFactory,
   MockFlashLoanReceiverFactory,
   MockStableDebtTokenFactory,
@@ -27,13 +27,13 @@ import {
   UniswapRepayAdapterFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
-  Weth9MockedFactory,
-  WethGatewayFactory,
+  WETH9MockedFactory,
+  WETHGatewayFactory,
 } from '../types';
-import {Ierc20DetailedFactory} from '../types/Ierc20DetailedFactory';
-import {MockTokenMap} from './contracts-helpers';
-import {DRE, getDb} from './misc-utils';
-import {eContractid, PoolConfiguration, tEthereumAddress, TokenContractId} from './types';
+import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
+import { MockTokenMap } from './contracts-helpers';
+import { DRE, getDb } from './misc-utils';
+import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
 
 export const getFirstSigner = async () => (await DRE.ethers.getSigners())[0];
 
@@ -88,15 +88,15 @@ export const getVariableDebtToken = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getMintableErc20 = async (address: tEthereumAddress) =>
-  await MintableErc20Factory.connect(
+export const getMintableERC20 = async (address: tEthereumAddress) =>
+  await MintableERC20Factory.connect(
     address ||
       (await getDb().get(`${eContractid.MintableERC20}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 
 export const getIErc20Detailed = async (address: tEthereumAddress) =>
-  await Ierc20DetailedFactory.connect(
+  await IERC20DetailedFactory.connect(
     address ||
       (await getDb().get(`${eContractid.IERC20Detailed}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
@@ -143,7 +143,7 @@ export const getMockedTokens = async (config: PoolConfiguration) => {
     async (acc, tokenSymbol) => {
       const accumulator = await acc;
       const address = db.get(`${tokenSymbol.toUpperCase()}.${DRE.network.name}`).value().address;
-      accumulator[tokenSymbol] = await getMintableErc20(address);
+      accumulator[tokenSymbol] = await getMintableERC20(address);
       return Promise.resolve(acc);
     },
     Promise.resolve({})
@@ -157,7 +157,7 @@ export const getAllMockedTokens = async () => {
     async (acc, tokenSymbol) => {
       const accumulator = await acc;
       const address = db.get(`${tokenSymbol.toUpperCase()}.${DRE.network.name}`).value().address;
-      accumulator[tokenSymbol] = await getMintableErc20(address);
+      accumulator[tokenSymbol] = await getMintableERC20(address);
       return Promise.resolve(acc);
     },
     Promise.resolve({})
@@ -169,9 +169,9 @@ export const getPairsTokenAggregator = (
   allAssetsAddresses: {
     [tokenSymbol: string]: tEthereumAddress;
   },
-  aggregatorsAddresses: {[tokenSymbol: string]: tEthereumAddress}
+  aggregatorsAddresses: { [tokenSymbol: string]: tEthereumAddress }
 ): [string[], string[]] => {
-  const {ETH, USD, WETH, ...assetsAddressesWithoutEth} = allAssetsAddresses;
+  const { ETH, USD, WETH, ...assetsAddressesWithoutEth } = allAssetsAddresses;
 
   const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
     if (tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH') {
@@ -237,14 +237,14 @@ export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
   );
 
 export const getWETHGateway = async (address?: tEthereumAddress) =>
-  await WethGatewayFactory.connect(
+  await WETHGatewayFactory.connect(
     address ||
       (await getDb().get(`${eContractid.WETHGateway}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 
 export const getWETHMocked = async (address?: tEthereumAddress) =>
-  await Weth9MockedFactory.connect(
+  await WETH9MockedFactory.connect(
     address || (await getDb().get(`${eContractid.WETHMocked}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
@@ -326,7 +326,7 @@ export const getLendingPoolCollateralManager = async (address?: tEthereumAddress
 export const getAddressById = async (id: string) =>
   (await getDb().get(`${id}.${DRE.network.name}`).value()).address;
 
-export const getChainlinkPriceProvider = async (address?: tEthereumAddress) =>
+export const getAaveOracle = async (address?: tEthereumAddress) =>
   await AaveOracleFactory.connect(
     address || (await getDb().get(`${eContractid.AaveOracle}.${DRE.network.name}`).value()).address,
     await getFirstSigner()

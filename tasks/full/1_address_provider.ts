@@ -1,5 +1,5 @@
 import {task} from 'hardhat/config';
-import {getEthersSignersAddresses, getParamPerNetwork} from '../../helpers/contracts-helpers';
+import {getParamPerNetwork} from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,

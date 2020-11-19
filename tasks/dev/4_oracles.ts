@@ -27,7 +27,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
     await localBRE.run('set-DRE');
     const poolConfig = loadPoolConfig(pool);
     const {
-      Mocks: {ChainlinkAggregatorPrices, AllAssetsInitialPrices},
+      Mocks: {AllAssetsInitialPrices},
       ProtocolGlobalParams: {UsdAddress, MockUsdPriceInWei},
       LendingRateOracleRatesCommon,
     } = poolConfig as ICommonConfiguration;
@@ -48,7 +48,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
     await waitForTx(await fallbackOracle.setEthUsdPrice(MockUsdPriceInWei));
     await setInitialAssetPricesInOracle(AllAssetsInitialPrices, mockTokensAddress, fallbackOracle);
 
-    const mockAggregators = await deployAllMockAggregators(ChainlinkAggregatorPrices, verify);
+    const mockAggregators = await deployAllMockAggregators(AllAssetsInitialPrices, verify);
 
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
     const allAggregatorsAddresses = getAllAggregatorsAddresses(mockAggregators);
