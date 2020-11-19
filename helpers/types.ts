@@ -22,7 +22,6 @@ export enum EthereumNetworkNames {
 
 export enum AavePools {
   proto = 'proto',
-  secondary = 'secondary',
 }
 
 export enum eContractid {
@@ -188,7 +187,6 @@ export interface iAssetBase<T> {
   SUSD: T;
   AAVE: T;
   BAT: T;
-  REP: T;
   MKR: T;
   LINK: T;
   KNC: T;
@@ -202,13 +200,6 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
-
-  UNI_DAI_ETH: T;
-  UNI_USDC_ETH: T;
-  UNI_SETH_ETH: T;
-  UNI_LEND_ETH: T;
-  UNI_MKR_ETH: T;
-  UNI_LINK_ETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -224,7 +215,6 @@ export type iAavePoolAssets<T> = Pick<
   | 'SUSD'
   | 'AAVE'
   | 'BAT'
-  | 'REP'
   | 'MKR'
   | 'LINK'
   | 'KNC'
@@ -238,25 +228,6 @@ export type iAavePoolAssets<T> = Pick<
   | 'UNI'
   | 'REN'
   | 'ENJ'
->;
-
-export type iUniAssets<T> = Pick<
-  iAssetBase<T>,
-  'UNI_DAI_ETH' | 'UNI_USDC_ETH' | 'UNI_SETH_ETH' | 'UNI_LEND_ETH' | 'UNI_MKR_ETH' | 'UNI_LINK_ETH'
->;
-
-export type iAaveSecondPoolAssets<T> = Pick<
-  iAssetBase<T>,
-  | 'WETH'
-  | 'DAI'
-  | 'USDC'
-  | 'USDT'
-  | 'UNI_DAI_ETH'
-  | 'UNI_USDC_ETH'
-  | 'UNI_SETH_ETH'
-  | 'UNI_LEND_ETH'
-  | 'UNI_MKR_ETH'
-  | 'UNI_LINK_ETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -280,7 +251,6 @@ export enum TokenContractId {
   LINK = 'LINK',
   KNC = 'KNC',
   MANA = 'MANA',
-  REP = 'REP',
   REN = 'REN',
   SNX = 'SNX',
   BUSD = 'BUSD',
@@ -288,12 +258,6 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  UNI_DAI_ETH = 'UNI_DAI_ETH',
-  UNI_USDC_ETH = 'UNI_USDC_ETH',
-  UNI_SETH_ETH = 'UNI_SETH_ETH',
-  UNI_LINK_ETH = 'UNI_LINK_ETH',
-  UNI_MKR_ETH = 'UNI_MKR_ETH',
-  UNI_LEND_ETH = 'UNI_LEND_ETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {}
@@ -370,7 +334,6 @@ export interface IProtocolGlobalConfig {
 }
 
 export interface IMocksConfig {
-  ChainlinkAggregatorPrices: iAssetBase<string>;
   AllAssetsInitialPrices: iAssetBase<string>;
 }
 
@@ -401,20 +364,14 @@ export interface ICommonConfiguration {
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
-  ProxyPriceProvider: iParamsPerNetwork<tEthereumAddress>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
 }
-
-export interface IUniswapConfiguration extends ICommonConfiguration {
-  ReservesConfig: iAaveSecondPoolAssets<IReserveParams>;
-}
-
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration | IUniswapConfiguration;
+export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration;

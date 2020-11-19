@@ -1,17 +1,17 @@
-import {LendingPool} from '../../../types/LendingPool';
-import {ReserveData, UserReserveData} from './interfaces';
+import { LendingPool } from '../../../types/LendingPool';
+import { ReserveData, UserReserveData } from './interfaces';
 import {
   getLendingRateOracle,
   getIErc20Detailed,
-  getMintableErc20,
+  getMintableERC20,
   getAToken,
   getStableDebtToken,
   getVariableDebtToken,
 } from '../../../helpers/contracts-getters';
-import {tEthereumAddress} from '../../../helpers/types';
+import { tEthereumAddress } from '../../../helpers/types';
 import BigNumber from 'bignumber.js';
-import {getDb, DRE} from '../../../helpers/misc-utils';
-import {AaveProtocolDataProvider} from '../../../types/AaveProtocolDataProvider';
+import { getDb, DRE } from '../../../helpers/misc-utils';
+import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvider';
 
 export const getReserveData = async (
   helper: AaveProtocolDataProvider,
@@ -27,7 +27,7 @@ export const getReserveData = async (
   const stableDebtToken = await getStableDebtToken(tokenAddresses.stableDebtTokenAddress);
   const variableDebtToken = await getVariableDebtToken(tokenAddresses.variableDebtTokenAddress);
 
-  const {0: principalStableDebt} = await stableDebtToken.getSupplyData();
+  const { 0: principalStableDebt } = await stableDebtToken.getSupplyData();
   const totalStableDebtLastUpdated = await stableDebtToken.getTotalSupplyLastUpdated();
 
   const scaledVariableDebt = await variableDebtToken.scaledTotalSupply();
@@ -84,7 +84,7 @@ export const getUserData = async (
     getATokenUserData(reserve, user, helper),
   ]);
 
-  const token = await getMintableErc20(reserve);
+  const token = await getMintableERC20(reserve);
   const walletBalance = new BigNumber((await token.balanceOf(sender || user)).toString());
 
   return {
@@ -103,7 +103,7 @@ export const getUserData = async (
 };
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
-  const token = await getMintableErc20(
+  const token = await getMintableERC20(
     (await getDb().get(`${symbol}.${DRE.network.name}`).value()).address
   );
 

@@ -1,8 +1,8 @@
-import {Contract, Signer, utils, ethers} from 'ethers';
-import {signTypedData_v4} from 'eth-sig-util';
-import {fromRpcSig, ECDSASignature} from 'ethereumjs-util';
+import { Contract, Signer, utils, ethers } from 'ethers';
+import { signTypedData_v4 } from 'eth-sig-util';
+import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
-import {getDb, DRE, waitForTx} from './misc-utils';
+import { getDb, DRE, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -12,13 +12,13 @@ import {
   iParamsPerNetwork,
   iParamsPerPool,
 } from './types';
-import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {Artifact} from 'hardhat/types';
-import {Artifact as BuidlerArtifact} from '@nomiclabs/buidler/types';
-import {verifyContract} from './etherscan-verification';
-import {getIErc20Detailed} from './contracts-getters';
+import { MintableERC20 } from '../types/MintableERC20';
+import { Artifact } from 'hardhat/types';
+import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
+import { verifyContract } from './etherscan-verification';
+import { getIErc20Detailed } from './contracts-getters';
 
-export type MockTokenMap = {[symbol: string]: MintableERC20};
+export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = DRE.network.name;
@@ -131,7 +131,7 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(
-  {kovan, ropsten, main, buidlerevm, coverage, tenderlyMain}: iParamsPerNetwork<T>,
+  { kovan, ropsten, main, buidlerevm, coverage, tenderlyMain }: iParamsPerNetwork<T>,
   network: eEthereumNetwork
 ) => {
   const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
@@ -157,7 +157,7 @@ export const getParamPerNetwork = <T>(
   }
 };
 
-export const getParamPerPool = <T>({proto}: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>({ proto }: iParamsPerPool<T>, pool: AavePools) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
@@ -194,17 +194,17 @@ export const buildPermitParams = (
 ) => ({
   types: {
     EIP712Domain: [
-      {name: 'name', type: 'string'},
-      {name: 'version', type: 'string'},
-      {name: 'chainId', type: 'uint256'},
-      {name: 'verifyingContract', type: 'address'},
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+      { name: 'verifyingContract', type: 'address' },
     ],
     Permit: [
-      {name: 'owner', type: 'address'},
-      {name: 'spender', type: 'address'},
-      {name: 'value', type: 'uint256'},
-      {name: 'nonce', type: 'uint256'},
-      {name: 'deadline', type: 'uint256'},
+      { name: 'owner', type: 'address' },
+      { name: 'spender', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
     ],
   },
   primaryType: 'Permit' as const,
