@@ -10,7 +10,7 @@ import {
   DefaultReserveInterestRateStrategy
 } from '../lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
-import {StringLib} from '../libraries/helpers/StringLib.sol';
+import {StringLib} from './StringLib.sol';
 
 contract ATokensAndRatesHelper is Ownable {
   address payable private pool;
