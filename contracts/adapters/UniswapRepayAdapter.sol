@@ -16,11 +16,18 @@ import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
  **/
 contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
+  /*
+  * STANDARD: Use the provided amounts parameters
+  * ALL_DEBT: Repay the whole debt balance
+  * ALL_COLLATERAL: Use all the collateral balance to repay the max amount of debt
+  */
+  enum RepayMode {STANDARD, ALL_DEBT, ALL_COLLATERAL}
+
   struct RepayParams {
     address assetToSwapTo;
     uint256 repayAmount;
     uint256 rateMode;
-    bool repayAllDebt;
+    RepayMode repayMode;
     PermitSignature permitSignature;
   }
 
@@ -45,7 +52,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   address Address of the reserve to be swapped to and repay
    *   uint256 repayAmount Amount of debt to be repaid
    *   uint256 rateMode Rate modes of the debt to be repaid
-   *   bool repayAllDebt Flag indicating if all the debt should be repaid
+   *   RepayMode repayMode Enum indicating the repaid mode
    *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
    *   uint8 v V param for the permit signature
@@ -70,7 +77,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
         decodedParams.repayAmount,
         decodedParams.rateMode,
         initiator,
-        decodedParams.repayAllDebt,
+        decodedParams.repayMode,
         premiums[0],
         decodedParams.permitSignature
       );
@@ -97,13 +104,13 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 repayAmount,
     uint256 rateMode,
     address initiator,
-    bool repayAllDebt,
+    RepayMode repayMode,
     uint256 premium,
     PermitSignature memory permitSignature
   ) internal {
     uint256 debtRepayAmount;
 
-    if (repayAllDebt) {
+    if (repayMode == RepayMode.ALL_DEBT) {
       ReserveLogic.ReserveData memory reserveDebtData = _getReserveData(assetTo);
 
       address debtToken = ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE
@@ -137,7 +144,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    *   address Address of the reserve to be swapped to and repay
    *   uint256 repayAmount Amount of debt to be repaid
    *   uint256 rateMode Rate modes of the debt to be repaid
-   *   bool repayAllDebt Flag indicating if all the debt should be repaid
+   *   RepayMode repayMode Enum indicating the repaid mode
    *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
    *   uint8 v V param for the permit signature
@@ -150,19 +157,19 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       address assetToSwapTo,
       uint256 repayAmount,
       uint256 rateMode,
-      bool repayAllDebt,
+      RepayMode repayMode,
       uint256 permitAmount,
       uint256 deadline,
       uint8 v,
       bytes32 r,
       bytes32 s
-    ) = abi.decode(params, (address, uint256, uint256, bool, uint256, uint256, uint8, bytes32, bytes32));
+    ) = abi.decode(params, (address, uint256, uint256, RepayMode, uint256, uint256, uint8, bytes32, bytes32));
 
     return RepayParams(
       assetToSwapTo,
       repayAmount,
       rateMode,
-      repayAllDebt,
+      repayMode,
       PermitSignature(
         permitAmount,
         deadline,
