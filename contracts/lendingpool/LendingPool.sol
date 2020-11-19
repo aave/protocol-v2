@@ -179,13 +179,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Allows users to borrow a specific amount of the reserve currency, provided that the borrower
-   * already deposited enough collateral.
+   * @dev Allows users to borrow a specific amount of the reserve underlying asset, provided that the borrower
+   * already deposited enough collateral, or he was given enough allowance by a credit delegator on the
+   * corresponding debt token (StableDebtToken or VariableDebtToken)
    * @param asset the address of the reserve
    * @param amount the amount to be borrowed
-   * @param interestRateMode the interest rate mode at which the user wants to borrow. Can be 0 (STABLE) or 1 (VARIABLE)
+   * @param interestRateMode the interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
    * @param referralCode a referral code for integrators
-   * @param onBehalfOf address of the user who will receive the debt
+   * @param onBehalfOf address of the user who will receive the debt. Should be the address of the borrower itself
+   * calling the function if he wants to borrow against his own collateral, or the address of the credit delegator
+   * if he has been given credit delegation allowance 
    **/
   function borrow(
     address asset,
