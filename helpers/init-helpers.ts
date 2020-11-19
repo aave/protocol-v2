@@ -8,6 +8,7 @@ import {
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumberish } from 'ethers';
+import BigNumber from 'bignumber.js';
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -54,6 +55,7 @@ export const initReservesByHelper = async (
       BigNumberish,
       BigNumberish,
       BigNumberish,
+      BigNumberish,
       BigNumberish
     ][] = [];
     const reservesDecimals: string[] = [];
@@ -72,6 +74,7 @@ export const initReservesByHelper = async (
       const [
         ,
         {
+          optimalUtilizationRate,
           baseVariableBorrowRate,
           variableRateSlope1,
           variableRateSlope2,
@@ -83,6 +86,7 @@ export const initReservesByHelper = async (
       tokens.push(tokenAddress);
       symbols.push(assetSymbol);
       strategyRates.push([
+        optimalUtilizationRate,
         baseVariableBorrowRate,
         variableRateSlope1,
         variableRateSlope2,

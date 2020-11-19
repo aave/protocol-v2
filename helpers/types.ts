@@ -263,6 +263,7 @@ export enum TokenContractId {
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {}
 
 export interface IReserveBorrowParams {
+  optimalUtilizationRate: string;
   baseVariableBorrowRate: string;
   variableRateSlope1: string;
   variableRateSlope2: string;
