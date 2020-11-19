@@ -5,53 +5,55 @@ import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingRateOracle} from '../interfaces/ILendingRateOracle.sol';
 
 /**
  * @title DefaultReserveInterestRateStrategy contract
- * @notice implements the calculation of the interest rates depending on the reserve parameters.
- * @dev if there is need to update the calculation of the interest rates for a specific reserve,
- * a new version of this contract will be deployed.
+ * @notice Implements the calculation of the interest rates depending on the reserve state
+ * @dev The model of interest rate is based on 2 slopes, one before the `OPTIMAL_UTILIZATION_RATE`
+ * point of utilization and another from that one to 100%
+ * - An instance of this same contract, can't be used across different Aave markets, due to the caching
+ *   of the LendingPoolAddressesProvider
  * @author Aave
  **/
 contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   using WadRayMath for uint256;
   using SafeMath for uint256;
   using PercentageMath for uint256;
+
   /**
-   * @dev this constant represents the utilization rate at which the pool aims to obtain most competitive borrow rates
-   * expressed in ray
+   * @dev this constant represents the utilization rate at which the pool aims to obtain most competitive borrow rates.
+   * Expressed in ray
    **/
   uint256 public constant OPTIMAL_UTILIZATION_RATE = 0.8 * 1e27;
 
   /**
-   * @dev this constant represents the excess utilization rate above the optimal. It's always equal to
-   * 1-optimal utilization rate. Added as a constant here for gas optimizations
-   * expressed in ray
+   * @dev This constant represents the excess utilization rate above the optimal. It's always equal to
+   * 1-optimal utilization rate. Added as a constant here for gas optimizations.
+   * Expressed in ray
    **/
-
   uint256 public constant EXCESS_UTILIZATION_RATE = 0.2 * 1e27;
 
-  LendingPoolAddressesProvider public immutable addressesProvider;
+  ILendingPoolAddressesProvider public immutable addressesProvider;
 
-  //base variable borrow rate when Utilization rate = 0. Expressed in ray
+  // Base variable borrow rate when Utilization rate = 0. Expressed in ray
   uint256 internal immutable _baseVariableBorrowRate;
 
-  //slope of the variable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
+  // Slope of the variable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _variableRateSlope1;
 
-  //slope of the variable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
+  // Slope of the variable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _variableRateSlope2;
 
-  //slope of the stable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
+  // Slope of the stable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _stableRateSlope1;
 
-  //slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
+  // Slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _stableRateSlope2;
 
   constructor(
-    LendingPoolAddressesProvider provider,
+    ILendingPoolAddressesProvider provider,
     uint256 baseVariableBorrowRate,
     uint256 variableRateSlope1,
     uint256 variableRateSlope2,
@@ -65,10 +67,6 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     _stableRateSlope1 = stableRateSlope1;
     _stableRateSlope2 = stableRateSlope2;
   }
-
-  /**
-   * @dev accessors
-   */
 
   function variableRateSlope1() external view returns (uint256) {
     return _variableRateSlope1;
@@ -103,16 +101,14 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   }
 
   /**
-   * @dev calculates the interest rates depending on the available liquidity and the total borrowed.
-   * @param reserve the address of the reserve
-   * @param availableLiquidity the liquidity available in the reserve
-   * @param totalStableDebt the total borrowed from the reserve a stable rate
-   * @param totalVariableDebt the total borrowed from the reserve at a variable rate
-   * @param averageStableBorrowRate the weighted average of all the stable rate borrows
-   * @param reserveFactor the reserve portion of the interest to redirect to the reserve treasury
-   * @return currentLiquidityRate the liquidity rate
-   * @return currentStableBorrowRate stable borrow rate
-   * @return currentVariableBorrowRate variable borrow rate
+   * @dev Calculates the interest rates depending on the reserve's state and configurations
+   * @param reserve The address of the reserve
+   * @param availableLiquidity The liquidity available in the reserve
+   * @param totalStableDebt The total borrowed from the reserve a stable rate
+   * @param totalVariableDebt The total borrowed from the reserve at a variable rate
+   * @param averageStableBorrowRate The weighted average of all the stable rate loans
+   * @param reserveFactor The reserve portion of the interest that goes to the treasury of the market
+   * @return The liquidity rate, the stable borrow rate and the variable borrow rate
    **/
   function calculateInterestRates(
     address reserve,
@@ -184,12 +180,12 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   }
 
   /**
-   * @dev calculates the overall borrow rate as the weighted average between the total variable borrows and total stable borrows.
-   * @param totalStableDebt the total borrowed from the reserve a stable rate
-   * @param totalVariableDebt the total borrowed from the reserve at a variable rate
-   * @param currentVariableBorrowRate the current variable borrow rate
-   * @param currentAverageStableBorrowRate the weighted average of all the stable rate borrows
-   * @return the weighted averaged borrow rate
+   * @dev Calculates the overall borrow rate as the weighted average between the total variable borrows and total stable borrows
+   * @param totalStableDebt The total borrowed from the reserve a stable rate
+   * @param totalVariableDebt The total borrowed from the reserve at a variable rate
+   * @param currentVariableBorrowRate The current variable borrow rate of the reserve
+   * @param currentAverageStableBorrowRate The current weighted average of all the stable rate loans
+   * @return The weighted averaged borrow rate
    **/
   function _getOverallBorrowRate(
     uint256 totalStableDebt,
