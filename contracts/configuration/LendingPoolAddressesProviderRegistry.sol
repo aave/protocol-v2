@@ -9,31 +9,19 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolAddressesProviderRegistry contract
- * @notice contains the list of active addresses providers
+ * @dev Main registry of LendingPoolAddressesProvider of multiple Aave protocol's markets
+ * - Used for indexing purposes of Aave protocol's markets
+ * - The id assigned to a LendingPoolAddressesProvider refers to the market it is connected with,
+ *   for example with `0` for the Aave main market and `1` for the next created
  * @author Aave
  **/
-
 contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesProviderRegistry {
   mapping(address => uint256) private _addressesProviders;
   address[] private _addressesProvidersList;
 
   /**
-   * @dev returns if an addressesProvider is registered or not
-   * @param provider the addresses provider
-   * @return The id of the addresses provider or 0 if the addresses provider not registered
-   **/
-  function isAddressesProviderRegistered(address provider)
-    external
-    override
-    view
-    returns (uint256)
-  {
-    return _addressesProviders[provider];
-  }
-
-  /**
-   * @dev returns the list of active addressesProviders
-   * @return the list of addressesProviders, potentially containing address(0) elements
+   * @dev Returns the list of registered addresses provider
+   * @return The list of addresses provider, potentially containing address(0) elements
    **/
   function getAddressesProvidersList() external override view returns (address[] memory) {
     address[] memory addressesProvidersList = _addressesProvidersList;
@@ -52,8 +40,9 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   }
 
   /**
-   * @dev adds a lending pool to the list of registered lending pools
-   * @param provider the pool address to be registered
+   * @dev Registers an addresses provider
+   * @param provider The address of the new LendingPoolAddressesProvider
+   * @param id The id for the new LendingPoolAddressesProvider, referring to the market it belongs to
    **/
   function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
     require(id != 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);
@@ -64,8 +53,8 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   }
 
   /**
-   * @dev removes a lending pool from the list of registered lending pools
-   * @param provider the pool address to be unregistered
+   * @dev Removes a LendingPoolAddressesProvider from the list of registered addresses provider
+   * @param provider The LendingPoolAddressesProvider address
    **/
   function unregisterAddressesProvider(address provider) external override onlyOwner {
     require(_addressesProviders[provider] > 0, Errors.LPAPR_PROVIDER_NOT_REGISTERED);
@@ -74,9 +63,18 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   }
 
   /**
-   * @dev adds to the list of the addresses providers, if it wasn't already added before
-   * @param provider the pool address to be added
-   **/
+   * @dev Returns the id on a registered LendingPoolAddressesProvider
+   * @return The id or 0 if the LendingPoolAddressesProvider is not registered
+   */
+  function getAddressesProviderIdByAddress(address addressesProvider)
+    external
+    override
+    view
+    returns (uint256)
+  {
+    return _addressesProviders[addressesProvider];
+  }
+
   function _addToAddressesProvidersList(address provider) internal {
     uint256 providersCount = _addressesProvidersList.length;
 
@@ -87,18 +85,5 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
     }
 
     _addressesProvidersList.push(provider);
-  }
-
-  /**
-   * @dev Returns the id on an `addressesProvider` or address(0) if not registered
-   * @return The id or 0 if the addresses provider is not registered
-   */
-  function getAddressesProviderIdByAddress(address addressesProvider)
-    external
-    override
-    view
-    returns (uint256)
-  {
-    return _addressesProviders[addressesProvider];
   }
 }

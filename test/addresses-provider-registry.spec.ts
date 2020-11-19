@@ -44,8 +44,7 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   it('Removes the mock addresses provider', async () => {
     const {users, registry, addressesProvider} = testEnv;
 
-    //checking the isAddressesProviderRegistered function
-    const id = await registry.isAddressesProviderRegistered(users[1].address);
+    const id = await registry.getAddressesProviderIdByAddress(users[1].address);
 
     expect(id).to.be.equal('2', 'Invalid isRegistered return value');
 
@@ -88,7 +87,7 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
 
     const providers = await registry.getAddressesProvidersList();
 
-    const id = await registry.isAddressesProviderRegistered(addressesProvider.address);
+    const id = await registry.getAddressesProviderIdByAddress(addressesProvider.address);
 
     expect(providers.length).to.be.equal(2, 'Invalid length of the addresses providers list');
 

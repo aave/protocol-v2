@@ -2,10 +2,12 @@
 pragma solidity ^0.6.8;
 
 /**
-@title ILendingPoolAddressesProvider interface
-@notice provides the interface to fetch the Aave protocol address
- */
-
+ * @title LendingPoolAddressesProvider contract
+ * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
+ * - Acting also as factory of proxies and admin of those, so with right to change its implementations
+ * - Owned by the Aave Governance
+ * @author Aave
+ **/
 interface ILendingPoolAddressesProvider {
   event LendingPoolUpdated(address indexed newAddress);
   event ConfigurationAdminUpdated(address indexed newAddress);
@@ -18,15 +20,9 @@ interface ILendingPoolAddressesProvider {
   event ProxyCreated(bytes32 id, address indexed newAddress);
   event AddressSet(bytes32 id, address indexed newAddress, bool hasProxy);
 
-  function setAddress(
-    bytes32 id,
-    address newAddress
-  ) external;
+  function setAddress(bytes32 id, address newAddress) external;
 
-  function setAddressAsProxy(
-    bytes32 id,
-    address impl
-  ) external;
+  function setAddressAsProxy(bytes32 id, address impl) external;
 
   function getAddress(bytes32 id) external view returns (address);
 
