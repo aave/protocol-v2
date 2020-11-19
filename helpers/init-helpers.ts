@@ -8,17 +8,26 @@ import {
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumberish } from 'ethers';
+import {
+  deployDefaultReserveInterestRateStrategy,
+  deployDelegationAwareAToken,
+  deployStableDebtToken,
+  deployVariableDebtToken,
+} from './contracts-deployments';
+import { ZERO_ADDRESS } from './constants';
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
   admin: tEthereumAddress,
-  incentivesController: tEthereumAddress
+  incentivesController: tEthereumAddress,
+  verify: boolean
 ) => {
   const stableAndVariableDeployer = await getStableAndVariableTokensHelper();
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
 
   const addressProvider = await getLendingPoolAddressesProvider();
+  const poolAddress = await addressProvider.getLendingPool();
 
   // Set aTokenAndRatesDeployer as temporal admin
   await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
@@ -39,6 +48,7 @@ export const initReservesByHelper = async (
   let deployedRates: string[] = [];
   let reserveTokens: string[] = [];
   let reserveInitDecimals: string[] = [];
+  let reserveSymbols: string[] = [];
 
   console.log(
     `- Token deployments in ${reservesChunks.length * 2} txs instead of ${
@@ -59,6 +69,10 @@ export const initReservesByHelper = async (
     const reservesDecimals: string[] = [];
 
     for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
+      // Skip UNI due is aDelegatedToken
+      if (assetSymbol === 'UNI') {
+        continue;
+      }
       const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
         (value) => value === assetSymbol
       );
@@ -126,6 +140,62 @@ export const initReservesByHelper = async (
     deployedRates = [...deployedRates, ...strategies];
     reserveInitDecimals = [...reserveInitDecimals, ...reservesDecimals];
     reserveTokens = [...reserveTokens, ...tokens];
+    reserveSymbols = [...reserveSymbols, ...symbols];
+  }
+
+  // Deploy UNI token due is delegated aToken
+  if (tokenAddresses.UNI) {
+    console.log('  - Deploy UNI delegated aToken, debts tokens, and strategy');
+    const {
+      baseVariableBorrowRate,
+      variableRateSlope1,
+      variableRateSlope2,
+      stableRateSlope1,
+      stableRateSlope2,
+    } = reservesParams.UNI;
+    const aTokenUNI = await deployDelegationAwareAToken(
+      [poolAddress, tokenAddresses.UNI, 'Aave interest bearing ', 'aUNI', ZERO_ADDRESS],
+      verify
+    );
+    const stableDebtUNI = await deployStableDebtToken(
+      [
+        poolAddress,
+        tokenAddresses.UNI,
+        'Aave stable debt bearing UNI',
+        'stableDebtUNI',
+        ZERO_ADDRESS,
+      ],
+      verify
+    );
+    const variableDebtUNI = await deployVariableDebtToken(
+      [
+        poolAddress,
+        tokenAddresses.UNI,
+        'Aave variable debt bearing UNI',
+        'variableDebtUNI',
+        ZERO_ADDRESS,
+      ],
+      verify
+    );
+    const ratesUNI = await deployDefaultReserveInterestRateStrategy(
+      [
+        tokenAddresses.UNI,
+        baseVariableBorrowRate,
+        variableRateSlope1,
+        variableRateSlope2,
+        stableRateSlope1,
+        stableRateSlope2,
+      ],
+      verify
+    );
+
+    deployedStableTokens.push(stableDebtUNI.address);
+    deployedVariableTokens.push(variableDebtUNI.address);
+    deployedATokens.push(aTokenUNI.address);
+    deployedRates.push(ratesUNI.address);
+    reserveInitDecimals.push(reservesParams.UNI.reserveDecimals);
+    reserveTokens.push(tokenAddresses.UNI);
+    reserveSymbols.push('UNI');
   }
 
   // Deploy init reserves per chunks
@@ -134,7 +204,7 @@ export const initReservesByHelper = async (
   const chunkedAtokens = chunk(deployedATokens, initChunks);
   const chunkedRates = chunk(deployedRates, initChunks);
   const chunkedDecimals = chunk(reserveInitDecimals, initChunks);
-  const chunkedSymbols = chunk(Object.keys(tokenAddresses), initChunks);
+  const chunkedSymbols = chunk(reserveSymbols, initChunks);
 
   console.log(`- Reserves initialization in ${chunkedStableTokens.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedDecimals.length; chunkIndex++) {
