@@ -154,7 +154,7 @@ export const initReservesByHelper = async (
       stableRateSlope2,
     } = reservesParams.UNI;
     const aTokenUNI = await deployDelegationAwareAToken(
-      [poolAddress, tokenAddresses.UNI, 'Aave interest bearing ', 'aUNI', ZERO_ADDRESS],
+      [poolAddress, tokenAddresses.UNI, 'Aave interest bearing UNI', 'aUNI', ZERO_ADDRESS],
       verify
     );
     const stableDebtUNI = await deployStableDebtToken(
