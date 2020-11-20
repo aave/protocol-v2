@@ -1,9 +1,8 @@
 stages:
-  - test
-  - deploy-mainnet-fork
+  - checks
 
 test:
-  stage: test
+  stage: checks
   tags:
     - aave-build-runner
   before_script:
@@ -13,14 +12,15 @@ test:
   after_script:
     - docker-compose -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -f docker-compose.test.yml down
+
 deploy-mainnet-fork:
-  stage: deploy-mainnet-fork
+  stage: checks
   tags:
     - aave-build-runner
   before_script:
     - docker-compose build
   script:
-    - docker-compose run contracts-env npm aave:main:fork
+    - docker-compose run contracts-env npm aave:fork:main
   after_script:
     - docker-compose -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -f docker-compose.test.yml down
