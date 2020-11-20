@@ -18,9 +18,9 @@ deploy-mainnet-fork:
   tags:
     - aave-build-runner
   before_script:
-    - docker-compose build
+    - docker-compose -f docker-compose.test.yml build
   script:
-    - docker-compose run contracts-env npm aave:fork:main
+    - docker-compose -f docker-compose.test.yml run contracts-env npm aave:fork:main
   after_script:
     - docker-compose -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -f docker-compose.test.yml down
