@@ -16,18 +16,10 @@ import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
  **/
 contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
-  /*
-  * STANDARD: Use the provided amounts parameters
-  * ALL_DEBT: Repay the whole debt balance
-  * ALL_COLLATERAL: Use all the collateral balance to repay the max amount of debt
-  */
-  enum RepayMode {STANDARD, ALL_DEBT, ALL_COLLATERAL}
-
   struct RepayParams {
-    address assetToSwapTo;
-    uint256 repayAmount;
+    address collateralAsset;
+    uint256 collateralAmount;
     uint256 rateMode;
-    RepayMode repayMode;
     PermitSignature permitSignature;
   }
 
@@ -40,17 +32,17 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   {}
 
   /**
-   * @dev Swaps the received reserve amount into the asset specified in the params. The received funds from the swap are
-   * then used to repay a debt on the protocol on behalf of the user.
-   * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
-   * repay the flash loan.
+   * @dev Uses the received funds from the flash loan to repay a debt on the protocol on behalf of the user. Then pulls
+   * the collateral from the user and swaps it to repay the flash loan.
+   * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset, swap it
+   * and repay the flash loan.
    * @param assets Address to be swapped
    * @param amounts Amount of the reserve to be swapped
    * @param premiums Fee of the flash loan
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
-   *   address Address of the reserve to be swapped to and repay
-   *   uint256 repayAmount Amount of debt to be repaid
+   *   address collateralAsset Address of the reserve to be swapped
+   *   uint256 collateralAmount Amount of reserve to be swapped
    *   uint256 rateMode Rate modes of the debt to be repaid
    *   RepayMode repayMode Enum indicating the repaid mode
    *   uint256 permitAmount Amount for the permit signature
@@ -71,13 +63,12 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     RepayParams memory decodedParams = _decodeParams(params);
 
       _swapAndRepay(
+        decodedParams.collateralAsset,
         assets[0],
-        decodedParams.assetToSwapTo,
         amounts[0],
-        decodedParams.repayAmount,
+        decodedParams.collateralAmount,
         decodedParams.rateMode,
         initiator,
-        decodedParams.repayMode,
         premiums[0],
         decodedParams.permitSignature
       );
@@ -86,12 +77,12 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   }
 
   /**
-   * @dev Perform the swap and the repay of the debt
+   * @dev Perform the repay of the debt, pulls the initiator collateral and swaps to repay the flash loan
    *
    * @param assetFrom Address of token to be swapped
-   * @param assetTo Address of token to be received
-   * @param amount Amount of the reserve to be swapped
-   * @param repayAmount Amount of the debt to be repaid
+   * @param assetTo Address of debt token to be received from the swap
+   * @param amount Amount of the debt to be repaid
+   * @param collateralAmount Amount of the reserve to be swapped
    * @param rateMode Rate mode of the debt to be repaid
    * @param initiator Address of the user
    * @param premium Fee of the flash loan
@@ -101,61 +92,39 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     address assetFrom,
     address assetTo,
     uint256 amount,
-    uint256 repayAmount,
+    uint256 collateralAmount,
     uint256 rateMode,
     address initiator,
-    RepayMode repayMode,
     uint256 premium,
     PermitSignature memory permitSignature
   ) internal {
-    uint256 debtRepayAmount;
-    uint256 amountSwapped;
-
-    ReserveLogic.ReserveData memory reserveData = _getReserveData(assetFrom);
-
-    if (repayMode == RepayMode.ALL_COLLATERAL) {
-      uint256 aTokenInitiatorBalance = IERC20(reserveData.aTokenAddress).balanceOf(initiator);
-      amountSwapped = aTokenInitiatorBalance.sub(premium);
-
-      debtRepayAmount = _swapExactTokensForTokens(assetFrom, assetTo, amountSwapped, repayAmount);
-    } else {
-      if (repayMode == RepayMode.ALL_DEBT) {
-        ReserveLogic.ReserveData memory reserveDebtData = _getReserveData(assetTo);
-
-        address debtToken = ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE
-          ? reserveDebtData.stableDebtTokenAddress
-          : reserveDebtData.variableDebtTokenAddress;
-
-        debtRepayAmount = IERC20(debtToken).balanceOf(initiator);
-      } else {
-        debtRepayAmount = repayAmount;
-      }
-
-      amountSwapped = _swapTokensForExactTokens(assetFrom, assetTo, amount, debtRepayAmount);
-    }
-
     // Repay debt
-    IERC20(assetTo).approve(address(POOL), debtRepayAmount);
-    POOL.repay(assetTo, debtRepayAmount, rateMode, initiator);
-    // In the case the repay amount provided exceeded the actual debt, send the leftovers to the user
-    _sendRepayLeftovers(assetTo, initiator);
+    IERC20(assetTo).approve(address(POOL), amount);
+    POOL.repay(assetTo, amount, rateMode, initiator);
+    uint256 debtRepayLeftovers = IERC20(assetTo).balanceOf(address(this));
 
     uint256 flashLoanDebt = amount.add(premium);
-    uint256 amountToPull = amountSwapped.add(premium);
+    uint256 neededForFlashLoanDebt = flashLoanDebt.sub(debtRepayLeftovers);
 
-    _pullAToken(assetFrom, reserveData.aTokenAddress, initiator, amountToPull, permitSignature);
+    // Pull aTokens from user
+    ReserveLogic.ReserveData memory reserveData = _getReserveData(assetFrom);
+    _pullAToken(assetFrom, reserveData.aTokenAddress, initiator, collateralAmount, permitSignature);
+
+    uint256 amountSwapped = _swapTokensForExactTokens(assetFrom, assetTo, collateralAmount, neededForFlashLoanDebt);
+
+    // Send collateral leftovers from swap to the user
+    _sendLeftovers(assetFrom, initiator);
 
     // Repay flashloan
-    IERC20(assetFrom).approve(address(POOL), flashLoanDebt);
+    IERC20(assetTo).approve(address(POOL), flashLoanDebt);
   }
 
   /**
    * @dev Decodes debt information encoded in flashloan params
    * @param params Additional variadic field to include extra params. Expected parameters:
-   *   address Address of the reserve to be swapped to and repay
-   *   uint256 repayAmount Amount of debt to be repaid
+   *   address collateralAsset Address of the reserve to be swapped
+   *   uint256 collateralAmount Amount of reserve to be swapped
    *   uint256 rateMode Rate modes of the debt to be repaid
-   *   RepayMode repayMode Enum indicating the repaid mode
    *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
    *   uint8 v V param for the permit signature
@@ -165,22 +134,20 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    */
   function _decodeParams(bytes memory params) internal pure returns (RepayParams memory) {
     (
-      address assetToSwapTo,
-      uint256 repayAmount,
+      address collateralAsset,
+      uint256 collateralAmount,
       uint256 rateMode,
-      RepayMode repayMode,
       uint256 permitAmount,
       uint256 deadline,
       uint8 v,
       bytes32 r,
       bytes32 s
-    ) = abi.decode(params, (address, uint256, uint256, RepayMode, uint256, uint256, uint8, bytes32, bytes32));
+    ) = abi.decode(params, (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32));
 
     return RepayParams(
-      assetToSwapTo,
-      repayAmount,
+      collateralAsset,
+      collateralAmount,
       rateMode,
-      repayMode,
       PermitSignature(
         permitAmount,
         deadline,
@@ -196,7 +163,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   * @param asset address of the asset
   * @param user address
   */
-  function _sendRepayLeftovers(address asset, address user) internal {
+  function _sendLeftovers(address asset, address user) internal {
     uint256 assetLeftover = IERC20(asset).balanceOf(address(this));
 
     if (assetLeftover > 0) {

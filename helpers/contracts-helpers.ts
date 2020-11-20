@@ -259,10 +259,9 @@ export const buildLiquiditySwapParams = (
 };
 
 export const buildRepayAdapterParams = (
-  assetToSwapTo: tEthereumAddress,
-  repayAmount: BigNumberish,
+  collateralAsset: tEthereumAddress,
+  collateralAmount: BigNumberish,
   rateMode: BigNumberish,
-  repayMode: BigNumberish,
   permitAmount: BigNumberish,
   deadline: BigNumberish,
   v: BigNumberish,
@@ -276,11 +275,10 @@ export const buildRepayAdapterParams = (
       'uint256',
       'uint256',
       'uint256',
-      'uint256',
       'uint8',
       'bytes32',
       'bytes32',
     ],
-    [assetToSwapTo, repayAmount, rateMode, repayMode, permitAmount, deadline, v, r, s]
+    [collateralAsset, collateralAmount, rateMode, permitAmount, deadline, v, r, s]
   );
 };
