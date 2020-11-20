@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.12;
+pragma solidity 0.6.12;
 
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
