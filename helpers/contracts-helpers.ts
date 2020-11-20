@@ -262,7 +262,7 @@ export const buildRepayAdapterParams = (
   assetToSwapTo: tEthereumAddress,
   repayAmount: BigNumberish,
   rateMode: BigNumberish,
-  repayAllDebt: BigNumberish,
+  repayMode: BigNumberish,
   permitAmount: BigNumberish,
   deadline: BigNumberish,
   v: BigNumberish,
@@ -270,7 +270,17 @@ export const buildRepayAdapterParams = (
   s: string | Buffer
 ) => {
   return ethers.utils.defaultAbiCoder.encode(
-    ['address', 'uint256', 'uint256', 'bool', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32'],
-    [assetToSwapTo, repayAmount, rateMode, repayAllDebt, permitAmount, deadline, v, r, s]
+    [
+      'address',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint8',
+      'bytes32',
+      'bytes32',
+    ],
+    [assetToSwapTo, repayAmount, rateMode, repayMode, permitAmount, deadline, v, r, s]
   );
 };
