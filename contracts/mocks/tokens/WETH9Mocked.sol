@@ -1,4 +1,4 @@
-pragma solidity >=0.4.22 <=0.6.8;
+pragma solidity >=0.4.22 <=0.6.12;
 
 import {WETH9} from '../dependencies/weth/WETH9.sol';
 

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity ^0.6.12;
 
 import {DebtTokenBase} from '../../tokenization/base/DebtTokenBase.sol';
 import {ReserveLogic} from '../logic/ReserveLogic.sol';
