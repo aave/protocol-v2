@@ -226,7 +226,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);
 
-  await deployWalletBalancerProvider(addressesProvider.address);
+  await deployWalletBalancerProvider();
 
   await deployWETHGateway([mockTokens.WETH.address, lendingPoolAddress]);
 
