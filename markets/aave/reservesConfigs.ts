@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
-import {oneRay} from '../../helpers/constants';
-import {IReserveParams} from '../../helpers/types';
+import { oneRay } from '../../helpers/constants';
+import { eContractid, IReserveParams } from '../../helpers/types';
 
 export const strategyBase: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
@@ -15,6 +15,7 @@ export const strategyBase: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const stablecoinStrategyBase: IReserveParams = {
@@ -30,6 +31,7 @@ export const stablecoinStrategyBase: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const stablecoinStrategyCentralized: IReserveParams = {
@@ -45,6 +47,7 @@ export const stablecoinStrategyCentralized: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategyGovernanceTokens: IReserveParams = {
@@ -132,6 +135,7 @@ export const stablecoinStrategySUSD: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategySNX: IReserveParams = {
@@ -159,6 +163,7 @@ export const stablecoinStrategyTUSD: IReserveParams = {
 export const strategyUNI: IReserveParams = {
   ...strategyGovernanceTokens,
   stableBorrowRateEnabled: false,
+  aTokenImpl: eContractid.DelegationAwareAToken,
 };
 
 export const stablecoinStrategyUSDC: IReserveParams = {
@@ -190,6 +195,7 @@ export const strategyWBTC: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '8',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategyWETH: IReserveParams = {
@@ -205,6 +211,7 @@ export const strategyWETH: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategyYFI: IReserveParams = {

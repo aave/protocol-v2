@@ -288,7 +288,7 @@ export const deployMintableDelegationERC20 = async (
     verify
   );
 export const deployDefaultReserveInterestRateStrategy = async (
-  args: [tEthereumAddress, string, string, string, string, string],
+  args: [tEthereumAddress, string, string, string, string, string, string],
   verify: boolean
 ) =>
   withSaveAndVerify(

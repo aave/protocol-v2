@@ -1,4 +1,4 @@
-import { iMultiPoolsAssets, IReserveParams, tEthereumAddress } from './types';
+import { eContractid, iMultiPoolsAssets, IReserveParams, tEthereumAddress } from './types';
 import { AaveProtocolDataProvider } from '../types/AaveProtocolDataProvider';
 import { chunk, waitForTx } from './misc-utils';
 import {
@@ -11,10 +11,22 @@ import { BigNumberish } from 'ethers';
 import {
   deployDefaultReserveInterestRateStrategy,
   deployDelegationAwareAToken,
+  deployGenericAToken,
   deployStableDebtToken,
   deployVariableDebtToken,
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
+
+const chooseATokenDeployment = (id: eContractid) => {
+  switch (id) {
+    case eContractid.AToken:
+      return deployGenericAToken;
+    case eContractid.DelegationAwareAToken:
+      return deployDelegationAwareAToken;
+    default:
+      throw Error(`Missing aToken deployment script for: ${id}`);
+  }
+};
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -36,9 +48,11 @@ export const initReservesByHelper = async (
   const tokensChunks = 4;
   const initChunks = 6;
 
-  // Deploy tokens and rates in chunks
+  // Deploy tokens and rates that uses common aToken in chunks
   const reservesChunks = chunk(
-    Object.entries(reservesParams) as [string, IReserveParams][],
+    Object.entries(reservesParams).filter(
+      ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
+    ) as [string, IReserveParams][],
     tokensChunks
   );
   // Initialize variables for future reserves initialization
@@ -70,10 +84,6 @@ export const initReservesByHelper = async (
     const reservesDecimals: string[] = [];
 
     for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
-      // Skip UNI due is aDelegatedToken
-      if (assetSymbol === 'UNI') {
-        continue;
-      }
       const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
         (value) => value === assetSymbol
       );
@@ -146,43 +156,56 @@ export const initReservesByHelper = async (
     reserveSymbols = [...reserveSymbols, ...symbols];
   }
 
-  // Deploy UNI token due is delegated aToken
-  if (tokenAddresses.UNI) {
-    console.log('  - Deploy UNI delegated aToken, debts tokens, and strategy');
+  // Deploy delegated aware reserves tokens
+  const delegatedAwareReserves = Object.entries(reservesParams).filter(
+    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.DelegationAwareAToken
+  ) as [string, IReserveParams][];
+
+  for (let [symbol, params] of delegatedAwareReserves) {
+    console.log(`  - Deploy ${symbol} delegation await aToken, debts tokens, and strategy`);
     const {
+      optimalUtilizationRate,
       baseVariableBorrowRate,
       variableRateSlope1,
       variableRateSlope2,
       stableRateSlope1,
       stableRateSlope2,
-    } = reservesParams.UNI;
-    const aTokenUNI = await deployDelegationAwareAToken(
-      [poolAddress, tokenAddresses.UNI, 'Aave interest bearing UNI', 'aUNI', ZERO_ADDRESS],
-      verify
-    );
-    const stableDebtUNI = await deployStableDebtToken(
+    } = params;
+    const deployCustomAToken = chooseATokenDeployment(params.aTokenImpl);
+    const aToken = await deployCustomAToken(
       [
         poolAddress,
-        tokenAddresses.UNI,
-        'Aave stable debt bearing UNI',
-        'stableDebtUNI',
+        tokenAddresses[symbol],
+        `Aave interest bearing ${symbol}`,
+        `a${symbol}`,
         ZERO_ADDRESS,
       ],
       verify
     );
-    const variableDebtUNI = await deployVariableDebtToken(
+    const stableDebt = await deployStableDebtToken(
       [
         poolAddress,
-        tokenAddresses.UNI,
-        'Aave variable debt bearing UNI',
-        'variableDebtUNI',
+        tokenAddresses[symbol],
+        `Aave stable debt bearing ${symbol}`,
+        `stableDebt${symbol}`,
         ZERO_ADDRESS,
       ],
       verify
     );
-    const ratesUNI = await deployDefaultReserveInterestRateStrategy(
+    const variableDebt = await deployVariableDebtToken(
       [
-        tokenAddresses.UNI,
+        poolAddress,
+        tokenAddresses[symbol],
+        `Aave variable debt bearing ${symbol}`,
+        `variableDebt${symbol}`,
+        ZERO_ADDRESS,
+      ],
+      verify
+    );
+    const rates = await deployDefaultReserveInterestRateStrategy(
+      [
+        tokenAddresses[symbol],
+        optimalUtilizationRate,
         baseVariableBorrowRate,
         variableRateSlope1,
         variableRateSlope2,
@@ -192,13 +215,13 @@ export const initReservesByHelper = async (
       verify
     );
 
-    deployedStableTokens.push(stableDebtUNI.address);
-    deployedVariableTokens.push(variableDebtUNI.address);
-    deployedATokens.push(aTokenUNI.address);
-    deployedRates.push(ratesUNI.address);
-    reserveInitDecimals.push(reservesParams.UNI.reserveDecimals);
-    reserveTokens.push(tokenAddresses.UNI);
-    reserveSymbols.push('UNI');
+    deployedStableTokens.push(stableDebt.address);
+    deployedVariableTokens.push(variableDebt.address);
+    deployedATokens.push(aToken.address);
+    deployedRates.push(rates.address);
+    reserveInitDecimals.push(params.reserveDecimals);
+    reserveTokens.push(tokenAddresses[symbol]);
+    reserveSymbols.push(symbol);
   }
 
   // Deploy init reserves per chunks
