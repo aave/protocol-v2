@@ -64,6 +64,7 @@ export const initReservesByHelper = async (
       BigNumberish,
       BigNumberish,
       BigNumberish,
+      BigNumberish,
       BigNumberish
     ][] = [];
     const reservesDecimals: string[] = [];
@@ -86,6 +87,7 @@ export const initReservesByHelper = async (
       const [
         ,
         {
+          optimalUtilizationRate,
           baseVariableBorrowRate,
           variableRateSlope1,
           variableRateSlope2,
@@ -97,6 +99,7 @@ export const initReservesByHelper = async (
       tokens.push(tokenAddress);
       symbols.push(assetSymbol);
       strategyRates.push([
+        optimalUtilizationRate,
         baseVariableBorrowRate,
         variableRateSlope1,
         variableRateSlope2,
