@@ -33,12 +33,8 @@ export const CommonsConfig: ICommonConfiguration = {
   ConfigName: 'Commons',
   ProviderId: 0,
   ProtocolGlobalParams: {
-    OptimalUtilizationRate: new BigNumber(0.8).times(RAY),
-    ExcessUtilizationRate: new BigNumber(0.2).times(RAY),
-    ApprovalAmountLendingPoolCore: '1000000000000000000000000000',
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '5848466240000000',
-    EthereumAddress: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
     UsdAddress: '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96',
     NilAddress: '0x0000000000000000000000000000000000000000',
     OneAddress: '0x0000000000000000000000000000000000000001',

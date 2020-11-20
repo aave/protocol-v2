@@ -10,7 +10,6 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
-import 'hardhat/console.sol';
 
 contract AaveProtocolDataProvider {
   using ReserveConfiguration for ReserveConfiguration.Map;

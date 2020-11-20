@@ -1,11 +1,7 @@
 import {TestEnv, makeSuite} from './helpers/make-suite';
-import {RAY} from '../helpers/constants';
+import {APPROVAL_AMOUNT_LENDING_POOL, RAY} from '../helpers/constants';
 import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
 import {ProtocolErrors} from '../helpers/types';
-import {CommonsConfig} from '../markets/aave/commons';
-
-const APPROVAL_AMOUNT_LENDING_POOL =
-  CommonsConfig.ProtocolGlobalParams.ApprovalAmountLendingPoolCore;
 
 const {expect} = require('chai');
 
