@@ -2,14 +2,14 @@ pragma solidity ^0.6.8;
 pragma experimental ABIEncoderV2;
 
 import {
-  ReserveConfiguration
+ReserveConfiguration
 } from '../../contracts/libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../../contracts/libraries/configuration/UserConfiguration.sol';
 import {ReserveLogic} from '../../contracts/libraries/logic/ReserveLogic.sol';
 import {ILendingPool} from '../../contracts/interfaces/ILendingPool.sol';
 import {LendingPool} from '../../contracts/lendingpool/LendingPool.sol';
 import {
-  ILendingPoolAddressesProvider
+ILendingPoolAddressesProvider
 } from '../../contracts/interfaces/ILendingPoolAddressesProvider.sol';
 
 /*
@@ -82,35 +82,35 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   }
 
   function getReserveData(address asset)
-    external
-    override
-    view
-    returns (ReserveLogic.ReserveData memory)
+  external
+  override
+  view
+  returns (ReserveLogic.ReserveData memory)
   {
     return originalPool.getReserveData(asset);
   }
 
   function getUserConfiguration(address user)
-    external
-    override
-    view
-    returns (UserConfiguration.Map memory)
+  external
+  override
+  view
+  returns (UserConfiguration.Map memory)
   {
     return originalPool.getUserConfiguration(user);
   }
 
   function getUserAccountData(address user)
-    external
-    override
-    view
-    returns (
-      uint256 totalCollateralETH,
-      uint256 totalBorrowsETH,
-      uint256 availableBorrowsETH,
-      uint256 currentLiquidationThreshold,
-      uint256 ltv,
-      uint256 healthFactor
-    )
+  external
+  override
+  view
+  returns (
+    uint256 totalCollateralETH,
+    uint256 totalBorrowsETH,
+    uint256 availableBorrowsETH,
+    uint256 currentLiquidationThreshold,
+    uint256 ltv,
+    uint256 healthFactor
+  )
   {
     return originalPool.getUserAccountData(user);
   }
@@ -132,8 +132,8 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   }
 
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
-    external
-    override
+  external
+  override
   {
     originalPool.setReserveInterestRateStrategyAddress(reserve, rateStrategyAddress);
   }
@@ -143,10 +143,10 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   }
 
   function getConfiguration(address reserve)
-    external
-    override
-    view
-    returns (ReserveConfiguration.Map memory)
+  external
+  override
+  view
+  returns (ReserveConfiguration.Map memory)
   {
     return originalPool.getConfiguration(reserve);
   }
@@ -161,10 +161,10 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   mapping(uint256 => uint256) private reserveNormalizedVariableDebt;
 
   function getReserveNormalizedVariableDebt(address asset)
-    external
-    override
-    view
-    returns (uint256)
+  external
+  override
+  view
+  returns (uint256)
   {
     require(reserveNormalizedVariableDebt[block.timestamp] == 1e27);
     return reserveNormalizedVariableDebt[block.timestamp];
