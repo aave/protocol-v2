@@ -1,1 +1,1 @@
-certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --solc solc6.8 --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond --cache StableDebtToken --staging master
+certoraRun.py specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --solc solc6.12 --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond,-b=4 --cache StableDebtToken --staging
