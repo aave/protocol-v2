@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
@@ -14,6 +14,9 @@ import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.
 contract AaveProtocolDataProvider {
   using ReserveConfiguration for ReserveConfiguration.Map;
   using UserConfiguration for UserConfiguration.Map;
+
+  address constant MKR = 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2;
+  address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   struct TokenData {
     string symbol;
@@ -31,10 +34,16 @@ contract AaveProtocolDataProvider {
     address[] memory reserves = pool.getReservesList();
     TokenData[] memory reservesTokens = new TokenData[](reserves.length);
     for (uint256 i = 0; i < reserves.length; i++) {
+      if (reserves[i] == MKR) {
+        reservesTokens[i] = TokenData({symbol: 'MKR', tokenAddress: reserves[i]});
+        continue;
+      }
+      if (reserves[i] == ETH) {
+        reservesTokens[i] = TokenData({symbol: 'ETH', tokenAddress: reserves[i]});
+        continue;
+      }
       reservesTokens[i] = TokenData({
-        symbol: (reserves[i] == 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)
-          ? 'ETH'
-          : IERC20Detailed(reserves[i]).symbol(),
+        symbol: IERC20Detailed(reserves[i]).symbol(),
         tokenAddress: reserves[i]
       });
     }

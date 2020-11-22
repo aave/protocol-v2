@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -65,7 +65,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
     uint256 previousBalance = super.balanceOf(onBehalfOf);
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.AT_INVALID_MINT_AMOUNT);
+    require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
 
     _mint(onBehalfOf, amountScaled);
 
@@ -86,7 +86,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 index
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.AT_INVALID_BURN_AMOUNT);
+    require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
 
     _burn(user, amountScaled);
 

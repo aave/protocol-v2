@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 
 import {SafeMath} from '../dependencies/openzeppelin/contracts//SafeMath.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts//IERC20.sol';
@@ -72,13 +72,13 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     uint256 actualAmountToLiquidate;
     uint256 liquidationRatio;
     uint256 maxAmountCollateralToLiquidate;
-    ReserveLogic.InterestRateMode borrowRateMode;
     uint256 userStableRate;
     uint256 maxCollateralToLiquidate;
     uint256 principalAmountNeeded;
     uint256 healthFactor;
     IAToken collateralAtoken;
     bool isCollateralEnabled;
+    ReserveLogic.InterestRateMode borrowRateMode;
     address principalAToken;
     uint256 errorCode;
     string errorMsg;
