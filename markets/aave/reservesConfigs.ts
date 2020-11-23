@@ -3,6 +3,7 @@ import {oneRay} from '../../helpers/constants';
 import {IReserveParams} from '../../helpers/types';
 
 export const strategyBase: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
@@ -17,6 +18,7 @@ export const strategyBase: IReserveParams = {
 };
 
 export const stablecoinStrategyBase: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1.5).multipliedBy(oneRay).toFixed(),
@@ -31,6 +33,7 @@ export const stablecoinStrategyBase: IReserveParams = {
 };
 
 export const stablecoinStrategyCentralized: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
@@ -117,6 +120,7 @@ export const strategyREN: IReserveParams = {
 };
 
 export const stablecoinStrategySUSD: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
@@ -174,6 +178,7 @@ export const stablecoinStrategyUSDT: IReserveParams = {
 };
 
 export const strategyWBTC: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(0.5).multipliedBy(oneRay).toFixed(),
@@ -188,6 +193,7 @@ export const strategyWBTC: IReserveParams = {
 };
 
 export const strategyWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),

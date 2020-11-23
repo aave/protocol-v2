@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 
 import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
@@ -26,14 +26,15 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
    * @dev this constant represents the utilization rate at which the pool aims to obtain most competitive borrow rates.
    * Expressed in ray
    **/
-  uint256 public constant OPTIMAL_UTILIZATION_RATE = 0.8 * 1e27;
+  uint256 public immutable OPTIMAL_UTILIZATION_RATE;
 
   /**
    * @dev This constant represents the excess utilization rate above the optimal. It's always equal to
    * 1-optimal utilization rate. Added as a constant here for gas optimizations.
    * Expressed in ray
    **/
-  uint256 public constant EXCESS_UTILIZATION_RATE = 0.2 * 1e27;
+
+  uint256 public immutable EXCESS_UTILIZATION_RATE;
 
   ILendingPoolAddressesProvider public immutable addressesProvider;
 
@@ -54,12 +55,16 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
   constructor(
     ILendingPoolAddressesProvider provider,
+    uint256 optimalUtilizationRate,
     uint256 baseVariableBorrowRate,
     uint256 variableRateSlope1,
     uint256 variableRateSlope2,
     uint256 stableRateSlope1,
     uint256 stableRateSlope2
   ) public {
+
+    OPTIMAL_UTILIZATION_RATE = optimalUtilizationRate;
+    EXCESS_UTILIZATION_RATE = WadRayMath.ray().sub(optimalUtilizationRate);
     addressesProvider = provider;
     _baseVariableBorrowRate = baseVariableBorrowRate;
     _variableRateSlope1 = variableRateSlope1;
