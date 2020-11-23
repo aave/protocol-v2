@@ -19,7 +19,7 @@ interface IScaledBalanceToken {
   function getScaledUserBalanceAndSupply(address user) external view returns (uint256, uint256);
 
   /**
-   * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(debt/index)
    * @return the scaled total supply
    **/
   function scaledTotalSupply() external view returns (uint256);

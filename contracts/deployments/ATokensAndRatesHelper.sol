@@ -108,16 +108,16 @@ contract ATokensAndRatesHelper is Ownable {
     }
   }
 
-  function enableBorrowingOnReserves(address[] calldata tokens, bool[] calldata stableBorrows)
+  function enableBorrowingOnReserves(address[] calldata tokens, bool[] calldata stableBorrowingEnabled)
     external
     onlyOwner
   {
-    require(stableBorrows.length == tokens.length);
+    require(stableBorrowingEnabled.length == tokens.length);
 
     for (uint256 i = 0; i < tokens.length; i++) {
       LendingPoolConfigurator(poolConfigurator).enableBorrowingOnReserve(
         tokens[i],
-        stableBorrows[i]
+        stableBorrowingEnabled[i]
       );
     }
   }

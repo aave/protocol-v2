@@ -97,7 +97,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   }
 
   struct CalcInterestRatesLocalVars {
-    uint256 totalBorrows;
+    uint256 totalDebt;
     uint256 currentVariableBorrowRate;
     uint256 currentStableBorrowRate;
     uint256 currentLiquidityRate;
@@ -133,15 +133,15 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   {
     CalcInterestRatesLocalVars memory vars;
 
-    vars.totalBorrows = totalStableDebt.add(totalVariableDebt);
+    vars.totalDebt = totalStableDebt.add(totalVariableDebt);
     vars.currentVariableBorrowRate = 0;
     vars.currentStableBorrowRate = 0;
     vars.currentLiquidityRate = 0;
 
     uint256 utilizationRate =
-      vars.totalBorrows == 0
+      vars.totalDebt == 0
         ? 0
-        : vars.totalBorrows.rayDiv(availableLiquidity.add(vars.totalBorrows));
+        : vars.totalDebt.rayDiv(availableLiquidity.add(vars.totalDebt));
 
     vars.currentStableBorrowRate = ILendingRateOracle(addressesProvider.getLendingRateOracle())
       .getMarketBorrowRate(reserve);
@@ -184,7 +184,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   }
 
   /**
-   * @dev Calculates the overall borrow rate as the weighted average between the total variable borrows and total stable borrows
+   * @dev Calculates the overall borrow rate as the weighted average between the total variable debt and total stable debt
    * @param totalStableDebt The total borrowed from the reserve a stable rate
    * @param totalVariableDebt The total borrowed from the reserve at a variable rate
    * @param currentVariableBorrowRate The current variable borrow rate of the reserve
@@ -197,16 +197,16 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 currentVariableBorrowRate,
     uint256 currentAverageStableBorrowRate
   ) internal pure returns (uint256) {
-    uint256 totalBorrows = totalStableDebt.add(totalVariableDebt);
+    uint256 totalDebt = totalStableDebt.add(totalVariableDebt);
 
-    if (totalBorrows == 0) return 0;
+    if (totalDebt == 0) return 0;
 
     uint256 weightedVariableRate = totalVariableDebt.wadToRay().rayMul(currentVariableBorrowRate);
 
     uint256 weightedStableRate = totalStableDebt.wadToRay().rayMul(currentAverageStableBorrowRate);
 
     uint256 overallBorrowRate =
-      weightedVariableRate.add(weightedStableRate).rayDiv(totalBorrows.wadToRay());
+      weightedVariableRate.add(weightedStableRate).rayDiv(totalDebt.wadToRay());
 
     return overallBorrowRate;
   }

@@ -234,7 +234,7 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev Returns the scaled total supply of the variable debt token. Represents sum(borrows/index)
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(debt/index)
    * @return the scaled total supply
    **/
   function scaledTotalSupply() public view virtual override returns (uint256) {
