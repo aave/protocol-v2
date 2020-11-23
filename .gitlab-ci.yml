@@ -14,6 +14,8 @@ test:
     - docker-compose -f docker-compose.test.yml down
 
 deploy-mainnet-fork:
+  tags:
+    - aave-build-runner
   stage: checks
   before_script:
     - docker-compose -f docker-compose.test.yml build
