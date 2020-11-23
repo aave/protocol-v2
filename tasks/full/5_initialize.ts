@@ -42,7 +42,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
       }
 
-      await initReservesByHelper(ReservesConfig, reserveAssets, admin, ZERO_ADDRESS);
+      await initReservesByHelper(ReservesConfig, reserveAssets, admin, ZERO_ADDRESS, verify);
       await enableReservesToBorrowByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
       await enableReservesAsCollateralByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 

@@ -50,7 +50,13 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     const admin = await addressesProvider.getPoolAdmin();
 
-    await initReservesByHelper(reservesParams, protoPoolReservesAddresses, admin, ZERO_ADDRESS);
+    await initReservesByHelper(
+      reservesParams,
+      protoPoolReservesAddresses,
+      admin,
+      ZERO_ADDRESS,
+      verify
+    );
     await enableReservesToBorrowByHelper(
       reservesParams,
       protoPoolReservesAddresses,
