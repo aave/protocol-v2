@@ -2,8 +2,8 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {StableDebtToken} from '../tokenization/StableDebtToken.sol';
-import {VariableDebtToken} from '../tokenization/VariableDebtToken.sol';
+import {StableDebtToken} from '../protocol/tokenization/StableDebtToken.sol';
+import {VariableDebtToken} from '../protocol/tokenization/VariableDebtToken.sol';
 import {LendingRateOracle} from '../mocks/oracle/LendingRateOracle.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {StringLib} from './StringLib.sol';

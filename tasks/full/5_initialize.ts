@@ -1,38 +1,41 @@
-import {task} from 'hardhat/config';
-import {getParamPerNetwork} from '../../helpers/contracts-helpers';
+import { task } from 'hardhat/config';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
   deployAaveProtocolDataProvider,
   deployWETHGateway,
 } from '../../helpers/contracts-deployments';
-import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
-import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
-import {waitForTx} from '../../helpers/misc-utils';
+import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
+import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
+import { waitForTx } from '../../helpers/misc-utils';
 import {
   initReservesByHelper,
   enableReservesToBorrowByHelper,
   enableReservesAsCollateralByHelper,
 } from '../../helpers/init-helpers';
-import {exit} from 'process';
-import {getLendingPoolAddressesProvider} from '../../helpers/contracts-getters';
-import {ZERO_ADDRESS} from '../../helpers/constants';
+import { exit } from 'process';
+import {
+  getAaveProtocolDataProvider,
+  getLendingPoolAddressesProvider,
+} from '../../helpers/contracts-getters';
+import { ZERO_ADDRESS } from '../../helpers/constants';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({verify, pool}, localBRE) => {
+  .setAction(async ({ verify, pool }, localBRE) => {
     try {
       await localBRE.run('set-DRE');
       const network = <eEthereumNetwork>localBRE.network.name;
       const poolConfig = loadPoolConfig(pool);
-      const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
+      const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
 
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
-      const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
+      const testHelpers = await getAaveProtocolDataProvider();
 
       const admin = await addressesProvider.getPoolAdmin();
       if (!reserveAssets) {
@@ -48,7 +51,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
       );
 
-      await deployWalletBalancerProvider(addressesProvider.address, verify);
+      await deployWalletBalancerProvider(verify);
 
       const wethAddress = await getWethAddress(poolConfig);
       const lendingPoolAddress = await addressesProvider.getLendingPool();

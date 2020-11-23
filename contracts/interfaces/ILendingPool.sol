@@ -2,9 +2,9 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
+import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
 import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
 
 interface ILendingPool {

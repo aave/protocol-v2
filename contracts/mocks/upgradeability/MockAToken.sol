@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {AToken} from '../../tokenization/AToken.sol';
-import {LendingPool} from '../../lendingpool/LendingPool.sol';
+import {AToken} from '../../protocol/tokenization/AToken.sol';
+import {LendingPool} from '../../protocol/lendingpool/LendingPool.sol';
 
 contract MockAToken is AToken {
   constructor(
@@ -24,7 +24,7 @@ contract MockAToken is AToken {
     )
   {}
 
-  function getRevision() internal override pure returns (uint256) {
+  function getRevision() internal pure override returns (uint256) {
     return 0x2;
   }
 
