@@ -1,4 +1,4 @@
-import {task} from 'hardhat/config';
+import { task } from 'hardhat/config';
 import {
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
@@ -13,22 +13,25 @@ import {
   loadPoolConfig,
 } from '../../helpers/configuration';
 
-import {tEthereumAddress, AavePools, eContractid} from '../../helpers/types';
-import {waitForTx, filterMapBy} from '../../helpers/misc-utils';
+import { tEthereumAddress, AavePools, eContractid } from '../../helpers/types';
+import { waitForTx, filterMapBy } from '../../helpers/misc-utils';
 import {
   enableReservesToBorrowByHelper,
   enableReservesAsCollateralByHelper,
   initReservesByHelper,
 } from '../../helpers/init-helpers';
-import {getAllTokenAddresses} from '../../helpers/mock-helpers';
-import {ZERO_ADDRESS} from '../../helpers/constants';
-import {getAllMockedTokens, getLendingPoolAddressesProvider} from '../../helpers/contracts-getters';
-import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
+import { getAllTokenAddresses } from '../../helpers/mock-helpers';
+import { ZERO_ADDRESS } from '../../helpers/constants';
+import {
+  getAllMockedTokens,
+  getLendingPoolAddressesProvider,
+} from '../../helpers/contracts-getters';
+import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
 
 task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({verify, pool}, localBRE) => {
+  .setAction(async ({ verify, pool }, localBRE) => {
     await localBRE.run('set-DRE');
     const poolConfig = loadPoolConfig(pool);
 
@@ -37,7 +40,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 
-    const protoPoolReservesAddresses = <{[symbol: string]: tEthereumAddress}>(
+    const protoPoolReservesAddresses = <{ [symbol: string]: tEthereumAddress }>(
       filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI_'))
     );
 
@@ -75,7 +78,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       mockFlashLoanReceiver.address
     );
 
-    await deployWalletBalancerProvider(addressesProvider.address, verify);
+    await deployWalletBalancerProvider(verify);
 
     await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
 

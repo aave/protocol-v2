@@ -244,14 +244,11 @@ export const deployMockFlashLoanReceiver = async (
     verify
   );
 
-export const deployWalletBalancerProvider = async (
-  addressesProvider: tEthereumAddress,
-  verify?: boolean
-) =>
+export const deployWalletBalancerProvider = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(addressesProvider),
+    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(),
     eContractid.WalletBalanceProvider,
-    [addressesProvider],
+    [],
     verify
   );
 
