@@ -18,9 +18,7 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
-import {DebtTokenBase} from '../tokenization/base/DebtTokenBase.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
-import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
@@ -29,7 +27,19 @@ import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 
 /**
  * @title LendingPool contract
- * @notice Implements the actions of the LendingPool, and exposes accessory methods to fetch the users and reserve data
+ * @dev Main point of interaction with an Aave protocol's market
+ * - Users can:
+ *   # Deposit
+ *   # Withdraw
+ *   # Borrow
+ *   # Repay
+ *   # Swap their loans between variable and stable rate
+ *   # Enable/disable their deposits as collateral rebalance stable rate borrow positions
+ *   # Liquidate positions
+ *   # Execute Flash Loans
+ * - To be covered by a proxy contract, owned by the LendingPoolAddressesProvider of the specific market
+ * - All admin functions are callable by the LendingPoolConfigurator contract defined also in the
+ *   LendingPoolAddressesProvider
  * @author Aave
  **/
 contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage {
@@ -44,25 +54,20 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   uint256 public constant MAX_NUMBER_RESERVES = 128;
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
-  /**
-   * @dev functions marked by this modifier can only be called when the protocol is not paused
-   **/
   modifier whenNotPaused() {
     _whenNotPaused();
     _;
   }
 
-  /**
-   * @dev functions marked by this modifier can only be called by the LendingPoolConfigurator
-   **/
   modifier onlyLendingPoolConfigurator() {
     _onlyLendingPoolConfigurator();
     _;
   }
 
-  /**
-   * @dev only lending pools configurator can use functions affected by this modifier
-   **/
+  function _whenNotPaused() internal view {
+    require(!_paused, Errors.LP_IS_PAUSED);
+  }
+
   function _onlyLendingPoolConfigurator() internal view {
     require(
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
@@ -70,36 +75,31 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
-  /**
-   * @dev Function to make a function callable only when the contract is not paused.
-   *
-   * Requirements:
-   *
-   * - The contract must not be paused.
-   */
-  function _whenNotPaused() internal view {
-    require(!_paused, Errors.LP_IS_PAUSED);
-  }
-
-  function getRevision() internal pure override returns (uint256) {
+  function getRevision() internal override pure returns (uint256) {
     return LENDINGPOOL_REVISION;
   }
 
   /**
-   * @dev this function is invoked by the proxy contract when the LendingPool contract is added to the
-   * AddressesProvider.
-   * @param provider the address of the LendingPoolAddressesProvider registry
+   * @dev Function is invoked by the proxy contract when the LendingPool contract is added to the
+   * LendingPoolAddressesProvider of the market.
+   * - Caching the address of the LendingPoolAddressesProvider in order to reduce gas consumption
+   *   on subsequent operations
+   * @param provider The address of the LendingPoolAddressesProvider
    **/
   function initialize(ILendingPoolAddressesProvider provider) public initializer {
     _addressesProvider = provider;
   }
 
   /**
-   * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
-   * is minted.
-   * @param asset the address of the reserve
-   * @param amount the amount to be deposited
-   * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
+   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
+   * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
+   * @param asset The address of the underlying asset to deposit
+   * @param amount The amount to be deposited
+   * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
+   *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
+   *   is a different wallet
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
    **/
   function deposit(
     address asset,
@@ -123,17 +123,20 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
     }
 
-    //transfer to the aToken contract
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
 
   /**
-   * @dev withdraws the _reserves of user.
-   * @param asset the address of the reserve
-   * @param amount the underlying amount to be redeemed
-   * @param to address that will receive the underlying
+   * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
+   * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
+   * @param asset The address of the underlying asset to withdraw
+   * @param amount The underlying amount to be withdrawn
+   *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
+   * @param to Address that will receive the underlying, same as msg.sender if the user
+   *   wants to receive it on his own wallet, or a different address if the beneficiary is a
+   *   different wallet
    **/
   function withdraw(
     address asset,
@@ -148,7 +151,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     uint256 amountToWithdraw = amount;
 
-    //if amount is equal to uint(-1), the user wants to redeem everything
     if (amount == type(uint256).max) {
       amountToWithdraw = userBalance;
     }
@@ -179,14 +181,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Allows users to borrow a specific amount of the reserve underlying asset, provided that the borrower
+   * @dev Allows users to borrow a specific `amount` of the reserve underlying asset, provided that the borrower
    * already deposited enough collateral, or he was given enough allowance by a credit delegator on the
    * corresponding debt token (StableDebtToken or VariableDebtToken)
-   * @param asset the address of the reserve
-   * @param amount the amount to be borrowed
-   * @param interestRateMode the interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
-   * @param referralCode a referral code for integrators
-   * @param onBehalfOf address of the user who will receive the debt. Should be the address of the borrower itself
+   * - E.g. User borrows 100 USDC passing as `onBehalfOf` his own address, receiving the 100 USDC in his wallet
+   *   and 100 stable/variable debt tokens, depending on the `interestRateMode`
+   * @param asset The address of the underlying asset to borrow
+   * @param amount The amount to be borrowed
+   * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
+   * @param onBehalfOf Address of the user who will receive the debt. Should be the address of the borrower itself
    * calling the function if he wants to borrow against his own collateral, or the address of the credit delegator
    * if he has been given credit delegation allowance
    **/
@@ -214,12 +219,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @notice repays a borrow on the specific reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
-   * @dev the target user is defined by onBehalfOf. If there is no repayment on behalf of another account,
-   * onBehalfOf must be equal to msg.sender.
-   * @param asset the address of the reserve on which the user borrowed
-   * @param amount the amount to repay, or uint256(-1) if the user wants to repay everything
-   * @param onBehalfOf the address for which msg.sender is repaying.
+   * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
+   * - E.g. User repays 100 USDC, burning 100 variable/stable debt tokens of the `onBehalfOf` address
+   * @param asset The address of the borrowed underlying asset previously borrowed
+   * @param amount The amount to repay
+   * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
+   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
+   * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
+   * user calling the function if he wants to reduce/remove his own debt, or the address of any other
+   * other borrower whose debt should be removed
    **/
   function repay(
     address asset,
@@ -242,9 +250,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    //default to max amount
-    uint256 paybackAmount =
-      interestRateMode == ReserveLogic.InterestRateMode.STABLE ? stableDebt : variableDebt;
+    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
@@ -252,7 +260,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateState();
 
-    //burns an equivalent amount of debt tokens
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
     } else {
@@ -276,9 +283,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev borrowers can user this function to swap between stable and variable borrow rate modes.
-   * @param asset the address of the reserve on which the user borrowed
-   * @param rateMode the rate mode that the user wants to swap
+   * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
+   * @param asset The address of the underlying asset borrowed
+   * @param rateMode The rate mode that the user wants to swap to
    **/
   function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
@@ -298,7 +305,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     reserve.updateState();
 
     if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
-      //burn stable rate tokens, mint variable rate tokens
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
         msg.sender,
@@ -307,7 +313,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         reserve.variableBorrowIndex
       );
     } else {
-      //do the opposite
       IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
         msg.sender,
         variableDebt,
@@ -327,12 +332,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev rebalances the stable interest rate of a user. Users can be rebalanced if the following conditions are satisfied:
-   * 1. Usage ratio is above 95%
-   * 2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
-   *    borrowed at a stable rate and depositors are not earning enough.
-   * @param asset the address of the reserve
-   * @param user the address of the user to be rebalanced
+   * @dev Rebalances the stable interest rate of a user to the current stable rate defined on the reserve.
+   * - Users can be rebalanced if the following conditions are satisfied:
+   *     1. Usage ratio is above 95%
+   *     2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
+   *        borrowed at a stable rate and depositors are not earning enough
+   * @param asset The address of the underlying asset borrowed
+   * @param user The address of the user to be rebalanced
    **/
   function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
     ReserveLogic.ReserveData storage reserve = _reserves[asset];
@@ -367,9 +373,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev allows depositors to enable or disable a specific deposit as collateral.
-   * @param asset the address of the reserve
-   * @param useAsCollateral true if the user wants to use the deposit as collateral, false otherwise.
+   * @dev Allows depositors to enable/disable a specific deposited asset as collateral
+   * @param asset The address of the underlying asset deposited
+   * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
    **/
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
     external
@@ -399,35 +405,36 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev users can invoke this function to liquidate an undercollateralized position.
-   * @param asset the address of the collateral to liquidated
-   * @param asset the address of the principal reserve
-   * @param user the address of the borrower
-   * @param purchaseAmount the amount of principal that the liquidator wants to repay
-   * @param receiveAToken true if the liquidators wants to receive the aTokens, false if
-   * he wants to receive the underlying asset directly
+   * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
+   * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
+   *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
+   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param user The address of the borrower getting liquidated
+   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
+   * to receive the underlying collateral asset directly
    **/
   function liquidationCall(
-    address collateral,
-    address asset,
+    address collateralAsset,
+    address debtAsset,
     address user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     bool receiveAToken
   ) external override whenNotPaused {
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) =
-      collateralManager.delegatecall(
-        abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateral,
-          asset,
-          user,
-          purchaseAmount,
-          receiveAToken
-        )
-      );
+    (bool success, bytes memory result) = collateralManager.delegatecall(
+      abi.encodeWithSignature(
+        'liquidationCall(address,address,address,uint256,bool)',
+        collateralAsset,
+        debtAsset,
+        user,
+        debtToCover,
+        receiveAToken
+      )
+    );
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
@@ -448,16 +455,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
-   * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
-   * that must be kept into consideration. For further details please visit https://developers.aave.com
-   * @param receiverAddress The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
-   * @param assets The addresss of the assets being flashborrowed
-   * @param amounts The amounts requested for this flashloan for each asset
-   * @param modes Types of the debt to open if the flash loan is not returned. 0 -> Don't open any debt, just revert, 1 -> stable, 2 -> variable
-   * @param onBehalfOf If mode is not 0, then the address to take the debt onBehalfOf. The onBehalfOf address must already have approved `msg.sender` to incur the debt on their behalf.
+   * @dev Allows smartcontracts to access the liquidity of the pool within one transaction,
+   * as long as the amount taken plus a fee is returned.
+   * IMPORTANT There are security concerns for developers of flashloan receiver contracts that must be kept into consideration.
+   * For further details please visit https://developers.aave.com
+   * @param receiverAddress The address of the contract receiving the funds, implementing the IFlashLoanReceiver interface
+   * @param assets The addresses of the assets being flash-borrowed
+   * @param amounts The amounts amounts being flash-borrowed
+   * @param modes Types of the debt to open if the flash loan is not returned:
+   *   0 -> Don't open any debt, just revert if funds can't be transferred from the receiver
+   *   1 -> Open debt at stable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
+   *   2 -> Open debt at variable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
+   * @param onBehalfOf The address  that will receive the debt in the case of using on `modes` 1 or 2
    * @param params Variadic packed params to pass to the receiver as extra information
-   * @param referralCode Referral code of the flash loan
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
    **/
   function flashLoan(
     address receiverAddress,
@@ -482,11 +494,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       premiums[vars.i] = amounts[vars.i].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
 
-      //transfer funds to the receiver
       IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
 
-    //execute action of the receiver
     require(
       vars.receiver.executeOperation(assets, amounts, premiums, msg.sender, params),
       Errors.LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN
@@ -518,8 +528,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
           vars.currentAmountPlusPremium
         );
       } else {
-        //if the user didn't choose to return the funds, the system checks if there
-        //is enough collateral and eventually open a position
+        // If the user chose to not return the funds, the system checks if there is enough collateral and
+        // eventually opens a debt position
         _executeBorrow(
           ExecuteBorrowParams(
             vars.currentAsset,
@@ -545,9 +555,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the state and configuration of the reserve
-   * @param asset the address of the reserve
-   * @return the state of the reserve
+   * @dev Returns the state and configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The state of the reserve
    **/
   function getReserveData(address asset)
     external
@@ -559,8 +569,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the user account data across all the reserves
-   * @param user the address of the user
+   * @dev Returns the user account data across all the reserves
+   * @param user The address of the user
    * @return totalCollateralETH the total collateral in ETH of the user
    * @return totalDebtETH the total debt in ETH of the user
    * @return availableBorrowsETH the borrowing power left of the user
@@ -604,9 +614,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the configuration of the reserve
-   * @param asset the address of the reserve
-   * @return the configuration of the reserve
+   * @dev Returns the configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The configuration of the reserve
    **/
   function getConfiguration(address asset)
     external
@@ -618,9 +628,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the configuration of the user across all the reserves
-   * @param user the user
-   * @return the configuration of the user
+   * @dev Returns the configuration of the user across all the reserves
+   * @param user The user address
+   * @return The configuration of the user
    **/
   function getUserConfiguration(address user)
     external
@@ -632,9 +642,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the normalized income per unit of asset
-   * @param asset the address of the reserve
-   * @return the reserve normalized income
+   * @dev Returns the normalized income per unit of asset
+   * @param asset The address of the underlying asset of the reserve
+   * @return The reserve's normalized income
    */
   function getReserveNormalizedIncome(address asset)
     external
@@ -647,9 +657,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the normalized variable debt per unit of asset
-   * @param asset the address of the reserve
-   * @return the reserve normalized debt
+   * @dev Returns the normalized variable debt per unit of asset
+   * @param asset The address of the underlying asset of the reserve
+   * @return The reserve normalized variable debt
    */
   function getReserveNormalizedVariableDebt(address asset)
     external
@@ -668,7 +678,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the list of the initialized reserves
+   * @dev Returns the list of the initialized reserves
    **/
   function getReservesList() external view override returns (address[] memory) {
     address[] memory _activeReserves = new address[](_reservesCount);
@@ -680,20 +690,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev returns the addresses provider
+   * @dev Returns the cached LendingPoolAddressesProvider connected to this contract
    **/
   function getAddressesProvider() external view override returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
   }
 
   /**
-   * @dev validates and finalizes an aToken transfer
-   * @param asset the address of the reserve
-   * @param from the user from which the aTokens are transferred
-   * @param to the user receiving the aTokens
-   * @param amount the amount being transferred/redeemed
-   * @param balanceFromBefore the balance of the from user before the transfer
-   * @param balanceToBefore the balance of the to user before the transfer
+   * @dev Validates and finalizes an aToken transfer
+   * - Only callable by the overlying aToken of the `asset`
+   * @param asset The address of the underlying asset of the aToken
+   * @param from The user from which the aTokens are transferred
+   * @param to The user receiving the aTokens
+   * @param amount The amount being transferred/withdrawn
+   * @param balanceFromBefore The aToken balance of the `from` user before the transfer
+   * @param balanceToBefore The aToken balance of the `to` user before the transfer
    */
   function finalizeTransfer(
     address asset,
@@ -732,10 +743,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev initializes a reserve
-   * @param asset the address of the reserve
-   * @param aTokenAddress the address of the overlying aToken contract
-   * @param interestRateStrategyAddress the address of the interest rate strategy contract
+   * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
+   * interest rate strategy
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param aTokenAddress The address of the aToken that will be assigned to the reserve
+   * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
+   * @param aTokenAddress The address of the VariableDebtToken that will be assigned to the reserve
+   * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function initReserve(
     address asset,
@@ -755,9 +770,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev updates the address of the interest rate strategy contract
-   * @param asset the address of the reserve
-   * @param rateStrategyAddress the address of the interest rate strategy contract
+   * @dev Updates the address of the interest rate strategy contract
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param rateStrategyAddress The address of the interest rate strategy contract
    **/
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
@@ -768,9 +784,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev sets the configuration map of the reserve
-   * @param asset the address of the reserve
-   * @param configuration the configuration map
+   * @dev Sets the configuration bitmap of the reserve as a whole
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param configuration The new configuration bitmap
    **/
   function setConfiguration(address asset, uint256 configuration)
     external
@@ -781,8 +798,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Set the _pause state
-   * @param val the boolean value to set the current pause state of LendingPool
+   * @dev Set the _pause state of a reserve
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param val `true` to pause the reserve, `false` to un-pause it
    */
   function setPause(bool val) external override onlyLendingPoolConfigurator {
     _paused = val;
@@ -793,7 +811,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  // internal functions
   struct ExecuteBorrowParams {
     address asset;
     address user;
@@ -805,10 +822,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool releaseUnderlying;
   }
 
-  /**
-   * @dev Internal function to execute a borrowing action, allowing to transfer or not the underlying
-   * @param vars Input struct for the borrowing action, in order to avoid STD errors
-   **/
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
     ReserveLogic.ReserveData storage reserve = _reserves[vars.asset];
     UserConfiguration.Map storage userConfig = _usersConfig[vars.onBehalfOf];
@@ -837,7 +850,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateState();
 
-    //caching the current stable borrow rate
     uint256 currentStableRate = 0;
 
     bool isFirstBorrowing = false;
@@ -889,9 +901,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
-  /**
-   * @dev adds a reserve to the array of the _reserves address
-   **/
   function _addReserveToList(address asset) internal {
     uint256 reservesCount = _reservesCount;
 

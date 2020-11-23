@@ -71,10 +71,10 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     address collateral,
     address asset,
     address user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     bool receiveAToken
   ) external override {
-    originalPool.liquidationCall(collateral, asset, user, purchaseAmount, receiveAToken);
+    originalPool.liquidationCall(collateral, asset, user, debtToCover, receiveAToken);
   }
 
   function getReservesList() external override view returns (address[] memory) {
