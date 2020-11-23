@@ -9,7 +9,7 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 
 /**
  * @title WalletBalanceProvider contract
