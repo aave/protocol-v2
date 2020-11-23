@@ -71,7 +71,7 @@ const mainnetFork = MAINNET_FORK
 
 const buidlerConfig: HardhatUserConfig = {
   solidity: {
-    version: '0.6.8',
+    version: '0.6.12',
     settings: {
       optimizer: {enabled: true, runs: 200},
       evmVersion: 'istanbul',
