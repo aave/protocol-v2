@@ -36,7 +36,7 @@ rule balanceOfChange(address a, address b, method f)
 }
 
 /**
-Checks that the change to total supply is coherent with the change to balance due to an operation
+Checks that the change to total supply is coherent with the change to user balance due to an operation
 (which is not burn).
 */
 rule integirtyBalanceOfTotalSupply(address a, method f )
@@ -55,24 +55,49 @@ rule integirtyBalanceOfTotalSupply(address a, method f )
 	assert  (balanceAAfter != balanceABefore  => (balanceAAfter - balanceABefore  == totalSupplyAfter - totalSupplyBefore));
 }
 
+
 /**
-Burn behaves differently and due to accumulation errors might have less total supply than the balance.
+Checks that the change to total supply is coherent with the change to user balance due to a burn operation.
 */
-rule integirtyBalanceOfTotalSupplyOnBurn(address a, method f)
+rule integirtyBalanceOfTotalSupplyOnBurn(address a, uint256 x)
 {
 	env e;
 	require sinvoke getIncentivesController(e) == 0;
+	
 	uint256 balanceABefore = sinvoke balanceOf(e, a);
+	
 	uint256 totalSupplyBefore = sinvoke totalSupply(e);
-	 
-	uint256 x;
+	uint256 averageStableRateBefore = sinvoke getAverageStableRate(e);
+	uint256 debtSupplyBefore = sinvoke rayWadMul(e, averageStableRateBefore, totalSupplyBefore);
+	
+	uint256 stableRateA = sinvoke getUserStableRate(e, a);
+	uint256 repaidDebtA = sinvoke rayWadMul(e, stableRateA, x);
+	
+	
 	sinvoke burn(e, a, x); 
 	uint256 balanceAAfter = sinvoke balanceOf(e, a);
 	uint256 totalSupplyAfter = sinvoke totalSupply(e);
-	if (totalSupplyBefore > x)
-		assert (balanceAAfter != balanceABefore  => (balanceAAfter - balanceABefore  == totalSupplyAfter - totalSupplyBefore));
-	else
+
+	if(totalSupplyBefore > x) {
+	    /* The amount being burned (x) is smaller than the total supply */
+		if(repaidDebtA >= debtSupplyBefore) {
+			/*
+			The user debt being repaid is at least the debt supply.
+			The total supply becomes 0.
+			*/
+			assert(totalSupplyAfter == 0);
+		}
+		else {
+			assert(balanceAAfter != balanceABefore  =>
+			(balanceAAfter - balanceABefore  == totalSupplyAfter - totalSupplyBefore));
+		}
+	}
+	else {
+	/* The amount being burned (x) is at least the total supply.
+	   The total supply becomes 0.
+	*/
 		assert (totalSupplyAfter == 0);
+	}
 }
 
 /**

@@ -11,7 +11,11 @@ contract StableDebtTokenHarness is StableDebtToken {
     string memory symbol,
     address incentivesController
   ) public StableDebtToken(pool, underlyingAsset, name, symbol, incentivesController) {}
-
+	
+	
+   /**
+   Simplification: The user accumulates no interest (the balance increase is always 0).
+   **/
   function balanceOf(address account) public override view returns (uint256) {
     return IncentivizedERC20.balanceOf(account);
   }
@@ -22,5 +26,9 @@ contract StableDebtTokenHarness is StableDebtToken {
 
   function getIncentivesController() public view returns (address) {
     return address(_incentivesController);
+  }
+  
+  function rayWadMul(uint256 aRay, uint256 bWad) external view returns(uint256) {
+	return aRay.rayMul(bWad.wadToRay());
   }
 }
