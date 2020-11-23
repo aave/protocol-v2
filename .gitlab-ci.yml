@@ -25,7 +25,7 @@ certora-test:
     - mv solc-static-linux /usr/bin/solc
     - export PATH=$PATH:/usr/bin/solc/solc-static-linux
   script:
-    - certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond --cache StableDebtToken --staging
+    - certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond,-b=4 --cache StableDebtToken --staging
     - certoraRun specs/harness/UserConfigurationHarness.sol --verify UserConfigurationHarness:specs/UserConfiguration.spec --settings -useBitVectorTheory --staging
     - certoraRun contracts/tokenization/VariableDebtToken.sol:VariableDebtToken specs/harness/LendingPoolHarnessForVariableDebtToken.sol --solc_args '--optimize' --link VariableDebtToken:POOL=LendingPoolHarnessForVariableDebtToken --verify VariableDebtToken:specs/VariableDebtToken.spec --settings -assumeUnwindCond,-useNonLinearArithmetic,-b=4 --cache VariableDebtToken --staging
 
