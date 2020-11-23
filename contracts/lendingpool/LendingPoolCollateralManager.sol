@@ -42,7 +42,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
    * @param collateral the address of the collateral being liquidated
    * @param principal the address of the reserve
    * @param user the address of the user being liquidated
-   * @param purchaseAmount the total amount liquidated
+   * @param debtToCover the total amount liquidated
    * @param liquidatedCollateralAmount the amount of collateral being liquidated
    * @param liquidator the address of the liquidator
    * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
@@ -51,7 +51,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     address indexed collateral,
     address indexed principal,
     address indexed user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     uint256 liquidatedCollateralAmount,
     address liquidator,
     bool receiveAToken
@@ -107,7 +107,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
    * @param collateral the address of the collateral to liquidated
    * @param principal the address of the principal reserve
    * @param user the address of the borrower
-   * @param purchaseAmount the amount of principal that the liquidator wants to repay
+   * @param debtToCover the amount of principal that the liquidator wants to repay
    * @param receiveAToken true if the liquidators wants to receive the aTokens, false if
    * he wants to receive the underlying asset directly
    **/
@@ -115,7 +115,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     address collateral,
     address principal,
     address user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     bool receiveAToken
   ) external returns (uint256, string memory) {
     ReserveLogic.ReserveData storage collateralReserve = _reserves[collateral];
@@ -160,9 +160,9 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
       LIQUIDATION_CLOSE_FACTOR_PERCENT
     );
 
-    vars.actualAmountToLiquidate = purchaseAmount > vars.maxPrincipalAmountToLiquidate
+    vars.actualAmountToLiquidate = debtToCover > vars.maxPrincipalAmountToLiquidate
       ? vars.maxPrincipalAmountToLiquidate
-      : purchaseAmount;
+      : debtToCover;
 
     (
       vars.maxCollateralToLiquidate,
@@ -287,7 +287,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
    * all the checks to validate the liquidation have been performed, otherwise it might fail.
    * @param collateralAddress the collateral to be liquidated
    * @param principalAddress the principal currency to be liquidated
-   * @param purchaseAmount the amount of principal being liquidated
+   * @param debtToCover the amount of principal being liquidated
    * @param userCollateralBalance the collatera balance for the specific collateral asset of the user being liquidated
    * @return collateralAmount the maximum amount that is possible to liquidated given all the liquidation constraints (user balance, close factor)
    * @return principalAmountNeeded the purchase amount
@@ -297,7 +297,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     ReserveLogic.ReserveData storage principalReserve,
     address collateralAddress,
     address principalAddress,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     uint256 userCollateralBalance
   ) internal view returns (uint256, uint256) {
     uint256 collateralAmount = 0;
@@ -318,7 +318,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     //max amount of principal currency that is available for liquidation.
     vars.maxAmountCollateralToLiquidate = vars
       .principalCurrencyPrice
-      .mul(purchaseAmount)
+      .mul(debtToCover)
       .mul(10**vars.collateralDecimals)
       .percentMul(vars.liquidationBonus)
       .div(vars.collateralPrice.mul(10**vars.principalDecimals));
@@ -333,7 +333,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
         .percentDiv(vars.liquidationBonus);
     } else {
       collateralAmount = vars.maxAmountCollateralToLiquidate;
-      principalAmountNeeded = purchaseAmount;
+      principalAmountNeeded = debtToCover;
     }
     return (collateralAmount, principalAmountNeeded);
   }
