@@ -2,15 +2,17 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {LendingPool} from '../lendingpool/LendingPool.sol';
-import {LendingPoolAddressesProvider} from '../configuration/LendingPoolAddressesProvider.sol';
-import {LendingPoolConfigurator} from '../lendingpool/LendingPoolConfigurator.sol';
-import {AToken} from '../tokenization/AToken.sol';
+import {LendingPool} from '../protocol/lendingpool/LendingPool.sol';
+import {
+  LendingPoolAddressesProvider
+} from '../protocol/configuration/LendingPoolAddressesProvider.sol';
+import {LendingPoolConfigurator} from '../protocol/lendingpool/LendingPoolConfigurator.sol';
+import {AToken} from '../protocol/tokenization/AToken.sol';
 import {
   DefaultReserveInterestRateStrategy
-} from '../lendingpool/DefaultReserveInterestRateStrategy.sol';
+} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
-import {StringLib} from '../libraries/helpers/StringLib.sol';
+import {StringLib} from '../protocol/libraries/helpers/StringLib.sol';
 
 contract ATokensAndRatesHelper is Ownable {
   address payable private pool;
@@ -34,7 +36,6 @@ contract ATokensAndRatesHelper is Ownable {
     uint256[6][] calldata rates,
     address incentivesController
   ) external onlyOwner {
-
     require(tokens.length == symbols.length, 't Arrays not same length');
     require(rates.length == symbols.length, 'r Arrays not same length');
     for (uint256 i = 0; i < tokens.length; i++) {
