@@ -1194,7 +1194,7 @@ const calcCompoundedInterest = (
     .plus(thirdTerm);
 };
 
-const calcExpectedInterestRates = (
+export const calcExpectedInterestRates = (
   reserveSymbol: string,
   marketStableRate: BigNumber,
   utilizationRate: BigNumber,
@@ -1253,7 +1253,7 @@ const calcExpectedInterestRates = (
   return [liquidityRate, stableBorrowRate, variableBorrowRate];
 };
 
-const calcExpectedOverallBorrowRate = (
+export const calcExpectedOverallBorrowRate = (
   totalStableDebt: BigNumber,
   totalVariableDebt: BigNumber,
   currentVariableBorrowRate: BigNumber,
@@ -1274,7 +1274,7 @@ const calcExpectedOverallBorrowRate = (
   return overallBorrowRate;
 };
 
-const calcExpectedUtilizationRate = (
+export const calcExpectedUtilizationRate = (
   totalStableDebt: BigNumber,
   totalVariableDebt: BigNumber,
   totalLiquidity: BigNumber
