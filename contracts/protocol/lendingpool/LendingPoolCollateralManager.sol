@@ -8,6 +8,7 @@ import {IAToken} from '../tokenization/interfaces/IAToken.sol';
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import {ILendingPoolCollateralManager} from '../../interfaces/ILendingPoolCollateralManager.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
@@ -26,7 +27,7 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  * @notice this contract will be ran always through delegatecall
  * @dev LendingPoolCollateralManager inherits VersionedInitializable from OpenZeppelin to have the same storage layout as LendingPool
  **/
-contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStorage {
+contract LendingPoolCollateralManager is ILendingPoolCollateralManager, VersionedInitializable, LendingPoolStorage {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -36,33 +37,6 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
   // is gonna be used through DELEGATECALL
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
-
-  /**
-   * @dev emitted when a borrower is liquidated
-   * @param collateral the address of the collateral being liquidated
-   * @param principal the address of the reserve
-   * @param user the address of the user being liquidated
-   * @param debtToCover the total amount liquidated
-   * @param liquidatedCollateralAmount the amount of collateral being liquidated
-   * @param liquidator the address of the liquidator
-   * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
-   **/
-  event LiquidationCall(
-    address indexed collateral,
-    address indexed principal,
-    address indexed user,
-    uint256 debtToCover,
-    uint256 liquidatedCollateralAmount,
-    address liquidator,
-    bool receiveAToken
-  );
-
-  /**
-   * @dev emitted when a user disables a reserve as collateral
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   **/
-  event ReserveUsedAsCollateralDisabled(address indexed reserve, address indexed user);
 
   struct LiquidationCallLocalVars {
     uint256 userCollateralBalance;
@@ -117,7 +91,7 @@ contract LendingPoolCollateralManager is VersionedInitializable, LendingPoolStor
     address user,
     uint256 debtToCover,
     bool receiveAToken
-  ) external returns (uint256, string memory) {
+  ) external override returns (uint256, string memory) {
     ReserveLogic.ReserveData storage collateralReserve = _reserves[collateral];
     ReserveLogic.ReserveData storage principalReserve = _reserves[principal];
     UserConfiguration.Map storage userConfig = _usersConfig[user];

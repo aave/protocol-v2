@@ -19,7 +19,6 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
-import {LendingPoolCollateralManager} from './LendingPoolCollateralManager.sol'; // TODO change to interface
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
