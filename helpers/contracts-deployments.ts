@@ -363,7 +363,7 @@ export const deployDelegationAwareAToken = async (
   ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
   return withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.AToken,
+    eContractid.DelegationAwareAToken,
     args,
     verify
   );
