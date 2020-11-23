@@ -84,7 +84,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       mockFlashLoanReceiver.address
     );
 
-    await deployWalletBalancerProvider(addressesProvider.address, verify);
+    await deployWalletBalancerProvider(verify);
 
     await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
 

@@ -24,12 +24,7 @@ contract WalletBalanceProvider {
   using SafeERC20 for IERC20;
   using ReserveConfiguration for ReserveConfiguration.Map;
 
-  ILendingPoolAddressesProvider internal immutable _provider;
   address constant MOCK_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
-  constructor(ILendingPoolAddressesProvider provider) public {
-    _provider = provider;
-  }
 
   /**
     @dev Fallback function, don't accept any ETH
@@ -80,12 +75,12 @@ contract WalletBalanceProvider {
   /**
     @dev provides balances of user wallet for all reserves available on the pool
     */
-  function getUserWalletBalances(address user)
+  function getUserWalletBalances(address provider, address user)
     external
     view
     returns (address[] memory, uint256[] memory)
   {
-    ILendingPool pool = ILendingPool(_provider.getLendingPool());
+    ILendingPool pool = ILendingPool(ILendingPoolAddressesProvider(provider).getLendingPool());
 
     address[] memory reserves = pool.getReservesList();
     address[] memory reservesWithEth = new address[](reserves.length + 1);

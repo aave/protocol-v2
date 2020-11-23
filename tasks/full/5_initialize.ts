@@ -15,7 +15,10 @@ import {
   enableReservesAsCollateralByHelper,
 } from '../../helpers/init-helpers';
 import { exit } from 'process';
-import { getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
+import {
+  getAaveProtocolDataProvider,
+  getLendingPoolAddressesProvider,
+} from '../../helpers/contracts-getters';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -32,7 +35,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const addressesProvider = await getLendingPoolAddressesProvider();
 
-      const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
+      const testHelpers = await getAaveProtocolDataProvider();
 
       const admin = await addressesProvider.getPoolAdmin();
       if (!reserveAssets) {
@@ -48,7 +51,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
       );
 
-      await deployWalletBalancerProvider(addressesProvider.address, verify);
+      await deployWalletBalancerProvider(verify);
 
       const wethAddress = await getWethAddress(poolConfig);
       const lendingPoolAddress = await addressesProvider.getLendingPool();
