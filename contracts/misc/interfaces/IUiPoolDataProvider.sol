@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {ReserveLogic} from '../../libraries/logic/ReserveLogic.sol';
+import {ReserveLogic} from '../../protocol/libraries/logic/ReserveLogic.sol';
 
 interface IUiPoolDataProvider {
   struct AggregatedReserveData {
