@@ -21,8 +21,8 @@ import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
-  using ReserveConfiguration for DataTypes.ReserveBitmap;
-  using UserConfiguration for DataTypes.UserBitmap;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
 
@@ -57,7 +57,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
-    DataTypes.UserBitmap memory userConfig = lendingPool.getUserConfiguration(user);
+    DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
     AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
     UserReserveData[] memory userReservesData =

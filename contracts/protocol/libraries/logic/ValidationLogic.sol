@@ -27,8 +27,8 @@ library ValidationLogic {
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
-  using ReserveConfiguration for DataTypes.ReserveBitmap;
-  using UserConfiguration for DataTypes.UserBitmap;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
   uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
@@ -62,7 +62,7 @@ library ValidationLogic {
     uint256 amount,
     uint256 userBalance,
     mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserBitmap storage userConfig,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -133,7 +133,7 @@ library ValidationLogic {
     uint256 interestRateMode,
     uint256 maxStableLoanPercent,
     mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserBitmap storage userConfig,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -266,7 +266,7 @@ library ValidationLogic {
    */
   function validateSwapRateMode(
     DataTypes.ReserveData storage reserve,
-    DataTypes.UserBitmap storage userConfig,
+    DataTypes.UserConfigurationMap storage userConfig,
     uint256 stableDebt,
     uint256 variableDebt,
     DataTypes.InterestRateMode currentRateMode
@@ -354,7 +354,7 @@ library ValidationLogic {
     address reserveAddress,
     bool useAsCollateral,
     mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserBitmap storage userConfig,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -400,7 +400,7 @@ library ValidationLogic {
   function validateLiquidationCall(
     DataTypes.ReserveData storage collateralReserve,
     DataTypes.ReserveData storage principalReserve,
-    DataTypes.UserBitmap storage userConfig,
+    DataTypes.UserConfigurationMap storage userConfig,
     uint256 userHealthFactor,
     uint256 userStableDebt,
     uint256 userVariableDebt
@@ -454,7 +454,7 @@ library ValidationLogic {
   function validateTransfer(
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserBitmap storage userConfig,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle

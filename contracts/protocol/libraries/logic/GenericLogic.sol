@@ -22,8 +22,8 @@ library GenericLogic {
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-  using ReserveConfiguration for DataTypes.ReserveBitmap;
-  using UserConfiguration for DataTypes.UserBitmap;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
 
@@ -57,7 +57,7 @@ library GenericLogic {
     address user,
     uint256 amount,
     mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserBitmap calldata userConfig,
+    DataTypes.UserConfigurationMap calldata userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -152,7 +152,7 @@ library GenericLogic {
   function calculateUserAccountData(
     address user,
     mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserBitmap memory userConfig,
+    DataTypes.UserConfigurationMap memory userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle

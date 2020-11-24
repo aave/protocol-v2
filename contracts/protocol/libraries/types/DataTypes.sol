@@ -5,7 +5,7 @@ library DataTypes {
   // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
   struct ReserveData {
     //stores the reserve configuration
-    ReserveBitmap configuration;
+    ReserveConfigurationMap configuration;
     //the liquidity index. Expressed in ray
     uint128 liquidityIndex;
     //variable borrow index. Expressed in ray
@@ -27,7 +27,7 @@ library DataTypes {
     uint8 id;
   }
 
-  struct ReserveBitmap {
+  struct ReserveConfigurationMap {
     //bit 0-15: LTV
     //bit 16-31: Liq. threshold
     //bit 32-47: Liq. bonus
@@ -41,7 +41,7 @@ library DataTypes {
     uint256 data;
   }
 
-  struct UserBitmap {
+  struct UserConfigurationMap {
     uint256 data;
   }
 

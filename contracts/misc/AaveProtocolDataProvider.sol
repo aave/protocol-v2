@@ -12,8 +12,8 @@ import {IVariableDebtToken} from '../protocol/tokenization/interfaces/IVariableD
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract AaveProtocolDataProvider {
-  using ReserveConfiguration for DataTypes.ReserveBitmap;
-  using UserConfiguration for DataTypes.UserBitmap;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address constant MKR = 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2;
   address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -80,7 +80,7 @@ contract AaveProtocolDataProvider {
       bool isFrozen
     )
   {
-    DataTypes.ReserveBitmap memory configuration =
+    DataTypes.ReserveConfigurationMap memory configuration =
       ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getConfiguration(asset);
 
     (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = configuration
@@ -143,7 +143,7 @@ contract AaveProtocolDataProvider {
     DataTypes.ReserveData memory reserve =
       ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
 
-    DataTypes.UserBitmap memory userConfig =
+    DataTypes.UserConfigurationMap memory userConfig =
       ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getUserConfiguration(user);
 
     currentATokenBalance = IERC20Detailed(reserve.aTokenAddress).balanceOf(user);

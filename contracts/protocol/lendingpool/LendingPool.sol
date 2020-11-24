@@ -623,7 +623,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     external
     view
     override
-    returns (DataTypes.ReserveBitmap memory)
+    returns (DataTypes.ReserveConfigurationMap memory)
   {
     return _reserves[asset].configuration;
   }
@@ -637,7 +637,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     external
     view
     override
-    returns (DataTypes.UserBitmap memory)
+    returns (DataTypes.UserConfigurationMap memory)
   {
     return _usersConfig[user];
   }
@@ -730,13 +730,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (from != to) {
       if (balanceFromBefore.sub(amount) == 0) {
-        DataTypes.UserBitmap storage fromConfig = _usersConfig[from];
+        DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
         fromConfig.setUsingAsCollateral(reserveId, false);
         emit ReserveUsedAsCollateralDisabled(asset, from);
       }
 
       if (balanceToBefore == 0 && amount != 0) {
-        DataTypes.UserBitmap storage toConfig = _usersConfig[to];
+        DataTypes.UserConfigurationMap storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
         emit ReserveUsedAsCollateralEnabled(asset, to);
       }
@@ -825,7 +825,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
     DataTypes.ReserveData storage reserve = _reserves[vars.asset];
-    DataTypes.UserBitmap storage userConfig = _usersConfig[vars.onBehalfOf];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
     address oracle = _addressesProvider.getPriceOracle();
 

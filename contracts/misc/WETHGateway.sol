@@ -15,8 +15,8 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract WETHGateway is IWETHGateway, Ownable {
-  using ReserveConfiguration for DataTypes.ReserveBitmap;
-  using UserConfiguration for DataTypes.UserBitmap;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   IWETH internal immutable WETH;
   ILendingPool internal immutable POOL;

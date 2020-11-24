@@ -90,7 +90,7 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     external
     view
     override
-    returns (DataTypes.UserBitmap memory)
+    returns (DataTypes.UserConfigurationMap memory)
   {
     return originalPool.getUserConfiguration(user);
   }
@@ -142,7 +142,7 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     external
     view
     override
-    returns (DataTypes.ReserveBitmap memory)
+    returns (DataTypes.ReserveConfigurationMap memory)
   {
     return originalPool.getConfiguration(asset);
   }

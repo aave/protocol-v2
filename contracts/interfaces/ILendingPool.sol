@@ -353,14 +353,14 @@ interface ILendingPool {
    * @param asset The address of the underlying asset of the reserve
    * @return The configuration of the reserve
    **/
-  function getConfiguration(address asset) external view returns (DataTypes.ReserveBitmap memory);
+  function getConfiguration(address asset) external view returns (DataTypes.ReserveConfigurationMap memory);
 
   /**
    * @dev Returns the configuration of the user across all the reserves
    * @param user The user address
    * @return The configuration of the user
    **/
-  function getUserConfiguration(address user) external view returns (DataTypes.UserBitmap memory);
+  function getUserConfiguration(address user) external view returns (DataTypes.UserConfigurationMap memory);
 
   /**
    * @dev Returns the normalized income normalized income of the reserve

@@ -23,7 +23,7 @@ contract WalletBalanceProvider {
   using Address for address payable;
   using Address for address;
   using SafeERC20 for IERC20;
-  using ReserveConfiguration for DataTypes.ReserveBitmap;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   address constant MOCK_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -93,7 +93,7 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reservesWithEth.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      DataTypes.ReserveBitmap memory configuration = pool.getConfiguration(reservesWithEth[j]);
+      DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
 

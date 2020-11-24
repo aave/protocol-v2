@@ -45,7 +45,7 @@ library ReserveLogic {
   );
 
   using ReserveLogic for DataTypes.ReserveData;
-  using ReserveConfiguration for DataTypes.ReserveBitmap;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   /**
    * @dev returns the ongoing normalized income for the reserve.

@@ -97,7 +97,7 @@ contract LendingPoolCollateralManager is
   ) external override returns (uint256, string memory) {
     DataTypes.ReserveData storage collateralReserve = _reserves[collateral];
     DataTypes.ReserveData storage principalReserve = _reserves[principal];
-    DataTypes.UserBitmap storage userConfig = _usersConfig[user];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[user];
 
     LiquidationCallLocalVars memory vars;
 
