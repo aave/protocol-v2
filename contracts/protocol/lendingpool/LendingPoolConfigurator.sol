@@ -14,7 +14,7 @@ import {ITokenConfiguration} from '../tokenization/interfaces/ITokenConfiguratio
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -25,7 +25,7 @@ import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 contract LendingPoolConfigurator is VersionedInitializable {
   using SafeMath for uint256;
-  using ReserveConfiguration for ReserveConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   /**
    * @dev emitted when a reserve is initialized.
@@ -250,7 +250,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
       interestRateStrategyAddress
     );
 
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setDecimals(underlyingAssetDecimals);
 
@@ -274,7 +274,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param implementation the address of the new aToken implementation
    **/
   function updateAToken(address asset, address implementation) external onlyPoolAdmin {
-    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
+    DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
 
     _upgradeTokenImplementation(asset, reserveData.aTokenAddress, implementation);
 
@@ -287,7 +287,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param implementation the address of the new aToken implementation
    **/
   function updateStableDebtToken(address asset, address implementation) external onlyPoolAdmin {
-    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
+    DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
 
     _upgradeTokenImplementation(asset, reserveData.stableDebtTokenAddress, implementation);
 
@@ -300,7 +300,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param implementation the address of the new aToken implementation
    **/
   function updateVariableDebtToken(address asset, address implementation) external onlyPoolAdmin {
-    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
+    DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
 
     _upgradeTokenImplementation(asset, reserveData.variableDebtTokenAddress, implementation);
 
@@ -316,7 +316,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     external
     onlyPoolAdmin
   {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(true);
     currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
@@ -331,7 +331,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   function disableBorrowingOnReserve(address asset) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(false);
 
@@ -354,7 +354,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     uint256 liquidationThreshold,
     uint256 liquidationBonus
   ) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     //validation of the parameters: the LTV can
     //only be lower or equal than the liquidation threshold
@@ -396,7 +396,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   function enableReserveStableRate(address asset) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setStableRateBorrowingEnabled(true);
 
@@ -410,7 +410,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   function disableReserveStableRate(address asset) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setStableRateBorrowingEnabled(false);
 
@@ -424,7 +424,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   function activateReserve(address asset) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setActive(true);
 
@@ -440,7 +440,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   function deactivateReserve(address asset) external onlyPoolAdmin {
     _checkNoLiquidity(asset);
 
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setActive(false);
 
@@ -454,7 +454,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   function freezeReserve(address asset) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setFrozen(true);
 
@@ -468,7 +468,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param asset the address of the reserve
    **/
   function unfreezeReserve(address asset) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setFrozen(false);
 
@@ -483,7 +483,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
    * @param reserveFactor the new reserve factor of the reserve
    **/
   function setReserveFactor(address asset, uint256 reserveFactor) external onlyPoolAdmin {
-    ReserveConfiguration.Map memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setReserveFactor(reserveFactor);
 
@@ -535,7 +535,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
     InitializableImmutableAdminUpgradeabilityProxy proxy =
       InitializableImmutableAdminUpgradeabilityProxy(payable(proxyAddress));
 
-    ReserveConfiguration.Map memory configuration = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(asset);
 
     (, , , uint256 decimals, ) = configuration.getParamsMemory();
 
@@ -559,7 +559,7 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   function _checkNoLiquidity(address asset) internal view {
-    ReserveLogic.ReserveData memory reserveData = pool.getReserveData(asset);
+    DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
 
     uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
 
