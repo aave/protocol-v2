@@ -6,7 +6,6 @@ import {IWETH} from './interfaces/IWETH.sol';
 import {IWETHGateway} from './interfaces/IWETHGateway.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IAToken} from '../protocol/tokenization/interfaces/IAToken.sol';
-import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
