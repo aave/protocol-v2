@@ -3,7 +3,6 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {ReserveLogic} from '../../protocol/libraries/logic/ReserveLogic.sol';
 
 interface IUiPoolDataProvider {
   struct AggregatedReserveData {

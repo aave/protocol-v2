@@ -12,10 +12,11 @@ import {UserConfiguration} from '../protocol/libraries/configuration/UserConfigu
 import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract WETHGateway is IWETHGateway, Ownable {
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveBitmap;
+  using UserConfiguration for DataTypes.UserBitmap;
 
   IWETH internal immutable WETH;
   ILendingPool internal immutable POOL;
@@ -79,7 +80,7 @@ contract WETHGateway is IWETHGateway, Ownable {
       Helpers.getUserCurrentDebtMemory(onBehalfOf, POOL.getReserveData(address(WETH)));
 
     uint256 paybackAmount =
-      ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE
+      DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE
         ? stableDebt
         : variableDebt;
 

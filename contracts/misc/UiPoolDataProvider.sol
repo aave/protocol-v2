@@ -12,17 +12,17 @@ import {IVariableDebtToken} from '../protocol/tokenization/interfaces/IVariableD
 import {IStableDebtToken} from '../protocol/tokenization/interfaces/IStableDebtToken.sol';
 
 import {WadRayMath} from '../protocol/libraries/math/WadRayMath.sol';
-import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {
   DefaultReserveInterestRateStrategy
 } from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveBitmap;
+  using UserConfiguration for DataTypes.UserBitmap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
 
@@ -57,7 +57,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
-    UserConfiguration.Map memory userConfig = lendingPool.getUserConfiguration(user);
+    DataTypes.UserBitmap memory userConfig = lendingPool.getUserConfiguration(user);
 
     AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
     UserReserveData[] memory userReservesData =
@@ -68,7 +68,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.underlyingAsset = reserves[i];
 
       // reserve current state
-      ReserveLogic.ReserveData memory baseData =
+      DataTypes.ReserveData memory baseData =
         lendingPool.getReserveData(reserveData.underlyingAsset);
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;

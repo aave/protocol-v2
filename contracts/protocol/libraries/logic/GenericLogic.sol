@@ -10,6 +10,7 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title GenericLogic library
@@ -17,12 +18,12 @@ import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
  * @title Implements protocol-level logic to check the status of the user across all the reserves
  */
 library GenericLogic {
-  using ReserveLogic for ReserveLogic.ReserveData;
+  using ReserveLogic for DataTypes.ReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveBitmap;
+  using UserConfiguration for DataTypes.UserBitmap;
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
 
@@ -55,8 +56,8 @@ library GenericLogic {
     address asset,
     address user,
     uint256 amount,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map calldata userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserBitmap calldata userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -150,8 +151,8 @@ library GenericLogic {
    **/
   function calculateUserAccountData(
     address user,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map memory userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserBitmap memory userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -177,7 +178,7 @@ library GenericLogic {
       }
 
       vars.currentReserveAddress = reserves[vars.i];
-      ReserveLogic.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
+      DataTypes.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
         .configuration

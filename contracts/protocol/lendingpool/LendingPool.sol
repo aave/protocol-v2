@@ -24,6 +24,7 @@ import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
+import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 /**
  * @title LendingPool contract
@@ -107,7 +108,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf,
     uint16 referralCode
   ) external override whenNotPaused {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
 
@@ -143,7 +144,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address to
   ) external override whenNotPaused {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
 
@@ -202,7 +203,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode,
     address onBehalfOf
   ) external override whenNotPaused {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset];
 
     _executeBorrow(
       ExecuteBorrowParams(
@@ -235,11 +236,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
 
-    ReserveLogic.InterestRateMode interestRateMode = ReserveLogic.InterestRateMode(rateMode);
+    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
 
     ValidationLogic.validateRepay(
       reserve,
@@ -250,7 +251,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    uint256 paybackAmount = interestRateMode == ReserveLogic.InterestRateMode.STABLE
+    uint256 paybackAmount = interestRateMode == DataTypes.InterestRateMode.STABLE
       ? stableDebt
       : variableDebt;
 
@@ -260,7 +261,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateState();
 
-    if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
+    if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
     } else {
       IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
@@ -288,11 +289,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param rateMode The rate mode that the user wants to swap to
    **/
   function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
 
-    ReserveLogic.InterestRateMode interestRateMode = ReserveLogic.InterestRateMode(rateMode);
+    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
 
     ValidationLogic.validateSwapRateMode(
       reserve,
@@ -304,7 +305,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateState();
 
-    if (interestRateMode == ReserveLogic.InterestRateMode.STABLE) {
+    if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
       IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
         msg.sender,
@@ -341,7 +342,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param user The address of the user to be rebalanced
    **/
   function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset];
 
     IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
     IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
@@ -382,7 +383,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     override
     whenNotPaused
   {
-    ReserveLogic.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
@@ -509,7 +510,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.currentATokenAddress = aTokenAddresses[vars.i];
       vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
 
-      if (ReserveLogic.InterestRateMode(modes[vars.i]) == ReserveLogic.InterestRateMode.NONE) {
+      if (DataTypes.InterestRateMode(modes[vars.i]) == DataTypes.InterestRateMode.NONE) {
         _reserves[vars.currentAsset].updateState();
         _reserves[vars.currentAsset].cumulateToLiquidityIndex(
           IERC20(vars.currentATokenAddress).totalSupply(),
@@ -563,7 +564,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     external
     view
     override
-    returns (ReserveLogic.ReserveData memory)
+    returns (DataTypes.ReserveData memory)
   {
     return _reserves[asset];
   }
@@ -622,7 +623,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     external
     view
     override
-    returns (ReserveConfiguration.Map memory)
+    returns (DataTypes.ReserveBitmap memory)
   {
     return _reserves[asset].configuration;
   }
@@ -636,7 +637,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     external
     view
     override
-    returns (UserConfiguration.Map memory)
+    returns (DataTypes.UserBitmap memory)
   {
     return _usersConfig[user];
   }
@@ -729,13 +730,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (from != to) {
       if (balanceFromBefore.sub(amount) == 0) {
-        UserConfiguration.Map storage fromConfig = _usersConfig[from];
+        DataTypes.UserBitmap storage fromConfig = _usersConfig[from];
         fromConfig.setUsingAsCollateral(reserveId, false);
         emit ReserveUsedAsCollateralDisabled(asset, from);
       }
 
       if (balanceToBefore == 0 && amount != 0) {
-        UserConfiguration.Map storage toConfig = _usersConfig[to];
+        DataTypes.UserBitmap storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
         emit ReserveUsedAsCollateralEnabled(asset, to);
       }
@@ -823,8 +824,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
-    ReserveLogic.ReserveData storage reserve = _reserves[vars.asset];
-    UserConfiguration.Map storage userConfig = _usersConfig[vars.onBehalfOf];
+    DataTypes.ReserveData storage reserve = _reserves[vars.asset];
+    DataTypes.UserBitmap storage userConfig = _usersConfig[vars.onBehalfOf];
 
     address oracle = _addressesProvider.getPriceOracle();
 
@@ -854,7 +855,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     bool isFirstBorrowing = false;
     if (
-      ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE
+      DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE
     ) {
       currentStableRate = reserve.currentStableBorrowRate;
 
@@ -894,7 +895,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.onBehalfOf,
       vars.amount,
       vars.interestRateMode,
-      ReserveLogic.InterestRateMode(vars.interestRateMode) == ReserveLogic.InterestRateMode.STABLE
+      DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE
         ? currentStableRate
         : reserve.currentVariableBorrowRate,
       vars.referralCode

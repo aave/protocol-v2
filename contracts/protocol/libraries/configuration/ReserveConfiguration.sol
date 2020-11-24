@@ -2,6 +2,7 @@
 pragma solidity 0.6.12;
 
 import {Errors} from '../helpers/Errors.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveConfiguration library
@@ -35,26 +36,12 @@ library ReserveConfiguration {
   uint256 constant MAX_VALID_DECIMALS = 255;
   uint256 constant MAX_VALID_RESERVE_FACTOR = 65535;
 
-  struct Map {
-    //bit 0-15: LTV
-    //bit 16-31: Liq. threshold
-    //bit 32-47: Liq. bonus
-    //bit 48-55: Decimals
-    //bit 56: Reserve is active
-    //bit 57: reserve is frozen
-    //bit 58: borrowing is enabled
-    //bit 59: stable rate borrowing enabled
-    //bit 60-63: reserved
-    //bit 64-79: reserve factor
-    uint256 data;
-  }
-
   /**
    * @dev sets the Loan to Value of the reserve
    * @param self the reserve configuration
    * @param ltv the new ltv
    **/
-  function setLtv(ReserveConfiguration.Map memory self, uint256 ltv) internal pure {
+  function setLtv(DataTypes.ReserveBitmap memory self, uint256 ltv) internal pure {
     require(ltv <= MAX_VALID_LTV, Errors.RC_INVALID_LTV);
 
     self.data = (self.data & LTV_MASK) | ltv;
@@ -65,7 +52,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the loan to value
    **/
-  function getLtv(ReserveConfiguration.Map storage self) internal view returns (uint256) {
+  function getLtv(DataTypes.ReserveBitmap storage self) internal view returns (uint256) {
     return self.data & ~LTV_MASK;
   }
 
@@ -74,7 +61,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param threshold the new liquidation threshold
    **/
-  function setLiquidationThreshold(ReserveConfiguration.Map memory self, uint256 threshold)
+  function setLiquidationThreshold(DataTypes.ReserveBitmap memory self, uint256 threshold)
     internal
     pure
   {
@@ -90,7 +77,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the liquidation threshold
    **/
-  function getLiquidationThreshold(ReserveConfiguration.Map storage self)
+  function getLiquidationThreshold(DataTypes.ReserveBitmap storage self)
     internal
     view
     returns (uint256)
@@ -103,7 +90,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param bonus the new liquidation bonus
    **/
-  function setLiquidationBonus(ReserveConfiguration.Map memory self, uint256 bonus) internal pure {
+  function setLiquidationBonus(DataTypes.ReserveBitmap memory self, uint256 bonus) internal pure {
     require(bonus <= MAX_VALID_LIQUIDATION_BONUS, Errors.RC_INVALID_LIQ_BONUS);
 
     self.data =
@@ -116,7 +103,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the liquidation bonus
    **/
-  function getLiquidationBonus(ReserveConfiguration.Map storage self)
+  function getLiquidationBonus(DataTypes.ReserveBitmap storage self)
     internal
     view
     returns (uint256)
@@ -129,7 +116,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param decimals the decimals
    **/
-  function setDecimals(ReserveConfiguration.Map memory self, uint256 decimals) internal pure {
+  function setDecimals(DataTypes.ReserveBitmap memory self, uint256 decimals) internal pure {
     require(decimals <= MAX_VALID_DECIMALS, Errors.RC_INVALID_DECIMALS);
 
     self.data = (self.data & DECIMALS_MASK) | (decimals << RESERVE_DECIMALS_START_BIT_POSITION);
@@ -140,7 +127,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the decimals of the asset
    **/
-  function getDecimals(ReserveConfiguration.Map storage self) internal view returns (uint256) {
+  function getDecimals(DataTypes.ReserveBitmap storage self) internal view returns (uint256) {
     return (self.data & ~DECIMALS_MASK) >> RESERVE_DECIMALS_START_BIT_POSITION;
   }
 
@@ -149,7 +136,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param active the active state
    **/
-  function setActive(ReserveConfiguration.Map memory self, bool active) internal pure {
+  function setActive(DataTypes.ReserveBitmap memory self, bool active) internal pure {
     self.data =
       (self.data & ACTIVE_MASK) |
       (uint256(active ? 1 : 0) << IS_ACTIVE_START_BIT_POSITION);
@@ -160,7 +147,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the active state
    **/
-  function getActive(ReserveConfiguration.Map storage self) internal view returns (bool) {
+  function getActive(DataTypes.ReserveBitmap storage self) internal view returns (bool) {
     return (self.data & ~ACTIVE_MASK) != 0;
   }
 
@@ -169,7 +156,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param frozen the frozen state
    **/
-  function setFrozen(ReserveConfiguration.Map memory self, bool frozen) internal pure {
+  function setFrozen(DataTypes.ReserveBitmap memory self, bool frozen) internal pure {
     self.data =
       (self.data & FROZEN_MASK) |
       (uint256(frozen ? 1 : 0) << IS_FROZEN_START_BIT_POSITION);
@@ -180,7 +167,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the frozen state
    **/
-  function getFrozen(ReserveConfiguration.Map storage self) internal view returns (bool) {
+  function getFrozen(DataTypes.ReserveBitmap storage self) internal view returns (bool) {
     return (self.data & ~FROZEN_MASK) != 0;
   }
 
@@ -189,7 +176,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param enabled true if the borrowing needs to be enabled, false otherwise
    **/
-  function setBorrowingEnabled(ReserveConfiguration.Map memory self, bool enabled) internal pure {
+  function setBorrowingEnabled(DataTypes.ReserveBitmap memory self, bool enabled) internal pure {
     self.data =
       (self.data & BORROWING_MASK) |
       (uint256(enabled ? 1 : 0) << BORROWING_ENABLED_START_BIT_POSITION);
@@ -200,7 +187,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the borrowing state
    **/
-  function getBorrowingEnabled(ReserveConfiguration.Map storage self) internal view returns (bool) {
+  function getBorrowingEnabled(DataTypes.ReserveBitmap storage self) internal view returns (bool) {
     return (self.data & ~BORROWING_MASK) != 0;
   }
 
@@ -209,7 +196,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param enabled true if the stable rate borrowing needs to be enabled, false otherwise
    **/
-  function setStableRateBorrowingEnabled(ReserveConfiguration.Map memory self, bool enabled)
+  function setStableRateBorrowingEnabled(DataTypes.ReserveBitmap memory self, bool enabled)
     internal
     pure
   {
@@ -223,7 +210,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the stable rate borrowing state
    **/
-  function getStableRateBorrowingEnabled(ReserveConfiguration.Map storage self)
+  function getStableRateBorrowingEnabled(DataTypes.ReserveBitmap storage self)
     internal
     view
     returns (bool)
@@ -236,7 +223,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @param reserveFactor the reserve factor
    **/
-  function setReserveFactor(ReserveConfiguration.Map memory self, uint256 reserveFactor)
+  function setReserveFactor(DataTypes.ReserveBitmap memory self, uint256 reserveFactor)
     internal
     pure
   {
@@ -252,7 +239,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the reserve factor
    **/
-  function getReserveFactor(ReserveConfiguration.Map storage self) internal view returns (uint256) {
+  function getReserveFactor(DataTypes.ReserveBitmap storage self) internal view returns (uint256) {
     return (self.data & ~RESERVE_FACTOR_MASK) >> RESERVE_FACTOR_START_BIT_POSITION;
   }
 
@@ -261,7 +248,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
    **/
-  function getFlags(ReserveConfiguration.Map storage self)
+  function getFlags(DataTypes.ReserveBitmap storage self)
     internal
     view
     returns (
@@ -286,7 +273,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
    **/
-  function getParams(ReserveConfiguration.Map storage self)
+  function getParams(DataTypes.ReserveBitmap storage self)
     internal
     view
     returns (
@@ -313,7 +300,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
    **/
-  function getParamsMemory(ReserveConfiguration.Map memory self)
+  function getParamsMemory(DataTypes.ReserveBitmap memory self)
     internal
     pure
     returns (
@@ -338,7 +325,7 @@ library ReserveConfiguration {
    * @param self the reserve configuration
    * @return the state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
    **/
-  function getFlagsMemory(ReserveConfiguration.Map memory self)
+  function getFlagsMemory(DataTypes.ReserveBitmap memory self)
     internal
     pure
     returns (

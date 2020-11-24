@@ -10,8 +10,6 @@ import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPoolCollateralManager} from '../../interfaces/ILendingPoolCollateralManager.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
@@ -19,6 +17,7 @@ import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 /**
  * @title LendingPoolCollateralManager contract
@@ -27,7 +26,11 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  * @notice this contract will be ran always through delegatecall
  * @dev LendingPoolCollateralManager inherits VersionedInitializable from OpenZeppelin to have the same storage layout as LendingPool
  **/
-contract LendingPoolCollateralManager is ILendingPoolCollateralManager, VersionedInitializable, LendingPoolStorage {
+contract LendingPoolCollateralManager is
+  ILendingPoolCollateralManager,
+  VersionedInitializable,
+  LendingPoolStorage
+{
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -52,7 +55,7 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
     uint256 healthFactor;
     IAToken collateralAtoken;
     bool isCollateralEnabled;
-    ReserveLogic.InterestRateMode borrowRateMode;
+    DataTypes.InterestRateMode borrowRateMode;
     address principalAToken;
     uint256 errorCode;
     string errorMsg;
@@ -92,9 +95,9 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
     uint256 debtToCover,
     bool receiveAToken
   ) external override returns (uint256, string memory) {
-    ReserveLogic.ReserveData storage collateralReserve = _reserves[collateral];
-    ReserveLogic.ReserveData storage principalReserve = _reserves[principal];
-    UserConfiguration.Map storage userConfig = _usersConfig[user];
+    DataTypes.ReserveData storage collateralReserve = _reserves[collateral];
+    DataTypes.ReserveData storage principalReserve = _reserves[principal];
+    DataTypes.UserBitmap storage userConfig = _usersConfig[user];
 
     LiquidationCallLocalVars memory vars;
 
@@ -266,8 +269,8 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
    * @return principalAmountNeeded the purchase amount
    **/
   function _calculateAvailableCollateralToLiquidate(
-    ReserveLogic.ReserveData storage collateralReserve,
-    ReserveLogic.ReserveData storage principalReserve,
+    DataTypes.ReserveData storage collateralReserve,
+    DataTypes.ReserveData storage principalReserve,
     address collateralAddress,
     address principalAddress,
     uint256 debtToCover,

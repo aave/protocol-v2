@@ -5,16 +5,17 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
+import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 contract LendingPoolStorage {
-  using ReserveLogic for ReserveLogic.ReserveData;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveLogic for DataTypes.ReserveData;
+  using ReserveConfiguration for DataTypes.ReserveBitmap;
+  using UserConfiguration for DataTypes.UserBitmap;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 
-  mapping(address => ReserveLogic.ReserveData) internal _reserves;
-  mapping(address => UserConfiguration.Map) internal _usersConfig;
+  mapping(address => DataTypes.ReserveData) internal _reserves;
+  mapping(address => DataTypes.UserBitmap) internal _usersConfig;
 
   // the list of the available reserves, structured as a mapping for gas savings reasons
   mapping(uint256 => address) internal _reservesList;

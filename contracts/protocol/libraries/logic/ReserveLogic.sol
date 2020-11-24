@@ -13,6 +13,7 @@ import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterest
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveLogic library
@@ -43,35 +44,8 @@ library ReserveLogic {
     uint256 variableBorrowIndex
   );
 
-  using ReserveLogic for ReserveLogic.ReserveData;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-
-  enum InterestRateMode {NONE, STABLE, VARIABLE}
-
-  // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
-  struct ReserveData {
-    //stores the reserve configuration
-    ReserveConfiguration.Map configuration;
-    //the liquidity index. Expressed in ray
-    uint128 liquidityIndex;
-    //variable borrow index. Expressed in ray
-    uint128 variableBorrowIndex;
-    //the current supply rate. Expressed in ray
-    uint128 currentLiquidityRate;
-    //the current variable borrow rate. Expressed in ray
-    uint128 currentVariableBorrowRate;
-    //the current stable borrow rate. Expressed in ray
-    uint128 currentStableBorrowRate;
-    uint40 lastUpdateTimestamp;
-    //tokens addresses
-    address aTokenAddress;
-    address stableDebtTokenAddress;
-    address variableDebtTokenAddress;
-    //address of the interest rate strategy
-    address interestRateStrategyAddress;
-    //the id of the reserve. Represents the position in the list of the active reserves
-    uint8 id;
-  }
+  using ReserveLogic for DataTypes.ReserveData;
+  using ReserveConfiguration for DataTypes.ReserveBitmap;
 
   /**
    * @dev returns the ongoing normalized income for the reserve.
@@ -80,7 +54,11 @@ library ReserveLogic {
    * @param reserve the reserve object
    * @return the normalized income. expressed in ray
    **/
-  function getNormalizedIncome(ReserveData storage reserve) internal view returns (uint256) {
+  function getNormalizedIncome(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint256)
+  {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -104,7 +82,11 @@ library ReserveLogic {
    * @param reserve the reserve object
    * @return the normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(ReserveData storage reserve) internal view returns (uint256) {
+  function getNormalizedDebt(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint256)
+  {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -126,7 +108,7 @@ library ReserveLogic {
    * a formal specification.
    * @param reserve the reserve object
    **/
-  function updateState(ReserveData storage reserve) internal {
+  function updateState(DataTypes.ReserveData storage reserve) internal {
     uint256 scaledVariableDebt =
       IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
@@ -160,7 +142,7 @@ library ReserveLogic {
    * @param amount the amount to accomulate
    **/
   function cumulateToLiquidityIndex(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 totalLiquidity,
     uint256 amount
   ) internal {
@@ -181,7 +163,7 @@ library ReserveLogic {
    * @param interestRateStrategyAddress the address of the interest rate strategy contract
    **/
   function init(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address aTokenAddress,
     address stableDebtTokenAddress,
     address variableDebtTokenAddress,
@@ -216,7 +198,7 @@ library ReserveLogic {
    * @param liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
    **/
   function updateInterestRates(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address reserveAddress,
     address aTokenAddress,
     uint256 liquidityAdded,
@@ -292,7 +274,7 @@ library ReserveLogic {
    * @param newVariableBorrowIndex the variable borrow index after the last accumulation of the interest
    **/
   function _mintToTreasury(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
@@ -352,7 +334,7 @@ library ReserveLogic {
    * @param variableBorrowIndex the last stored variable borrow index
    **/
   function _updateIndexes(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 liquidityIndex,
     uint256 variableBorrowIndex,
