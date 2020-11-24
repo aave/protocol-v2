@@ -1,7 +1,7 @@
 pragma solidity 0.6.12;
 
-import {StableDebtToken} from '../../contracts/tokenization/StableDebtToken.sol';
-import {IncentivizedERC20} from '../../contracts/tokenization/IncentivizedERC20.sol';
+import {StableDebtToken} from '../../contracts/protocol/tokenization/StableDebtToken.sol';
+import {IncentivizedERC20} from '../../contracts/protocol/tokenization/IncentivizedERC20.sol';
 
 contract StableDebtTokenHarness is StableDebtToken {
   constructor(

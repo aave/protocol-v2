@@ -3,11 +3,11 @@ pragma experimental ABIEncoderV2;
 
 import {
 ReserveConfiguration
-} from '../../contracts/libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../../contracts/libraries/configuration/UserConfiguration.sol';
-import {ReserveLogic} from '../../contracts/libraries/logic/ReserveLogic.sol';
+} from '../../contracts/protocol/libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../../contracts/protocol/libraries/configuration/UserConfiguration.sol';
+import {ReserveLogic} from '../../contracts/protocol/libraries/logic/ReserveLogic.sol';
 import {ILendingPool} from '../../contracts/interfaces/ILendingPool.sol';
-import {LendingPool} from '../../contracts/lendingpool/LendingPool.sol';
+import {LendingPool} from '../../contracts/protocol/lendingpool/LendingPool.sol';
 import {
 ILendingPoolAddressesProvider
 } from '../../contracts/interfaces/ILendingPoolAddressesProvider.sol';
