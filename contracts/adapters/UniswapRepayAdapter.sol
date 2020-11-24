@@ -84,29 +84,39 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 debtRateMode,
     PermitSignature calldata permitSignature
   ) external {
-    ReserveLogic.ReserveData memory reserveData = _getReserveData(collateralAsset);
+    ReserveLogic.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
+    ReserveLogic.ReserveData memory debtReserveData = _getReserveData(debtAsset);
+
+    address debtToken = ReserveLogic.InterestRateMode(debtRateMode) == ReserveLogic.InterestRateMode.STABLE
+      ? debtReserveData.stableDebtTokenAddress
+      : debtReserveData.variableDebtTokenAddress;
+
+    uint256 currentDebt = IERC20(debtToken).balanceOf(msg.sender);
+    uint256 amountToRepay = debtRepayAmount <= currentDebt ? debtRepayAmount : currentDebt;
 
     if (collateralAsset != debtAsset) {
+      uint256 maxCollateralToSwap = collateralAmount;
+      if (amountToRepay < debtRepayAmount) {
+        maxCollateralToSwap = maxCollateralToSwap.mul(amountToRepay).div(debtRepayAmount);
+      }
+
       // Get exact collateral needed for the swap to avoid leftovers
-      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, debtRepayAmount);
-      require(amounts[0] <= collateralAmount, 'slippage too high');
+      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, amountToRepay);
+      require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user
-      _pullAToken(collateralAsset, reserveData.aTokenAddress, msg.sender, amounts[0], permitSignature);
+      _pullAToken(collateralAsset, collateralReserveData.aTokenAddress, msg.sender, amounts[0], permitSignature);
 
       // Swap collateral for debt asset
-      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], debtRepayAmount);
+      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], amountToRepay);
     } else {
       // Pull aTokens from user
-      _pullAToken(collateralAsset, reserveData.aTokenAddress, msg.sender, debtRepayAmount, permitSignature);
+      _pullAToken(collateralAsset, collateralReserveData.aTokenAddress, msg.sender, amountToRepay, permitSignature);
     }
 
     // Repay debt
-    IERC20(debtAsset).approve(address(POOL), debtRepayAmount);
-    POOL.repay(debtAsset, debtRepayAmount, debtRateMode, msg.sender);
-
-    // In the case the repay amount provided exceeded the actual debt, send the leftovers to the user
-    _sendLeftovers(debtAsset, msg.sender);
+    IERC20(debtAsset).approve(address(POOL), amountToRepay);
+    POOL.repay(debtAsset, amountToRepay, debtRateMode, msg.sender);
   }
 
 
