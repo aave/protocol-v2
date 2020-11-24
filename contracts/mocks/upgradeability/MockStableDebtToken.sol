@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {StableDebtToken} from '../../tokenization/StableDebtToken.sol';
+import {StableDebtToken} from '../../protocol/tokenization/StableDebtToken.sol';
 
 contract MockStableDebtToken is StableDebtToken {
   constructor(
@@ -15,7 +15,7 @@ contract MockStableDebtToken is StableDebtToken {
     StableDebtToken(_pool, _underlyingAssetAddress, _tokenName, _tokenSymbol, incentivesController)
   {}
 
-  function getRevision() internal override pure returns (uint256) {
+  function getRevision() internal pure override returns (uint256) {
     return 0x2;
   }
 }

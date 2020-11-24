@@ -260,7 +260,9 @@ export enum TokenContractId {
   ENJ = 'ENJ',
 }
 
-export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {}
+export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
+  aTokenImpl: eContractid;
+}
 
 export interface IReserveBorrowParams {
   optimalUtilizationRate: string;

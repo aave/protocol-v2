@@ -20,61 +20,61 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   LendingPool private originalPool;
 
   function deposit(
-    address reserve,
+    address asset,
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
   ) external override {
-    originalPool.deposit(reserve, amount, onBehalfOf, referralCode);
+    originalPool.deposit(asset, amount, onBehalfOf, referralCode);
   }
 
   function withdraw(
-    address reserve,
+    address asset,
     uint256 amount,
     address to
   ) external override {
-    originalPool.withdraw(reserve, amount, to);
+    originalPool.withdraw(asset, amount, to);
   }
 
   function borrow(
-    address reserve,
+    address asset,
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
   ) external override {
-    originalPool.borrow(reserve, amount, interestRateMode, referralCode, onBehalfOf);
+    originalPool.borrow(asset, amount, interestRateMode, referralCode, onBehalfOf);
   }
 
   function repay(
-    address reserve,
+    address asset,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
   ) external override {
-    originalPool.repay(reserve, amount, rateMode, onBehalfOf);
+    originalPool.repay(asset, amount, rateMode, onBehalfOf);
   }
 
-  function swapBorrowRateMode(address reserve, uint256 rateMode) external override {
-    originalPool.swapBorrowRateMode(reserve, rateMode);
+  function swapBorrowRateMode(address asset, uint256 rateMode) external override {
+    originalPool.swapBorrowRateMode(asset, rateMode);
   }
 
-  function rebalanceStableBorrowRate(address reserve, address user) external override {
-    originalPool.rebalanceStableBorrowRate(reserve, user);
+  function rebalanceStableBorrowRate(address asset, address user) external override {
+    originalPool.rebalanceStableBorrowRate(asset, user);
   }
 
-  function setUserUseReserveAsCollateral(address reserve, bool useAsCollateral) external override {
-    originalPool.setUserUseReserveAsCollateral(reserve, useAsCollateral);
+  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
+    originalPool.setUserUseReserveAsCollateral(asset, useAsCollateral);
   }
 
   function liquidationCall(
     address collateral,
-    address reserve,
+    address asset,
     address user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     bool receiveAToken
   ) external override {
-    originalPool.liquidationCall(collateral, reserve, user, purchaseAmount, receiveAToken);
+    originalPool.liquidationCall(collateral, asset, user, debtToCover, receiveAToken);
   }
 
   function getReservesList() external override view returns (address[] memory) {
@@ -82,48 +82,48 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   }
 
   function getReserveData(address asset)
-  external
-  override
-  view
-  returns (ReserveLogic.ReserveData memory)
+    external
+    override
+    view
+    returns (ReserveLogic.ReserveData memory)
   {
     return originalPool.getReserveData(asset);
   }
 
   function getUserConfiguration(address user)
-  external
-  override
-  view
-  returns (UserConfiguration.Map memory)
+    external
+    override
+    view
+    returns (UserConfiguration.Map memory)
   {
     return originalPool.getUserConfiguration(user);
   }
 
   function getUserAccountData(address user)
-  external
-  override
-  view
-  returns (
-    uint256 totalCollateralETH,
-    uint256 totalBorrowsETH,
-    uint256 availableBorrowsETH,
-    uint256 currentLiquidationThreshold,
-    uint256 ltv,
-    uint256 healthFactor
-  )
+    external
+    override
+    view
+    returns (
+      uint256 totalCollateralETH,
+      uint256 totalBorrowsETH,
+      uint256 availableBorrowsETH,
+      uint256 currentLiquidationThreshold,
+      uint256 ltv,
+      uint256 healthFactor
+    )
   {
     return originalPool.getUserAccountData(user);
   }
 
   function initReserve(
-    address reserve,
+    address asset,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
   ) external override {
     originalPool.initReserve(
-      reserve,
+      asset,
       aTokenAddress,
       stableDebtAddress,
       variableDebtAddress,
@@ -131,24 +131,24 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     );
   }
 
-  function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
-  external
-  override
+  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
+    external
+    override
   {
-    originalPool.setReserveInterestRateStrategyAddress(reserve, rateStrategyAddress);
+    originalPool.setReserveInterestRateStrategyAddress(asset, rateStrategyAddress);
   }
 
-  function setConfiguration(address reserve, uint256 configuration) external override {
-    originalPool.setConfiguration(reserve, configuration);
+  function setConfiguration(address asset, uint256 configuration) external override {
+    originalPool.setConfiguration(asset, configuration);
   }
 
-  function getConfiguration(address reserve)
-  external
-  override
-  view
-  returns (ReserveConfiguration.Map memory)
+  function getConfiguration(address asset)
+    external
+    override
+    view
+    returns (ReserveConfiguration.Map memory)
   {
-    return originalPool.getConfiguration(reserve);
+    return originalPool.getConfiguration(asset);
   }
 
   mapping(uint256 => uint256) private reserveNormalizedIncome;
@@ -161,10 +161,10 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
   mapping(uint256 => uint256) private reserveNormalizedVariableDebt;
 
   function getReserveNormalizedVariableDebt(address asset)
-  external
-  override
-  view
-  returns (uint256)
+    external
+    override
+    view
+    returns (uint256)
   {
     require(reserveNormalizedVariableDebt[block.timestamp] == 1e27);
     return reserveNormalizedVariableDebt[block.timestamp];

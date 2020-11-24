@@ -5,11 +5,11 @@ pragma experimental ABIEncoderV2;
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
-import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
-import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
+import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
+import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
+import {IStableDebtToken} from '../protocol/tokenization/interfaces/IStableDebtToken.sol';
+import {IVariableDebtToken} from '../protocol/tokenization/interfaces/IVariableDebtToken.sol';
 
 contract AaveProtocolDataProvider {
   using ReserveConfiguration for ReserveConfiguration.Map;
@@ -80,10 +80,8 @@ contract AaveProtocolDataProvider {
       bool isFrozen
     )
   {
-    ReserveConfiguration.Map memory configuration = ILendingPool(
-      ADDRESSES_PROVIDER.getLendingPool()
-    )
-      .getConfiguration(asset);
+    ReserveConfiguration.Map memory configuration =
+      ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getConfiguration(asset);
 
     (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = configuration
       .getParamsMemory();
@@ -110,8 +108,8 @@ contract AaveProtocolDataProvider {
       uint40 lastUpdateTimestamp
     )
   {
-    ReserveLogic.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
-      .getReserveData(asset);
+    ReserveLogic.ReserveData memory reserve =
+      ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
 
     return (
       IERC20Detailed(asset).balanceOf(reserve.aTokenAddress),
@@ -142,11 +140,11 @@ contract AaveProtocolDataProvider {
       bool usageAsCollateralEnabled
     )
   {
-    ReserveLogic.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
-      .getReserveData(asset);
+    ReserveLogic.ReserveData memory reserve =
+      ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
 
-    UserConfiguration.Map memory userConfig = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
-      .getUserConfiguration(user);
+    UserConfiguration.Map memory userConfig =
+      ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getUserConfiguration(user);
 
     currentATokenBalance = IERC20Detailed(reserve.aTokenAddress).balanceOf(user);
     currentVariableDebt = IERC20Detailed(reserve.variableDebtTokenAddress).balanceOf(user);
@@ -170,8 +168,8 @@ contract AaveProtocolDataProvider {
       address variableDebtTokenAddress
     )
   {
-    ReserveLogic.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
-      .getReserveData(asset);
+    ReserveLogic.ReserveData memory reserve =
+      ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
 
     return (
       reserve.aTokenAddress,

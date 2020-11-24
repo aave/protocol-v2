@@ -162,8 +162,8 @@ export const deployAaveLibraries = async (
   // libPath example: contracts/libraries/logic/GenericLogic.sol
   // libName example: GenericLogic
   return {
-    ['__$5201a97c05ba6aa659e2f36a933dd51801$__']: validationLogic.address,
-    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: reserveLogic.address,
+    ['__$de8c0cf1a7d7c36c802af9a64fb9d86036$__']: validationLogic.address,
+    ['__$22cd43a9dda9ce44e9b92ba393b88fb9ac$__']: reserveLogic.address,
   };
 };
 
@@ -244,14 +244,11 @@ export const deployMockFlashLoanReceiver = async (
     verify
   );
 
-export const deployWalletBalancerProvider = async (
-  addressesProvider: tEthereumAddress,
-  verify?: boolean
-) =>
+export const deployWalletBalancerProvider = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(addressesProvider),
+    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(),
     eContractid.WalletBalanceProvider,
-    [addressesProvider],
+    [],
     verify
   );
 
@@ -288,7 +285,7 @@ export const deployMintableDelegationERC20 = async (
     verify
   );
 export const deployDefaultReserveInterestRateStrategy = async (
-  args: [tEthereumAddress, string, string, string, string, string],
+  args: [tEthereumAddress, string, string, string, string, string, string],
   verify: boolean
 ) =>
   withSaveAndVerify(
@@ -366,7 +363,7 @@ export const deployDelegationAwareAToken = async (
   ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
   return withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.AToken,
+    eContractid.DelegationAwareAToken,
     args,
     verify
   );
