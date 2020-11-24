@@ -76,6 +76,40 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     return true;
   }
 
+  function swapAndRepay(
+    address collateralAsset,
+    address debtAsset,
+    uint256 collateralAmount,
+    uint256 debtRepayAmount,
+    uint256 debtRateMode,
+    PermitSignature calldata permitSignature
+  ) external {
+    ReserveLogic.ReserveData memory reserveData = _getReserveData(collateralAsset);
+
+    if (collateralAsset != debtAsset) {
+      // Get exact collateral needed for the swap to avoid leftovers
+      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, debtRepayAmount);
+      require(amounts[0] <= collateralAmount, 'slippage too high');
+
+      // Pull aTokens from user
+      _pullAToken(collateralAsset, reserveData.aTokenAddress, msg.sender, amounts[0], permitSignature);
+
+      // Swap collateral for debt asset
+      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], debtRepayAmount);
+    } else {
+      // Pull aTokens from user
+      _pullAToken(collateralAsset, reserveData.aTokenAddress, msg.sender, debtRepayAmount, permitSignature);
+    }
+
+    // Repay debt
+    IERC20(debtAsset).approve(address(POOL), debtRepayAmount);
+    POOL.repay(debtAsset, debtRepayAmount, debtRateMode, msg.sender);
+
+    // In the case the repay amount provided exceeded the actual debt, send the leftovers to the user
+    _sendLeftovers(debtAsset, msg.sender);
+  }
+
+
   /**
    * @dev Perform the repay of the debt, pulls the initiator collateral and swaps to repay the flash loan
    *

@@ -73,7 +73,7 @@ contract BaseUniswapAdapter {
     view
     returns (uint256, uint256, uint256, uint256)
   {
-    AmountCalc memory results = _getAmountsOut(reserveIn, reserveOut, amountIn);
+    AmountCalc memory results = _getAmountsOutData(reserveIn, reserveOut, amountIn);
 
     return (
       results.calculatedAmount,
@@ -98,7 +98,7 @@ contract BaseUniswapAdapter {
     view
     returns (uint256, uint256, uint256, uint256)
   {
-    AmountCalc memory results = _getAmountsIn(reserveIn, reserveOut, amountOut);
+    AmountCalc memory results = _getAmountsInData(reserveIn, reserveOut, amountOut);
 
     return (
       results.calculatedAmount,
@@ -291,7 +291,7 @@ contract BaseUniswapAdapter {
    *   uint256 In amount of reserveIn value denominated in USD (8 decimals)
    *   uint256 Out amount of reserveOut value denominated in USD (8 decimals)
    */
-  function _getAmountsOut(address reserveIn, address reserveOut, uint256 amountIn) internal view returns (AmountCalc memory) {
+  function _getAmountsOutData(address reserveIn, address reserveOut, uint256 amountIn) internal view returns (AmountCalc memory) {
     // Subtract flash loan fee
     uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
 
@@ -328,12 +328,8 @@ contract BaseUniswapAdapter {
    *   uint256 In amount of reserveIn value denominated in USD (8 decimals)
    *   uint256 Out amount of reserveOut value denominated in USD (8 decimals)
    */
-  function _getAmountsIn(address reserveIn, address reserveOut, uint256 amountOut) internal view returns (AmountCalc memory) {
-    address[] memory path = new address[](2);
-    path[0] = reserveIn;
-    path[1] = reserveOut;
-
-    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, path);
+  function _getAmountsInData(address reserveIn, address reserveOut, uint256 amountOut) internal view returns (AmountCalc memory) {
+    uint256[] memory amounts = _getAmountsIn(reserveIn, reserveOut, amountOut);
 
     // Add flash loan fee
     uint256 finalAmountIn = amounts[0].add(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
@@ -352,5 +348,20 @@ contract BaseUniswapAdapter {
       _calcUsdValue(reserveIn, finalAmountIn, reserveInDecimals),
       _calcUsdValue(reserveOut, amountOut, reserveOutDecimals)
     );
+  }
+
+  /**
+ * @dev Calculates the input asset amount required to buy the given output asset amount
+ * @param reserveIn Address of the asset to be swap from
+ * @param reserveOut Address of the asset to be swap to
+ * @param amountOut Amount of reserveOut
+ * @return uint256[] amounts Array containing the amountIn and amountOut for a swap
+ */
+  function _getAmountsIn(address reserveIn, address reserveOut, uint256 amountOut) internal view returns (uint256[] memory) {
+    address[] memory path = new address[](2);
+    path[0] = reserveIn;
+    path[1] = reserveOut;
+
+    return UNISWAP_ROUTER.getAmountsIn(amountOut, path);
   }
 }
