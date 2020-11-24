@@ -101,11 +101,11 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
 
   function getUserAccountData(address user)
     external
-    override
     view
+    override
     returns (
       uint256 totalCollateralETH,
-      uint256 totalBorrowsETH,
+      uint256 totalDebtETH,
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
