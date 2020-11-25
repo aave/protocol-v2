@@ -263,9 +263,12 @@ export enum TokenContractId {
   ENJ = 'ENJ',
 }
 
-export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {}
+export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
+  aTokenImpl: eContractid;
+}
 
 export interface IReserveBorrowParams {
+  optimalUtilizationRate: string;
   baseVariableBorrowRate: string;
   variableRateSlope1: string;
   variableRateSlope2: string;
@@ -324,12 +327,8 @@ export enum EthereumNetwork {
 }
 
 export interface IProtocolGlobalConfig {
-  OptimalUtilizationRate: BigNumber;
-  ExcessUtilizationRate: BigNumber;
-  ApprovalAmountLendingPoolCore: string;
   TokenDistributorPercentageBase: string;
   MockUsdPriceInWei: string;
-  EthereumAddress: tEthereumAddress;
   UsdAddress: tEthereumAddress;
   NilAddress: tEthereumAddress;
   OneAddress: tEthereumAddress;

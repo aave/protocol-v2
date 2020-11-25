@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {IWETH} from './interfaces/IWETH.sol';
 import {IWETHGateway} from './interfaces/IWETHGateway.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {IAToken} from '../tokenization/interfaces/IAToken.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
-import {Helpers} from '../libraries/helpers/Helpers.sol';
+import {IAToken} from '../protocol/tokenization/interfaces/IAToken.sol';
+import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
+import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract WETHGateway is IWETHGateway, Ownable {
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   IWETH internal immutable WETH;
   ILendingPool internal immutable POOL;
@@ -40,7 +40,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
-  function depositETH(address onBehalfOf, uint16 referralCode) external override payable {
+  function depositETH(address onBehalfOf, uint16 referralCode) external payable override {
     WETH.deposit{value: msg.value}();
     POOL.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
   }
@@ -74,16 +74,14 @@ contract WETHGateway is IWETHGateway, Ownable {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external override payable {
-    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebtMemory(
-      onBehalfOf,
-      POOL.getReserveData(address(WETH))
-    );
+  ) external payable override {
+    (uint256 stableDebt, uint256 variableDebt) =
+      Helpers.getUserCurrentDebtMemory(onBehalfOf, POOL.getReserveData(address(WETH)));
 
-    uint256 paybackAmount = ReserveLogic.InterestRateMode(rateMode) ==
-      ReserveLogic.InterestRateMode.STABLE
-      ? stableDebt
-      : variableDebt;
+    uint256 paybackAmount =
+      DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE
+        ? stableDebt
+        : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;

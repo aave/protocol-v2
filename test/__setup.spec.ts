@@ -247,7 +247,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   ]);
   await insertContractAddressInDb(eContractid.UniswapRepayAdapter, UniswapRepayAdapter.address);
 
-  await deployWalletBalancerProvider(addressesProvider.address);
+  await deployWalletBalancerProvider();
 
   await deployWETHGateway([mockTokens.WETH.address, lendingPoolAddress]);
 

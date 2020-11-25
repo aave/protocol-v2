@@ -7,7 +7,7 @@ dist/
 build/
 .vscode
 .idea
-types
+/types
 
 deployed-contracts.json
 

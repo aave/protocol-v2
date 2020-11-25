@@ -1,8 +1,9 @@
 import BigNumber from 'bignumber.js';
-import {oneRay} from '../../helpers/constants';
-import {IReserveParams} from '../../helpers/types';
+import { oneRay } from '../../helpers/constants';
+import { eContractid, IReserveParams } from '../../helpers/types';
 
 export const strategyBase: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
@@ -14,9 +15,11 @@ export const strategyBase: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const stablecoinStrategyBase: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1.5).multipliedBy(oneRay).toFixed(),
@@ -28,9 +31,11 @@ export const stablecoinStrategyBase: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const stablecoinStrategyCentralized: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
@@ -42,6 +47,7 @@ export const stablecoinStrategyCentralized: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategyGovernanceTokens: IReserveParams = {
@@ -117,6 +123,7 @@ export const strategyREN: IReserveParams = {
 };
 
 export const stablecoinStrategySUSD: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0.01).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
@@ -128,6 +135,7 @@ export const stablecoinStrategySUSD: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategySNX: IReserveParams = {
@@ -155,6 +163,7 @@ export const stablecoinStrategyTUSD: IReserveParams = {
 export const strategyUNI: IReserveParams = {
   ...strategyGovernanceTokens,
   stableBorrowRateEnabled: false,
+  aTokenImpl: eContractid.DelegationAwareAToken,
 };
 
 export const stablecoinStrategyUSDC: IReserveParams = {
@@ -174,6 +183,7 @@ export const stablecoinStrategyUSDT: IReserveParams = {
 };
 
 export const strategyWBTC: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(0.5).multipliedBy(oneRay).toFixed(),
@@ -185,9 +195,11 @@ export const strategyWBTC: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '8',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategyWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
@@ -199,6 +211,7 @@ export const strategyWETH: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
 };
 
 export const strategyYFI: IReserveParams = {

@@ -4,4 +4,6 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile_test
-    command: npm run test
+    environment:
+      - MNEMONIC
+      - ALCHEMY_KEY
