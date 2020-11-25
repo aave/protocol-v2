@@ -10,7 +10,7 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
 /**
  * @title UniswapLiquiditySwapAdapter
- * @notice Uniswap V2 Adapter to swap liquidity using a flash loan.
+ * @notice Uniswap V2 Adapter to swap liquidity.
  * @author Aave
  **/
 contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
@@ -39,12 +39,12 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   {}
 
   /**
-   * @dev Swaps the received reserve amount from the flashloan into the asset specified in the params.
+   * @dev Swaps the received reserve amount from the flash loan into the asset specified in the params.
    * The received funds from the swap are then deposited into the protocol on behalf of the user.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
    * repay the flash loan.
-   * @param assets Address to be swapped
-   * @param amounts Amount of the reserve to be swapped
+   * @param assets Address of asset to be swapped
+   * @param amounts Amount of the asset to be swapped
    * @param premiums Fee of the flash loan
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
@@ -103,8 +103,9 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
   }
 
   /**
-   * @dev Swaps an `amountToSwap` of an asset to another and deposits the funds on behalf of the user without using a flashloan.
-   * This method can be used when the user has no debts.
+   * @dev Swaps an amount of an asset to another and deposits the new asset amount on behalf of the user without using
+   * a flash loan. This method can be used when the temporary transfer of the collateral asset to this contract
+   * does not affect the user position.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
    * perform the swap.
    * @param assetToSwapFromList List of addresses of the underlying asset to be swap from
@@ -164,8 +165,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
    * @dev Swaps an `amountToSwap` of an asset to another and deposits the funds on behalf of the initiator.
    * @param assetFrom Address of the underlying asset to be swap from
    * @param assetTo Address of the underlying asset to be swap to and deposited
-   * @param amount Amount from flashloan
-   * @param premium Premium of the flashloan
+   * @param amount Amount from flash loan
+   * @param premium Premium of the flash loan
    * @param minAmountToReceive Min amount to be received from the swap
    * @param swapAllBalance Flag indicating if all the user balance should be swapped
    * @param permitSignature List of struct containing the permit signature
@@ -203,12 +204,12 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
     _pullAToken(assetFrom, aToken, initiator, amountToPull, permitSignature);
 
-    // Repay flashloan
+    // Repay flash loan
     IERC20(assetFrom).approve(address(POOL), flashLoanDebt);
   }
 
   /**
-   * @dev Decodes debt information encoded in flashloan params
+   * @dev Decodes the information encoded in the flash loan params
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address[] assetToSwapToList List of the addresses of the reserve to be swapped to and deposited
    *   uint256[] minAmountsToReceive List of min amounts to be received from the swap
@@ -232,6 +233,17 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       bytes32[] memory s
     ) = abi.decode(params, (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
 
-    return SwapParams(assetToSwapToList, minAmountsToReceive, swapAllBalance, PermitParams(permitAmount, deadline, v, r, s));
+    return SwapParams(
+      assetToSwapToList,
+      minAmountsToReceive,
+      swapAllBalance,
+      PermitParams(
+        permitAmount,
+        deadline,
+        v,
+        r,
+        s
+      )
+    );
   }
 }

@@ -11,7 +11,7 @@ import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 /**
  * @title UniswapRepayAdapter
- * @notice Uniswap V2 Adapter to perform a repay of a debt using a flash loan.
+ * @notice Uniswap V2 Adapter to perform a repay of a debt with collateral.
  * @author Aave
  **/
 contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
@@ -33,18 +33,18 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
 
   /**
    * @dev Uses the received funds from the flash loan to repay a debt on the protocol on behalf of the user. Then pulls
-   * the collateral from the user and swaps it to repay the flash loan.
+   * the collateral from the user and swaps it to the debt asset to repay the flash loan.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset, swap it
    * and repay the flash loan.
-   * @param assets Address to be swapped
-   * @param amounts Amount of the reserve to be swapped
+   * Supports only one asset on the flash loan.
+   * @param assets Address of debt asset
+   * @param amounts Amount of the debt to be repaid
    * @param premiums Fee of the flash loan
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address collateralAsset Address of the reserve to be swapped
    *   uint256 collateralAmount Amount of reserve to be swapped
    *   uint256 rateMode Rate modes of the debt to be repaid
-   *   RepayMode repayMode Enum indicating the repaid mode
    *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
    *   uint8 v V param for the permit signature
@@ -76,6 +76,18 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     return true;
   }
 
+  /**
+   * @dev Swaps the user collateral for the debt asset and then repay the debt on the protocol on behalf of the user
+   * without using flash loans. This method can be used when the temporary transfer of the collateral asset to this
+   * contract does not affect the user position.
+   * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset
+   * @param collateralAsset Address of asset to be swapped
+   * @param debtAsset Address of debt asset
+   * @param collateralAmount Amount of the collateral to be swapped
+   * @param debtRepayAmount Amount of the debt to be repaid
+   * @param debtRateMode Rate mode of the debt to be repaid
+   * @param permitSignature struct containing the permit signature
+   */
   function swapAndRepay(
     address collateralAsset,
     address debtAsset,
@@ -182,12 +194,12 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       );
     }
 
-    // Repay flashloan
+    // Repay flash loan
     IERC20(debtAsset).approve(address(POOL), amount.add(premium));
   }
 
   /**
-   * @dev Decodes debt information encoded in flashloan params
+   * @dev Decodes debt information encoded in the flash loan params
    * @param params Additional variadic field to include extra params. Expected parameters:
    *   address collateralAsset Address of the reserve to be swapped
    *   uint256 collateralAmount Amount of reserve to be swapped
