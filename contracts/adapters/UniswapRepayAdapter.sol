@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {BaseUniswapAdapter} from './BaseUniswapAdapter.sol';
@@ -7,7 +7,7 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
 import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 /**
  * @title UniswapRepayAdapter
@@ -84,10 +84,10 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 debtRateMode,
     PermitSignature calldata permitSignature
   ) external {
-    ReserveLogic.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
-    ReserveLogic.ReserveData memory debtReserveData = _getReserveData(debtAsset);
+    DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
+    DataTypes.ReserveData memory debtReserveData = _getReserveData(debtAsset);
 
-    address debtToken = ReserveLogic.InterestRateMode(debtRateMode) == ReserveLogic.InterestRateMode.STABLE
+    address debtToken = DataTypes.InterestRateMode(debtRateMode) == DataTypes.InterestRateMode.STABLE
       ? debtReserveData.stableDebtTokenAddress
       : debtReserveData.variableDebtTokenAddress;
 
@@ -142,7 +142,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     uint256 premium,
     PermitSignature memory permitSignature
   ) internal {
-    ReserveLogic.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
+    DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
 
     // Repay debt
     IERC20(debtAsset).approve(address(POOL), amount);

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {PercentageMath} from '../libraries/math/PercentageMath.sol';
+import {PercentageMath} from '../protocol/libraries/math/PercentageMath.sol';
 import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IERC20WithPermit} from '../interfaces/IERC20WithPermit.sol';
@@ -214,7 +214,7 @@ contract BaseUniswapAdapter {
    * @dev Get the aToken associated to the asset
    * @return address of the aToken
    */
-  function _getReserveData(address asset) internal view returns (ReserveLogic.ReserveData memory) {
+  function _getReserveData(address asset) internal view returns (DataTypes.ReserveData memory) {
     return POOL.getReserveData(asset);
   }
 
