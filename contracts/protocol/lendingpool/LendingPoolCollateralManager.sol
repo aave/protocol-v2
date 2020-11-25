@@ -42,8 +42,8 @@ contract LendingPoolCollateralManager is
     uint256 userCollateralBalance;
     uint256 userStableDebt;
     uint256 userVariableDebt;
-    uint256 maxDebtToLiquidate;
-    uint256 actualAmountToLiquidate;
+    uint256 maxLiquidatableDebt;
+    uint256 actualDebtToLiquidate;
     uint256 liquidationRatio;
     uint256 maxAmountCollateralToLiquidate;
     uint256 userStableRate;
@@ -67,7 +67,7 @@ contract LendingPoolCollateralManager is
   }
 
   /**
-   * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
+   * @dev Function to liquidate a position if its Health Factor drops below 1
    * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
    *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
    * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
@@ -118,12 +118,12 @@ contract LendingPoolCollateralManager is
 
     vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
-    vars.maxDebtToLiquidate = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
+    vars.maxLiquidatableDebt = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
       LIQUIDATION_CLOSE_FACTOR_PERCENT
     );
 
-    vars.actualAmountToLiquidate = debtToCover > vars.maxDebtToLiquidate
-      ? vars.maxDebtToLiquidate
+    vars.actualDebtToLiquidate = debtToCover > vars.maxLiquidatableDebt
+      ? vars.maxLiquidatableDebt
       : debtToCover;
 
     (
@@ -134,16 +134,16 @@ contract LendingPoolCollateralManager is
       debtReserve,
       collateralAsset,
       debtAsset,
-      vars.actualAmountToLiquidate,
+      vars.actualDebtToLiquidate,
       vars.userCollateralBalance
     );
 
-    // If debtAmountNeeded < vars.actualAmountToLiquidate, there isn't enough
+    // If debtAmountNeeded < actualDebtToLiquidate, there isn't enough
     // collateral to cover the actual amount that is being liquidated, hence we liquidate
     // a smaller amount
 
-    if (vars.debtAmountNeeded < vars.actualAmountToLiquidate) {
-      vars.actualAmountToLiquidate = vars.debtAmountNeeded;
+    if (vars.debtAmountNeeded < vars.actualDebtToLiquidate) {
+      vars.actualDebtToLiquidate = vars.debtAmountNeeded;
     }
 
     // If the liquidator reclaims the underlying asset, we make sure there is enough available liquidity in the
@@ -161,10 +161,10 @@ contract LendingPoolCollateralManager is
 
     debtReserve.updateState();
 
-    if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
+    if (vars.userVariableDebt >= vars.actualDebtToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate,
+        vars.actualDebtToLiquidate,
         debtReserve.variableBorrowIndex
       );
     } else {
@@ -178,14 +178,14 @@ contract LendingPoolCollateralManager is
       }
       IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
+        vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
     }
 
     debtReserve.updateInterestRates(
       debtAsset,
       debtReserve.aTokenAddress,
-      vars.actualAmountToLiquidate,
+      vars.actualDebtToLiquidate,
       0
     );
 
@@ -220,14 +220,14 @@ contract LendingPoolCollateralManager is
     IERC20(debtAsset).safeTransferFrom(
       msg.sender,
       debtReserve.aTokenAddress,
-      vars.actualAmountToLiquidate
+      vars.actualDebtToLiquidate
     );
 
     emit LiquidationCall(
       collateralAsset,
       debtAsset,
       user,
-      vars.actualAmountToLiquidate,
+      vars.actualDebtToLiquidate,
       vars.maxCollateralToLiquidate,
       msg.sender,
       receiveAToken
@@ -284,7 +284,7 @@ contract LendingPoolCollateralManager is
     vars.debtAssetDecimals = debtReserve.configuration.getDecimals();
 
     // This is the maximum possible amount of the selected collateral that can be liquidated, given the
-    // max amount of debt that is available for liquidation
+    // max amount of  liquidatable debt
     vars.maxAmountCollateralToLiquidate = vars
       .debtAssetPrice
       .mul(debtToCover)
