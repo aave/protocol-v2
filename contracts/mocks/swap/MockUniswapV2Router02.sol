@@ -10,6 +10,7 @@ contract MockUniswapV2Router02 is IUniswapV2Router02 {
   mapping(address => uint256) internal _amountToSwap;
   mapping(address => mapping(address => mapping(uint256 => uint256))) internal _amountsIn;
   mapping(address => mapping(address => mapping(uint256 => uint256))) internal _amountsOut;
+  uint256 internal defaultMockValue;
 
   function setAmountToReturn(address reserve, uint256 amount) public {
     _amountToReturn[reserve] = amount;
@@ -61,16 +62,20 @@ contract MockUniswapV2Router02 is IUniswapV2Router02 {
     _amountsIn[reserveIn][reserveOut][amountOut] = amountIn;
   }
 
+  function setDefaultMockValue(uint value) public {
+    defaultMockValue = value;
+  }
+
   function getAmountsOut(uint amountIn, address[] calldata path) external view override returns (uint[] memory) {
     uint256[] memory amounts = new uint256[](2);
     amounts[0] = amountIn;
-    amounts[1] = _amountsOut[path[0]][path[1]][amountIn];
+    amounts[1] = _amountsOut[path[0]][path[1]][amountIn] > 0 ? _amountsOut[path[0]][path[1]][amountIn] : defaultMockValue;
     return amounts;
   }
 
   function getAmountsIn(uint amountOut, address[] calldata path) external view override returns (uint[] memory) {
     uint256[] memory amounts = new uint256[](2);
-    amounts[0] = _amountsIn[path[0]][path[1]][amountOut];
+    amounts[0] = _amountsIn[path[0]][path[1]][amountOut] > 0 ? _amountsIn[path[0]][path[1]][amountOut] : defaultMockValue;
     amounts[1] = amountOut;
     return amounts;
   }
