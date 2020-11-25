@@ -20,7 +20,6 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
  * @title LendingPoolConfigurator contract
  * @author Aave
  * @dev Implements the configuration methods for the Aave protocol. Interacts directly with the LendingPool contract
- * All the functions can be invoked by either the PoolAdmin or the EmergencyAdmin.
  **/
 
 contract LendingPoolConfigurator is VersionedInitializable {
