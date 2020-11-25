@@ -12,10 +12,10 @@ library MathUtils {
   uint256 internal constant SECONDS_PER_YEAR = 365 days;
 
   /**
-   * @dev function to calculate the interest using a linear interest rate formula
-   * @param rate the interest rate, in ray
-   * @param lastUpdateTimestamp the timestamp of the last update of the interest
-   * @return the interest rate linearly accumulated during the timeDelta, in ray
+   * @dev Function to calculate the interest accumulated using a linear interest rate formula
+   * @param rate The interest rate, in ray
+   * @param lastUpdateTimestamp The timestamp of the last update of the interest
+   * @return The interest rate linearly accumulated during the timeDelta, in ray
    **/
 
   function calculateLinearInterest(uint256 rate, uint40 lastUpdateTimestamp)
@@ -30,17 +30,17 @@ library MathUtils {
   }
 
   /**
-   * @dev function to calculate the interest using a compounded interest rate formula.
+   * @dev Function to calculate the interest using a compounded interest rate formula
    * To avoid expensive exponentiation, the calculation is performed using a binomial approximation:
    *
    *  (1+x)^n = 1+n*x+[n/2*(n-1)]*x^2+[n/6*(n-1)*(n-2)*x^3...
    *
-   * The approximation slightly underpays liquidity providers, with the advantage of great gas cost reductions.
-   * The whitepaper contains reference to the approximation and a table showing the margin of error per different time periods.
+   * The approximation slightly underpays liquidity providers and undercharges borrowers, with the advantage of great gas cost reductions
+   * The whitepaper contains reference to the approximation and a table showing the margin of error per different time periods
    *
-   * @param rate the interest rate, in ray
-   * @param lastUpdateTimestamp the timestamp of the last update of the interest
-   * @return the interest rate compounded during the timeDelta, in ray
+   * @param rate The interest rate, in ray
+   * @param lastUpdateTimestamp The timestamp of the last update of the interest
+   * @return The interest rate compounded during the timeDelta, in ray
    **/
   function calculateCompoundedInterest(
     uint256 rate,
@@ -70,9 +70,9 @@ library MathUtils {
   }
 
   /**
-   * @dev calculates the compounded interest between the timestamp of the last update and the current block timestamp
-   * @param rate the interest rate (in ray)
-   * @param lastUpdateTimestamp the timestamp from which the interest accumulation needs to be calculated
+   * @dev Calculates the compounded interest between the timestamp of the last update and the current block timestamp
+   * @param rate The interest rate (in ray)
+   * @param lastUpdateTimestamp The timestamp from which the interest accumulation needs to be calculated
    **/
   function calculateCompoundedInterest(uint256 rate, uint40 lastUpdateTimestamp)
     internal

@@ -14,10 +14,10 @@ library UserConfiguration {
     0x5555555555555555555555555555555555555555555555555555555555555555;
 
   /**
-   * @dev sets if the user is borrowing the reserve identified by reserveIndex
-   * @param self the configuration object
-   * @param reserveIndex the index of the reserve in the bitmap
-   * @param borrowing true if the user is borrowing the reserve, false otherwise
+   * @dev Sets if the user is borrowing the reserve identified by reserveIndex
+   * @param self The configuration object
+   * @param reserveIndex The index of the reserve in the bitmap
+   * @param borrowing True if the user is borrowing the reserve, false otherwise
    **/
   function setBorrowing(
     DataTypes.UserConfigurationMap storage self,
@@ -31,27 +31,27 @@ library UserConfiguration {
   }
 
   /**
-   * @dev sets if the user is using as collateral the reserve identified by reserveIndex
-   * @param self the configuration object
-   * @param reserveIndex the index of the reserve in the bitmap
-   * @param _usingAsCollateral true if the user is usin the reserve as collateral, false otherwise
+   * @dev Sets if the user is using as collateral the reserve identified by reserveIndex
+   * @param self The configuration object
+   * @param reserveIndex The index of the reserve in the bitmap
+   * @param usingAsCollateral True if the user is usin the reserve as collateral, false otherwise
    **/
   function setUsingAsCollateral(
     DataTypes.UserConfigurationMap storage self,
     uint256 reserveIndex,
-    bool _usingAsCollateral
+    bool usingAsCollateral
   ) internal {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
     self.data =
       (self.data & ~(1 << (reserveIndex * 2 + 1))) |
-      (uint256(_usingAsCollateral ? 1 : 0) << (reserveIndex * 2 + 1));
+      (uint256(usingAsCollateral ? 1 : 0) << (reserveIndex * 2 + 1));
   }
 
   /**
-   * @dev used to validate if a user has been using the reserve for borrowing or as collateral
-   * @param self the configuration object
-   * @param reserveIndex the index of the reserve in the bitmap
-   * @return true if the user has been using a reserve for borrowing or as collateral, false otherwise
+   * @dev Used to validate if a user has been using the reserve for borrowing or as collateral
+   * @param self The configuration object
+   * @param reserveIndex The index of the reserve in the bitmap
+   * @return True if the user has been using a reserve for borrowing or as collateral, false otherwise
    **/
   function isUsingAsCollateralOrBorrowing(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
     internal
@@ -63,10 +63,10 @@ library UserConfiguration {
   }
 
   /**
-   * @dev used to validate if a user has been using the reserve for borrowing
-   * @param self the configuration object
-   * @param reserveIndex the index of the reserve in the bitmap
-   * @return true if the user has been using a reserve for borrowing, false otherwise
+   * @dev Used to validate if a user has been using the reserve for borrowing
+   * @param self The configuration object
+   * @param reserveIndex The index of the reserve in the bitmap
+   * @return True if the user has been using a reserve for borrowing, false otherwise
    **/
   function isBorrowing(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
     internal
@@ -78,10 +78,10 @@ library UserConfiguration {
   }
 
   /**
-   * @dev used to validate if a user has been using the reserve as collateral
-   * @param self the configuration object
-   * @param reserveIndex the index of the reserve in the bitmap
-   * @return true if the user has been using a reserve as collateral, false otherwise
+   * @dev Used to validate if a user has been using the reserve as collateral
+   * @param self The configuration object
+   * @param reserveIndex The index of the reserve in the bitmap
+   * @return True if the user has been using a reserve as collateral, false otherwise
    **/
   function isUsingAsCollateral(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
     internal
@@ -93,18 +93,18 @@ library UserConfiguration {
   }
 
   /**
-   * @dev used to validate if a user has been borrowing from any reserve
-   * @param self the configuration object
-   * @return true if the user has been borrowing any reserve, false otherwise
+   * @dev Used to validate if a user has been borrowing from any reserve
+   * @param self The configuration object
+   * @return True if the user has been borrowing any reserve, false otherwise
    **/
   function isBorrowingAny(DataTypes.UserConfigurationMap memory self) internal pure returns (bool) {
     return self.data & BORROWING_MASK != 0;
   }
 
   /**
-   * @dev used to validate if a user has not been using any reserve
-   * @param self the configuration object
-   * @return true if the user has been borrowing any reserve, false otherwise
+   * @dev Used to validate if a user has not been using any reserve
+   * @param self The configuration object
+   * @return True if the user has been borrowing any reserve, false otherwise
    **/
   function isEmpty(DataTypes.UserConfigurationMap memory self) internal pure returns (bool) {
     return self.data == 0;

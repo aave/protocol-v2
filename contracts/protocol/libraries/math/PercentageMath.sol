@@ -6,7 +6,7 @@ import {Errors} from '../helpers/Errors.sol';
 /**
  * @title PercentageMath library
  * @author Aave
- * @notice Provides functions to calculate percentages.
+ * @notice Provides functions to perform percentage calculations
  * @dev Percentages are defined by default with 2 decimals of precision (100.00). The precision is indicated by PERCENTAGE_FACTOR
  * @dev Operations are rounded half up
  **/
@@ -16,10 +16,10 @@ library PercentageMath {
   uint256 constant HALF_PERCENT = PERCENTAGE_FACTOR / 2;
 
   /**
-   * @dev executes a percentage multiplication
-   * @param value the value of which the percentage needs to be calculated
-   * @param percentage the percentage of the value to be calculated
-   * @return the percentage of value
+   * @dev Executes a percentage multiplication
+   * @param value The value of which the percentage needs to be calculated
+   * @param percentage The percentage of the value to be calculated
+   * @return The percentage of value
    **/
   function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256) {
     if (value == 0 || percentage == 0) {
@@ -35,10 +35,10 @@ library PercentageMath {
   }
 
   /**
-   * @dev executes a percentage division
-   * @param value the value of which the percentage needs to be calculated
-   * @param percentage the percentage of the value to be calculated
-   * @return the value divided the percentage
+   * @dev Executes a percentage division
+   * @param value The value of which the percentage needs to be calculated
+   * @param percentage The percentage of the value to be calculated
+   * @return The value divided the percentage
    **/
   function percentDiv(uint256 value, uint256 percentage) internal pure returns (uint256) {
     require(percentage != 0, Errors.MATH_DIVISION_BY_ZERO);
