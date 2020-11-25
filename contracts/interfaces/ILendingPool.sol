@@ -2,105 +2,9 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-/**
- * @title LendingPoolAddressesProvider contract
- * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
- * - Acting also as factory of proxies and admin of those, so with right to change its implementations
- * - Owned by the Aave Governance
- * @author Aave
- **/
-interface ILendingPoolAddressesProvider {
-  event LendingPoolUpdated(address indexed newAddress);
-  event ConfigurationAdminUpdated(address indexed newAddress);
-  event EmergencyAdminUpdated(address indexed newAddress);
-  event LendingPoolConfiguratorUpdated(address indexed newAddress);
-  event LendingPoolCollateralManagerUpdated(address indexed newAddress);
-  event PriceOracleUpdated(address indexed newAddress);
-  event LendingRateOracleUpdated(address indexed newAddress);
-  event ProxyCreated(bytes32 id, address indexed newAddress);
-  event AddressSet(bytes32 id, address indexed newAddress, bool hasProxy);
+import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
-  function setAddress(bytes32 id, address newAddress) external;
-
-  function setAddressAsProxy(bytes32 id, address impl) external;
-
-  function getAddress(bytes32 id) external view returns (address);
-
-  function getLendingPool() external view returns (address);
-
-  function setLendingPoolImpl(address pool) external;
-
-  function getLendingPoolConfigurator() external view returns (address);
-
-  function setLendingPoolConfiguratorImpl(address configurator) external;
-
-  function getLendingPoolCollateralManager() external view returns (address);
-
-  function setLendingPoolCollateralManager(address manager) external;
-
-  function getPoolAdmin() external view returns (address);
-
-  function setPoolAdmin(address admin) external;
-
-  function getEmergencyAdmin() external view returns (address);
-
-  function setEmergencyAdmin(address admin) external;
-
-  function getPriceOracle() external view returns (address);
-
-  function setPriceOracle(address priceOracle) external;
-
-  function getLendingRateOracle() external view returns (address);
-
-  function setLendingRateOracle(address lendingRateOracle) external;
-}
-
-library DataTypes {
-  // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
-  struct ReserveData {
-    //stores the reserve configuration
-    ReserveConfigurationMap configuration;
-    //the liquidity index. Expressed in ray
-    uint128 liquidityIndex;
-    //variable borrow index. Expressed in ray
-    uint128 variableBorrowIndex;
-    //the current supply rate. Expressed in ray
-    uint128 currentLiquidityRate;
-    //the current variable borrow rate. Expressed in ray
-    uint128 currentVariableBorrowRate;
-    //the current stable borrow rate. Expressed in ray
-    uint128 currentStableBorrowRate;
-    uint40 lastUpdateTimestamp;
-    //tokens addresses
-    address aTokenAddress;
-    address stableDebtTokenAddress;
-    address variableDebtTokenAddress;
-    //address of the interest rate strategy
-    address interestRateStrategyAddress;
-    //the id of the reserve. Represents the position in the list of the active reserves
-    uint8 id;
-  }
-
-  struct ReserveConfigurationMap {
-    //bit 0-15: LTV
-    //bit 16-31: Liq. threshold
-    //bit 32-47: Liq. bonus
-    //bit 48-55: Decimals
-    //bit 56: Reserve is active
-    //bit 57: reserve is frozen
-    //bit 58: borrowing is enabled
-    //bit 59: stable rate borrowing enabled
-    //bit 60-63: reserved
-    //bit 64-79: reserve factor
-    uint256 data;
-  }
-
-  struct UserConfigurationMap {
-    uint256 data;
-  }
-
-  enum InterestRateMode {NONE, STABLE, VARIABLE}
-}
 
 interface ILendingPool {
   /**
@@ -450,14 +354,20 @@ interface ILendingPool {
    * @param asset The address of the underlying asset of the reserve
    * @return The configuration of the reserve
    **/
-  function getConfiguration(address asset) external view returns (DataTypes.ReserveConfigurationMap memory);
+  function getConfiguration(address asset)
+    external
+    view
+    returns (DataTypes.ReserveConfigurationMap memory);
 
   /**
    * @dev Returns the configuration of the user across all the reserves
    * @param user The user address
    * @return The configuration of the user
    **/
-  function getUserConfiguration(address user) external view returns (DataTypes.UserConfigurationMap memory);
+  function getUserConfiguration(address user)
+    external
+    view
+    returns (DataTypes.UserConfigurationMap memory);
 
   /**
    * @dev Returns the normalized income normalized income of the reserve
