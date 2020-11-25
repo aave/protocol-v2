@@ -19,7 +19,7 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
 /**
  * @title LendingPoolConfigurator contract
  * @author Aave
- * @dev Implements the configuration methods for the Aave protocol. Interacts directly with the LendingPool contract
+ * @dev Implements the configuration methods for the Aave protocol
  **/
 
 contract LendingPoolConfigurator is VersionedInitializable {
