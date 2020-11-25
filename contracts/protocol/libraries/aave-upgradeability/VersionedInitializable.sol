@@ -4,7 +4,7 @@ pragma solidity 0.6.12;
 /**
  * @title VersionedInitializable
  *
- * @dev Helper contract to support initializer functions. To use it, replace
+ * @dev Helper contract to implement initializer functions. To use it, replace
  * the constructor with a function that has the `initializer` modifier.
  * WARNING: Unlike constructors, initializer functions must be manually
  * invoked. This applies both to deploying an Initializable contract, as well
@@ -49,11 +49,15 @@ abstract contract VersionedInitializable {
     }
   }
 
-  /// @dev returns the revision number of the contract.
-  /// Needs to be defined in the inherited class as a constant.
+  /**
+  * @dev returns the revision number of the contract
+  * Needs to be defined in the inherited class as a constant.
+  **/ 
   function getRevision() internal pure virtual returns (uint256);
 
-  /// @dev Returns true if and only if the function is running in the constructor
+  /**
+  * @dev Returns true if and only if the function is running in the constructor
+  **/ 
   function isConstructor() private view returns (bool) {
     // extcodesize checks the size of the code stored in an address, and
     // address returns the current address. Since the code is still not
