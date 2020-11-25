@@ -2,6 +2,7 @@
 pragma solidity 0.6.12;
 
 import {Errors} from '../helpers/Errors.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title UserConfiguration library
@@ -12,10 +13,6 @@ library UserConfiguration {
   uint256 internal constant BORROWING_MASK =
     0x5555555555555555555555555555555555555555555555555555555555555555;
 
-  struct Map {
-    uint256 data;
-  }
-
   /**
    * @dev sets if the user is borrowing the reserve identified by reserveIndex
    * @param self the configuration object
@@ -23,7 +20,7 @@ library UserConfiguration {
    * @param borrowing true if the user is borrowing the reserve, false otherwise
    **/
   function setBorrowing(
-    UserConfiguration.Map storage self,
+    DataTypes.UserConfigurationMap storage self,
     uint256 reserveIndex,
     bool borrowing
   ) internal {
@@ -40,7 +37,7 @@ library UserConfiguration {
    * @param _usingAsCollateral true if the user is usin the reserve as collateral, false otherwise
    **/
   function setUsingAsCollateral(
-    UserConfiguration.Map storage self,
+    DataTypes.UserConfigurationMap storage self,
     uint256 reserveIndex,
     bool _usingAsCollateral
   ) internal {
@@ -56,7 +53,7 @@ library UserConfiguration {
    * @param reserveIndex the index of the reserve in the bitmap
    * @return true if the user has been using a reserve for borrowing or as collateral, false otherwise
    **/
-  function isUsingAsCollateralOrBorrowing(UserConfiguration.Map memory self, uint256 reserveIndex)
+  function isUsingAsCollateralOrBorrowing(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
     internal
     pure
     returns (bool)
@@ -71,7 +68,7 @@ library UserConfiguration {
    * @param reserveIndex the index of the reserve in the bitmap
    * @return true if the user has been using a reserve for borrowing, false otherwise
    **/
-  function isBorrowing(UserConfiguration.Map memory self, uint256 reserveIndex)
+  function isBorrowing(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
     internal
     pure
     returns (bool)
@@ -86,7 +83,7 @@ library UserConfiguration {
    * @param reserveIndex the index of the reserve in the bitmap
    * @return true if the user has been using a reserve as collateral, false otherwise
    **/
-  function isUsingAsCollateral(UserConfiguration.Map memory self, uint256 reserveIndex)
+  function isUsingAsCollateral(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
     internal
     pure
     returns (bool)
@@ -100,7 +97,7 @@ library UserConfiguration {
    * @param self the configuration object
    * @return true if the user has been borrowing any reserve, false otherwise
    **/
-  function isBorrowingAny(UserConfiguration.Map memory self) internal pure returns (bool) {
+  function isBorrowingAny(DataTypes.UserConfigurationMap memory self) internal pure returns (bool) {
     return self.data & BORROWING_MASK != 0;
   }
 
@@ -109,7 +106,7 @@ library UserConfiguration {
    * @param self the configuration object
    * @return true if the user has been borrowing any reserve, false otherwise
    **/
-  function isEmpty(UserConfiguration.Map memory self) internal pure returns (bool) {
+  function isEmpty(DataTypes.UserConfigurationMap memory self) internal pure returns (bool) {
     return self.data == 0;
   }
 }

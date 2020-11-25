@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {DebtTokenBase} from '../../tokenization/base/DebtTokenBase.sol';
-import {ReserveLogic} from '../logic/ReserveLogic.sol';
+import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title Helpers library
@@ -16,25 +16,25 @@ library Helpers {
    * @param reserve the reserve object
    * @return the stable and variable debt balance
    **/
-  function getUserCurrentDebt(address user, ReserveLogic.ReserveData storage reserve)
+  function getUserCurrentDebt(address user, DataTypes.ReserveData storage reserve)
     internal
     view
     returns (uint256, uint256)
   {
     return (
-      DebtTokenBase(reserve.stableDebtTokenAddress).balanceOf(user),
-      DebtTokenBase(reserve.variableDebtTokenAddress).balanceOf(user)
+      IERC20(reserve.stableDebtTokenAddress).balanceOf(user),
+      IERC20(reserve.variableDebtTokenAddress).balanceOf(user)
     );
   }
 
-  function getUserCurrentDebtMemory(address user, ReserveLogic.ReserveData memory reserve)
+  function getUserCurrentDebtMemory(address user, DataTypes.ReserveData memory reserve)
     internal
     view
     returns (uint256, uint256)
   {
     return (
-      DebtTokenBase(reserve.stableDebtTokenAddress).balanceOf(user),
-      DebtTokenBase(reserve.variableDebtTokenAddress).balanceOf(user)
+      IERC20(reserve.stableDebtTokenAddress).balanceOf(user),
+      IERC20(reserve.variableDebtTokenAddress).balanceOf(user)
     );
   }
 }

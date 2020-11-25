@@ -14,6 +14,7 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveLogic library
@@ -21,13 +22,13 @@ import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterest
  * @notice Implements functions to validate specific action on the protocol.
  */
 library ValidationLogic {
-  using ReserveLogic for ReserveLogic.ReserveData;
+  using ReserveLogic for DataTypes.ReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
   uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
@@ -37,7 +38,7 @@ library ValidationLogic {
    * @param reserve the reserve state on which the user is depositing
    * @param amount the amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
+  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
@@ -60,8 +61,8 @@ library ValidationLogic {
     address reserveAddress,
     uint256 amount,
     uint256 userBalance,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -100,7 +101,7 @@ library ValidationLogic {
     uint256 availableLiquidity;
     uint256 finalUserBorrowRate;
     uint256 healthFactor;
-    ReserveLogic.InterestRateMode rateMode;
+    DataTypes.InterestRateMode rateMode;
     bool healthFactorBelowThreshold;
     bool isActive;
     bool isFrozen;
@@ -125,14 +126,14 @@ library ValidationLogic {
 
   function validateBorrow(
     address asset,
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address userAddress,
     uint256 amount,
     uint256 amountInETH,
     uint256 interestRateMode,
     uint256 maxStableLoanPercent,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -151,8 +152,8 @@ library ValidationLogic {
 
     //validate interest rate mode
     require(
-      uint256(ReserveLogic.InterestRateMode.VARIABLE) == interestRateMode ||
-        uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
+      uint256(DataTypes.InterestRateMode.VARIABLE) == interestRateMode ||
+        uint256(DataTypes.InterestRateMode.STABLE) == interestRateMode,
       Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
     );
 
@@ -197,7 +198,7 @@ library ValidationLogic {
      *    liquidity
      **/
 
-    if (vars.rateMode == ReserveLogic.InterestRateMode.STABLE) {
+    if (vars.rateMode == DataTypes.InterestRateMode.STABLE) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
       require(vars.stableRateBorrowingEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
@@ -228,9 +229,9 @@ library ValidationLogic {
    * @param variableDebt the borrow balance of the user
    */
   function validateRepay(
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 amountSent,
-    ReserveLogic.InterestRateMode rateMode,
+    DataTypes.InterestRateMode rateMode,
     address onBehalfOf,
     uint256 stableDebt,
     uint256 variableDebt
@@ -243,9 +244,9 @@ library ValidationLogic {
 
     require(
       (stableDebt > 0 &&
-        ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
+        DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) ||
         (variableDebt > 0 &&
-          ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
+          DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE),
       Errors.VL_NO_DEBT_OF_SELECTED_TYPE
     );
 
@@ -264,20 +265,20 @@ library ValidationLogic {
    * @param currentRateMode the rate mode of the borrow
    */
   function validateSwapRateMode(
-    ReserveLogic.ReserveData storage reserve,
-    UserConfiguration.Map storage userConfig,
+    DataTypes.ReserveData storage reserve,
+    DataTypes.UserConfigurationMap storage userConfig,
     uint256 stableDebt,
     uint256 variableDebt,
-    ReserveLogic.InterestRateMode currentRateMode
+    DataTypes.InterestRateMode currentRateMode
   ) external view {
     (bool isActive, bool isFrozen, , bool stableRateEnabled) = reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
-    if (currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
+    if (currentRateMode == DataTypes.InterestRateMode.STABLE) {
       require(stableDebt > 0, Errors.VL_NO_STABLE_RATE_LOAN_IN_RESERVE);
-    } else if (currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
+    } else if (currentRateMode == DataTypes.InterestRateMode.VARIABLE) {
       require(variableDebt > 0, Errors.VL_NO_VARIABLE_RATE_LOAN_IN_RESERVE);
       /**
        * user wants to swap to stable, before swapping we need to ensure that
@@ -308,7 +309,7 @@ library ValidationLogic {
    * @param aTokenAddress the address of the aToken contract
    */
   function validateRebalanceStableBorrowRate(
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address reserveAddress,
     IERC20 stableDebtToken,
     IERC20 variableDebtToken,
@@ -349,11 +350,11 @@ library ValidationLogic {
    * @param oracle the price oracle
    */
   function validateSetUseReserveAsCollateral(
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address reserveAddress,
     bool useAsCollateral,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -397,9 +398,9 @@ library ValidationLogic {
    * @param userVariableDebt Total variable debt balance of the user
    **/
   function validateLiquidationCall(
-    ReserveLogic.ReserveData storage collateralReserve,
-    ReserveLogic.ReserveData storage principalReserve,
-    UserConfiguration.Map storage userConfig,
+    DataTypes.ReserveData storage collateralReserve,
+    DataTypes.ReserveData storage principalReserve,
+    DataTypes.UserConfigurationMap storage userConfig,
     uint256 userHealthFactor,
     uint256 userStableDebt,
     uint256 userVariableDebt
@@ -452,8 +453,8 @@ library ValidationLogic {
    */
   function validateTransfer(
     address from,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
