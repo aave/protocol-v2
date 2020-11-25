@@ -24,6 +24,7 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 contract LendingPoolConfigurator is VersionedInitializable {
   using SafeMath for uint256;
+  using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   /**
