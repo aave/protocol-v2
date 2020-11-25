@@ -284,7 +284,7 @@ contract LendingPoolCollateralManager is
     vars.debtAssetDecimals = debtReserve.configuration.getDecimals();
 
     // This is the maximum possible amount of the selected collateral that can be liquidated, given the
-    // max amount of  liquidatable debt
+    // max amount of liquidatable debt
     vars.maxAmountCollateralToLiquidate = vars
       .debtAssetPrice
       .mul(debtToCover)
