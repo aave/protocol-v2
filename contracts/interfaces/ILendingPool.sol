@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
-
-import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
-import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
-import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
-
 pragma experimental ABIEncoderV2;
+
+import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 interface ILendingPool {
   /**
-   * @dev emitted on deposit
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   * @param amount the amount to be deposited
-   * @param referral the referral number of the action
+   * @dev Emitted on deposit()
+   * @param reserve The address of the underlying asset of the reserve
+   * @param user The address initiating the deposit
+   * @param onBehalfOf The beneficiary of the deposit, receiving the aTokens
+   * @param amount The amount deposited
+   * @param referral The referral code used
    **/
   event Deposit(
     address indexed reserve,
@@ -25,22 +23,24 @@ interface ILendingPool {
   );
 
   /**
-   * @dev emitted during a withdraw action.
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   * @param to address that will receive the underlying
-   * @param amount the amount to be withdrawn
+   * @dev Emitted on withdraw()
+   * @param reserve The address of the underlyng asset being withdrawn
+   * @param user The address initiating the withdrawal, owner of aTokens
+   * @param to Address that will receive the underlying
+   * @param amount The amount to be withdrawn
    **/
   event Withdraw(address indexed reserve, address indexed user, address indexed to, uint256 amount);
 
   /**
-   * @dev emitted on borrow
-   * @param reserve the address of the reserve
-   * @param user the address of the user
-   * @param amount the amount to be deposited
-   * @param borrowRateMode the rate mode, can be either 1-stable or 2-variable
-   * @param borrowRate the rate at which the user has borrowed
-   * @param referral the referral number of the action
+   * @dev Emitted on borrow() and flashLoan() when debt needs to be opened
+   * @param reserve The address of the underlying asset being borrowed
+   * @param user The address of the user initiating the borrow(), receiving the funds on borrow() or just
+   * initiator of the transaction on flashLoan()
+   * @param onBehalfOf The address that will be getting the debt
+   * @param amount The amount borrowed out
+   * @param borrowRateMode The rate mode: 1 for Stable, 2 for Variable
+   * @param borrowRate The numeric rate at which the user has borrowed
+   * @param referral The referral code used
    **/
   event Borrow(
     address indexed reserve,
@@ -51,12 +51,13 @@ interface ILendingPool {
     uint256 borrowRate,
     uint16 indexed referral
   );
+
   /**
-   * @dev emitted on repay
-   * @param reserve the address of the reserve
-   * @param user the address of the user for which the repay has been executed
-   * @param repayer the address of the user that has performed the repay action
-   * @param amount the amount repaid
+   * @dev Emitted on repay()
+   * @param reserve The address of the underlying asset of the reserve
+   * @param user The beneficiary of the repayment, getting his debt reduced
+   * @param repayer The address of the user initiating the repay(), providing the funds
+   * @param amount The amount repaid
    **/
   event Repay(
     address indexed reserve,
@@ -64,41 +65,44 @@ interface ILendingPool {
     address indexed repayer,
     uint256 amount
   );
+
   /**
-   * @dev emitted when a user performs a rate swap
-   * @param reserve the address of the reserve
-   * @param user the address of the user executing the swap
+   * @dev Emitted on swapBorrowRateMode()
+   * @param reserve The address of the underlying asset of the reserve
+   * @param user The address of the user swapping his rate mode
+   * @param rateMode The rate mode that the user wants to swap to
    **/
   event Swap(address indexed reserve, address indexed user, uint256 rateMode);
 
   /**
-   * @dev emitted when a user enables a reserve as collateral
-   * @param reserve the address of the reserve
-   * @param user the address of the user
+   * @dev Emitted on setUserUseReserveAsCollateral()
+   * @param reserve The address of the underlying asset of the reserve
+   * @param user The address of the user enabling the usage as collateral
    **/
   event ReserveUsedAsCollateralEnabled(address indexed reserve, address indexed user);
 
   /**
-   * @dev emitted when a user disables a reserve as collateral
-   * @param reserve the address of the reserve
-   * @param user the address of the user
+   * @dev Emitted on setUserUseReserveAsCollateral()
+   * @param reserve The address of the underlying asset of the reserve
+   * @param user The address of the user enabling the usage as collateral
    **/
   event ReserveUsedAsCollateralDisabled(address indexed reserve, address indexed user);
 
   /**
-   * @dev emitted when the stable rate of a user gets rebalanced
-   * @param reserve the address of the reserve
-   * @param user the address of the user for which the rebalance has been executed
+   * @dev Emitted on rebalanceStableBorrowRate()
+   * @param reserve The address of the underlying asset of the reserve
+   * @param user The address of the user for which the rebalance has been executed
    **/
   event RebalanceStableBorrowRate(address indexed reserve, address indexed user);
+
   /**
-   * @dev emitted when a flashloan is executed
-   * @param target the address of the flashLoanReceiver
-   * @param initiator the address initiating the flash loan
-   * @param asset the address of the asset being flashborrowed
-   * @param amount the amount requested
-   * @param premium the total fee on the amount
-   * @param referralCode the referral code of the caller
+   * @dev Emitted on flashLoan()
+   * @param target The address of the flash loan receiver contract
+   * @param initiator The address initiating the flash loan
+   * @param asset The address of the asset being flash borrowed
+   * @param amount The amount flash borrowed
+   * @param premium The fee flash borrowed
+   * @param referralCode The referral code used
    **/
   event FlashLoan(
     address indexed target,
@@ -120,23 +124,23 @@ interface ILendingPool {
   event Unpaused();
 
   /**
-   * @dev emitted when a borrower is liquidated. Thos evemt is emitted directly by the LendingPool
-   * but it's declared here as the LendingPoolCollateralManager
-   * is executed using a delegateCall().
+   * @dev Emitted when a borrower is liquidated. This event is emitted by the LendingPool via
+   * LendingPoolCollateral manager using a DELEGATECALL
    * This allows to have the events in the generated ABI for LendingPool.
-   * @param collateral the address of the collateral being liquidated
-   * @param principal the address of the reserve
-   * @param user the address of the user being liquidated
-   * @param purchaseAmount the total amount liquidated
-   * @param liquidatedCollateralAmount the amount of collateral being liquidated
-   * @param liquidator the address of the liquidator
-   * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
+   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param user The address of the borrower getting liquidated
+   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+   * @param liquidatedCollateralAmount The amount of collateral received by the liiquidator
+   * @param liquidator The address of the liquidator
+   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
+   * to receive the underlying collateral asset directly
    **/
   event LiquidationCall(
-    address indexed collateral,
-    address indexed principal,
+    address indexed collateralAsset,
+    address indexed debtAsset,
     address indexed user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     uint256 liquidatedCollateralAmount,
     address liquidator,
     bool receiveAToken
@@ -147,12 +151,12 @@ interface ILendingPool {
    * in the ReserveLogic library and emitted in the updateInterestRates() function. Since the function is internal,
    * the event will actually be fired by the LendingPool contract. The event is therefore replicated here so it
    * gets added to the LendingPool ABI
-   * @param reserve the address of the reserve
-   * @param liquidityRate the new liquidity rate
-   * @param stableBorrowRate the new stable borrow rate
-   * @param variableBorrowRate the new variable borrow rate
-   * @param liquidityIndex the new liquidity index
-   * @param variableBorrowIndex the new variable borrow index
+   * @param reserve The address of the underlying asset of the reserve
+   * @param liquidityRate The new liquidity rate
+   * @param stableBorrowRate The new stable borrow rate
+   * @param variableBorrowRate The new variable borrow rate
+   * @param liquidityIndex The new liquidity index
+   * @param variableBorrowIndex The new variable borrow index
    **/
   event ReserveDataUpdated(
     address indexed reserve,
@@ -164,40 +168,57 @@ interface ILendingPool {
   );
 
   /**
-   * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
-   * is minted.
-   * @param reserve the address of the reserve
-   * @param amount the amount to be deposited
-   * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
+   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
+   * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
+   * @param asset The address of the underlying asset to deposit
+   * @param amount The amount to be deposited
+   * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
+   *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
+   *   is a different wallet
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
    **/
   function deposit(
-    address reserve,
+    address asset,
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
   ) external;
 
   /**
-   * @dev withdraws the assets of user.
-   * @param reserve the address of the reserve
-   * @param amount the underlying amount to be redeemed
-   * @param to address that will receive the underlying
+   * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
+   * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
+   * @param asset The address of the underlying asset to withdraw
+   * @param amount The underlying amount to be withdrawn
+   *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
+   * @param to Address that will receive the underlying, same as msg.sender if the user
+   *   wants to receive it on his own wallet, or a different address if the beneficiary is a
+   *   different wallet
+   * @return The final amount withdrawn
    **/
   function withdraw(
-    address reserve,
+    address asset,
     uint256 amount,
     address to
-  ) external;
+  ) external returns (uint256);
 
   /**
-   * @dev Allows users to borrow a specific amount of the reserve currency, provided that the borrower
-   * already deposited enough collateral.
-   * @param reserve the address of the reserve
-   * @param amount the amount to be borrowed
-   * @param interestRateMode the interest rate mode at which the user wants to borrow. Can be 0 (STABLE) or 1 (VARIABLE)
+   * @dev Allows users to borrow a specific `amount` of the reserve underlying asset, provided that the borrower
+   * already deposited enough collateral, or he was given enough allowance by a credit delegator on the
+   * corresponding debt token (StableDebtToken or VariableDebtToken)
+   * - E.g. User borrows 100 USDC passing as `onBehalfOf` his own address, receiving the 100 USDC in his wallet
+   *   and 100 stable/variable debt tokens, depending on the `interestRateMode`
+   * @param asset The address of the underlying asset to borrow
+   * @param amount The amount to be borrowed
+   * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
+   * @param onBehalfOf Address of the user who will receive the debt. Should be the address of the borrower itself
+   * calling the function if he wants to borrow against his own collateral, or the address of the credit delegator
+   * if he has been given credit delegation allowance
    **/
   function borrow(
-    address reserve,
+    address asset,
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode,
@@ -205,73 +226,87 @@ interface ILendingPool {
   ) external;
 
   /**
-   * @notice repays a borrow on the specific reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
-   * @dev the target user is defined by onBehalfOf. If there is no repayment on behalf of another account,
-   * onBehalfOf must be equal to msg.sender.
-   * @param reserve the address of the reserve on which the user borrowed
-   * @param amount the amount to repay, or uint256(-1) if the user wants to repay everything
-   * @param onBehalfOf the address for which msg.sender is repaying.
+   * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
+   * - E.g. User repays 100 USDC, burning 100 variable/stable debt tokens of the `onBehalfOf` address
+   * @param asset The address of the borrowed underlying asset previously borrowed
+   * @param amount The amount to repay
+   * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
+   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
+   * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
+   * user calling the function if he wants to reduce/remove his own debt, or the address of any other
+   * other borrower whose debt should be removed
+   * @return The final amount repaid
    **/
   function repay(
-    address reserve,
+    address asset,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external;
+  ) external returns (uint256);
 
   /**
-   * @dev borrowers can user this function to swap between stable and variable borrow rate modes.
-   * @param reserve the address of the reserve on which the user borrowed
-   * @param rateMode the rate mode that the user wants to swap
+   * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
+   * @param asset The address of the underlying asset borrowed
+   * @param rateMode The rate mode that the user wants to swap to
    **/
-  function swapBorrowRateMode(address reserve, uint256 rateMode) external;
+  function swapBorrowRateMode(address asset, uint256 rateMode) external;
 
   /**
-   * @dev rebalances the stable interest rate of a user if current liquidity rate > user stable rate.
-   * this is regulated by Aave to ensure that the protocol is not abused, and the user is paying a fair
-   * rate. Anyone can call this function.
-   * @param reserve the address of the reserve
-   * @param user the address of the user to be rebalanced
+   * @dev Rebalances the stable interest rate of a user to the current stable rate defined on the reserve.
+   * - Users can be rebalanced if the following conditions are satisfied:
+   *     1. Usage ratio is above 95%
+   *     2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
+   *        borrowed at a stable rate and depositors are not earning enough
+   * @param asset The address of the underlying asset borrowed
+   * @param user The address of the user to be rebalanced
    **/
-  function rebalanceStableBorrowRate(address reserve, address user) external;
+  function rebalanceStableBorrowRate(address asset, address user) external;
 
   /**
-   * @dev allows depositors to enable or disable a specific deposit as collateral.
-   * @param reserve the address of the reserve
-   * @param useAsCollateral true if the user wants to user the deposit as collateral, false otherwise.
+   * @dev Allows depositors to enable/disable a specific deposited asset as collateral
+   * @param asset The address of the underlying asset deposited
+   * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
    **/
-  function setUserUseReserveAsCollateral(address reserve, bool useAsCollateral) external;
+  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external;
 
   /**
-   * @dev users can invoke this function to liquidate an undercollateralized position.
-   * @param reserve the address of the collateral to liquidated
-   * @param reserve the address of the principal reserve
-   * @param user the address of the borrower
-   * @param purchaseAmount the amount of principal that the liquidator wants to repay
-   * @param receiveAToken true if the liquidators wants to receive the aTokens, false if
-   * he wants to receive the underlying asset directly
+   * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
+   * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
+   *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
+   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param user The address of the borrower getting liquidated
+   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
+   * to receive the underlying collateral asset directly
    **/
   function liquidationCall(
-    address collateral,
-    address reserve,
+    address collateralAsset,
+    address debtAsset,
     address user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     bool receiveAToken
   ) external;
 
   /**
-   * @dev allows smartcontracts to access the liquidity of the pool within one transaction,
-   * as long as the amount taken plus a fee is returned. NOTE There are security concerns for developers of flashloan receiver contracts
-   * that must be kept into consideration. For further details please visit https://developers.aave.com
-   * @param receiver The address of the contract receiving the funds. The receiver should implement the IFlashLoanReceiver interface.
-   * @param assets the address of the principal reserve
-   * @param amounts the amount requested for this flashloan
-   * @param modes the flashloan borrow modes
-   * @param params a bytes array to be sent to the flashloan executor
-   * @param referralCode the referral code of the caller
+   * @dev Allows smartcontracts to access the liquidity of the pool within one transaction,
+   * as long as the amount taken plus a fee is returned.
+   * IMPORTANT There are security concerns for developers of flashloan receiver contracts that must be kept into consideration.
+   * For further details please visit https://developers.aave.com
+   * @param receiverAddress The address of the contract receiving the funds, implementing the IFlashLoanReceiver interface
+   * @param assets The addresses of the assets being flash-borrowed
+   * @param amounts The amounts amounts being flash-borrowed
+   * @param modes Types of the debt to open if the flash loan is not returned:
+   *   0 -> Don't open any debt, just revert if funds can't be transferred from the receiver
+   *   1 -> Open debt at stable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
+   *   2 -> Open debt at variable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
+   * @param onBehalfOf The address  that will receive the debt in the case of using on `modes` 1 or 2
+   * @param params Variadic packed params to pass to the receiver as extra information
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
    **/
   function flashLoan(
-    address receiver,
+    address receiverAddress,
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata modes,
@@ -280,24 +315,28 @@ interface ILendingPool {
     uint16 referralCode
   ) external;
 
+  /**
+   * @dev Returns the user account data across all the reserves
+   * @param user The address of the user
+   * @return totalCollateralETH the total collateral in ETH of the user
+   * @return totalDebtETH the total debt in ETH of the user
+   * @return availableBorrowsETH the borrowing power left of the user
+   * @return currentLiquidationThreshold the liquidation threshold of the user
+   * @return ltv the loan to value of the user
+   * @return healthFactor the current health factor of the user
+   **/
   function getUserAccountData(address user)
     external
     view
     returns (
       uint256 totalCollateralETH,
-      uint256 totalBorrowsETH,
+      uint256 totalDebtETH,
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
       uint256 healthFactor
     );
 
-  /**
-   * @dev initializes a reserve
-   * @param reserve the address of the reserve
-   * @param aTokenAddress the address of the overlying aToken contract
-   * @param interestRateStrategyAddress the address of the interest rate strategy contract
-   **/
   function initReserve(
     address reserve,
     address aTokenAddress,
@@ -306,29 +345,51 @@ interface ILendingPool {
     address interestRateStrategyAddress
   ) external;
 
-  /**
-   * @dev updates the address of the interest rate strategy contract
-   * @param reserve the address of the reserve
-   * @param rateStrategyAddress the address of the interest rate strategy contract
-   **/
-
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
     external;
 
   function setConfiguration(address reserve, uint256 configuration) external;
 
-  function getConfiguration(address reserve)
+  /**
+   * @dev Returns the configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The configuration of the reserve
+   **/
+  function getConfiguration(address asset)
     external
     view
-    returns (ReserveConfiguration.Map memory);
+    returns (DataTypes.ReserveConfigurationMap memory);
 
-  function getUserConfiguration(address user) external view returns (UserConfiguration.Map memory);
+  /**
+   * @dev Returns the configuration of the user across all the reserves
+   * @param user The user address
+   * @return The configuration of the user
+   **/
+  function getUserConfiguration(address user)
+    external
+    view
+    returns (DataTypes.UserConfigurationMap memory);
 
-  function getReserveNormalizedIncome(address reserve) external view returns (uint256);
+  /**
+   * @dev Returns the normalized income normalized income of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The reserve's normalized income
+   */
+  function getReserveNormalizedIncome(address asset) external view returns (uint256);
 
-  function getReserveNormalizedVariableDebt(address reserve) external view returns (uint256);
+  /**
+   * @dev Returns the normalized variable debt per unit of asset
+   * @param asset The address of the underlying asset of the reserve
+   * @return The reserve normalized variable debt
+   */
+  function getReserveNormalizedVariableDebt(address asset) external view returns (uint256);
 
-  function getReserveData(address asset) external view returns (ReserveLogic.ReserveData memory);
+  /**
+   * @dev Returns the state and configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The state of the reserve
+   **/
+  function getReserveData(address asset) external view returns (DataTypes.ReserveData memory);
 
   function finalizeTransfer(
     address asset,
@@ -343,14 +404,7 @@ interface ILendingPool {
 
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 
-  /**
-   * @dev Set the _pause state
-   * @param val the boolean value to set the current pause state of LendingPool
-   */
   function setPause(bool val) external;
 
-  /**
-   * @dev Returns if the LendingPool is paused
-   */
   function paused() external view returns (bool);
 }

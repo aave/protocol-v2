@@ -10,6 +10,7 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 /**
  * @title WalletBalanceProvider contract
@@ -22,7 +23,7 @@ contract WalletBalanceProvider {
   using Address for address payable;
   using Address for address;
   using SafeERC20 for IERC20;
-  using ReserveConfiguration for ReserveConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   address constant MOCK_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -92,7 +93,7 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reservesWithEth.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      ReserveConfiguration.Map memory configuration = pool.getConfiguration(reservesWithEth[j]);
+      DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
 

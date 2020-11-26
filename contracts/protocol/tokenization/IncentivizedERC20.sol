@@ -38,45 +38,45 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @return the name of the token
+   * @return The name of the token
    **/
   function name() public view override returns (string memory) {
     return _name;
   }
 
   /**
-   * @return the symbol of the token
+   * @return The symbol of the token
    **/
   function symbol() public view override returns (string memory) {
     return _symbol;
   }
 
   /**
-   * @return the decimals of the token
+   * @return The decimals of the token
    **/
   function decimals() public view override returns (uint8) {
     return _decimals;
   }
 
   /**
-   * @return the total supply of the token
+   * @return The total supply of the token
    **/
   function totalSupply() public view virtual override returns (uint256) {
     return _totalSupply;
   }
 
   /**
-   * @return the balance of the token
+   * @return The balance of the token
    **/
   function balanceOf(address account) public view virtual override returns (uint256) {
     return _balances[account];
   }
 
   /**
-   * @dev executes a transfer of tokens from _msgSender() to recipient
-   * @param recipient the recipient of the tokens
-   * @param amount the amount of tokens being transferred
-   * @return true if the transfer succeeds, false otherwise
+   * @dev Executes a transfer of tokens from _msgSender() to recipient
+   * @param recipient The recipient of the tokens
+   * @param amount The amount of tokens being transferred
+   * @return `true` if the transfer succeeds, `false` otherwise
    **/
   function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
@@ -85,10 +85,10 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev returns the allowance of spender on the tokens owned by owner
-   * @param owner the owner of the tokens
-   * @param spender the user allowed to spend the owner's tokens
-   * @return the amount of owner's tokens spender is allowed to spend
+   * @dev Returns the allowance of spender on the tokens owned by owner
+   * @param owner The owner of the tokens
+   * @param spender The user allowed to spend the owner's tokens
+   * @return The amount of owner's tokens spender is allowed to spend
    **/
   function allowance(address owner, address spender)
     public
@@ -101,9 +101,9 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev allows spender to spend the tokens owned by _msgSender()
-   * @param spender the user allowed to spend _msgSender() tokens
-   * @return true
+   * @dev Allows `spender` to spend the tokens owned by _msgSender()
+   * @param spender The user allowed to spend _msgSender() tokens
+   * @return `true`
    **/
   function approve(address spender, uint256 amount) public virtual override returns (bool) {
     _approve(_msgSender(), spender, amount);
@@ -111,11 +111,11 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev executes a transfer of token from sender to recipient, if _msgSender() is allowed to do so
-   * @param sender the owner of the tokens
-   * @param recipient the recipient of the tokens
-   * @param amount the amount of tokens being transferred
-   * @return true if the transfer succeeds, false otherwise
+   * @dev Executes a transfer of token from sender to recipient, if _msgSender() is allowed to do so
+   * @param sender The owner of the tokens
+   * @param recipient The recipient of the tokens
+   * @param amount The amount of tokens being transferred
+   * @return `true` if the transfer succeeds, `false` otherwise
    **/
   function transferFrom(
     address sender,
@@ -133,10 +133,10 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev increases the allowance of spender to spend _msgSender() tokens
-   * @param spender the user allowed to spend on behalf of _msgSender()
-   * @param addedValue the amount being added to the allowance
-   * @return true
+   * @dev Increases the allowance of spender to spend _msgSender() tokens
+   * @param spender The user allowed to spend on behalf of _msgSender()
+   * @param addedValue The amount being added to the allowance
+   * @return `true`
    **/
   function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
     _approve(_msgSender(), spender, _allowances[_msgSender()][spender].add(addedValue));
@@ -144,10 +144,10 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   }
 
   /**
-   * @dev decreases the allowance of spender to spend _msgSender() tokens
-   * @param spender the user allowed to spend on behalf of _msgSender()
-   * @param subtractedValue the amount being subtracted to the allowance
-   * @return true
+   * @dev Decreases the allowance of spender to spend _msgSender() tokens
+   * @param spender The user allowed to spend on behalf of _msgSender()
+   * @param subtractedValue The amount being subtracted to the allowance
+   * @return `true`
    **/
   function decreaseAllowance(address spender, uint256 subtractedValue)
     public

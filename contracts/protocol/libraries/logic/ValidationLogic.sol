@@ -14,30 +14,31 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveLogic library
  * @author Aave
- * @notice Implements functions to validate specific action on the protocol.
+ * @notice Implements functions to validate the different actions of the protocol
  */
 library ValidationLogic {
-  using ReserveLogic for ReserveLogic.ReserveData;
+  using ReserveLogic for DataTypes.ReserveData;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
   uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
 
   /**
-   * @dev validates a deposit.
-   * @param reserve the reserve state on which the user is depositing
-   * @param amount the amount to be deposited
+   * @dev Validates a deposit action
+   * @param reserve The reserve object on which the user is depositing
+   * @param amount The amount to be deposited
    */
-  function validateDeposit(ReserveLogic.ReserveData storage reserve, uint256 amount) external view {
+  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
@@ -46,22 +47,22 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates a withdraw action.
-   * @param reserveAddress the address of the reserve
-   * @param amount the amount to be withdrawn
-   * @param userBalance the balance of the user
-   * @param reservesData the reserves state
-   * @param userConfig the user configuration
-   * @param reserves the addresses of the reserves
-   * @param reservesCount the number of reserves
-   * @param oracle the price oracle
+   * @dev Validates a withdraw action
+   * @param reserveAddress The address of the reserve
+   * @param amount The amount to be withdrawn
+   * @param userBalance The balance of the user
+   * @param reservesData The reserves state
+   * @param userConfig The user configuration
+   * @param reserves The addresses of the reserves
+   * @param reservesCount The number of reserves
+   * @param oracle The price oracle
    */
   function validateWithdraw(
     address reserveAddress,
     uint256 amount,
     uint256 userBalance,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -100,7 +101,7 @@ library ValidationLogic {
     uint256 availableLiquidity;
     uint256 finalUserBorrowRate;
     uint256 healthFactor;
-    ReserveLogic.InterestRateMode rateMode;
+    DataTypes.InterestRateMode rateMode;
     bool healthFactorBelowThreshold;
     bool isActive;
     bool isFrozen;
@@ -109,30 +110,30 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates a borrow.
-   * @param asset the address of the asset to borrow
-   * @param reserve the reserve state from which the user is borrowing
-   * @param userAddress the address of the user
-   * @param amount the amount to be borrowed
-   * @param amountInETH the amount to be borrowed, in ETH
-   * @param interestRateMode the interest rate mode at which the user is borrowing
-   * @param maxStableLoanPercent the max amount of the liquidity that can be borrowed at stable rate, in percentage
-   * @param reservesData the state of all the reserves
-   * @param userConfig the state of the user for the specific reserve
-   * @param reserves the addresses of all the active reserves
-   * @param oracle the price oracle
+   * @dev Validates a borrow action
+   * @param asset The address of the asset to borrow
+   * @param reserve The reserve state from which the user is borrowing
+   * @param userAddress The address of the user
+   * @param amount The amount to be borrowed
+   * @param amountInETH The amount to be borrowed, in ETH
+   * @param interestRateMode The interest rate mode at which the user is borrowing
+   * @param maxStableLoanPercent The max amount of the liquidity that can be borrowed at stable rate, in percentage
+   * @param reservesData The state of all the reserves
+   * @param userConfig The state of the user for the specific reserve
+   * @param reserves The addresses of all the active reserves
+   * @param oracle The price oracle
    */
 
   function validateBorrow(
     address asset,
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address userAddress,
     uint256 amount,
     uint256 amountInETH,
     uint256 interestRateMode,
     uint256 maxStableLoanPercent,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -151,8 +152,8 @@ library ValidationLogic {
 
     //validate interest rate mode
     require(
-      uint256(ReserveLogic.InterestRateMode.VARIABLE) == interestRateMode ||
-        uint256(ReserveLogic.InterestRateMode.STABLE) == interestRateMode,
+      uint256(DataTypes.InterestRateMode.VARIABLE) == interestRateMode ||
+        uint256(DataTypes.InterestRateMode.STABLE) == interestRateMode,
       Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
     );
 
@@ -193,11 +194,10 @@ library ValidationLogic {
      * 1. Reserve must be enabled for stable rate borrowing
      * 2. Users cannot borrow from the reserve if their collateral is (mostly) the same currency
      *    they are borrowing, to prevent abuses.
-     * 3. Users will be able to borrow only a relatively small, configurable amount of the total
-     *    liquidity
+     * 3. Users will be able to borrow only a portion of the total available liquidity
      **/
 
-    if (vars.rateMode == ReserveLogic.InterestRateMode.STABLE) {
+    if (vars.rateMode == DataTypes.InterestRateMode.STABLE) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
       require(vars.stableRateBorrowingEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
@@ -220,17 +220,17 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates a repay.
-   * @param reserve the reserve state from which the user is repaying
-   * @param amountSent the amount sent for the repayment. Can be an actual value or uint(-1)
-   * @param onBehalfOf the address of the user msg.sender is repaying for
-   * @param stableDebt the borrow balance of the user
-   * @param variableDebt the borrow balance of the user
+   * @dev Validates a repay action
+   * @param reserve The reserve state from which the user is repaying
+   * @param amountSent The amount sent for the repayment. Can be an actual value or uint(-1)
+   * @param onBehalfOf The address of the user msg.sender is repaying for
+   * @param stableDebt The borrow balance of the user
+   * @param variableDebt The borrow balance of the user
    */
   function validateRepay(
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 amountSent,
-    ReserveLogic.InterestRateMode rateMode,
+    DataTypes.InterestRateMode rateMode,
     address onBehalfOf,
     uint256 stableDebt,
     uint256 variableDebt
@@ -243,9 +243,9 @@ library ValidationLogic {
 
     require(
       (stableDebt > 0 &&
-        ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.STABLE) ||
+        DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) ||
         (variableDebt > 0 &&
-          ReserveLogic.InterestRateMode(rateMode) == ReserveLogic.InterestRateMode.VARIABLE),
+          DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE),
       Errors.VL_NO_DEBT_OF_SELECTED_TYPE
     );
 
@@ -256,28 +256,28 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates a swap of borrow rate mode.
-   * @param reserve the reserve state on which the user is swapping the rate
-   * @param userConfig the user reserves configuration
-   * @param stableDebt the stable debt of the user
-   * @param variableDebt the variable debt of the user
-   * @param currentRateMode the rate mode of the borrow
+   * @dev Validates a swap of borrow rate mode.
+   * @param reserve The reserve state on which the user is swapping the rate
+   * @param userConfig The user reserves configuration
+   * @param stableDebt The stable debt of the user
+   * @param variableDebt The variable debt of the user
+   * @param currentRateMode The rate mode of the borrow
    */
   function validateSwapRateMode(
-    ReserveLogic.ReserveData storage reserve,
-    UserConfiguration.Map storage userConfig,
+    DataTypes.ReserveData storage reserve,
+    DataTypes.UserConfigurationMap storage userConfig,
     uint256 stableDebt,
     uint256 variableDebt,
-    ReserveLogic.InterestRateMode currentRateMode
+    DataTypes.InterestRateMode currentRateMode
   ) external view {
     (bool isActive, bool isFrozen, , bool stableRateEnabled) = reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
-    if (currentRateMode == ReserveLogic.InterestRateMode.STABLE) {
+    if (currentRateMode == DataTypes.InterestRateMode.STABLE) {
       require(stableDebt > 0, Errors.VL_NO_STABLE_RATE_LOAN_IN_RESERVE);
-    } else if (currentRateMode == ReserveLogic.InterestRateMode.VARIABLE) {
+    } else if (currentRateMode == DataTypes.InterestRateMode.VARIABLE) {
       require(variableDebt > 0, Errors.VL_NO_VARIABLE_RATE_LOAN_IN_RESERVE);
       /**
        * user wants to swap to stable, before swapping we need to ensure that
@@ -300,15 +300,15 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates a stable borrow rate rebalance
-   * @param reserve the reserve state on which the user is getting rebalanced
-   * @param reserveAddress the address of the reserve
-   * @param stableDebtToken the stable debt token instance
-   * @param variableDebtToken the variable debt token instance
-   * @param aTokenAddress the address of the aToken contract
+   * @dev Validates a stable borrow rate rebalance action
+   * @param reserve The reserve state on which the user is getting rebalanced
+   * @param reserveAddress The address of the reserve
+   * @param stableDebtToken The stable debt token instance
+   * @param variableDebtToken The variable debt token instance
+   * @param aTokenAddress The address of the aToken contract
    */
   function validateRebalanceStableBorrowRate(
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address reserveAddress,
     IERC20 stableDebtToken,
     IERC20 variableDebtToken,
@@ -340,20 +340,20 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates the choice of a user of setting (or not) an asset as collateral
-   * @param reserve the state of the reserve that the user is enabling or disabling as collateral
-   * @param reserveAddress the address of the reserve
-   * @param reservesData the data of all the reserves
-   * @param userConfig the state of the user for the specific reserve
-   * @param reserves the addresses of all the active reserves
-   * @param oracle the price oracle
+   * @dev Validates the action of setting an asset as collateral
+   * @param reserve The state of the reserve that the user is enabling or disabling as collateral
+   * @param reserveAddress The address of the reserve
+   * @param reservesData The data of all the reserves
+   * @param userConfig The state of the user for the specific reserve
+   * @param reserves The addresses of all the active reserves
+   * @param oracle The price oracle
    */
   function validateSetUseReserveAsCollateral(
-    ReserveLogic.ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address reserveAddress,
     bool useAsCollateral,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -379,16 +379,16 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates a flashloan action
-   * @param assets the assets being flashborrowed
-   * @param amounts the amounts for each asset being borrowed
+   * @dev Validates a flashloan action
+   * @param assets The assets being flashborrowed
+   * @param amounts The amounts for each asset being borrowed
    **/
   function validateFlashloan(address[] memory assets, uint256[] memory amounts) internal pure {
     require(assets.length == amounts.length, Errors.VL_INCONSISTENT_FLASHLOAN_PARAMS);
   }
 
   /**
-   * @dev Validates the liquidationCall() action
+   * @dev Validates the liquidation action
    * @param collateralReserve The reserve data of the collateral
    * @param principalReserve The reserve data of the principal
    * @param userConfig The user configuration
@@ -397,9 +397,9 @@ library ValidationLogic {
    * @param userVariableDebt Total variable debt balance of the user
    **/
   function validateLiquidationCall(
-    ReserveLogic.ReserveData storage collateralReserve,
-    ReserveLogic.ReserveData storage principalReserve,
-    UserConfiguration.Map storage userConfig,
+    DataTypes.ReserveData storage collateralReserve,
+    DataTypes.ReserveData storage principalReserve,
+    DataTypes.UserConfigurationMap storage userConfig,
     uint256 userHealthFactor,
     uint256 userStableDebt,
     uint256 userVariableDebt
@@ -443,17 +443,17 @@ library ValidationLogic {
   }
 
   /**
-   * @dev validates an aToken transfer.
-   * @param from the user from which the aTokens are being transferred
-   * @param reservesData the state of all the reserves
-   * @param userConfig the state of the user for the specific reserve
-   * @param reserves the addresses of all the active reserves
-   * @param oracle the price oracle
+   * @dev Validates an aToken transfer
+   * @param from The user from which the aTokens are being transferred
+   * @param reservesData The state of all the reserves
+   * @param userConfig The state of the user for the specific reserve
+   * @param reserves The addresses of all the active reserves
+   * @param oracle The price oracle
    */
   function validateTransfer(
     address from,
-    mapping(address => ReserveLogic.ReserveData) storage reservesData,
-    UserConfiguration.Map storage userConfig,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle

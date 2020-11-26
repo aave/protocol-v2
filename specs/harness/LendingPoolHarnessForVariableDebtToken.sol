@@ -1,16 +1,12 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {
-  ReserveConfiguration
-} from '../../contracts/libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../../contracts/libraries/configuration/UserConfiguration.sol';
-import {ReserveLogic} from '../../contracts/libraries/logic/ReserveLogic.sol';
 import {ILendingPool} from '../../contracts/interfaces/ILendingPool.sol';
 import {LendingPool} from '../../contracts/lendingpool/LendingPool.sol';
 import {
   ILendingPoolAddressesProvider
 } from '../../contracts/interfaces/ILendingPoolAddressesProvider.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 /*
 Certora: Harness that delegates calls to the original LendingPool.
@@ -71,38 +67,38 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     address collateral,
     address asset,
     address user,
-    uint256 purchaseAmount,
+    uint256 debtToCover,
     bool receiveAToken
   ) external override {
-    originalPool.liquidationCall(collateral, asset, user, purchaseAmount, receiveAToken);
+    originalPool.liquidationCall(collateral, asset, user, debtToCover, receiveAToken);
   }
 
-  function getReservesList() external override view returns (address[] memory) {
+  function getReservesList() external view override returns (address[] memory) {
     return originalPool.getReservesList();
   }
 
   function getReserveData(address asset)
     external
-    override
     view
-    returns (ReserveLogic.ReserveData memory)
+    override
+    returns (DataTypes.ReserveData memory)
   {
     return originalPool.getReserveData(asset);
   }
 
   function getUserConfiguration(address user)
     external
-    override
     view
-    returns (UserConfiguration.Map memory)
+    override
+    returns (DataTypes.UserConfigurationMap memory)
   {
     return originalPool.getUserConfiguration(user);
   }
 
   function getUserAccountData(address user)
     external
-    override
     view
+    override
     returns (
       uint256 totalCollateralETH,
       uint256 totalBorrowsETH,
@@ -144,16 +140,16 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
 
   function getConfiguration(address asset)
     external
-    override
     view
-    returns (ReserveConfiguration.Map memory)
+    override
+    returns (DataTypes.ReserveConfigurationMap memory)
   {
     return originalPool.getConfiguration(asset);
   }
 
   mapping(uint256 => uint256) private reserveNormalizedIncome;
 
-  function getReserveNormalizedIncome(address asset) external override view returns (uint256) {
+  function getReserveNormalizedIncome(address asset) external view override returns (uint256) {
     require(reserveNormalizedIncome[block.timestamp] == 1e27);
     return reserveNormalizedIncome[block.timestamp];
   }
@@ -162,8 +158,8 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
 
   function getReserveNormalizedVariableDebt(address asset)
     external
-    override
     view
+    override
     returns (uint256)
   {
     require(reserveNormalizedVariableDebt[block.timestamp] == 1e27);
@@ -174,7 +170,7 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     originalPool.setPause(val);
   }
 
-  function paused() external override view returns (bool) {
+  function paused() external view override returns (bool) {
     return originalPool.paused();
   }
 
@@ -201,7 +197,7 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     originalPool.finalizeTransfer(asset, from, to, amount, balanceFromAfter, balanceToBefore);
   }
 
-  function getAddressesProvider() external override view returns (ILendingPoolAddressesProvider) {
+  function getAddressesProvider() external view override returns (ILendingPoolAddressesProvider) {
     return originalPool.getAddressesProvider();
   }
 }

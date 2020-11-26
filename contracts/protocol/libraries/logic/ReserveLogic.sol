@@ -3,21 +3,22 @@ pragma solidity 0.6.12;
 
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {MathUtils} from '../math/MathUtils.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {IAToken} from '../../tokenization/interfaces/IAToken.sol';
-import {IStableDebtToken} from '../../tokenization/interfaces/IStableDebtToken.sol';
-import {IVariableDebtToken} from '../../tokenization/interfaces/IVariableDebtToken.sol';
-import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
+import {IAToken} from '../../../interfaces/IAToken.sol';
+import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
+import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
+import {MathUtils} from '../math/MathUtils.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
+import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveLogic library
  * @author Aave
- * @notice Implements the logic to update the state of the reserves
+ * @notice Implements the logic to update the reserves state
  */
 library ReserveLogic {
   using SafeMath for uint256;
@@ -27,15 +28,15 @@ library ReserveLogic {
 
   /**
    * @dev Emitted when the state of a reserve is updated
-   * @param reserve the address of the reserve
-   * @param liquidityRate the new liquidity rate
-   * @param stableBorrowRate the new stable borrow rate
-   * @param variableBorrowRate the new variable borrow rate
-   * @param liquidityIndex the new liquidity index
-   * @param variableBorrowIndex the new variable borrow index
+   * @param asset The address of the underlying asset of the reserve
+   * @param liquidityRate The new liquidity rate
+   * @param stableBorrowRate The new stable borrow rate
+   * @param variableBorrowRate The new variable borrow rate
+   * @param liquidityIndex The new liquidity index
+   * @param variableBorrowIndex The new variable borrow index
    **/
   event ReserveDataUpdated(
-    address indexed reserve,
+    address indexed asset,
     uint256 liquidityRate,
     uint256 stableBorrowRate,
     uint256 variableBorrowRate,
@@ -43,44 +44,21 @@ library ReserveLogic {
     uint256 variableBorrowIndex
   );
 
-  using ReserveLogic for ReserveLogic.ReserveData;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-
-  enum InterestRateMode {NONE, STABLE, VARIABLE}
-
-  // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
-  struct ReserveData {
-    //stores the reserve configuration
-    ReserveConfiguration.Map configuration;
-    //the liquidity index. Expressed in ray
-    uint128 liquidityIndex;
-    //variable borrow index. Expressed in ray
-    uint128 variableBorrowIndex;
-    //the current supply rate. Expressed in ray
-    uint128 currentLiquidityRate;
-    //the current variable borrow rate. Expressed in ray
-    uint128 currentVariableBorrowRate;
-    //the current stable borrow rate. Expressed in ray
-    uint128 currentStableBorrowRate;
-    uint40 lastUpdateTimestamp;
-    //tokens addresses
-    address aTokenAddress;
-    address stableDebtTokenAddress;
-    address variableDebtTokenAddress;
-    //address of the interest rate strategy
-    address interestRateStrategyAddress;
-    //the id of the reserve. Represents the position in the list of the active reserves
-    uint8 id;
-  }
+  using ReserveLogic for DataTypes.ReserveData;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   /**
-   * @dev returns the ongoing normalized income for the reserve.
-   * a value of 1e27 means there is no income. As time passes, the income is accrued.
-   * A value of 2*1e27 means for each unit of asset one unit of income has been accrued.
-   * @param reserve the reserve object
+   * @dev Returns the ongoing normalized income for the reserve
+   * A value of 1e27 means there is no income. As time passes, the income is accrued
+   * A value of 2*1e27 means for each unit of asset one unit of income has been accrued
+   * @param reserve The reserve object
    * @return the normalized income. expressed in ray
    **/
-  function getNormalizedIncome(ReserveData storage reserve) internal view returns (uint256) {
+  function getNormalizedIncome(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint256)
+  {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -98,13 +76,17 @@ library ReserveLogic {
   }
 
   /**
-   * @dev returns the ongoing normalized variable debt for the reserve.
-   * a value of 1e27 means there is no debt. As time passes, the income is accrued.
-   * A value of 2*1e27 means that the debt of the reserve is double the initial amount.
-   * @param reserve the reserve object
-   * @return the normalized variable debt. expressed in ray
+   * @dev Returns the ongoing normalized variable debt for the reserve
+   * A value of 1e27 means there is no debt. As time passes, the income is accrued
+   * A value of 2*1e27 means that for each unit of debt, one unit worth of interest has been accumulated
+   * @param reserve The reserve object
+   * @return The normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(ReserveData storage reserve) internal view returns (uint256) {
+  function getNormalizedDebt(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint256)
+  {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -122,11 +104,10 @@ library ReserveLogic {
   }
 
   /**
-   * @dev Updates the liquidity cumulative index Ci and variable borrow cumulative index Bvc. Refer to the whitepaper for
-   * a formal specification.
+   * @dev Updates the liquidity cumulative index and the variable borrow index.
    * @param reserve the reserve object
    **/
-  function updateState(ReserveData storage reserve) internal {
+  function updateState(DataTypes.ReserveData storage reserve) internal {
     uint256 scaledVariableDebt =
       IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
@@ -153,14 +134,14 @@ library ReserveLogic {
   }
 
   /**
-   * @dev accumulates a predefined amount of asset to the reserve as a fixed, one time income. Used for example to accumulate
-   * the flashloan fee to the reserve, and spread it through the depositors.
-   * @param reserve the reserve object
-   * @param totalLiquidity the total liquidity available in the reserve
-   * @param amount the amount to accomulate
+   * @dev Accumulates a predefined amount of asset to the reserve as a fixed, instantaneous income. Used for example to accumulate
+   * the flashloan fee to the reserve, and spread it between all the depositors
+   * @param reserve The reserve object
+   * @param totalLiquidity The total liquidity available in the reserve
+   * @param amount The amount to accomulate
    **/
   function cumulateToLiquidityIndex(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 totalLiquidity,
     uint256 amount
   ) internal {
@@ -169,19 +150,19 @@ library ReserveLogic {
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
     result = result.rayMul(reserve.liquidityIndex);
-    require(result < type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+    require(result <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
     reserve.liquidityIndex = uint128(result);
   }
 
   /**
-   * @dev initializes a reserve
-   * @param reserve the reserve object
-   * @param aTokenAddress the address of the overlying atoken contract
-   * @param interestRateStrategyAddress the address of the interest rate strategy contract
+   * @dev Initializes a reserve
+   * @param reserve The reserve object
+   * @param aTokenAddress The address of the overlying atoken contract
+   * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function init(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address aTokenAddress,
     address stableDebtTokenAddress,
     address variableDebtTokenAddress,
@@ -209,14 +190,13 @@ library ReserveLogic {
   }
 
   /**
-   * @dev Updates the reserve current stable borrow rate Rf, the current variable borrow rate Rv and the current liquidity rate Rl.
-   * Also updates the lastUpdateTimestamp value. Please refer to the whitepaper for further information.
-   * @param reserve the address of the reserve to be updated
-   * @param liquidityAdded the amount of liquidity added to the protocol (deposit or repay) in the previous action
-   * @param liquidityTaken the amount of liquidity taken from the protocol (redeem or borrow)
+   * @dev Updates the reserve current stable borrow rate, the current variable borrow rate and the current liquidity rate
+   * @param reserve The address of the reserve to be updated
+   * @param liquidityAdded The amount of liquidity added to the protocol (deposit or repay) in the previous action
+   * @param liquidityTaken The amount of liquidity taken from the protocol (redeem or borrow)
    **/
   function updateInterestRates(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     address reserveAddress,
     address aTokenAddress,
     uint256 liquidityAdded,
@@ -250,9 +230,9 @@ library ReserveLogic {
       vars.avgStableRate,
       reserve.configuration.getReserveFactor()
     );
-    require(vars.newLiquidityRate < type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
-    require(vars.newStableRate < type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
-    require(vars.newVariableRate < type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
+    require(vars.newLiquidityRate <= type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
+    require(vars.newStableRate <= type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
+    require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
 
     reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
     reserve.currentStableBorrowRate = uint128(vars.newStableRate);
@@ -283,16 +263,16 @@ library ReserveLogic {
   }
 
   /**
-   * @dev mints part of the repaid interest to the reserve treasury, depending on the reserveFactor for the
+   * @dev Mints part of the repaid interest to the reserve treasury as a function of the reserveFactor for the
    * specific asset.
-   * @param reserve the reserve reserve to be updated
-   * @param scaledVariableDebt the current scaled total variable debt
-   * @param previousVariableBorrowIndex the variable borrow index before the last accumulation of the interest
-   * @param newLiquidityIndex the new liquidity index
-   * @param newVariableBorrowIndex the variable borrow index after the last accumulation of the interest
+   * @param reserve The reserve reserve to be updated
+   * @param scaledVariableDebt The current scaled total variable debt
+   * @param previousVariableBorrowIndex The variable borrow index before the last accumulation of the interest
+   * @param newLiquidityIndex The new liquidity index
+   * @param newVariableBorrowIndex The variable borrow index after the last accumulation of the interest
    **/
   function _mintToTreasury(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
@@ -345,14 +325,14 @@ library ReserveLogic {
   }
 
   /**
-   * @dev updates the reserve indexes and the timestamp of the update
-   * @param reserve the reserve reserve to be updated
-   * @param scaledVariableDebt the scaled variable debt
-   * @param liquidityIndex the last stored liquidity index
-   * @param variableBorrowIndex the last stored variable borrow index
+   * @dev Updates the reserve indexes and the timestamp of the update
+   * @param reserve The reserve reserve to be updated
+   * @param scaledVariableDebt The scaled variable debt
+   * @param liquidityIndex The last stored liquidity index
+   * @param variableBorrowIndex The last stored variable borrow index
    **/
   function _updateIndexes(
-    ReserveData storage reserve,
+    DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 liquidityIndex,
     uint256 variableBorrowIndex,
@@ -368,7 +348,7 @@ library ReserveLogic {
       uint256 cumulatedLiquidityInterest =
         MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
-      require(newLiquidityIndex < type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+      require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
       reserve.liquidityIndex = uint128(newLiquidityIndex);
 
@@ -379,7 +359,7 @@ library ReserveLogic {
           MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
         newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
         require(
-          newVariableBorrowIndex < type(uint128).max,
+          newVariableBorrowIndex <= type(uint128).max,
           Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
         );
         reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
