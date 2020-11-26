@@ -68,6 +68,8 @@ interface IStableDebtToken {
 
   /**
    * @dev Burns debt of `user`
+   * - The resulting rate is the weighted average between the rate of the new debt
+   * and the rate of the previous debt
    * @param user The address of the user getting his debt burned
    * @param amount The amount of debt tokens getting burned
    **/
