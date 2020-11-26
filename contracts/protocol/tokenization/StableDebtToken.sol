@@ -123,7 +123,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
 
-    require(vars.newStableRate < type(uint128).max, Errors.SDT_STABLE_DEBT_OVERFLOW);
+    require(vars.newStableRate <= type(uint128).max, Errors.SDT_STABLE_DEBT_OVERFLOW);
     _usersStableRate[onBehalfOf] = vars.newStableRate;
 
     //solium-disable-next-line
