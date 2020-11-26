@@ -3,18 +3,18 @@ pragma solidity 0.6.12;
 
 interface IScaledBalanceToken {
   /**
-   * @dev Returns the principal balance of the user. The principal balance is the last
-   * updated stored balance, which does not consider the perpetually accruing interest.
-   * @param user The address of the user
-   * @return The principal balance of the user
+   * @dev Returns the scaled balance of the user. The scaled balance is the sum of all the
+   * updated stored balance divided by the reserve's liquidity index at the moment of the update
+   * @param user The user whose balance is calculated
+   * @return The scaled balance of the user
    **/
   function scaledBalanceOf(address user) external view returns (uint256);
 
   /**
-   * @dev Returns the principal balance of the user and principal total supply.
+   * @dev Returns the scaled balance of the user and the scaled total supply.
    * @param user The address of the user
-   * @return The principal balance of the user
-   * @return The principal total supply
+   * @return The scaled balance of the user
+   * @return The scaled balance and the scaled total supply
    **/
   function getScaledUserBalanceAndSupply(address user) external view returns (uint256, uint256);
 

@@ -12,7 +12,7 @@ interface IStableDebtToken {
   /**
    * @dev Emitted when new stable debt is minted
    * @param user The address of the user who triggered the minting
-   * @param onBehalfOf The recipient of aTokens
+   * @param onBehalfOf The recipient of stable debt tokens
    * @param amount The amount minted
    * @param currentBalance The current balance of the user
    * @param balanceIncrease The increase in balance since the last action of the user

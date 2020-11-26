@@ -199,10 +199,10 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev returns the principal balance of the user and principal total supply.
-   * @param user the address of the user
-   * @return the principal balance of the user
-   * @return the principal total supply
+   * @dev Returns the scaled balance of the user and the scaled total supply.
+   * @param user The address of the user
+   * @return The scaled balance of the user
+   * @return The scaled balance and the scaled total supply
    **/
   function getScaledUserBalanceAndSupply(address user)
     external
