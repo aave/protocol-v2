@@ -2735,6 +2735,79 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(userAEthBalance).to.be.lt(userAEthBalanceBefore);
         expect(userAEthBalance).to.be.gte(userAEthBalanceBefore.sub(liquidityToSwap));
       });
+
+      it('should correctly repay debt using the same asset as collateral', async () => {
+        const { users, pool, aDai, dai, uniswapRepayAdapter, helpersContract } = testEnv;
+        const user = users[0].signer;
+        const userAddress = users[0].address;
+
+        // Add deposit for user
+        await dai.mint(parseEther('20'));
+        await dai.approve(pool.address, parseEther('20'));
+        await pool.deposit(dai.address, parseEther('20'), userAddress, 0);
+
+        const amountCollateralToSwap = parseEther('10');
+        const debtAmount = parseEther('10');
+
+        // Open user Debt
+        await pool.connect(user).borrow(dai.address, debtAmount, 1, 0, userAddress);
+
+        const daiStableDebtTokenAddress = (
+          await helpersContract.getReserveTokensAddresses(dai.address)
+        ).stableDebtTokenAddress;
+
+        const daiStableDebtContract = await getContract<StableDebtToken>(
+          eContractid.StableDebtToken,
+          daiStableDebtTokenAddress
+        );
+
+        const userDaiStableDebtAmountBefore = await daiStableDebtContract.balanceOf(userAddress);
+
+        const flashLoanDebt = new BigNumber(amountCollateralToSwap.toString())
+          .multipliedBy(1.0009)
+          .toFixed(0);
+
+        await aDai.connect(user).approve(uniswapRepayAdapter.address, flashLoanDebt);
+        const userADaiBalanceBefore = await aDai.balanceOf(userAddress);
+        const userDaiBalanceBefore = await dai.balanceOf(userAddress);
+
+        const params = buildRepayAdapterParams(
+          dai.address,
+          amountCollateralToSwap,
+          1,
+          0,
+          0,
+          0,
+          '0x0000000000000000000000000000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000000000000000000000000000'
+        );
+
+        await pool
+          .connect(user)
+          .flashLoan(
+            uniswapRepayAdapter.address,
+            [dai.address],
+            [amountCollateralToSwap.toString()],
+            [0],
+            userAddress,
+            params,
+            0
+          );
+
+        const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
+        const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
+        const userADaiBalance = await aDai.balanceOf(userAddress);
+        const adapterADaiBalance = await aDai.balanceOf(uniswapRepayAdapter.address);
+        const userDaiBalance = await dai.balanceOf(userAddress);
+
+        expect(adapterADaiBalance).to.be.eq(Zero);
+        expect(adapterDaiBalance).to.be.eq(Zero);
+        expect(userDaiStableDebtAmountBefore).to.be.gte(debtAmount);
+        expect(userDaiStableDebtAmount).to.be.lt(debtAmount);
+        expect(userADaiBalance).to.be.lt(userADaiBalanceBefore);
+        expect(userADaiBalance).to.be.gte(userADaiBalanceBefore.sub(flashLoanDebt));
+        expect(userDaiBalance).to.be.eq(userDaiBalanceBefore);
+      });
     });
 
     describe('swapAndRepay', () => {
@@ -3191,6 +3264,70 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(userDaiVariableDebtAmount).to.be.eq(Zero);
         expect(userAEthBalance).to.be.lt(userAEthBalanceBefore);
         expect(userAEthBalance).to.be.gte(userAEthBalanceBefore.sub(liquidityToSwap));
+      });
+
+      it('should correctly repay debt using the same asset as collateral', async () => {
+        const { users, pool, dai, uniswapRepayAdapter, helpersContract, aDai } = testEnv;
+        const user = users[0].signer;
+        const userAddress = users[0].address;
+
+        // Add deposit for user
+        await dai.mint(parseEther('20'));
+        await dai.approve(pool.address, parseEther('20'));
+        await pool.deposit(dai.address, parseEther('20'), userAddress, 0);
+
+        const amountCollateralToSwap = parseEther('10');
+
+        const debtAmount = parseEther('10');
+
+        // Open user Debt
+        await pool.connect(user).borrow(dai.address, debtAmount, 1, 0, userAddress);
+
+        const daiStableDebtTokenAddress = (
+          await helpersContract.getReserveTokensAddresses(dai.address)
+        ).stableDebtTokenAddress;
+
+        const daiStableDebtContract = await getContract<StableDebtToken>(
+          eContractid.StableDebtToken,
+          daiStableDebtTokenAddress
+        );
+
+        const userDaiStableDebtAmountBefore = await daiStableDebtContract.balanceOf(userAddress);
+
+        await aDai.connect(user).approve(uniswapRepayAdapter.address, amountCollateralToSwap);
+        const userADaiBalanceBefore = await aDai.balanceOf(userAddress);
+        const userDaiBalanceBefore = await dai.balanceOf(userAddress);
+
+        await uniswapRepayAdapter
+          .connect(user)
+          .swapAndRepay(
+            dai.address,
+            dai.address,
+            amountCollateralToSwap,
+            amountCollateralToSwap,
+            1,
+            {
+              amount: 0,
+              deadline: 0,
+              v: 0,
+              r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            }
+          );
+
+        const adapterDaiBalance = await dai.balanceOf(uniswapRepayAdapter.address);
+        const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
+        const userADaiBalance = await aDai.balanceOf(userAddress);
+        const adapterADaiBalance = await aDai.balanceOf(uniswapRepayAdapter.address);
+        const userDaiBalance = await dai.balanceOf(userAddress);
+
+        expect(adapterADaiBalance).to.be.eq(Zero);
+        expect(adapterDaiBalance).to.be.eq(Zero);
+        expect(userDaiStableDebtAmountBefore).to.be.gte(debtAmount);
+        expect(userDaiStableDebtAmount).to.be.lt(debtAmount);
+        expect(userADaiBalance).to.be.lt(userADaiBalanceBefore);
+        expect(userADaiBalance).to.be.gte(userADaiBalanceBefore.sub(amountCollateralToSwap));
+        expect(userDaiBalance).to.be.eq(userDaiBalanceBefore);
       });
     });
   });
