@@ -79,7 +79,7 @@ interface IAToken is IERC20, IScaledBalanceToken {
 
   /**
    * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
-   * assets in borrow(), redeem() and flashLoan()
+   * assets in borrow(), withdraw() and flashLoan()
    * @param user The recipient of the aTokens
    * @param amount The amount getting transferred
    * @return The amount transferred
