@@ -291,7 +291,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Calculates the total supply
-   * @param avgRate The average rate at which calculate the total supply
+   * @param avgRate The average rate at which the total supply increases
    * @return The debt balance of the user since the last burn/mint action
    **/
   function _calcTotalSupply(uint256 avgRate) internal view virtual returns (uint256) {
