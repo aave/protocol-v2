@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
-
 interface ILendingPool {
   /**
    * @dev Emitted on deposit()
@@ -241,7 +240,7 @@ interface ILendingPool {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external;
+  ) external returns (uint256);
 
   /**
    * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
