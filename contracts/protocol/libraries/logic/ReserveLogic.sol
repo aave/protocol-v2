@@ -150,7 +150,7 @@ library ReserveLogic {
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
     result = result.rayMul(reserve.liquidityIndex);
-    require(result < type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+    require(result <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
     reserve.liquidityIndex = uint128(result);
   }
@@ -230,9 +230,9 @@ library ReserveLogic {
       vars.avgStableRate,
       reserve.configuration.getReserveFactor()
     );
-    require(vars.newLiquidityRate < type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
-    require(vars.newStableRate < type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
-    require(vars.newVariableRate < type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
+    require(vars.newLiquidityRate <= type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
+    require(vars.newStableRate <= type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
+    require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
 
     reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
     reserve.currentStableBorrowRate = uint128(vars.newStableRate);
@@ -348,7 +348,7 @@ library ReserveLogic {
       uint256 cumulatedLiquidityInterest =
         MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
-      require(newLiquidityIndex < type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+      require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
       reserve.liquidityIndex = uint128(newLiquidityIndex);
 
@@ -359,7 +359,7 @@ library ReserveLogic {
           MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
         newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
         require(
-          newVariableBorrowIndex < type(uint128).max,
+          newVariableBorrowIndex <= type(uint128).max,
           Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
         );
         reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
