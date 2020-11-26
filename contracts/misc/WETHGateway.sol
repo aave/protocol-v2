@@ -2,15 +2,15 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from './interfaces/IWETH.sol';
 import {IWETHGateway} from './interfaces/IWETHGateway.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {IAToken} from '../protocol/tokenization/interfaces/IAToken.sol';
+import {IAToken} from '../interfaces/IAToken.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
-import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract WETHGateway is IWETHGateway, Ownable {

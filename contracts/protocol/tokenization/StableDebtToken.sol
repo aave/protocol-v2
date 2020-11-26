@@ -4,12 +4,13 @@ pragma solidity 0.6.12;
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {IStableDebtToken} from './interfaces/IStableDebtToken.sol';
+import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
- * @title contract StableDebtToken
- * @notice Implements a stable debt token to track the user positions
+ * @title StableDebtToken
+ * @notice Implements a stable debt token to track the borrowing positions of users
+ * at stable rate mode
  * @author Aave
  **/
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
@@ -31,15 +32,15 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   ) public DebtTokenBase(pool, underlyingAsset, name, symbol, incentivesController) {}
 
   /**
-   * @dev gets the revision of the stable debt token implementation
-   * @return the debt token implementation revision
+   * @dev Gets the revision of the stable debt token implementation
+   * @return The debt token implementation revision
    **/
   function getRevision() internal pure virtual override returns (uint256) {
     return DEBT_TOKEN_REVISION;
   }
 
   /**
-   * @dev returns the average stable rate across all the stable rate debt
+   * @dev Returns the average stable rate across all the stable rate debt
    * @return the average stable rate
    **/
   function getAverageStableRate() external view virtual override returns (uint256) {
@@ -47,25 +48,25 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev returns the timestamp of the last user action
-   * @return the last update timestamp
+   * @dev Returns the timestamp of the last user action
+   * @return The last update timestamp
    **/
   function getUserLastUpdated(address user) external view virtual override returns (uint40) {
     return _timestamps[user];
   }
 
   /**
-   * @dev returns the stable rate of the user
-   * @param user the address of the user
-   * @return the stable rate of user
+   * @dev Returns the stable rate of the user
+   * @param user The address of the user
+   * @return The stable rate of user
    **/
   function getUserStableRate(address user) external view virtual override returns (uint256) {
     return _usersStableRate[user];
   }
 
   /**
-   * @dev calculates the current user debt balance
-   * @return the accumulated debt of the user
+   * @dev Calculates the current user debt balance
+   * @return The accumulated debt of the user
    **/
   function balanceOf(address account) public view virtual override returns (uint256) {
     uint256 accountBalance = super.balanceOf(account);
@@ -87,11 +88,15 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev mints debt token to the target user. The resulting rate is the weighted average
-   * between the rate of the new debt and the rate of the previous debt
-   * @param user the address of the user
-   * @param amount the amount of debt tokens to mint
-   * @param rate the rate of the debt being minted.
+   * @dev Mints debt token to the `onBehalfOf` address.
+   * -  Only callable by the LendingPool
+   * - The resulting rate is the weighted average between the rate of the new debt
+   * and the rate of the previous debt
+   * @param user The address receiving the borrowed underlying, being the delegatee in case
+   * of credit delegate, or same as `onBehalfOf` otherwise
+   * @param onBehalfOf The address receiving the debt tokens
+   * @param amount The amount of debt tokens to mint
+   * @param rate The rate of the debt being minted
    **/
   function mint(
     address user,
@@ -105,17 +110,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _decreaseBorrowAllowance(onBehalfOf, user, amount);
     }
 
-    //cumulates the user debt
     (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(onBehalfOf);
 
-    //accrueing the interest accumulation to the stored total supply and caching it
     vars.previousSupply = totalSupply();
     vars.currentAvgStableRate = _avgStableRate;
     vars.nextSupply = _totalSupply = vars.previousSupply.add(amount);
 
     vars.amountInRay = amount.wadToRay();
 
-    //calculates the new stable rate for the user
     vars.newStableRate = _usersStableRate[onBehalfOf]
       .rayMul(currentBalance.wadToRay())
       .add(vars.amountInRay.rayMul(rate))
@@ -124,11 +126,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     require(vars.newStableRate < type(uint128).max, Errors.SDT_STABLE_DEBT_OVERFLOW);
     _usersStableRate[onBehalfOf] = vars.newStableRate;
 
-    //updating the user and supply timestamp
     //solium-disable-next-line
     _totalSupplyTimestamp = _timestamps[onBehalfOf] = uint40(block.timestamp);
 
-    //calculates the updated average stable rate
+    // Calculates the updated average stable rate
     vars.currentAvgStableRate = _avgStableRate = vars
       .currentAvgStableRate
       .rayMul(vars.previousSupply.wadToRay())
@@ -137,7 +138,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     _mint(onBehalfOf, amount.add(balanceIncrease), vars.previousSupply);
 
-    // transfer event to track balances
     emit Transfer(address(0), onBehalfOf, amount);
 
     emit Mint(
@@ -155,9 +155,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev burns debt of the target user.
-   * @param user the address of the user
-   * @param amount the amount of debt tokens to mint
+   * @dev Burns debt of `user`
+   * @param user The address of the user getting his debt burned
+   * @param amount The amount of debt tokens getting burned
    **/
   function burn(address user, uint256 amount) external override onlyLendingPool {
     (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(user);
@@ -167,10 +167,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 nextSupply = 0;
     uint256 userStableRate = _usersStableRate[user];
 
-    //since the total supply and each single user debt accrue separately,
-    //there might be accumulation errors so that the last borrower repaying
-    //might actually try to repay more than the available debt supply.
-    //in this case we simply set the total supply and the avg stable rate to 0
+    // Since the total supply and each single user debt accrue separately,
+    // there might be accumulation errors so that the last borrower repaying
+    // mght actually try to repay more than the available debt supply.
+    // In this case we simply set the total supply and the avg stable rate to 0
     if (previousSupply <= amount) {
       _avgStableRate = 0;
       _totalSupply = 0;
@@ -179,9 +179,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       uint256 firstTerm = _avgStableRate.rayMul(previousSupply.wadToRay());
       uint256 secondTerm = userStableRate.rayMul(amount.wadToRay());
 
-      //for the same reason described above, when the last user is repaying it might
-      //happen that user rate * user balance > avg rate * total supply. In that case,
-      //we simply set the avg rate to 0
+      // For the same reason described above, when the last user is repaying it might
+      // happen that user rate * user balance > avg rate * total supply. In that case,
+      // we simply set the avg rate to 0
       if (secondTerm >= firstTerm) {
         newStableRate = _avgStableRate = _totalSupply = 0;
       } else {
@@ -205,7 +205,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _burn(user, amount.sub(balanceIncrease), previousSupply);
     }
 
-    // transfer event to track balances
     emit Transfer(user, address(0), amount);
 
     emit Burn(user, amount, currentBalance, balanceIncrease, newStableRate, nextSupply);
@@ -242,7 +241,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev returns the principal and total supply, the average borrow rate and the last supply update timestamp
+   * @dev Returns the principal and total supply, the average borrow rate and the last supply update timestamp
    **/
   function getSupplyData()
     public
@@ -260,7 +259,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev returns the the total supply and the average stable rate
+   * @dev Returns the the total supply and the average stable rate
    **/
   function getTotalSupplyAndAvgRate() public view override returns (uint256, uint256) {
     uint256 avgRate = _avgStableRate;
@@ -268,14 +267,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev returns the total supply
+   * @dev Returns the total supply
    **/
   function totalSupply() public view override returns (uint256) {
     return _calcTotalSupply(_avgStableRate);
   }
 
   /**
-   * @dev returns the timestamp at which the total supply was updated
+   * @dev Returns the timestamp at which the total supply was updated
    **/
   function getTotalSupplyLastUpdated() public view override returns (uint40) {
     return _totalSupplyTimestamp;
@@ -283,7 +282,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the principal debt balance of the user from
-   * @param user the user
+   * @param user The user's address
    * @return The debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address user) external view virtual override returns (uint256) {
@@ -291,8 +290,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev calculates the total supply
-   * @param avgRate the average rate at which calculate the total supply
+   * @dev Calculates the total supply
+   * @param avgRate The average rate at which the total supply increases
    * @return The debt balance of the user since the last burn/mint action
    **/
   function _calcTotalSupply(uint256 avgRate) internal view virtual returns (uint256) {
@@ -309,9 +308,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev mints stable debt tokens to an user
-   * @param account the account receiving the debt tokens
-   * @param amount the amount being minted
+   * @dev Mints stable debt tokens to an user
+   * @param account The account receiving the debt tokens
+   * @param amount The amount being minted
    * @param oldTotalSupply the total supply before the minting event
    **/
   function _mint(
@@ -328,10 +327,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   }
 
   /**
-   * @dev burns stable debt tokens of an user
-   * @param account the user getting his debt burned
-   * @param amount the amount being burned
-   * @param oldTotalSupply the total supply before the burning event
+   * @dev Burns stable debt tokens of an user
+   * @param account The user getting his debt burned
+   * @param amount The amount being burned
+   * @param oldTotalSupply The total supply before the burning event
    **/
   function _burn(
     address account,
