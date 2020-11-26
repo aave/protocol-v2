@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import {HardhatUserConfig} from 'hardhat/config';
+import {HardhatUserConfig} from 'hardhat/types';
 // @ts-ignore
 import {accounts} from './test-wallets.js';
 import {eEthereumNetwork} from './helpers/types';
@@ -11,20 +11,23 @@ import '@nomiclabs/hardhat-waffle';
 import 'temp-hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
+import '@tenderly/hardhat-tenderly';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
-const DEFAULT_GAS_MUL = 2;
+const DEFAULT_GAS_MUL = 5;
 const DEFAULT_GAS_PRICE = 2000000000;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';
+const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
+const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full'].forEach((folder) => {
+  ['misc', 'migrations', 'dev', 'full', 'verifications'].forEach((folder) => {
     const tasksPath = path.join(__dirname, 'tasks', folder);
     fs.readdirSync(tasksPath)
       .filter((pth) => pth.includes('.ts'))
@@ -38,7 +41,11 @@ require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {
-    url: `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
+    url: ALCHEMY_KEY
+      ? `https://eth-${
+          networkName === 'main' ? 'mainnet' : networkName
+        }.alchemyapi.io/v2/${ALCHEMY_KEY}`
+      : `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
     hardfork: HARDFORK,
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
     gasMultiplier: DEFAULT_GAS_MUL,
@@ -53,9 +60,18 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
   };
 };
 
+const mainnetFork = MAINNET_FORK
+  ? {
+      blockNumber: 11268220,
+      url: ALCHEMY_KEY
+        ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
+        : `https://main.infura.io/v3/${INFURA_KEY}`,
+    }
+  : undefined;
+
 const buidlerConfig: HardhatUserConfig = {
   solidity: {
-    version: '0.6.8',
+    version: '0.6.12',
     settings: {
       optimizer: {enabled: true, runs: 200},
       evmVersion: 'istanbul',
@@ -71,6 +87,11 @@ const buidlerConfig: HardhatUserConfig = {
   mocha: {
     timeout: 0,
   },
+  tenderly: {
+    project: process.env.TENDERLY_PROJECT || '',
+    username: process.env.TENDERLY_USERNAME || '',
+    forkNetwork: '1', //Network id of the network we want to fork
+  },
   networks: {
     coverage: {
       url: 'http://localhost:8555',
@@ -79,6 +100,7 @@ const buidlerConfig: HardhatUserConfig = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
+    tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     hardhat: {
       hardfork: 'istanbul',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
@@ -91,6 +113,7 @@ const buidlerConfig: HardhatUserConfig = {
         privateKey: secretKey,
         balance,
       })),
+      forking: mainnetFork,
     },
     buidlerevm_docker: {
       hardfork: 'istanbul',

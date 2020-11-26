@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 
 pragma experimental ABIEncoderV2;
 
@@ -9,7 +9,8 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 /**
  * @title WalletBalanceProvider contract
@@ -22,14 +23,9 @@ contract WalletBalanceProvider {
   using Address for address payable;
   using Address for address;
   using SafeERC20 for IERC20;
-  using ReserveConfiguration for ReserveConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
-  ILendingPoolAddressesProvider internal immutable _provider;
   address constant MOCK_ETH_ADDRESS = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
-  constructor(ILendingPoolAddressesProvider provider) public {
-    _provider = provider;
-  }
 
   /**
     @dev Fallback function, don't accept any ETH
@@ -80,12 +76,12 @@ contract WalletBalanceProvider {
   /**
     @dev provides balances of user wallet for all reserves available on the pool
     */
-  function getUserWalletBalances(address user)
+  function getUserWalletBalances(address provider, address user)
     external
     view
     returns (address[] memory, uint256[] memory)
   {
-    ILendingPool pool = ILendingPool(_provider.getLendingPool());
+    ILendingPool pool = ILendingPool(ILendingPoolAddressesProvider(provider).getLendingPool());
 
     address[] memory reserves = pool.getReservesList();
     address[] memory reservesWithEth = new address[](reserves.length + 1);
@@ -97,7 +93,7 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reservesWithEth.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      ReserveConfiguration.Map memory configuration = pool.getConfiguration(reservesWithEth[j]);
+      DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
 

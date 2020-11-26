@@ -49,7 +49,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
 
 const buidlerConfig: any = {
   solc: {
-    version: '0.6.8',
+    version: '0.6.12',
     optimizer: {enabled: true, runs: 200},
     evmVersion: 'istanbul',
   },

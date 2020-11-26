@@ -1,14 +1,26 @@
 stages:
-  - test
+  - checks
 
 test:
-  stage: test
+  stage: checks
   tags:
     - aave-build-runner
   before_script:
-    - docker-compose -f docker-compose.test.yml build
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
   script:
-    - docker-compose -f docker-compose.test.yml run contracts-env npm run ci:test
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:test
   after_script:
-    - docker-compose -f docker-compose.test.yml run contracts-env npm run ci:clean
-    - docker-compose -f docker-compose.test.yml down
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
+
+deploy-mainnet-fork:
+  tags:
+    - aave-build-runner
+  stage: checks
+  before_script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
+  script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run aave:fork:main
+  after_script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down

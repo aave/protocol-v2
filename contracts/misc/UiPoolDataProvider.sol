@@ -1,28 +1,27 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6.8;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IUiPoolDataProvider} from './interfaces/IUiPoolDataProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {IAToken} from '../tokenization/interfaces/IAToken.sol';
-import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
-import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
-
-import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
+import {IAToken} from '../interfaces/IAToken.sol';
+import {IVariableDebtToken} from '../interfaces/IVariableDebtToken.sol';
+import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
+import {WadRayMath} from '../protocol/libraries/math/WadRayMath.sol';
+import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {
   DefaultReserveInterestRateStrategy
-} from '../lendingpool/DefaultReserveInterestRateStrategy.sol';
+} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
-  using ReserveConfiguration for ReserveConfiguration.Map;
-  using UserConfiguration for UserConfiguration.Map;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
 
@@ -46,8 +45,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
 
   function getReservesData(ILendingPoolAddressesProvider provider, address user)
     external
-    override
     view
+    override
     returns (
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
@@ -57,21 +56,19 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
-    UserConfiguration.Map memory userConfig = lendingPool.getUserConfiguration(user);
+    DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
     AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
-    UserReserveData[] memory userReservesData = new UserReserveData[](
-      user != address(0) ? reserves.length : 0
-    );
+    UserReserveData[] memory userReservesData =
+      new UserReserveData[](user != address(0) ? reserves.length : 0);
 
     for (uint256 i = 0; i < reserves.length; i++) {
       AggregatedReserveData memory reserveData = reservesData[i];
       reserveData.underlyingAsset = reserves[i];
 
       // reserve current state
-      ReserveLogic.ReserveData memory baseData = lendingPool.getReserveData(
-        reserveData.underlyingAsset
-      );
+      DataTypes.ReserveData memory baseData =
+        lendingPool.getReserveData(reserveData.underlyingAsset);
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
       reserveData.liquidityRate = baseData.currentLiquidityRate;

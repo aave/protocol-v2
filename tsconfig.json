@@ -4,11 +4,14 @@
     "module": "commonjs",
     "strict": true,
     "esModuleInterop": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "noImplicitAny": false,
+    "resolveJsonModule": true
   },
-  "include": ["./scripts", "./test"],
+  "include": ["./scripts", "./test", "./tasks"],
   "files": [
     "./hardhat.config.ts",
+    "./modules/tenderly/tenderly.d.ts",
     "node_modules/@nomiclabs/buidler-ethers/src/type-extensions.d.ts",
     "node_modules/buidler-typechain/src/type-extensions.d.ts",
     "node_modules/@nomiclabs/buidler-waffle/src/type-extensions.d.ts",

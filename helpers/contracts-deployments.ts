@@ -1,5 +1,5 @@
-import {Contract} from 'ethers';
-import {DRE} from './misc-utils';
+import { Contract } from 'ethers';
+import { DRE } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -12,16 +12,16 @@ import {
   eEthereumNetwork,
 } from './types';
 
-import {MintableErc20 as MintableERC20} from '../types/MintableErc20';
-import {MockContract} from 'ethereum-waffle';
-import {getReservesConfigByPool} from './configuration';
-import {getFirstSigner} from './contracts-getters';
-import {ZERO_ADDRESS} from './constants';
+import { MintableERC20 } from '../types/MintableERC20';
+import { MockContract } from 'ethereum-waffle';
+import { getReservesConfigByPool } from './configuration';
+import { getFirstSigner } from './contracts-getters';
+import { ZERO_ADDRESS } from './constants';
 import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
-  ChainlinkProxyPriceProviderFactory,
+  AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   DelegationAwareATokenFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -30,10 +30,9 @@ import {
   LendingPoolCollateralManagerFactory,
   LendingPoolConfiguratorFactory,
   LendingPoolFactory,
-  LendingPoolLibraryAddresses,
   LendingRateOracleFactory,
-  MintableDelegationErc20Factory,
-  MintableErc20Factory,
+  MintableDelegationERC20Factory,
+  MintableERC20Factory,
   MockAggregatorFactory,
   MockATokenFactory,
   MockFlashLoanReceiverFactory,
@@ -45,8 +44,8 @@ import {
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
-  Weth9MockedFactory,
-  WethGatewayFactory,
+  WETH9MockedFactory,
+  WETHGatewayFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -54,10 +53,11 @@ import {
   linkBytecode,
   insertContractAddressInDb,
 } from './contracts-helpers';
-import {StableAndVariableTokensHelperFactory} from '../types/StableAndVariableTokensHelperFactory';
-import {MintableDelegationErc20} from '../types/MintableDelegationErc20';
-import {readArtifact as buidlerReadArtifact} from '@nomiclabs/buidler/plugins';
-import {HardhatRuntimeEnvironment} from 'hardhat/types';
+import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
+import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
+import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -162,8 +162,8 @@ export const deployAaveLibraries = async (
   // libPath example: contracts/libraries/logic/GenericLogic.sol
   // libName example: GenericLogic
   return {
-    ['__$5201a97c05ba6aa659e2f36a933dd51801$__']: validationLogic.address,
-    ['__$d3b4366daeb9cadc7528af6145b50b2183$__']: reserveLogic.address,
+    ['__$de8c0cf1a7d7c36c802af9a64fb9d86036$__']: validationLogic.address,
+    ['__$22cd43a9dda9ce44e9b92ba393b88fb9ac$__']: reserveLogic.address,
   };
 };
 
@@ -198,13 +198,13 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
     verify
   );
 
-export const deployChainlinkProxyPriceProvider = async (
+export const deployAaveOracle = async (
   args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new ChainlinkProxyPriceProviderFactory(await getFirstSigner()).deploy(...args),
-    eContractid.ChainlinkProxyPriceProvider,
+    await new AaveOracleFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AaveOracle,
     args,
     verify
   );
@@ -244,14 +244,11 @@ export const deployMockFlashLoanReceiver = async (
     verify
   );
 
-export const deployWalletBalancerProvider = async (
-  addressesProvider: tEthereumAddress,
-  verify?: boolean
-) =>
+export const deployWalletBalancerProvider = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(addressesProvider),
+    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(),
     eContractid.WalletBalanceProvider,
-    [addressesProvider],
+    [],
     verify
   );
 
@@ -271,7 +268,7 @@ export const deployMintableERC20 = async (
   verify?: boolean
 ): Promise<MintableERC20> =>
   withSaveAndVerify(
-    await new MintableErc20Factory(await getFirstSigner()).deploy(...args),
+    await new MintableERC20Factory(await getFirstSigner()).deploy(...args),
     eContractid.MintableERC20,
     args,
     verify
@@ -280,15 +277,15 @@ export const deployMintableERC20 = async (
 export const deployMintableDelegationERC20 = async (
   args: [string, string, string],
   verify?: boolean
-): Promise<MintableDelegationErc20> =>
+): Promise<MintableDelegationERC20> =>
   withSaveAndVerify(
-    await new MintableDelegationErc20Factory(await getFirstSigner()).deploy(...args),
+    await new MintableDelegationERC20Factory(await getFirstSigner()).deploy(...args),
     eContractid.MintableDelegationERC20,
     args,
     verify
   );
 export const deployDefaultReserveInterestRateStrategy = async (
-  args: [tEthereumAddress, string, string, string, string, string],
+  args: [tEthereumAddress, string, string, string, string, string, string],
   verify: boolean
 ) =>
   withSaveAndVerify(
@@ -366,26 +363,21 @@ export const deployDelegationAwareAToken = async (
   ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
   return withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.AToken,
+    eContractid.DelegationAwareAToken,
     args,
     verify
   );
 };
 
 export const deployAllMockTokens = async (verify?: boolean) => {
-  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
+  const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
-  const secondaryConfigData = getReservesConfigByPool(AavePools.secondary);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
     let decimals = '18';
 
     let configData = (<any>protoConfigData)[tokenSymbol];
-
-    if (!configData) {
-      configData = (<any>secondaryConfigData)[tokenSymbol];
-    }
 
     tokens[tokenSymbol] = await deployMintableERC20(
       [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
@@ -396,7 +388,7 @@ export const deployAllMockTokens = async (verify?: boolean) => {
 };
 
 export const deployMockTokens = async (config: PoolConfiguration, verify?: boolean) => {
-  const tokens: {[symbol: string]: MockContract | MintableERC20} = {};
+  const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
   const defaultDecimals = 18;
 
   const configData = config.ReservesConfig;
@@ -443,7 +435,7 @@ export const deployWETHGateway = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new WethGatewayFactory(await getFirstSigner()).deploy(...args),
+    await new WETHGatewayFactory(await getFirstSigner()).deploy(...args),
     eContractid.WETHGateway,
     args,
     verify
@@ -462,7 +454,7 @@ export const deployMockStableDebtToken = async (
 
 export const deployWETHMocked = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new Weth9MockedFactory(await getFirstSigner()).deploy(),
+    await new WETH9MockedFactory(await getFirstSigner()).deploy(),
     eContractid.WETHMocked,
     [],
     verify
