@@ -138,12 +138,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
+   * @return The final amount withdrawn
    **/
   function withdraw(
     address asset,
     uint256 amount,
     address to
-  ) external override whenNotPaused {
+  ) external override whenNotPaused  returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
@@ -179,6 +180,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
+
+    return amountToWithdraw;
   }
 
   /**
@@ -229,6 +232,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
    * user calling the function if he wants to reduce/remove his own debt, or the address of any other
    * other borrower whose debt should be removed
+   * @return The final amount repaid
    **/
   function repay(
     address asset,

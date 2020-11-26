@@ -194,12 +194,13 @@ interface ILendingPool {
    * @param to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
+   * @return The final amount withdrawn
    **/
   function withdraw(
     address asset,
     uint256 amount,
     address to
-  ) external;
+  ) external returns (uint256);
 
   /**
    * @dev Allows users to borrow a specific `amount` of the reserve underlying asset, provided that the borrower
@@ -234,6 +235,7 @@ interface ILendingPool {
    * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
    * user calling the function if he wants to reduce/remove his own debt, or the address of any other
    * other borrower whose debt should be removed
+   * @return The final amount repaid
    **/
   function repay(
     address asset,
