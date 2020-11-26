@@ -30,7 +30,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 // ----------------
 
 export const CommonsConfig: ICommonConfiguration = {
-  ConfigName: 'Commons',
+  MarketId: 'Commons',
   ProviderId: 0,
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',

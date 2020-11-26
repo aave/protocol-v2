@@ -17,6 +17,7 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
  * @author Aave
  **/
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
+  string private _marketId;
   mapping(bytes32 => address) private _addresses;
 
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';
@@ -26,6 +27,18 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
+
+  constructor(string memory marketId) public {
+    _setMarketId(marketId);
+  }
+
+  /**
+   * @dev Allows to set the market which this LendingPoolAddressesProvider represents
+   * @param marketId The market id
+   */
+  function setMarketId(string memory marketId) external override onlyOwner {
+    _setMarketId(marketId);
+  }
 
   /**
    * @dev General function to update the implementation of a proxy registered with
@@ -185,5 +198,10 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     } else {
       proxy.upgradeToAndCall(newAddress, params);
     }
+  }
+
+  function _setMarketId(string memory marketId) internal {
+    _marketId = marketId;
+    emit MarketIdSet(marketId);
   }
 }

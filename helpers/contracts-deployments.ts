@@ -65,11 +65,11 @@ const readArtifact = async (id: string) => {
   }
   return (DRE as HardhatRuntimeEnvironment).artifacts.readArtifact(id);
 };
-export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
+export const deployLendingPoolAddressesProvider = async (marketId: string, verify?: boolean) =>
   withSaveAndVerify(
-    await new LendingPoolAddressesProviderFactory(await getFirstSigner()).deploy(),
+    await new LendingPoolAddressesProviderFactory(await getFirstSigner()).deploy(marketId),
     eContractid.LendingPoolAddressesProvider,
-    [],
+    [marketId],
     verify
   );
 
