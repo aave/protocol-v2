@@ -282,7 +282,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the principal debt balance of the user from
-   * @param user Rhe user's address
+   * @param user The user's address
    * @return The debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address user) external view virtual override returns (uint256) {
