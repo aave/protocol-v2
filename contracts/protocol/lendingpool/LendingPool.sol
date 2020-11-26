@@ -117,14 +117,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
 
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
       emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
     }
-
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
