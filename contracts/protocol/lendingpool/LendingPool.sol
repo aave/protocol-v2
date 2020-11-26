@@ -525,7 +525,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         _reserves[vars.currentAsset].updateInterestRates(
           vars.currentAsset,
           vars.currentATokenAddress,
-          vars.currentPremium,
+          vars.currentAmountPlusPremium,
           0
         );
 
