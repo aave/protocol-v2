@@ -39,16 +39,6 @@ contract DelegationAwareAToken is AToken {
     )
   {}
 
-  function initialize(
-    uint8 _underlyingAssetDecimals,
-    string calldata _tokenName,
-    string calldata _tokenSymbol
-  ) external virtual override initializer {
-    _setName(_tokenName);
-    _setSymbol(_tokenSymbol);
-    _setDecimals(_underlyingAssetDecimals);
-  }
-
   /**
    * @dev Delegates voting power of the underlying asset to a `delegatee` address
    * @param delegatee The address that will receive the delegation
