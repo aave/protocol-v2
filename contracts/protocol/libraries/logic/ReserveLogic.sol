@@ -150,7 +150,7 @@ library ReserveLogic {
     uint256 result = amountToLiquidityRatio.add(WadRayMath.ray());
 
     result = result.rayMul(reserve.liquidityIndex);
-    require(result < type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+    require(result <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
     reserve.liquidityIndex = uint128(result);
   }
