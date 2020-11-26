@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.6;
+pragma solidity ^0.6.12;
 
 /**
  * @title ITokenConfiguration
  * @author Aave
- * @dev common interface between aTokens and debt tokens to fetch the
+ * @dev Common interface between aTokens and debt tokens to fetch the
  * token configuration
  **/
 interface ITokenConfiguration {

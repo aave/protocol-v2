@@ -1,14 +1,15 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {DebtTokenBase} from './base/DebtTokenBase.sol';
+import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {IVariableDebtToken} from './interfaces/IVariableDebtToken.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
+import {DebtTokenBase} from './base/DebtTokenBase.sol';
 
 /**
- * @title contract VariableDebtToken
- * @notice Implements a variable debt token to track the user positions
+ * @title VariableDebtToken
+ * @notice Implements a variable debt token to track the borrowing positions of users
+ * at variable rate mode
  * @author Aave
  **/
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
@@ -25,16 +26,16 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   ) public DebtTokenBase(pool, underlyingAsset, name, symbol, incentivesController) {}
 
   /**
-   * @dev gets the revision of the stable debt token implementation
-   * @return the debt token implementation revision
+   * @dev Gets the revision of the stable debt token implementation
+   * @return The debt token implementation revision
    **/
   function getRevision() internal pure virtual override returns (uint256) {
     return DEBT_TOKEN_REVISION;
   }
 
   /**
-   * @dev calculates the accumulated debt balance of the user
-   * @return the debt balance of the user
+   * @dev Calculates the accumulated debt balance of the user
+   * @return The debt balance of the user
    **/
   function balanceOf(address user) public view virtual override returns (uint256) {
     uint256 scaledBalance = super.balanceOf(user);
@@ -47,11 +48,14 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   }
 
   /**
-   * @dev mints new variable debt
-   * @param user the user receiving the debt
-   * @param amount the amount of debt being minted
-   * @param index the variable debt index of the reserve
-   * @return true if the the previous balance of the user is 0
+   * @dev Mints debt token to the `onBehalfOf` address
+   * -  Only callable by the LendingPool
+   * @param user The address receiving the borrowed underlying, being the delegatee in case
+   * of credit delegate, or same as `onBehalfOf` otherwise
+   * @param onBehalfOf The address receiving the debt tokens
+   * @param amount The amount of debt being minted
+   * @param index The variable debt index of the reserve
+   * @return `true` if the the previous balance of the user is 0
    **/
   function mint(
     address user,
@@ -76,9 +80,11 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   }
 
   /**
-   * @dev burns user variable debt
-   * @param user the user which debt is burnt
-   * @param index the variable debt index of the reserve
+   * @dev Burns user variable debt
+   * - Only callable by the LendingPool
+   * @param user The user whose debt is getting burned
+   * @param amount The amount getting burned
+   * @param index The variable debt index of the reserve
    **/
   function burn(
     address user,
@@ -104,7 +110,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Returns the total supply of the variable debt token. Represents the total debt accrued by the users
-   * @return the total supply
+   * @return The total supply
    **/
   function totalSupply() public view virtual override returns (uint256) {
     return
@@ -120,10 +126,10 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   }
 
   /**
-   * @dev returns the principal balance of the user and principal total supply.
-   * @param user the address of the user
-   * @return the principal balance of the user
-   * @return the principal total supply
+   * @dev Teturns the principal balance of the user and principal total supply.
+   * @param user The address of the user
+   * @return The principal balance of the user
+   * @return The principal total supply
    **/
   function getScaledUserBalanceAndSupply(address user)
     external

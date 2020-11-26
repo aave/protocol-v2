@@ -1,19 +1,18 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {IncentivizedERC20} from './IncentivizedERC20.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {IAToken} from '../../interfaces/IAToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
-import {IAToken} from './interfaces/IAToken.sol';
-import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {IncentivizedERC20} from './IncentivizedERC20.sol';
 
 /**
  * @title Aave ERC20 AToken
- *
- * @dev Implementation of the interest bearing token for the Aave protocol.
+ * @dev Implementation of the interest bearing token for the Aave protocol
  * @author Aave
  */
 contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
@@ -87,9 +86,12 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev burns the aTokens and sends the equivalent amount of underlying to the target.
-   * only lending pools can call this function
-   * @param amount the amount being burned
+   * @dev Burns aTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
+   * - Only callable by the LendingPool, as extra state updates there need to be managed
+   * @param user The owner of the aTokens, getting them burned
+   * @param receiverOfUnderlying The address that will receive the underlying
+   * @param amount The amount being burned
+   * @param index The new liquidity index of the reserve
    **/
   function burn(
     address user,
@@ -101,21 +103,19 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
-    //transfers the underlying to the target
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
-    //transfer event to track balances
     emit Transfer(user, address(0), amount);
     emit Burn(user, receiverOfUnderlying, amount, index);
   }
 
   /**
-   * @dev mints aTokens to user
-   * only lending pools can call this function
-   * @param user the address receiving the minted tokens
-   * @param amount the amount of tokens to mint
-   * @param index the the last index of the reserve
-   * @return true if the the previous balance of the user is 0
+   * @dev Mints `amount` aTokens to `user`
+   * - Only callable by the LendingPool, as extra state updates there need to be managed
+   * @param user The address receiving the minted tokens
+   * @param amount The amount of tokens getting minted
+   * @param index The new liquidity index of the reserve
+   * @return `true` if the the previous balance of the user was 0
    */
   function mint(
     address user,
@@ -128,7 +128,6 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
-    //transfer event to track balances
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
 
@@ -136,52 +135,49 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev mints aTokens to reserve treasury
-   * only lending pools can call this function
-   * @param amount the amount of tokens to mint to the treasury
-   * @param index the the last index of the reserve
+   * @dev Mints aTokens to the reserve treasury
+   * - Only callable by the LendingPool
+   * @param amount The amount of tokens getting minted
+   * @param index The new liquidity index of the reserve
    */
   function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
     if (amount == 0) {
       return;
     }
 
-    //compared to the normal mint, we don't check for rounding errors.
-    //the amount to mint can easily be very small since is a fraction of the interest
-    //accrued. in that case, the treasury will experience a (very small) loss, but it
-    //wont cause potentially valid transactions to fail.
-
+    // Compared to the normal mint, we don't check for rounding errors.
+    // The amount to mint can easily be very small since it is a fraction of the interest ccrued.
+    // In that case, the treasury will experience a (very small) loss, but it
+    // wont cause potentially valid transactions to fail.
     _mint(RESERVE_TREASURY_ADDRESS, amount.rayDiv(index));
 
-    //transfer event to track balances
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
     emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
   }
 
   /**
-   * @dev transfers tokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
-   *      only lending pools can call this function
-   * @param from the address from which transfer the aTokens
-   * @param to the destination address
-   * @param value the amount to transfer
+   * @dev Transfers aTokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
+   * - Only callable by the LendingPool
+   * @param from The address getting liquidated, current owner of the aTokens
+   * @param to The recipient
+   * @param value The amount of tokens getting transferred
    **/
   function transferOnLiquidation(
     address from,
     address to,
     uint256 value
   ) external override onlyLendingPool {
-    //being a normal transfer, the Transfer() and BalanceTransfer() are emitted
-    //so no need to emit a specific event here
+    // Being a normal transfer, the Transfer() and BalanceTransfer() are emitted
+    // so no need to emit a specific event here
     _transfer(from, to, value, false);
 
     emit Transfer(from, to, value);
   }
 
   /**
-   * @dev calculates the balance of the user, which is the
-   * principal balance + interest generated by the principal balance
-   * @param user the user for which the balance is being calculated
-   * @return the total balance of the user
+   * @dev Calculates the balance of the user: principal balance + interest generated by the principal
+   * @param user The user whose balance is calculated
+   * @return The balance of the user
    **/
   function balanceOf(address user)
     public
@@ -193,10 +189,10 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev returns the scaled balance of the user. The scaled balance is the sum of all the
-   * updated stored balance divided the reserve index at the moment of the update
-   * @param user the address of the user
-   * @return the scaled balance of the user
+   * @dev Returns the scaled balance of the user. The scaled balance is the sum of all the
+   * updated stored balance divided by the reserve's liquidity index at the moment of the update
+   * @param user The user whose balance is calculated
+   * @return The scaled balance of the user
    **/
   function scaledBalanceOf(address user) external view override returns (uint256) {
     return super.balanceOf(user);
@@ -242,11 +238,11 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev transfers the underlying asset to the target. Used by the lendingpool to transfer
+   * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
    * assets in borrow(), redeem() and flashLoan()
-   * @param target the target of the transfer
-   * @param amount the amount to transfer
-   * @return the amount transferred
+   * @param target The recipient of the aTokens
+   * @param amount The amount getting transferred
+   * @return The amount transferred
    **/
   function transferUnderlyingTo(address target, uint256 amount)
     external
@@ -259,14 +255,15 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev implements the permit function as for https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
-   * @param owner the owner of the funds
-   * @param spender the spender
-   * @param value the amount
-   * @param deadline the deadline timestamp, type(uint256).max for max deadline
-   * @param v signature param
-   * @param s signature param
-   * @param r signature param
+   * @dev implements the permit function as for
+   * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
+   * @param owner The owner of the funds
+   * @param spender The spender
+   * @param value The amount
+   * @param deadline The deadline timestamp, type(uint256).max for max deadline
+   * @param v Signature param
+   * @param s Signature param
+   * @param r Signature param
    */
   function permit(
     address owner,
@@ -295,12 +292,12 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev transfers the aTokens between two users. Validates the transfer
+   * @dev Transfers the aTokens between two users. Validates the transfer
    * (ie checks for valid HF after the transfer) if required
-   * @param from the source address
-   * @param to the destination address
-   * @param amount the amount to transfer
-   * @param validate true if the transfer needs to be validated
+   * @param from The source address
+   * @param to The destination address
+   * @param amount The amount getting transferred
+   * @param validate `true` if the transfer needs to be validated
    **/
   function _transfer(
     address from,
@@ -330,10 +327,10 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev overrides the parent _transfer to force validated transfer() and transferFrom()
-   * @param from the source address
-   * @param to the destination address
-   * @param amount the amount to transfer
+   * @dev Overrides the parent _transfer to force validated transfer() and transferFrom()
+   * @param from The source address
+   * @param to The destination address
+   * @param amount The amount getting transferred
    **/
   function _transfer(
     address from,
@@ -341,12 +338,5 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount
   ) internal override {
     _transfer(from, to, amount, true);
-  }
-
-  /**
-   * @dev aTokens should not receive ETH
-   **/
-  receive() external payable {
-    revert();
   }
 }

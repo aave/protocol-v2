@@ -2,13 +2,13 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
+import {IVariableDebtToken} from '../interfaces/IVariableDebtToken.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
-import {IStableDebtToken} from '../protocol/tokenization/interfaces/IStableDebtToken.sol';
-import {IVariableDebtToken} from '../protocol/tokenization/interfaces/IVariableDebtToken.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 contract AaveProtocolDataProvider {
