@@ -126,7 +126,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   }
 
   /**
-   * @dev Teturns the principal balance of the user and principal total supply.
+   * @dev Returns the principal balance of the user and principal total supply.
    * @param user The address of the user
    * @return The principal balance of the user
    * @return The principal total supply
