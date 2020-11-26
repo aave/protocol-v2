@@ -1,7 +1,7 @@
-import {oneRay, ZERO_ADDRESS} from '../../helpers/constants';
-import {IAaveConfiguration, EthereumNetwork, eEthereumNetwork} from '../../helpers/types';
+import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
+import { IAaveConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
 
-import {CommonsConfig} from './commons';
+import { CommonsConfig } from './commons';
 import {
   stablecoinStrategyBUSD,
   stablecoinStrategyDAI,
@@ -29,7 +29,7 @@ import {
 
 export const AaveConfig: IAaveConfiguration = {
   ...CommonsConfig,
-  ConfigName: 'Aave',
+  MarketId: 'Aave genesis market',
   ProviderId: 1,
   ReservesConfig: {
     AAVE: strategyAAVE,

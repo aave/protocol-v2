@@ -345,7 +345,7 @@ export interface ILendingRate {
 }
 
 export interface ICommonConfiguration {
-  ConfigName: string;
+  MarketId: string;
   ProviderId: number;
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;
