@@ -33,6 +33,14 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   /**
+   * @dev Returns the id of the Aave market to which this contracts points to
+   * @return The market id
+   **/
+  function getMarketId() external override returns (string memory) {
+    return _marketId;
+  }
+
+  /**
    * @dev Allows to set the market which this LendingPoolAddressesProvider represents
    * @param marketId The market id
    */
