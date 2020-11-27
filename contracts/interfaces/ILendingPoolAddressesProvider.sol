@@ -20,6 +20,8 @@ interface ILendingPoolAddressesProvider {
   event ProxyCreated(bytes32 id, address indexed newAddress);
   event AddressSet(bytes32 id, address indexed newAddress, bool hasProxy);
 
+  function getMarketId() external returns (string memory);
+
   function setMarketId(string calldata marketId) external;
 
   function setAddress(bytes32 id, address newAddress) external;
