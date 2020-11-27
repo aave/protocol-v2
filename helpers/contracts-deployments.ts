@@ -365,17 +365,12 @@ export const deployDelegationAwareAToken = async (
     tEthereumAddress
   ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
 
-  const promise = withSaveAndVerify(
+  return withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.DelegationAwareAToken,
     args,
     verify
   );
-
-  console.log("Done");
-
-  return promise;
-
 };
 
 export const deployAllMockTokens = async (verify?: boolean) => {
