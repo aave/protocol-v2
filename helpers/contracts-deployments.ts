@@ -318,12 +318,12 @@ export const deployVariableDebtToken = async (
   );
 
 export const deployGenericAToken = async (
-  [poolAddress, underlyingAssetAddress, name, symbol, treasuryAddress, incentivesController]: [
+  [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol,incentivesController]: [
+    tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
     string,
     string,
-    tEthereumAddress,
     tEthereumAddress
   ],
   verify: boolean
@@ -336,7 +336,7 @@ export const deployGenericAToken = async (
     tEthereumAddress,
     tEthereumAddress
 
-  ] = [poolAddress, underlyingAssetAddress, name, symbol, treasuryAddress, incentivesController];
+  ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
   return withSaveAndVerify(
     await new ATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.AToken,
@@ -346,12 +346,12 @@ export const deployGenericAToken = async (
 };
 
 export const deployDelegationAwareAToken = async (
-  [poolAddress, underlyingAssetAddress, name, symbol, treasuryAddress, incentivesController]: [
+  [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [
+    tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
     string,
     string,
-    tEthereumAddress,
     tEthereumAddress
   ],
   verify: boolean
@@ -363,13 +363,19 @@ export const deployDelegationAwareAToken = async (
     string,
     tEthereumAddress,
     tEthereumAddress
-  ] = [poolAddress, underlyingAssetAddress, name, symbol, treasuryAddress,  incentivesController];
-  return withSaveAndVerify(
+  ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
+
+  const promise = withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.DelegationAwareAToken,
     args,
     verify
   );
+
+  console.log("Done");
+
+  return promise;
+
 };
 
 export const deployAllMockTokens = async (verify?: boolean) => {

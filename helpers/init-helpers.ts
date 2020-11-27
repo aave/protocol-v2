@@ -171,7 +171,7 @@ export const initReservesByHelper = async (
   ) as [string, IReserveParams][];
 
   for (let [symbol, params] of delegatedAwareReserves) {
-    console.log(`  - Deploy ${symbol} delegation await aToken, debts tokens, and strategy`);
+    console.log(`  - Deploy ${symbol} delegation aware aToken, debts tokens, and strategy`);
     const {
       optimalUtilizationRate,
       baseVariableBorrowRate,
@@ -185,9 +185,9 @@ export const initReservesByHelper = async (
       [
         poolAddress,
         tokenAddresses[symbol],
+        treasuryAddress,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
-        treasuryAddress,
         ZERO_ADDRESS,
       ],
       verify
