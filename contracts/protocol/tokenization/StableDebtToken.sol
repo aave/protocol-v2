@@ -163,7 +163,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(user);
 
     uint256 previousSupply = totalSupply();
-    uint256 newStableRate = 0;
+    uint256 newAvgStableRate = 0;
     uint256 nextSupply = 0;
     uint256 userStableRate = _usersStableRate[user];
 
@@ -183,9 +183,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       // happen that user rate * user balance > avg rate * total supply. In that case,
       // we simply set the avg rate to 0
       if (secondTerm >= firstTerm) {
-        newStableRate = _avgStableRate = _totalSupply = 0;
+        newAvgStableRate = _avgStableRate = _totalSupply = 0;
       } else {
-        newStableRate = _avgStableRate = firstTerm.sub(secondTerm).rayDiv(nextSupply.wadToRay());
+        newAvgStableRate = _avgStableRate = firstTerm.sub(secondTerm).rayDiv(nextSupply.wadToRay());
       }
     }
 
@@ -200,14 +200,25 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = uint40(block.timestamp);
 
     if (balanceIncrease > amount) {
-      _mint(user, balanceIncrease.sub(amount), previousSupply);
+      uint256 amountToMint = balanceIncrease.sub(amount);
+      _mint(user, amountToMint, previousSupply);
+      emit Mint(
+        user,
+        user,
+        amountToMint,
+        currentBalance,
+        balanceIncrease,
+        userStableRate,
+        newAvgStableRate,
+        nextSupply
+      );
     } else {
-      _burn(user, amount.sub(balanceIncrease), previousSupply);
+      uint256 amountToBurn = amount.sub(balanceIncrease);
+      _burn(user, amountToBurn, previousSupply);
+      emit Burn(user, amountToBurn, currentBalance, balanceIncrease, newAvgStableRate, nextSupply);
     }
 
     emit Transfer(user, address(0), amount);
-
-    emit Burn(user, amount, currentBalance, balanceIncrease, newStableRate, nextSupply);
   }
 
   /**
