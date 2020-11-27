@@ -133,8 +133,7 @@ export const initReservesByHelper = async (
       rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
       rawInsertContractAddressInDb(`variableDebt${symbols[index]}`, event?.args?.variableToken);
     });
-
-    
+   
     // Deploy atokens and rate strategies and save implementations
     const tx2 = await waitForTx(
       await atokenAndRatesDeployer.initDeployment(

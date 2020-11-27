@@ -82,7 +82,6 @@ export const getTreasuryAddress = async (
   return getParamPerNetwork(config.ReserveFactorTreasuryAddress, <eEthereumNetwork>currentNetwork);
 };
 
-
 export const getATokenDomainSeparatorPerNetwork = (
   network: eEthereumNetwork,
   config: ICommonConfiguration
