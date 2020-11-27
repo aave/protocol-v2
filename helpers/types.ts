@@ -364,6 +364,7 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

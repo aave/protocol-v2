@@ -305,4 +305,13 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [eEthereumNetwork.tenderlyMain]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   },
+  ReserveFactorTreasuryAddress: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '', 
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderlyMain]: '',
+  },
 };
