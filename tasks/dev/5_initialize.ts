@@ -9,6 +9,7 @@ import {
 import {
   ConfigNames,
   getReservesConfigByPool,
+  getTreasuryAddress,
   getWethAddress,
   loadPoolConfig,
 } from '../../helpers/configuration';
@@ -50,10 +51,13 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     const admin = await addressesProvider.getPoolAdmin();
 
+    const treasuryAddress = await getTreasuryAddress(poolConfig);
+
     await initReservesByHelper(
       reservesParams,
       protoPoolReservesAddresses,
       admin,
+      treasuryAddress,
       ZERO_ADDRESS,
       verify
     );

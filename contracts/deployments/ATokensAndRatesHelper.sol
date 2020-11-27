@@ -34,6 +34,7 @@ contract ATokensAndRatesHelper is Ownable {
     address[] calldata tokens,
     string[] calldata symbols,
     uint256[6][] calldata rates,
+    address treasuryAddress,
     address incentivesController
   ) external onlyOwner {
     require(tokens.length == symbols.length, 't Arrays not same length');
@@ -44,7 +45,7 @@ contract ATokensAndRatesHelper is Ownable {
           new AToken(
             LendingPool(pool),
             tokens[i],
-            address(0),
+            treasuryAddress,
             StringLib.concat('Aave interest bearing ', symbols[i]),
             StringLib.concat('a', symbols[i]),
             incentivesController

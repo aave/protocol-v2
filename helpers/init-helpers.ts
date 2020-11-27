@@ -32,9 +32,11 @@ export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
   admin: tEthereumAddress,
+  treasuryAddress: tEthereumAddress,
   incentivesController: tEthereumAddress,
   verify: boolean
 ) => {
+
   const stableAndVariableDeployer = await getStableAndVariableTokensHelper();
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
 
@@ -121,18 +123,25 @@ export const initReservesByHelper = async (
 
     // Deploy stable and variable deployers and save implementations
     const tx1 = await waitForTx(
-      await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
+      await stableAndVariableDeployer.initDeployment(
+        tokens,
+        symbols,
+        incentivesController
+      )
     );
     tx1.events?.forEach((event, index) => {
       rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
       rawInsertContractAddressInDb(`variableDebt${symbols[index]}`, event?.args?.variableToken);
     });
+
+    
     // Deploy atokens and rate strategies and save implementations
     const tx2 = await waitForTx(
       await atokenAndRatesDeployer.initDeployment(
         tokens,
         symbols,
         strategyRates,
+        treasuryAddress,
         incentivesController
       )
     );
@@ -178,6 +187,7 @@ export const initReservesByHelper = async (
         tokenAddresses[symbol],
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
+        treasuryAddress,
         ZERO_ADDRESS,
       ],
       verify

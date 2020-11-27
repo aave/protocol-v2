@@ -26,7 +26,7 @@ import {
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../helpers/types';
 import { MintableERC20 } from '../types/MintableERC20';
-import { getReservesConfigByPool } from '../helpers/configuration';
+import { ConfigNames, getReservesConfigByPool, getTreasuryAddress, loadPoolConfig } from '../helpers/configuration';
 import { initializeMakeSuite } from './helpers/make-suite';
 
 import {
@@ -209,7 +209,12 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const admin = await deployer.getAddress();
 
   console.log('Initialize configuration');
-  await initReservesByHelper(reservesParams, allReservesAddresses, admin, ZERO_ADDRESS);
+
+  const config = loadPoolConfig(ConfigNames.Aave);
+
+  const treasuryAddress = await getTreasuryAddress(config);
+
+  await initReservesByHelper(reservesParams, allReservesAddresses, admin, treasuryAddress, ZERO_ADDRESS, false);
   await enableReservesToBorrowByHelper(reservesParams, allReservesAddresses, testHelpers, admin);
   await enableReservesAsCollateralByHelper(
     reservesParams,
