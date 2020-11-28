@@ -17,8 +17,7 @@ import {
 import { tEthereumAddress, AavePools, eContractid } from '../../helpers/types';
 import { waitForTx, filterMapBy } from '../../helpers/misc-utils';
 import {
-  enableReservesToBorrowByHelper,
-  enableReservesAsCollateralByHelper,
+  configureReservesByHelper,
   initReservesByHelper,
 } from '../../helpers/init-helpers';
 import { getAllTokenAddresses } from '../../helpers/mock-helpers';
@@ -61,13 +60,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       ZERO_ADDRESS,
       verify
     );
-    await enableReservesToBorrowByHelper(
-      reservesParams,
-      protoPoolReservesAddresses,
-      testHelpers,
-      admin
-    );
-    await enableReservesAsCollateralByHelper(
+    await configureReservesByHelper(
       reservesParams,
       protoPoolReservesAddresses,
       testHelpers,

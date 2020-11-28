@@ -262,6 +262,7 @@ export enum TokenContractId {
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
+  reserveFactor: string;
 }
 
 export interface IReserveBorrowParams {

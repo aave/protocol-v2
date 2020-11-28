@@ -16,6 +16,7 @@ export const strategyBase: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
 };
 
 export const stablecoinStrategyBase: IReserveParams = {
@@ -32,6 +33,7 @@ export const stablecoinStrategyBase: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
 };
 
 export const stablecoinStrategyCentralized: IReserveParams = {
@@ -48,6 +50,7 @@ export const stablecoinStrategyCentralized: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
 };
 
 export const strategyGovernanceTokens: IReserveParams = {
@@ -136,6 +139,7 @@ export const stablecoinStrategySUSD: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
 };
 
 export const strategySNX: IReserveParams = {
@@ -196,6 +200,7 @@ export const strategyWBTC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
 };
 
 export const strategyWETH: IReserveParams = {
@@ -212,6 +217,7 @@ export const strategyWETH: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
 };
 
 export const strategyYFI: IReserveParams = {

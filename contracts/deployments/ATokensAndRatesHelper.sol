@@ -31,20 +31,20 @@ contract ATokensAndRatesHelper is Ownable {
   }
 
   function initDeployment(
-    address[] calldata tokens,
+    address[] calldata assets,
     string[] calldata symbols,
     uint256[6][] calldata rates,
     address treasuryAddress,
     address incentivesController
   ) external onlyOwner {
-    require(tokens.length == symbols.length, 't Arrays not same length');
+    require(assets.length == symbols.length, 't Arrays not same length');
     require(rates.length == symbols.length, 'r Arrays not same length');
-    for (uint256 i = 0; i < tokens.length; i++) {
+    for (uint256 i = 0; i < assets.length; i++) {
       emit deployedContracts(
         address(
           new AToken(
             LendingPool(pool),
-            tokens[i],
+            assets[i],
             treasuryAddress,
             StringLib.concat('Aave interest bearing ', symbols[i]),
             StringLib.concat('a', symbols[i]),
@@ -89,37 +89,34 @@ contract ATokensAndRatesHelper is Ownable {
     }
   }
 
-  function enableReservesAsCollateral(
-    address[] calldata tokens,
+  function configureReserves(
+    address[] calldata assets,
     uint256[] calldata baseLTVs,
     uint256[] calldata liquidationThresholds,
-    uint256[] calldata liquidationBonuses
+    uint256[] calldata liquidationBonuses,
+    uint256[] calldata reserveFactors,
+    bool[] calldata stableBorrowingEnabled
   ) external onlyOwner {
-    require(baseLTVs.length == tokens.length);
-    require(liquidationThresholds.length == tokens.length);
-    require(liquidationBonuses.length == tokens.length);
+    require(baseLTVs.length == assets.length);
+    require(liquidationThresholds.length == assets.length);
+    require(liquidationBonuses.length == assets.length);
+    require(stableBorrowingEnabled.length == assets.length);
+    require(reserveFactors.length == assets.length);
 
-    for (uint256 i = 0; i < tokens.length; i++) {
-      LendingPoolConfigurator(poolConfigurator).configureReserveAsCollateral(
-        tokens[i],
+    LendingPoolConfigurator configurator = LendingPoolConfigurator(poolConfigurator);
+    for (uint256 i = 0; i < assets.length; i++) {
+      configurator.configureReserveAsCollateral(
+        assets[i],
         baseLTVs[i],
         liquidationThresholds[i],
         liquidationBonuses[i]
       );
-    }
-  }
 
-  function enableBorrowingOnReserves(address[] calldata tokens, bool[] calldata stableBorrowingEnabled)
-    external
-    onlyOwner
-  {
-    require(stableBorrowingEnabled.length == tokens.length);
-
-    for (uint256 i = 0; i < tokens.length; i++) {
-      LendingPoolConfigurator(poolConfigurator).enableBorrowingOnReserve(
-        tokens[i],
+      configurator.enableBorrowingOnReserve(
+        assets[i],
         stableBorrowingEnabled[i]
       );
+      configurator.setReserveFactor(assets[i], reserveFactors[i]);
     }
   }
 }

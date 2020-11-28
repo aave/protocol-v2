@@ -286,74 +286,7 @@ export const getPairsTokenAggregator = (
   return [mappedPairs, mappedAggregators];
 };
 
-export const enableReservesToBorrowByHelper = async (
-  reservesParams: iMultiPoolsAssets<IReserveParams>,
-  tokenAddresses: { [symbol: string]: tEthereumAddress },
-  helpers: AaveProtocolDataProvider,
-  admin: tEthereumAddress
-) => {
-  const addressProvider = await getLendingPoolAddressesProvider();
-  const atokenAndRatesDeployer = await getATokensAndRatesHelper();
-  const tokens: string[] = [];
-  const symbols: string[] = [];
-  const stableEnabled: boolean[] = [];
-
-  // Prepare data
-  for (const [assetSymbol, { borrowingEnabled, stableBorrowRateEnabled }] of Object.entries(
-    reservesParams
-  ) as [string, IReserveParams][]) {
-    if (!borrowingEnabled) continue;
-    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-      (value) => value === assetSymbol
-    );
-    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-      assetAddressIndex
-    ];
-    const { borrowingEnabled: borrowingAlreadyEnabled } = await helpers.getReserveConfigurationData(
-      tokenAddress
-    );
-
-    if (borrowingAlreadyEnabled) {
-      console.log(`Reserve ${assetSymbol} is already enabled for borrowing, skipping`);
-      continue;
-    }
-    tokens.push(tokenAddress);
-    stableEnabled.push(stableBorrowRateEnabled);
-    symbols.push(assetSymbol);
-  }
-  if (tokens.length) {
-    // Set aTokenAndRatesDeployer as temporal admin
-    await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
-
-    // Deploy init per chunks
-    const stableChunks = 20;
-    const chunkedTokens = chunk(tokens, stableChunks);
-    const chunkedSymbols = chunk(symbols, stableChunks);
-    const chunkedStableEnabled = chunk(stableEnabled, stableChunks);
-
-    console.log(`- Borrow stable initialization in ${chunkedTokens.length} txs`);
-    for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
-      try {
-        await waitForTx(
-          await atokenAndRatesDeployer.enableBorrowingOnReserves(
-            chunkedTokens[chunkIndex],
-            chunkedStableEnabled[chunkIndex],
-            { gasLimit: 12000000 }
-          )
-        );
-      } catch (error) {
-        console.error(error);
-        throw error;
-      }
-
-      console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
-    }
-    // Set deployer back as admin
-    await waitForTx(await addressProvider.setPoolAdmin(admin));
-  }
-};
-
-export const enableReservesAsCollateralByHelper = async (
+export const configureReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
   helpers: AaveProtocolDataProvider,
@@ -366,10 +299,12 @@ export const enableReservesAsCollateralByHelper = async (
   const baseLTVA: string[] = [];
   const liquidationThresholds: string[] = [];
   const liquidationBonuses: string[] = [];
+  const reserveFactors: string[] = [];
+  const stableRatesEnabled: boolean[] = [];
 
   for (const [
     assetSymbol,
-    { baseLTVAsCollateral, liquidationBonus, liquidationThreshold },
+    { baseLTVAsCollateral, liquidationBonus, liquidationThreshold, reserveFactor, stableBorrowRateEnabled },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
     if (baseLTVAsCollateral === '-1') continue;
 
@@ -393,6 +328,8 @@ export const enableReservesAsCollateralByHelper = async (
     baseLTVA.push(baseLTVAsCollateral);
     liquidationThresholds.push(liquidationThreshold);
     liquidationBonuses.push(liquidationBonus);
+    reserveFactors.push(reserveFactor);
+    stableRatesEnabled.push(stableBorrowRateEnabled);
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
@@ -405,15 +342,19 @@ export const enableReservesAsCollateralByHelper = async (
     const chunkedBase = chunk(baseLTVA, enableChunks);
     const chunkedliquidationThresholds = chunk(liquidationThresholds, enableChunks);
     const chunkedliquidationBonuses = chunk(liquidationBonuses, enableChunks);
+    const chunkedReserveFactors = chunk(reserveFactors, enableChunks);
+    const chunkedStableRatesEnabled = chunk(stableRatesEnabled, enableChunks);
 
-    console.log(`- Enable reserve as collateral in ${chunkedTokens.length} txs`);
+    console.log(`- Configure reserves in ${chunkedTokens.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
       await waitForTx(
-        await atokenAndRatesDeployer.enableReservesAsCollateral(
+        await atokenAndRatesDeployer.configureReserves(
           chunkedTokens[chunkIndex],
           chunkedBase[chunkIndex],
           chunkedliquidationThresholds[chunkIndex],
           chunkedliquidationBonuses[chunkIndex],
+          chunkedReserveFactors[chunkIndex],
+          chunkedStableRatesEnabled[chunkIndex],
           { gasLimit: 12000000 }
         )
       );
