@@ -37,8 +37,7 @@ import {
 import { DRE, waitForTx } from '../helpers/misc-utils';
 import {
   initReservesByHelper,
-  enableReservesToBorrowByHelper,
-  enableReservesAsCollateralByHelper,
+  configureReservesByHelper,
 } from '../helpers/init-helpers';
 import AaveConfig from '../markets/aave';
 import { ZERO_ADDRESS } from '../helpers/constants';
@@ -215,8 +214,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(reservesParams, allReservesAddresses, admin, treasuryAddress, ZERO_ADDRESS, false);
-  await enableReservesToBorrowByHelper(reservesParams, allReservesAddresses, testHelpers, admin);
-  await enableReservesAsCollateralByHelper(
+  await configureReservesByHelper(
     reservesParams,
     allReservesAddresses,
     testHelpers,
