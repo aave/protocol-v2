@@ -80,7 +80,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Unfreezes the ETH reserve', async () => {
@@ -107,7 +107,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Check the onlyAaveAdmin on freezeReserve ', async () => {
@@ -149,7 +149,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
@@ -177,7 +177,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
 
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
@@ -222,7 +222,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(0);
     expect(liquidationBonus).to.be.equal(0);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Activates the ETH reserve as collateral', async () => {
@@ -249,7 +249,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Check the onlyAaveAdmin on configureReserveAsCollateral ', async () => {
@@ -285,7 +285,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(false);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Enables stable borrow rate on the ETH reserve', async () => {
@@ -311,7 +311,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(8000);
     expect(liquidationBonus).to.be.equal(10500);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(0);
+    expect(reserveFactor).to.be.equal(1000);
   });
 
   it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {

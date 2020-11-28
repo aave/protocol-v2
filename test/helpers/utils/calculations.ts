@@ -5,10 +5,16 @@ import {
   MAX_UINT_AMOUNT,
   OPTIMAL_UTILIZATION_RATE,
   EXCESS_UTILIZATION_RATE,
+  PERCENTAGE_FACTOR,
 } from '../../../helpers/constants';
-import {IReserveParams, iAavePoolAssets, RateMode, tEthereumAddress} from '../../../helpers/types';
+import {
+  IReserveParams,
+  iAavePoolAssets,
+  RateMode,
+  tEthereumAddress,
+} from '../../../helpers/types';
 import './math';
-import {ReserveData, UserReserveData} from './interfaces';
+import { ReserveData, UserReserveData } from './interfaces';
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
@@ -758,7 +764,7 @@ export const calcExpectedUserDataAfterSetUseAsCollateral = (
   userDataBeforeAction: UserReserveData,
   txCost: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   expectedUserData.usageAsCollateralEnabled = useAsCollateral;
 
@@ -885,7 +891,7 @@ export const calcExpectedUserDataAfterSwapRateMode = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   const stableDebtBalance = calcExpectedStableDebtTokenBalance(
     userDataBeforeAction.principalStableDebt,
@@ -1035,7 +1041,7 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   expectedUserData.principalVariableDebt = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
@@ -1084,7 +1090,7 @@ export const calcExpectedATokenBalance = (
 ) => {
   const index = calcExpectedReserveNormalizedIncome(reserveData, currentTimestamp);
 
-  const {scaledATokenBalance: scaledBalanceBeforeAction} = userData;
+  const { scaledATokenBalance: scaledBalanceBeforeAction } = userData;
 
   return scaledBalanceBeforeAction.rayMul(index);
 };
@@ -1119,7 +1125,7 @@ export const calcExpectedVariableDebtTokenBalance = (
     currentTimestamp
   );
 
-  const {scaledVariableDebt} = userData;
+  const { scaledVariableDebt } = userData;
 
   return scaledVariableDebt.rayMul(normalizedDebt);
 };
@@ -1202,7 +1208,7 @@ export const calcExpectedInterestRates = (
   totalVariableDebt: BigNumber,
   averageStableBorrowRate: BigNumber
 ): BigNumber[] => {
-  const {reservesParams} = configuration;
+  const { reservesParams } = configuration;
 
   const reserveIndex = Object.keys(reservesParams).findIndex((value) => value === reserveSymbol);
   const [, reserveConfiguration] = (Object.entries(reservesParams) as [string, IReserveParams][])[
@@ -1248,7 +1254,9 @@ export const calcExpectedInterestRates = (
     variableBorrowRate,
     averageStableBorrowRate
   );
-  const liquidityRate = expectedOverallRate.rayMul(utilizationRate);
+  const liquidityRate = expectedOverallRate
+    .rayMul(utilizationRate)
+    .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(reserveConfiguration.reserveFactor));
 
   return [liquidityRate, stableBorrowRate, variableBorrowRate];
 };
@@ -1292,7 +1300,7 @@ const calcExpectedReserveNormalizedIncome = (
   reserveData: ReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const {liquidityRate, liquidityIndex, lastUpdateTimestamp} = reserveData;
+  const { liquidityRate, liquidityIndex, lastUpdateTimestamp } = reserveData;
 
   //if utilization rate is 0, nothing to compound
   if (liquidityRate.eq('0')) {
