@@ -109,7 +109,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     await oracle.setAssetPrice(
       dai.address,
-      new BigNumber(daiPrice.toString()).multipliedBy(1.25).toFixed(0)
+      new BigNumber(daiPrice.toString()).multipliedBy(1.18).toFixed(0)
     );
 
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -280,7 +280,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //drops HF below 1
     await oracle.setAssetPrice(
       usdc.address,
-      new BigNumber(usdcPrice.toString()).multipliedBy(1.2).toFixed(0)
+      new BigNumber(usdcPrice.toString()).multipliedBy(1.12).toFixed(0)
     );
 
     //mints dai to the liquidator
@@ -402,7 +402,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //drops HF below 1
     await oracle.setAssetPrice(
       usdc.address,
-      new BigNumber(usdcPrice.toString()).multipliedBy(1.12).toFixed(0)
+      new BigNumber(usdcPrice.toString()).multipliedBy(1.08).toFixed(0)
     );
 
     //mints usdc to the liquidator
