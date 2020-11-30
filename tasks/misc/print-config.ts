@@ -10,7 +10,7 @@ import { DRE } from '../../helpers/misc-utils';
 import { eEthereumNetwork } from '../../helpers/types';
 
 task('print-config', 'Inits the DRE, to have access to all the plugins')
-  .addOptionalParam('dataProvider', 'Address of AaveProtocolDataProvider')
+  .addParam('dataProvider', 'Address of AaveProtocolDataProvider')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ pool, dataProvider }, localBRE) => {
     await localBRE.run('set-DRE');
