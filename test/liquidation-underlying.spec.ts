@@ -46,7 +46,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     await configurator.activateReserve(dai.address);
   });
 
-  it('LIQUIDATION - Deposits WETH, borrows DAI', async () => {
+  it('Deposits WETH, borrows DAI', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
     const depositor = users[0];
     const borrower = users[1];
@@ -101,7 +101,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
   });
 
-  it('LIQUIDATION - Drop the health factor below 1', async () => {
+  it('Drop the health factor below 1', async () => {
     const {dai, weth, users, pool, oracle} = testEnv;
     const borrower = users[1];
 
@@ -120,7 +120,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
   });
 
-  it('LIQUIDATION - Liquidates the borrow', async () => {
+  it('Liquidates the borrow', async () => {
     const {dai, weth, users, pool, oracle, helpersContract} = testEnv;
     const liquidator = users[3];
     const borrower = users[1];
@@ -402,7 +402,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //drops HF below 1
     await oracle.setAssetPrice(
       usdc.address,
-      new BigNumber(usdcPrice.toString()).multipliedBy(1.08).toFixed(0)
+      new BigNumber(usdcPrice.toString()).multipliedBy(1.14).toFixed(0)
     );
 
     //mints usdc to the liquidator

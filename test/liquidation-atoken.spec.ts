@@ -20,7 +20,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     LP_IS_PAUSED,
   } = ProtocolErrors;
 
-  it('LIQUIDATION - Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
+  it('Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
     const { dai, weth, users, pool, oracle } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
@@ -79,7 +79,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).to.be.revertedWith(LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD);
   });
 
-  it('LIQUIDATION - Drop the health factor below 1', async () => {
+  it('Drop the health factor below 1', async () => {
     const { dai, users, pool, oracle } = testEnv;
     const borrower = users[1];
 
@@ -98,7 +98,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
   });
 
-  it('LIQUIDATION - Tries to liquidate a different currency than the loan principal', async () => {
+  it('Tries to liquidate a different currency than the loan principal', async () => {
     const { pool, users, weth } = testEnv;
     const borrower = users[1];
     //user 2 tries to borrow
@@ -107,7 +107,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).revertedWith(LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER);
   });
 
-  it('LIQUIDATION - Tries to liquidate a different collateral than the borrower collateral', async () => {
+  it('Tries to liquidate a different collateral than the borrower collateral', async () => {
     const { pool, dai, users } = testEnv;
     const borrower = users[1];
 
@@ -116,7 +116,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).revertedWith(LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED);
   });
 
-  it('LIQUIDATION - Liquidates the borrow', async () => {
+  it('Liquidates the borrow', async () => {
     const { pool, dai, weth, aWETH, aDai, users, oracle, helpersContract, deployer } = testEnv;
     const borrower = users[1];
 
@@ -284,7 +284,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await oracle.setAssetPrice(
       usdc.address,
-      new BigNumber(usdcPrice.toString()).multipliedBy(1.2).toFixed(0)
+      new BigNumber(usdcPrice.toString()).multipliedBy(1.12).toFixed(0)
     );
 
     //mints dai to the liquidator
