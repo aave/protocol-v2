@@ -1,4 +1,4 @@
-import { Contract, Signer, utils, ethers } from 'ethers';
+import { Contract, Signer, utils, ethers , BigNumberish} from 'ethers';
 import { signTypedData_v4 } from 'eth-sig-util';
 import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
@@ -231,4 +231,54 @@ export const getSignatureFromTypedData = (
     data: typedData,
   });
   return fromRpcSig(signature);
+};
+
+export const buildLiquiditySwapParams = (
+  assetToSwapToList: tEthereumAddress[],
+  minAmountsToReceive: BigNumberish[],
+  swapAllBalances: BigNumberish[],
+  permitAmounts: BigNumberish[],
+  deadlines: BigNumberish[],
+  v: BigNumberish[],
+  r: (string | Buffer)[],
+  s: (string | Buffer)[]
+) => {
+  return ethers.utils.defaultAbiCoder.encode(
+    [
+      'address[]',
+      'uint256[]',
+      'bool[]',
+      'uint256[]',
+      'uint256[]',
+      'uint8[]',
+      'bytes32[]',
+      'bytes32[]',
+    ],
+    [assetToSwapToList, minAmountsToReceive, swapAllBalances, permitAmounts, deadlines, v, r, s]
+  );
+};
+
+export const buildRepayAdapterParams = (
+  collateralAsset: tEthereumAddress,
+  collateralAmount: BigNumberish,
+  rateMode: BigNumberish,
+  permitAmount: BigNumberish,
+  deadline: BigNumberish,
+  v: BigNumberish,
+  r: string | Buffer,
+  s: string | Buffer
+) => {
+  return ethers.utils.defaultAbiCoder.encode(
+    [
+      'address',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint256',
+      'uint8',
+      'bytes32',
+      'bytes32',
+    ],
+    [collateralAsset, collateralAmount, rateMode, permitAmount, deadline, v, r, s]
+  );
 };

@@ -38,10 +38,13 @@ import {
   MockFlashLoanReceiverFactory,
   MockStableDebtTokenFactory,
   MockVariableDebtTokenFactory,
+  MockUniswapV2Router02Factory,
   PriceOracleFactory,
   ReserveLogicFactory,
   SelfdestructTransferFactory,
   StableDebtTokenFactory,
+  UniswapLiquiditySwapAdapterFactory,
+  UniswapRepayAdapterFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
   WETH9MockedFactory,
@@ -491,5 +494,35 @@ export const deploySelfdestructTransferMock = async (verify?: boolean) =>
     await new SelfdestructTransferFactory(await getFirstSigner()).deploy(),
     eContractid.SelfdestructTransferMock,
     [],
+    verify
+  );
+
+export const deployMockUniswapRouter = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new MockUniswapV2Router02Factory(await getFirstSigner()).deploy(),
+    eContractid.MockUniswapV2Router02,
+    [],
+    verify
+  );
+
+export const deployUniswapLiquiditySwapAdapter = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UniswapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
+    eContractid.UniswapLiquiditySwapAdapter,
+    args,
+    verify
+  );
+
+export const deployUniswapRepayAdapter = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UniswapRepayAdapterFactory(await getFirstSigner()).deploy(...args),
+    eContractid.UniswapRepayAdapter,
+    args,
     verify
   );

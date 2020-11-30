@@ -22,6 +22,9 @@ import {
   deployATokensAndRatesHelper,
   deployWETHGateway,
   deployWETHMocked,
+  deployMockUniswapRouter,
+  deployUniswapLiquiditySwapAdapter,
+  deployUniswapRepayAdapter,
 } from '../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../helpers/types';
@@ -228,6 +231,24 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
   await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);
+
+  const mockUniswapRouter = await deployMockUniswapRouter();
+  await insertContractAddressInDb(eContractid.MockUniswapV2Router02, mockUniswapRouter.address);
+
+  const UniswapLiquiditySwapAdapter = await deployUniswapLiquiditySwapAdapter([
+    addressesProvider.address,
+    mockUniswapRouter.address,
+  ]);
+  await insertContractAddressInDb(
+    eContractid.UniswapLiquiditySwapAdapter,
+    UniswapLiquiditySwapAdapter.address
+  );
+
+  const UniswapRepayAdapter = await deployUniswapRepayAdapter([
+    addressesProvider.address,
+    mockUniswapRouter.address,
+  ]);
+  await insertContractAddressInDb(eContractid.UniswapRepayAdapter, UniswapRepayAdapter.address);
 
   await deployWalletBalancerProvider();
 

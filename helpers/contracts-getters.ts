@@ -17,11 +17,14 @@ import {
   MockFlashLoanReceiverFactory,
   MockStableDebtTokenFactory,
   MockVariableDebtTokenFactory,
+  MockUniswapV2Router02Factory,
   PriceOracleFactory,
   ReserveLogicFactory,
   SelfdestructTransferFactory,
   StableAndVariableTokensHelperFactory,
   StableDebtTokenFactory,
+  UniswapLiquiditySwapAdapterFactory,
+  UniswapRepayAdapterFactory,
   VariableDebtTokenFactory,
   WalletBalanceProviderFactory,
   WETH9MockedFactory,
@@ -326,5 +329,28 @@ export const getAddressById = async (id: string) =>
 export const getAaveOracle = async (address?: tEthereumAddress) =>
   await AaveOracleFactory.connect(
     address || (await getDb().get(`${eContractid.AaveOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockUniswapRouter = async (address?: tEthereumAddress) =>
+  await MockUniswapV2Router02Factory.connect(
+    address ||
+      (await getDb().get(`${eContractid.MockUniswapV2Router02}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getUniswapLiquiditySwapAdapter = async (address?: tEthereumAddress) =>
+  await UniswapLiquiditySwapAdapterFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.UniswapLiquiditySwapAdapter}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getUniswapRepayAdapter = async (address?: tEthereumAddress) =>
+  await UniswapRepayAdapterFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.UniswapRepayAdapter}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
