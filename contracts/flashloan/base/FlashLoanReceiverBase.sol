@@ -12,21 +12,11 @@ abstract contract FlashLoanReceiverBase is IFlashLoanReceiver {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
 
-  ILendingPoolAddressesProvider internal _addressesProvider;
-  ILendingPool internal _lendingPool;
+  ILendingPoolAddressesProvider public immutable override ADDRESSES_PROVIDER;
+  ILendingPool public immutable override LENDING_POOL;
 
   constructor(ILendingPoolAddressesProvider provider) public {
-    _addressesProvider = provider;
-    _lendingPool = ILendingPool(provider.getLendingPool());
+    ADDRESSES_PROVIDER = provider;
+    LENDING_POOL = ILendingPool(provider.getLendingPool());
   }
-
-  function getAddressesProvider() external view override returns (ILendingPoolAddressesProvider) {
-    return _addressesProvider;
-  }
-
-  function getLendingPool() external view override returns (ILendingPool) {
-    return _lendingPool;
-  }
-
-  receive() external payable {}
 }

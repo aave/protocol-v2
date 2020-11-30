@@ -19,7 +19,7 @@ interface IFlashLoanReceiver {
     bytes calldata params
   ) external returns (bool);
 
-  function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
+  function ADDRESSES_PROVIDER() external view returns (ILendingPoolAddressesProvider);
 
-  function getLendingPool() external view returns (ILendingPool);
+  function LENDING_POOL() external view returns (ILendingPool);
 }
