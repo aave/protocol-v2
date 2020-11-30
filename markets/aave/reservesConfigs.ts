@@ -316,7 +316,7 @@ export const strategyYFI: IReserveParams = {
   stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
   stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '4000',
-  liquidationThreshold: '4500',
+  liquidationThreshold: '5500',
   liquidationBonus: '11500',
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
