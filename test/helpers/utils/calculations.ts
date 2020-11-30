@@ -1,10 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {
-  ONE_YEAR,
-  RAY,
-  MAX_UINT_AMOUNT,
-  PERCENTAGE_FACTOR,
-} from '../../../helpers/constants';
+import { ONE_YEAR, RAY, MAX_UINT_AMOUNT, PERCENTAGE_FACTOR } from '../../../helpers/constants';
 import {
   IReserveParams,
   iAavePoolAssets,
@@ -525,11 +520,10 @@ export const calcExpectedReserveDataAfterRepay = (
 
     //due to accumulation errors, the total stable debt might be smaller than the last user debt.
     //in this case we simply set the total supply and avg stable rate to 0.
-    if (expectedReserveData.principalStableDebt.lt(0)) {
-      expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = new BigNumber(
+    if (expectedReserveData.totalStableDebt.lt(0)) {
+      expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = expectedReserveData.averageStableBorrowRate = new BigNumber(
         0
       );
-      expectedReserveData.averageStableBorrowRate = new BigNumber(0);
     } else {
       expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
         reserveDataBeforeAction.averageStableBorrowRate,
@@ -537,6 +531,15 @@ export const calcExpectedReserveDataAfterRepay = (
         amountRepaidBN.negated(),
         userDataBeforeAction.stableBorrowRate
       );
+
+      //also due to accumulation errors, the final avg stable rate when the last user repays might be negative.
+      //if that is the case, it means a small leftover of total stable debt is left, which can be erased.
+
+      if (expectedReserveData.averageStableBorrowRate.lt(0)) {
+        expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = expectedReserveData.averageStableBorrowRate = new BigNumber(
+          0
+        );
+      }
     }
 
     expectedReserveData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt;
