@@ -35,7 +35,7 @@
     "aave:ropsten:full:migration": "npm run compile && npm run hardhat:ropsten -- aave:mainnet --verify",
     "aave:fork:main:tenderly": "npm run compile && npm run hardhat:tenderly-main -- aave:mainnet",
     "aave:fork:main": "npm run compile && MAINNET_FORK=true  hardhat aave:mainnet",
-    "aave:main:full:migration": "npm run hardhat:main -- aave:mainnet --verify",
+    "aave:main:full:migration": "npm run compile && npm run hardhat:main -- aave:mainnet --verify",
     "dev:prettier": "prettier --write .",
     "ci:test": "npm run compile && npm run test",
     "ci:clean": "rm -rf ./artifacts ./cache ./types",
@@ -48,7 +48,8 @@
     "mainnet:verify": "npm run hardhat:main verify:general -- --all --pool Aave",
     "kovan:verify:tokens": "npm run hardhat:kovan verify:tokens -- --pool Aave",
     "ropsten:verify:tokens": "npm run hardhat:ropsten verify:tokens -- --pool Aave",
-    "mainnet:verify:tokens": "npm run hardhat:main verify:tokens -- --pool Aave"
+    "mainnet:verify:tokens": "npm run hardhat:main verify:tokens -- --pool Aave",
+    "print-config:fork:mainnet": "MAINNET_FORK=true hardhat print-config:fork"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
