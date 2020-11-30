@@ -3,8 +3,6 @@ import {
   ONE_YEAR,
   RAY,
   MAX_UINT_AMOUNT,
-  OPTIMAL_UTILIZATION_RATE,
-  EXCESS_UTILIZATION_RATE,
   PERCENTAGE_FACTOR,
 } from '../../../helpers/constants';
 import {
@@ -1210,6 +1208,7 @@ export const calcExpectedInterestRates = (
 ): BigNumber[] => {
   const { reservesParams } = configuration;
 
+
   const reserveIndex = Object.keys(reservesParams).findIndex((value) => value === reserveSymbol);
   const [, reserveConfiguration] = (Object.entries(reservesParams) as [string, IReserveParams][])[
     reserveIndex
@@ -1218,10 +1217,12 @@ export const calcExpectedInterestRates = (
   let stableBorrowRate: BigNumber = marketStableRate;
   let variableBorrowRate: BigNumber = new BigNumber(reserveConfiguration.baseVariableBorrowRate);
 
-  if (utilizationRate.gt(OPTIMAL_UTILIZATION_RATE)) {
+  const optimalRate = new BigNumber(reserveConfiguration.optimalUtilizationRate);
+  const excessRate = new BigNumber(RAY).minus(optimalRate);
+  if (utilizationRate.gt(optimalRate)) {
     const excessUtilizationRateRatio = utilizationRate
-      .minus(OPTIMAL_UTILIZATION_RATE)
-      .rayDiv(EXCESS_UTILIZATION_RATE);
+      .minus(reserveConfiguration.optimalUtilizationRate)
+      .rayDiv(excessRate);
 
     stableBorrowRate = stableBorrowRate
       .plus(reserveConfiguration.stableRateSlope1)
@@ -1237,13 +1238,13 @@ export const calcExpectedInterestRates = (
   } else {
     stableBorrowRate = stableBorrowRate.plus(
       new BigNumber(reserveConfiguration.stableRateSlope1).rayMul(
-        utilizationRate.rayDiv(new BigNumber(OPTIMAL_UTILIZATION_RATE))
+        utilizationRate.rayDiv(new BigNumber(optimalRate))
       )
     );
 
     variableBorrowRate = variableBorrowRate.plus(
       utilizationRate
-        .rayDiv(OPTIMAL_UTILIZATION_RATE)
+        .rayDiv(optimalRate)
         .rayMul(new BigNumber(reserveConfiguration.variableRateSlope1))
     );
   }
