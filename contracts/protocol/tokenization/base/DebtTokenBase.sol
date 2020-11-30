@@ -2,6 +2,7 @@
 pragma solidity 0.6.12;
 
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {ICreditDelegationToken} from '../../../interfaces/ICreditDelegationToken.sol';
 import {
   VersionedInitializable
 } from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
@@ -14,14 +15,11 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
  * @author Aave
  */
 
-abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
-  event BorrowAllowanceDelegated(
-    address indexed fromUser,
-    address indexed toUser,
-    address asset,
-    uint256 amount
-  );
-
+abstract contract DebtTokenBase is
+  IncentivizedERC20,
+  VersionedInitializable,
+  ICreditDelegationToken
+{
   address public immutable UNDERLYING_ASSET_ADDRESS;
   ILendingPool public immutable POOL;
 
@@ -73,7 +71,7 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
    * respect the liquidation constraints (even if delegated, a delegatee cannot
    * force a delegator HF to go below 1)
    **/
-  function approveDelegation(address delegatee, uint256 amount) external {
+  function approveDelegation(address delegatee, uint256 amount) external override {
     _borrowAllowances[_msgSender()][delegatee] = amount;
     emit BorrowAllowanceDelegated(_msgSender(), delegatee, UNDERLYING_ASSET_ADDRESS, amount);
   }
@@ -84,7 +82,12 @@ abstract contract DebtTokenBase is IncentivizedERC20, VersionedInitializable {
    * @param toUser The user to give allowance to
    * @return the current allowance of toUser
    **/
-  function borrowAllowance(address fromUser, address toUser) external view returns (uint256) {
+  function borrowAllowance(address fromUser, address toUser)
+    external
+    view
+    override
+    returns (uint256)
+  {
     return _borrowAllowances[fromUser][toUser];
   }
 
