@@ -69,7 +69,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-      '8000',
+      '8250',
       'Invalid liquidation threshold'
     );
 

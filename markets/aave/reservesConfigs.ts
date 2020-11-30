@@ -169,7 +169,7 @@ export const strategyWETH: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '1000'
 };
 
 export const strategyKNC: IReserveParams = {
