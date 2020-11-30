@@ -7,7 +7,7 @@ import {
   getStableAndVariableTokensHelper,
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
-import { BigNumberish } from 'ethers';
+import { BigNumber, BigNumberish } from 'ethers';
 import {
   deployDefaultReserveInterestRateStrategy,
   deployDelegationAwareAToken,
@@ -35,8 +35,8 @@ export const initReservesByHelper = async (
   treasuryAddress: tEthereumAddress,
   incentivesController: tEthereumAddress,
   verify: boolean
-) => {
-
+): Promise<BigNumber> => {
+  let gasUsage = BigNumber.from('0');
   const stableAndVariableDeployer = await getStableAndVariableTokensHelper();
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
 
@@ -47,8 +47,8 @@ export const initReservesByHelper = async (
   await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
-  const tokensChunks = 4;
-  const initChunks = 6;
+  const tokensChunks = 2;
+  const initChunks = 4;
 
   // Deploy tokens and rates that uses common aToken in chunks
   const reservesChunks = chunk(
@@ -123,17 +123,13 @@ export const initReservesByHelper = async (
 
     // Deploy stable and variable deployers and save implementations
     const tx1 = await waitForTx(
-      await stableAndVariableDeployer.initDeployment(
-        tokens,
-        symbols,
-        incentivesController
-      )
+      await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
     );
     tx1.events?.forEach((event, index) => {
       rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
       rawInsertContractAddressInDb(`variableDebt${symbols[index]}`, event?.args?.variableToken);
     });
-   
+
     // Deploy atokens and rate strategies and save implementations
     const tx2 = await waitForTx(
       await atokenAndRatesDeployer.initDeployment(
@@ -150,6 +146,10 @@ export const initReservesByHelper = async (
     });
 
     console.log(`  - Deployed aToken, DebtTokens and Strategy for: ${symbols.join(', ')} `);
+    console.log('    * gasUsed: debtTokens batch', tx1.gasUsed.toString());
+    console.log('    * gasUsed: aTokens and Strategy batch', tx2.gasUsed.toString());
+    gasUsage = gasUsage.add(tx1.gasUsed).add(tx2.gasUsed);
+
     const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
     const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
     const aTokens: string[] = tx2.events?.map((e) => e.args?.aToken) || [];
@@ -252,11 +252,15 @@ export const initReservesByHelper = async (
         chunkedDecimals[chunkIndex]
       )
     );
+
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+    console.log('    * gasUsed', tx3.gasUsed.toString());
+    gasUsage = gasUsage.add(tx3.gasUsed);
   }
 
   // Set deployer back as admin
   await waitForTx(await addressProvider.setPoolAdmin(admin));
+  return gasUsage;
 };
 
 export const getPairsTokenAggregator = (
@@ -304,7 +308,13 @@ export const configureReservesByHelper = async (
 
   for (const [
     assetSymbol,
-    { baseLTVAsCollateral, liquidationBonus, liquidationThreshold, reserveFactor, stableBorrowRateEnabled },
+    {
+      baseLTVAsCollateral,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+    },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
     if (baseLTVAsCollateral === '-1') continue;
 

@@ -12,7 +12,13 @@ import {
   getEmergencyAdmin,
 } from '../../helpers/configuration';
 import { eEthereumNetwork } from '../../helpers/types';
-import { getLendingPoolAddressesProviderRegistry } from '../../helpers/contracts-getters';
+import {
+  getFirstSigner,
+  getLendingPoolAddressesProviderRegistry,
+} from '../../helpers/contracts-getters';
+import { isAddress } from 'ethers/lib/utils';
+import { isZeroAddress } from 'ethereumjs-util';
+import { Signer } from 'ethers';
 
 task(
   'full:deploy-address-provider',
@@ -22,30 +28,70 @@ task(
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, pool }, DRE) => {
     await DRE.run('set-DRE');
-
+    let signer: Signer;
     const network = <eEthereumNetwork>DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const { ProviderId, MarketId } = poolConfig;
 
     const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
-    // Deploy address provider and set genesis manager
+    const providerRegistryOwner = getParamPerNetwork(poolConfig.ProviderRegistryOwner, network);
+
+    if (
+      !providerRegistryAddress ||
+      !isAddress(providerRegistryAddress) ||
+      isZeroAddress(providerRegistryAddress)
+    ) {
+      throw Error('config.ProviderRegistry is missing or is not an address.');
+    }
+
+    if (
+      !providerRegistryOwner ||
+      !isAddress(providerRegistryOwner) ||
+      isZeroAddress(providerRegistryOwner)
+    ) {
+      throw Error('config.ProviderRegistryOwner is missing or is not an address.');
+    }
+
+    // Checks if deployer address is registry owner
+    if (process.env.MAINNET_FORK === 'true') {
+      await DRE.network.provider.request({
+        method: 'hardhat_impersonateAccount',
+        params: [providerRegistryOwner],
+      });
+      signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
+    } else {
+      signer = await getFirstSigner();
+      const deployerAddress = await signer.getAddress();
+      if (providerRegistryOwner !== (await signer.getAddress())) {
+        throw Error(
+          `Current signer is not provider registry owner. \nCurrent deployer address: ${deployerAddress} \nExpected address: ${poolConfig.ProviderRegistryOwner}`
+        );
+      }
+    }
+    // 1. Address Provider Registry instance
+
+    const addressesProviderRegistry = (
+      await getLendingPoolAddressesProviderRegistry(providerRegistryAddress)
+    ).connect(signer);
+
+    console.log('Registry Address', addressesProviderRegistry.address);
+
+    // 2. Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(MarketId, verify);
 
-    await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
-    await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
-
-    console.log('Pool Admin', await addressesProvider.getPoolAdmin());
-    console.log('Emergency Admin', await addressesProvider.getEmergencyAdmin());
-
-    // If no provider registry is set, deploy lending pool address provider registry and register the address provider
-    const addressesProviderRegistry = notFalsyOrZeroAddress(providerRegistryAddress)
-      ? await getLendingPoolAddressesProviderRegistry(providerRegistryAddress)
-      : await deployLendingPoolAddressesProviderRegistry(verify);
-
+    // 3. Set the provider at the Registry
     await waitForTx(
       await addressesProviderRegistry.registerAddressesProvider(
         addressesProvider.address,
         ProviderId
       )
     );
+
+    // 4. Set pool admins
+
+    await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
+    await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
+
+    console.log('Pool Admin', await addressesProvider.getPoolAdmin());
+    console.log('Emergency Admin', await addressesProvider.getEmergencyAdmin());
   });

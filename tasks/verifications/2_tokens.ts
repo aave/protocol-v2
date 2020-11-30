@@ -1,23 +1,23 @@
-import {task} from 'hardhat/config';
-import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
-import {ZERO_ADDRESS} from '../../helpers/constants';
+import { task } from 'hardhat/config';
+import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
+import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAddressById,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
-import {getParamPerNetwork} from '../../helpers/contracts-helpers';
-import {verifyContract} from '../../helpers/etherscan-verification';
-import {eEthereumNetwork, ICommonConfiguration, IReserveParams} from '../../helpers/types';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { verifyContract } from '../../helpers/etherscan-verification';
+import { eEthereumNetwork, ICommonConfiguration, IReserveParams } from '../../helpers/types';
 
 task('verify:tokens', 'Deploy oracles for dev enviroment')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({verify, all, pool}, localDRE) => {
+  .setAction(async ({ verify, all, pool }, localDRE) => {
     await localDRE.run('set-DRE');
     const network = localDRE.network.name as eEthereumNetwork;
     const poolConfig = loadPoolConfig(pool);
-    const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
+    const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
 
     const addressesProvider = await getLendingPoolAddressesProvider();
     const lendingPoolProxy = await getLendingPool();
@@ -40,6 +40,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       }
 
       const {
+        optimalUtilizationRate,
         baseVariableBorrowRate,
         variableRateSlope1,
         variableRateSlope2,
@@ -64,6 +65,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       console.log(`\n- Verifying Strategy rate...\n`);
       await verifyContract(interestRateStrategyAddress, [
         addressesProvider.address,
+        optimalUtilizationRate,
         baseVariableBorrowRate,
         variableRateSlope1,
         variableRateSlope2,
