@@ -58,15 +58,20 @@ task('print-config', 'Inits the DRE, to have access to all the plugins')
       'isActive',
       'isFrozen',
     ];
+    const tokensFields = ['aToken', 'stableDebtToken', 'variableDebtToken'];
     for (const [symbol, address] of Object.entries(
       getParamPerNetwork(poolConfig.ReserveAssets, network)
     )) {
       console.log(`- ${symbol} asset config`);
       console.log(`  - reserve address: ${address}`);
 
-      const reserveData = await protocolDataProvider.getReserveData(address);
+      const reserveData = await protocolDataProvider.getReserveConfigurationData(address);
+      const tokensAddresses = await protocolDataProvider.getReserveTokensAddresses(address);
       fields.forEach((field, index) => {
         console.log(`  - ${field}:`, reserveData[index].toString());
+      });
+      tokensFields.forEach((field, index) => {
+        console.log(`  - ${field}:`, tokensAddresses[index]);
       });
     }
   });
