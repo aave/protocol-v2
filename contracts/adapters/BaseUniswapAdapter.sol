@@ -8,70 +8,65 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IERC20WithPermit} from '../interfaces/IERC20WithPermit.sol';
+import {FlashLoanReceiverBase} from '../flashloan/base/FlashLoanReceiverBase.sol';
+import {IBaseUniswapAdapter} from './interfaces/IBaseUniswapAdapter.sol';
 
 /**
  * @title BaseUniswapAdapter
  * @notice Implements the logic for performing assets swaps in Uniswap V2
  * @author Aave
  **/
-contract BaseUniswapAdapter {
+abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapter {
   using SafeMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
-  struct PermitSignature {
-    uint256 amount;
-    uint256 deadline;
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
-  }
-
-  struct AmountCalc {
-    uint256 calculatedAmount;
-    uint256 relativePrice;
-    uint256 amountInUsd;
-    uint256 amountOutUsd;
-  }
-
   // Max slippage percent allowed
-  uint256 public constant MAX_SLIPPAGE_PERCENT = 3000; // 30%
+  uint256 public constant override MAX_SLIPPAGE_PERCENT = 3000; // 30%
   // FLash Loan fee set in lending pool
-  uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
+  uint256 public constant override FLASHLOAN_PREMIUM_TOTAL = 9;
   // USD oracle asset address
-  address public constant USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
+  address public constant override USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
 
-  ILendingPool public immutable POOL;
-  IPriceOracleGetter public immutable ORACLE;
-  IUniswapV2Router02 public immutable UNISWAP_ROUTER;
+  IPriceOracleGetter public immutable override ORACLE;
+  IUniswapV2Router02 public immutable override UNISWAP_ROUTER;
 
-  event Swapped(address fromAsset, address toAsset, uint256 fromAmount, uint256 receivedAmount);
-
-  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter) public {
-    POOL = ILendingPool(addressesProvider.getLendingPool());
+  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
+    public
+    FlashLoanReceiverBase(addressesProvider)
+  {
     ORACLE = IPriceOracleGetter(addressesProvider.getPriceOracle());
     UNISWAP_ROUTER = uniswapRouter;
   }
 
   /**
- * @dev Given an input asset amount, returns the maximum output amount of the other asset and the prices
- * @param amountIn Amount of reserveIn
- * @param reserveIn Address of the asset to be swap from
- * @param reserveOut Address of the asset to be swap to
- * @return uint256 Amount out of the reserveOut
- * @return uint256 The price of out amount denominated in the reserveIn currency (18 decimals)
- * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
- * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
- */
-  function getAmountsOut(uint256 amountIn, address reserveIn, address reserveOut)
+   * @dev Given an input asset amount, returns the maximum output amount of the other asset and the prices
+   * @param amountIn Amount of reserveIn
+   * @param reserveIn Address of the asset to be swap from
+   * @param reserveOut Address of the asset to be swap to
+   * @return uint256 Amount out of the reserveOut
+   * @return uint256 The price of out amount denominated in the reserveIn currency (18 decimals)
+   * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
+   * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
+   */
+  function getAmountsOut(
+    uint256 amountIn,
+    address reserveIn,
+    address reserveOut
+  )
     external
     view
-    returns (uint256, uint256, uint256, uint256)
+    override
+    returns (
+      uint256,
+      uint256,
+      uint256,
+      uint256
+    )
   {
     AmountCalc memory results = _getAmountsOutData(reserveIn, reserveOut, amountIn);
 
@@ -93,10 +88,20 @@ contract BaseUniswapAdapter {
    * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
    * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
    */
-  function getAmountsIn(uint256 amountOut, address reserveIn, address reserveOut)
+  function getAmountsIn(
+    uint256 amountOut,
+    address reserveIn,
+    address reserveOut
+  )
     external
     view
-    returns (uint256, uint256, uint256, uint256)
+    override
+    returns (
+      uint256,
+      uint256,
+      uint256,
+      uint256
+    )
   {
     AmountCalc memory results = _getAmountsInData(reserveIn, reserveOut, amountOut);
 
@@ -121,20 +126,18 @@ contract BaseUniswapAdapter {
     address assetToSwapTo,
     uint256 amountToSwap,
     uint256 minAmountOut
-  )
-    internal
-    returns (uint256)
-  {
+  ) internal returns (uint256) {
     uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
     uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
 
     uint256 fromAssetPrice = _getPrice(assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
-    uint256 expectedMinAmountOut = amountToSwap
-      .mul(fromAssetPrice.mul(10**toAssetDecimals))
-      .div(toAssetPrice.mul(10**fromAssetDecimals))
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(MAX_SLIPPAGE_PERCENT));
+    uint256 expectedMinAmountOut =
+      amountToSwap
+        .mul(fromAssetPrice.mul(10**toAssetDecimals))
+        .div(toAssetPrice.mul(10**fromAssetDecimals))
+        .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(MAX_SLIPPAGE_PERCENT));
 
     require(expectedMinAmountOut < minAmountOut, 'minAmountOut exceed max slippage');
 
@@ -143,7 +146,14 @@ contract BaseUniswapAdapter {
     address[] memory path = new address[](2);
     path[0] = assetToSwapFrom;
     path[1] = assetToSwapTo;
-    uint256[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(amountToSwap, minAmountOut, path, address(this), block.timestamp);
+    uint256[] memory amounts =
+      UNISWAP_ROUTER.swapExactTokensForTokens(
+        amountToSwap,
+        minAmountOut,
+        path,
+        address(this),
+        block.timestamp
+      );
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
 
@@ -164,20 +174,18 @@ contract BaseUniswapAdapter {
     address assetToSwapTo,
     uint256 maxAmountToSwap,
     uint256 amountToReceive
-  )
-    internal
-    returns (uint256)
-  {
+  ) internal returns (uint256) {
     uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
     uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
 
     uint256 fromAssetPrice = _getPrice(assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
-    uint256 expectedMaxAmountToSwap = amountToReceive
-      .mul(toAssetPrice.mul(10**fromAssetDecimals))
-      .div(fromAssetPrice.mul(10**toAssetDecimals))
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR.add(MAX_SLIPPAGE_PERCENT));
+    uint256 expectedMaxAmountToSwap =
+      amountToReceive
+        .mul(toAssetPrice.mul(10**fromAssetDecimals))
+        .div(fromAssetPrice.mul(10**toAssetDecimals))
+        .percentMul(PercentageMath.PERCENTAGE_FACTOR.add(MAX_SLIPPAGE_PERCENT));
 
     require(maxAmountToSwap < expectedMaxAmountToSwap, 'maxAmountToSwap exceed max slippage');
 
@@ -186,7 +194,14 @@ contract BaseUniswapAdapter {
     address[] memory path = new address[](2);
     path[0] = assetToSwapFrom;
     path[1] = assetToSwapTo;
-    uint256[] memory amounts = UNISWAP_ROUTER.swapTokensForExactTokens(amountToReceive, maxAmountToSwap, path, address(this), block.timestamp);
+    uint256[] memory amounts =
+      UNISWAP_ROUTER.swapTokensForExactTokens(
+        amountToReceive,
+        maxAmountToSwap,
+        path,
+        address(this),
+        block.timestamp
+      );
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
 
@@ -215,7 +230,7 @@ contract BaseUniswapAdapter {
    * @return address of the aToken
    */
   function _getReserveData(address asset) internal view returns (DataTypes.ReserveData memory) {
-    return POOL.getReserveData(asset);
+    return LENDING_POOL.getReserveData(asset);
   }
 
   /**
@@ -249,7 +264,7 @@ contract BaseUniswapAdapter {
     IERC20(reserveAToken).safeTransferFrom(user, address(this), amount);
 
     // withdraw reserve
-    POOL.withdraw(reserve, amount, address(this));
+    LENDING_POOL.withdraw(reserve, amount, address(this));
   }
 
   /**
@@ -259,7 +274,8 @@ contract BaseUniswapAdapter {
    * @return whether or not permit should be called
    */
   function _usePermit(PermitSignature memory signature) internal pure returns (bool) {
-    return !(uint256(signature.deadline) == uint256(signature.v) && uint256(signature.deadline) == 0);
+    return
+      !(uint256(signature.deadline) == uint256(signature.v) && uint256(signature.deadline) == 0);
   }
 
   /**
@@ -269,15 +285,15 @@ contract BaseUniswapAdapter {
    * @param decimals Decimals of the reserve
    * @return whether or not permit should be called
    */
-  function _calcUsdValue(address reserve, uint256 amount, uint256 decimals) internal view returns (uint256) {
+  function _calcUsdValue(
+    address reserve,
+    uint256 amount,
+    uint256 decimals
+  ) internal view returns (uint256) {
     uint256 ethUsdPrice = _getPrice(USD_ADDRESS);
     uint256 reservePrice = _getPrice(reserve);
 
-    return amount
-      .mul(reservePrice)
-      .div(10**decimals)
-      .mul(ethUsdPrice)
-      .div(10**18);
+    return amount.mul(reservePrice).div(10**decimals).mul(ethUsdPrice).div(10**18);
   }
 
   /**
@@ -291,7 +307,11 @@ contract BaseUniswapAdapter {
    *   uint256 In amount of reserveIn value denominated in USD (8 decimals)
    *   uint256 Out amount of reserveOut value denominated in USD (8 decimals)
    */
-  function _getAmountsOutData(address reserveIn, address reserveOut, uint256 amountIn) internal view returns (AmountCalc memory) {
+  function _getAmountsOutData(
+    address reserveIn,
+    address reserveOut,
+    uint256 amountIn
+  ) internal view returns (AmountCalc memory) {
     // Subtract flash loan fee
     uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
 
@@ -304,17 +324,18 @@ contract BaseUniswapAdapter {
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
-    uint256 outPerInPrice = finalAmountIn
-      .mul(10**18)
-      .mul(10**reserveOutDecimals)
-      .div(amounts[1].mul(10**reserveInDecimals));
+    uint256 outPerInPrice =
+      finalAmountIn.mul(10**18).mul(10**reserveOutDecimals).div(
+        amounts[1].mul(10**reserveInDecimals)
+      );
 
-    return AmountCalc(
-      amounts[1],
-      outPerInPrice,
-      _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
-      _calcUsdValue(reserveOut, amounts[1], reserveOutDecimals)
-    );
+    return
+      AmountCalc(
+        amounts[1],
+        outPerInPrice,
+        _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
+        _calcUsdValue(reserveOut, amounts[1], reserveOutDecimals)
+      );
   }
 
   /**
@@ -328,7 +349,11 @@ contract BaseUniswapAdapter {
    *   uint256 In amount of reserveIn value denominated in USD (8 decimals)
    *   uint256 Out amount of reserveOut value denominated in USD (8 decimals)
    */
-  function _getAmountsInData(address reserveIn, address reserveOut, uint256 amountOut) internal view returns (AmountCalc memory) {
+  function _getAmountsInData(
+    address reserveIn,
+    address reserveOut,
+    uint256 amountOut
+  ) internal view returns (AmountCalc memory) {
     uint256[] memory amounts = _getAmountsIn(reserveIn, reserveOut, amountOut);
 
     // Add flash loan fee
@@ -337,27 +362,32 @@ contract BaseUniswapAdapter {
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
-    uint256 inPerOutPrice = amountOut
-      .mul(10**18)
-      .mul(10**reserveInDecimals)
-      .div(finalAmountIn.mul(10**reserveOutDecimals));
+    uint256 inPerOutPrice =
+      amountOut.mul(10**18).mul(10**reserveInDecimals).div(
+        finalAmountIn.mul(10**reserveOutDecimals)
+      );
 
-    return AmountCalc(
-      finalAmountIn,
-      inPerOutPrice,
-      _calcUsdValue(reserveIn, finalAmountIn, reserveInDecimals),
-      _calcUsdValue(reserveOut, amountOut, reserveOutDecimals)
-    );
+    return
+      AmountCalc(
+        finalAmountIn,
+        inPerOutPrice,
+        _calcUsdValue(reserveIn, finalAmountIn, reserveInDecimals),
+        _calcUsdValue(reserveOut, amountOut, reserveOutDecimals)
+      );
   }
 
   /**
- * @dev Calculates the input asset amount required to buy the given output asset amount
- * @param reserveIn Address of the asset to be swap from
- * @param reserveOut Address of the asset to be swap to
- * @param amountOut Amount of reserveOut
- * @return uint256[] amounts Array containing the amountIn and amountOut for a swap
- */
-  function _getAmountsIn(address reserveIn, address reserveOut, uint256 amountOut) internal view returns (uint256[] memory) {
+   * @dev Calculates the input asset amount required to buy the given output asset amount
+   * @param reserveIn Address of the asset to be swap from
+   * @param reserveOut Address of the asset to be swap to
+   * @param amountOut Amount of reserveOut
+   * @return uint256[] amounts Array containing the amountIn and amountOut for a swap
+   */
+  function _getAmountsIn(
+    address reserveIn,
+    address reserveOut,
+    uint256 amountOut
+  ) internal view returns (uint256[] memory) {
     address[] memory path = new address[](2);
     path[0] = reserveIn;
     path[1] = reserveOut;

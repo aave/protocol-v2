@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 import {BaseUniswapAdapter} from './BaseUniswapAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
-import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
@@ -14,8 +13,7 @@ import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
  * @notice Uniswap V2 Adapter to perform a repay of a debt with collateral.
  * @author Aave
  **/
-contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
-
+contract UniswapRepayAdapter is BaseUniswapAdapter {
   struct RepayParams {
     address collateralAsset;
     uint256 collateralAmount;
@@ -23,10 +21,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     PermitSignature permitSignature;
   }
 
-  constructor(
-    ILendingPoolAddressesProvider addressesProvider,
-    IUniswapV2Router02 uniswapRouter
-  )
+  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
     public
     BaseUniswapAdapter(addressesProvider, uniswapRouter)
   {}
@@ -58,20 +53,20 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     address initiator,
     bytes calldata params
   ) external override returns (bool) {
-    require(msg.sender == address(POOL), "CALLER_MUST_BE_LENDING_POOL");
+    require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
 
     RepayParams memory decodedParams = _decodeParams(params);
 
-      _swapAndRepay(
-        decodedParams.collateralAsset,
-        assets[0],
-        amounts[0],
-        decodedParams.collateralAmount,
-        decodedParams.rateMode,
-        initiator,
-        premiums[0],
-        decodedParams.permitSignature
-      );
+    _swapAndRepay(
+      decodedParams.collateralAsset,
+      assets[0],
+      amounts[0],
+      decodedParams.collateralAmount,
+      decodedParams.rateMode,
+      initiator,
+      premiums[0],
+      decodedParams.permitSignature
+    );
 
     return true;
   }
@@ -99,9 +94,10 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
     DataTypes.ReserveData memory debtReserveData = _getReserveData(debtAsset);
 
-    address debtToken = DataTypes.InterestRateMode(debtRateMode) == DataTypes.InterestRateMode.STABLE
-      ? debtReserveData.stableDebtTokenAddress
-      : debtReserveData.variableDebtTokenAddress;
+    address debtToken =
+      DataTypes.InterestRateMode(debtRateMode) == DataTypes.InterestRateMode.STABLE
+        ? debtReserveData.stableDebtTokenAddress
+        : debtReserveData.variableDebtTokenAddress;
 
     uint256 currentDebt = IERC20(debtToken).balanceOf(msg.sender);
     uint256 amountToRepay = debtRepayAmount <= currentDebt ? debtRepayAmount : currentDebt;
@@ -117,20 +113,31 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user
-      _pullAToken(collateralAsset, collateralReserveData.aTokenAddress, msg.sender, amounts[0], permitSignature);
+      _pullAToken(
+        collateralAsset,
+        collateralReserveData.aTokenAddress,
+        msg.sender,
+        amounts[0],
+        permitSignature
+      );
 
       // Swap collateral for debt asset
       _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], amountToRepay);
     } else {
       // Pull aTokens from user
-      _pullAToken(collateralAsset, collateralReserveData.aTokenAddress, msg.sender, amountToRepay, permitSignature);
+      _pullAToken(
+        collateralAsset,
+        collateralReserveData.aTokenAddress,
+        msg.sender,
+        amountToRepay,
+        permitSignature
+      );
     }
 
     // Repay debt
-    IERC20(debtAsset).approve(address(POOL), amountToRepay);
-    POOL.repay(debtAsset, amountToRepay, debtRateMode, msg.sender);
+    IERC20(debtAsset).approve(address(LENDING_POOL), amountToRepay);
+    LENDING_POOL.repay(debtAsset, amountToRepay, debtRateMode, msg.sender);
   }
-
 
   /**
    * @dev Perform the repay of the debt, pulls the initiator collateral and swaps to repay the flash loan
@@ -157,9 +164,9 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
 
     // Repay debt
-    IERC20(debtAsset).approve(address(POOL), amount);
+    IERC20(debtAsset).approve(address(LENDING_POOL), amount);
     uint256 repaidAmount = IERC20(debtAsset).balanceOf(address(this));
-    POOL.repay(debtAsset, amount, rateMode, initiator);
+    LENDING_POOL.repay(debtAsset, amount, rateMode, initiator);
     repaidAmount = repaidAmount.sub(IERC20(debtAsset).balanceOf(address(this)));
 
     if (collateralAsset != debtAsset) {
@@ -195,7 +202,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     }
 
     // Repay flash loan
-    IERC20(debtAsset).approve(address(POOL), amount.add(premium));
+    IERC20(debtAsset).approve(address(LENDING_POOL), amount.add(premium));
   }
 
   /**
@@ -223,17 +230,12 @@ contract UniswapRepayAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       bytes32 s
     ) = abi.decode(params, (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32));
 
-    return RepayParams(
-      collateralAsset,
-      collateralAmount,
-      rateMode,
-      PermitSignature(
-        permitAmount,
-        deadline,
-        v,
-        r,
-        s
-      )
-    );
+    return
+      RepayParams(
+        collateralAsset,
+        collateralAmount,
+        rateMode,
+        PermitSignature(permitAmount, deadline, v, r, s)
+      );
   }
 }

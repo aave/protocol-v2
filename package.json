@@ -43,6 +43,7 @@
     "print-contracts:main": "npm run hardhat:main -- print-contracts",
     "print-contracts:ropsten": "npm run hardhat:main -- print-contracts",
     "dev:deployUIProvider": "npm run hardhat:kovan deploy-UiPoolDataProvider",
+    "dev:deployUniswapRepayAdapter": "npm run hardhat:kovan deploy-UniswapRepayAdapter",
     "kovan:verify": "npm run hardhat:kovan verify:general -- --all --pool Aave",
     "ropsten:verify": "npm run hardhat:ropsten verify:general -- --all --pool Aave",
     "mainnet:verify": "npm run hardhat:main verify:general -- --all --pool Aave",

@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 import {BaseUniswapAdapter} from './BaseUniswapAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
-import {IFlashLoanReceiver} from '../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
 /**
@@ -13,8 +12,7 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
  * @notice Uniswap V2 Adapter to swap liquidity.
  * @author Aave
  **/
-contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
-
+contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
   struct PermitParams {
     uint256[] amount;
     uint256[] deadline;
@@ -30,10 +28,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     PermitParams permitParams;
   }
 
-  constructor(
-    ILendingPoolAddressesProvider addressesProvider,
-    IUniswapV2Router02 uniswapRouter
-  )
+  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
     public
     BaseUniswapAdapter(addressesProvider, uniswapRouter)
   {}
@@ -64,19 +59,19 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     address initiator,
     bytes calldata params
   ) external override returns (bool) {
-    require(msg.sender == address(POOL), "CALLER_MUST_BE_LENDING_POOL");
+    require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
 
     SwapParams memory decodedParams = _decodeParams(params);
 
     require(
-      assets.length == decodedParams.assetToSwapToList.length
-      && assets.length == decodedParams.minAmountsToReceive.length
-      && assets.length == decodedParams.swapAllBalance.length
-      && assets.length == decodedParams.permitParams.amount.length
-      && assets.length == decodedParams.permitParams.deadline.length
-      && assets.length == decodedParams.permitParams.v.length
-      && assets.length == decodedParams.permitParams.r.length
-      && assets.length == decodedParams.permitParams.s.length,
+      assets.length == decodedParams.assetToSwapToList.length &&
+        assets.length == decodedParams.minAmountsToReceive.length &&
+        assets.length == decodedParams.swapAllBalance.length &&
+        assets.length == decodedParams.permitParams.amount.length &&
+        assets.length == decodedParams.permitParams.deadline.length &&
+        assets.length == decodedParams.permitParams.v.length &&
+        assets.length == decodedParams.permitParams.r.length &&
+        assets.length == decodedParams.permitParams.s.length,
       'INCONSISTENT_PARAMS'
     );
 
@@ -127,10 +122,10 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     PermitSignature[] calldata permitParams
   ) external {
     require(
-      assetToSwapFromList.length == assetToSwapToList.length
-      && assetToSwapFromList.length == amountToSwapList.length
-      && assetToSwapFromList.length == minAmountsToReceive.length
-      && assetToSwapFromList.length == permitParams.length,
+      assetToSwapFromList.length == assetToSwapToList.length &&
+        assetToSwapFromList.length == amountToSwapList.length &&
+        assetToSwapFromList.length == minAmountsToReceive.length &&
+        assetToSwapFromList.length == permitParams.length,
       'INCONSISTENT_PARAMS'
     );
 
@@ -138,26 +133,22 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       address aToken = _getReserveData(assetToSwapFromList[i]).aTokenAddress;
 
       uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(msg.sender);
-      uint256 amountToSwap = amountToSwapList[i] > aTokenInitiatorBalance ? aTokenInitiatorBalance : amountToSwapList[i];
+      uint256 amountToSwap =
+        amountToSwapList[i] > aTokenInitiatorBalance ? aTokenInitiatorBalance : amountToSwapList[i];
 
-      _pullAToken(
-        assetToSwapFromList[i],
-        aToken,
-        msg.sender,
-        amountToSwap,
-        permitParams[i]
-      );
+      _pullAToken(assetToSwapFromList[i], aToken, msg.sender, amountToSwap, permitParams[i]);
 
-      uint256 receivedAmount = _swapExactTokensForTokens(
-        assetToSwapFromList[i],
-        assetToSwapToList[i],
-        amountToSwap,
-        minAmountsToReceive[i]
-      );
+      uint256 receivedAmount =
+        _swapExactTokensForTokens(
+          assetToSwapFromList[i],
+          assetToSwapToList[i],
+          amountToSwap,
+          minAmountsToReceive[i]
+        );
 
       // Deposit new reserve
-      IERC20(assetToSwapToList[i]).approve(address(POOL), receivedAmount);
-      POOL.deposit(assetToSwapToList[i], receivedAmount, msg.sender, 0);
+      IERC20(assetToSwapToList[i]).approve(address(LENDING_POOL), receivedAmount);
+      LENDING_POOL.deposit(assetToSwapToList[i], receivedAmount, msg.sender, 0);
     }
   }
 
@@ -184,20 +175,17 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     address aToken = _getReserveData(assetFrom).aTokenAddress;
 
     uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(initiator);
-    uint256 amountToSwap = swapAllBalance && aTokenInitiatorBalance.sub(premium) <= amount
-      ? aTokenInitiatorBalance.sub(premium)
-      : amount;
+    uint256 amountToSwap =
+      swapAllBalance && aTokenInitiatorBalance.sub(premium) <= amount
+        ? aTokenInitiatorBalance.sub(premium)
+        : amount;
 
-    uint256 receivedAmount = _swapExactTokensForTokens(
-      assetFrom,
-      assetTo,
-      amountToSwap,
-      minAmountToReceive
-    );
+    uint256 receivedAmount =
+      _swapExactTokensForTokens(assetFrom, assetTo, amountToSwap, minAmountToReceive);
 
     // Deposit new reserve
-    IERC20(assetTo).approve(address(POOL), receivedAmount);
-    POOL.deposit(assetTo, receivedAmount, initiator, 0);
+    IERC20(assetTo).approve(address(LENDING_POOL), receivedAmount);
+    LENDING_POOL.deposit(assetTo, receivedAmount, initiator, 0);
 
     uint256 flashLoanDebt = amount.add(premium);
     uint256 amountToPull = amountToSwap.add(premium);
@@ -205,7 +193,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
     _pullAToken(assetFrom, aToken, initiator, amountToPull, permitSignature);
 
     // Repay flash loan
-    IERC20(assetFrom).approve(address(POOL), flashLoanDebt);
+    IERC20(assetFrom).approve(address(LENDING_POOL), flashLoanDebt);
   }
 
   /**
@@ -231,19 +219,18 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter, IFlashLoanReceiver {
       uint8[] memory v,
       bytes32[] memory r,
       bytes32[] memory s
-    ) = abi.decode(params, (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[]));
+    ) =
+      abi.decode(
+        params,
+        (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[])
+      );
 
-    return SwapParams(
-      assetToSwapToList,
-      minAmountsToReceive,
-      swapAllBalance,
-      PermitParams(
-        permitAmount,
-        deadline,
-        v,
-        r,
-        s
-      )
-    );
+    return
+      SwapParams(
+        assetToSwapToList,
+        minAmountsToReceive,
+        swapAllBalance,
+        PermitParams(permitAmount, deadline, v, r, s)
+      );
   }
 }

@@ -1,10 +1,13 @@
 import path from 'path';
 import fs from 'fs';
-import {HardhatUserConfig} from 'hardhat/types';
+import { HardhatUserConfig } from 'hardhat/types';
+
+require('dotenv').config();
+
 // @ts-ignore
-import {accounts} from './test-wallets.js';
-import {eEthereumNetwork} from './helpers/types';
-import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
+import { accounts } from './test-wallets.js';
+import { eEthereumNetwork } from './helpers/types';
+import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
@@ -27,7 +30,7 @@ const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full', 'verifications'].forEach((folder) => {
+  ['misc', 'migrations', 'dev', 'full', 'verifications', 'deployments'].forEach((folder) => {
     const tasksPath = path.join(__dirname, 'tasks', folder);
     fs.readdirSync(tasksPath)
       .filter((pth) => pth.includes('.ts'))
@@ -73,7 +76,7 @@ const buidlerConfig: HardhatUserConfig = {
   solidity: {
     version: '0.6.12',
     settings: {
-      optimizer: {enabled: true, runs: 200},
+      optimizer: { enabled: true, runs: 200 },
       evmVersion: 'istanbul',
     },
   },
@@ -109,7 +112,7 @@ const buidlerConfig: HardhatUserConfig = {
       chainId: BUIDLEREVM_CHAINID,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
-      accounts: accounts.map(({secretKey, balance}: {secretKey: string; balance: string}) => ({
+      accounts: accounts.map(({ secretKey, balance }: { secretKey: string; balance: string }) => ({
         privateKey: secretKey,
         balance,
       })),
