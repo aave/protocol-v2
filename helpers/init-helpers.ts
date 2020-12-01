@@ -9,6 +9,7 @@ import { AaveProtocolDataProvider } from '../types/AaveProtocolDataProvider';
 import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAaveProtocolDataProvider,
+  getAToken,
   getATokensAndRatesHelper,
   getLendingPoolAddressesProvider,
   getStableAndVariableTokensHelper,
@@ -440,10 +441,9 @@ export const initTokenReservesByHelper = async (
     ][])[reserveParamIndex];
 
     if (!isZeroAddress(aTokenAddress)) {
-      console.log(`Skipping ${symbol} due already initialized`);
+      console.log(`- Skipping ${symbol} due already initialized`);
       continue;
     }
-    console.log('Getting deployment information from', symbol);
     let stableTokenImpl = await getAddressById(`stableDebt${symbol}`, network);
     let variableTokenImpl = await getAddressById(`variableDebt${symbol}`, network);
     let aTokenImplementation = await getAddressById(`a${symbol}`, network);
@@ -519,7 +519,15 @@ export const initTokenReservesByHelper = async (
       );
       strategyImpl = rates.address;
     }
-
+    const symbols = [`a${symbol}`, `variableDebt${symbol}`, `stableDebt${symbol}`];
+    const tokens = [aTokenImplementation, variableTokenImpl, stableTokenImpl];
+    for (let index = 0; index < symbols.length; index++) {
+      if (!(await isErc20SymbolCorrect(tokens[index], symbols[index]))) {
+        console.error(`${symbol} and implementation does not match: ${tokens[index]}`);
+        throw Error('Symbol does not match implementation.');
+      }
+    }
+    console.log(`- Added ${symbol} to the initialize batch`);
     deployedStableTokens.push(stableTokenImpl);
     deployedVariableTokens.push(variableTokenImpl);
     deployedATokens.push(aTokenImplementation);
@@ -556,4 +564,10 @@ export const initTokenReservesByHelper = async (
   // Set deployer back as admin
   await waitForTx(await addressProvider.setPoolAdmin(admin));
   return gasUsage;
+};
+
+const isErc20SymbolCorrect = async (token: tEthereumAddress, symbol: string) => {
+  const erc20 = await getAToken(token); // using aToken for ERC20 interface
+  const erc20Symbol = await erc20.symbol();
+  return symbol === erc20Symbol;
 };
