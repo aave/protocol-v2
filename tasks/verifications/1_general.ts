@@ -1,7 +1,7 @@
-import {zeroAddress} from 'ethereumjs-util';
-import {task} from 'hardhat/config';
-import {loadPoolConfig, ConfigNames, getWethAddress} from '../../helpers/configuration';
-import {ZERO_ADDRESS} from '../../helpers/constants';
+import { zeroAddress } from 'ethereumjs-util';
+import { task } from 'hardhat/config';
+import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
+import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAaveProtocolDataProvider,
   getAddressById,
@@ -16,21 +16,30 @@ import {
   getWalletProvider,
   getWETHGateway,
 } from '../../helpers/contracts-getters';
-import {getParamPerNetwork} from '../../helpers/contracts-helpers';
-import {verifyContract} from '../../helpers/etherscan-verification';
-import {eEthereumNetwork, ICommonConfiguration} from '../../helpers/types';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { verifyContract } from '../../helpers/etherscan-verification';
+import { notFalsyOrZeroAddress } from '../../helpers/misc-utils';
+import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 
 task('verify:general', 'Deploy oracles for dev enviroment')
   .addFlag('all', 'Verify all contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({all, pool}, localDRE) => {
+  .setAction(async ({ all, pool }, localDRE) => {
     await localDRE.run('set-DRE');
     const network = localDRE.network.name as eEthereumNetwork;
     const poolConfig = loadPoolConfig(pool);
-    const {ReserveAssets, ReservesConfig} = poolConfig as ICommonConfiguration;
+    const {
+      ReserveAssets,
+      ReservesConfig,
+      ProviderRegistry,
+      MarketId,
+    } = poolConfig as ICommonConfiguration;
 
+    const registryAddress = getParamPerNetwork(ProviderRegistry, network);
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const addressesProviderRegistry = await getLendingPoolAddressesProviderRegistry();
+    const addressesProviderRegistry = notFalsyOrZeroAddress(registryAddress)
+      ? await getLendingPoolAddressesProviderRegistry(registryAddress)
+      : await getLendingPoolAddressesProviderRegistry();
     const lendingPoolProxy = await getLendingPool();
     const lendingPoolConfigurator = await getLendingPoolConfiguratorProxy();
     const lendingPoolCollateralManager = await getLendingPoolCollateralManager();
@@ -45,7 +54,7 @@ task('verify:general', 'Deploy oracles for dev enviroment')
 
       // Address Provider
       console.log('\n- Verifying address provider...\n');
-      await verifyContract(addressesProvider.address, []);
+      await verifyContract(addressesProvider.address, [MarketId]);
 
       // Address Provider Registry
       console.log('\n- Verifying address provider registry...\n');
@@ -69,7 +78,7 @@ task('verify:general', 'Deploy oracles for dev enviroment')
 
       // Wallet balance provider
       console.log('\n- Verifying  Wallet Balance Provider...\n');
-      await verifyContract(walletProvider.address, [addressesProvider.address]);
+      await verifyContract(walletProvider.address, []);
 
       // WETHGateway
       console.log('\n- Verifying  WETHGateway...\n');
