@@ -68,7 +68,7 @@ task('print-config', 'Inits the DRE, to have access to all the plugins')
       const reserveData = await protocolDataProvider.getReserveConfigurationData(address);
       const tokensAddresses = await protocolDataProvider.getReserveTokensAddresses(address);
       fields.forEach((field, index) => {
-        console.log(`  - ${field}:`, reserveData[index].toString());
+        console.log(`  - ${field}:`, reserveData[field].toString());
       });
       tokensFields.forEach((field, index) => {
         console.log(`  - ${field}:`, tokensAddresses[index]);

@@ -62,7 +62,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
 
 const mainnetFork = MAINNET_FORK
   ? {
-      blockNumber: 11361132,
+      blockNumber: 11366117,
       url: ALCHEMY_KEY
         ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
         : `https://main.infura.io/v3/${INFURA_KEY}`,

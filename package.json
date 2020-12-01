@@ -36,6 +36,7 @@
     "aave:fork:main:tenderly": "npm run compile && npm run hardhat:tenderly-main -- aave:mainnet",
     "aave:fork:main": "npm run compile && MAINNET_FORK=true  hardhat aave:mainnet",
     "aave:main:full:migration": "npm run compile && npm run hardhat:main -- aave:mainnet --verify",
+    "aave:main:full:initialize": "npm run compile && MAINNET_FORK=true full:initialize-tokens --pool Aave",
     "dev:prettier": "prettier --write .",
     "ci:test": "npm run compile && npm run test",
     "ci:clean": "rm -rf ./artifacts ./cache ./types",
@@ -50,7 +51,10 @@
     "ropsten:verify:tokens": "npm run hardhat:ropsten verify:tokens -- --pool Aave",
     "mainnet:verify:tokens": "npm run hardhat:main verify:tokens -- --pool Aave",
     "print-config:fork:mainnet": "MAINNET_FORK=true hardhat print-config:fork",
-    "print-config:kovan": "hardhat --network kovan print-config --pool Aave --data-provider 0xA1901785c29cBd48bfA74e46b67C736b26054fa4"
+    "print-config:kovan": "hardhat --network kovan print-config --pool Aave --data-provider 0xA1901785c29cBd48bfA74e46b67C736b26054fa4",
+    "main:fork:initialize-tokens": "npm run compile && MAINNET_FORK=true hardhat full:initialize-tokens --pool Aave",
+    "main:initialize-tokens": "npm run compile && hardhat --network main full:initialize-tokens --pool Aave",
+    "kovan:initialize-tokens": "npm run compile && hardhat --network kovan full:initialize-tokens --pool Aave"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
