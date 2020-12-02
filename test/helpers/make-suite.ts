@@ -14,7 +14,7 @@ import {
   getUniswapLiquiditySwapAdapter,
   getUniswapRepayAdapter,
 } from '../../helpers/contracts-getters';
-import { tEthereumAddress } from '../../helpers/types';
+import { eEthereumNetwork, tEthereumAddress } from '../../helpers/types';
 import { LendingPool } from '../../types/LendingPool';
 import { AaveProtocolDataProvider } from '../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../types/MintableERC20';
@@ -31,9 +31,11 @@ import { LendingPoolAddressesProviderRegistry } from '../../types/LendingPoolAdd
 import { getEthersSigners } from '../../helpers/contracts-helpers';
 import { UniswapLiquiditySwapAdapter } from '../../types/UniswapLiquiditySwapAdapter';
 import { UniswapRepayAdapter } from '../../types/UniswapRepayAdapter';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 import { WETHGateway } from '../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
+import { AaveConfig } from '../../markets/aave';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -108,9 +110,16 @@ export async function initializeMakeSuite() {
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
-  testEnv.oracle = await getPriceOracle();
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
-  testEnv.registry = await getLendingPoolAddressesProviderRegistry();
+
+  if (process.env.MAINNET_FORK === 'true') {
+    testEnv.registry = await getLendingPoolAddressesProviderRegistry(
+      getParamPerNetwork(AaveConfig.ProviderRegistry, eEthereumNetwork.main)
+    );
+  } else {
+    testEnv.registry = await getLendingPoolAddressesProviderRegistry();
+    testEnv.oracle = await getPriceOracle();
+  }
 
   testEnv.helpersContract = await getAaveProtocolDataProvider();
 

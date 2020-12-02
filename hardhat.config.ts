@@ -1,9 +1,6 @@
 import path from 'path';
 import fs from 'fs';
 import { HardhatUserConfig } from 'hardhat/types';
-
-require('dotenv').config();
-
 // @ts-ignore
 import { accounts } from './test-wallets.js';
 import { eEthereumNetwork } from './helpers/types';
@@ -65,7 +62,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
 
 const mainnetFork = MAINNET_FORK
   ? {
-      blockNumber: 11268220,
+      blockNumber: 11361132,
       url: ALCHEMY_KEY
         ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
         : `https://main.infura.io/v3/${INFURA_KEY}`,
