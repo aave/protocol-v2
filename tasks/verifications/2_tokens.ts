@@ -1,5 +1,10 @@
 import { task } from 'hardhat/config';
-import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
+import {
+  loadPoolConfig,
+  ConfigNames,
+  getWethAddress,
+  getTreasuryAddress,
+} from '../../helpers/configuration';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAddressById,
@@ -18,6 +23,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
     const network = localDRE.network.name as eEthereumNetwork;
     const poolConfig = loadPoolConfig(pool);
     const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
+    const treasuryAddress = await getTreasuryAddress(poolConfig);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
     const lendingPoolProxy = await getLendingPool();
@@ -82,7 +88,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       await verifyContract(aToken, [
         lendingPoolProxy.address,
         tokenAddress,
-        ZERO_ADDRESS,
+        treasuryAddress,
         `Aave interest bearing ${token}`,
         `a${token}`,
         ZERO_ADDRESS,

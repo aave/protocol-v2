@@ -1,6 +1,11 @@
 import { zeroAddress } from 'ethereumjs-util';
 import { task } from 'hardhat/config';
-import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
+import {
+  loadPoolConfig,
+  ConfigNames,
+  getWethAddress,
+  getTreasuryAddress,
+} from '../../helpers/configuration';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAaveProtocolDataProvider,
@@ -34,6 +39,7 @@ task('verify:general', 'Deploy oracles for dev enviroment')
       ProviderRegistry,
       MarketId,
     } = poolConfig as ICommonConfiguration;
+    const treasuryAddress = await getTreasuryAddress(poolConfig);
 
     const registryAddress = getParamPerNetwork(ProviderRegistry, network);
     const addressesProvider = await getLendingPoolAddressesProvider();
@@ -146,7 +152,7 @@ task('verify:general', 'Deploy oracles for dev enviroment')
     await verifyContract(aDAI, [
       lendingPoolProxy.address,
       DAI,
-      ZERO_ADDRESS,
+      treasuryAddress,
       'Aave interest bearing DAI',
       'aDAI',
       ZERO_ADDRESS,
@@ -176,7 +182,7 @@ task('verify:general', 'Deploy oracles for dev enviroment')
     await verifyContract(aUNI, [
       lendingPoolProxy.address,
       UNI,
-      ZERO_ADDRESS,
+      treasuryAddress,
       'Aave interest bearing UNI',
       'aUNI',
       ZERO_ADDRESS,
