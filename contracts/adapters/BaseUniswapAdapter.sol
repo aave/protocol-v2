@@ -174,9 +174,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         block.timestamp
       );
 
-    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
+    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length-1]);
 
-    return amounts[1];
+    return amounts[amounts.length-1];
   }
 
   /**
@@ -222,7 +222,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         block.timestamp
       );
 
-    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[1]);
+    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length-1]);
 
     return amounts[0];
   }
@@ -357,15 +357,15 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     uint256 outPerInPrice =
       finalAmountIn.mul(10**18).mul(10**reserveOutDecimals).div(
-        amounts[1].mul(10**reserveInDecimals)
+        amounts[amounts.length-1].mul(10**reserveInDecimals)
       );
 
     return
       AmountCalc(
-        amounts[1],
+        amounts[amounts.length-1],
         outPerInPrice,
         _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
-        _calcUsdValue(reserveOut, amounts[1], reserveOutDecimals),
+        _calcUsdValue(reserveOut, amounts[amounts.length-1], reserveOutDecimals),
         (pathWithWeth[0] != address(0) ? pathWithWeth : simplePath)
       );
   }
