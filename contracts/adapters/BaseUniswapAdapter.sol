@@ -131,7 +131,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     address assetToSwapFrom,
     address assetToSwapTo,
     uint256 amountToSwap,
-    uint256 minAmountOut
+    uint256 minAmountOut,
+    bool useEthPath
   ) internal returns (uint256) {
     uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
     uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
@@ -149,9 +150,17 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), amountToSwap);
 
-    address[] memory path = new address[](2);
-    path[0] = assetToSwapFrom;
-    path[1] = assetToSwapTo;
+    address[] memory path;
+    if (useEthPath) {
+      path = new address[](3);
+      path[0] = assetToSwapFrom;
+      path[1] = WETH_ADDRESS;
+      path[2] = assetToSwapTo;
+    } else {
+      path = new address[](2);
+      path[0] = assetToSwapFrom;
+      path[1] = assetToSwapTo;
+    }
     uint256[] memory amounts =
       UNISWAP_ROUTER.swapExactTokensForTokens(
         amountToSwap,
@@ -374,7 +383,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256 amountOut
   ) internal view returns (AmountCalc memory) {
     (uint256[] memory amounts, address[] memory path) =
-      _getAmountsIn(reserveIn, reserveOut, amountOut);
+      _getAmountsInAndPath(reserveIn, reserveOut, amountOut);
 
     // Add flash loan fee
     uint256 finalAmountIn = amounts[0].add(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
@@ -404,7 +413,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
    * @param amountOut Amount of reserveOut
    * @return uint256[] amounts Array containing the amountIn and amountOut for a swap
    */
-  function _getAmountsIn(
+  function _getAmountsInAndPath(
     address reserveIn,
     address reserveOut,
     uint256 amountOut
@@ -419,14 +428,43 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       uint256[] memory resultAmounts
     ) {
       amounts = resultAmounts;
+      return (amounts, simplePath);
     } catch {
       pathWithWeth[0] = reserveIn;
       pathWithWeth[1] = WETH_ADDRESS;
       pathWithWeth[2] = reserveOut;
 
       amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth);
+      return (amounts, pathWithWeth);
+    }
+  }
+
+  /**
+   * @dev Calculates the input asset amount required to buy the given output asset amount
+   * @param reserveIn Address of the asset to be swap from
+   * @param reserveOut Address of the asset to be swap to
+   * @param amountOut Amount of reserveOut
+   * @return uint256[] amounts Array containing the amountIn and amountOut for a swap
+   */
+  function _getAmountsIn(
+    address reserveIn,
+    address reserveOut,
+    uint256 amountOut,
+    bool useEthPath
+  ) internal view returns (uint256[] memory) {
+    address[] memory path;
+
+    if (useEthPath) {
+      path = new address[](3);
+      path[0] = reserveIn;
+      path[1] = WETH_ADDRESS;
+      path[2] = reserveOut;
+    } else {
+      path = new address[](2);
+      path[0] = reserveIn;
+      path[1] = reserveOut;
     }
 
-    return (amounts, (pathWithWeth[0] != address(0) ? pathWithWeth : simplePath));
+    return UNISWAP_ROUTER.getAmountsIn(amountOut, path);
   }
 }

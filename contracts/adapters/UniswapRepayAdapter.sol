@@ -19,6 +19,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     uint256 collateralAmount;
     uint256 rateMode;
     PermitSignature permitSignature;
+    bool useEthPath;
   }
 
   constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
@@ -65,7 +66,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       decodedParams.rateMode,
       initiator,
       premiums[0],
-      decodedParams.permitSignature
+      decodedParams.permitSignature,
+      decodedParams.useEthPath
     );
 
     return true;
@@ -82,6 +84,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
    * @param debtRepayAmount Amount of the debt to be repaid
    * @param debtRateMode Rate mode of the debt to be repaid
    * @param permitSignature struct containing the permit signature
+   * @param useEthPath struct containing the permit signature
+
    */
   function swapAndRepay(
     address collateralAsset,
@@ -89,7 +93,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     uint256 collateralAmount,
     uint256 debtRepayAmount,
     uint256 debtRateMode,
-    PermitSignature calldata permitSignature
+    PermitSignature calldata permitSignature,
+    bool useEthPath
   ) external {
     DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
     DataTypes.ReserveData memory debtReserveData = _getReserveData(debtAsset);
@@ -109,7 +114,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       // Get exact collateral needed for the swap to avoid leftovers
-      (uint256[] memory amounts,) = _getAmountsIn(collateralAsset, debtAsset, amountToRepay);
+      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, amountToRepay, useEthPath);
       require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user
@@ -159,7 +164,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     uint256 rateMode,
     address initiator,
     uint256 premium,
-    PermitSignature memory permitSignature
+    PermitSignature memory permitSignature,
+    bool useEthPath
   ) internal {
     DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
 
@@ -176,7 +182,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       uint256 neededForFlashLoanDebt = repaidAmount.add(premium);
-      (uint256[] memory amounts,) = _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt);
+      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt, useEthPath);
       require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user
@@ -227,15 +233,17 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       uint256 deadline,
       uint8 v,
       bytes32 r,
-      bytes32 s
-    ) = abi.decode(params, (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32));
+      bytes32 s,
+      bool useEthPath
+    ) = abi.decode(params, (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32, bool));
 
     return
       RepayParams(
         collateralAsset,
         collateralAmount,
         rateMode,
-        PermitSignature(permitAmount, deadline, v, r, s)
+        PermitSignature(permitAmount, deadline, v, r, s),
+        useEthPath
       );
   }
 }

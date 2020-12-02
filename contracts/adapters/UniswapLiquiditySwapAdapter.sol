@@ -26,6 +26,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     uint256[] minAmountsToReceive;
     bool[] swapAllBalance;
     PermitParams permitParams;
+    bool[] useEthPath;
   }
 
   constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
@@ -71,7 +72,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
         assets.length == decodedParams.permitParams.deadline.length &&
         assets.length == decodedParams.permitParams.v.length &&
         assets.length == decodedParams.permitParams.r.length &&
-        assets.length == decodedParams.permitParams.s.length,
+        assets.length == decodedParams.permitParams.s.length &&
+        assets.length == decodedParams.useEthPath.length,
       'INCONSISTENT_PARAMS'
     );
 
@@ -90,11 +92,20 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
           decodedParams.permitParams.v[i],
           decodedParams.permitParams.r[i],
           decodedParams.permitParams.s[i]
-        )
+        ),
+        decodedParams.useEthPath[i]
       );
     }
 
     return true;
+  }
+
+  struct SwapAndDepositLocalVars {
+    uint256 i;
+    uint256 aTokenInitiatorBalance;
+    uint256 amountToSwap;
+    uint256 receivedAmount;
+    address aToken;
   }
 
   /**
@@ -113,13 +124,15 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    *   uint8 v param for the permit signature
    *   bytes32 r param for the permit signature
    *   bytes32 s param for the permit signature
+   * @param useEthPath true if the swap needs to occur using ETH in the routing, false otherwise
    */
   function swapAndDeposit(
     address[] calldata assetToSwapFromList,
     address[] calldata assetToSwapToList,
     uint256[] calldata amountToSwapList,
     uint256[] calldata minAmountsToReceive,
-    PermitSignature[] calldata permitParams
+    PermitSignature[] calldata permitParams,
+    bool[] calldata useEthPath
   ) external {
     require(
       assetToSwapFromList.length == assetToSwapToList.length &&
@@ -129,26 +142,29 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
       'INCONSISTENT_PARAMS'
     );
 
-    for (uint256 i = 0; i < assetToSwapFromList.length; i++) {
-      address aToken = _getReserveData(assetToSwapFromList[i]).aTokenAddress;
+    SwapAndDepositLocalVars memory vars;
 
-      uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(msg.sender);
-      uint256 amountToSwap =
-        amountToSwapList[i] > aTokenInitiatorBalance ? aTokenInitiatorBalance : amountToSwapList[i];
+    for (vars.i = 0; vars.i < assetToSwapFromList.length; vars.i++) {
+      vars.aToken = _getReserveData(assetToSwapFromList[vars.i]).aTokenAddress;
 
-      _pullAToken(assetToSwapFromList[i], aToken, msg.sender, amountToSwap, permitParams[i]);
+      vars.aTokenInitiatorBalance = IERC20(vars.aToken).balanceOf(msg.sender);
+      vars.amountToSwap =
+        amountToSwapList[vars.i] > vars.aTokenInitiatorBalance ? vars.aTokenInitiatorBalance : amountToSwapList[vars.i];
 
-      uint256 receivedAmount =
+      _pullAToken(assetToSwapFromList[vars.i], vars.aToken, msg.sender, vars.amountToSwap, permitParams[vars.i]);
+
+      vars.receivedAmount =
         _swapExactTokensForTokens(
-          assetToSwapFromList[i],
-          assetToSwapToList[i],
-          amountToSwap,
-          minAmountsToReceive[i]
+          assetToSwapFromList[vars.i],
+          assetToSwapToList[vars.i],
+          vars.amountToSwap,
+          minAmountsToReceive[vars.i],
+          useEthPath[vars.i]
         );
 
       // Deposit new reserve
-      IERC20(assetToSwapToList[i]).approve(address(LENDING_POOL), receivedAmount);
-      LENDING_POOL.deposit(assetToSwapToList[i], receivedAmount, msg.sender, 0);
+      IERC20(assetToSwapToList[vars.i]).approve(address(LENDING_POOL), vars.receivedAmount);
+      LENDING_POOL.deposit(assetToSwapToList[vars.i], vars.receivedAmount, msg.sender, 0);
     }
   }
 
@@ -161,6 +177,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    * @param minAmountToReceive Min amount to be received from the swap
    * @param swapAllBalance Flag indicating if all the user balance should be swapped
    * @param permitSignature List of struct containing the permit signature
+   * @param useEthPath true if the swap needs to occur using ETH in the routing, false otherwise
    */
   function _swapLiquidity(
     address assetFrom,
@@ -170,7 +187,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     address initiator,
     uint256 minAmountToReceive,
     bool swapAllBalance,
-    PermitSignature memory permitSignature
+    PermitSignature memory permitSignature,
+    bool useEthPath
   ) internal {
     address aToken = _getReserveData(assetFrom).aTokenAddress;
 
@@ -181,7 +199,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
         : amount;
 
     uint256 receivedAmount =
-      _swapExactTokensForTokens(assetFrom, assetTo, amountToSwap, minAmountToReceive);
+      _swapExactTokensForTokens(assetFrom, assetTo, amountToSwap, minAmountToReceive, useEthPath);
 
     // Deposit new reserve
     IERC20(assetTo).approve(address(LENDING_POOL), receivedAmount);
@@ -207,6 +225,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    *   uint8[] v List of v param for the permit signature
    *   bytes32[] r List of r param for the permit signature
    *   bytes32[] s List of s param for the permit signature
+   *   bool[] useEthPath true if the swap needs to occur using ETH in the routing, false otherwise
    * @return SwapParams struct containing decoded params
    */
   function _decodeParams(bytes memory params) internal pure returns (SwapParams memory) {
@@ -218,11 +237,12 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
       uint256[] memory deadline,
       uint8[] memory v,
       bytes32[] memory r,
-      bytes32[] memory s
+      bytes32[] memory s,
+      bool[] memory useEthPath
     ) =
       abi.decode(
         params,
-        (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[])
+        (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[], bool[])
       );
 
     return
@@ -230,7 +250,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
         assetToSwapToList,
         minAmountsToReceive,
         swapAllBalance,
-        PermitParams(permitAmount, deadline, v, r, s)
+        PermitParams(permitAmount, deadline, v, r, s),
+        useEthPath
       );
   }
 }
