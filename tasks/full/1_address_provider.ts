@@ -16,9 +16,10 @@ import {
   getFirstSigner,
   getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-getters';
-import { isAddress } from 'ethers/lib/utils';
+import { formatEther, isAddress, parseEther } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
 import { Signer } from 'ethers';
+import { parse } from 'path';
 
 task(
   'full:deploy-address-provider',
@@ -59,6 +60,8 @@ task(
         params: [providerRegistryOwner],
       });
       signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
+      const firstAccount = await getFirstSigner();
+      await firstAccount.sendTransaction({ value: parseEther('10'), to: providerRegistryOwner });
     } else {
       signer = await getFirstSigner();
       const deployerAddress = await signer.getAddress();
@@ -69,7 +72,6 @@ task(
       }
     }
     // 1. Address Provider Registry instance
-
     const addressesProviderRegistry = (
       await getLendingPoolAddressesProviderRegistry(providerRegistryAddress)
     ).connect(signer);
