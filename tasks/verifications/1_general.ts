@@ -1,3 +1,4 @@
+import { error } from 'console';
 import { zeroAddress } from 'ethereumjs-util';
 import { task } from 'hardhat/config';
 import {
@@ -105,86 +106,22 @@ task('verify:general', 'Deploy oracles for dev enviroment')
     console.log('\n- Verifying  Lending Pool Collateral Manager Proxy...\n');
     await verifyContract(lendingPoolCollateralManager.address, []);
 
-    // Tokens verification
-    const DAI = getParamPerNetwork(ReserveAssets, network).DAI;
-    const stableDebtDai = await getAddressById('stableDebtDAI');
-    const variableDebtDai = await getAddressById('variableDebtDAI');
-    const aDAI = await getAddressById('aDAI');
-    const {
-      stableDebtTokenAddress,
-      variableDebtTokenAddress,
-      aTokenAddress,
-      interestRateStrategyAddress,
-    } = await lendingPoolProxy.getReserveData(DAI);
-    const {
-      baseVariableBorrowRate,
-      variableRateSlope1,
-      variableRateSlope2,
-      stableRateSlope1,
-      stableRateSlope2,
-    } = ReservesConfig.DAI;
-
-    // Proxy Stable Debt
-    console.log('\n- Verifying DAI Stable Debt Token proxy...\n');
-    await verifyContract(stableDebtTokenAddress, [lendingPoolConfigurator.address]);
-
-    // Proxy Variable Debt
-    console.log('\n- Verifying DAI Variable Debt Token proxy...\n');
-    await verifyContract(variableDebtTokenAddress, [lendingPoolConfigurator.address]);
-
-    // Proxy aToken
-    console.log('\n- Verifying aDAI Token proxy...\n');
-    await verifyContract(aTokenAddress, [lendingPoolConfigurator.address]);
-
-    // Strategy Rate
-    console.log('\n- Verifying Strategy rate...\n');
-    await verifyContract(interestRateStrategyAddress, [
-      addressesProvider.address,
-      baseVariableBorrowRate,
-      variableRateSlope1,
-      variableRateSlope2,
-      stableRateSlope1,
-      stableRateSlope2,
-    ]);
-
-    // aToken
-    console.log('\n- Verifying aToken...\n');
-    await verifyContract(aDAI, [
-      lendingPoolProxy.address,
-      DAI,
-      treasuryAddress,
-      'Aave interest bearing DAI',
-      'aDAI',
-      ZERO_ADDRESS,
-    ]);
-    // stableDebtToken
-    console.log('\n- Verifying StableDebtToken...\n');
-    await verifyContract(stableDebtDai, [
-      lendingPoolProxy.address,
-      DAI,
-      'Aave stable debt bearing DAI',
-      'stableDebtDAI',
-      ZERO_ADDRESS,
-    ]);
-    // variableDebtToken
-    console.log('\n- Verifying VariableDebtToken...\n');
-    await verifyContract(variableDebtDai, [
-      lendingPoolProxy.address,
-      DAI,
-      'Aave variable debt bearing DAI',
-      'variableDebtDAI',
-      ZERO_ADDRESS,
-    ]);
     // DelegatedAwareAToken
     console.log('\n- Verifying DelegatedAwareAToken...\n');
     const UNI = getParamPerNetwork(ReserveAssets, network).UNI;
     const aUNI = await getAddressById('aUNI');
-    await verifyContract(aUNI, [
-      lendingPoolProxy.address,
-      UNI,
-      treasuryAddress,
-      'Aave interest bearing UNI',
-      'aUNI',
-      ZERO_ADDRESS,
-    ]);
+    if (aUNI) {
+      console.log('Verifying aUNI');
+      await verifyContract(aUNI, [
+        lendingPoolProxy.address,
+        UNI,
+        treasuryAddress,
+        'Aave interest bearing UNI',
+        'aUNI',
+        ZERO_ADDRESS,
+      ]);
+    } else {
+      console.error('Missing aUNI address at JSON DB. Skipping...');
+    }
+    console.log('Finished verifications.');
   });
