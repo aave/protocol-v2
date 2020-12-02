@@ -109,7 +109,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       // Get exact collateral needed for the swap to avoid leftovers
-      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, amountToRepay);
+      (uint256[] memory amounts,) = _getAmountsIn(collateralAsset, debtAsset, amountToRepay);
       require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user
@@ -176,7 +176,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       uint256 neededForFlashLoanDebt = repaidAmount.add(premium);
-      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt);
+      (uint256[] memory amounts,) = _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt);
       require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user

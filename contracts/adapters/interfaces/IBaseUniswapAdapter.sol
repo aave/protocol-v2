@@ -21,6 +21,7 @@ interface IBaseUniswapAdapter {
     uint256 relativePrice;
     uint256 amountInUsd;
     uint256 amountOutUsd;
+    address[] path;
   }
 
   function MAX_SLIPPAGE_PERCENT() external returns (uint256);
@@ -42,6 +43,7 @@ interface IBaseUniswapAdapter {
    * @return uint256 The price of out amount denominated in the reserveIn currency (18 decimals)
    * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
    * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
+   * @return address[] The exchange path
    */
   function getAmountsOut(
     uint256 amountIn,
@@ -54,7 +56,8 @@ interface IBaseUniswapAdapter {
       uint256,
       uint256,
       uint256,
-      uint256
+      uint256,
+      address[] memory
     );
 
   /**
@@ -66,6 +69,7 @@ interface IBaseUniswapAdapter {
    * @return uint256 The price of in amount denominated in the reserveOut currency (18 decimals)
    * @return uint256 In amount of reserveIn value denominated in USD (8 decimals)
    * @return uint256 Out amount of reserveOut value denominated in USD (8 decimals)
+   * @return address[] The exchange path
    */
   function getAmountsIn(
     uint256 amountOut,
@@ -78,6 +82,7 @@ interface IBaseUniswapAdapter {
       uint256,
       uint256,
       uint256,
-      uint256
+      uint256,
+      address[] memory
     );
 }

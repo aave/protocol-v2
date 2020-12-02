@@ -32,6 +32,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   // USD oracle asset address
   address public constant override USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
 
+  address public constant WETH_ADDRESS = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+
   IPriceOracleGetter public immutable override ORACLE;
   IUniswapV2Router02 public immutable override UNISWAP_ROUTER;
 
@@ -65,7 +67,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       uint256,
       uint256,
       uint256,
-      uint256
+      uint256,
+      address[] memory
     )
   {
     AmountCalc memory results = _getAmountsOutData(reserveIn, reserveOut, amountIn);
@@ -74,7 +77,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       results.calculatedAmount,
       results.relativePrice,
       results.amountInUsd,
-      results.amountOutUsd
+      results.amountOutUsd,
+      results.path
     );
   }
 
@@ -100,7 +104,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       uint256,
       uint256,
       uint256,
-      uint256
+      uint256,
+      address[] memory
     )
   {
     AmountCalc memory results = _getAmountsInData(reserveIn, reserveOut, amountOut);
@@ -109,7 +114,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       results.calculatedAmount,
       results.relativePrice,
       results.amountInUsd,
-      results.amountOutUsd
+      results.amountOutUsd,
+      results.path
     );
   }
 
@@ -315,11 +321,23 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     // Subtract flash loan fee
     uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
 
-    address[] memory path = new address[](2);
-    path[0] = reserveIn;
-    path[1] = reserveOut;
+    address[] memory simplePath = new address[](2);
+    simplePath[0] = reserveIn;
+    simplePath[1] = reserveOut;
 
-    uint256[] memory amounts = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, path);
+    uint256[] memory amounts;
+    address[] memory pathWithWeth = new address[](3);
+    try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
+      uint256[] memory resultAmounts
+    ) {
+      amounts = resultAmounts;
+    } catch {
+      pathWithWeth[0] = reserveIn;
+      pathWithWeth[1] = WETH_ADDRESS;
+      pathWithWeth[2] = reserveOut;
+
+      amounts = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth);
+    }
 
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
@@ -334,7 +352,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         amounts[1],
         outPerInPrice,
         _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
-        _calcUsdValue(reserveOut, amounts[1], reserveOutDecimals)
+        _calcUsdValue(reserveOut, amounts[1], reserveOutDecimals),
+        (pathWithWeth[0] != address(0) ? pathWithWeth : simplePath)
       );
   }
 
@@ -354,7 +373,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     address reserveOut,
     uint256 amountOut
   ) internal view returns (AmountCalc memory) {
-    uint256[] memory amounts = _getAmountsIn(reserveIn, reserveOut, amountOut);
+    (uint256[] memory amounts, address[] memory path) =
+      _getAmountsIn(reserveIn, reserveOut, amountOut);
 
     // Add flash loan fee
     uint256 finalAmountIn = amounts[0].add(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
@@ -372,7 +392,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         finalAmountIn,
         inPerOutPrice,
         _calcUsdValue(reserveIn, finalAmountIn, reserveInDecimals),
-        _calcUsdValue(reserveOut, amountOut, reserveOutDecimals)
+        _calcUsdValue(reserveOut, amountOut, reserveOutDecimals),
+        path
       );
   }
 
@@ -387,11 +408,25 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     address reserveIn,
     address reserveOut,
     uint256 amountOut
-  ) internal view returns (uint256[] memory) {
-    address[] memory path = new address[](2);
-    path[0] = reserveIn;
-    path[1] = reserveOut;
+  ) internal view returns (uint256[] memory, address[] memory) {
+    address[] memory simplePath = new address[](2);
+    simplePath[0] = reserveIn;
+    simplePath[1] = reserveOut;
 
-    return UNISWAP_ROUTER.getAmountsIn(amountOut, path);
+    uint256[] memory amounts;
+    address[] memory pathWithWeth = new address[](3);
+    try UNISWAP_ROUTER.getAmountsIn(amountOut, simplePath) returns (
+      uint256[] memory resultAmounts
+    ) {
+      amounts = resultAmounts;
+    } catch {
+      pathWithWeth[0] = reserveIn;
+      pathWithWeth[1] = WETH_ADDRESS;
+      pathWithWeth[2] = reserveOut;
+
+      amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth);
+    }
+
+    return (amounts, (pathWithWeth[0] != address(0) ? pathWithWeth : simplePath));
   }
 }
