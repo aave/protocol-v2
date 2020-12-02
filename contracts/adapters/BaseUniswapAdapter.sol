@@ -174,9 +174,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         block.timestamp
       );
 
-    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length-1]);
+    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length - 1]);
 
-    return amounts[amounts.length-1];
+    return amounts[amounts.length - 1];
   }
 
   /**
@@ -222,7 +222,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         block.timestamp
       );
 
-    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length-1]);
+    emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length - 1]);
 
     return amounts[0];
   }
@@ -338,35 +338,42 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     simplePath[0] = reserveIn;
     simplePath[1] = reserveOut;
 
-    uint256[] memory amounts;
+    uint256[] memory amountsWithoutWeth;
+    uint256[] memory amountsWithWeth;
+
     address[] memory pathWithWeth = new address[](3);
     try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
       uint256[] memory resultAmounts
     ) {
-      amounts = resultAmounts;
+      amountsWithoutWeth = resultAmounts;
     } catch {
       pathWithWeth[0] = reserveIn;
       pathWithWeth[1] = WETH_ADDRESS;
       pathWithWeth[2] = reserveOut;
 
-      amounts = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth);
+      amountsWithWeth = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth);
     }
+
+    uint256 bestAmountOut =
+      (amountsWithWeth.length > 0 && amountsWithWeth[2] > amountsWithoutWeth[1])
+        ? amountsWithWeth[2]
+        : amountsWithoutWeth[1];
 
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
     uint256 outPerInPrice =
       finalAmountIn.mul(10**18).mul(10**reserveOutDecimals).div(
-        amounts[amounts.length-1].mul(10**reserveInDecimals)
+        bestAmountOut.mul(10**reserveInDecimals)
       );
 
     return
       AmountCalc(
-        amounts[amounts.length-1],
+        bestAmountOut,
         outPerInPrice,
         _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
-        _calcUsdValue(reserveOut, amounts[amounts.length-1], reserveOutDecimals),
-        (pathWithWeth[0] != address(0) ? pathWithWeth : simplePath)
+        _calcUsdValue(reserveOut, bestAmountOut, reserveOutDecimals),
+        (bestAmountOut == amountsWithoutWeth[1]) ? simplePath : pathWithWeth
       );
   }
 
