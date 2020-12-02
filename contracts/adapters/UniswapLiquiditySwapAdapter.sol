@@ -29,10 +29,11 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     bool[] useEthPath;
   }
 
-  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
-    public
-    BaseUniswapAdapter(addressesProvider, uniswapRouter)
-  {}
+  constructor(
+    ILendingPoolAddressesProvider addressesProvider,
+    IUniswapV2Router02 uniswapRouter,
+    address wethAddress
+  ) public BaseUniswapAdapter(addressesProvider, uniswapRouter, wethAddress) {}
 
   /**
    * @dev Swaps the received reserve amount from the flash loan into the asset specified in the params.
@@ -148,19 +149,25 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
       vars.aToken = _getReserveData(assetToSwapFromList[vars.i]).aTokenAddress;
 
       vars.aTokenInitiatorBalance = IERC20(vars.aToken).balanceOf(msg.sender);
-      vars.amountToSwap =
-        amountToSwapList[vars.i] > vars.aTokenInitiatorBalance ? vars.aTokenInitiatorBalance : amountToSwapList[vars.i];
+      vars.amountToSwap = amountToSwapList[vars.i] > vars.aTokenInitiatorBalance
+        ? vars.aTokenInitiatorBalance
+        : amountToSwapList[vars.i];
 
-      _pullAToken(assetToSwapFromList[vars.i], vars.aToken, msg.sender, vars.amountToSwap, permitParams[vars.i]);
+      _pullAToken(
+        assetToSwapFromList[vars.i],
+        vars.aToken,
+        msg.sender,
+        vars.amountToSwap,
+        permitParams[vars.i]
+      );
 
-      vars.receivedAmount =
-        _swapExactTokensForTokens(
-          assetToSwapFromList[vars.i],
-          assetToSwapToList[vars.i],
-          vars.amountToSwap,
-          minAmountsToReceive[vars.i],
-          useEthPath[vars.i]
-        );
+      vars.receivedAmount = _swapExactTokensForTokens(
+        assetToSwapFromList[vars.i],
+        assetToSwapToList[vars.i],
+        vars.amountToSwap,
+        minAmountsToReceive[vars.i],
+        useEthPath[vars.i]
+      );
 
       // Deposit new reserve
       IERC20(assetToSwapToList[vars.i]).approve(address(LENDING_POOL), vars.receivedAmount);

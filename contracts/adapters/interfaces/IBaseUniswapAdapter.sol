@@ -24,6 +24,8 @@ interface IBaseUniswapAdapter {
     address[] path;
   }
 
+  function WETH_ADDRESS() external returns (address);
+
   function MAX_SLIPPAGE_PERCENT() external returns (uint256);
 
   function FLASHLOAN_PREMIUM_TOTAL() external returns (uint256);

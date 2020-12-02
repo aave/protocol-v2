@@ -22,10 +22,11 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     bool useEthPath;
   }
 
-  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
-    public
-    BaseUniswapAdapter(addressesProvider, uniswapRouter)
-  {}
+  constructor(
+    ILendingPoolAddressesProvider addressesProvider,
+    IUniswapV2Router02 uniswapRouter,
+    address wethAddress
+  ) public BaseUniswapAdapter(addressesProvider, uniswapRouter, wethAddress) {}
 
   /**
    * @dev Uses the received funds from the flash loan to repay a debt on the protocol on behalf of the user. Then pulls
@@ -114,7 +115,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       // Get exact collateral needed for the swap to avoid leftovers
-      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, amountToRepay, useEthPath);
+      uint256[] memory amounts =
+        _getAmountsIn(collateralAsset, debtAsset, amountToRepay, useEthPath);
       require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user
@@ -182,7 +184,8 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       uint256 neededForFlashLoanDebt = repaidAmount.add(premium);
-      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt, useEthPath);
+      uint256[] memory amounts =
+        _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt, useEthPath);
       require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
 
       // Pull aTokens from user
@@ -235,7 +238,11 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       bytes32 r,
       bytes32 s,
       bool useEthPath
-    ) = abi.decode(params, (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32, bool));
+    ) =
+      abi.decode(
+        params,
+        (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32, bool)
+      );
 
     return
       RepayParams(

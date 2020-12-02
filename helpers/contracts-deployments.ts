@@ -321,7 +321,7 @@ export const deployVariableDebtToken = async (
   );
 
 export const deployGenericAToken = async (
-  [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol,incentivesController]: [
+  [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [
     tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
@@ -338,7 +338,6 @@ export const deployGenericAToken = async (
     string,
     tEthereumAddress,
     tEthereumAddress
-
   ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
   return withSaveAndVerify(
     await new ATokenFactory(await getFirstSigner()).deploy(...args),
@@ -506,7 +505,7 @@ export const deployMockUniswapRouter = async (verify?: boolean) =>
   );
 
 export const deployUniswapLiquiditySwapAdapter = async (
-  args: [tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(
@@ -517,7 +516,7 @@ export const deployUniswapLiquiditySwapAdapter = async (
   );
 
 export const deployUniswapRepayAdapter = async (
-  args: [tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(

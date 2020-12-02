@@ -6,6 +6,8 @@ import { accounts } from './test-wallets.js';
 import { eEthereumNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 
+require('dotenv').config();
+
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import 'temp-hardhat-etherscan';
@@ -45,7 +47,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
       ? `https://eth-${
           networkName === 'main' ? 'mainnet' : networkName
         }.alchemyapi.io/v2/${ALCHEMY_KEY}`
-      : `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
+      : `https://${networkName === 'main' ? 'mainnet' : networkName}.infura.io/v3/${INFURA_KEY}`,
     hardfork: HARDFORK,
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
     gasMultiplier: DEFAULT_GAS_MUL,

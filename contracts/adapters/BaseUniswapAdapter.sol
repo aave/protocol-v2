@@ -32,17 +32,21 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   // USD oracle asset address
   address public constant override USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
 
-  address public constant WETH_ADDRESS = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  //  address public constant WETH_ADDRESS = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2; mainnet
+  //  address public constant WETH_ADDRESS = 0xd0a1e359811322d97991e03f863a0c30c2cf029c; kovan
 
+  address public immutable override WETH_ADDRESS;
   IPriceOracleGetter public immutable override ORACLE;
   IUniswapV2Router02 public immutable override UNISWAP_ROUTER;
 
-  constructor(ILendingPoolAddressesProvider addressesProvider, IUniswapV2Router02 uniswapRouter)
-    public
-    FlashLoanReceiverBase(addressesProvider)
-  {
+  constructor(
+    ILendingPoolAddressesProvider addressesProvider,
+    IUniswapV2Router02 uniswapRouter,
+    address wethAddress
+  ) public FlashLoanReceiverBase(addressesProvider) {
     ORACLE = IPriceOracleGetter(addressesProvider.getPriceOracle());
     UNISWAP_ROUTER = uniswapRouter;
+    WETH_ADDRESS = wethAddress;
   }
 
   /**
