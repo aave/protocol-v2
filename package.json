@@ -111,12 +111,12 @@
   "author": "Aave",
   "contributors": [
     {
-      "name": "Ernesto Boado",
-      "email": "ernesto@aave.com"
-    },
-    {
       "name": "Emilio Frangella",
       "email": "emilio@aave.com"
+    },
+    {
+      "name": "Ernesto Boado",
+      "email": "ernesto@aave.com"
     },
     {
       "name": "Andrey Kozlov",
@@ -125,6 +125,14 @@
     {
       "name": "David Racero",
       "email": "david.k@aave.com"
+    },
+    {
+      "name": "Pol Sendra",
+      "email": "pol@aave.com"
+    },
+    {
+      "name": "David Truong",
+      "email": "david@aave.com"
     }
   ],
   "license": "AGPLv3",
