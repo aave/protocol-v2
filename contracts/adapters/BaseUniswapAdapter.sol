@@ -342,22 +342,23 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256[] memory amountsWithWeth;
 
     address[] memory pathWithWeth = new address[](3);
+    pathWithWeth[0] = reserveIn;
+    pathWithWeth[1] = WETH_ADDRESS;
+    pathWithWeth[2] = reserveOut;
+    amountsWithWeth = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth);
+
+    uint256 bestAmountOut;
     try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
       uint256[] memory resultAmounts
     ) {
       amountsWithoutWeth = resultAmounts;
-    } catch {
-      pathWithWeth[0] = reserveIn;
-      pathWithWeth[1] = WETH_ADDRESS;
-      pathWithWeth[2] = reserveOut;
 
-      amountsWithWeth = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth);
-    }
-
-    uint256 bestAmountOut =
-      (amountsWithWeth.length > 0 && amountsWithWeth[2] > amountsWithoutWeth[1])
+      bestAmountOut = (amountsWithWeth[2] > amountsWithoutWeth[1])
         ? amountsWithWeth[2]
         : amountsWithoutWeth[1];
+    } catch {
+      bestAmountOut = amountsWithWeth[2];
+    }
 
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
@@ -433,20 +434,26 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     simplePath[0] = reserveIn;
     simplePath[1] = reserveOut;
 
-    uint256[] memory amounts;
+    uint256[] memory amountsWithoutWeth;
+    uint256[] memory amountsWithWeth;
+
     address[] memory pathWithWeth = new address[](3);
+    pathWithWeth[0] = reserveIn;
+    pathWithWeth[1] = WETH_ADDRESS;
+    pathWithWeth[2] = reserveOut;
+    amountsWithWeth = UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth);
+
     try UNISWAP_ROUTER.getAmountsIn(amountOut, simplePath) returns (
       uint256[] memory resultAmounts
     ) {
-      amounts = resultAmounts;
-      return (amounts, simplePath);
-    } catch {
-      pathWithWeth[0] = reserveIn;
-      pathWithWeth[1] = WETH_ADDRESS;
-      pathWithWeth[2] = reserveOut;
+      amountsWithoutWeth = resultAmounts;
 
-      amounts = UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth);
-      return (amounts, pathWithWeth);
+      return
+        (amountsWithWeth[2] > amountsWithoutWeth[1])
+          ? (amountsWithWeth, pathWithWeth)
+          : (amountsWithoutWeth, simplePath);
+    } catch {
+      return (amountsWithWeth, pathWithWeth);
     }
   }
 
