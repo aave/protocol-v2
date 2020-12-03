@@ -459,8 +459,6 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       return (new uint256[](2), new address[](2));
     }
 
-    amountsWithWeth = UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth);
-
     try UNISWAP_ROUTER.getAmountsIn(amountOut, simplePath) returns (
       uint256[] memory resultAmounts
     ) {
