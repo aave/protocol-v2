@@ -2,9 +2,9 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPool} from '../../contracts/interfaces/ILendingPool.sol';
-import {LendingPool} from '../../contracts/lendingpool/LendingPool.sol';
+import {LendingPool} from '../../contracts/protocol/lendingpool/LendingPool.sol';
 import {
-  ILendingPoolAddressesProvider
+ILendingPoolAddressesProvider
 } from '../../contracts/interfaces/ILendingPoolAddressesProvider.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
@@ -101,7 +101,7 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     override
     returns (
       uint256 totalCollateralETH,
-      uint256 totalBorrowsETH,
+      uint256 totalDebtETH,
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
