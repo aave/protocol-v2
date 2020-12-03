@@ -25,6 +25,8 @@ The documentation of Aave V2 is in the following [Aave V2 documentation](https:/
 
 For getting the latest contracts addresses, please check the [Deployed contracts](https://docs.aave.com/v2/-MJXUluJ2u1DiL-VU6MM/deployed-contracts) page at the documentation to stay up to date.
 
+A more detailed and technical description of the protocol can be found in this repository, [here](./aave-v2-whitepaper.pdf)
+
 ## Audits
 
 - MixBytes (16/09/2020 - 03/12/2020): [report](./audits/Mixbytes-aave-v2-03-12-2020.pdf)
