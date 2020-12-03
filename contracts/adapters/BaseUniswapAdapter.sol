@@ -345,7 +345,14 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     pathWithWeth[0] = reserveIn;
     pathWithWeth[1] = WETH_ADDRESS;
     pathWithWeth[2] = reserveOut;
-    amountsWithWeth = UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth);
+
+    try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth) returns (
+      uint256[] memory resultsWithWeth
+    ) {
+      amountsWithWeth = resultsWithWeth;
+    } catch {
+      amountsWithWeth = new uint256[](2);
+    }
 
     uint256 bestAmountOut;
     try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
@@ -374,7 +381,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         outPerInPrice,
         _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
         _calcUsdValue(reserveOut, bestAmountOut, reserveOutDecimals),
-        (bestAmountOut == amountsWithoutWeth[1]) ? simplePath : pathWithWeth
+        (bestAmountOut == 0) ? new address[](2) : (bestAmountOut == amountsWithoutWeth[1])
+          ? simplePath
+          : pathWithWeth
       );
   }
 
@@ -436,11 +445,19 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     uint256[] memory amountsWithoutWeth;
     uint256[] memory amountsWithWeth;
-
     address[] memory pathWithWeth = new address[](3);
     pathWithWeth[0] = reserveIn;
     pathWithWeth[1] = WETH_ADDRESS;
     pathWithWeth[2] = reserveOut;
+
+    try UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth) returns (
+      uint256[] memory resultsWithWeth
+    ) {
+      amountsWithWeth = resultsWithWeth;
+    } catch {
+      return (new uint256[](2), new address[](2));
+    }
+
     amountsWithWeth = UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth);
 
     try UNISWAP_ROUTER.getAmountsIn(amountOut, simplePath) returns (
