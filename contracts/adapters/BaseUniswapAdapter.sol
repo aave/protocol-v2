@@ -7,6 +7,7 @@ import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
@@ -20,7 +21,7 @@ import {IBaseUniswapAdapter} from './interfaces/IBaseUniswapAdapter.sol';
  * @notice Implements the logic for performing assets swaps in Uniswap V2
  * @author Aave
  **/
-abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapter {
+abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapter, Ownable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
@@ -501,5 +502,14 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     }
 
     return UNISWAP_ROUTER.getAmountsIn(amountOut, path);
+  }
+
+  /**
+   * @dev Emergency rescue for token stucked on this contract, as failsafe mechanism
+   * - Funds should never remain in this contract more time than during transactions
+   * - Only callable by the owner
+   **/
+  function rescueTokens(IERC20 token) external onlyOwner {
+    token.transfer(owner(), token.balanceOf(address(this)));
   }
 }
