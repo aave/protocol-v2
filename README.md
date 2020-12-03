@@ -31,8 +31,9 @@ A more detailed and technical description of the protocol can be found in this r
 
 - MixBytes (16/09/2020 - 03/12/2020): [report](./audits/Mixbytes-aave-v2-03-12-2020.pdf)
 - PeckShield (29/09/2020 - 03/12/2020) : [report](./audits/Peckshield-aave-v2-03-12-2020-EN.pdf) (Also available in Chinese in the same folder)
-- CertiK (28/09/2020 - 02-12-2020): [report](./audits/Certik-aave-v2-03-12-2020.pdf)
-- Consensys Diligence (09-09-2020 - 09-10-2020): [report](https://consensys.net/diligence/audits/2020/09/aave-protocol-v2/)
+- CertiK (28/09/2020 - 02/12/2020): [report](./audits/Certik-aave-v2-03-12-2020.pdf)
+- Consensys Diligence (09/09/2020 - 09/10/2020): [report](https://consensys.net/diligence/audits/2020/09/aave-protocol-v2/)
+- Certora, formal verification (02/08/2020 - 29/10/2020): [report](./audits/Certora-FV-aave-v2-03-12-2020.pdf)
 
 ## Connect with the community
 
