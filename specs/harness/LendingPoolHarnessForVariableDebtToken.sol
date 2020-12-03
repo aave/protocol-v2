@@ -1,7 +1,7 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {ILendingPool} from '../../contracts/protocol/interfaces/ILendingPool.sol';
+import {ILendingPool} from '../../contracts/interfaces/ILendingPool.sol';
 import {LendingPool} from '../../contracts/protocol/lendingpool/LendingPool.sol';
 import {
   ILendingPoolAddressesProvider
