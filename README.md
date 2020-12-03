@@ -25,6 +25,13 @@ The documentation of Aave V2 is in the following [Aave V2 documentation](https:/
 
 For getting the latest contracts addresses, please check the [Deployed contracts](https://docs.aave.com/v2/-MJXUluJ2u1DiL-VU6MM/deployed-contracts) page at the documentation to stay up to date.
 
+## Audits
+
+- MixBytes (16/09/2020 - 03/12/2020): [report](./audits/Mixbytes-aave-v2-03-12-2020.pdf)
+- PeckShield (29/09/2020 - 03/12/2020) : [report](./audits/Peckshield-aave-v2-03-12-2020-EN.pdf) (Also available in Chinese in the same folder)
+- CertiK (28/09/2020 - 02-12-2020): [report](./audits/Certik-aave-v2-03-12-2020.pdf)
+- Consensys Diligence (09-09-2020 - 09-10-2020): [report]()
+
 ## Connect with the community
 
 You can join at the [Discord](https://discord.com/invite/CJm5Jt3) channel or at the [Governance Forum](https://governance.aave.com/) for asking questions about the protocol or talk about Aave with other peers.
