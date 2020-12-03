@@ -21,9 +21,9 @@ Aave is a decentralized non-custodial liquidity markets protocol where users can
 
 ## Documentation
 
-The documentation of Aave V2 is in the following [Aave V2 documentation](https://docs.aave.com/v2/-MJXUluJ2u1DiL-VU6MM) link. At the documentation you can learn more about the protocol, see the contract interfaces, integration guides and audits.
+The documentation of Aave V2 is in the following [Aave V2 documentation](https://docs.aave.com/developers/v/2.0/) link. At the documentation you can learn more about the protocol, see the contract interfaces, integration guides and audits.
 
-For getting the latest contracts addresses, please check the [Deployed contracts](https://docs.aave.com/v2/-MJXUluJ2u1DiL-VU6MM/deployed-contracts) page at the documentation to stay up to date.
+For getting the latest contracts addresses, please check the [Deployed contracts](https://docs.aave.com/developers/v/2.0/deployed-contracts/deployed-contracts) page at the documentation to stay up to date.
 
 A more detailed and technical description of the protocol can be found in this repository, [here](./aave-v2-whitepaper.pdf)
 
@@ -36,7 +36,7 @@ A more detailed and technical description of the protocol can be found in this r
 
 ## Connect with the community
 
-You can join at the [Discord](https://discord.com/invite/CJm5Jt3) channel or at the [Governance Forum](https://governance.aave.com/) for asking questions about the protocol or talk about Aave with other peers.
+You can join at the [Discord](http://aave.com/discord) channel or at the [Governance Forum](https://governance.aave.com/) for asking questions about the protocol or talk about Aave with other peers.
 
 ## Setup
 
