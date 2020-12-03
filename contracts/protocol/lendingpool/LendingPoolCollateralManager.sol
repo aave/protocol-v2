@@ -10,8 +10,6 @@ import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPoolCollateralManager} from '../../interfaces/ILendingPoolCollateralManager.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
@@ -19,22 +17,24 @@ import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 /**
  * @title LendingPoolCollateralManager contract
  * @author Aave
- * @notice Implements actions involving management of collateral in the protocol.
- * @notice this contract will be ran always through delegatecall
- * @dev LendingPoolCollateralManager inherits VersionedInitializable from OpenZeppelin to have the same storage layout as LendingPool
+ * @dev Implements actions involving management of collateral in the protocol, the main one being the liquidations
+ * IMPORTANT This contract will run always via DELEGATECALL, through the LendingPool, so the chain of inheritance
+ * is the same as the LendingPool, to have compatible storage layouts
  **/
-contract LendingPoolCollateralManager is ILendingPoolCollateralManager, VersionedInitializable, LendingPoolStorage {
+contract LendingPoolCollateralManager is
+  ILendingPoolCollateralManager,
+  VersionedInitializable,
+  LendingPoolStorage
+{
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-
-  // IMPORTANT The storage layout of the LendingPool is reproduced here because this contract
-  // is gonna be used through DELEGATECALL
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
@@ -42,59 +42,51 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
     uint256 userCollateralBalance;
     uint256 userStableDebt;
     uint256 userVariableDebt;
-    uint256 maxPrincipalAmountToLiquidate;
-    uint256 actualAmountToLiquidate;
+    uint256 maxLiquidatableDebt;
+    uint256 actualDebtToLiquidate;
     uint256 liquidationRatio;
     uint256 maxAmountCollateralToLiquidate;
     uint256 userStableRate;
     uint256 maxCollateralToLiquidate;
-    uint256 principalAmountNeeded;
+    uint256 debtAmountNeeded;
     uint256 healthFactor;
     IAToken collateralAtoken;
     bool isCollateralEnabled;
-    ReserveLogic.InterestRateMode borrowRateMode;
-    address principalAToken;
+    DataTypes.InterestRateMode borrowRateMode;
     uint256 errorCode;
     string errorMsg;
   }
 
-  struct AvailableCollateralToLiquidateLocalVars {
-    uint256 userCompoundedBorrowBalance;
-    uint256 liquidationBonus;
-    uint256 collateralPrice;
-    uint256 principalCurrencyPrice;
-    uint256 maxAmountCollateralToLiquidate;
-    uint256 principalDecimals;
-    uint256 collateralDecimals;
-  }
-
   /**
-   * @dev as the contract extends the VersionedInitializable contract to match the state
-   * of the LendingPool contract, the getRevision() function is needed.
+   * @dev As thIS contract extends the VersionedInitializable contract to match the state
+   * of the LendingPool contract, the getRevision() function is needed, but the value is not
+   * important, as the initialize() function will never be called here
    */
   function getRevision() internal pure override returns (uint256) {
     return 0;
   }
 
   /**
-   * @dev users can invoke this function to liquidate an undercollateralized position.
-   * @param collateral the address of the collateral to liquidated
-   * @param principal the address of the principal reserve
-   * @param user the address of the borrower
-   * @param debtToCover the amount of principal that the liquidator wants to repay
-   * @param receiveAToken true if the liquidators wants to receive the aTokens, false if
-   * he wants to receive the underlying asset directly
+   * @dev Function to liquidate a position if its Health Factor drops below 1
+   * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
+   *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
+   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param user The address of the borrower getting liquidated
+   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
+   * to receive the underlying collateral asset directly
    **/
   function liquidationCall(
-    address collateral,
-    address principal,
+    address collateralAsset,
+    address debtAsset,
     address user,
     uint256 debtToCover,
     bool receiveAToken
   ) external override returns (uint256, string memory) {
-    ReserveLogic.ReserveData storage collateralReserve = _reserves[collateral];
-    ReserveLogic.ReserveData storage principalReserve = _reserves[principal];
-    UserConfiguration.Map storage userConfig = _usersConfig[user];
+    DataTypes.ReserveData storage collateralReserve = _reserves[collateralAsset];
+    DataTypes.ReserveData storage debtReserve = _reserves[debtAsset];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[user];
 
     LiquidationCallLocalVars memory vars;
 
@@ -107,15 +99,11 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
       _addressesProvider.getPriceOracle()
     );
 
-    //if the user hasn't borrowed the specific currency defined by asset, it cannot be liquidated
-    (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(
-      user,
-      principalReserve
-    );
+    (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(user, debtReserve);
 
     (vars.errorCode, vars.errorMsg) = ValidationLogic.validateLiquidationCall(
       collateralReserve,
-      principalReserve,
+      debtReserve,
       userConfig,
       vars.healthFactor,
       vars.userStableDebt,
@@ -130,38 +118,39 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
 
     vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
-    vars.maxPrincipalAmountToLiquidate = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
+    vars.maxLiquidatableDebt = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
       LIQUIDATION_CLOSE_FACTOR_PERCENT
     );
 
-    vars.actualAmountToLiquidate = debtToCover > vars.maxPrincipalAmountToLiquidate
-      ? vars.maxPrincipalAmountToLiquidate
+    vars.actualDebtToLiquidate = debtToCover > vars.maxLiquidatableDebt
+      ? vars.maxLiquidatableDebt
       : debtToCover;
 
     (
       vars.maxCollateralToLiquidate,
-      vars.principalAmountNeeded
+      vars.debtAmountNeeded
     ) = _calculateAvailableCollateralToLiquidate(
       collateralReserve,
-      principalReserve,
-      collateral,
-      principal,
-      vars.actualAmountToLiquidate,
+      debtReserve,
+      collateralAsset,
+      debtAsset,
+      vars.actualDebtToLiquidate,
       vars.userCollateralBalance
     );
 
-    //if principalAmountNeeded < vars.ActualAmountToLiquidate, there isn't enough
-    //of collateral to cover the actual amount that is being liquidated, hence we liquidate
-    //a smaller amount
+    // If debtAmountNeeded < actualDebtToLiquidate, there isn't enough
+    // collateral to cover the actual amount that is being liquidated, hence we liquidate
+    // a smaller amount
 
-    if (vars.principalAmountNeeded < vars.actualAmountToLiquidate) {
-      vars.actualAmountToLiquidate = vars.principalAmountNeeded;
+    if (vars.debtAmountNeeded < vars.actualDebtToLiquidate) {
+      vars.actualDebtToLiquidate = vars.debtAmountNeeded;
     }
 
-    //if liquidator reclaims the underlying asset, we make sure there is enough available collateral in the reserve
+    // If the liquidator reclaims the underlying asset, we make sure there is enough available liquidity in the
+    // collateral reserve
     if (!receiveAToken) {
       uint256 currentAvailableCollateral =
-        IERC20(collateral).balanceOf(address(vars.collateralAtoken));
+        IERC20(collateralAsset).balanceOf(address(vars.collateralAtoken));
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
           uint256(Errors.CollateralManagerErrors.NOT_ENOUGH_LIQUIDITY),
@@ -170,54 +159,48 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
       }
     }
 
-    //update the principal reserve
-    principalReserve.updateState();
+    debtReserve.updateState();
 
-    if (vars.userVariableDebt >= vars.actualAmountToLiquidate) {
-      IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
+    if (vars.userVariableDebt >= vars.actualDebtToLiquidate) {
+      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate,
-        principalReserve.variableBorrowIndex
+        vars.actualDebtToLiquidate,
+        debtReserve.variableBorrowIndex
       );
     } else {
-      //if the user does not have variable debt, no need to try to burn variable
-      //debt tokens
+      // If the user doesn't have variable debt, no need to try to burn variable debt tokens
       if (vars.userVariableDebt > 0) {
-        IVariableDebtToken(principalReserve.variableDebtTokenAddress).burn(
+        IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
           user,
           vars.userVariableDebt,
-          principalReserve.variableBorrowIndex
+          debtReserve.variableBorrowIndex
         );
       }
-      IStableDebtToken(principalReserve.stableDebtTokenAddress).burn(
+      IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(
         user,
-        vars.actualAmountToLiquidate.sub(vars.userVariableDebt)
+        vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
     }
 
-    principalReserve.updateInterestRates(
-      principal,
-      principalReserve.aTokenAddress,
-      vars.actualAmountToLiquidate,
+    debtReserve.updateInterestRates(
+      debtAsset,
+      debtReserve.aTokenAddress,
+      vars.actualDebtToLiquidate,
       0
     );
 
-    //if liquidator reclaims the aToken, he receives the equivalent atoken amount
     if (receiveAToken) {
       vars.collateralAtoken.transferOnLiquidation(user, msg.sender, vars.maxCollateralToLiquidate);
     } else {
-      //otherwise receives the underlying asset
-
-      //updating collateral reserve
       collateralReserve.updateState();
       collateralReserve.updateInterestRates(
-        collateral,
+        collateralAsset,
         address(vars.collateralAtoken),
         0,
         vars.maxCollateralToLiquidate
       );
 
-      //burn the equivalent amount of atoken
+      // Burn the equivalent amount of aToken, sending the underlying to the liquidator
       vars.collateralAtoken.burn(
         user,
         msg.sender,
@@ -226,26 +209,25 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
       );
     }
 
-    //if the collateral being liquidated is equal to the user balance,
-    //we set the currency as not being used as collateral anymore
-
+    // If the collateral being liquidated is equal to the user balance,
+    // we set the currency as not being used as collateral anymore
     if (vars.maxCollateralToLiquidate == vars.userCollateralBalance) {
       userConfig.setUsingAsCollateral(collateralReserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(collateral, user);
+      emit ReserveUsedAsCollateralDisabled(collateralAsset, user);
     }
 
-    //transfers the principal currency to the aToken
-    IERC20(principal).safeTransferFrom(
+    // Transfers the debt asset being repaid to the aToken, where the liquidity is kept
+    IERC20(debtAsset).safeTransferFrom(
       msg.sender,
-      principalReserve.aTokenAddress,
-      vars.actualAmountToLiquidate
+      debtReserve.aTokenAddress,
+      vars.actualDebtToLiquidate
     );
 
     emit LiquidationCall(
-      collateral,
-      principal,
+      collateralAsset,
+      debtAsset,
       user,
-      vars.actualAmountToLiquidate,
+      vars.actualDebtToLiquidate,
       vars.maxCollateralToLiquidate,
       msg.sender,
       receiveAToken
@@ -254,60 +236,74 @@ contract LendingPoolCollateralManager is ILendingPoolCollateralManager, Versione
     return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
   }
 
+  struct AvailableCollateralToLiquidateLocalVars {
+    uint256 userCompoundedBorrowBalance;
+    uint256 liquidationBonus;
+    uint256 collateralPrice;
+    uint256 debtAssetPrice;
+    uint256 maxAmountCollateralToLiquidate;
+    uint256 debtAssetDecimals;
+    uint256 collateralDecimals;
+  }
+
   /**
-   * @dev calculates how much of a specific collateral can be liquidated, given
-   * a certain amount of principal currency. This function needs to be called after
-   * all the checks to validate the liquidation have been performed, otherwise it might fail.
-   * @param collateralAddress the collateral to be liquidated
-   * @param principalAddress the principal currency to be liquidated
-   * @param debtToCover the amount of principal being liquidated
-   * @param userCollateralBalance the collatera balance for the specific collateral asset of the user being liquidated
-   * @return collateralAmount the maximum amount that is possible to liquidated given all the liquidation constraints (user balance, close factor)
-   * @return principalAmountNeeded the purchase amount
+   * @dev Calculates how much of a specific collateral can be liquidated, given
+   * a certain amount of debt asset.
+   * - This function needs to be called after all the checks to validate the liquidation have been performed,
+   *   otherwise it might fail.
+   * @param collateralReserve The data of the collateral reserve
+   * @param debtReserve The data of the debt reserve
+   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+   * @param userCollateralBalance The collateral balance for the specific `collateralAsset` of the user being liquidated
+   * @return collateralAmount: The maximum amount that is possible to liquidate given all the liquidation constraints
+   *                           (user balance, close factor)
+   *         debtAmountNeeded: The amount to repay with the liquidation
    **/
   function _calculateAvailableCollateralToLiquidate(
-    ReserveLogic.ReserveData storage collateralReserve,
-    ReserveLogic.ReserveData storage principalReserve,
-    address collateralAddress,
-    address principalAddress,
+    DataTypes.ReserveData storage collateralReserve,
+    DataTypes.ReserveData storage debtReserve,
+    address collateralAsset,
+    address debtAsset,
     uint256 debtToCover,
     uint256 userCollateralBalance
   ) internal view returns (uint256, uint256) {
     uint256 collateralAmount = 0;
-    uint256 principalAmountNeeded = 0;
+    uint256 debtAmountNeeded = 0;
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
 
     AvailableCollateralToLiquidateLocalVars memory vars;
 
-    vars.collateralPrice = oracle.getAssetPrice(collateralAddress);
-    vars.principalCurrencyPrice = oracle.getAssetPrice(principalAddress);
+    vars.collateralPrice = oracle.getAssetPrice(collateralAsset);
+    vars.debtAssetPrice = oracle.getAssetPrice(debtAsset);
 
     (, , vars.liquidationBonus, vars.collateralDecimals, ) = collateralReserve
       .configuration
       .getParams();
-    vars.principalDecimals = principalReserve.configuration.getDecimals();
+    vars.debtAssetDecimals = debtReserve.configuration.getDecimals();
 
-    //this is the maximum possible amount of the selected collateral that can be liquidated, given the
-    //max amount of principal currency that is available for liquidation.
+    // This is the maximum possible amount of the selected collateral that can be liquidated, given the
+    // max amount of liquidatable debt
     vars.maxAmountCollateralToLiquidate = vars
-      .principalCurrencyPrice
+      .debtAssetPrice
       .mul(debtToCover)
       .mul(10**vars.collateralDecimals)
       .percentMul(vars.liquidationBonus)
-      .div(vars.collateralPrice.mul(10**vars.principalDecimals));
+      .div(vars.collateralPrice.mul(10**vars.debtAssetDecimals));
 
     if (vars.maxAmountCollateralToLiquidate > userCollateralBalance) {
       collateralAmount = userCollateralBalance;
-      principalAmountNeeded = vars
+      debtAmountNeeded = vars
         .collateralPrice
         .mul(collateralAmount)
-        .mul(10**vars.principalDecimals)
-        .div(vars.principalCurrencyPrice.mul(10**vars.collateralDecimals))
+        .mul(10**vars.debtAssetDecimals)
+        .div(vars.debtAssetPrice.mul(10**vars.collateralDecimals))
         .percentDiv(vars.liquidationBonus);
     } else {
       collateralAmount = vars.maxAmountCollateralToLiquidate;
-      principalAmountNeeded = debtToCover;
+      debtAmountNeeded = debtToCover;
     }
-    return (collateralAmount, principalAmountNeeded);
+    return (collateralAmount, debtAmountNeeded);
   }
 }

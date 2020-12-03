@@ -7,7 +7,7 @@ import {UserConfiguration} from '../../contracts/protocol/libraries/configuratio
 A wrapper contract for calling functions from the library UserConfiguration.
 */
 contract UserConfigurationHarness {
-  UserConfiguration.Map internal usersConfig;
+  DataTypes.UserConfigurationMap internal usersConfig;
 
   function setBorrowing(
     address user,
