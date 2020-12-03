@@ -1,14 +1,13 @@
 import BigNumber from 'bignumber.js';
+import { ONE_YEAR, RAY, MAX_UINT_AMOUNT, PERCENTAGE_FACTOR } from '../../../helpers/constants';
 import {
-  ONE_YEAR,
-  RAY,
-  MAX_UINT_AMOUNT,
-  OPTIMAL_UTILIZATION_RATE,
-  EXCESS_UTILIZATION_RATE,
-} from '../../../helpers/constants';
-import {IReserveParams, iAavePoolAssets, RateMode, tEthereumAddress} from '../../../helpers/types';
+  IReserveParams,
+  iAavePoolAssets,
+  RateMode,
+  tEthereumAddress,
+} from '../../../helpers/types';
 import './math';
-import {ReserveData, UserReserveData} from './interfaces';
+import { ReserveData, UserReserveData } from './interfaces';
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
@@ -521,11 +520,10 @@ export const calcExpectedReserveDataAfterRepay = (
 
     //due to accumulation errors, the total stable debt might be smaller than the last user debt.
     //in this case we simply set the total supply and avg stable rate to 0.
-    if (expectedReserveData.principalStableDebt.lt(0)) {
-      expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = new BigNumber(
+    if (expectedReserveData.totalStableDebt.lt(0)) {
+      expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = expectedReserveData.averageStableBorrowRate = new BigNumber(
         0
       );
-      expectedReserveData.averageStableBorrowRate = new BigNumber(0);
     } else {
       expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
         reserveDataBeforeAction.averageStableBorrowRate,
@@ -533,6 +531,15 @@ export const calcExpectedReserveDataAfterRepay = (
         amountRepaidBN.negated(),
         userDataBeforeAction.stableBorrowRate
       );
+
+      //also due to accumulation errors, the final avg stable rate when the last user repays might be negative.
+      //if that is the case, it means a small leftover of total stable debt is left, which can be erased.
+
+      if (expectedReserveData.averageStableBorrowRate.lt(0)) {
+        expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = expectedReserveData.averageStableBorrowRate = new BigNumber(
+          0
+        );
+      }
     }
 
     expectedReserveData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt;
@@ -758,7 +765,7 @@ export const calcExpectedUserDataAfterSetUseAsCollateral = (
   userDataBeforeAction: UserReserveData,
   txCost: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   expectedUserData.usageAsCollateralEnabled = useAsCollateral;
 
@@ -885,7 +892,7 @@ export const calcExpectedUserDataAfterSwapRateMode = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   const stableDebtBalance = calcExpectedStableDebtTokenBalance(
     userDataBeforeAction.principalStableDebt,
@@ -1035,7 +1042,7 @@ export const calcExpectedUserDataAfterStableRateRebalance = (
   txCost: BigNumber,
   txTimestamp: BigNumber
 ): UserReserveData => {
-  const expectedUserData = {...userDataBeforeAction};
+  const expectedUserData = { ...userDataBeforeAction };
 
   expectedUserData.principalVariableDebt = calcExpectedVariableDebtTokenBalance(
     reserveDataBeforeAction,
@@ -1084,7 +1091,7 @@ export const calcExpectedATokenBalance = (
 ) => {
   const index = calcExpectedReserveNormalizedIncome(reserveData, currentTimestamp);
 
-  const {scaledATokenBalance: scaledBalanceBeforeAction} = userData;
+  const { scaledATokenBalance: scaledBalanceBeforeAction } = userData;
 
   return scaledBalanceBeforeAction.rayMul(index);
 };
@@ -1119,7 +1126,7 @@ export const calcExpectedVariableDebtTokenBalance = (
     currentTimestamp
   );
 
-  const {scaledVariableDebt} = userData;
+  const { scaledVariableDebt } = userData;
 
   return scaledVariableDebt.rayMul(normalizedDebt);
 };
@@ -1194,7 +1201,7 @@ const calcCompoundedInterest = (
     .plus(thirdTerm);
 };
 
-const calcExpectedInterestRates = (
+export const calcExpectedInterestRates = (
   reserveSymbol: string,
   marketStableRate: BigNumber,
   utilizationRate: BigNumber,
@@ -1202,7 +1209,8 @@ const calcExpectedInterestRates = (
   totalVariableDebt: BigNumber,
   averageStableBorrowRate: BigNumber
 ): BigNumber[] => {
-  const {reservesParams} = configuration;
+  const { reservesParams } = configuration;
+
 
   const reserveIndex = Object.keys(reservesParams).findIndex((value) => value === reserveSymbol);
   const [, reserveConfiguration] = (Object.entries(reservesParams) as [string, IReserveParams][])[
@@ -1212,10 +1220,12 @@ const calcExpectedInterestRates = (
   let stableBorrowRate: BigNumber = marketStableRate;
   let variableBorrowRate: BigNumber = new BigNumber(reserveConfiguration.baseVariableBorrowRate);
 
-  if (utilizationRate.gt(OPTIMAL_UTILIZATION_RATE)) {
+  const optimalRate = new BigNumber(reserveConfiguration.optimalUtilizationRate);
+  const excessRate = new BigNumber(RAY).minus(optimalRate);
+  if (utilizationRate.gt(optimalRate)) {
     const excessUtilizationRateRatio = utilizationRate
-      .minus(OPTIMAL_UTILIZATION_RATE)
-      .rayDiv(EXCESS_UTILIZATION_RATE);
+      .minus(reserveConfiguration.optimalUtilizationRate)
+      .rayDiv(excessRate);
 
     stableBorrowRate = stableBorrowRate
       .plus(reserveConfiguration.stableRateSlope1)
@@ -1231,13 +1241,13 @@ const calcExpectedInterestRates = (
   } else {
     stableBorrowRate = stableBorrowRate.plus(
       new BigNumber(reserveConfiguration.stableRateSlope1).rayMul(
-        utilizationRate.rayDiv(new BigNumber(OPTIMAL_UTILIZATION_RATE))
+        utilizationRate.rayDiv(new BigNumber(optimalRate))
       )
     );
 
     variableBorrowRate = variableBorrowRate.plus(
       utilizationRate
-        .rayDiv(OPTIMAL_UTILIZATION_RATE)
+        .rayDiv(optimalRate)
         .rayMul(new BigNumber(reserveConfiguration.variableRateSlope1))
     );
   }
@@ -1248,12 +1258,14 @@ const calcExpectedInterestRates = (
     variableBorrowRate,
     averageStableBorrowRate
   );
-  const liquidityRate = expectedOverallRate.rayMul(utilizationRate);
+  const liquidityRate = expectedOverallRate
+    .rayMul(utilizationRate)
+    .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(reserveConfiguration.reserveFactor));
 
   return [liquidityRate, stableBorrowRate, variableBorrowRate];
 };
 
-const calcExpectedOverallBorrowRate = (
+export const calcExpectedOverallBorrowRate = (
   totalStableDebt: BigNumber,
   totalVariableDebt: BigNumber,
   currentVariableBorrowRate: BigNumber,
@@ -1274,7 +1286,7 @@ const calcExpectedOverallBorrowRate = (
   return overallBorrowRate;
 };
 
-const calcExpectedUtilizationRate = (
+export const calcExpectedUtilizationRate = (
   totalStableDebt: BigNumber,
   totalVariableDebt: BigNumber,
   totalLiquidity: BigNumber
@@ -1292,7 +1304,7 @@ const calcExpectedReserveNormalizedIncome = (
   reserveData: ReserveData,
   currentTimestamp: BigNumber
 ) => {
-  const {liquidityRate, liquidityIndex, lastUpdateTimestamp} = reserveData;
+  const { liquidityRate, liquidityIndex, lastUpdateTimestamp } = reserveData;
 
   //if utilization rate is 0, nothing to compound
   if (liquidityRate.eq('0')) {

@@ -6,13 +6,12 @@ import {
   deployAaveProtocolDataProvider,
   deployWETHGateway,
 } from '../../helpers/contracts-deployments';
-import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
+import { loadPoolConfig, ConfigNames, getWethAddress, getTreasuryAddress } from '../../helpers/configuration';
 import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
 import {
   initReservesByHelper,
-  enableReservesToBorrowByHelper,
-  enableReservesAsCollateralByHelper,
+  configureReservesByHelper,
 } from '../../helpers/init-helpers';
 import { exit } from 'process';
 import {
@@ -42,9 +41,10 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
       }
 
-      await initReservesByHelper(ReservesConfig, reserveAssets, admin, ZERO_ADDRESS, verify);
-      await enableReservesToBorrowByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
-      await enableReservesAsCollateralByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
+      const treasuryAddress = await getTreasuryAddress(poolConfig);
+
+      await initReservesByHelper(ReservesConfig, reserveAssets, admin, treasuryAddress, ZERO_ADDRESS, verify);
+      await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
       const collateralManager = await deployLendingPoolCollateralManager(verify);
       await waitForTx(

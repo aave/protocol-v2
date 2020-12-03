@@ -7,14 +7,13 @@ import {DataTypes} from '../types/DataTypes.sol';
 /**
  * @title Helpers library
  * @author Aave
- * @notice Implements calculation helpers.
  */
 library Helpers {
   /**
-   * @dev fetches the user current stable and variable debt balances
-   * @param user the user
-   * @param reserve the reserve object
-   * @return the stable and variable debt balance
+   * @dev Fetches the user current stable and variable debt balances
+   * @param user The user address
+   * @param reserve The reserve data object
+   * @return The stable and variable debt balance
    **/
   function getUserCurrentDebt(address user, DataTypes.ReserveData storage reserve)
     internal

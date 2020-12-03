@@ -26,7 +26,7 @@ import {
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../helpers/types';
 import { MintableERC20 } from '../types/MintableERC20';
-import { getReservesConfigByPool } from '../helpers/configuration';
+import { ConfigNames, getReservesConfigByPool, getTreasuryAddress, loadPoolConfig } from '../helpers/configuration';
 import { initializeMakeSuite } from './helpers/make-suite';
 
 import {
@@ -37,8 +37,7 @@ import {
 import { DRE, waitForTx } from '../helpers/misc-utils';
 import {
   initReservesByHelper,
-  enableReservesToBorrowByHelper,
-  enableReservesAsCollateralByHelper,
+  configureReservesByHelper,
 } from '../helpers/init-helpers';
 import AaveConfig from '../markets/aave';
 import { ZERO_ADDRESS } from '../helpers/constants';
@@ -91,7 +90,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const mockTokens = await deployAllMockTokens(deployer);
 
-  const addressesProvider = await deployLendingPoolAddressesProvider();
+  const addressesProvider = await deployLendingPoolAddressesProvider(AaveConfig.MarketId);
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
   //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
@@ -209,9 +208,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const admin = await deployer.getAddress();
 
   console.log('Initialize configuration');
-  await initReservesByHelper(reservesParams, allReservesAddresses, admin, ZERO_ADDRESS);
-  await enableReservesToBorrowByHelper(reservesParams, allReservesAddresses, testHelpers, admin);
-  await enableReservesAsCollateralByHelper(
+
+  const config = loadPoolConfig(ConfigNames.Aave);
+
+  const treasuryAddress = await getTreasuryAddress(config);
+
+  await initReservesByHelper(reservesParams, allReservesAddresses, admin, treasuryAddress, ZERO_ADDRESS, false);
+  await configureReservesByHelper(
     reservesParams,
     allReservesAddresses,
     testHelpers,

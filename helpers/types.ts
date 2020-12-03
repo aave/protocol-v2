@@ -262,6 +262,7 @@ export enum TokenContractId {
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
+  reserveFactor: string;
 }
 
 export interface IReserveBorrowParams {
@@ -345,11 +346,12 @@ export interface ILendingRate {
 }
 
 export interface ICommonConfiguration {
-  ConfigName: string;
+  MarketId: string;
   ProviderId: number;
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
+  ProviderRegistryOwner: iParamsPerNetwork<tEthereumAddress | undefined>;
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
@@ -364,6 +366,7 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

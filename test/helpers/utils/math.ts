@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import {RAY, WAD, HALF_RAY, HALF_WAD, WAD_RAY_RATIO} from '../../../helpers/constants';
+import {RAY, WAD, HALF_RAY, HALF_WAD, WAD_RAY_RATIO, HALF_PERCENTAGE, PERCENTAGE_FACTOR} from '../../../helpers/constants';
 
 declare module 'bignumber.js' {
   interface BigNumber {
@@ -7,10 +7,13 @@ declare module 'bignumber.js' {
     wad: () => BigNumber;
     halfRay: () => BigNumber;
     halfWad: () => BigNumber;
+    halfPercentage: () => BigNumber;
     wadMul: (a: BigNumber) => BigNumber;
     wadDiv: (a: BigNumber) => BigNumber;
     rayMul: (a: BigNumber) => BigNumber;
     rayDiv: (a: BigNumber) => BigNumber;
+    percentMul: (a: BigNumber) => BigNumber;
+    percentDiv: (a: BigNumber) => BigNumber;
     rayToWad: () => BigNumber;
     wadToRay: () => BigNumber;
   }
@@ -63,4 +66,21 @@ BigNumber.prototype.rayToWad = function (): BigNumber {
 
 BigNumber.prototype.wadToRay = function (): BigNumber {
   return this.multipliedBy(WAD_RAY_RATIO).decimalPlaces(0, BigNumber.ROUND_DOWN);
+};
+
+
+
+
+BigNumber.prototype.halfPercentage = (): BigNumber => {
+  return new BigNumber(HALF_PERCENTAGE).decimalPlaces(0, BigNumber.ROUND_DOWN);
+};
+
+BigNumber.prototype.percentMul = function (b: BigNumber): BigNumber {
+  return this.halfPercentage().plus(this.multipliedBy(b)).div(PERCENTAGE_FACTOR).decimalPlaces(0, BigNumber.ROUND_DOWN);
+};
+
+BigNumber.prototype.percentDiv = function (a: BigNumber): BigNumber {
+  const halfA = a.div(2).decimalPlaces(0, BigNumber.ROUND_DOWN);
+
+  return halfA.plus(this.multipliedBy(PERCENTAGE_FACTOR)).div(a).decimalPlaces(0, BigNumber.ROUND_DOWN);
 };

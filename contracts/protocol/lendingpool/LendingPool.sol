@@ -4,9 +4,16 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {IAToken} from '../tokenization/interfaces/IAToken.sol';
+import {IAToken} from '../../interfaces/IAToken.sol';
+import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
+import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
+import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -16,15 +23,8 @@ import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
-import {IStableDebtToken} from '../tokenization/interfaces/IStableDebtToken.sol';
-import {IVariableDebtToken} from '../tokenization/interfaces/IVariableDebtToken.sol';
-import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
-import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {LendingPoolStorage} from './LendingPoolStorage.sol';
-import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
+import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
 /**
  * @title LendingPool contract
@@ -76,7 +76,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
-  function getRevision() internal override pure returns (uint256) {
+  function getRevision() internal pure override returns (uint256) {
     return LENDINGPOOL_REVISION;
   }
 
@@ -117,14 +117,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
 
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
       emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
     }
-
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
@@ -138,12 +138,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
+   * @return The final amount withdrawn
    **/
   function withdraw(
     address asset,
     uint256 amount,
     address to
-  ) external override whenNotPaused {
+  ) external override whenNotPaused  returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
@@ -179,6 +180,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
+
+    return amountToWithdraw;
   }
 
   /**
@@ -229,13 +232,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
    * user calling the function if he wants to reduce/remove his own debt, or the address of any other
    * other borrower whose debt should be removed
+   * @return The final amount repaid
    **/
   function repay(
     address asset,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external override whenNotPaused {
+  ) external override whenNotPaused returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -251,9 +255,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    uint256 paybackAmount = interestRateMode == DataTypes.InterestRateMode.STABLE
-      ? stableDebt
-      : variableDebt;
+    uint256 paybackAmount =
+      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
@@ -281,6 +284,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
 
     emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+
+    return paybackAmount;
   }
 
   /**
@@ -426,16 +431,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = collateralManager.delegatecall(
-      abi.encodeWithSignature(
-        'liquidationCall(address,address,address,uint256,bool)',
-        collateralAsset,
-        debtAsset,
-        user,
-        debtToCover,
-        receiveAToken
-      )
-    );
+    (bool success, bytes memory result) =
+      collateralManager.delegatecall(
+        abi.encodeWithSignature(
+          'liquidationCall(address,address,address,uint256,bool)',
+          collateralAsset,
+          debtAsset,
+          user,
+          debtToCover,
+          receiveAToken
+        )
+      );
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
     (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
@@ -519,7 +525,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         _reserves[vars.currentAsset].updateInterestRates(
           vars.currentAsset,
           vars.currentATokenAddress,
-          vars.currentPremium,
+          vars.currentAmountPlusPremium,
           0
         );
 
@@ -854,9 +860,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 currentStableRate = 0;
 
     bool isFirstBorrowing = false;
-    if (
-      DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE
-    ) {
+    if (DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE) {
       currentStableRate = reserve.currentStableBorrowRate;
 
       isFirstBorrowing = IStableDebtToken(reserve.stableDebtTokenAddress).mint(

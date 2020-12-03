@@ -1,15 +1,15 @@
 import BigNumber from 'bignumber.js';
 
-import {DRE} from '../helpers/misc-utils';
-import {APPROVAL_AMOUNT_LENDING_POOL, oneEther} from '../helpers/constants';
-import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
-import {makeSuite} from './helpers/make-suite';
-import {ProtocolErrors, RateMode} from '../helpers/types';
-import {calcExpectedVariableDebtTokenBalance} from './helpers/utils/calculations';
-import {getUserData, getReserveData} from './helpers/utils/helpers';
+import { DRE } from '../helpers/misc-utils';
+import { APPROVAL_AMOUNT_LENDING_POOL, oneEther } from '../helpers/constants';
+import { convertToCurrencyDecimals } from '../helpers/contracts-helpers';
+import { makeSuite } from './helpers/make-suite';
+import { ProtocolErrors, RateMode } from '../helpers/types';
+import { calcExpectedVariableDebtTokenBalance } from './helpers/utils/calculations';
+import { getUserData, getReserveData } from './helpers/utils/helpers';
 
 const chai = require('chai');
-const {expect} = chai;
+const { expect } = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => {
   const {
@@ -20,8 +20,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     LP_IS_PAUSED,
   } = ProtocolErrors;
 
-  it('LIQUIDATION - Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
-    const {dai, weth, users, pool, oracle} = testEnv;
+  it('Deposits WETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
+    const { dai, weth, users, pool, oracle } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
 
@@ -69,7 +69,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-      '8000',
+      '8250',
       'Invalid liquidation threshold'
     );
 
@@ -79,8 +79,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).to.be.revertedWith(LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD);
   });
 
-  it('LIQUIDATION - Drop the health factor below 1', async () => {
-    const {dai, users, pool, oracle} = testEnv;
+  it('Drop the health factor below 1', async () => {
+    const { dai, users, pool, oracle } = testEnv;
     const borrower = users[1];
 
     const daiPrice = await oracle.getAssetPrice(dai.address);
@@ -98,8 +98,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
   });
 
-  it('LIQUIDATION - Tries to liquidate a different currency than the loan principal', async () => {
-    const {pool, users, weth} = testEnv;
+  it('Tries to liquidate a different currency than the loan principal', async () => {
+    const { pool, users, weth } = testEnv;
     const borrower = users[1];
     //user 2 tries to borrow
     await expect(
@@ -107,8 +107,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).revertedWith(LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER);
   });
 
-  it('LIQUIDATION - Tries to liquidate a different collateral than the borrower collateral', async () => {
-    const {pool, dai, users} = testEnv;
+  it('Tries to liquidate a different collateral than the borrower collateral', async () => {
+    const { pool, dai, users } = testEnv;
     const borrower = users[1];
 
     await expect(
@@ -116,8 +116,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).revertedWith(LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED);
   });
 
-  it('LIQUIDATION - Liquidates the borrow', async () => {
-    const {pool, dai, weth, users, oracle, helpersContract} = testEnv;
+  it('Liquidates the borrow', async () => {
+    const { pool, dai, weth, aWETH, aDai, users, oracle, helpersContract, deployer } = testEnv;
     const borrower = users[1];
 
     //mints dai to the caller
@@ -223,10 +223,15 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       new BigNumber(ethReserveDataBefore.availableLiquidity.toString()).toFixed(0),
       'Invalid collateral available liquidity'
     );
+
+    expect(
+      (await helpersContract.getUserReserveData(weth.address, deployer.address))
+        .usageAsCollateralEnabled
+    ).to.be.true;
   });
 
   it('User 3 deposits 1000 USDC, user 4 1 WETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const {users, pool, usdc, oracle, weth, helpersContract} = testEnv;
+    const { users, pool, usdc, oracle, weth, helpersContract } = testEnv;
     const depositor = users[3];
     const borrower = users[4];
 
@@ -279,7 +284,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await oracle.setAssetPrice(
       usdc.address,
-      new BigNumber(usdcPrice.toString()).multipliedBy(1.2).toFixed(0)
+      new BigNumber(usdcPrice.toString()).multipliedBy(1.12).toFixed(0)
     );
 
     //mints dai to the liquidator

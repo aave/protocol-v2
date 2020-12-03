@@ -1,10 +1,10 @@
 import path from 'path';
 import fs from 'fs';
-import {HardhatUserConfig} from 'hardhat/types';
+import { HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
-import {accounts} from './test-wallets.js';
-import {eEthereumNetwork} from './helpers/types';
-import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
+import { accounts } from './test-wallets.js';
+import { eEthereumNetwork } from './helpers/types';
+import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
@@ -62,7 +62,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
 
 const mainnetFork = MAINNET_FORK
   ? {
-      blockNumber: 11268220,
+      blockNumber: 11366117,
       url: ALCHEMY_KEY
         ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
         : `https://main.infura.io/v3/${INFURA_KEY}`,
@@ -73,7 +73,7 @@ const buidlerConfig: HardhatUserConfig = {
   solidity: {
     version: '0.6.12',
     settings: {
-      optimizer: {enabled: true, runs: 200},
+      optimizer: { enabled: true, runs: 200 },
       evmVersion: 'istanbul',
     },
   },
@@ -109,7 +109,7 @@ const buidlerConfig: HardhatUserConfig = {
       chainId: BUIDLEREVM_CHAINID,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
-      accounts: accounts.map(({secretKey, balance}: {secretKey: string; balance: string}) => ({
+      accounts: accounts.map(({ secretKey, balance }: { secretKey: string; balance: string }) => ({
         privateKey: secretKey,
         balance,
       })),

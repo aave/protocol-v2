@@ -19,14 +19,14 @@ library WadRayMath {
   uint256 internal constant WAD_RAY_RATIO = 1e9;
 
   /**
-   * @return one ray, 1e27
+   * @return One ray, 1e27
    **/
   function ray() internal pure returns (uint256) {
     return RAY;
   }
 
   /**
-   * @return one wad, 1e18
+   * @return One wad, 1e18
    **/
 
   function wad() internal pure returns (uint256) {
@@ -34,24 +34,24 @@ library WadRayMath {
   }
 
   /**
-   * @return half ray, 1e27/2
+   * @return Half ray, 1e27/2
    **/
   function halfRay() internal pure returns (uint256) {
     return halfRAY;
   }
 
   /**
-   * @return half ray, 1e18/2
+   * @return Half ray, 1e18/2
    **/
   function halfWad() internal pure returns (uint256) {
     return halfWAD;
   }
 
   /**
-   * @dev multiplies two wad, rounding half up to the nearest wad
-   * @param a wad
-   * @param b wad
-   * @return the result of a*b, in wad
+   * @dev Multiplies two wad, rounding half up to the nearest wad
+   * @param a Wad
+   * @param b Wad
+   * @return The result of a*b, in wad
    **/
   function wadMul(uint256 a, uint256 b) internal pure returns (uint256) {
     if (a == 0 || b == 0) {
@@ -64,10 +64,10 @@ library WadRayMath {
   }
 
   /**
-   * @dev divides two wad, rounding half up to the nearest wad
-   * @param a wad
-   * @param b wad
-   * @return the result of a/b, in wad
+   * @dev Divides two wad, rounding half up to the nearest wad
+   * @param a Wad
+   * @param b Wad
+   * @return The result of a/b, in wad
    **/
   function wadDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.MATH_DIVISION_BY_ZERO);
@@ -79,10 +79,10 @@ library WadRayMath {
   }
 
   /**
-   * @dev multiplies two ray, rounding half up to the nearest ray
-   * @param a ray
-   * @param b ray
-   * @return the result of a*b, in ray
+   * @dev Multiplies two ray, rounding half up to the nearest ray
+   * @param a Ray
+   * @param b Ray
+   * @return The result of a*b, in ray
    **/
   function rayMul(uint256 a, uint256 b) internal pure returns (uint256) {
     if (a == 0 || b == 0) {
@@ -95,10 +95,10 @@ library WadRayMath {
   }
 
   /**
-   * @dev divides two ray, rounding half up to the nearest ray
-   * @param a ray
-   * @param b ray
-   * @return the result of a/b, in ray
+   * @dev Divides two ray, rounding half up to the nearest ray
+   * @param a Ray
+   * @param b Ray
+   * @return The result of a/b, in ray
    **/
   function rayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
     require(b != 0, Errors.MATH_DIVISION_BY_ZERO);
@@ -110,8 +110,8 @@ library WadRayMath {
   }
 
   /**
-   * @dev casts ray down to wad
-   * @param a ray
+   * @dev Casts ray down to wad
+   * @param a Ray
    * @return a casted to wad, rounded half up to the nearest wad
    **/
   function rayToWad(uint256 a) internal pure returns (uint256) {
@@ -123,8 +123,8 @@ library WadRayMath {
   }
 
   /**
-   * @dev convert wad up to ray
-   * @param a wad
+   * @dev Converts wad up to ray
+   * @param a Wad
    * @return a converted in ray
    **/
   function wadToRay(uint256 a) internal pure returns (uint256) {

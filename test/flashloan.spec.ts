@@ -252,6 +252,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(false);
 
+    const reserveDataBefore = await helpersContract.getReserveData(usdc.address);
+
     const flashloanAmount = await convertToCurrencyDecimals(usdc.address, '500');
 
     await pool.flashLoan(
@@ -263,6 +265,9 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       '0x10',
       '0'
     );
+
+    const reserveDataAfter = helpersContract.getReserveData(usdc.address);
+
 
     const reserveData = await helpersContract.getReserveData(usdc.address);
     const userData = await helpersContract.getUserReserveData(usdc.address, depositor.address);

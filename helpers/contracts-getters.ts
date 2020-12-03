@@ -320,8 +320,8 @@ export const getLendingPoolCollateralManager = async (address?: tEthereumAddress
     await getFirstSigner()
   );
 
-export const getAddressById = async (id: string) =>
-  (await getDb().get(`${id}.${DRE.network.name}`).value()).address;
+export const getAddressById = async (id: string): Promise<tEthereumAddress | undefined> =>
+  (await getDb().get(`${id}.${DRE.network.name}`).value())?.address || undefined;
 
 export const getAaveOracle = async (address?: tEthereumAddress) =>
   await AaveOracleFactory.connect(

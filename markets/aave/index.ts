@@ -1,16 +1,17 @@
-import {oneRay, ZERO_ADDRESS} from '../../helpers/constants';
-import {IAaveConfiguration, EthereumNetwork, eEthereumNetwork} from '../../helpers/types';
+import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
+import { IAaveConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
 
-import {CommonsConfig} from './commons';
+import { CommonsConfig } from './commons';
 import {
-  stablecoinStrategyBUSD,
-  stablecoinStrategyDAI,
-  stablecoinStrategySUSD,
-  stablecoinStrategyTUSD,
-  stablecoinStrategyUSDC,
-  stablecoinStrategyUSDT,
+  strategyBUSD,
+  strategyDAI,
+  strategySUSD,
+  strategyTUSD,
+  strategyUSDC,
+  strategyUSDT,
   strategyAAVE,
-  strategyBase,
+  strategyBAT,
+  strategyZRX,
   strategyKNC,
   strategyLINK,
   strategyMANA,
@@ -29,13 +30,13 @@ import {
 
 export const AaveConfig: IAaveConfiguration = {
   ...CommonsConfig,
-  ConfigName: 'Aave',
+  MarketId: 'Aave genesis market',
   ProviderId: 1,
   ReservesConfig: {
     AAVE: strategyAAVE,
-    BAT: strategyBase,
-    BUSD: stablecoinStrategyBUSD,
-    DAI: stablecoinStrategyDAI,
+    BAT: strategyBAT,
+    BUSD: strategyBUSD,
+    DAI: strategyDAI,
     ENJ: strategyREN,
     KNC: strategyKNC,
     LINK: strategyLINK,
@@ -43,15 +44,15 @@ export const AaveConfig: IAaveConfiguration = {
     MKR: strategyMKR,
     REN: strategyREN,
     SNX: strategySNX,
-    SUSD: stablecoinStrategySUSD,
-    TUSD: stablecoinStrategyTUSD,
+    SUSD: strategySUSD,
+    TUSD: strategyTUSD,
     UNI: strategyUNI,
-    USDC: stablecoinStrategyUSDC,
-    USDT: stablecoinStrategyUSDT,
+    USDC: strategyUSDC,
+    USDT: strategyUSDT,
     WBTC: strategyWBTC,
     WETH: strategyWETH,
     YFI: strategyYFI,
-    ZRX: strategyBase,
+    ZRX: strategyZRX,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},

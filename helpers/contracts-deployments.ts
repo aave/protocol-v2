@@ -65,11 +65,11 @@ const readArtifact = async (id: string) => {
   }
   return (DRE as HardhatRuntimeEnvironment).artifacts.readArtifact(id);
 };
-export const deployLendingPoolAddressesProvider = async (verify?: boolean) =>
+export const deployLendingPoolAddressesProvider = async (marketId: string, verify?: boolean) =>
   withSaveAndVerify(
-    await new LendingPoolAddressesProviderFactory(await getFirstSigner()).deploy(),
+    await new LendingPoolAddressesProviderFactory(await getFirstSigner()).deploy(marketId),
     eContractid.LendingPoolAddressesProvider,
-    [],
+    [marketId],
     verify
   );
 
@@ -318,7 +318,8 @@ export const deployVariableDebtToken = async (
   );
 
 export const deployGenericAToken = async (
-  [poolAddress, underlyingAssetAddress, name, symbol, incentivesController]: [
+  [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol,incentivesController]: [
+    tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
     string,
@@ -330,11 +331,12 @@ export const deployGenericAToken = async (
   const args: [
     tEthereumAddress,
     tEthereumAddress,
+    string,
+    string,
     tEthereumAddress,
-    string,
-    string,
     tEthereumAddress
-  ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
+
+  ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
   return withSaveAndVerify(
     await new ATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.AToken,
@@ -344,7 +346,8 @@ export const deployGenericAToken = async (
 };
 
 export const deployDelegationAwareAToken = async (
-  [poolAddress, underlyingAssetAddress, name, symbol, incentivesController]: [
+  [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [
+    tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
     string,
@@ -356,11 +359,12 @@ export const deployDelegationAwareAToken = async (
   const args: [
     tEthereumAddress,
     tEthereumAddress,
+    string,
+    string,
     tEthereumAddress,
-    string,
-    string,
     tEthereumAddress
-  ] = [poolAddress, underlyingAssetAddress, ZERO_ADDRESS, name, symbol, incentivesController];
+  ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
+
   return withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.DelegationAwareAToken,
