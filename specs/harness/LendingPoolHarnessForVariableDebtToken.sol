@@ -6,7 +6,7 @@ import {LendingPool} from '../../contracts/protocol/lendingpool/LendingPool.sol'
 import {
   ILendingPoolAddressesProvider
 } from '../../contracts/interfaces/ILendingPoolAddressesProvider.sol';
-import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {DataTypes} from '../../contracts/protocol/libraries/types/DataTypes.sol';
 
 /*
 Certora: Harness that delegates calls to the original LendingPool.
