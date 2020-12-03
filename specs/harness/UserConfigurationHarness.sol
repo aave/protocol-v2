@@ -2,15 +2,16 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {UserConfiguration} from '../../contracts/protocol/libraries/configuration/UserConfiguration.sol';
+import {DataTypes} from '../../contracts/protocol/libraries/types/DataTypes.sol';
 
 /*
 A wrapper contract for calling functions from the library UserConfiguration.
 */
 contract UserConfigurationHarness {
+
   DataTypes.UserConfigurationMap internal usersConfig;
 
   function setBorrowing(
-    address user,
     uint256 reserveIndex,
     bool borrowing
   ) public {
@@ -18,14 +19,13 @@ contract UserConfigurationHarness {
   }
 
   function setUsingAsCollateral(
-    address user,
     uint256 reserveIndex,
     bool _usingAsCollateral
   ) public {
     UserConfiguration.setUsingAsCollateral(usersConfig, reserveIndex, _usingAsCollateral);
   }
 
-  function isUsingAsCollateralOrBorrowing(address user, uint256 reserveIndex)
+  function isUsingAsCollateralOrBorrowing(uint256 reserveIndex)
     public
     view
     returns (bool)
@@ -33,19 +33,19 @@ contract UserConfigurationHarness {
     return UserConfiguration.isUsingAsCollateralOrBorrowing(usersConfig, reserveIndex);
   }
 
-  function isBorrowing(address user, uint256 reserveIndex) public view returns (bool) {
+  function isBorrowing(uint256 reserveIndex) public view returns (bool) {
     return UserConfiguration.isBorrowing(usersConfig, reserveIndex);
   }
 
-  function isUsingAsCollateral(address user, uint256 reserveIndex) public view returns (bool) {
+  function isUsingAsCollateral(uint256 reserveIndex) public view returns (bool) {
     return UserConfiguration.isUsingAsCollateral(usersConfig, reserveIndex);
   }
 
-  function isBorrowingAny(address user) public view returns (bool) {
+  function isBorrowingAny() public view returns (bool) {
     return UserConfiguration.isBorrowingAny(usersConfig);
   }
 
-  function isEmpty(address user) public view returns (bool) {
+  function isEmpty() public view returns (bool) {
     return UserConfiguration.isEmpty(usersConfig);
   }
 
