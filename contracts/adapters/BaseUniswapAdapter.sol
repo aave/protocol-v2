@@ -343,16 +343,20 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256[] memory amountsWithWeth;
 
     address[] memory pathWithWeth = new address[](3);
-    pathWithWeth[0] = reserveIn;
-    pathWithWeth[1] = WETH_ADDRESS;
-    pathWithWeth[2] = reserveOut;
+    if (reserveIn != WETH_ADDRESS && reserveOut != WETH_ADDRESS) {
+      pathWithWeth[0] = reserveIn;
+      pathWithWeth[1] = WETH_ADDRESS;
+      pathWithWeth[2] = reserveOut;
 
-    try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth) returns (
-      uint256[] memory resultsWithWeth
-    ) {
-      amountsWithWeth = resultsWithWeth;
-    } catch {
-      amountsWithWeth = new uint256[](2);
+      try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth) returns (
+        uint256[] memory resultsWithWeth
+      ) {
+        amountsWithWeth = resultsWithWeth;
+      } catch {
+        amountsWithWeth = new uint256[](3);
+      }
+    } else {
+      amountsWithWeth = new uint256[](3);
     }
 
     uint256 bestAmountOut;
@@ -447,16 +451,21 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256[] memory amountsWithoutWeth;
     uint256[] memory amountsWithWeth;
     address[] memory pathWithWeth = new address[](3);
-    pathWithWeth[0] = reserveIn;
-    pathWithWeth[1] = WETH_ADDRESS;
-    pathWithWeth[2] = reserveOut;
 
-    try UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth) returns (
-      uint256[] memory resultsWithWeth
-    ) {
-      amountsWithWeth = resultsWithWeth;
-    } catch {
-      return (new uint256[](2), new address[](2));
+    if (reserveIn != WETH_ADDRESS && reserveOut != WETH_ADDRESS) {
+      pathWithWeth[0] = reserveIn;
+      pathWithWeth[1] = WETH_ADDRESS;
+      pathWithWeth[2] = reserveOut;
+
+      try UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth) returns (
+        uint256[] memory resultsWithWeth
+      ) {
+        amountsWithWeth = resultsWithWeth;
+      } catch {
+        return (new uint256[](2), new address[](2));
+      }
+    } else {
+      amountsWithWeth = new uint256[](3);
     }
 
     try UNISWAP_ROUTER.getAmountsIn(amountOut, simplePath) returns (
