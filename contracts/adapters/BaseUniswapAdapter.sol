@@ -462,7 +462,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       ) {
         amountsWithWeth = resultsWithWeth;
       } catch {
-        return (new uint256[](2), new address[](2));
+        amountsWithWeth = new uint256[](3);
       }
     } else {
       amountsWithWeth = new uint256[](3);
