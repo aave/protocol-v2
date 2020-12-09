@@ -50,7 +50,8 @@ interface IBaseUniswapAdapter {
   function getAmountsOut(
     uint256 amountIn,
     address reserveIn,
-    address reserveOut
+    address reserveOut,
+    bool withFlash
   )
     external
     view
@@ -76,7 +77,8 @@ interface IBaseUniswapAdapter {
   function getAmountsIn(
     uint256 amountOut,
     address reserveIn,
-    address reserveOut
+    address reserveOut,
+    bool withFlash
   )
     external
     view

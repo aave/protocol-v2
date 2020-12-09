@@ -63,7 +63,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   function getAmountsOut(
     uint256 amountIn,
     address reserveIn,
-    address reserveOut
+    address reserveOut,
+    bool withFlash
   )
     external
     view
@@ -76,7 +77,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       address[] memory
     )
   {
-    AmountCalc memory results = _getAmountsOutData(reserveIn, reserveOut, amountIn);
+    AmountCalc memory results = _getAmountsOutData(reserveIn, reserveOut, amountIn, withFlash);
 
     return (
       results.calculatedAmount,
@@ -100,7 +101,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   function getAmountsIn(
     uint256 amountOut,
     address reserveIn,
-    address reserveOut
+    address reserveOut,
+    bool withFlash
   )
     external
     view
@@ -113,7 +115,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       address[] memory
     )
   {
-    AmountCalc memory results = _getAmountsInData(reserveIn, reserveOut, amountOut);
+    AmountCalc memory results = _getAmountsInData(reserveIn, reserveOut, amountOut, withFlash);
 
     return (
       results.calculatedAmount,
@@ -316,6 +318,14 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     return amount.mul(reservePrice).div(10**decimals).mul(ethUsdPrice).div(10**18);
   }
 
+  struct AmountOutVars {
+    uint256 finalAmountIn;
+    address[] simplePath;
+    uint256[] amountsWithoutWeth;
+    uint256[] amountsWithWeth;
+    address[] pathWithWeth;
+  }
+
   /**
    * @dev Given an input asset amount, returns the maximum output amount of the other asset
    * @param reserveIn Address of the asset to be swap from
@@ -330,54 +340,55 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   function _getAmountsOutData(
     address reserveIn,
     address reserveOut,
-    uint256 amountIn
+    uint256 amountIn,
+    bool withFlash
   ) internal view returns (AmountCalc memory) {
+    AmountOutVars memory vars;
     // Subtract flash loan fee
-    uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
+    vars.finalAmountIn = amountIn.sub(
+      withFlash ? amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000) : 0
+    );
 
-    address[] memory simplePath = new address[](2);
-    simplePath[0] = reserveIn;
-    simplePath[1] = reserveOut;
+    vars.simplePath = new address[](2);
+    vars.simplePath[0] = reserveIn;
+    vars.simplePath[1] = reserveOut;
 
-    uint256[] memory amountsWithoutWeth;
-    uint256[] memory amountsWithWeth;
-
-    address[] memory pathWithWeth = new address[](3);
+    vars.pathWithWeth = new address[](3);
     if (reserveIn != WETH_ADDRESS && reserveOut != WETH_ADDRESS) {
-      pathWithWeth[0] = reserveIn;
-      pathWithWeth[1] = WETH_ADDRESS;
-      pathWithWeth[2] = reserveOut;
+      vars.pathWithWeth[0] = reserveIn;
+      vars.pathWithWeth[1] = WETH_ADDRESS;
+      vars.pathWithWeth[2] = reserveOut;
 
-      try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth) returns (
+      try UNISWAP_ROUTER.getAmountsOut(vars.finalAmountIn, vars.pathWithWeth) returns (
         uint256[] memory resultsWithWeth
       ) {
-        amountsWithWeth = resultsWithWeth;
+        vars.amountsWithWeth = resultsWithWeth;
       } catch {
-        amountsWithWeth = new uint256[](3);
+        vars.amountsWithWeth = new uint256[](3);
       }
     } else {
-      amountsWithWeth = new uint256[](3);
+      vars.amountsWithWeth = new uint256[](3);
     }
 
     uint256 bestAmountOut;
-    try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
+    try UNISWAP_ROUTER.getAmountsOut(vars.finalAmountIn, vars.simplePath) returns (
       uint256[] memory resultAmounts
     ) {
-      amountsWithoutWeth = resultAmounts;
+      vars.amountsWithoutWeth = resultAmounts;
 
-      bestAmountOut = (amountsWithWeth[2] > amountsWithoutWeth[1])
-        ? amountsWithWeth[2]
-        : amountsWithoutWeth[1];
+      bestAmountOut = (vars.amountsWithWeth[2] > vars.amountsWithoutWeth[1])
+        ? vars.amountsWithWeth[2]
+        : vars.amountsWithoutWeth[1];
     } catch {
-      amountsWithoutWeth = new uint256[](2);
-      bestAmountOut = amountsWithWeth[2];
+      vars.amountsWithoutWeth = new uint256[](2);
+      bestAmountOut = vars.amountsWithWeth[2];
     }
 
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
     uint256 outPerInPrice =
-      finalAmountIn.mul(10**18).mul(10**reserveOutDecimals).div(
+      vars.finalAmountIn.mul(10**18).mul(10**reserveOutDecimals).div(
         bestAmountOut.mul(10**reserveInDecimals)
       );
 
@@ -387,9 +398,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         outPerInPrice,
         _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
         _calcUsdValue(reserveOut, bestAmountOut, reserveOutDecimals),
-        (bestAmountOut == 0) ? new address[](2) : (bestAmountOut == amountsWithoutWeth[1])
-          ? simplePath
-          : pathWithWeth
+        (bestAmountOut == 0) ? new address[](2) : (bestAmountOut == vars.amountsWithoutWeth[1])
+          ? vars.simplePath
+          : vars.pathWithWeth
       );
   }
 
@@ -407,13 +418,15 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   function _getAmountsInData(
     address reserveIn,
     address reserveOut,
-    uint256 amountOut
+    uint256 amountOut,
+    bool withFlash
   ) internal view returns (AmountCalc memory) {
     (uint256[] memory amounts, address[] memory path) =
       _getAmountsInAndPath(reserveIn, reserveOut, amountOut);
 
     // Add flash loan fee
-    uint256 finalAmountIn = amounts[0].add(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
+    uint256 finalAmountIn =
+      amounts[0].add(withFlash ? amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000) : 0);
 
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
