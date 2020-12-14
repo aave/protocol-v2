@@ -1,43 +1,52 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
-import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IAToken} from '../../interfaces/IAToken.sol';
-import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {Errors} from '../libraries/helpers/Errors.sol';
-import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
-import {IncentivizedElasticAMPLMirrorERC20} from './IncentivizedElasticAMPLMirrorERC20.sol';
+import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {IAToken} from '../../../interfaces/IAToken.sol';
+import {WadRayMath} from '../../libraries/math/WadRayMath.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
+import {VersionedInitializable} from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
+import {IncentivizedAAmplERC20} from './IncentivizedAAmplERC20.sol';
+import {DataTypes} from '../../libraries/types/DataTypes.sol';
 
-/**
- * @title Aave-AMPL ERC20 AToken
- * @dev Implementation of the interest bearing AMPL token for the Aave protocol.
- *
- *      AMPL is an elastic supply token, a special type of ERC-20 token.
- *      The normal the aTokens' value is pegged to the value of the corresponding deposited asset at a 1:1 ratio.
- *      Thus the generic AToken's accounting breaks when wrapped around AMPL as the underlying
- *      balances change and the AToken's implementation is not aware of AMPL's dynamics.
- *
- *      For Example, With the generic aToken:
- *      Let's say user deposits 100 AMPL for 100 aToken.
- *      If AMPL expands by 10% and the user tries to withdraw AMPL with all his aToken,
- *      he only get back 100 AMPL and 10AMPL will be locked in the AToken contract.
- *      In the case of a 10% contraction. When the user tries to withdraw AMPL with all his aToken,
- *      the transaction fails.
- *      This is because the aToken and AMPL don't have a 1:1 peg due to AMPL's elastic supply.
- *
- *      This aAMPL Token solves this problem by mirroring AMPLs elasticity.
- *      If the user deposits 100 AMPL for 100 aAMPL. When AMPL expands or contracts the
- *      aAMPL mirrors the expansion & contraction, letting it maintain the 1:1 peg.
- *
- *      The aAMPL does NOT change any logic in the generic AToken implementation.
- *      The only change is that in inherits from a elastic mirrored ERC-20
- *      (`IncentivizedElasticAMPLMirrorERC20`) rather than the generic ERC20 (`IncentivizedERC20`).
- *
- * @author AmpleforthOrg & Aave
- */
-contract AAMPLToken is VersionedInitializable, IncentivizedElasticAMPLMirrorERC20, IAToken {
+interface IAMPLDebtToken {
+  function getAMPLBorrowData() external view returns (uint256, uint256);
+}
+
+/*
+  AMPL specific AToken implementation.
+
+  The AAmplToken inherits from `IncentivizedAAmplERC20` rather than the `IncentivizedERC20`
+  which the generic token inherits from. The AAmplToken also stores references to the STABLE_DEBT_TOKEN,
+  and the VARIABLE_DEBT_TOKEN contracts to calculate the total Principal borrowed (getAMPLBorrowData()),
+  at any time.
+
+  The AMPL AToken externally behaves similar to every other aTOKEN. It always maintains a 1:1 peg with
+  the underlying AMPL.
+
+  The following should always be true.
+
+  1) At any time, user can deposit x AMPLs to mint x aAMPLs.
+     Total aAMPL suppxly increases by exactly x.
+
+  2) At any time, user can burn x aAMPLs for x AMPLs.
+     Total aAMPL supply decreases by exactly x.
+
+  3) At any time, userA can transfer x aAMPLs to userB.
+     userA's aAMPL balance reduces by X.
+     userB's aAMPL balance increases by X.
+     Total aAMPL supply exactly remains same.
+
+  4) When AMPL's supply rebases, only the 'unborrowed' aAMPL should rebase.
+     => Say there are 1000 aAMPL, and 200 AMPL is lent out. AMPL expands by 10%.
+        Thew new aAMPL supply should be 1080 aAMPL.
+     => Say there are 1000 aAMPL, and 200 AMPL is lent out. AMPL contracts by 10%.
+        Thew new aAMPL supply should be 920 aAMPL.
+*/
+contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -51,7 +60,15 @@ contract AAMPLToken is VersionedInitializable, IncentivizedElasticAMPLMirrorERC2
   uint256 public constant ATOKEN_REVISION = 0x1;
   address public immutable UNDERLYING_ASSET_ADDRESS;
   address public immutable RESERVE_TREASURY_ADDRESS;
+  address public immutable STABLE_DEBT_TOKEN_ADDRESS;
+  address public immutable VARIABLE_DEBT_TOKEN_ADDRESS;
   ILendingPool public immutable POOL;
+
+  // AMPL constants
+  uint256 private constant MAX_UINT256 = ~uint256(0); // (2^256) - 1
+  uint256 private constant AMPL_DECIMALS = 9;
+  uint256 private constant INITIAL_AMPL_SUPPLY = 50 * 10**6 * 10**AMPL_DECIMALS;
+  uint256 private constant TOTAL_GONS = MAX_UINT256 - (MAX_UINT256 % INITIAL_AMPL_SUPPLY);
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -70,10 +87,15 @@ contract AAMPLToken is VersionedInitializable, IncentivizedElasticAMPLMirrorERC2
     string memory tokenName,
     string memory tokenSymbol,
     address incentivesController
-  ) public IncentivizedElasticAMPLMirrorERC20(tokenName, tokenSymbol, 18, incentivesController, underlyingAssetAddress) {
+  ) public IncentivizedAAmplERC20(tokenName, tokenSymbol, 18, incentivesController, underlyingAssetAddress) {
     POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
     RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
+
+    // NEW
+    DataTypes.ReserveData memory reserveData = pool.getReserveData(underlyingAssetAddress);
+    STABLE_DEBT_TOKEN_ADDRESS = reserveData.stableDebtTokenAddress;
+    VARIABLE_DEBT_TOKEN_ADDRESS = reserveData.variableDebtTokenAddress;
   }
 
   function getRevision() internal pure virtual override returns (uint256) {
@@ -144,6 +166,7 @@ contract AAMPLToken is VersionedInitializable, IncentivizedElasticAMPLMirrorERC2
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool returns (bool) {
+
     uint256 previousBalance = super.balanceOf(user);
 
     uint256 amountScaled = amount.rayDiv(index);
@@ -204,7 +227,7 @@ contract AAMPLToken is VersionedInitializable, IncentivizedElasticAMPLMirrorERC2
   function balanceOf(address user)
     public
     view
-    override(IncentivizedElasticAMPLMirrorERC20, IERC20)
+    override(IncentivizedAAmplERC20, IERC20)
     returns (uint256)
   {
     return super.balanceOf(user).rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
@@ -241,7 +264,7 @@ contract AAMPLToken is VersionedInitializable, IncentivizedElasticAMPLMirrorERC2
    * does that too.
    * @return the current total supply
    **/
-  function totalSupply() public view override(IncentivizedElasticAMPLMirrorERC20, IERC20) returns (uint256) {
+  function totalSupply() public view override(IncentivizedAAmplERC20, IERC20) returns (uint256) {
     uint256 currentSupplyScaled = super.totalSupply();
 
     if (currentSupplyScaled == 0) {
@@ -360,5 +383,26 @@ contract AAMPLToken is VersionedInitializable, IncentivizedElasticAMPLMirrorERC2
     uint256 amount
   ) internal override {
     _transfer(from, to, amount, true);
+  }
+
+
+  // returns the totalAMPLBorrowed and the totalScaledAMPLBorrowed
+  function getAMPLBorrowData() internal override view returns (uint256, uint256) {
+    uint256 stablePrincipal;
+    uint256 stablePrincipalScaled;
+    uint256 variablePrincipal;
+    uint256 variablePrincipalScaled;
+
+    (stablePrincipal, stablePrincipalScaled) = IAMPLDebtToken(STABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
+    (variablePrincipal, variablePrincipalScaled) = IAMPLDebtToken(VARIABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
+
+    return (
+      stablePrincipal.add(variablePrincipal),
+      stablePrincipalScaled.add(variablePrincipalScaled)
+    );
+  }
+
+  function getAMPLScalar() internal override view returns (uint256) {
+    return TOTAL_GONS.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
   }
 }
