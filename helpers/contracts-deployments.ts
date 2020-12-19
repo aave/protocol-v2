@@ -387,6 +387,7 @@ export const deployAllMockTokens = async (verify?: boolean) => {
       [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
       verify
     );
+    await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
   }
   return tokens;
 };
