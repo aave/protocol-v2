@@ -38,6 +38,12 @@ export const setInitialMarketRatesInRatesOracleByHelper = async (
     borrowRates.push(borrowRate);
     symbols.push(assetSymbol);
   }
+
+  console.log("---setInitialMarketRatesInRatesOracleByHelper---");
+  console.log(assetAddresses);
+  console.log(symbols);
+  console.log(borrowRates);
+
   // Set borrow rates per chunks
   const ratesChunks = 20;
   const chunkedTokens = chunk(assetAddresses, ratesChunks);

@@ -111,6 +111,12 @@ export const CommonsConfig: ICommonConfiguration = {
     BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
+    WETHDAI: {
+      borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+    },
+    WETHWBTC: {
+      borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+    },
   },
   // ----------------
   // COMMON PROTOCOL ADDRESSES ACROSS POOLS

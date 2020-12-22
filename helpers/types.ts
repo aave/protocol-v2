@@ -200,6 +200,8 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
+  WETHDAI: T;
+  WETHWBTC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -230,6 +232,17 @@ export type iAavePoolAssets<T> = Pick<
   | 'ENJ'
 >;
 
+export type iUniswapPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  | 'DAI'
+  | 'USDC'
+  | 'USDT'
+  | 'WBTC'
+  | 'WETH'
+  | 'WETHDAI'
+  | 'WETHWBTC'
+>;
+
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
@@ -258,6 +271,8 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
+  WETHDAI = 'WETHDAI',
+  WETHWBTC = 'WETHWBTC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -371,6 +386,10 @@ export interface ICommonConfiguration {
 
 export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
+}
+
+export interface IUniswapConfiguration extends ICommonConfiguration {
+  ReservesConfig: iUniswapPoolAssets<IReserveParams>;
 }
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;

@@ -153,7 +153,9 @@ export const getAllMockedTokens = async () => {
   const tokens: MockTokenMap = await Object.keys(TokenContractId).reduce<Promise<MockTokenMap>>(
     async (acc, tokenSymbol) => {
       const accumulator = await acc;
+      console.log("getAllMockedTokens: got accumulator");
       const address = db.get(`${tokenSymbol.toUpperCase()}.${DRE.network.name}`).value().address;
+      console.log("getAllMockedTokens: Initialized address for %s, address: %s", tokenSymbol, address);
       accumulator[tokenSymbol] = await getMintableERC20(address);
       return Promise.resolve(acc);
     },

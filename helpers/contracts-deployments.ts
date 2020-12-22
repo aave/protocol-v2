@@ -387,6 +387,7 @@ export const deployAllMockTokens = async (verify?: boolean) => {
       [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
       verify
     );
+    console.log("deployAllMockTokens: deployed", tokenSymbol);
   }
   return tokens;
 };
