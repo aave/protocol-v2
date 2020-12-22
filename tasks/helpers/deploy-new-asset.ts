@@ -81,7 +81,7 @@ WRONG RESERVE ASSET SETUP:
     );
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
-        reserveAssetAddress,
+        addressProvider.address,
         strategyParams.optimalUtilizationRate,
         strategyParams.baseVariableBorrowRate,
         strategyParams.variableRateSlope1,
