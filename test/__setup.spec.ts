@@ -159,6 +159,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       REN: mockTokens.REN.address,
       UNI: mockTokens.UNI.address,
       ENJ: mockTokens.ENJ.address,
+      UNI_WETH: mockTokens.WETH.address,
+      UNI_WBTC: mockTokens.WBTC.address,
+      UNI_DAI: mockTokens.DAI.address,
+      UNI_USDC: mockTokens.USDC.address,
+      UNI_USDT: mockTokens.USDT.address,
+      UNI_WETHDAI: mockTokens.UNI_WETHDAI.address,
+      UNI_WETHWBTC: mockTokens.UNI_WETHWBTC.address,
       USD: USD_ADDRESS,
     },
     fallbackOracle
@@ -213,8 +220,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const treasuryAddress = await getTreasuryAddress(config);
 
-  await initReservesByHelper(reservesParams, allReservesAddresses, admin, treasuryAddress, ZERO_ADDRESS, false);
+  await initReservesByHelper(addressesProvider, reservesParams, allReservesAddresses, admin, treasuryAddress, ZERO_ADDRESS, false);
   await configureReservesByHelper(
+    addressesProvider,
     reservesParams,
     allReservesAddresses,
     testHelpers,

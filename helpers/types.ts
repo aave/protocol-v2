@@ -22,36 +22,47 @@ export enum EthereumNetworkNames {
 
 export enum AavePools {
   proto = 'proto',
+  uniswap = 'uniswap',
 }
 
 export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
+  UniswapLendingPoolAddressesProvider = 'UniswapLendingPoolAddressesProvider',
   MintableERC20 = 'MintableERC20',
   MintableDelegationERC20 = 'MintableDelegationERC20',
   LendingPoolAddressesProviderRegistry = 'LendingPoolAddressesProviderRegistry',
   LendingPoolParametersProvider = 'LendingPoolParametersProvider',
   LendingPoolConfigurator = 'LendingPoolConfigurator',
+  UniswapLendingPoolConfigurator = 'UniswapLendingPoolConfigurator',
   ValidationLogic = 'ValidationLogic',
   ReserveLogic = 'ReserveLogic',
   GenericLogic = 'GenericLogic',
   LendingPool = 'LendingPool',
+  UniswapLendingPool = 'UniswapLendingPool',
   PriceOracle = 'PriceOracle',
+  UniswapPriceOracle = 'UniswapPriceOracle',
   Proxy = 'Proxy',
   MockAggregator = 'MockAggregator',
   LendingRateOracle = 'LendingRateOracle',
+  UniswapLendingRateOracle = 'UniswapLendingRateOracle',
   AaveOracle = 'AaveOracle',
+  UniswapAaveOracle = 'UniswapAaveOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
+  UniswapLendingPoolCollateralManager = 'UniswapLendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
+  UniswapMockFlashLoanReceiver = 'UniswapMockFlashLoanReceiver',
   WalletBalanceProvider = 'WalletBalanceProvider',
+  UniswapWalletBalanceProvider = 'UniswapWalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
   DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
   AaveProtocolDataProvider = 'AaveProtocolDataProvider',
+  UniswapAaveProtocolDataProvider = 'UniswapAaveProtocolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
@@ -61,12 +72,16 @@ export enum eContractid {
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
   UiPoolDataProvider = 'UiPoolDataProvider',
   WETHGateway = 'WETHGateway',
+  UniswapWETHGateway = 'UniswapWETHGateway',
   WETH = 'WETH',
   WETHMocked = 'WETHMocked',
   SelfdestructTransferMock = 'SelfdestructTransferMock',
   LendingPoolImpl = 'LendingPoolImpl',
+  UniswapLendingPoolImpl = 'UniswapLendingPoolImpl',
   LendingPoolConfiguratorImpl = 'LendingPoolConfiguratorImpl',
+  UniswapLendingPoolConfiguratorImpl = 'UniswapLendingPoolConfiguratorImpl', 
   LendingPoolCollateralManagerImpl = 'LendingPoolCollateralManagerImpl',
+  UniswapLendingPoolCollateralManagerImpl = 'UniswapLendingPoolCollateralManagerImpl',
 }
 
 /*
@@ -200,8 +215,13 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
-  WETHDAI: T;
-  WETHWBTC: T;
+  UNI_WETH: T;
+  UNI_WBTC: T;
+  UNI_DAI: T;
+  UNI_USDC: T;
+  UNI_USDT: T;
+  UNI_WETHDAI: T;
+  UNI_WETHWBTC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -234,13 +254,13 @@ export type iAavePoolAssets<T> = Pick<
 
 export type iUniswapPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'DAI'
-  | 'USDC'
-  | 'USDT'
-  | 'WBTC'
-  | 'WETH'
-  | 'WETHDAI'
-  | 'WETHWBTC'
+  | 'UNI_DAI'
+  | 'UNI_USDC'
+  | 'UNI_USDT'
+  | 'UNI_WBTC'
+  | 'UNI_WETH'
+  | 'UNI_WETHDAI'
+  | 'UNI_WETHWBTC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -271,8 +291,13 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  WETHDAI = 'WETHDAI',
-  WETHWBTC = 'WETHWBTC',
+  UNI_WETH = 'WETH',
+  UNI_WBTC = 'WBTC',
+  UNI_DAI = 'DAI',
+  UNI_USDC = 'USDC',
+  UNI_USDT = 'USDT',
+  UNI_WETHDAI = 'WETHDAI',
+  UNI_WETHWBTC = 'WETHWBTC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -313,6 +338,7 @@ export interface iParamsPerNetwork<T> {
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
+  [AavePools.uniswap]: T;
 }
 
 export interface iBasicDistributionParams {

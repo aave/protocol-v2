@@ -25,10 +25,10 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
   switch (configName) {
     case ConfigNames.Aave:
       return AaveConfig;
+    case ConfigNames.Uniswap:
+        return UniswapConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
-    case ConfigNames.Uniswap:
-      return UniswapConfig;
     default:
       throw new Error(`Unsupported pool configuration: ${Object.values(ConfigNames)}`);
   }
@@ -43,6 +43,9 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
     {
       [AavePools.proto]: {
         ...AaveConfig.ReservesConfig,
+      },
+      [AavePools.uniswap]: {
+        ...UniswapConfig.ReservesConfig,
       },
     },
     pool

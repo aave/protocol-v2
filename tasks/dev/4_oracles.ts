@@ -58,7 +58,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 
-    console.log("Got the addresses provider");
+    console.log("Got the addresses provider (check if different both times):", addressesProvider.address);
 
     const admin = await addressesProvider.getPoolAdmin();
 

@@ -25,6 +25,7 @@ import {
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
+import { LendingPoolAddressesProvider } from '../types';
 
 const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -38,6 +39,7 @@ const chooseATokenDeployment = (id: eContractid) => {
 };
 
 export const initReservesByHelper = async (
+  addressProvider: LendingPoolAddressesProvider,
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
   admin: tEthereumAddress,
@@ -49,7 +51,7 @@ export const initReservesByHelper = async (
   const stableAndVariableDeployer = await getStableAndVariableTokensHelper();
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
 
-  const addressProvider = await getLendingPoolAddressesProvider();
+  //const addressProvider = await getLendingPoolAddressesProvider();
   const poolAddress = await addressProvider.getLendingPool();
 
   // Set aTokenAndRatesDeployer as temporal admin
@@ -80,6 +82,7 @@ export const initReservesByHelper = async (
       Object.entries(reservesParams).length * 4
     } txs`
   );
+  console.log("initReservesByHelper: tokenAddresses:", tokenAddresses);
   for (let reservesChunk of reservesChunks) {
     // Prepare data
     const tokens: string[] = [];
@@ -95,13 +98,15 @@ export const initReservesByHelper = async (
     const reservesDecimals: string[] = [];
 
     for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
+      console.log("initReservesByHelper: assetSymbol:\n%s", assetSymbol);
       const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
         (value) => value === assetSymbol
       );
+      console.log("initReservesByHelper: assetAddressIndex:\n%s", assetAddressIndex);
       const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
         assetAddressIndex
       ];
-
+      console.log("initReservesByHelper: tokenAddress:\n%s", assetAddressIndex);
       const reserveParamIndex = Object.keys(reservesParams).findIndex(
         (value) => value === assetSymbol
       );
@@ -131,6 +136,7 @@ export const initReservesByHelper = async (
     }
 
     // Deploy stable and variable deployers and save implementations
+    // PARAMS HANG IN LOCALHOST console.log("Hanging params:\ntokens:\n %s\n symbols:\n %s \n incentivesController: \n %s ", tokens, symbols, incentivesController);
     const tx1 = await waitForTx(
       await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
     );
@@ -300,12 +306,13 @@ export const getPairsTokenAggregator = (
 };
 
 export const configureReservesByHelper = async (
+  addressProvider: LendingPoolAddressesProvider,
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
   helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
-  const addressProvider = await getLendingPoolAddressesProvider();
+  //const addressProvider = await getLendingPoolAddressesProvider();
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
   const tokens: string[] = [];
   const symbols: string[] = [];

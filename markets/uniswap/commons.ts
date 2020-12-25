@@ -23,8 +23,13 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   WBTC: oneEther.multipliedBy('47.332685').toFixed(),
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
-  WETHDAI: oneEther.multipliedBy('22.407436').toFixed(),
-  WETHWBTC: oneEther.multipliedBy('22.407436').toFixed(),
+  UNI_WETH:oneEther.toFixed(),
+  UNI_WBTC: oneEther.multipliedBy('47.332685').toFixed(),
+  UNI_DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  UNI_USDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
+  UNI_USDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  UNI_WETHDAI: oneEther.multipliedBy('22.407436').toFixed(),
+  UNI_WETHWBTC: oneEther.multipliedBy('22.407436').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
@@ -54,67 +59,25 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   // TODO: reorg alphabetically, checking the reason of tests failing
   LendingRateOracleRatesCommon: {
-    WETH: {
+    UNI_WETH: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    DAI: {
+    UNI_DAI: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    TUSD: {
-      borrowRate: oneRay.multipliedBy(0.035).toFixed(),
-    },
-    USDC: {
+    UNI_USDC: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    SUSD: {
+    UNI_USDT: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     },
-    USDT: {
-      borrowRate: oneRay.multipliedBy(0.035).toFixed(),
-    },
-    BAT: {
+    UNI_WBTC: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    AAVE: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    LINK: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    KNC: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    MKR: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    MANA: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    WBTC: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    ZRX: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    SNX: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    YFI: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    REN: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    UNI: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    BUSD: {
+    UNI_WETHDAI: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    WETHDAI: {
-      borrowRate: oneRay.multipliedBy(0.05).toFixed(),
-    },
-    WETHWBTC: {
+    UNI_WETHWBTC: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
   },
@@ -267,6 +230,8 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      WETHDAI: ZERO_ADDRESS,
+      WETHWBTC: ZERO_ADDRESS,
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',

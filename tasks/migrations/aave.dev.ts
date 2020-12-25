@@ -22,21 +22,21 @@ task('aave:dev', 'Deploy development enviroment')
 
     console.log('2. Deploy Aave market address provider');
     await localBRE.run('dev:deploy-address-provider', {verify});
-    
-    console.log('3. Deploy Uniswap market address provider');
-    await localBRE.run('dev:deploy-uniswap-address-provider', {verify});
 
-    console.log('4. Deploy Aave lending pool');
+    console.log('3. Deploy Aave lending pool');
     await localBRE.run('dev:deploy-lending-pool', {verify});
 
-    console.log('5. Deploy oracles');
+    console.log('4. Deploy oracles');
     await localBRE.run('dev:deploy-oracles', {verify, pool: POOL_NAME});
 
-    console.log('6. Deploy Uniswap market oracles');
-    await localBRE.run('dev:deploy-oracles', {verify, pool: "Uniswap"});
+    // console.log('6. Deploy Uniswap market oracles');
+    // await localBRE.run('dev:deploy-oracles', {verify, pool: "Uniswap"});
 
-    console.log('6. Initialize lending pool');
+    console.log('5. Initialize lending pool');
     await localBRE.run('dev:initialize-lending-pool', {verify, pool: POOL_NAME});
+
+    console.log('6. Deploy Uniswap market');
+    await localBRE.run('dev:deploy-uniswap-market', {verify});
 
     console.log('\nFinished migration');
     printContracts();

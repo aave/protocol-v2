@@ -28,6 +28,7 @@ export const setInitialMarketRatesInRatesOracleByHelper = async (
     string,
     IMarketRates
   ][]) {
+    console.log("Current asset symbol:", assetSymbol);
     const assetAddressIndex = Object.keys(assetsAddresses).findIndex(
       (value) => value === assetSymbol
     );

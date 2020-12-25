@@ -36,6 +36,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const testHelpers = await getAaveProtocolDataProvider();
 
+      console.log("reserveAssets:\n", reserveAssets);
       const admin = await addressesProvider.getPoolAdmin();
       if (!reserveAssets) {
         throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
@@ -43,8 +44,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const treasuryAddress = await getTreasuryAddress(poolConfig);
 
-      await initReservesByHelper(ReservesConfig, reserveAssets, admin, treasuryAddress, ZERO_ADDRESS, verify);
-      await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
+      await initReservesByHelper(addressesProvider, ReservesConfig, reserveAssets, admin, treasuryAddress, ZERO_ADDRESS, verify);
+      await configureReservesByHelper(addressesProvider, ReservesConfig, reserveAssets, testHelpers, admin);
 
       const collateralManager = await deployLendingPoolCollateralManager(verify);
       await waitForTx(

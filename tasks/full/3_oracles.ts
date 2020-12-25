@@ -1,5 +1,5 @@
 import { task } from 'hardhat/config';
-import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { getParamPerNetwork, getParamPerPool } from '../../helpers/contracts-helpers';
 import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
 import { ICommonConfiguration, eEthereumNetwork, SymbolMap } from '../../helpers/types';
@@ -32,6 +32,8 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         FallbackOracle,
         ChainlinkAggregator,
       } = poolConfig as ICommonConfiguration;
+      
+      //console.log("------------------------------------------------ReserveAssets:\n", ReserveAssets);
       const lendingRateOracles = getLendingRateOracles(poolConfig);
       const addressesProvider = await getLendingPoolAddressesProvider();
       const admin = await getGenesisPoolAdmin(poolConfig);
@@ -40,13 +42,14 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       const fallbackOracleAddress = await getParamPerNetwork(FallbackOracle, network);
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
       const chainlinkAggregators = await getParamPerNetwork(ChainlinkAggregator, network);
+      //console.log("------------------------------------------------reserveAssets:\n", reserveAssets);
 
       const tokensToWatch: SymbolMap<string> = {
         ...reserveAssets,
         USD: UsdAddress,
       };
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
-
+      console.log("tokens:\n %s \n aggregators: \n %s", tokens, aggregators);
       const aaveOracle = notFalsyOrZeroAddress(aaveOracleAddress)
         ? await getAaveOracle(aaveOracleAddress)
         : await deployAaveOracle(

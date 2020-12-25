@@ -21,13 +21,13 @@ export const UniswapConfig: IUniswapConfiguration = {
   MarketId: 'Uniswap V2 market',
   ProviderId: 2,
   ReservesConfig: {
-    DAI: strategyDAI,
-    USDC: strategyUSDC,
-    USDT: strategyUSDT,
-    WBTC: strategyWBTC,
-    WETH: strategyWETH,
-    WETHDAI: strategyWETHDAI,
-    WETHWBTC: strategyWETHWBTC
+    UNI_DAI: strategyDAI,
+    UNI_USDC: strategyUSDC,
+    UNI_USDT: strategyUSDT,
+    UNI_WBTC: strategyWBTC,
+    UNI_WETH: strategyWETH,
+    UNI_WETHDAI: strategyWETHDAI,
+    UNI_WETHWBTC: strategyWETHWBTC
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
