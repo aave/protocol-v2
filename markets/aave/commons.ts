@@ -23,13 +23,8 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   WBTC: oneEther.multipliedBy('47.332685').toFixed(),
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
-  UNI_WETH:oneEther.toFixed(),
-  UNI_WBTC: oneEther.multipliedBy('47.332685').toFixed(),
-  UNI_DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  UNI_USDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
-  UNI_USDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  UNI_WETHDAI: oneEther.multipliedBy('22.407436').toFixed(),
-  UNI_WETHWBTC: oneEther.multipliedBy('22.407436').toFixed(),
+  WETHDAI: oneEther.multipliedBy('22.407436').toFixed(),
+  WETHWBTC: oneEther.multipliedBy('22.407436').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------

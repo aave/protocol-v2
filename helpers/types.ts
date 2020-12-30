@@ -215,13 +215,8 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
-  UNI_WETH: T;
-  UNI_WBTC: T;
-  UNI_DAI: T;
-  UNI_USDC: T;
-  UNI_USDT: T;
-  UNI_WETHDAI: T;
-  UNI_WETHWBTC: T;
+  WETHDAI: T;
+  WETHWBTC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -254,13 +249,13 @@ export type iAavePoolAssets<T> = Pick<
 
 export type iUniswapPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'UNI_DAI'
-  | 'UNI_USDC'
-  | 'UNI_USDT'
-  | 'UNI_WBTC'
-  | 'UNI_WETH'
-  | 'UNI_WETHDAI'
-  | 'UNI_WETHWBTC'
+  | 'DAI'
+  | 'USDC'
+  | 'USDT'
+  | 'WBTC'
+  | 'WETH'
+  | 'WETHDAI'
+  | 'WETHWBTC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -291,13 +286,8 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  UNI_WETH = 'WETH',
-  UNI_WBTC = 'WBTC',
-  UNI_DAI = 'DAI',
-  UNI_USDC = 'USDC',
-  UNI_USDT = 'USDT',
-  UNI_WETHDAI = 'WETHDAI',
-  UNI_WETHWBTC = 'WETHWBTC',
+  WETHDAI = 'WETHDAI',
+  WETHWBTC = 'WETHWBTC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
