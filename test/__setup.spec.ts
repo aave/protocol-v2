@@ -97,6 +97,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const addressList = await Promise.all(
     (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
+  console.log(addressList);
 
   await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
 
@@ -159,13 +160,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       REN: mockTokens.REN.address,
       UNI: mockTokens.UNI.address,
       ENJ: mockTokens.ENJ.address,
-      UNI_WETH: mockTokens.WETH.address,
-      UNI_WBTC: mockTokens.WBTC.address,
-      UNI_DAI: mockTokens.DAI.address,
-      UNI_USDC: mockTokens.USDC.address,
-      UNI_USDT: mockTokens.USDT.address,
-      UNI_WETHDAI: mockTokens.UNI_WETHDAI.address,
-      UNI_WETHWBTC: mockTokens.UNI_WETHWBTC.address,
+      WETHDAI: mockTokens.WETHDAI.address,
+      WETHWBTC: mockTokens.WETHWBTC.address,
       USD: USD_ADDRESS,
     },
     fallbackOracle

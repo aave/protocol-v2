@@ -139,6 +139,7 @@ task(
       ProtocolGlobalParams: {UsdAddress, MockUsdPriceInWei},
       LendingRateOracleRatesCommon,
     } = poolConfig as ICommonConfiguration;
+    
     console.log("Initialized mocks, global params and lending rate oracle rates");
 
     const defaultTokenList = {
