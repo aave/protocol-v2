@@ -3,7 +3,9 @@ pragma solidity 0.6.12;
 
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {ILendingPool} from '../../
+
+interfaces/ILendingPool.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
