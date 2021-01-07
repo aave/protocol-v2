@@ -1,14 +1,14 @@
 ```
-        .///.                .///.     //.            .//  `/////////////- 
-       `++:++`              .++:++`    :++`          `++:  `++:......---.` 
-      `/+: -+/`            `++- :+/`    /+/         `/+/   `++.            
-      /+/   :+/            /+:   /+/    `/+/        /+/`   `++.            
-  -::/++::`  /+:       -::/++::` `/+:    `++:      :++`    `++/:::::::::.  
-  -:+++::-`  `/+:      --++/---`  `++-    .++-    -++.     `++/:::::::::.  
-   -++.       .++-      -++`       .++.    .++.  .++-      `++.            
-  .++-         -++.    .++.         -++.    -++``++-       `++.            
- `++:           :++`  .++-           :++`    :+//+:        `++:----------` 
- -/:             :/-  -/:             :/.     ://:         `/////////////- 
+        .///.                .///.     //.            .//  `/////////////-
+       `++:++`              .++:++`    :++`          `++:  `++:......---.`
+      `/+: -+/`            `++- :+/`    /+/         `/+/   `++.
+      /+/   :+/            /+:   /+/    `/+/        /+/`   `++.
+  -::/++::`  /+:       -::/++::` `/+:    `++:      :++`    `++/:::::::::.
+  -:+++::-`  `/+:      --++/---`  `++-    .++-    -++.     `++/:::::::::.
+   -++.       .++-      -++`       .++.    .++.  .++-      `++.
+  .++-         -++.    .++.         -++.    -++``++-       `++.
+ `++:           :++`  .++-           :++`    :+//+:        `++:----------`
+ -/:             :/-  -/:             :/.     ://:         `/////////////-
 ```
 
 # Aave Protocol v2
@@ -106,41 +106,87 @@ npm run aave:kovan:full:migration
 
 ### Mainnet fork deployment
 
-You can deploy Aave Protocol v2 in a forked Mainnet chain using Hardhat built-in feature:
+You can deploy Aave Protocol v2 in a forked Mainnet chain using Hardhat built-in fork feature:
 
 ```
-# In one terminal, run a hardhat note with mainnet fork enabled
-MAINNET_FORK=true npx hardhat node
+docker-compose run contracts-env npm run aave:fork:main
+```
 
-# In another terminal, run docker-compose
-docker-compose up
+### Deploy Aave into a Mainnet Fork via console
 
-# Open another tab or terminal
-docker-compose exec contracts-env bash
+You can deploy Aave into the Hardhat console in fork mode, to interact with the protocol inside the fork or for testing purposes.
 
-# A new Bash terminal is prompted, connected to the container
-npm run aave:fork:main
+Run the console in Mainnet fork mode:
 
-# Contracts are now deployed at Hardhat node with Mainnet fork.
+```
+docker-compose run contracts-env npm run console:fork
+```
 
-# You can interact with them via Hardhat console
-MAINNET_FORK=true npx hardhat console
-# Or your custom Hardhat task
-MAINNET_FORK=true npx hardhat your-custom-task
+At the Hardhat console, interact with the Aave protocol in Mainnet fork mode:
+
+```
+// Deploy the Aave protocol in fork mode
+await run('aave:mainnet')
+
+// Or your custom Hardhat task
+await run('your-custom-task');
+
+// After you initialize the HRE via 'set-DRE' task, you can import any TS/JS file
+run('set-DRE');
+
+// Import contract getters to retrieve an Ethers.js Contract instance
+const contractGetters = require('./helpers/contracts-getters'); // Import a TS/JS file
+
+// Lending pool instance
+const lendingPool = await contractGetters.getLendingPool("LendingPool address from 'aave:mainnet' task");
+
+// You can impersonate any Ethereum address
+await network.provider.request({ method: "hardhat_impersonateAccount",  params: ["0xb1adceddb2941033a090dd166a462fe1c2029484"]});
+
+const signer = await ethers.provider.getSigner("0xb1adceddb2941033a090dd166a462fe1c2029484")
+
+// ERC20 token DAI Mainnet instance
+const DAI = await contractGetters.getIErc20Detailed("0x6B175474E89094C44Da98b954EedeAC495271d0F");
+
+// Approve 100 DAI to LendingPool address
+await DAI.connect(signer).approve(lendingPool.address, ethers.utils.parseUnits('100'));
+
+// Deposit 100 DAI
+await lendingPool.connect(signer).deposit(DAI.address, ethers.utils.parseUnits('100'), await signer.getAddress(), '0');
 
 ```
 
-### Mainnet fork - Run the check list
+## Interact with Aave in Mainnet via console
 
-For testing the deployment scripts for Mainnet release, you can run the check-list tests in a Mainnet fork using Hardhat built-in feature:
+You can interact with Aave at Mainnet network using the Hardhat console, in the scenario where the frontend is down or you want to interact directly. You can check the deployed addresses at https://docs.aave.com/developers/deployed-contracts.
+
+Run the Hardhat console pointing to the Mainnet network:
 
 ```
-# In another terminal, run docker-compose
-docker-compose up
+docker-compose run contracts-env npx hardhat --network main console
+```
 
-# Open another tab or terminal
-docker-compose exec contracts-env bash
+At the Hardhat console, you can interact with the protocol:
 
-# A new Bash terminal is prompted, connected to the container
-npm run test:main:check-list
+```
+// Load the HRE into helpers to access signers
+run("set-DRE")
+
+// Import getters to instance any Aave contract
+const contractGetters = require('./helpers/contracts-getters');
+
+// Load the first signer
+const signer = await contractGetters.getFirstSigner();
+
+// Lending pool instance
+const lendingPool = await contractGetters.getLendingPool("0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9");
+
+// ERC20 token DAI Mainnet instance
+const DAI = await contractGetters.getIErc20Detailed("0x6B175474E89094C44Da98b954EedeAC495271d0F");
+
+// Approve 100 DAI to LendingPool address
+await DAI.connect(signer).approve(lendingPool.address, ethers.utils.parseUnits('100'));
+
+// Deposit 100 DAI
+await lendingPool.connect(signer).deposit(DAI.address, ethers.utils.parseUnits('100'), await signer.getAddress(), '0');
 ```
