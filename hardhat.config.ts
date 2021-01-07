@@ -40,12 +40,11 @@ if (!SKIP_LOAD) {
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
+  const net = networkName === 'main' ? 'mainnet' : networkName;
   return {
     url: ALCHEMY_KEY
-      ? `https://eth-${
-          networkName === 'main' ? 'mainnet' : networkName
-        }.alchemyapi.io/v2/${ALCHEMY_KEY}`
-      : `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
+      ? `https://eth-${net}.alchemyapi.io/v2/${ALCHEMY_KEY}`
+      : `https://${net}.infura.io/v3/${INFURA_KEY}`,
     hardfork: HARDFORK,
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
     gasMultiplier: DEFAULT_GAS_MUL,
@@ -65,7 +64,7 @@ const mainnetFork = MAINNET_FORK
       blockNumber: 11366117,
       url: ALCHEMY_KEY
         ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
-        : `https://main.infura.io/v3/${INFURA_KEY}`,
+        : `https://mainnet.infura.io/v3/${INFURA_KEY}`,
     }
   : undefined;
 

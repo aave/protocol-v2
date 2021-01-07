@@ -1,14 +1,14 @@
 ```
-        .///.                .///.     //.            .//  `/////////////- 
-       `++:++`              .++:++`    :++`          `++:  `++:......---.` 
-      `/+: -+/`            `++- :+/`    /+/         `/+/   `++.            
-      /+/   :+/            /+:   /+/    `/+/        /+/`   `++.            
-  -::/++::`  /+:       -::/++::` `/+:    `++:      :++`    `++/:::::::::.  
-  -:+++::-`  `/+:      --++/---`  `++-    .++-    -++.     `++/:::::::::.  
-   -++.       .++-      -++`       .++.    .++.  .++-      `++.            
-  .++-         -++.    .++.         -++.    -++``++-       `++.            
- `++:           :++`  .++-           :++`    :+//+:        `++:----------` 
- -/:             :/-  -/:             :/.     ://:         `/////////////- 
+        .///.                .///.     //.            .//  `/////////////-
+       `++:++`              .++:++`    :++`          `++:  `++:......---.`
+      `/+: -+/`            `++- :+/`    /+/         `/+/   `++.
+      /+/   :+/            /+:   /+/    `/+/        /+/`   `++.
+  -::/++::`  /+:       -::/++::` `/+:    `++:      :++`    `++/:::::::::.
+  -:+++::-`  `/+:      --++/---`  `++-    .++-    -++.     `++/:::::::::.
+   -++.       .++-      -++`       .++.    .++.  .++-      `++.
+  .++-         -++.    .++.         -++.    -++``++-       `++.
+ `++:           :++`  .++-           :++`    :+//+:        `++:----------`
+ -/:             :/-  -/:             :/.     ://:         `/////////////-
 ```
 
 # Aave Protocol v2
@@ -106,28 +106,34 @@ npm run aave:kovan:full:migration
 
 ### Mainnet fork deployment
 
-You can deploy Aave Protocol v2 in a forked Mainnet chain using Hardhat built-in feature:
+You can deploy Aave Protocol v2 in a forked Mainnet chain using Hardhat built-in fork feature:
 
 ```
-# In one terminal, run a hardhat note with mainnet fork enabled
-MAINNET_FORK=true npx hardhat node
+docker-compose run contracts-env npm run aave:fork:main
+```
 
-# In another terminal, run docker-compose
-docker-compose up
+### Mainnet fork - Interact with Aave via Hardhat console
 
-# Open another tab or terminal
-docker-compose exec contracts-env bash
+You can also deploy Aave into the Hardhat console in fork mode, to interact with the protocol inside the fork or for testing purposes.
 
-# A new Bash terminal is prompted, connected to the container
-npm run aave:fork:main
+```
+# Run the console in fork mode
+docker-compose run contracts-env npm run console:fork
 
-# Contracts are now deployed at Hardhat node with Mainnet fork.
+# Deploy the Aave protocol in fork mode
+await run('aave:mainnet')
 
-# You can interact with them via Hardhat console
-MAINNET_FORK=true npx hardhat console
 # Or your custom Hardhat task
-MAINNET_FORK=true npx hardhat your-custom-task
+await run('your-custom-task');
 
+# After you initialize the Signers via 'set-DRE' task, you can import any TS/JS file
+await run('set-DRE'); // Initialize signers
+
+# Import contract getters to retrieve an Ethers.js Contract instance
+const contractGetters = require('./helpers/contracts-getters'); // Import a TS/JS file
+
+# Lending pool instance
+const lendingPool = await contractGetters.getLendingPool("LendingPool address from 'aave:mainnet' task");
 ```
 
 ### Mainnet fork - Run the check list
