@@ -111,8 +111,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
   },
-  ProviderRegistryOwner: {
-    [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
+  ProviderRegistryOwner: { // TEMPORARILY USING MY DEPLOYER
+    [eEthereumNetwork.kovan]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9',//'0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0xbd723fc4f1d737dcfc48a07fe7336766d34cad5f',
     [eEthereumNetwork.coverage]: '',
@@ -181,6 +181,8 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0xC5d1B1DEb2992738C0273408ac43e1e906086B6C',
       ZRX: '0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883',
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
+      WETHDAI: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      WETHWBTC: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
     },
     [EthereumNetwork.ropsten]: {
       AAVE: ZERO_ADDRESS,

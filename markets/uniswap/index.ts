@@ -39,8 +39,8 @@ export const UniswapConfig: IUniswapConfiguration = {
       USDT: '0x13512979ADE267AB5100878E2e0f485B568328a4',
       WBTC: '0xD1B98B6607330172f1D991521145A22BCe793277',
       WETH: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
-      WETHDAI: '',
-      WETHWBTC: '',
+      WETHDAI: '0x7d3A67ab574abD3F9849e5fcDa48c19939d032b4',
+      WETHWBTC: '0x342e78bf229Cd2a750E80D7D7c2C185455979b91',
     },
     [EthereumNetwork.ropsten]: {
       // AAVE: '',

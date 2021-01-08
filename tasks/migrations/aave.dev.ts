@@ -29,8 +29,8 @@ task('aave:dev', 'Deploy development enviroment')
     console.log('4. Deploy oracles');
     await localBRE.run('dev:deploy-oracles', {verify, pool: POOL_NAME});
 
-    // console.log('6. Deploy Uniswap market oracles');
-    // await localBRE.run('dev:deploy-oracles', {verify, pool: "Uniswap"});
+    console.log('6. Deploy Uniswap market oracles');
+    await localBRE.run('dev:deploy-oracles', {verify, pool: "Uniswap"});
 
     console.log('5. Initialize lending pool');
     await localBRE.run('dev:initialize-lending-pool', {verify, pool: POOL_NAME});

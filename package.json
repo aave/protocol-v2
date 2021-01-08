@@ -31,6 +31,7 @@
     "aave:evm:dev:migration": "npm run compile && hardhat aave:dev",
     "aave:docker:full:migration": "npm run compile && npm run hardhat:docker -- aave:mainnet",
     "aave:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- aave:mainnet --verify",
+    "uniswap:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- uniswap:mainnet --verify",
     "aave:kovan:full:initialize": "npm run hardhat:kovan -- full:initialize-lending-pool --verify --pool Aave",
     "aave:ropsten:full:migration": "npm run compile && npm run hardhat:ropsten -- aave:mainnet --verify",
     "aave:fork:main:tenderly": "npm run compile && npm run hardhat:tenderly-main -- aave:mainnet",
