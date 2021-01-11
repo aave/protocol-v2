@@ -153,9 +153,7 @@ export const getAllMockedTokens = async () => {
   const tokens: MockTokenMap = await Object.keys(TokenContractId).reduce<Promise<MockTokenMap>>(
     async (acc, tokenSymbol) => {
       const accumulator = await acc;
-      console.log("getAllMockedTokens: got accumulator, next token:", tokenSymbol.toUpperCase());
       const address = db.get(`${tokenSymbol.toUpperCase()}.${DRE.network.name}`).value().address;
-      console.log("getAllMockedTokens: Initialized address for %s, address: %s", tokenSymbol, address);
       accumulator[tokenSymbol] = await getMintableERC20(address);
       return Promise.resolve(acc);
     },
@@ -177,8 +175,6 @@ export const getPairsTokenAggregator = (
       const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
         (value) => value === tokenSymbol
       );
-      //console.log("getPairsTokenAggregator: tokenSymbol:", tokenSymbol);
-      //console.log("getPairsTokenAggregator: aggregatorsAddresses:\n\n", aggregatorsAddresses);
       const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
         string,
         tEthereumAddress
