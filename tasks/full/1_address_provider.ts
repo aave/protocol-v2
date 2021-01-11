@@ -81,7 +81,7 @@ task(
     // 2. Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(MarketId, verify);
     
-    // TEMPORARILY DISABLING SEC. 3 FOR KOVAN DEPLOYMENT
+    // TEMPORARILY DISABLING SEC. 3 FOR GOVERNANCE USE
 
     // 3. Set the provider at the Registry
     // await waitForTx(

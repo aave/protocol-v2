@@ -18,17 +18,15 @@ task('dev:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, localBRE) => {
     await localBRE.run('set-DRE');
-    // TEST--- CURRENTLY FAILS BECAUSE ALREADY HAS AN IMPLEMENTATION, SHOULD BE DONE BEFORE UNI MARKET TASK
+
     const addressesProvider = await getLendingPoolAddressesProvider();
-    
+
     const lendingPoolImpl = await deployLendingPool(verify);
 
     // Set lending pool impl to Address Provider
     await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
     const address = await addressesProvider.getLendingPool();
-    console.log("AAVE MARKET LENDING POOL:", address);
-
     const lendingPoolProxy = await getLendingPool(address);
 
     await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);

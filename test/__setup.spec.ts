@@ -97,7 +97,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const addressList = await Promise.all(
     (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
-  console.log(addressList);
 
   await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
 
@@ -216,9 +215,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const treasuryAddress = await getTreasuryAddress(config);
 
-  await initReservesByHelper(addressesProvider, reservesParams, allReservesAddresses, admin, treasuryAddress, ZERO_ADDRESS, false);
+  await initReservesByHelper(reservesParams, allReservesAddresses, admin, treasuryAddress, ZERO_ADDRESS, false);
   await configureReservesByHelper(
-    addressesProvider,
     reservesParams,
     allReservesAddresses,
     testHelpers,
