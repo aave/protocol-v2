@@ -35,8 +35,8 @@ task('aave:dev', 'Deploy development enviroment')
     console.log('5. Initialize lending pool');
     await localBRE.run('dev:initialize-lending-pool', {verify, pool: POOL_NAME});
 
-    console.log('6. Deploy Uniswap market');
-    await localBRE.run('dev:deploy-uniswap-market', {verify});
+    // console.log('6. Deploy Uniswap market');
+    // await localBRE.run('dev:deploy-uniswap-market', {verify});
 
     console.log('\nFinished migration');
     printContracts();
