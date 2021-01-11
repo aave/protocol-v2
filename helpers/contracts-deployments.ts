@@ -388,7 +388,6 @@ export const deployAllMockTokens = async (verify?: boolean) => {
       verify
     );
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
-    console.log("deployAllMockTokens: deployed", tokenSymbol);
   }
   return tokens;
 };
