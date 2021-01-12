@@ -17,6 +17,7 @@ import {
   getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
+import { addGas } from '../../gas-tracker';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -66,8 +67,10 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
           admin
         );
       }
-
+      console.log("ORACLES: %s and %s", aaveOracle.address, lendingRateOracle.address);
       // Register the proxy price provider on the addressesProvider
+      addGas(await addressesProvider.estimateGas.setPriceOracle(aaveOracle.address));
+      addGas(await addressesProvider.estimateGas.setLendingRateOracle(lendingRateOracle.address));
       await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
     } catch (error) {

@@ -11,7 +11,6 @@ import {
   PoolConfiguration,
   eEthereumNetwork,
 } from './types';
-
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
 import { getReservesConfigByPool } from './configuration';
@@ -58,6 +57,7 @@ import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
+import { addGas } from '../gas-tracker';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -71,7 +71,8 @@ export const deployLendingPoolAddressesProvider = async (marketId: string, verif
     eContractid.LendingPoolAddressesProvider,
     [marketId],
     verify
-  );
+  )
+  
 
 export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolean) =>
   withSaveAndVerify(

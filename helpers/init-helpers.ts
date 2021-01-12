@@ -25,6 +25,7 @@ import {
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
+import { addGas } from '../gas-tracker';
 
 const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -53,6 +54,7 @@ export const initReservesByHelper = async (
   const poolAddress = await addressProvider.getLendingPool();
 
   // Set aTokenAndRatesDeployer as temporal admin
+  addGas(await addressProvider.estimateGas.setPoolAdmin(atokenAndRatesDeployer.address));
   await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
@@ -130,6 +132,7 @@ export const initReservesByHelper = async (
       reservesDecimals.push(reserveDecimals);
     }
 
+    // tx1 and tx2 gas is accounted for later.
     // Deploy stable and variable deployers and save implementations
     const tx1 = await waitForTx(
       await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
@@ -158,7 +161,7 @@ export const initReservesByHelper = async (
     console.log('    * gasUsed: debtTokens batch', tx1.gasUsed.toString());
     console.log('    * gasUsed: aTokens and Strategy batch', tx2.gasUsed.toString());
     gasUsage = gasUsage.add(tx1.gasUsed).add(tx2.gasUsed);
-
+    addGas(gasUsage);
     const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
     const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
     const aTokens: string[] = tx2.events?.map((e) => e.args?.aToken) || [];
@@ -352,6 +355,7 @@ export const configureReservesByHelper = async (
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
+    addGas(await addressProvider.estimateGas.setPoolAdmin(atokenAndRatesDeployer.address));
     await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
     // Deploy init per chunks
@@ -366,6 +370,15 @@ export const configureReservesByHelper = async (
 
     console.log(`- Configure reserves in ${chunkedTokens.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
+      addGas(await atokenAndRatesDeployer.estimateGas.configureReserves(
+        chunkedTokens[chunkIndex],
+        chunkedBase[chunkIndex],
+        chunkedliquidationThresholds[chunkIndex],
+        chunkedliquidationBonuses[chunkIndex],
+        chunkedReserveFactors[chunkIndex],
+        chunkedStableRatesEnabled[chunkIndex],
+        { gasLimit: 12000000 }
+      ));
       await waitForTx(
         await atokenAndRatesDeployer.configureReserves(
           chunkedTokens[chunkIndex],
@@ -380,6 +393,7 @@ export const configureReservesByHelper = async (
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
     // Set deployer back as admin
+    addGas(await addressProvider.estimateGas.setPoolAdmin(admin));
     await waitForTx(await addressProvider.setPoolAdmin(admin));
   }
 };

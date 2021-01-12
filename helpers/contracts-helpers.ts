@@ -16,7 +16,9 @@ import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyContract } from './etherscan-verification';
-import { getIErc20Detailed } from './contracts-getters';
+import { getIErc20Detailed, getFirstSigner } from './contracts-getters';
+import { addGas, totalGas } from '../gas-tracker';
+
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
@@ -88,6 +90,13 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   args: (string | string[])[],
   verify?: boolean
 ): Promise<ContractType> => {
+  // const signer = await getFirstSigner();
+  // const factory = ethers.ContractFactory.fromSolidity(instance);
+  // const gasCost = await signer.estimateGas(await factory.getDeployTransaction());
+  // console.log("TEST:", gasCost.toString());
+  addGas(instance.deployTransaction.gasLimit);
+  console.log("Current totalGas value:", totalGas);
+  console.log("LOGGED GAS LIMIT:", instance.deployTransaction.gasLimit);
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (DRE.network.name.includes('tenderly')) {

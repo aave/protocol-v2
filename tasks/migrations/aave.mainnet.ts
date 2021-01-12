@@ -4,6 +4,7 @@ import {checkVerification} from '../../helpers/etherscan-verification';
 import {ConfigNames} from '../../helpers/configuration';
 import {EthereumNetworkNames} from '../../helpers/types';
 import {printContracts} from '../../helpers/misc-utils';
+import {totalGas} from '../../gas-tracker';
 
 task('aave:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -56,4 +57,5 @@ task('aave:mainnet', 'Deploy development enviroment')
     }
     console.log('\nFinished migrations');
     printContracts();
+    console.log("Total gas used:", totalGas);
   });
