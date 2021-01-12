@@ -1,66 +1,66 @@
 methods {
-	setBorrowing(address, uint256, bool) envfree
-	setUsingAsCollateral(address, uint256, bool) envfree
-	isUsingAsCollateralOrBorrowing(address, uint256) returns bool envfree
-	isBorrowing(address, uint256) returns bool envfree
-	isUsingAsCollateral(address, uint256) returns bool envfree
-	isBorrowingAny(address ) returns bool envfree
- 	isEmpty(address ) returns bool envfree
+	setBorrowing(uint256, bool) envfree
+	setUsingAsCollateral(uint256, bool) envfree
+	isUsingAsCollateralOrBorrowing(uint256) returns bool envfree
+	isBorrowing(uint256) returns bool envfree
+	isUsingAsCollateral(uint256) returns bool envfree
+	isBorrowingAny() returns bool envfree
+ 	isEmpty() returns bool envfree
 }
 
-invariant empty(address user, uint256 reserveIndex ) 
-	 isEmpty(user) => !isBorrowingAny(user) && !isUsingAsCollateralOrBorrowing(user, reserveIndex)
+invariant empty(uint256 reserveIndex) 
+	 isEmpty() => !isBorrowingAny() && !isUsingAsCollateralOrBorrowing(reserveIndex)
 
-invariant notEmpty(address user, uint256 reserveIndex ) 
-	( isBorrowingAny(user) ||  isUsingAsCollateral(user, reserveIndex)) => !isEmpty(user)
-
-
-invariant borrowing(address user, uint256 reserveIndex ) 
-	 isBorrowing(user, reserveIndex) =>  isBorrowingAny(user) 
-
-invariant collateralOrBorrowing(address user, uint256 reserveIndex ) 
-	( isUsingAsCollateral(user, reserveIndex) ||  isBorrowing(user, reserveIndex) ) <=>  isUsingAsCollateralOrBorrowing(user, reserveIndex) 
+invariant notEmpty(uint256 reserveIndex) 
+	(isBorrowingAny() ||  isUsingAsCollateral(reserveIndex)) => !isEmpty()
 
 
+invariant borrowing(uint256 reserveIndex ) 
+	 isBorrowing(reserveIndex) =>  isBorrowingAny() 
 
-rule setBorrowing(address user, uint256 reserveIndex, bool borrowing)
+invariant collateralOrBorrowing(uint256 reserveIndex ) 
+	(isUsingAsCollateral(reserveIndex) || isBorrowing(reserveIndex)) <=>  isUsingAsCollateralOrBorrowing(reserveIndex) 
+
+
+
+rule setBorrowing(uint256 reserveIndex, bool borrowing)
 {
 	require reserveIndex < 128;
 	
-	setBorrowing(user, reserveIndex, borrowing);
-	assert isBorrowing(user, reserveIndex) == borrowing, "unexpected result";
+	setBorrowing(reserveIndex, borrowing);
+	assert isBorrowing(reserveIndex) == borrowing, "unexpected result";
 }
 
-rule setBorrowingNoChangeToOther(address user, uint256 reserveIndex, uint256 reserveIndexOther, bool borrowing)
+rule setBorrowingNoChangeToOther(uint256 reserveIndex, uint256 reserveIndexOther, bool borrowing)
 {
 	require reserveIndexOther != reserveIndex;
 	require reserveIndexOther < 128 && reserveIndex < 128;
-	bool otherReserveBorrowing =  isBorrowing(user, reserveIndexOther);
-	bool otherReserveCollateral = isUsingAsCollateral(user,reserveIndexOther);
+	bool otherReserveBorrowing =  isBorrowing(reserveIndexOther);
+	bool otherReserveCollateral = isUsingAsCollateral(reserveIndexOther);
 
-	setBorrowing(user, reserveIndex, borrowing);
-	assert otherReserveBorrowing == isBorrowing(user, reserveIndexOther) &&
-		otherReserveCollateral == isUsingAsCollateral(user,reserveIndexOther), "changed to other reserve";
+	setBorrowing(reserveIndex, borrowing);
+	assert otherReserveBorrowing == isBorrowing(reserveIndexOther) &&
+		otherReserveCollateral == isUsingAsCollateral(reserveIndexOther), "changed to other reserve";
 }
 
 
-rule  setUsingAsCollateral(address user, uint256 reserveIndex, bool usingAsCollateral)
+rule  setUsingAsCollateral(uint256 reserveIndex, bool usingAsCollateral)
 {
 	require reserveIndex < 128;
 	
-	setUsingAsCollateral(user, reserveIndex, usingAsCollateral);
-	assert isUsingAsCollateral(user, reserveIndex) == usingAsCollateral, "unexpected result";
+	setUsingAsCollateral(reserveIndex, usingAsCollateral);
+	assert isUsingAsCollateral(reserveIndex) == usingAsCollateral, "unexpected result";
 }
 
 
-rule setUsingAsCollateralNoChangeToOther(address user, uint256 reserveIndex, uint256 reserveIndexOther, bool usingAsCollateral)
+rule setUsingAsCollateralNoChangeToOther(uint256 reserveIndex, uint256 reserveIndexOther, bool usingAsCollateral)
 {
 	require reserveIndexOther != reserveIndex;
 	require reserveIndexOther < 128 && reserveIndex < 128;
-	bool otherReserveBorrowing = isBorrowing(user, reserveIndexOther);
-	bool otherReserveCollateral = isUsingAsCollateral(user,reserveIndexOther);
+	bool otherReserveBorrowing = isBorrowing(reserveIndexOther);
+	bool otherReserveCollateral = isUsingAsCollateral(reserveIndexOther);
 	
-	setUsingAsCollateral(user, reserveIndex, usingAsCollateral);
-	assert otherReserveBorrowing == isBorrowing(user, reserveIndexOther) &&
-		otherReserveCollateral == isUsingAsCollateral(user,reserveIndexOther), "changed to other reserve";
+	setUsingAsCollateral(reserveIndex, usingAsCollateral);
+	assert otherReserveBorrowing == isBorrowing(reserveIndexOther) &&
+		otherReserveCollateral == isUsingAsCollateral(reserveIndexOther), "changed to other reserve";
 }

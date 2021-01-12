@@ -2,11 +2,11 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPool} from '../../contracts/interfaces/ILendingPool.sol';
-import {LendingPool} from '../../contracts/lendingpool/LendingPool.sol';
+import {LendingPool} from '../../contracts/protocol/lendingpool/LendingPool.sol';
 import {
   ILendingPoolAddressesProvider
 } from '../../contracts/interfaces/ILendingPoolAddressesProvider.sol';
-import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {DataTypes} from '../../contracts/protocol/libraries/types/DataTypes.sol';
 
 /*
 Certora: Harness that delegates calls to the original LendingPool.
@@ -28,8 +28,8 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     address asset,
     uint256 amount,
     address to
-  ) external override {
-    originalPool.withdraw(asset, amount, to);
+  ) external override returns (uint256) {
+    return originalPool.withdraw(asset, amount, to);
   }
 
   function borrow(
@@ -47,8 +47,8 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external override {
-    originalPool.repay(asset, amount, rateMode, onBehalfOf);
+  ) external override returns (uint256) {
+    return originalPool.repay(asset, amount, rateMode, onBehalfOf);
   }
 
   function swapBorrowRateMode(address asset, uint256 rateMode) external override {
@@ -101,7 +101,7 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     override
     returns (
       uint256 totalCollateralETH,
-      uint256 totalBorrowsETH,
+      uint256 totalDebtETH,
       uint256 availableBorrowsETH,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
