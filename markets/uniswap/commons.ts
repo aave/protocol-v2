@@ -23,8 +23,13 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   WBTC: oneEther.multipliedBy('47.332685').toFixed(),
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
-  WETHDAI: oneEther.multipliedBy('22.407436').toFixed(),
-  WETHWBTC: oneEther.multipliedBy('22.407436').toFixed(),
+  UniDAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  UniUSDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
+  UniUSDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  UniWBTC: oneEther.multipliedBy('47.332685').toFixed(),
+  UniWETH: oneEther.toFixed(),
+  UniWETHDAI: oneEther.multipliedBy('22.407436').toFixed(),
+  UniWETHWBTC: oneEther.multipliedBy('22.407436').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
@@ -54,25 +59,25 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   // TODO: reorg alphabetically, checking the reason of tests failing
   LendingRateOracleRatesCommon: {
-    WETH: {
+    UniWETH: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    DAI: {
+    UniDAI: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    USDC: {
+    UniUSDC: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    USDT: {
+    UniUSDT: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     },
-    WBTC: {
+    UniWBTC: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    WETHDAI: {
+    UniWETHDAI: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    WETHWBTC: {
+    UniWETHWBTC: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
   },
@@ -226,9 +231,13 @@ export const CommonsConfig: ICommonConfiguration = {
       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
+      UniUSDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
+      UniWBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
+      UniUSDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
+      UniDAI:'0x773616E4d11A78F511299002da57A0a94577F1f4',
+      UniWETHDAI: ZERO_ADDRESS,
+      UniWETHWBTC: ZERO_ADDRESS,
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
-      WETHDAI: ZERO_ADDRESS,
-      WETHWBTC: ZERO_ADDRESS,
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
