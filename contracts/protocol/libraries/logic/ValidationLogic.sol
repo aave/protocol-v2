@@ -197,7 +197,7 @@ library ValidationLogic {
      * 3. Users will be able to borrow only a portion of the total available liquidity
      **/
 
-    if (vars.rateMode == DataTypes.InterestRateMode.STABLE) {
+    if (interestRateMode == uint256(DataTypes.InterestRateMode.STABLE)) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
       require(vars.stableRateBorrowingEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
