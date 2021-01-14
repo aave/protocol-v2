@@ -129,7 +129,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       );
 
       // Swap collateral for debt asset
-      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], amountToRepay);
+      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], amountToRepay, useEthPath);
     } else {
       // Pull aTokens from user
       _pullAToken(
@@ -141,8 +141,9 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       );
     }
 
-    // Repay debt
-    IERC20(debtAsset).approve(address(LENDING_POOL), amountToRepay);
+    // Repay debt. Approves 0 first to comply with tokens that implement the anti frontrunning approval fix
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), amountToRepay);
     LENDING_POOL.repay(debtAsset, amountToRepay, debtRateMode, msg.sender);
   }
 
@@ -171,8 +172,9 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
   ) internal {
     DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
 
-    // Repay debt
-    IERC20(debtAsset).approve(address(LENDING_POOL), amount);
+    // Repay debt. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), amount);
     uint256 repaidAmount = IERC20(debtAsset).balanceOf(address(this));
     LENDING_POOL.repay(debtAsset, amount, rateMode, initiator);
     repaidAmount = repaidAmount.sub(IERC20(debtAsset).balanceOf(address(this)));
@@ -198,7 +200,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       );
 
       // Swap collateral asset to the debt asset
-      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], neededForFlashLoanDebt);
+      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], neededForFlashLoanDebt, useEthPath);
     } else {
       // Pull aTokens from user
       _pullAToken(
@@ -210,8 +212,9 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       );
     }
 
-    // Repay flash loan
-    IERC20(debtAsset).approve(address(LENDING_POOL), amount.add(premium));
+    // Repay flashloan. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), amount.add(premium));
   }
 
   /**

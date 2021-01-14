@@ -150,7 +150,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     require(expectedMinAmountOut < minAmountOut, 'minAmountOut exceed max slippage');
 
-    IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), amountToSwap);
+    // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), 0);
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), amountToSwap);
 
     address[] memory path;
     if (useEthPath) {
@@ -190,7 +192,8 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     address assetToSwapFrom,
     address assetToSwapTo,
     uint256 maxAmountToSwap,
-    uint256 amountToReceive
+    uint256 amountToReceive,
+    bool useEthPath
   ) internal returns (uint256) {
     uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
     uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
@@ -206,11 +209,22 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     require(maxAmountToSwap < expectedMaxAmountToSwap, 'maxAmountToSwap exceed max slippage');
 
-    IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), maxAmountToSwap);
+    // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), 0);
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), maxAmountToSwap);
 
-    address[] memory path = new address[](2);
-    path[0] = assetToSwapFrom;
-    path[1] = assetToSwapTo;
+    address[] memory path;
+    if (useEthPath) {
+      path = new address[](3);
+      path[0] = assetToSwapFrom;
+      path[1] = WETH_ADDRESS;
+      path[2] = assetToSwapTo;
+    } else {
+      path = new address[](2);
+      path[0] = assetToSwapFrom;
+      path[1] = assetToSwapTo;
+    }
+
     uint256[] memory amounts =
       UNISWAP_ROUTER.swapTokensForExactTokens(
         amountToReceive,
@@ -472,7 +486,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       amountsWithoutWeth = resultAmounts;
 
       return
-        (amountsWithWeth[2] > amountsWithoutWeth[1])
+        (amountsWithWeth[0] < amountsWithoutWeth[0] && amountsWithWeth[0] != 0)
           ? (amountsWithWeth, pathWithWeth)
           : (amountsWithoutWeth, simplePath);
     } catch {
