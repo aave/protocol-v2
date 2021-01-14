@@ -11,6 +11,8 @@ import {
   getLendingPoolAddressesProviderRegistry,
   getWETHMocked,
   getWETHGateway,
+  getUniswapLiquiditySwapAdapter,
+  getUniswapRepayAdapter,
 } from '../../helpers/contracts-getters';
 import { eEthereumNetwork, tEthereumAddress } from '../../helpers/types';
 import { LendingPool } from '../../types/LendingPool';
@@ -26,7 +28,10 @@ import { almostEqual } from './almost-equal';
 import { PriceOracle } from '../../types/PriceOracle';
 import { LendingPoolAddressesProvider } from '../../types/LendingPoolAddressesProvider';
 import { LendingPoolAddressesProviderRegistry } from '../../types/LendingPoolAddressesProviderRegistry';
-import { getEthersSigners, getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { getEthersSigners } from '../../helpers/contracts-helpers';
+import { UniswapLiquiditySwapAdapter } from '../../types/UniswapLiquiditySwapAdapter';
+import { UniswapRepayAdapter } from '../../types/UniswapRepayAdapter';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 import { WETHGateway } from '../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
@@ -54,6 +59,8 @@ export interface TestEnv {
   usdc: MintableERC20;
   aave: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
+  uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
+  uniswapRepayAdapter: UniswapRepayAdapter;
   registry: LendingPoolAddressesProviderRegistry;
   wethGateway: WETHGateway;
 }
@@ -79,6 +86,8 @@ const testEnv: TestEnv = {
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
+  uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
+  uniswapRepayAdapter: {} as UniswapRepayAdapter,
   registry: {} as LendingPoolAddressesProviderRegistry,
   wethGateway: {} as WETHGateway,
 } as TestEnv;
@@ -141,6 +150,9 @@ export async function initializeMakeSuite() {
   testEnv.aave = await getMintableERC20(aaveAddress);
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
+
+  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();
+  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter();
 }
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {

@@ -6,6 +6,8 @@ import { accounts } from './test-wallets.js';
 import { eEthereumNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 
+require('dotenv').config();
+
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import 'temp-hardhat-etherscan';
@@ -16,7 +18,7 @@ import '@tenderly/hardhat-tenderly';
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const DEFAULT_GAS_MUL = 5;
-const DEFAULT_GAS_PRICE = 2000000000;
+const DEFAULT_GAS_PRICE = 65000000000;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
@@ -27,14 +29,16 @@ const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full', 'verifications', 'helpers'].forEach((folder) => {
-    const tasksPath = path.join(__dirname, 'tasks', folder);
-    fs.readdirSync(tasksPath)
-      .filter((pth) => pth.includes('.ts'))
-      .forEach((task) => {
-        require(`${tasksPath}/${task}`);
-      });
-  });
+  ['misc', 'migrations', 'dev', 'full', 'verifications', 'deployments', 'helpers'].forEach(
+    (folder) => {
+      const tasksPath = path.join(__dirname, 'tasks', folder);
+      fs.readdirSync(tasksPath)
+        .filter((pth) => pth.includes('.ts'))
+        .forEach((task) => {
+          require(`${tasksPath}/${task}`);
+        });
+    }
+  );
 }
 
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
