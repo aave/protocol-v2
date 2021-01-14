@@ -19,7 +19,6 @@ import { verifyContract } from './etherscan-verification';
 import { getIErc20Detailed, getFirstSigner } from './contracts-getters';
 import { addGas, totalGas } from '../gas-tracker';
 
-
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
@@ -96,7 +95,7 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   // console.log("TEST:", gasCost.toString());
   addGas(instance.deployTransaction.gasLimit);
   console.log("Current totalGas value:", totalGas);
-  console.log("LOGGED GAS LIMIT:", instance.deployTransaction.gasLimit);
+  console.log("Logged gas limit:", instance.deployTransaction.gasLimit);
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (DRE.network.name.includes('tenderly')) {

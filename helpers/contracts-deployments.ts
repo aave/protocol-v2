@@ -72,7 +72,6 @@ export const deployLendingPoolAddressesProvider = async (marketId: string, verif
     [marketId],
     verify
   )
-  
 
 export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolean) =>
   withSaveAndVerify(

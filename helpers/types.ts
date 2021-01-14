@@ -277,8 +277,6 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  WETHDAI = 'WETHDAI',
-  WETHWBTC = 'WETHWBTC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
