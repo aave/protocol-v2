@@ -1,4 +1,4 @@
-import { Contract, Signer, utils, ethers , BigNumberish} from 'ethers';
+import { Contract, Signer, utils, ethers, BigNumberish } from 'ethers';
 import { signTypedData_v4 } from 'eth-sig-util';
 import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
@@ -241,7 +241,8 @@ export const buildLiquiditySwapParams = (
   deadlines: BigNumberish[],
   v: BigNumberish[],
   r: (string | Buffer)[],
-  s: (string | Buffer)[]
+  s: (string | Buffer)[],
+  useEthPath: boolean[]
 ) => {
   return ethers.utils.defaultAbiCoder.encode(
     [
@@ -253,8 +254,19 @@ export const buildLiquiditySwapParams = (
       'uint8[]',
       'bytes32[]',
       'bytes32[]',
+      'bool[]',
     ],
-    [assetToSwapToList, minAmountsToReceive, swapAllBalances, permitAmounts, deadlines, v, r, s]
+    [
+      assetToSwapToList,
+      minAmountsToReceive,
+      swapAllBalances,
+      permitAmounts,
+      deadlines,
+      v,
+      r,
+      s,
+      useEthPath,
+    ]
   );
 };
 
@@ -266,19 +278,11 @@ export const buildRepayAdapterParams = (
   deadline: BigNumberish,
   v: BigNumberish,
   r: string | Buffer,
-  s: string | Buffer
+  s: string | Buffer,
+  useEthPath: boolean
 ) => {
   return ethers.utils.defaultAbiCoder.encode(
-    [
-      'address',
-      'uint256',
-      'uint256',
-      'uint256',
-      'uint256',
-      'uint8',
-      'bytes32',
-      'bytes32',
-    ],
-    [collateralAsset, collateralAmount, rateMode, permitAmount, deadline, v, r, s]
+    ['address', 'uint256', 'uint256', 'uint256', 'uint256', 'uint8', 'bytes32', 'bytes32', 'bool'],
+    [collateralAsset, collateralAmount, rateMode, permitAmount, deadline, v, r, s, useEthPath]
   );
 };

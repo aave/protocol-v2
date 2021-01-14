@@ -121,7 +121,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -236,7 +237,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [
             '0x0000000000000000000000000000000000000000000000000000000000000000',
             '0x0000000000000000000000000000000000000000000000000000000000000000',
-          ]
+          ],
+          [false, false]
         );
 
         await pool
@@ -382,7 +384,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [deadline, deadline],
           [aWETHv, aUsdcv],
           [aWETHr, aUsdcr],
-          [aWETHs, aUsdcs]
+          [aWETHs, aUsdcs],
+          [false, false]
         );
 
         await pool
@@ -478,7 +481,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [deadline],
           [v],
           [r],
-          [s]
+          [s],
+          [false]
         );
 
         await expect(
@@ -544,7 +548,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -569,7 +574,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0, 0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -594,7 +600,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0, 0],
           [0, 0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -622,7 +629,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             '0x0000000000000000000000000000000000000000000000000000000000000000',
             '0x0000000000000000000000000000000000000000000000000000000000000000',
           ],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -650,7 +658,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [
             '0x0000000000000000000000000000000000000000000000000000000000000000',
             '0x0000000000000000000000000000000000000000000000000000000000000000',
-          ]
+          ],
+          [false]
         );
 
         await expect(
@@ -675,7 +684,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -700,7 +710,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -725,7 +736,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -738,6 +750,32 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               [0],
               userAddress,
               params8,
+              0
+            )
+        ).to.be.revertedWith('INCONSISTENT_PARAMS');
+
+        const params9 = buildLiquiditySwapParams(
+          [dai.address],
+          [expectedDaiAmount],
+          [0],
+          [0],
+          [0],
+          [0],
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false, false]
+        );
+
+        await expect(
+          pool
+            .connect(user)
+            .flashLoan(
+              uniswapLiquiditySwapAdapter.address,
+              [weth.address],
+              [flashloanAmount.toString()],
+              [0],
+              userAddress,
+              params9,
               0
             )
         ).to.be.revertedWith('INCONSISTENT_PARAMS');
@@ -773,7 +811,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -852,7 +891,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -916,7 +956,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         await expect(
@@ -975,7 +1016,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [0],
           [0],
           ['0x0000000000000000000000000000000000000000000000000000000000000000'],
-          ['0x0000000000000000000000000000000000000000000000000000000000000000']
+          ['0x0000000000000000000000000000000000000000000000000000000000000000'],
+          [false]
         );
 
         // Flashloan + premium > aToken balance. Then it will only swap the balance - premium
@@ -1077,7 +1119,8 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           [deadline],
           [v],
           [r],
-          [s]
+          [s],
+          [false]
         );
 
         // Flashloan + premium > aToken balance. Then it will only swap the balance - premium
@@ -1490,7 +1533,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               s: '0x0000000000000000000000000000000000000000000000000000000000000000',
             },
           ],
-          [false]
+          [false, false]
         );
 
         const adapterWethBalance = await weth.balanceOf(uniswapLiquiditySwapAdapter.address);
@@ -1630,7 +1673,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               s: aUsdcs,
             },
           ],
-          [false]
+          [false, false]
         );
 
         const adapterWethBalance = await weth.balanceOf(uniswapLiquiditySwapAdapter.address);
