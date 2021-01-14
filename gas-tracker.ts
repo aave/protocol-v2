@@ -1,4 +1,6 @@
-// Should be a ts file that has a global var var gas = 0;
+/**
+ * @dev This is a simple script that keeps track of gas spent during deployment.
+ */
 import { BigNumber } from 'ethers'; 
 
 export var totalGas:BigNumber = BigNumber.from(0);
