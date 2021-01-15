@@ -89,10 +89,6 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   args: (string | string[])[],
   verify?: boolean
 ): Promise<ContractType> => {
-  // const signer = await getFirstSigner();
-  // const factory = ethers.ContractFactory.fromSolidity(instance);
-  // const gasCost = await signer.estimateGas(await factory.getDeployTransaction());
-  // console.log("TEST:", gasCost.toString());
   addGas(instance.deployTransaction.gasLimit);
   console.log("Current totalGas value:", totalGas);
   console.log("Logged gas limit:", instance.deployTransaction.gasLimit);

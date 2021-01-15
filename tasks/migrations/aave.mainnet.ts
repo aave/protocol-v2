@@ -57,5 +57,5 @@ task('aave:mainnet', 'Deploy development enviroment')
     }
     console.log('\nFinished migrations');
     printContracts();
-    console.log("Total gas used:", totalGas);
+    console.log("Total gas used:", totalGas.toString());
   });
