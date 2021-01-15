@@ -1,4 +1,4 @@
-import {task} from 'hardhat/config';
+import { task } from 'hardhat/config';
 import {
   getEthersSignersAddresses,
   insertContractAddressInDb,
@@ -9,17 +9,18 @@ import {
   deployLendingPoolConfigurator,
   deployStableAndVariableTokensHelper,
 } from '../../helpers/contracts-deployments';
-import {eContractid} from '../../helpers/types';
-import {waitForTx} from '../../helpers/misc-utils';
+import { eContractid } from '../../helpers/types';
+import { waitForTx } from '../../helpers/misc-utils';
 import {
   getLendingPoolAddressesProvider,
   getLendingPool,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
 task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({verify}, DRE) => {
+  .setAction(async ({ verify }, DRE: HardhatRuntimeEnvironment) => {
     try {
       await DRE.run('set-DRE');
 

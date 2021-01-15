@@ -1,13 +1,13 @@
-import {task} from '@nomiclabs/buidler/config';
+import { task } from 'hardhat/config';
 
-import {UiPoolDataProviderFactory} from '../../types';
-import {verifyContract} from '../../helpers/etherscan-verification';
-import {eContractid} from '../../helpers/types';
+import { UiPoolDataProviderFactory } from '../../types';
+import { verifyContract } from '../../helpers/etherscan-verification';
+import { eContractid } from '../../helpers/types';
 
 task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider contract`)
   .addFlag('verify', 'Verify UiPoolDataProvider contract via Etherscan API.')
-  .setAction(async ({verify}, localBRE) => {
-    await localBRE.run('set-bre');
+  .setAction(async ({ verify }, localBRE) => {
+    await localBRE.run('set-DRE');
 
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');
@@ -21,7 +21,7 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
     ).deploy();
     await uiPoolDataProvider.deployTransaction.wait();
     console.log('uiPoolDataProvider.address', uiPoolDataProvider.address);
-    await verifyContract(eContractid.UiPoolDataProvider, uiPoolDataProvider.address, []);
+    await verifyContract(uiPoolDataProvider.address, []);
 
     console.log(`\tFinished UiPoolDataProvider proxy and implementation deployment`);
   });

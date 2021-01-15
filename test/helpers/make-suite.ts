@@ -11,6 +11,9 @@ import {
   getLendingPoolAddressesProviderRegistry,
   getWETHMocked,
   getWETHGateway,
+  getUniswapLiquiditySwapAdapter,
+  getUniswapRepayAdapter,
+  getFlashLiquidationAdapter,
 } from '../../helpers/contracts-getters';
 import { eEthereumNetwork, tEthereumAddress } from '../../helpers/types';
 import { LendingPool } from '../../types/LendingPool';
@@ -26,11 +29,18 @@ import { almostEqual } from './almost-equal';
 import { PriceOracle } from '../../types/PriceOracle';
 import { LendingPoolAddressesProvider } from '../../types/LendingPoolAddressesProvider';
 import { LendingPoolAddressesProviderRegistry } from '../../types/LendingPoolAddressesProviderRegistry';
-import { getEthersSigners, getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { getEthersSigners } from '../../helpers/contracts-helpers';
+import { UniswapLiquiditySwapAdapter } from '../../types/UniswapLiquiditySwapAdapter';
+import { UniswapRepayAdapter } from '../../types/UniswapRepayAdapter';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 import { WETHGateway } from '../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../markets/aave';
+import { FlashLiquidationAdapter } from '../../types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { hrtime } from 'process';
+import { usingTenderly } from '../../helpers/tenderly-utils';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -54,15 +64,16 @@ export interface TestEnv {
   usdc: MintableERC20;
   aave: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
+  uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
+  uniswapRepayAdapter: UniswapRepayAdapter;
   registry: LendingPoolAddressesProviderRegistry;
   wethGateway: WETHGateway;
+  flashLiquidationAdapter: FlashLiquidationAdapter;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
 const setBuidlerevmSnapshotId = (id: string) => {
-  if (DRE.network.name === 'hardhat') {
-    buidlerevmSnapshotId = id;
-  }
+  buidlerevmSnapshotId = id;
 };
 
 const testEnv: TestEnv = {
@@ -79,6 +90,9 @@ const testEnv: TestEnv = {
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
+  uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
+  uniswapRepayAdapter: {} as UniswapRepayAdapter,
+  flashLiquidationAdapter: {} as FlashLiquidationAdapter,
   registry: {} as LendingPoolAddressesProviderRegistry,
   wethGateway: {} as WETHGateway,
 } as TestEnv;
@@ -141,16 +155,38 @@ export async function initializeMakeSuite() {
   testEnv.aave = await getMintableERC20(aaveAddress);
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
+
+  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();
+  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter();
+  testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter();
 }
+
+const setSnapshot = async () => {
+  const hre = DRE as HardhatRuntimeEnvironment;
+  if (usingTenderly()) {
+    setBuidlerevmSnapshotId((await hre.tenderlyRPC.getHead()) || '0x1');
+    return;
+  }
+  setBuidlerevmSnapshotId(await evmSnapshot());
+};
+
+const revertHead = async () => {
+  const hre = DRE as HardhatRuntimeEnvironment;
+  if (usingTenderly()) {
+    await hre.tenderlyRPC.setHead(buidlerevmSnapshotId);
+    return;
+  }
+  await evmRevert(buidlerevmSnapshotId);
+};
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
   describe(name, () => {
     before(async () => {
-      setBuidlerevmSnapshotId(await evmSnapshot());
+      await setSnapshot();
     });
     tests(testEnv);
     after(async () => {
-      await evmRevert(buidlerevmSnapshotId);
+      await revertHead();
     });
   });
 }

@@ -123,10 +123,11 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
       user,
       debtReserve
     );
-
+    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
     vars.maxLiquidatableDebt = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
       LIQUIDATION_CLOSE_FACTOR_PERCENT
     );
+
     vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
     vars.actualDebtToLiquidate = debtToCover > vars.maxLiquidatableDebt
       ? vars.maxLiquidatableDebt
@@ -148,6 +149,8 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
 
     uint256 flashLoanDebt = coverAmount.add(premium);
 
+    require(IERC20(debtAsset).approve(address(LENDING_POOL), debtToCover), 'Approval error');
+
     // Liquidate the user position and release the underlying collateral
     LENDING_POOL.liquidationCall(collateralAsset, debtAsset, user, debtToCover, false);
 
@@ -164,9 +167,11 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     // Repay flash loan
     IERC20(debtAsset).approve(address(LENDING_POOL), flashLoanDebt);
 
-    // Transfer remaining profit to initiator
-    if (vars.maxCollateralToLiquidate.sub(soldAmount) > 0) {
-      IERC20(collateralAsset).transfer(initiator, vars.maxCollateralToLiquidate.sub(soldAmount));
+    uint256 remainingTokens = vars.maxCollateralToLiquidate.sub(soldAmount);
+
+    // Transfer remaining tokens to initiator
+    if (remainingTokens > 0) {
+      IERC20(collateralAsset).transfer(initiator, remainingTokens);
     }
   }
 
@@ -226,7 +231,7 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     (, , vars.liquidationBonus, vars.collateralDecimals, ) = collateralReserve
       .configuration
       .getParamsMemory();
-    (, , , , vars.debtAssetDecimals) = debtReserve.configuration.getParamsMemory();
+    (, , , vars.debtAssetDecimals, ) = debtReserve.configuration.getParamsMemory();
 
     // This is the maximum possible amount of the selected collateral that can be liquidated, given the
     // max amount of liquidatable debt
