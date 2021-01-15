@@ -150,7 +150,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     require(expectedMinAmountOut < minAmountOut, 'minAmountOut exceed max slippage');
 
-    IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), amountToSwap);
+    // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), 0);
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), amountToSwap);
 
     address[] memory path;
     if (useEthPath) {
@@ -207,7 +209,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     require(maxAmountToSwap < expectedMaxAmountToSwap, 'maxAmountToSwap exceed max slippage');
 
-    IERC20(assetToSwapFrom).approve(address(UNISWAP_ROUTER), maxAmountToSwap);
+    // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), 0);
+    IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), maxAmountToSwap);
 
     address[] memory path;
     if (useEthPath) {
@@ -483,7 +487,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       amountsWithoutWeth = resultAmounts;
 
       return
-        (amountsWithWeth[2] > amountsWithoutWeth[1])
+        (amountsWithWeth[0] < amountsWithoutWeth[0] && amountsWithWeth[0] != 0)
           ? (amountsWithWeth, pathWithWeth)
           : (amountsWithoutWeth, simplePath);
     } catch {

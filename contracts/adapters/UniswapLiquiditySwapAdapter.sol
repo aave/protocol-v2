@@ -170,7 +170,8 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
       );
 
       // Deposit new reserve
-      IERC20(assetToSwapToList[vars.i]).approve(address(LENDING_POOL), vars.receivedAmount);
+      IERC20(assetToSwapToList[vars.i]).safeApprove(address(LENDING_POOL), 0);
+      IERC20(assetToSwapToList[vars.i]).safeApprove(address(LENDING_POOL), vars.receivedAmount);
       LENDING_POOL.deposit(assetToSwapToList[vars.i], vars.receivedAmount, msg.sender, 0);
     }
   }
@@ -186,6 +187,16 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    * @param permitSignature List of struct containing the permit signature
    * @param useEthPath true if the swap needs to occur using ETH in the routing, false otherwise
    */
+
+  struct SwapLiquidityLocalVars {
+    address aToken;
+    uint256 aTokenInitiatorBalance;
+    uint256 amountToSwap;
+    uint256 receivedAmount;
+    uint256 flashLoanDebt;
+    uint256 amountToPull;
+  }
+
   function _swapLiquidity(
     address assetFrom,
     address assetTo,
@@ -197,28 +208,36 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     PermitSignature memory permitSignature,
     bool useEthPath
   ) internal {
-    address aToken = _getReserveData(assetFrom).aTokenAddress;
+    SwapLiquidityLocalVars memory vars;
 
-    uint256 aTokenInitiatorBalance = IERC20(aToken).balanceOf(initiator);
-    uint256 amountToSwap =
-      swapAllBalance && aTokenInitiatorBalance.sub(premium) <= amount
-        ? aTokenInitiatorBalance.sub(premium)
-        : amount;
+    vars.aToken = _getReserveData(assetFrom).aTokenAddress;
 
-    uint256 receivedAmount =
-      _swapExactTokensForTokens(assetFrom, assetTo, amountToSwap, minAmountToReceive, useEthPath);
+    vars.aTokenInitiatorBalance = IERC20(vars.aToken).balanceOf(initiator);
+    vars.amountToSwap = swapAllBalance && vars.aTokenInitiatorBalance.sub(premium) <= amount
+      ? vars.aTokenInitiatorBalance.sub(premium)
+      : amount;
+
+    vars.receivedAmount = _swapExactTokensForTokens(
+      assetFrom,
+      assetTo,
+      vars.amountToSwap,
+      minAmountToReceive,
+      useEthPath
+    );
 
     // Deposit new reserve
-    IERC20(assetTo).approve(address(LENDING_POOL), receivedAmount);
-    LENDING_POOL.deposit(assetTo, receivedAmount, initiator, 0);
+    IERC20(assetTo).safeApprove(address(LENDING_POOL), 0);
+    IERC20(assetTo).safeApprove(address(LENDING_POOL), vars.receivedAmount);
+    LENDING_POOL.deposit(assetTo, vars.receivedAmount, initiator, 0);
 
-    uint256 flashLoanDebt = amount.add(premium);
-    uint256 amountToPull = amountToSwap.add(premium);
+    vars.flashLoanDebt = amount.add(premium);
+    vars.amountToPull = vars.amountToSwap.add(premium);
 
-    _pullAToken(assetFrom, aToken, initiator, amountToPull, permitSignature);
+    _pullAToken(assetFrom, vars.aToken, initiator, vars.amountToPull, permitSignature);
 
     // Repay flash loan
-    IERC20(assetFrom).approve(address(LENDING_POOL), flashLoanDebt);
+    IERC20(assetFrom).safeApprove(address(LENDING_POOL), 0);
+    IERC20(assetFrom).safeApprove(address(LENDING_POOL), vars.flashLoanDebt);
   }
 
   /**
