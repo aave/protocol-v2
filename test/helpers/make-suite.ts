@@ -39,7 +39,6 @@ import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../markets/aave';
 import { FlashLiquidationAdapter } from '../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { hrtime } from 'process';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
 chai.use(bignumberChai());

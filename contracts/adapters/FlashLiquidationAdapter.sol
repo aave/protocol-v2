@@ -145,11 +145,11 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
       vars.userCollateralBalance
     );
 
-    require(coverAmount >= vars.debtAmountNeeded, 'Not enought cover amount requested');
+    require(coverAmount >= vars.debtAmountNeeded, 'FLASH_COVER_NOT_ENOUGH');
 
     uint256 flashLoanDebt = coverAmount.add(premium);
 
-    require(IERC20(debtAsset).approve(address(LENDING_POOL), debtToCover), 'Approval error');
+    IERC20(debtAsset).approve(address(LENDING_POOL), debtToCover);
 
     // Liquidate the user position and release the underlying collateral
     LENDING_POOL.liquidationCall(collateralAsset, debtAsset, user, debtToCover, false);
