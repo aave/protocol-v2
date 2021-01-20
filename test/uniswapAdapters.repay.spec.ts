@@ -803,15 +803,15 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const userAddress = users[0].address;
 
         // Add deposit for user
-        await dai.mint(parseEther('20'));
-        await dai.approve(pool.address, parseEther('20'));
-        await pool.deposit(dai.address, parseEther('20'), userAddress, 0);
+        await dai.mint(parseEther('30'));
+        await dai.approve(pool.address, parseEther('30'));
+        await pool.deposit(dai.address, parseEther('30'), userAddress, 0);
 
         const amountCollateralToSwap = parseEther('10');
         const debtAmount = parseEther('10');
 
         // Open user Debt
-        await pool.connect(user).borrow(dai.address, debtAmount, 1, 0, userAddress);
+        await pool.connect(user).borrow(dai.address, debtAmount, 2, 0, userAddress);
 
         const daiStableDebtTokenAddress = (
           await helpersContract.getReserveTokensAddresses(dai.address)
@@ -1376,16 +1376,16 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const userAddress = users[0].address;
 
         // Add deposit for user
-        await dai.mint(parseEther('20'));
-        await dai.approve(pool.address, parseEther('20'));
-        await pool.deposit(dai.address, parseEther('20'), userAddress, 0);
+        await dai.mint(parseEther('30'));
+        await dai.approve(pool.address, parseEther('30'));
+        await pool.deposit(dai.address, parseEther('30'), userAddress, 0);
 
         const amountCollateralToSwap = parseEther('4');
 
         const debtAmount = parseEther('3');
 
         // Open user Debt
-        await pool.connect(user).borrow(dai.address, debtAmount, 1, 0, userAddress);
+        await pool.connect(user).borrow(dai.address, debtAmount, 2, 0, userAddress);
 
         const daiStableDebtTokenAddress = (
           await helpersContract.getReserveTokensAddresses(dai.address)

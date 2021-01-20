@@ -13,7 +13,7 @@
     "compile": "SKIP_LOAD=true hardhat compile",
     "console:fork": "MAINNET_FORK=true hardhat console",
     "test": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test/*.spec.ts",
-    "test-scenarios": "npm run test -- test/__setup.spec.ts test/scenario.spec.ts",
+    "test-scenarios": "npx hardhat test test/__setup.spec.ts test/scenario.spec.ts",
     "test-repay-with-collateral": "hardhat test test/__setup.spec.ts test/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "hardhat test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
     "test-liquidate-underlying": "hardhat test test/__setup.spec.ts test/liquidation-underlying.spec.ts",

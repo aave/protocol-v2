@@ -10,7 +10,7 @@
           "args": {
             "reserve": "WETH",
             "amount": "1000",
-            "user": "0"
+            "user": "3"
           },
           "expected": "success"
         },
@@ -18,7 +18,7 @@
           "name": "approve",
           "args": {
             "reserve": "WETH",
-            "user": "0"
+            "user": "3"
           },
           "expected": "success"
         },
@@ -26,6 +26,32 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
+            "amount": "1000",
+            "user": "3"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "DAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "DAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
