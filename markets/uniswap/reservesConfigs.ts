@@ -87,24 +87,92 @@ export const strategyUSDT: IReserveParams = {
   reserveFactor: '1000'
 };
 
-export const strategyWETHDAI: IReserveParams = {
+export const strategyDAIWETH: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: '0',
   variableRateSlope1: '0',
   variableRateSlope2: '0',
   stableRateSlope1: '0',
   stableRateSlope2: '0',
-  baseLTVAsCollateral: '5000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
-  borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '0'
 };
 
-export const strategyWETHWBTC: IReserveParams = {
+export const strategyWBTCWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyAAVEWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyBATWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyUSDCDAI: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyCRVWETH: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: '0',
   variableRateSlope1: '0',
@@ -112,11 +180,147 @@ export const strategyWETHWBTC: IReserveParams = {
   stableRateSlope1: '0',
   stableRateSlope2: '0',
   baseLTVAsCollateral: '5000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
-  borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  liquidationThreshold: '6000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '0'
+};
+
+export const strategyLINKWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyMKRWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyRENWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategySNXWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '4000',
+  liquidationThreshold: '6000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyUNIWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyUSDCWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyWBTCUSDC: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
+};
+
+export const strategyYFIWETH: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '5000',
+  liquidationThreshold: '6000',
+  liquidationBonus: '11500',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
 };

@@ -206,8 +206,20 @@ export interface iAssetBase<T> {
   UniDAI: T;
   UniUSDC: T;
   UniUSDT: T;
-  UniWETHDAI: T;
-  UniWETHWBTC: T;
+  UniDAIWETH: T;
+  UniWBTCWETH: T;
+  UniAAVEWETH: T;
+  UniBATWETH: T;
+  UniUSDCDAI: T;
+  UniCRVWETH: T;
+  UniLINKWETH: T;
+  UniMKRWETH: T;
+  UniRENWETH: T;
+  UniSNXWETH: T;
+  UniUNIWETH: T;
+  UniUSDCWETH: T;
+  UniWBTCUSDC: T;
+  UniYFIWETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -245,8 +257,20 @@ export type iUniswapPoolAssets<T> = Pick<
   | 'UniUSDT'
   | 'UniWBTC'
   | 'UniWETH'
-  | 'UniWETHDAI'
-  | 'UniWETHWBTC'
+  | 'UniDAIWETH'
+  | 'UniWBTCWETH'
+  | 'UniAAVEWETH'
+  | 'UniBATWETH'
+  | 'UniUSDCDAI'
+  | 'UniCRVWETH'
+  | 'UniLINKWETH'
+  | 'UniMKRWETH'
+  | 'UniRENWETH'
+  | 'UniSNXWETH'
+  | 'UniUNIWETH'
+  | 'UniUSDCWETH'
+  | 'UniWBTCUSDC'
+  | 'UniYFIWETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
