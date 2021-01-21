@@ -4,7 +4,6 @@ import {
   deployAaveOracle,
   deployLendingRateOracle,
 } from '../../helpers/contracts-deployments';
-
 import {
   setInitialAssetPricesInOracle,
   deployAllMockAggregators,
