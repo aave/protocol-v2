@@ -18,13 +18,13 @@ const { expect } = require('chai');
 makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
   let mockUniswapRouter: MockUniswapV2Router02;
   let evmSnapshotId: string;
+  const { INVALID_HF, LP_LIQUIDATION_CALL_FAILED } = ProtocolErrors;
 
   before(async () => {
     mockUniswapRouter = await getMockUniswapRouter();
   });
 
   const depositAndHFBelowOne = async () => {
-    const { INVALID_HF } = ProtocolErrors;
     const { dai, weth, users, pool, oracle } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
@@ -643,7 +643,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
               params,
               0
             )
-        ).to.be.revertedWith('FLASH_COVER_NOT_ENOUGH');
+        ).to.be.revertedWith(LP_LIQUIDATION_CALL_FAILED);
       });
 
       it('Revert if requested multiple assets', async () => {

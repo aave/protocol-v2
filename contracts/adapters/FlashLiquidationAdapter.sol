@@ -30,20 +30,11 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
   }
 
   struct LiquidationCallLocalVars {
-    uint256 userCollateralBalance;
-    uint256 userStableDebt;
-    uint256 userVariableDebt;
-    uint256 maxLiquidatableDebt;
-    uint256 actualDebtToLiquidate;
-    uint256 maxAmountCollateralToLiquidate;
-    uint256 maxCollateralToLiquidate;
-    uint256 debtAmountNeeded;
-    uint256 collateralPrice;
-    uint256 debtAssetPrice;
-    uint256 liquidationBonus;
-    uint256 collateralDecimals;
-    uint256 debtAssetDecimals;
-    IAToken collateralAtoken;
+    uint256 initCollateralBalance;
+    uint256 diffCollateralBalance;
+    uint256 flashLoanDebt;
+    uint256 soldAmount;
+    uint256 remainingTokens;
   }
 
   constructor(
@@ -115,63 +106,38 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     uint256 premium,
     address initiator
   ) internal {
-    DataTypes.ReserveData memory collateralReserve = LENDING_POOL.getReserveData(collateralAsset);
-    DataTypes.ReserveData memory debtReserve = LENDING_POOL.getReserveData(debtAsset);
     LiquidationCallLocalVars memory vars;
+    vars.initCollateralBalance = IERC20(collateralAsset).balanceOf(address(this));
+    vars.flashLoanDebt = coverAmount.add(premium);
 
-    (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebtMemory(
-      user,
-      debtReserve
-    );
-    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
-    vars.maxLiquidatableDebt = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
-      LIQUIDATION_CLOSE_FACTOR_PERCENT
-    );
-
-    vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
-    vars.actualDebtToLiquidate = debtToCover > vars.maxLiquidatableDebt
-      ? vars.maxLiquidatableDebt
-      : debtToCover;
-
-    (
-      vars.maxCollateralToLiquidate,
-      vars.debtAmountNeeded
-    ) = _calculateAvailableCollateralToLiquidate(
-      collateralReserve,
-      debtReserve,
-      collateralAsset,
-      debtAsset,
-      vars.actualDebtToLiquidate,
-      vars.userCollateralBalance
-    );
-
-    require(coverAmount >= vars.debtAmountNeeded, 'FLASH_COVER_NOT_ENOUGH');
-
-    uint256 flashLoanDebt = coverAmount.add(premium);
-
+    // Approve LendingPool to use debt token for liquidation
     IERC20(debtAsset).approve(address(LENDING_POOL), debtToCover);
 
     // Liquidate the user position and release the underlying collateral
     LENDING_POOL.liquidationCall(collateralAsset, debtAsset, user, debtToCover, false);
 
+    // Discover the liquidated tokens
+    vars.diffCollateralBalance = IERC20(collateralAsset).balanceOf(address(this)).sub(
+      vars.initCollateralBalance
+    );
+
     // Swap released collateral into the debt asset, to repay the flash loan
-    uint256 soldAmount =
-      _swapTokensForExactTokens(
-        collateralAsset,
-        debtAsset,
-        vars.maxCollateralToLiquidate,
-        flashLoanDebt,
-        useEthPath
-      );
+    vars.soldAmount = _swapTokensForExactTokens(
+      collateralAsset,
+      debtAsset,
+      vars.diffCollateralBalance,
+      vars.flashLoanDebt,
+      useEthPath
+    );
 
-    // Repay flash loan
-    IERC20(debtAsset).approve(address(LENDING_POOL), flashLoanDebt);
+    // Allow repay of flash loan
+    IERC20(debtAsset).approve(address(LENDING_POOL), vars.flashLoanDebt);
 
-    uint256 remainingTokens = vars.maxCollateralToLiquidate.sub(soldAmount);
+    vars.remainingTokens = vars.diffCollateralBalance.sub(vars.soldAmount);
 
     // Transfer remaining tokens to initiator
-    if (remainingTokens > 0) {
-      IERC20(collateralAsset).transfer(initiator, remainingTokens);
+    if (vars.remainingTokens > 0) {
+      IERC20(collateralAsset).transfer(initiator, vars.remainingTokens);
     }
   }
 
@@ -195,65 +161,5 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     ) = abi.decode(params, (address, address, address, uint256, bool));
 
     return LiquidationParams(collateralAsset, debtAsset, user, debtToCover, useEthPath);
-  }
-
-  /**
-   * @dev Calculates how much of a specific collateral can be liquidated, given
-   * a certain amount of debt asset.
-   * - This function needs to be called after all the checks to validate the liquidation have been performed,
-   *   otherwise it might fail.
-   * @param collateralReserve The data of the collateral reserve
-   * @param debtReserve The data of the debt reserve
-   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
-   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
-   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
-   * @param userCollateralBalance The collateral balance for the specific `collateralAsset` of the user being liquidated
-   * @return collateralAmount: The maximum amount that is possible to liquidate given all the liquidation constraints
-   *                           (user balance, close factor)
-   *         debtAmountNeeded: The amount to repay with the liquidation
-   **/
-  function _calculateAvailableCollateralToLiquidate(
-    DataTypes.ReserveData memory collateralReserve,
-    DataTypes.ReserveData memory debtReserve,
-    address collateralAsset,
-    address debtAsset,
-    uint256 debtToCover,
-    uint256 userCollateralBalance
-  ) internal view returns (uint256, uint256) {
-    uint256 collateralAmount = 0;
-    uint256 debtAmountNeeded = 0;
-
-    LiquidationCallLocalVars memory vars;
-
-    vars.collateralPrice = ORACLE.getAssetPrice(collateralAsset);
-    vars.debtAssetPrice = ORACLE.getAssetPrice(debtAsset);
-
-    (, , vars.liquidationBonus, vars.collateralDecimals, ) = collateralReserve
-      .configuration
-      .getParamsMemory();
-    (, , , vars.debtAssetDecimals, ) = debtReserve.configuration.getParamsMemory();
-
-    // This is the maximum possible amount of the selected collateral that can be liquidated, given the
-    // max amount of liquidatable debt
-    vars.maxAmountCollateralToLiquidate = vars
-      .debtAssetPrice
-      .mul(debtToCover)
-      .mul(10**vars.collateralDecimals)
-      .percentMul(vars.liquidationBonus)
-      .div(vars.collateralPrice.mul(10**vars.debtAssetDecimals));
-
-    if (vars.maxAmountCollateralToLiquidate > userCollateralBalance) {
-      collateralAmount = userCollateralBalance;
-      debtAmountNeeded = vars
-        .collateralPrice
-        .mul(collateralAmount)
-        .mul(10**vars.debtAssetDecimals)
-        .div(vars.debtAssetPrice.mul(10**vars.collateralDecimals))
-        .percentDiv(vars.liquidationBonus);
-    } else {
-      collateralAmount = vars.maxAmountCollateralToLiquidate;
-      debtAmountNeeded = debtToCover;
-    }
-    return (collateralAmount, debtAmountNeeded);
   }
 }
