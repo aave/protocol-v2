@@ -56,6 +56,7 @@ prepare:
     - docker push ${IMAGE}
   only:
     - master
+    - merge_requests
 
 publish:
   image: ${IMAGE}
@@ -68,3 +69,6 @@ publish:
     - npm run compile
     - ${VERSION}
     - npm publish --access public
+  only:
+    - master
+    - merge_requests
