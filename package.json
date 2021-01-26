@@ -1,7 +1,11 @@
 {
-  "name": "protocol-v2",
+  "name": "@aave/protocol-v2",
   "version": "1.0.0",
   "description": "Aave Protocol V2 smart contracts",
+  "files": [
+    "contracts",
+    "artifacts"
+  ],
   "scripts": {
     "run-env": "npm i && tail -f /dev/null",
     "hardhat": "hardhat",
@@ -62,7 +66,8 @@
     "main:initialize-tokens": "npm run compile && hardhat --network main full:initialize-tokens --pool Aave",
     "kovan:initialize-tokens": "npm run compile && hardhat --network kovan full:initialize-tokens --pool Aave",
     "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --verify",
-    "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify"
+    "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify",
+    "prepublishOnly": "npm run compile"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
@@ -118,33 +123,22 @@
   },
   "author": "Aave",
   "contributors": [
-    {
-      "name": "Emilio Frangella",
-      "email": "emilio@aave.com"
-    },
-    {
-      "name": "Ernesto Boado",
-      "email": "ernesto@aave.com"
-    },
-    {
-      "name": "Andrey Kozlov",
-      "email": "andrey@aave.com"
-    },
-    {
-      "name": "David Racero",
-      "email": "david.k@aave.com"
-    },
-    {
-      "name": "Pol Sendra",
-      "email": "pol@aave.com"
-    },
-    {
-      "name": "David Truong",
-      "email": "david@aave.com"
-    }
+    "Ernesto Boado <ernesto@aave.com>",
+    "Emilio Frangella <emilio@aave.com>",
+    "Andrey Kozlov <andrey@aave.com>",
+    "David Racero <david.k@aave.com>",
+    "Pol Sendra <pol@aave.com>",
+    "David Truong <david@aave.com>"
   ],
   "license": "AGPLv3",
   "dependencies": {
     "tmp-promise": "^3.0.2"
-  }
+  },
+  "keywords": [
+    "aave",
+    "protocol",
+    "protocol-v2",
+    "ethereum",
+    "solidity"
+  ]
 }
