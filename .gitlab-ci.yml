@@ -58,7 +58,9 @@ prepare:
     - master
 
 publish:
-  extends: .image_step
+  image: ${IMAGE}
+  tags:
+    - docker
   stage: publish
   script:
     - npm ci
