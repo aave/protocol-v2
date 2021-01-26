@@ -17,9 +17,6 @@ test:
   after_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
-  only:
-    - master
-    - merge_requests
 
 deploy-mainnet-fork:
   tags:
@@ -32,9 +29,6 @@ deploy-mainnet-fork:
   after_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
-  only:
-    - master
-    - merge_requests
 
 certora-test:
   stage: checks
