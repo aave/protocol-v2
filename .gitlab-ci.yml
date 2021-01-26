@@ -17,6 +17,9 @@ test:
   after_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
+  only:
+    - master
+    - merge_requests
 
 deploy-mainnet-fork:
   tags:
@@ -29,6 +32,9 @@ deploy-mainnet-fork:
   after_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
+  only:
+    - master
+    - merge_requests
 
 certora-test:
   stage: checks
@@ -45,6 +51,9 @@ certora-test:
     - certoraRun specs/harness/StableDebtTokenHarness.sol:StableDebtTokenHarness --solc_args "['--optimize']" --verify StableDebtTokenHarness:specs/StableDebtToken.spec --settings -assumeUnwindCond,-b=4 --cache StableDebtToken --cloud
     - certoraRun specs/harness/UserConfigurationHarness.sol --verify UserConfigurationHarness:specs/UserConfiguration.spec --solc_args "['--optimize']" --settings -useBitVectorTheory --cache UserConfiguration --cloud
     - certoraRun contracts/protocol/tokenization/VariableDebtToken.sol:VariableDebtToken specs/harness/LendingPoolHarnessForVariableDebtToken.sol --solc_args "['--optimize']" --link VariableDebtToken:POOL=LendingPoolHarnessForVariableDebtToken --verify VariableDebtToken:specs/VariableDebtToken.spec --settings -assumeUnwindCond,-useNonLinearArithmetic,-b=4 --cache VariableDebtToken --cloud
+  only:
+    - master
+    - merge_requests
 
 prepare:
   stage: prepare
