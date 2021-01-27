@@ -1,6 +1,11 @@
 stages:
   - checks
 
+include:
+  - project: 'guided-explorations/ci-cd-plugin-extensions/ci-cd-plugin-extension-github-action-super-linter'
+    file: '/ci-cd-plugin-extension-github-action-super-linter-gitlab-ci.yml'
+    ref: v0.1.4
+
 linter:
   extends: .ci-cd-plugin-extension-github-action-super-linter
   stage: checks
