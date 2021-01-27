@@ -8,7 +8,7 @@ linter:
   before_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
   script:
-    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env prettier:lint
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run prettier:lint
   after_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
