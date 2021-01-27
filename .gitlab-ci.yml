@@ -1,17 +1,17 @@
 stages:
   - checks
 
-include:
-  - project: 'guided-explorations/ci-cd-plugin-extensions/ci-cd-plugin-extension-github-action-super-linter'
-    file: '/ci-cd-plugin-extension-github-action-super-linter-gitlab-ci.yml'
-    ref: v0.1.4
-
 linter:
-  extends: .ci-cd-plugin-extension-github-action-super-linter
   stage: checks
-  only:
-    - master
-    - merge_requests
+  tags:
+    - aave-build-runner
+  before_script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
+  script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env prettier:lint
+  after_script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
 
 test:
   stage: checks

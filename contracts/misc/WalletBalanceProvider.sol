@@ -93,7 +93,8 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reservesWithEth.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(reservesWithEth[j]);
+      DataTypes.ReserveConfigurationMap memory configuration =
+        pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
 

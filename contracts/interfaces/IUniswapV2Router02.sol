@@ -11,14 +11,20 @@ interface IUniswapV2Router02 {
   ) external returns (uint256[] memory amounts);
 
   function swapTokensForExactTokens(
-    uint amountOut,
-    uint amountInMax,
+    uint256 amountOut,
+    uint256 amountInMax,
     address[] calldata path,
     address to,
-    uint deadline
+    uint256 deadline
   ) external returns (uint256[] memory amounts);
 
-  function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
+  function getAmountsOut(uint256 amountIn, address[] calldata path)
+    external
+    view
+    returns (uint256[] memory amounts);
 
-  function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
+  function getAmountsIn(uint256 amountOut, address[] calldata path)
+    external
+    view
+    returns (uint256[] memory amounts);
 }

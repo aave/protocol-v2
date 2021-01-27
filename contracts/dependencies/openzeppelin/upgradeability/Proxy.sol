@@ -20,7 +20,7 @@ abstract contract Proxy {
   /**
    * @return The Address of the implementation.
    */
-  function _implementation() internal virtual view returns (address);
+  function _implementation() internal view virtual returns (address);
 
   /**
    * @dev Delegates execution to an implementation contract.

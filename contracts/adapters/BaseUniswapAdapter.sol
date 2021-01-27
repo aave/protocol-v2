@@ -441,7 +441,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       uint256 reserveDecimals = _getDecimals(reserveIn);
       address[] memory path = new address[](1);
       path[0] = reserveIn;
-      
+
       return
         AmountCalc(
           amountIn,

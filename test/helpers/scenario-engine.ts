@@ -1,4 +1,4 @@
-import {TestEnv, SignerWithAddress} from './make-suite';
+import { TestEnv, SignerWithAddress } from './make-suite';
 import {
   mint,
   approve,
@@ -11,7 +11,7 @@ import {
   rebalanceStableBorrowRate,
   delegateBorrowAllowance,
 } from './actions';
-import {RateMode} from '../../helpers/types';
+import { RateMode } from '../../helpers/types';
 
 export interface Action {
   name: string;
@@ -33,14 +33,14 @@ export interface Scenario {
 
 export const executeStory = async (story: Story, testEnv: TestEnv) => {
   for (const action of story.actions) {
-    const {users} = testEnv;
+    const { users } = testEnv;
     await executeAction(action, users, testEnv);
   }
 };
 
 const executeAction = async (action: Action, users: SignerWithAddress[], testEnv: TestEnv) => {
-  const {reserve, user: userIndex, borrowRateMode} = action.args;
-  const {name, expected, revertMessage} = action;
+  const { reserve, user: userIndex, borrowRateMode } = action.args;
+  const { name, expected, revertMessage } = action;
 
   if (!name || name === '') {
     throw 'Action name is missing';
@@ -75,7 +75,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
   switch (name) {
     case 'mint':
-      const {amount} = action.args;
+      const { amount } = action.args;
 
       if (!amount || amount === '') {
         throw `Invalid amount of ${reserve} to mint`;
@@ -90,7 +90,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'deposit':
       {
-        const {amount, sendValue, onBehalfOf: onBehalfOfIndex} = action.args;
+        const { amount, sendValue, onBehalfOf: onBehalfOfIndex } = action.args;
         const onBehalfOf = onBehalfOfIndex
           ? users[parseInt(onBehalfOfIndex)].address
           : user.address;
@@ -114,7 +114,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'delegateBorrowAllowance':
       {
-        const {amount, toUser: toUserIndex} = action.args;
+        const { amount, toUser: toUserIndex } = action.args;
         const toUser = users[parseInt(toUserIndex, 10)].address;
         if (!amount || amount === '') {
           throw `Invalid amount to deposit into the ${reserve} reserve`;
@@ -135,7 +135,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'withdraw':
       {
-        const {amount} = action.args;
+        const { amount } = action.args;
 
         if (!amount || amount === '') {
           throw `Invalid amount to withdraw from the ${reserve} reserve`;
@@ -146,7 +146,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       break;
     case 'borrow':
       {
-        const {amount, timeTravel, onBehalfOf: onBehalfOfIndex} = action.args;
+        const { amount, timeTravel, onBehalfOf: onBehalfOfIndex } = action.args;
 
         const onBehalfOf = onBehalfOfIndex
           ? users[parseInt(onBehalfOfIndex)].address
@@ -172,8 +172,8 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'repay':
       {
-        const {amount, borrowRateMode, sendValue} = action.args;
-        let {onBehalfOf: onBehalfOfIndex} = action.args;
+        const { amount, borrowRateMode, sendValue } = action.args;
+        let { onBehalfOf: onBehalfOfIndex } = action.args;
 
         if (!amount || amount === '') {
           throw `Invalid amount to repay into the ${reserve} reserve`;
@@ -205,7 +205,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'setUseAsCollateral':
       {
-        const {useAsCollateral} = action.args;
+        const { useAsCollateral } = action.args;
 
         if (!useAsCollateral || useAsCollateral === '') {
           throw `A valid value for useAsCollateral needs to be set when calling setUseReserveAsCollateral on reserve ${reserve}`;
@@ -220,7 +220,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
     case 'rebalanceStableBorrowRate':
       {
-        const {target: targetIndex} = action.args;
+        const { target: targetIndex } = action.args;
 
         if (!targetIndex || targetIndex === '') {
           throw `A target must be selected when trying to rebalance a stable rate`;
