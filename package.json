@@ -114,7 +114,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --pattern 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test/**/*.ts'"
+      "pre-commit": "pretty-quick --pattern 'contracts/**/*.sol' --pattern 'helpers/**/*.ts'  --pattern 'test/**/*.ts' --pattern 'tasks/**/*.ts'"
     }
   },
   "author": "Aave",
