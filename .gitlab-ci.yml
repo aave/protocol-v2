@@ -1,6 +1,13 @@
 stages:
   - checks
 
+linter:
+  extends: .ci-cd-plugin-extension-github-action-super-linter
+  stage: checks
+  only:
+    - master
+    - merge_requests
+
 test:
   stage: checks
   tags:
