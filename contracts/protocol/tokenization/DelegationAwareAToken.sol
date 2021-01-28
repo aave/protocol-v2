@@ -14,36 +14,17 @@ import {AToken} from './AToken.sol';
 contract DelegationAwareAToken is AToken {
   modifier onlyPoolAdmin {
     require(
-      _msgSender() == ILendingPool(POOL).getAddressesProvider().getPoolAdmin(),
+      _msgSender() == ILendingPool(_pool).getAddressesProvider().getPoolAdmin(),
       Errors.CALLER_NOT_POOL_ADMIN
     );
     _;
   }
-
-  constructor(
-    ILendingPool pool,
-    address underlyingAssetAddress,
-    address reserveTreasury,
-    string memory tokenName,
-    string memory tokenSymbol,
-    address incentivesController
-  )
-    public
-    AToken(
-      pool,
-      underlyingAssetAddress,
-      reserveTreasury,
-      tokenName,
-      tokenSymbol,
-      incentivesController
-    )
-  {}
 
   /**
    * @dev Delegates voting power of the underlying asset to a `delegatee` address
    * @param delegatee The address that will receive the delegation
    **/
   function delegateUnderlyingTo(address delegatee) external onlyPoolAdmin {
-    IDelegationToken(UNDERLYING_ASSET_ADDRESS).delegate(delegatee);
+    IDelegationToken(_underlyingAsset).delegate(delegatee);
   }
 }
