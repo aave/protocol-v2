@@ -139,9 +139,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     vars.currentLiquidityRate = 0;
 
     uint256 utilizationRate =
-      vars.totalDebt == 0
-        ? 0
-        : vars.totalDebt.rayDiv(availableLiquidity.add(vars.totalDebt));
+      vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(availableLiquidity.add(vars.totalDebt));
 
     vars.currentStableBorrowRate = ILendingRateOracle(addressesProvider.getLendingRateOracle())
       .getMarketBorrowRate(reserve);

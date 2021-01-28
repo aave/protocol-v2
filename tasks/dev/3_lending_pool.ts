@@ -1,22 +1,22 @@
-import {task} from 'hardhat/config';
+import { task } from 'hardhat/config';
 import {
   deployATokensAndRatesHelper,
   deployLendingPool,
   deployLendingPoolConfigurator,
   deployStableAndVariableTokensHelper,
 } from '../../helpers/contracts-deployments';
-import {eContractid} from '../../helpers/types';
-import {waitForTx} from '../../helpers/misc-utils';
+import { eContractid } from '../../helpers/types';
+import { waitForTx } from '../../helpers/misc-utils';
 import {
   getLendingPoolAddressesProvider,
   getLendingPool,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
-import {insertContractAddressInDb} from '../../helpers/contracts-helpers';
+import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
 
 task('dev:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({verify}, localBRE) => {
+  .setAction(async ({ verify }, localBRE) => {
     await localBRE.run('set-DRE');
 
     const addressesProvider = await getLendingPoolAddressesProvider();

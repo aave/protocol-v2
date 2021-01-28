@@ -8,7 +8,7 @@ contract LendingRateOracle is ILendingRateOracle, Ownable {
   mapping(address => uint256) borrowRates;
   mapping(address => uint256) liquidityRates;
 
-  function getMarketBorrowRate(address _asset) external override view returns (uint256) {
+  function getMarketBorrowRate(address _asset) external view override returns (uint256) {
     return borrowRates[_asset];
   }
 

@@ -1,13 +1,13 @@
-import {expect} from 'chai';
-import {makeSuite, TestEnv} from './helpers/make-suite';
-import {ProtocolErrors} from '../helpers/types';
-import {getStableDebtToken} from '../helpers/contracts-getters';
+import { expect } from 'chai';
+import { makeSuite, TestEnv } from './helpers/make-suite';
+import { ProtocolErrors } from '../helpers/types';
+import { getStableDebtToken } from '../helpers/contracts-getters';
 
 makeSuite('Stable debt token tests', (testEnv: TestEnv) => {
-  const {CT_CALLER_MUST_BE_LENDING_POOL} = ProtocolErrors;
+  const { CT_CALLER_MUST_BE_LENDING_POOL } = ProtocolErrors;
 
   it('Tries to invoke mint not being the LendingPool', async () => {
-    const {deployer, pool, dai, helpersContract} = testEnv;
+    const { deployer, pool, dai, helpersContract } = testEnv;
 
     const daiStableDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
       .stableDebtTokenAddress;
@@ -20,7 +20,7 @@ makeSuite('Stable debt token tests', (testEnv: TestEnv) => {
   });
 
   it('Tries to invoke burn not being the LendingPool', async () => {
-    const {deployer, dai, helpersContract} = testEnv;
+    const { deployer, dai, helpersContract } = testEnv;
 
     const daiStableDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
       .stableDebtTokenAddress;

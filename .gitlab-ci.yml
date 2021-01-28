@@ -1,6 +1,18 @@
 stages:
   - checks
 
+lint:
+  stage: checks
+  tags:
+    - aave-build-runner
+  before_script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
+  script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run prettier:check
+  after_script:
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down
+
 test:
   stage: checks
   tags:
