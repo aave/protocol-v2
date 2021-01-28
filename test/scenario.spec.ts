@@ -18,8 +18,7 @@ fs.readdirSync(scenarioFolder).forEach((file) => {
   const scenario = require(`./helpers/scenarios/${file}`);
 
   makeSuite(scenario.title, async (testEnv) => {
-    before('Initializing configuration',
-	   async () => {
+    before('Initializing configuration', async () => {
       // Sets BigNumber for this suite, instead of globally
       BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
 
