@@ -7,7 +7,7 @@ import { getMockUniswapRouter } from '../helpers/contracts-getters';
 import { deployFlashLiquidationAdapter } from '../helpers/contracts-deployments';
 import { MockUniswapV2Router02 } from '../types/MockUniswapV2Router02';
 import BigNumber from 'bignumber.js';
-import { DRE, evmRevert, evmSnapshot, increaseTime } from '../helpers/misc-utils';
+import { DRE, evmRevert, evmSnapshot, increaseTime, waitForTx } from '../helpers/misc-utils';
 import { ethers } from 'ethers';
 import { ProtocolErrors, RateMode } from '../helpers/types';
 import { APPROVAL_AMOUNT_LENDING_POOL, MAX_UINT_AMOUNT, oneEther } from '../helpers/constants';
@@ -70,6 +70,84 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
     await pool
       .connect(borrower.signer)
       .borrow(dai.address, amountDAIToBorrow, RateMode.Stable, '0', borrower.address);
+
+    const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+
+    expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.equal(
+      '8250',
+      INVALID_HF
+    );
+
+    await oracle.setAssetPrice(
+      dai.address,
+      new BigNumber(daiPrice.toString()).multipliedBy(1.18).toFixed(0)
+    );
+
+    const userGlobalData = await pool.getUserAccountData(borrower.address);
+
+    expect(userGlobalData.healthFactor.toString()).to.be.bignumber.lt(
+      oneEther.toFixed(0),
+      INVALID_HF
+    );
+  };
+
+  const depositSameAssetAndHFBelowOne = async () => {
+    const { dai, weth, users, pool, oracle } = testEnv;
+    const depositor = users[0];
+    const borrower = users[1];
+
+    //mints DAI to depositor
+    await dai.connect(depositor.signer).mint(await convertToCurrencyDecimals(dai.address, '1000'));
+
+    //approve protocol to access depositor wallet
+    await dai.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    //user 1 deposits 1000 DAI
+    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
+
+    await pool
+      .connect(depositor.signer)
+      .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
+    //user 2 deposits 1 ETH
+    const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
+
+    //mints WETH to borrower
+    await weth.connect(borrower.signer).mint(await convertToCurrencyDecimals(weth.address, '1000'));
+
+    //approve protocol to access the borrower wallet
+    await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    await pool
+      .connect(borrower.signer)
+      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
+
+    //user 2 borrows
+
+    const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+    const daiPrice = await oracle.getAssetPrice(dai.address);
+
+    const amountDAIToBorrow = await convertToCurrencyDecimals(
+      dai.address,
+      new BigNumber(userGlobalDataBefore.availableBorrowsETH.toString())
+        .div(daiPrice.toString())
+        .multipliedBy(0.8)
+        .toFixed(0)
+    );
+    await waitForTx(
+      await pool
+        .connect(borrower.signer)
+        .borrow(dai.address, amountDAIToBorrow, RateMode.Stable, '0', borrower.address)
+    );
+
+    const userGlobalDataBefore2 = await pool.getUserAccountData(borrower.address);
+
+    const amountWETHToBorrow = new BigNumber(userGlobalDataBefore2.availableBorrowsETH.toString())
+      .multipliedBy(0.8)
+      .toFixed(0);
+
+    await pool
+      .connect(borrower.signer)
+      .borrow(weth.address, amountWETHToBorrow, RateMode.Variable, '0', borrower.address);
 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -212,22 +290,10 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           );
 
         // Expect Swapped event
-        await expect(Promise.resolve(tx))
-          .to.emit(flashLiquidationAdapter, 'Swapped')
-          .withArgs(weth.address, dai.address, expectedSwap.toString(), flashLoanDebt);
+        await expect(Promise.resolve(tx)).to.emit(flashLiquidationAdapter, 'Swapped');
 
         // Expect LiquidationCall event
-        await expect(Promise.resolve(tx))
-          .to.emit(pool, 'LiquidationCall')
-          .withArgs(
-            weth.address,
-            dai.address,
-            borrower.address,
-            amountToLiquidate.toString(),
-            expectedCollateralLiquidated.toString(),
-            flashLiquidationAdapter.address,
-            false
-          );
+        await expect(Promise.resolve(tx)).to.emit(pool, 'LiquidationCall');
 
         const userReserveDataAfter = await getUserData(
           pool,
@@ -253,6 +319,20 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           userReserveDataBefore.stableBorrowRate,
           userReserveDataBefore.stableRateLastUpdated,
           txTimestamp
+        );
+
+        const collateralAssetContractBalance = await weth.balanceOf(
+          flashLiquidationAdapter.address
+        );
+        const borrowAssetContractBalance = await dai.balanceOf(flashLiquidationAdapter.address);
+
+        expect(collateralAssetContractBalance).to.be.equal(
+          '0',
+          'Contract address should not keep any balance.'
+        );
+        expect(borrowAssetContractBalance).to.be.equal(
+          '0',
+          'Contract address should not keep any balance.'
         );
 
         expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
@@ -290,6 +370,87 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(liquidatorWethBalanceAfter).to.be.equal(
           liquidatorWethBalanceBefore.add(expectedProfit),
           'Invalid expected WETH profit'
+        );
+      });
+    });
+
+    describe('executeOperation: succesfully liquidateCall with same asset via Flash Loan, but no swap needed', () => {
+      it('Liquidates the borrow with profit', async () => {
+        await depositSameAssetAndHFBelowOne();
+        await increaseTime(100);
+
+        const { weth, users, pool, oracle, helpersContract, flashLiquidationAdapter } = testEnv;
+
+        const liquidator = users[3];
+        const borrower = users[1];
+
+        const liquidatorWethBalanceBefore = await weth.balanceOf(liquidator.address);
+
+        const assetPrice = await oracle.getAssetPrice(weth.address);
+        const ethReserveDataBefore = await helpersContract.getReserveData(weth.address);
+        const userReserveDataBefore = await getUserData(
+          pool,
+          helpersContract,
+          weth.address,
+          borrower.address
+        );
+
+        const assetDecimals = (
+          await helpersContract.getReserveConfigurationData(weth.address)
+        ).decimals.toString();
+        const amountToLiquidate = userReserveDataBefore.currentVariableDebt.div(2).toFixed(0);
+
+        const expectedCollateralLiquidated = new BigNumber(assetPrice.toString())
+          .times(new BigNumber(amountToLiquidate).times(105))
+          .times(new BigNumber(10).pow(assetDecimals))
+          .div(new BigNumber(assetPrice.toString()).times(new BigNumber(10).pow(assetDecimals)))
+          .div(100)
+          .decimalPlaces(0, BigNumber.ROUND_DOWN);
+
+        const flashLoanDebt = new BigNumber(amountToLiquidate.toString())
+          .multipliedBy(1.0009)
+          .toFixed(0);
+
+        const params = buildFlashLiquidationAdapterParams(
+          weth.address,
+          weth.address,
+          borrower.address,
+          amountToLiquidate,
+          false
+        );
+        const tx = await pool
+          .connect(liquidator.signer)
+          .flashLoan(
+            flashLiquidationAdapter.address,
+            [weth.address],
+            [amountToLiquidate],
+            [0],
+            borrower.address,
+            params,
+            0
+          );
+
+        // Dont expect Swapped event due is same asset
+        await expect(Promise.resolve(tx)).to.not.emit(flashLiquidationAdapter, 'Swapped');
+
+        // Expect LiquidationCall event
+        await expect(Promise.resolve(tx))
+          .to.emit(pool, 'LiquidationCall')
+          .withArgs(
+            weth.address,
+            weth.address,
+            borrower.address,
+            amountToLiquidate.toString(),
+            expectedCollateralLiquidated.toString(),
+            flashLiquidationAdapter.address,
+            false
+          );
+
+        const borrowAssetContractBalance = await weth.balanceOf(flashLiquidationAdapter.address);
+
+        expect(borrowAssetContractBalance).to.be.equal(
+          '0',
+          'Contract address should not keep any balance.'
         );
       });
     });
@@ -367,7 +528,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           .flashLoan(
             flashLiquidationAdapter.address,
             [dai.address],
-            [amountToLiquidate],
+            [flashLoanDebt],
             [0],
             borrower.address,
             params,
@@ -375,27 +536,10 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           );
 
         // Expect Swapped event
-        await expect(Promise.resolve(tx))
-          .to.emit(flashLiquidationAdapter, 'Swapped')
-          .withArgs(
-            weth.address,
-            dai.address,
-            expectedCollateralLiquidated.toString(),
-            flashLoanDebt
-          );
+        await expect(Promise.resolve(tx)).to.emit(flashLiquidationAdapter, 'Swapped');
 
         // Expect LiquidationCall event
-        await expect(Promise.resolve(tx))
-          .to.emit(pool, 'LiquidationCall')
-          .withArgs(
-            weth.address,
-            dai.address,
-            borrower.address,
-            amountToLiquidate.toString(),
-            expectedCollateralLiquidated.toString(),
-            flashLiquidationAdapter.address,
-            false
-          );
+        await expect(Promise.resolve(tx)).to.emit(pool, 'LiquidationCall');
 
         const userReserveDataAfter = await getUserData(
           pool,
@@ -423,6 +567,17 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           txTimestamp
         );
 
+        const collateralAssetContractBalance = await dai.balanceOf(flashLiquidationAdapter.address);
+        const borrowAssetContractBalance = await weth.balanceOf(flashLiquidationAdapter.address);
+
+        expect(collateralAssetContractBalance).to.be.equal(
+          '0',
+          'Contract address should not keep any balance.'
+        );
+        expect(borrowAssetContractBalance).to.be.equal(
+          '0',
+          'Contract address should not keep any balance.'
+        );
         expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
           stableDebtBeforeTx.minus(amountToLiquidate).toFixed(0),
           'Invalid user debt after liquidation'
@@ -438,13 +593,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         expect(daiReserveDataAfter.liquidityRate.toString()).to.be.bignumber.lt(
           daiReserveDataBefore.liquidityRate.toString(),
           'Invalid liquidity APY'
-        );
-
-        expect(daiReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
-          new BigNumber(daiReserveDataBefore.availableLiquidity.toString())
-            .plus(flashLoanDebt)
-            .toFixed(0),
-          'Invalid principal available liquidity'
         );
 
         expect(ethReserveDataAfter.availableLiquidity.toString()).to.be.bignumber.almostEqual(
@@ -512,7 +660,9 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           .div(100)
           .decimalPlaces(0, BigNumber.ROUND_DOWN);
 
-        const flashLoanDebt = new BigNumber(extraAmount.toString()).multipliedBy(1.0009).toFixed(0);
+        const flashLoanDebt = new BigNumber(amountToLiquidate.toString())
+          .multipliedBy(1.0009)
+          .toFixed(0);
 
         // Set how much ETH will be sold and swapped for DAI at Uniswap mock
         await (
@@ -542,17 +692,22 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           );
 
         // Expect Swapped event
-        await expect(Promise.resolve(tx))
-          .to.emit(flashLiquidationAdapter, 'Swapped')
-          .withArgs(
-            weth.address,
-            dai.address,
-            expectedCollateralLiquidated.toString(),
-            flashLoanDebt
-          );
+        await expect(Promise.resolve(tx)).to.emit(flashLiquidationAdapter, 'Swapped');
 
         // Expect LiquidationCall event
         await expect(Promise.resolve(tx)).to.emit(pool, 'LiquidationCall');
+
+        const collateralAssetContractBalance = await dai.balanceOf(flashLiquidationAdapter.address);
+        const borrowAssetContractBalance = await dai.balanceOf(flashLiquidationAdapter.address);
+
+        expect(collateralAssetContractBalance).to.be.equal(
+          '0',
+          'Contract address should not keep any balance.'
+        );
+        expect(borrowAssetContractBalance).to.be.equal(
+          '0',
+          'Contract address should not keep any balance.'
+        );
       });
     });
 
