@@ -99,7 +99,7 @@ makeSuite('Mainnet Check list', (testEnv: TestEnv) => {
   });
 
   it('Borrow stable WETH and Full Repay with ETH', async () => {
-    const { users, wethGateway, aWETH, weth, pool, helpersContract } = testEnv;
+    const { users, wethGateway, aWETH, dai, aDai, weth, pool, helpersContract } = testEnv;
     const borrowSize = parseEther('1');
     const repaySize = borrowSize.add(borrowSize.mul(5).div(100));
     const user = users[1];

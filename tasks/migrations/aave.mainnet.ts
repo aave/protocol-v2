@@ -1,7 +1,6 @@
 import { task } from 'hardhat/config';
 import { checkVerification } from '../../helpers/etherscan-verification';
 import { ConfigNames } from '../../helpers/configuration';
-import { EthereumNetworkNames } from '../../helpers/types';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 

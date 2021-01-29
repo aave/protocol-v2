@@ -1,12 +1,12 @@
-import {TestEnv, makeSuite} from './helpers/make-suite';
-import {ZERO_ADDRESS} from '../helpers/constants';
-import {ProtocolErrors} from '../helpers/types';
+import { TestEnv, makeSuite } from './helpers/make-suite';
+import { ZERO_ADDRESS } from '../helpers/constants';
+import { ProtocolErrors } from '../helpers/types';
 
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   it('Checks the addresses provider is added to the registry', async () => {
-    const {addressesProvider, registry} = testEnv;
+    const { addressesProvider, registry } = testEnv;
 
     const providers = await registry.getAddressesProvidersList();
 
@@ -18,8 +18,8 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   });
 
   it('tries to register an addresses provider with id 0', async () => {
-    const {users, registry} = testEnv;
-    const {LPAPR_INVALID_ADDRESSES_PROVIDER_ID} = ProtocolErrors;
+    const { users, registry } = testEnv;
+    const { LPAPR_INVALID_ADDRESSES_PROVIDER_ID } = ProtocolErrors;
 
     await expect(registry.registerAddressesProvider(users[2].address, '0')).to.be.revertedWith(
       LPAPR_INVALID_ADDRESSES_PROVIDER_ID
@@ -27,7 +27,7 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   });
 
   it('Registers a new mock addresses provider', async () => {
-    const {users, registry} = testEnv;
+    const { users, registry } = testEnv;
 
     //simulating an addresses provider using the users[1] wallet address
     await registry.registerAddressesProvider(users[1].address, '2');
@@ -42,7 +42,7 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   });
 
   it('Removes the mock addresses provider', async () => {
-    const {users, registry, addressesProvider} = testEnv;
+    const { users, registry, addressesProvider } = testEnv;
 
     const id = await registry.getAddressesProviderIdByAddress(users[1].address);
 
@@ -61,9 +61,9 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   });
 
   it('Tries to remove a unregistered addressesProvider', async () => {
-    const {LPAPR_PROVIDER_NOT_REGISTERED} = ProtocolErrors;
+    const { LPAPR_PROVIDER_NOT_REGISTERED } = ProtocolErrors;
 
-    const {users, registry} = testEnv;
+    const { users, registry } = testEnv;
 
     await expect(registry.unregisterAddressesProvider(users[2].address)).to.be.revertedWith(
       LPAPR_PROVIDER_NOT_REGISTERED
@@ -71,9 +71,9 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   });
 
   it('Tries to remove a unregistered addressesProvider', async () => {
-    const {LPAPR_PROVIDER_NOT_REGISTERED} = ProtocolErrors;
+    const { LPAPR_PROVIDER_NOT_REGISTERED } = ProtocolErrors;
 
-    const {users, registry} = testEnv;
+    const { users, registry } = testEnv;
 
     await expect(registry.unregisterAddressesProvider(users[2].address)).to.be.revertedWith(
       LPAPR_PROVIDER_NOT_REGISTERED
@@ -81,7 +81,7 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
   });
 
   it('Tries to add an already added addressesProvider with a different id. Should overwrite the previous id', async () => {
-    const {users, registry, addressesProvider} = testEnv;
+    const { users, registry, addressesProvider } = testEnv;
 
     await registry.registerAddressesProvider(addressesProvider.address, '2');
 

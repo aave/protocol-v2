@@ -1,8 +1,5 @@
 import { task } from 'hardhat/config';
-import {
-  getEthersSignersAddresses,
-  insertContractAddressInDb,
-} from '../../helpers/contracts-helpers';
+import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
 import {
   deployATokensAndRatesHelper,
   deployLendingPool,
