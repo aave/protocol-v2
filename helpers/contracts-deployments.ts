@@ -300,7 +300,7 @@ export const deployStableDebtToken = async (
   verify: boolean
 ) =>
   withSaveAndVerify(
-    await new StableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.StableDebtToken,
     args,
     verify
@@ -311,7 +311,7 @@ export const deployVariableDebtToken = async (
   verify: boolean
 ) =>
   withSaveAndVerify(
-    await new VariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    await new VariableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.VariableDebtToken,
     args,
     verify
@@ -338,7 +338,7 @@ export const deployGenericAToken = async (
 
   ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
   return withSaveAndVerify(
-    await new ATokenFactory(await getFirstSigner()).deploy(...args),
+    await new ATokenFactory(await getFirstSigner()).deploy(),
     eContractid.AToken,
     args,
     verify
@@ -366,7 +366,7 @@ export const deployDelegationAwareAToken = async (
   ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
 
   return withSaveAndVerify(
-    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
+    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
     eContractid.DelegationAwareAToken,
     args,
     verify
@@ -451,7 +451,7 @@ export const deployMockStableDebtToken = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.MockStableDebtToken,
     args,
     verify
@@ -470,7 +470,7 @@ export const deployMockVariableDebtToken = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    await new MockVariableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.MockVariableDebtToken,
     args,
     verify
@@ -481,7 +481,7 @@ export const deployMockAToken = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockATokenFactory(await getFirstSigner()).deploy(...args),
+    await new MockATokenFactory(await getFirstSigner()).deploy(),
     eContractid.MockAToken,
     args,
     verify

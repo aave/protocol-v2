@@ -95,7 +95,19 @@ export const initReservesByHelper = async (
       BigNumberish
     ][] = [];
     const reservesDecimals: string[] = [];
-
+    // TEST
+    const inputParams: {
+      asset: string, 
+      rates: [
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish
+      ]
+    }[] = [];
+    // TEST
     for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
       const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
         (value) => value === assetSymbol
@@ -130,12 +142,26 @@ export const initReservesByHelper = async (
         stableRateSlope2,
       ]);
       reservesDecimals.push(reserveDecimals);
+
+      // TEST
+      inputParams.push({ 
+        asset: tokenAddress,
+        rates: [
+          optimalUtilizationRate,
+          baseVariableBorrowRate,
+          variableRateSlope1,
+          variableRateSlope2,
+          stableRateSlope1,
+          stableRateSlope2
+        ] 
+      });
+      // TEST
     }
 
     // tx1 and tx2 gas is accounted for later.
     // Deploy stable and variable deployers and save implementations
     const tx1 = await waitForTx(
-      await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
+      await stableAndVariableDeployer.initDeployment(tokens, symbols)
     );
     tx1.events?.forEach((event, index) => {
       rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
@@ -144,13 +170,7 @@ export const initReservesByHelper = async (
 
     // Deploy atokens and rate strategies and save implementations
     const tx2 = await waitForTx(
-      await atokenAndRatesDeployer.initDeployment(
-        tokens,
-        symbols,
-        strategyRates,
-        treasuryAddress,
-        incentivesController
-      )
+      await atokenAndRatesDeployer.initDeployment(inputParams)
     );
     tx2.events?.forEach((event, index) => {
       rawInsertContractAddressInDb(`a${symbols[index]}`, event?.args?.aToken);
@@ -317,6 +337,16 @@ export const configureReservesByHelper = async (
   const liquidationBonuses: string[] = [];
   const reserveFactors: string[] = [];
   const stableRatesEnabled: boolean[] = [];
+  // TEST
+  const inputParams : {
+    asset: string;
+    baseLTV: BigNumberish;
+    liquidationThreshold: BigNumberish;
+    liquidationBonus: BigNumberish;
+    reserveFactor: BigNumberish;
+    stableBorrowingEnabled: boolean;
+  }[] = [];
+  // TEST
 
   for (const [
     assetSymbol,
@@ -345,6 +375,18 @@ export const configureReservesByHelper = async (
       continue;
     }
     // Push data
+
+    // TEST
+    inputParams.push({
+      asset: tokenAddress,
+      baseLTV: baseLTVAsCollateral,
+      liquidationThreshold: liquidationThreshold,
+      liquidationBonus: liquidationBonus,
+      reserveFactor: reserveFactor,
+      stableBorrowingEnabled: stableBorrowRateEnabled
+    });
+    // TEST
+
     tokens.push(tokenAddress);
     symbols.push(assetSymbol);
     baseLTVA.push(baseLTVAsCollateral);
@@ -368,25 +410,28 @@ export const configureReservesByHelper = async (
     const chunkedReserveFactors = chunk(reserveFactors, enableChunks);
     const chunkedStableRatesEnabled = chunk(stableRatesEnabled, enableChunks);
 
+    // TEST
+    const chunkedInputParams = chunk(inputParams, enableChunks);
+    // TEST
+
+
     console.log(`- Configure reserves in ${chunkedTokens.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
-      addGas(await atokenAndRatesDeployer.estimateGas.configureReserves(
-        chunkedTokens[chunkIndex],
-        chunkedBase[chunkIndex],
-        chunkedliquidationThresholds[chunkIndex],
-        chunkedliquidationBonuses[chunkIndex],
-        chunkedReserveFactors[chunkIndex],
-        chunkedStableRatesEnabled[chunkIndex],
-        { gasLimit: 12000000 }
-      ));
+      // addGas(await atokenAndRatesDeployer.estimateGas.configureReserves(
+      //   chunkedTokens[chunkIndex],
+      //   chunkedBase[chunkIndex],
+      //   chunkedliquidationThresholds[chunkIndex],
+      //   chunkedliquidationBonuses[chunkIndex],
+      //   chunkedReserveFactors[chunkIndex],
+      //   chunkedStableRatesEnabled[chunkIndex],
+      //   { gasLimit: 12000000 }
+      // ));
+
+
+
       await waitForTx(
         await atokenAndRatesDeployer.configureReserves(
-          chunkedTokens[chunkIndex],
-          chunkedBase[chunkIndex],
-          chunkedliquidationThresholds[chunkIndex],
-          chunkedliquidationBonuses[chunkIndex],
-          chunkedReserveFactors[chunkIndex],
-          chunkedStableRatesEnabled[chunkIndex],
+          chunkedInputParams[chunkIndex],
           { gasLimit: 12000000 }
         )
       );
