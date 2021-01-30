@@ -49,10 +49,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
-  //main configuration parameters
-  uint256 public constant MAX_STABLE_RATE_BORROW_SIZE_PERCENT = 2500;
-  uint256 public constant FLASHLOAN_PREMIUM_TOTAL = 9;
-  uint256 public constant MAX_NUMBER_RESERVES = 128;
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
   modifier whenNotPaused() {
@@ -86,9 +82,20 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - Caching the address of the LendingPoolAddressesProvider in order to reduce gas consumption
    *   on subsequent operations
    * @param provider The address of the LendingPoolAddressesProvider
+   * @param maxStableRateBorrowSizePercent The percentage of available liquidity that can be borrowed at once at stable rate
+   * @param flashLoanPremiumTotal The fee on flash loans
+   * @param maxNumberOfReserves Maximum number of reserves supported to be listed in this LendingPool
    **/
-  function initialize(ILendingPoolAddressesProvider provider) public initializer {
+  function initialize(
+    ILendingPoolAddressesProvider provider,
+    uint256 maxStableRateBorrowSizePercent,
+    uint256 flashLoanPremiumTotal,
+    uint256 maxNumberOfReserves
+  ) public initializer {
     _addressesProvider = provider;
+    _maxStableRateBorrowSizePercent = maxStableRateBorrowSizePercent;
+    _flashLoanPremiumTotal = flashLoanPremiumTotal;
+    _maxNumberOfReserves = maxNumberOfReserves;
   }
 
   /**
@@ -144,7 +151,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     address to
-  ) external override whenNotPaused  returns (uint256) {
+  ) external override whenNotPaused returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
@@ -499,7 +506,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
 
-      premiums[vars.i] = amounts[vars.i].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000);
+      premiums[vars.i] = amounts[vars.i].mul(_flashLoanPremiumTotal).div(10000);
 
       IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
@@ -704,6 +711,27 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
+   * @dev Returns the percentage of available liquidity that can be borrowed at once at stable rate
+   */
+  function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() public view returns (uint256) {
+    return _maxStableRateBorrowSizePercent;
+  }
+
+  /**
+   * @dev Returns the fee on flash loans 
+   */
+  function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
+    return _flashLoanPremiumTotal;
+  }
+
+  /**
+   * @dev Returns the maximum number of reserves supported to be listed in this LendingPool
+   */
+  function MAX_NUMBER_RESERVES() public view returns (uint256) {
+    return _maxNumberOfReserves;
+  }
+
+  /**
    * @dev Validates and finalizes an aToken transfer
    * - Only callable by the overlying aToken of the `asset`
    * @param asset The address of the underlying asset of the aToken
@@ -847,7 +875,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.amount,
       amountInETH,
       vars.interestRateMode,
-      MAX_STABLE_RATE_BORROW_SIZE_PERCENT,
+      _maxStableRateBorrowSizePercent,
       _reserves,
       userConfig,
       _reservesList,
@@ -909,7 +937,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function _addReserveToList(address asset) internal {
     uint256 reservesCount = _reservesCount;
 
-    require(reservesCount < MAX_NUMBER_RESERVES, Errors.LP_NO_MORE_RESERVES_ALLOWED);
+    require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
     bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
 

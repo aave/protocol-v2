@@ -89,20 +89,13 @@ library ValidationLogic {
   }
 
   struct ValidateBorrowLocalVars {
-    uint256 principalBorrowBalance;
     uint256 currentLtv;
     uint256 currentLiquidationThreshold;
-    uint256 requestedBorrowAmountETH;
     uint256 amountOfCollateralNeededETH;
     uint256 userCollateralBalanceETH;
     uint256 userBorrowBalanceETH;
-    uint256 borrowBalanceIncrease;
-    uint256 currentReserveStableRate;
     uint256 availableLiquidity;
-    uint256 finalUserBorrowRate;
     uint256 healthFactor;
-    DataTypes.InterestRateMode rateMode;
-    bool healthFactorBelowThreshold;
     bool isActive;
     bool isFrozen;
     bool borrowingEnabled;
@@ -197,7 +190,7 @@ library ValidationLogic {
      * 3. Users will be able to borrow only a portion of the total available liquidity
      **/
 
-    if (vars.rateMode == DataTypes.InterestRateMode.STABLE) {
+    if (interestRateMode == uint256(DataTypes.InterestRateMode.STABLE)) {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
       require(vars.stableRateBorrowingEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
