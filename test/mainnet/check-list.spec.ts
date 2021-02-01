@@ -15,7 +15,7 @@ const UNISWAP_ROUTER = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
 makeSuite('Mainnet Check list', (testEnv: TestEnv) => {
   const zero = BigNumber.from('0');
   const depositSize = parseEther('5');
-
+  const daiSize = parseEther('10000');
   it('Deposit WETH', async () => {
     const { users, wethGateway, aWETH, pool } = testEnv;
 
@@ -99,7 +99,7 @@ makeSuite('Mainnet Check list', (testEnv: TestEnv) => {
   });
 
   it('Borrow stable WETH and Full Repay with ETH', async () => {
-    const { users, wethGateway, aWETH, weth, pool, helpersContract } = testEnv;
+    const { users, wethGateway, aWETH, dai, aDai, weth, pool, helpersContract } = testEnv;
     const borrowSize = parseEther('1');
     const repaySize = borrowSize.add(borrowSize.mul(5).div(100));
     const user = users[1];
@@ -110,13 +110,15 @@ makeSuite('Mainnet Check list', (testEnv: TestEnv) => {
 
     const stableDebtToken = await getStableDebtToken(stableDebtTokenAddress);
 
-    // Deposit with native ETH
-    await wethGateway.connect(user.signer).depositETH(user.address, '0', { value: depositSize });
+    // Deposit 10000 DAI
+    await dai.connect(user.signer).mint(daiSize);
+    await dai.connect(user.signer).approve(pool.address, daiSize);
+    await pool.connect(user.signer).deposit(dai.address, daiSize, user.address, '0');
 
-    const aTokensBalance = await aWETH.balanceOf(user.address);
+    const aTokensBalance = await aDai.balanceOf(user.address);
 
     expect(aTokensBalance).to.be.gt(zero);
-    expect(aTokensBalance).to.be.gte(depositSize);
+    expect(aTokensBalance).to.be.gte(daiSize);
 
     // Borrow WETH with WETH as collateral
     await waitForTx(

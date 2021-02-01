@@ -1,27 +1,18 @@
 import { task } from 'hardhat/config';
-import { ExternalProvider } from '@ethersproject/providers';
 import { checkVerification } from '../../helpers/etherscan-verification';
 import { ConfigNames } from '../../helpers/configuration';
-import { EthereumNetworkNames } from '../../helpers/types';
 import { printContracts } from '../../helpers/misc-utils';
+import { usingTenderly } from '../../helpers/tenderly-utils';
 
 task('aave:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify }, DRE) => {
     const POOL_NAME = ConfigNames.Aave;
-    const network = <EthereumNetworkNames>DRE.network.name;
     await DRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {
       checkVerification();
-    }
-
-    if (network.includes('tenderly')) {
-      console.log('- Setting up Tenderly provider');
-      await DRE.tenderlyRPC.initializeFork();
-      const provider = new DRE.ethers.providers.Web3Provider(DRE.tenderlyRPC as any);
-      DRE.ethers.provider = provider;
     }
 
     console.log('Migration started\n');
@@ -50,7 +41,7 @@ task('aave:mainnet', 'Deploy development enviroment')
       await DRE.run('verify:tokens', { pool: POOL_NAME });
     }
 
-    if (network.includes('tenderly')) {
+    if (usingTenderly()) {
       const postDeployHead = DRE.tenderlyRPC.getHead();
       console.log('Tenderly UUID', postDeployHead);
     }

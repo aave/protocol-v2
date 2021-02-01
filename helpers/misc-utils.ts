@@ -17,9 +17,8 @@ export const stringToBigNumber = (amount: string): BigNumber => new BigNumber(am
 
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
-export let DRE:
-  | HardhatRuntimeEnvironment
-  | BuidlerRuntimeEnvironment = {} as HardhatRuntimeEnvironment;
+export let DRE: HardhatRuntimeEnvironment | BuidlerRuntimeEnvironment;
+
 export const setDRE = (_DRE: HardhatRuntimeEnvironment | BuidlerRuntimeEnvironment) => {
   DRE = _DRE;
 };
