@@ -82,20 +82,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - Caching the address of the LendingPoolAddressesProvider in order to reduce gas consumption
    *   on subsequent operations
    * @param provider The address of the LendingPoolAddressesProvider
-   * @param maxStableRateBorrowSizePercent The percentage of available liquidity that can be borrowed at once at stable rate
-   * @param flashLoanPremiumTotal The fee on flash loans
-   * @param maxNumberOfReserves Maximum number of reserves supported to be listed in this LendingPool
    **/
-  function initialize(
-    ILendingPoolAddressesProvider provider,
-    uint256 maxStableRateBorrowSizePercent,
-    uint256 flashLoanPremiumTotal,
-    uint256 maxNumberOfReserves
-  ) public initializer {
+  function initialize(ILendingPoolAddressesProvider provider) public initializer {
     _addressesProvider = provider;
-    _maxStableRateBorrowSizePercent = maxStableRateBorrowSizePercent;
-    _flashLoanPremiumTotal = flashLoanPremiumTotal;
-    _maxNumberOfReserves = maxNumberOfReserves;
+    _maxStableRateBorrowSizePercent = 2500;
+    _flashLoanPremiumTotal = 9;
+    _maxNumberOfReserves = 128;
   }
 
   /**
