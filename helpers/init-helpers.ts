@@ -484,6 +484,10 @@ export const configureReservesByHelper = async (
       // ));
 
 
+      addGas(await atokenAndRatesDeployer.estimateGas.configureReserves(
+        chunkedInputParams[chunkIndex],
+        { gasLimit: 12000000 }
+      ));
 
       await waitForTx(
         await atokenAndRatesDeployer.configureReserves(
