@@ -62,8 +62,11 @@ export const advanceTimeAndBlock = async function (forwardTime: number) {
   }
   const currentTime = currentBlock.timestamp;
   const futureTime = currentTime + forwardTime;
+  await new Promise((r) => setTimeout(r, 500));
   await DRE.ethers.provider.send('evm_setNextBlockTimestamp', [futureTime]);
+  await new Promise((r) => setTimeout(r, 500));
   await DRE.ethers.provider.send('evm_mine', []);
+  await new Promise((r) => setTimeout(r, 500));
 };
 
 export const waitForTx = async (tx: ContractTransaction) => await tx.wait(1);
