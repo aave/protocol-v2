@@ -37,6 +37,7 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     uint256 flashLoanDebt;
     uint256 soldAmount;
     uint256 remainingTokens;
+    uint256 borrowedAssetLeftovers;
   }
 
   constructor(
@@ -104,7 +105,7 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     address user,
     uint256 debtToCover,
     bool useEthPath,
-    uint256 flashBorrowedAmount, // 1000
+    uint256 flashBorrowedAmount,
     uint256 premium,
     address initiator
   ) internal {
@@ -112,8 +113,11 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     vars.initCollateralBalance = IERC20(collateralAsset).balanceOf(address(this));
     if (collateralAsset != borrowedAsset) {
       vars.initFlashBorrowedBalance = IERC20(borrowedAsset).balanceOf(address(this));
+
+      // Track leftover balance to rescue funds in case of external transfers into this contract
+      vars.borrowedAssetLeftovers = vars.initFlashBorrowedBalance.sub(flashBorrowedAmount);
     }
-    vars.flashLoanDebt = flashBorrowedAmount.add(premium); // 1010
+    vars.flashLoanDebt = flashBorrowedAmount.add(premium);
 
     // Approve LendingPool to use debt token for liquidation
     IERC20(borrowedAsset).approve(address(LENDING_POOL), debtToCover);
@@ -124,15 +128,16 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     // Discover the liquidated tokens
     uint256 collateralBalanceAfter = IERC20(collateralAsset).balanceOf(address(this));
 
+    // Track only collateral released, not current asset balance of the contract
     vars.diffCollateralBalance = collateralBalanceAfter.sub(vars.initCollateralBalance);
 
     if (collateralAsset != borrowedAsset) {
-      // Discover flash loan balance
+      // Discover flash loan balance after the liquidation
       uint256 flashBorrowedAssetAfter = IERC20(borrowedAsset).balanceOf(address(this));
 
-      vars.diffFlashBorrowedBalance = flashBorrowedAssetAfter.sub(
-        vars.initFlashBorrowedBalance.sub(flashBorrowedAmount)
-      );
+      // Use only flash loan borrowed assets, not current asset balance of the contract
+      vars.diffFlashBorrowedBalance = flashBorrowedAssetAfter.sub(vars.borrowedAssetLeftovers);
+
       // Swap released collateral into the debt asset, to repay the flash loan
       vars.soldAmount = _swapTokensForExactTokens(
         collateralAsset,
