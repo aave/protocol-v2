@@ -19,7 +19,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 USDC, user 1 deposits 5 ETH, borrows 600 DAI at a variable rate, user 0 rebalances user 1 (revert expected)",
+      "description": "User 0 deposits 1000 USDC, user 1 deposits 5 ETH, borrows 250 USDC at a stable rate, user 0 rebalances user 1 (revert expected)",
       "actions": [
         {
           "name": "mint",
