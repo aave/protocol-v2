@@ -34,7 +34,8 @@ fs.readdirSync(scenarioFolder).forEach((file) => {
     });
 
     for (const story of scenario.stories) {
-      it(story.description, async () => {
+      it(story.description, async function () {
+        this.retries(4);
         await executeStory(story, testEnv);
       });
     }
