@@ -200,7 +200,13 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       );
 
       // Swap collateral asset to the debt asset
-      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], neededForFlashLoanDebt, useEthPath);
+      _swapTokensForExactTokens(
+        collateralAsset,
+        debtAsset,
+        amounts[0],
+        neededForFlashLoanDebt,
+        useEthPath
+      );
     } else {
       // Pull aTokens from user
       _pullAToken(

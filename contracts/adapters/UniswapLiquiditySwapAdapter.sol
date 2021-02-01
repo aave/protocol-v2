@@ -187,16 +187,16 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    * @param permitSignature List of struct containing the permit signature
    * @param useEthPath true if the swap needs to occur using ETH in the routing, false otherwise
    */
-   
+
   struct SwapLiquidityLocalVars {
-   address aToken;
-   uint256 aTokenInitiatorBalance;
-   uint256 amountToSwap;
-   uint256 receivedAmount;
-   uint256 flashLoanDebt;
-   uint256 amountToPull;
+    address aToken;
+    uint256 aTokenInitiatorBalance;
+    uint256 amountToSwap;
+    uint256 receivedAmount;
+    uint256 flashLoanDebt;
+    uint256 amountToPull;
   }
-  
+
   function _swapLiquidity(
     address assetFrom,
     address assetTo,
@@ -208,19 +208,22 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     PermitSignature memory permitSignature,
     bool useEthPath
   ) internal {
-    
     SwapLiquidityLocalVars memory vars;
-    
+
     vars.aToken = _getReserveData(assetFrom).aTokenAddress;
 
     vars.aTokenInitiatorBalance = IERC20(vars.aToken).balanceOf(initiator);
-    vars.amountToSwap =
-      swapAllBalance && vars.aTokenInitiatorBalance.sub(premium) <= amount
-        ? vars.aTokenInitiatorBalance.sub(premium)
-        : amount;
+    vars.amountToSwap = swapAllBalance && vars.aTokenInitiatorBalance.sub(premium) <= amount
+      ? vars.aTokenInitiatorBalance.sub(premium)
+      : amount;
 
-    vars.receivedAmount =
-      _swapExactTokensForTokens(assetFrom, assetTo, vars.amountToSwap, minAmountToReceive, useEthPath);
+    vars.receivedAmount = _swapExactTokensForTokens(
+      assetFrom,
+      assetTo,
+      vars.amountToSwap,
+      minAmountToReceive,
+      useEthPath
+    );
 
     // Deposit new reserve
     IERC20(assetTo).safeApprove(address(LENDING_POOL), 0);
