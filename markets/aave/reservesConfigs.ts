@@ -341,3 +341,20 @@ export const strategyZRX: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000'
 };
+
+export const strategyXSUSHI: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '2500',
+  liquidationThreshold: '4500',
+  liquidationBonus: '11500',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '3500',
+};
