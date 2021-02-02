@@ -9,6 +9,7 @@ import { DRE } from '../helpers/misc-utils';
 import {
   ConfigNames,
   getATokenDomainSeparatorPerNetwork,
+  getTreasuryAddress,
   loadPoolConfig,
 } from '../helpers/configuration';
 import { waitForTx } from '../helpers/misc-utils';
@@ -19,6 +20,7 @@ import {
 import { DelegationAwareATokenFactory } from '../types';
 import { DelegationAwareAToken } from '../types/DelegationAwareAToken';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
+import AaveConfig from '../markets/aave';
 
 const { parseEther } = ethers.utils;
 
@@ -33,11 +35,11 @@ makeSuite('AToken: underlying delegation', (testEnv: TestEnv) => {
     delegationERC20 = await deployMintableDelegationERC20(['DEL', 'DEL', '18']);
 
     delegationAToken = await deployDelegationAwareAToken(
-      [pool.address, ZERO_ADDRESS, delegationERC20.address, ZERO_ADDRESS, '18', 'aDEL', 'aDEL'],
+      [pool.address, delegationERC20.address, await getTreasuryAddress(AaveConfig), ZERO_ADDRESS, 'aDEL', 'aDEL'],
       false
     );
     
-    await delegationAToken.initialize(pool.address, ZERO_ADDRESS, delegationERC20.address, ZERO_ADDRESS, '18', 'aDEL', 'aDEL');
+    //await delegationAToken.initialize(pool.address, ZERO_ADDRESS, delegationERC20.address, ZERO_ADDRESS, '18', 'aDEL', 'aDEL');
 
     console.log((await delegationAToken.decimals()).toString());
   });

@@ -231,11 +231,11 @@ export const initReservesByHelper = async (
       treasury: treasuryAddress,
       incentivesController: ZERO_ADDRESS,
       underlyingAssetName: reserveSymbols[i],
-      aTokenName: `Aave Interest Bearing ${reserveSymbols[i]}`,
+      aTokenName: `Aave interest bearing ${reserveSymbols[i]}`,
       aTokenSymbol: `a${reserveSymbols[i]}`,
-      variableDebtTokenName: `Aave Variable Debt ${reserveSymbols[i]}`,
+      variableDebtTokenName: `Aave variable debt bearing ${reserveSymbols[i]}`,
       variableDebtTokenSymbol: `variableDebt${reserveSymbols[i]}`,
-      stableDebtTokenName: `Aave Stable Debt ${reserveSymbols[i]}`,
+      stableDebtTokenName: `Aave stable debt bearing ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${reserveSymbols[i]}`
     });
   }
@@ -263,9 +263,9 @@ export const initReservesByHelper = async (
         poolAddress,
         tokenAddresses[symbol],
         treasuryAddress,
+        ZERO_ADDRESS,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );
@@ -273,9 +273,9 @@ export const initReservesByHelper = async (
       [
         poolAddress,
         tokenAddresses[symbol],
+        ZERO_ADDRESS, // Incentives controller
         `Aave stable debt bearing ${symbol}`,
-        `stableDebt${symbol}`,
-        ZERO_ADDRESS,
+        `stableDebt${symbol}`
       ],
       verify
     );
@@ -283,9 +283,9 @@ export const initReservesByHelper = async (
       [
         poolAddress,
         tokenAddresses[symbol],
+        ZERO_ADDRESS, // Incentives controller
         `Aave variable debt bearing ${symbol}`,
         `variableDebt${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );
@@ -573,9 +573,9 @@ export const initTokenReservesByHelper = async (
         [
           poolAddress,
           tokenAddresses[symbol],
+          ZERO_ADDRESS, // Incentives controller
           `Aave stable debt bearing ${symbol}`,
-          `stableDebt${symbol}`,
-          ZERO_ADDRESS,
+          `stableDebt${symbol}`
         ],
         verify
       );
@@ -586,9 +586,9 @@ export const initTokenReservesByHelper = async (
         [
           poolAddress,
           tokenAddresses[symbol],
+          ZERO_ADDRESS, // Incentives Controller
           `Aave variable debt bearing ${symbol}`,
-          `variableDebt${symbol}`,
-          ZERO_ADDRESS,
+          `variableDebt${symbol}`
         ],
         verify
       );
@@ -604,9 +604,9 @@ export const initTokenReservesByHelper = async (
           poolAddress,
           tokenAddresses[symbol],
           treasuryAddress,
-          `Aave interest bearing ${symbol}`,
-          `a${symbol}`,
           ZERO_ADDRESS,
+          `Aave interest bearing ${symbol}`,
+          `a${symbol}`
         ],
         verify
       );

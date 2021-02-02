@@ -16,6 +16,8 @@ import {Helpers} from '../helpers/Helpers.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
+import {console} from 'hardhat/console.sol';
+
 /**
  * @title ReserveLogic library
  * @author Aave
@@ -194,7 +196,7 @@ library ValidationLogic {
       //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
       require(vars.stableRateBorrowingEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
-
+      console.log("Reserve aToken balance on borrowing address:", IERC20(reserve.aTokenAddress).balanceOf(userAddress));
       require(
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
