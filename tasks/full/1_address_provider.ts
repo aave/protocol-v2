@@ -20,7 +20,7 @@ import { formatEther, isAddress, parseEther } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
 import { Signer, BigNumber } from 'ethers';
 import { parse } from 'path';
-import { addGas } from '../../gas-tracker';
+import { addGas } from '../../helpers/gas-tracker';
 //import BigNumber from 'bignumber.js';
 
 task(

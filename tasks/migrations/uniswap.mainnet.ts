@@ -4,7 +4,7 @@ import {checkVerification} from '../../helpers/etherscan-verification';
 import {ConfigNames} from '../../helpers/configuration';
 import {EthereumNetworkNames} from '../../helpers/types';
 import {printContracts} from '../../helpers/misc-utils';
-import {totalGas} from '../../gas-tracker';
+import {totalGas} from '../../helpers/gas-tracker';
 
 task('uniswap:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')

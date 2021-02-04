@@ -26,7 +26,7 @@ import {
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
-import { addGas } from '../gas-tracker';
+import { addGas } from './gas-tracker';
 import { getTreasuryAddress } from './configuration';
 
 export const chooseATokenDeployment = (id: eContractid) => {

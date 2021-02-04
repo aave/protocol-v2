@@ -18,7 +18,7 @@ import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyContract } from './etherscan-verification';
 import { getIErc20Detailed } from './contracts-getters';
 import { usingTenderly } from './tenderly-utils';
-import { addGas, totalGas } from '../gas-tracker';
+import { addGas, totalGas } from './gas-tracker';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
