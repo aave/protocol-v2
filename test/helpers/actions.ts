@@ -161,6 +161,9 @@ export const deposit = async (
   if (sendValue) {
     txOptions.value = await convertToCurrencyDecimals(reserve, sendValue);
   }
+
+  //console.log("Depositing %s %s, expecting %s", amountToDeposit.toString(), reserveSymbol, expectedResult);
+
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
       await pool
@@ -348,7 +351,7 @@ export const borrow = async (
   );
 
   const amountToBorrow = await convertToCurrencyDecimals(reserve, amount);
-
+  //console.log("Borrowing %s %s with rate mode %s expecting", amountToBorrow.toString(), reserveSymbol, interestRateMode, expectedResult);
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
       await pool

@@ -3,6 +3,7 @@ import { checkVerification } from '../../helpers/etherscan-verification';
 import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
+import {totalGas} from '../../gas-tracker';
 
 task('aave:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -47,4 +48,5 @@ task('aave:mainnet', 'Deploy development enviroment')
     }
     console.log('\nFinished migrations');
     printContracts();
+    console.log("Total gas used:", totalGas.toString());
   });

@@ -18,8 +18,10 @@ import {
 } from '../../helpers/contracts-getters';
 import { formatEther, isAddress, parseEther } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
-import { Signer } from 'ethers';
+import { Signer, BigNumber } from 'ethers';
 import { parse } from 'path';
+import { addGas } from '../../gas-tracker';
+//import BigNumber from 'bignumber.js';
 
 task(
   'full:deploy-address-provider',
@@ -80,16 +82,22 @@ task(
 
     // 2. Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(MarketId, verify);
+    
+    // TEMPORARILY DISABLING SEC. 3 FOR GOVERNANCE USE
 
     // 3. Set the provider at the Registry
-    await waitForTx(
-      await addressesProviderRegistry.registerAddressesProvider(
-        addressesProvider.address,
-        ProviderId
-      )
-    );
+    // await waitForTx(
+    //   await addressesProviderRegistry.registerAddressesProvider(
+    //     addressesProvider.address,
+    //     ProviderId
+    //   )
+    // );
 
     // 4. Set pool admins
+    
+
+    addGas(await addressesProvider.estimateGas.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
+    addGas(await addressesProvider.estimateGas.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));

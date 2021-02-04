@@ -12,6 +12,7 @@ import {
   getAToken,
   getATokensAndRatesHelper,
   getLendingPoolAddressesProvider,
+  getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
@@ -25,6 +26,8 @@ import {
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
+import { addGas } from '../gas-tracker';
+import { getTreasuryAddress } from './configuration';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -53,6 +56,7 @@ export const initReservesByHelper = async (
   const poolAddress = await addressProvider.getLendingPool();
 
   // Set aTokenAndRatesDeployer as temporal admin
+  addGas(await addressProvider.estimateGas.setPoolAdmin(atokenAndRatesDeployer.address));
   await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
@@ -75,11 +79,32 @@ export const initReservesByHelper = async (
   let reserveInitDecimals: string[] = [];
   let reserveSymbols: string[] = [];
 
+  // TEST START
+  let initInputParams: {
+    aTokenImpl: string,
+    stableDebtTokenImpl: string,
+    variableDebtTokenImpl: string,
+    underlyingAssetDecimals: BigNumberish,
+    interestRateStrategyAddress: string,
+    underlyingAsset: string,
+    treasury: string,
+    incentivesController: string,
+    underlyingAssetName: string,
+    aTokenName: string,
+    aTokenSymbol: string,
+    variableDebtTokenName: string,
+    variableDebtTokenSymbol: string,
+    stableDebtTokenName: string,
+    stableDebtTokenSymbol: string,
+  }[] = [];
+  // TEST END
+
   console.log(
     `- Token deployments in ${reservesChunks.length * 2} txs instead of ${
       Object.entries(reservesParams).length * 4
     } txs`
   );
+
   for (let reservesChunk of reservesChunks) {
     // Prepare data
     const tokens: string[] = [];
@@ -93,7 +118,19 @@ export const initReservesByHelper = async (
       BigNumberish
     ][] = [];
     const reservesDecimals: string[] = [];
-
+    // TEST START
+    const inputParams: {
+      asset: string, 
+      rates: [
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish,
+        BigNumberish
+      ]
+    }[] = [];
+    // TEST END
     for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
       const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
         (value) => value === assetSymbol
@@ -128,11 +165,26 @@ export const initReservesByHelper = async (
         stableRateSlope2,
       ]);
       reservesDecimals.push(reserveDecimals);
+
+      // TEST START
+      inputParams.push({ 
+        asset: tokenAddress,
+        rates: [
+          optimalUtilizationRate,
+          baseVariableBorrowRate,
+          variableRateSlope1,
+          variableRateSlope2,
+          stableRateSlope1,
+          stableRateSlope2
+        ] 
+      });
+      // TEST END
     }
 
+    // tx1 and tx2 gas is accounted for later.
     // Deploy stable and variable deployers and save implementations
     const tx1 = await waitForTx(
-      await stableAndVariableDeployer.initDeployment(tokens, symbols, incentivesController)
+      await stableAndVariableDeployer.initDeployment(tokens, symbols)
     );
     tx1.events?.forEach((event, index) => {
       rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
@@ -141,13 +193,7 @@ export const initReservesByHelper = async (
 
     // Deploy atokens and rate strategies and save implementations
     const tx2 = await waitForTx(
-      await atokenAndRatesDeployer.initDeployment(
-        tokens,
-        symbols,
-        strategyRates,
-        treasuryAddress,
-        incentivesController
-      )
+      await atokenAndRatesDeployer.initDeployment(inputParams)
     );
     tx2.events?.forEach((event, index) => {
       rawInsertContractAddressInDb(`a${symbols[index]}`, event?.args?.aToken);
@@ -158,7 +204,7 @@ export const initReservesByHelper = async (
     console.log('    * gasUsed: debtTokens batch', tx1.gasUsed.toString());
     console.log('    * gasUsed: aTokens and Strategy batch', tx2.gasUsed.toString());
     gasUsage = gasUsage.add(tx1.gasUsed).add(tx2.gasUsed);
-
+    
     const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
     const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
     const aTokens: string[] = tx2.events?.map((e) => e.args?.aToken) || [];
@@ -172,6 +218,29 @@ export const initReservesByHelper = async (
     reserveTokens = [...reserveTokens, ...tokens];
     reserveSymbols = [...reserveSymbols, ...symbols];
   }
+
+  // TEST START
+  for (let i = 0; i < deployedATokens.length; i ++) {
+    initInputParams.push({
+      aTokenImpl: deployedATokens[i],
+      stableDebtTokenImpl: deployedStableTokens[i], 
+      variableDebtTokenImpl: deployedVariableTokens[i],
+      underlyingAssetDecimals: reserveInitDecimals[i],
+      interestRateStrategyAddress: deployedRates[i],
+      underlyingAsset: reserveTokens[i],
+      treasury: treasuryAddress,
+      incentivesController: ZERO_ADDRESS,
+      underlyingAssetName: reserveSymbols[i],
+      aTokenName: `Aave interest bearing ${reserveSymbols[i]}`,
+      aTokenSymbol: `a${reserveSymbols[i]}`,
+      variableDebtTokenName: `Aave variable debt bearing ${reserveSymbols[i]}`,
+      variableDebtTokenSymbol: `variableDebt${reserveSymbols[i]}`,
+      stableDebtTokenName: `Aave stable debt bearing ${reserveSymbols[i]}`,
+      stableDebtTokenSymbol: `stableDebt${reserveSymbols[i]}`
+    });
+  }
+  // TEST END
+
 
   // Deploy delegated aware reserves tokens
   const delegatedAwareReserves = Object.entries(reservesParams).filter(
@@ -194,9 +263,9 @@ export const initReservesByHelper = async (
         poolAddress,
         tokenAddresses[symbol],
         treasuryAddress,
+        ZERO_ADDRESS,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );
@@ -204,9 +273,9 @@ export const initReservesByHelper = async (
       [
         poolAddress,
         tokenAddresses[symbol],
+        ZERO_ADDRESS, // Incentives controller
         `Aave stable debt bearing ${symbol}`,
-        `stableDebt${symbol}`,
-        ZERO_ADDRESS,
+        `stableDebt${symbol}`
       ],
       verify
     );
@@ -214,9 +283,9 @@ export const initReservesByHelper = async (
       [
         poolAddress,
         tokenAddresses[symbol],
+        ZERO_ADDRESS, // Incentives controller
         `Aave variable debt bearing ${symbol}`,
         `variableDebt${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );
@@ -250,24 +319,34 @@ export const initReservesByHelper = async (
   const chunkedDecimals = chunk(reserveInitDecimals, initChunks);
   const chunkedSymbols = chunk(reserveSymbols, initChunks);
 
+  // TEST START
+  const configurator = await getLendingPoolConfiguratorProxy();
+  await waitForTx(await addressProvider.setPoolAdmin(admin));
+
+  const chunkedInitInputParams = chunk(initInputParams, initChunks);
+  // TEST END
   console.log(`- Reserves initialization in ${chunkedStableTokens.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedDecimals.length; chunkIndex++) {
     const tx3 = await waitForTx(
-      await atokenAndRatesDeployer.initReserve(
-        chunkedStableTokens[chunkIndex],
-        chunkedVariableTokens[chunkIndex],
-        chunkedAtokens[chunkIndex],
-        chunkedRates[chunkIndex],
-        chunkedDecimals[chunkIndex]
-      )
+      // await atokenAndRatesDeployer.initReserve(
+      //   chunkedStableTokens[chunkIndex],
+      //   chunkedVariableTokens[chunkIndex],
+      //   chunkedAtokens[chunkIndex],
+      //   chunkedRates[chunkIndex],
+      //   chunkedDecimals[chunkIndex]
+      // )
+      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
+
     );
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     console.log('    * gasUsed', tx3.gasUsed.toString());
     gasUsage = gasUsage.add(tx3.gasUsed);
   }
+  addGas(gasUsage);
 
   // Set deployer back as admin
+  addGas(await addressProvider.estimateGas.setPoolAdmin(admin));
   await waitForTx(await addressProvider.setPoolAdmin(admin));
   return gasUsage;
 };
@@ -314,6 +393,16 @@ export const configureReservesByHelper = async (
   const liquidationBonuses: string[] = [];
   const reserveFactors: string[] = [];
   const stableRatesEnabled: boolean[] = [];
+  // TEST START
+  const inputParams : {
+    asset: string;
+    baseLTV: BigNumberish;
+    liquidationThreshold: BigNumberish;
+    liquidationBonus: BigNumberish;
+    reserveFactor: BigNumberish;
+    stableBorrowingEnabled: boolean;
+  }[] = [];
+  // TEST END
 
   for (const [
     assetSymbol,
@@ -342,6 +431,18 @@ export const configureReservesByHelper = async (
       continue;
     }
     // Push data
+
+    // TEST START
+    inputParams.push({
+      asset: tokenAddress,
+      baseLTV: baseLTVAsCollateral,
+      liquidationThreshold: liquidationThreshold,
+      liquidationBonus: liquidationBonus,
+      reserveFactor: reserveFactor,
+      stableBorrowingEnabled: stableBorrowRateEnabled
+    });
+    // TEST END
+
     tokens.push(tokenAddress);
     symbols.push(assetSymbol);
     baseLTVA.push(baseLTVAsCollateral);
@@ -352,6 +453,7 @@ export const configureReservesByHelper = async (
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
+    addGas(await addressProvider.estimateGas.setPoolAdmin(atokenAndRatesDeployer.address));
     await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
     // Deploy init per chunks
@@ -364,22 +466,39 @@ export const configureReservesByHelper = async (
     const chunkedReserveFactors = chunk(reserveFactors, enableChunks);
     const chunkedStableRatesEnabled = chunk(stableRatesEnabled, enableChunks);
 
+    // TEST START
+    const chunkedInputParams = chunk(inputParams, enableChunks);
+    // TEST END
+
+
     console.log(`- Configure reserves in ${chunkedTokens.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
+      // addGas(await atokenAndRatesDeployer.estimateGas.configureReserves(
+      //   chunkedTokens[chunkIndex],
+      //   chunkedBase[chunkIndex],
+      //   chunkedliquidationThresholds[chunkIndex],
+      //   chunkedliquidationBonuses[chunkIndex],
+      //   chunkedReserveFactors[chunkIndex],
+      //   chunkedStableRatesEnabled[chunkIndex],
+      //   { gasLimit: 12000000 }
+      // ));
+
+
+      addGas(await atokenAndRatesDeployer.estimateGas.configureReserves(
+        chunkedInputParams[chunkIndex],
+        { gasLimit: 12000000 }
+      ));
+
       await waitForTx(
         await atokenAndRatesDeployer.configureReserves(
-          chunkedTokens[chunkIndex],
-          chunkedBase[chunkIndex],
-          chunkedliquidationThresholds[chunkIndex],
-          chunkedliquidationBonuses[chunkIndex],
-          chunkedReserveFactors[chunkIndex],
-          chunkedStableRatesEnabled[chunkIndex],
+          chunkedInputParams[chunkIndex],
           { gasLimit: 12000000 }
         )
       );
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
     // Set deployer back as admin
+    addGas(await addressProvider.estimateGas.setPoolAdmin(admin));
     await waitForTx(await addressProvider.setPoolAdmin(admin));
   }
 };
@@ -454,9 +573,9 @@ export const initTokenReservesByHelper = async (
         [
           poolAddress,
           tokenAddresses[symbol],
+          ZERO_ADDRESS, // Incentives controller
           `Aave stable debt bearing ${symbol}`,
-          `stableDebt${symbol}`,
-          ZERO_ADDRESS,
+          `stableDebt${symbol}`
         ],
         verify
       );
@@ -467,9 +586,9 @@ export const initTokenReservesByHelper = async (
         [
           poolAddress,
           tokenAddresses[symbol],
+          ZERO_ADDRESS, // Incentives Controller
           `Aave variable debt bearing ${symbol}`,
-          `variableDebt${symbol}`,
-          ZERO_ADDRESS,
+          `variableDebt${symbol}`
         ],
         verify
       );
@@ -485,9 +604,9 @@ export const initTokenReservesByHelper = async (
           poolAddress,
           tokenAddresses[symbol],
           treasuryAddress,
-          `Aave interest bearing ${symbol}`,
-          `a${symbol}`,
           ZERO_ADDRESS,
+          `Aave interest bearing ${symbol}`,
+          `a${symbol}`
         ],
         verify
       );

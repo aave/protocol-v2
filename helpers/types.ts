@@ -22,6 +22,7 @@ export enum EthereumNetworkNames {
 
 export enum AavePools {
   proto = 'proto',
+  uniswap = 'uniswap',
 }
 
 export enum eContractid {
@@ -204,6 +205,25 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
+  UniWETH: T;
+  UniWBTC: T;
+  UniDAI: T;
+  UniUSDC: T;
+  UniUSDT: T;
+  UniDAIWETH: T;
+  UniWBTCWETH: T;
+  UniAAVEWETH: T;
+  UniBATWETH: T;
+  UniUSDCDAI: T;
+  UniCRVWETH: T;
+  UniLINKWETH: T;
+  UniMKRWETH: T;
+  UniRENWETH: T;
+  UniSNXWETH: T;
+  UniUNIWETH: T;
+  UniUSDCWETH: T;
+  UniWBTCUSDC: T;
+  UniYFIWETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -234,6 +254,29 @@ export type iAavePoolAssets<T> = Pick<
   | 'ENJ'
 >;
 
+export type iUniswapPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  | 'UniDAI'
+  | 'UniUSDC'
+  | 'UniUSDT'
+  | 'UniWBTC'
+  | 'UniWETH'
+  | 'UniDAIWETH'
+  | 'UniWBTCWETH'
+  | 'UniAAVEWETH'
+  | 'UniBATWETH'
+  | 'UniUSDCDAI'
+  | 'UniCRVWETH'
+  | 'UniLINKWETH'
+  | 'UniMKRWETH'
+  | 'UniRENWETH'
+  | 'UniSNXWETH'
+  | 'UniUNIWETH'
+  | 'UniUSDCWETH'
+  | 'UniWBTCUSDC'
+  | 'UniYFIWETH'
+>;
+
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
@@ -262,6 +305,25 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
+  UniWETH = 'UniWETH',
+  UniWBTC = 'UniWBTC',
+  UniDAI = 'UniDAI',
+  UniUSDC = 'UniUSDC',
+  UniUSDT = 'UniUSDT',
+  UniDAIWETH = 'UniDAIWETH',
+  UniWBTCWETH = 'UniWBTCWETH',
+  UniAAVEWETH = 'UniAAVEWETH',
+  UniBATWETH = 'UniBATWETH',
+  UniUSDCDAI = 'UniUSDCDAI',
+  UniCRVWETH = 'UniCRVWETH',
+  UniLINKWETH = 'UniLINKWETH',
+  UniMKRWETH = 'UniMKRWETH',
+  UniRENWETH = 'UniRENWETH',
+  UniSNXWETH = 'UniSNXWETH',
+  UniUNIWETH = 'UniUNIWETH',
+  UniUSDCWETH = 'UniUSDCWETH',
+  UniWBTCUSDC = 'UniWBTCUSDC',
+  UniYFIWETH = 'UniYFIWETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -302,6 +364,7 @@ export interface iParamsPerNetwork<T> {
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
+  [AavePools.uniswap]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -375,6 +438,10 @@ export interface ICommonConfiguration {
 
 export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
+}
+
+export interface IUniswapConfiguration extends ICommonConfiguration {
+  ReservesConfig: iUniswapPoolAssets<IReserveParams>;
 }
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
