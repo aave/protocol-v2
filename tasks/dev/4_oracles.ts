@@ -1,4 +1,4 @@
-import {task} from 'hardhat/config';
+import { task } from 'hardhat/config';
 import {
   deployPriceOracle,
   deployAaveOracle,
@@ -10,10 +10,10 @@ import {
   deployAllMockAggregators,
   setInitialMarketRatesInRatesOracleByHelper,
 } from '../../helpers/oracles-helpers';
-import {ICommonConfiguration, iAssetBase, TokenContractId} from '../../helpers/types';
-import {waitForTx} from '../../helpers/misc-utils';
-import {getAllAggregatorsAddresses, getAllTokenAddresses} from '../../helpers/mock-helpers';
-import {ConfigNames, loadPoolConfig, getWethAddress} from '../../helpers/configuration';
+import { ICommonConfiguration, iAssetBase, TokenContractId } from '../../helpers/types';
+import { waitForTx } from '../../helpers/misc-utils';
+import { getAllAggregatorsAddresses, getAllTokenAddresses } from '../../helpers/mock-helpers';
+import { ConfigNames, loadPoolConfig, getWethAddress } from '../../helpers/configuration';
 import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
@@ -23,12 +23,12 @@ import {
 task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({verify, pool}, localBRE) => {
+  .setAction(async ({ verify, pool }, localBRE) => {
     await localBRE.run('set-DRE');
     const poolConfig = loadPoolConfig(pool);
     const {
-      Mocks: {AllAssetsInitialPrices},
-      ProtocolGlobalParams: {UsdAddress, MockUsdPriceInWei},
+      Mocks: { AllAssetsInitialPrices },
+      ProtocolGlobalParams: { UsdAddress, MockUsdPriceInWei },
       LendingRateOracleRatesCommon,
     } = poolConfig as ICommonConfiguration;
 
@@ -67,7 +67,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
     const lendingRateOracle = await deployLendingRateOracle(verify);
     await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
 
-    const {USD, ...tokensAddressesWithoutUsd} = allTokenAddresses;
+    const { USD, ...tokensAddressesWithoutUsd } = allTokenAddresses;
     const allReservesAddresses = {
       ...tokensAddressesWithoutUsd,
     };

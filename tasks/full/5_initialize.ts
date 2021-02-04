@@ -6,13 +6,15 @@ import {
   deployAaveProtocolDataProvider,
   deployWETHGateway,
 } from '../../helpers/contracts-deployments';
-import { loadPoolConfig, ConfigNames, getWethAddress, getTreasuryAddress } from '../../helpers/configuration';
+import {
+  loadPoolConfig,
+  ConfigNames,
+  getWethAddress,
+  getTreasuryAddress,
+} from '../../helpers/configuration';
 import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
-import {
-  initReservesByHelper,
-  configureReservesByHelper,
-} from '../../helpers/init-helpers';
+import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
 import { exit } from 'process';
 import {
   getAaveProtocolDataProvider,
@@ -43,7 +45,14 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const treasuryAddress = await getTreasuryAddress(poolConfig);
 
-      await initReservesByHelper(ReservesConfig, reserveAssets, admin, treasuryAddress, ZERO_ADDRESS, verify);
+      await initReservesByHelper(
+        ReservesConfig,
+        reserveAssets,
+        admin,
+        treasuryAddress,
+        ZERO_ADDRESS,
+        verify
+      );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
       const collateralManager = await deployLendingPoolCollateralManager(verify);
