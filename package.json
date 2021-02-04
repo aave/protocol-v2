@@ -1,7 +1,11 @@
 {
-  "name": "protocol-v2",
-  "version": "1.0.0",
+  "name": "@aave/protocol-v2",
+  "version": "1.0.1",
   "description": "Aave Protocol V2 smart contracts",
+  "files": [
+    "contracts",
+    "artifacts"
+  ],
   "scripts": {
     "run-env": "npm i && tail -f /dev/null",
     "hardhat": "hardhat",
@@ -13,7 +17,7 @@
     "compile": "SKIP_LOAD=true hardhat compile",
     "console:fork": "MAINNET_FORK=true hardhat console",
     "test": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test/*.spec.ts",
-    "test-scenarios": "npm run test -- test/__setup.spec.ts test/scenario.spec.ts",
+    "test-scenarios": "npx hardhat test test/__setup.spec.ts test/scenario.spec.ts",
     "test-repay-with-collateral": "hardhat test test/__setup.spec.ts test/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "hardhat test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
     "test-liquidate-underlying": "hardhat test test/__setup.spec.ts test/liquidation-underlying.spec.ts",
@@ -39,7 +43,8 @@
     "aave:fork:main": "npm run compile && MAINNET_FORK=true  hardhat aave:mainnet",
     "aave:main:full:migration": "npm run compile && npm run hardhat:main -- aave:mainnet --verify",
     "aave:main:full:initialize": "npm run compile && MAINNET_FORK=true full:initialize-tokens --pool Aave",
-    "dev:prettier": "prettier --write .",
+    "prettier:check": "npx prettier -c 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test/**/*.ts'",
+    "prettier:write": "prettier --write 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test/**/*.ts'",
     "ci:test": "npm run compile && npm run test",
     "ci:clean": "rm -rf ./artifacts ./cache ./types",
     "print-contracts:kovan": "npm run hardhat:kovan -- print-contracts",
@@ -62,7 +67,8 @@
     "main:initialize-tokens": "npm run compile && hardhat --network main full:initialize-tokens --pool Aave",
     "kovan:initialize-tokens": "npm run compile && hardhat --network kovan full:initialize-tokens --pool Aave",
     "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --verify",
-    "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify"
+    "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify",
+    "prepublishOnly": "npm run compile"
   },
   "devDependencies": {
     "@nomiclabs/buidler": "^1.4.7",
@@ -93,7 +99,7 @@
     "ethereumjs-util": "7.0.2",
     "ethers": "^5.0.19",
     "globby": "^11.0.1",
-    "hardhat": "^2.0.2",
+    "hardhat": "^2.0.8",
     "hardhat-gas-reporter": "^1.0.0",
     "hardhat-typechain": "^0.3.3",
     "husky": "^4.2.5",
@@ -113,38 +119,27 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged"
+      "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern 'helpers/**/*.ts'  --pattern 'test/**/*.ts' --pattern 'tasks/**/*.ts'"
     }
   },
   "author": "Aave",
   "contributors": [
-    {
-      "name": "Emilio Frangella",
-      "email": "emilio@aave.com"
-    },
-    {
-      "name": "Ernesto Boado",
-      "email": "ernesto@aave.com"
-    },
-    {
-      "name": "Andrey Kozlov",
-      "email": "andrey@aave.com"
-    },
-    {
-      "name": "David Racero",
-      "email": "david.k@aave.com"
-    },
-    {
-      "name": "Pol Sendra",
-      "email": "pol@aave.com"
-    },
-    {
-      "name": "David Truong",
-      "email": "david@aave.com"
-    }
+    "Ernesto Boado <ernesto@aave.com>",
+    "Emilio Frangella <emilio@aave.com>",
+    "Andrey Kozlov <andrey@aave.com>",
+    "David Racero <david.k@aave.com>",
+    "Pol Sendra <pol@aave.com>",
+    "David Truong <david@aave.com>"
   ],
   "license": "AGPLv3",
   "dependencies": {
     "tmp-promise": "^3.0.2"
-  }
+  },
+  "keywords": [
+    "aave",
+    "protocol",
+    "protocol-v2",
+    "ethereum",
+    "solidity"
+  ]
 }

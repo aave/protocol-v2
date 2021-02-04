@@ -26,7 +26,7 @@ import {
 } from '../../helpers/contracts-getters';
 import { MAX_UINT_AMOUNT, ONE_YEAR } from '../../helpers/constants';
 import { SignerWithAddress, TestEnv } from './make-suite';
-import { DRE, increaseTime, timeLatest, waitForTx } from '../../helpers/misc-utils';
+import { advanceTimeAndBlock, DRE, timeLatest, waitForTx } from '../../helpers/misc-utils';
 
 import chai from 'chai';
 import { ReserveData, UserReserveData } from './utils/interfaces';
@@ -361,7 +361,7 @@ export const borrow = async (
     if (timeTravel) {
       const secondsToTravel = new BigNumber(timeTravel).multipliedBy(ONE_YEAR).div(365).toNumber();
 
-      await increaseTime(secondsToTravel);
+      await advanceTimeAndBlock(secondsToTravel);
     }
 
     const {

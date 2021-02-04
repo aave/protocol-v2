@@ -349,15 +349,16 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
 
     if (reserveIn == reserveOut) {
       uint256 reserveDecimals = _getDecimals(reserveIn);
-      address[] memory _reserveIn = new address[](1);
-      _reserveIn[0] = reserveIn;
+      address[] memory path = new address[](1);
+      path[0] = reserveIn;
+
       return
         AmountCalc(
           finalAmountIn,
           finalAmountIn.mul(10**18).div(amountIn),
           _calcUsdValue(reserveIn, amountIn, reserveDecimals),
           _calcUsdValue(reserveIn, finalAmountIn, reserveDecimals),
-          _reserveIn
+          path
         );
     }
 
@@ -386,6 +387,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     }
 
     uint256 bestAmountOut;
+
     try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
       uint256[] memory resultAmounts
     ) {
@@ -439,15 +441,16 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       // Add flash loan fee
       uint256 amountIn = amountOut.add(amountOut.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
       uint256 reserveDecimals = _getDecimals(reserveIn);
-      address[] memory _reserveIn = new address[](1);
-      _reserveIn[0] = reserveIn;
+      address[] memory path = new address[](1);
+      path[0] = reserveIn;
+
       return
         AmountCalc(
           amountIn,
           amountOut.mul(10**18).div(amountIn),
           _calcUsdValue(reserveIn, amountIn, reserveDecimals),
           _calcUsdValue(reserveIn, amountOut, reserveDecimals),
-          _reserveIn
+          path
         );
     }
 

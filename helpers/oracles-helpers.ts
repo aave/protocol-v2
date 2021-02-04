@@ -7,16 +7,16 @@ import {
   SymbolMap,
 } from './types';
 
-import {LendingRateOracle} from '../types/LendingRateOracle';
-import {PriceOracle} from '../types/PriceOracle';
-import {MockAggregator} from '../types/MockAggregator';
-import {deployMockAggregator} from './contracts-deployments';
-import {chunk, waitForTx} from './misc-utils';
-import {getStableAndVariableTokensHelper} from './contracts-getters';
+import { LendingRateOracle } from '../types/LendingRateOracle';
+import { PriceOracle } from '../types/PriceOracle';
+import { MockAggregator } from '../types/MockAggregator';
+import { deployMockAggregator } from './contracts-deployments';
+import { chunk, waitForTx } from './misc-utils';
+import { getStableAndVariableTokensHelper } from './contracts-getters';
 
 export const setInitialMarketRatesInRatesOracleByHelper = async (
   marketRates: iMultiPoolsAssets<IMarketRates>,
-  assetsAddresses: {[x: string]: tEthereumAddress},
+  assetsAddresses: { [x: string]: tEthereumAddress },
   lendingRateOracleInstance: LendingRateOracle,
   admin: tEthereumAddress
 ) => {
@@ -24,7 +24,7 @@ export const setInitialMarketRatesInRatesOracleByHelper = async (
   const assetAddresses: string[] = [];
   const borrowRates: string[] = [];
   const symbols: string[] = [];
-  for (const [assetSymbol, {borrowRate}] of Object.entries(marketRates) as [
+  for (const [assetSymbol, { borrowRate }] of Object.entries(marketRates) as [
     string,
     IMarketRates
   ][]) {
@@ -99,7 +99,7 @@ export const setAssetPricesInOracle = async (
 };
 
 export const deployMockAggregators = async (initialPrices: SymbolMap<string>, verify?: boolean) => {
-  const aggregators: {[tokenSymbol: string]: MockAggregator} = {};
+  const aggregators: { [tokenSymbol: string]: MockAggregator } = {};
   for (const tokenContractName of Object.keys(initialPrices)) {
     if (tokenContractName !== 'ETH') {
       const priceIndex = Object.keys(initialPrices).findIndex(
@@ -116,7 +116,7 @@ export const deployAllMockAggregators = async (
   initialPrices: iAssetAggregatorBase<string>,
   verify?: boolean
 ) => {
-  const aggregators: {[tokenSymbol: string]: MockAggregator} = {};
+  const aggregators: { [tokenSymbol: string]: MockAggregator } = {};
   for (const tokenContractName of Object.keys(initialPrices)) {
     if (tokenContractName !== 'ETH') {
       const priceIndex = Object.keys(initialPrices).findIndex(

@@ -2,13 +2,13 @@ import BigNumber from 'bignumber.js';
 import BN = require('bn.js');
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
-import {WAD} from './constants';
-import {Wallet, ContractTransaction} from 'ethers';
-import {HardhatRuntimeEnvironment} from 'hardhat/types';
-import {BuidlerRuntimeEnvironment} from '@nomiclabs/buidler/types';
-import {tEthereumAddress} from './types';
-import {isAddress} from 'ethers/lib/utils';
-import {isZeroAddress} from 'ethereumjs-util';
+import { WAD } from './constants';
+import { Wallet, ContractTransaction } from 'ethers';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
+import { tEthereumAddress } from './types';
+import { isAddress } from 'ethers/lib/utils';
+import { isZeroAddress } from 'ethereumjs-util';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -17,9 +17,8 @@ export const stringToBigNumber = (amount: string): BigNumber => new BigNumber(am
 
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
-export let DRE:
-  | HardhatRuntimeEnvironment
-  | BuidlerRuntimeEnvironment = {} as HardhatRuntimeEnvironment;
+export let DRE: HardhatRuntimeEnvironment | BuidlerRuntimeEnvironment;
+
 export const setDRE = (_DRE: HardhatRuntimeEnvironment | BuidlerRuntimeEnvironment) => {
   DRE = _DRE;
 };
@@ -47,12 +46,32 @@ export const increaseTime = async (secondsToIncrease: number) => {
   await DRE.ethers.provider.send('evm_mine', []);
 };
 
+// Workaround for time travel tests bug: https://github.com/Tonyhaenn/hh-time-travel/blob/0161d993065a0b7585ec5a043af2eb4b654498b8/test/test.js#L12
+export const advanceTimeAndBlock = async function (forwardTime: number) {
+  const currentBlockNumber = await DRE.ethers.provider.getBlockNumber();
+  const currentBlock = await DRE.ethers.provider.getBlock(currentBlockNumber);
+
+  if (currentBlock === null) {
+    /* Workaround for https://github.com/nomiclabs/hardhat/issues/1183
+     */
+    await DRE.ethers.provider.send('evm_increaseTime', [forwardTime]);
+    await DRE.ethers.provider.send('evm_mine', []);
+    //Set the next blocktime back to 15 seconds
+    await DRE.ethers.provider.send('evm_increaseTime', [15]);
+    return;
+  }
+  const currentTime = currentBlock.timestamp;
+  const futureTime = currentTime + forwardTime;
+  await DRE.ethers.provider.send('evm_setNextBlockTimestamp', [futureTime]);
+  await DRE.ethers.provider.send('evm_mine', []);
+};
+
 export const waitForTx = async (tx: ContractTransaction) => await tx.wait(1);
 
-export const filterMapBy = (raw: {[key: string]: any}, fn: (key: string) => boolean) =>
+export const filterMapBy = (raw: { [key: string]: any }, fn: (key: string) => boolean) =>
   Object.keys(raw)
     .filter(fn)
-    .reduce<{[key: string]: any}>((obj, key) => {
+    .reduce<{ [key: string]: any }>((obj, key) => {
       obj[key] = raw[key];
       return obj;
     }, {});

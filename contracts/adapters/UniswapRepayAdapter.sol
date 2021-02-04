@@ -234,6 +234,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
    *   uint8 v V param for the permit signature
    *   bytes32 r R param for the permit signature
    *   bytes32 s S param for the permit signature
+   *   bool useEthPath use WETH path route
    * @return RepayParams struct containing decoded params
    */
   function _decodeParams(bytes memory params) internal pure returns (RepayParams memory) {
