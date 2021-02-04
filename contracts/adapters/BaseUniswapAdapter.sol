@@ -24,7 +24,6 @@ import {IBaseUniswapAdapter} from './interfaces/IBaseUniswapAdapter.sol';
 abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapter, Ownable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
-
   using SafeERC20 for IERC20;
 
   // Max slippage percent allowed
