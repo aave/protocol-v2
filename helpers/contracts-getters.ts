@@ -29,6 +29,7 @@ import {
   WalletBalanceProviderFactory,
   WETH9MockedFactory,
   WETHGatewayFactory,
+  FlashLiquidationAdapterFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { MockTokenMap } from './contracts-helpers';
@@ -352,5 +353,13 @@ export const getUniswapRepayAdapter = async (address?: tEthereumAddress) =>
   await UniswapRepayAdapterFactory.connect(
     address ||
       (await getDb().get(`${eContractid.UniswapRepayAdapter}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getFlashLiquidationAdapter = async (address?: tEthereumAddress) =>
+  await FlashLiquidationAdapterFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.FlashLiquidationAdapter}.${DRE.network.name}`).value())
+        .address,
     await getFirstSigner()
   );

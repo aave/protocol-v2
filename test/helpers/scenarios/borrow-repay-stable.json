@@ -208,6 +208,15 @@
           },
           "expected": "revert",
           "revertMessage": "The collateral balance is 0"
+        },
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "DAI",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
         }
       ]
     },

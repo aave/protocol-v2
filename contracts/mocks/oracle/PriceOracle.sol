@@ -10,7 +10,7 @@ contract PriceOracle is IPriceOracle {
   event AssetPriceUpdated(address _asset, uint256 _price, uint256 timestamp);
   event EthPriceUpdated(uint256 _price, uint256 timestamp);
 
-  function getAssetPrice(address _asset) external override view returns (uint256) {
+  function getAssetPrice(address _asset) external view override returns (uint256) {
     return prices[_asset];
   }
 
