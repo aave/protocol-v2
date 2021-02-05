@@ -30,7 +30,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   UniWETH: oneEther.toFixed(),
   UniDAIWETH: oneEther.multipliedBy('22.407436').toFixed(),
   UniWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniAAVEWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  UniAAVEWETH: oneEther.multipliedBy('0.003620948469').toFixed(),
   UniBATWETH: oneEther.multipliedBy('22.407436').toFixed(),
   UniUSDCDAI: oneEther.multipliedBy('22.407436').toFixed(),
   UniCRVWETH: oneEther.multipliedBy('22.407436').toFixed(),
