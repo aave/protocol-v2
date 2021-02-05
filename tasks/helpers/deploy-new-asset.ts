@@ -53,9 +53,9 @@ WRONG RESERVE ASSET SETUP:
         poolAddress,
         reserveAssetAddress,
         treasuryAddress,
+        ZERO_ADDRESS,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );
