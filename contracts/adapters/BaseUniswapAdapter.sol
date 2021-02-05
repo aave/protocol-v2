@@ -24,6 +24,7 @@ import {IBaseUniswapAdapter} from './interfaces/IBaseUniswapAdapter.sol';
 abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapter, Ownable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
+
   using SafeERC20 for IERC20;
 
   // Max slippage percent allowed
@@ -346,6 +347,20 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     // Subtract flash loan fee
     uint256 finalAmountIn = amountIn.sub(amountIn.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
 
+    if (reserveIn == reserveOut) {
+      uint256 reserveDecimals = _getDecimals(reserveIn);
+      address[] memory _reserveIn = new address[](1);
+      _reserveIn[0] = reserveIn;
+      return
+        AmountCalc(
+          finalAmountIn,
+          finalAmountIn.mul(10**18).div(amountIn),
+          _calcUsdValue(reserveIn, amountIn, reserveDecimals),
+          _calcUsdValue(reserveIn, finalAmountIn, reserveDecimals),
+          _reserveIn
+        );
+    }
+
     address[] memory simplePath = new address[](2);
     simplePath[0] = reserveIn;
     simplePath[1] = reserveOut;
@@ -420,6 +435,22 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     address reserveOut,
     uint256 amountOut
   ) internal view returns (AmountCalc memory) {
+    if (reserveIn == reserveOut) {
+      // Add flash loan fee
+      uint256 amountIn = amountOut.add(amountOut.mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
+      uint256 reserveDecimals = _getDecimals(reserveIn);
+      address[] memory _reserveIn = new address[](1);
+      _reserveIn[0] = reserveIn;
+      return
+        AmountCalc(
+          amountIn,
+          amountOut.mul(10**18).div(amountIn),
+          _calcUsdValue(reserveIn, amountIn, reserveDecimals),
+          _calcUsdValue(reserveIn, amountOut, reserveDecimals),
+          _reserveIn
+        );
+    }
+
     (uint256[] memory amounts, address[] memory path) =
       _getAmountsInAndPath(reserveIn, reserveOut, amountOut);
 
