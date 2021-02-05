@@ -34,7 +34,7 @@
       ]
     },
     {
-      "description": "User 1 deposits 1000 DAI after user 1",
+      "description": "User 1 deposits 1000 DAI after user 0",
       "actions": [
         {
           "name": "mint",
@@ -150,7 +150,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "1",
             "user": "0"
           },
@@ -191,7 +190,7 @@
       ]
     },
     {
-      "description": "User 1 deposits 0 ETH (revert expected)",
+      "description": "User 1 deposits 0 WETH (revert expected)",
       "actions": [
         {
           "name": "mint",

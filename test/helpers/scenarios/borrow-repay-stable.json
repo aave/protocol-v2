@@ -88,7 +88,7 @@
       ]
     },
     {
-      "description": "User 1 repays the half of the DAI borrow after one year",
+      "description": "User 1 repays half of the DAI borrow after one year",
       "actions": [
         {
           "name": "mint",
@@ -170,7 +170,7 @@
       ]
     },
     {
-      "description": "User 1 deposits 1000 DAI, user 2 tries to borrow 1000 DAI at a stable rate without any collateral (revert expected)",
+      "description": "User 1 deposits 1000 DAI, user 2 tries to borrow 1000 DAI at a stable rate without any collateral (revert expected) User 1 withdrawws",
       "actions": [
         {
           "name": "mint",
@@ -270,7 +270,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "1",
             "user": "1"
           },
@@ -308,7 +307,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "1",
             "user": "2"
           },
@@ -346,7 +344,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "1",
             "user": "3"
           },
@@ -384,7 +381,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "1",
             "user": "4"
           },
@@ -578,7 +574,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "2",
             "user": "1"
           },

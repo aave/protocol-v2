@@ -10,8 +10,7 @@
           "args": {
             "reserve": "USDC",
             "user": "0",
-            "target": "1",
-            "borrowRateMode": "variable"
+            "target": "1"
           },
           "expected": "revert",
           "revertMessage": "User does not have any stable rate loan for this reserve"
@@ -19,7 +18,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 USDC, user 1 deposits 5 ETH, borrows 250 USDC at a stable rate, user 0 rebalances user 1 (revert expected)",
+      "description": "User 0 deposits 1000 USDC, user 1 deposits 7 WETH, borrows 250 USDC at a stable rate, user 0 rebalances user 1 (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -68,7 +67,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "7",
             "user": "1"
           },
@@ -97,7 +95,7 @@
       ]
     },
     {
-      "description": "User 1 borrows another 200 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "description": "User 1 borrows another 200 at variable, user 0 tries to rebalance but the conditions are not met (revert expected)",
       "actions": [
         {
           "name": "borrow",
@@ -122,7 +120,7 @@
       ]
     },
     {
-      "description": "User 1 borrows another 200 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "description": "User 1 borrows another 200 at variable, user 0 tries to rebalance but the conditions are not met (revert expected)",
       "actions": [
         {
           "name": "borrow",
@@ -147,7 +145,7 @@
       ]
     },
     {
-      "description": "User 1 borrows another 100 at stable, user 0 tries to rebalance but the conditions are not met (revert expected)",
+      "description": "User 1 borrows another 100 at variable, user 0 tries to rebalance but the conditions are not met (revert expected)",
       "actions": [
         {
           "name": "borrow",
@@ -173,7 +171,7 @@
     },
 
     {
-      "description": "User 0 borrows the remaining USDC (usage ratio = 100%). User 0 rebalances user 1",
+      "description": "User 1 borrows the remaining USDC (usage ratio = 100%) at variable. User 0 rebalances user 1",
       "actions": [
         {
           "name": "borrow",

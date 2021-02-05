@@ -66,7 +66,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "2",
             "user": "1"
           },
@@ -76,7 +75,6 @@
           "name": "setUseAsCollateral",
           "args": {
             "reserve": "WETH",
-
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -126,7 +124,6 @@
           "name": "setUseAsCollateral",
           "args": {
             "reserve": "WETH",
-
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -136,7 +133,7 @@
       ]
     },
     {
-      "description": "User 1 Deposits 1000 AAVE, disables WETH as collateral. Should revert as 1000 AAVE are not enough to cover the debt (revert expected)",
+      "description": "User 1 Deposits 10 AAVE, disables WETH as collateral. Should revert as 10 AAVE are not enough to cover the debt (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -159,7 +156,6 @@
           "name": "deposit",
           "args": {
             "reserve": "AAVE",
-
             "amount": "10",
             "user": "1"
           },
@@ -169,7 +165,6 @@
           "name": "setUseAsCollateral",
           "args": {
             "reserve": "WETH",
-
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -193,7 +188,6 @@
           "name": "deposit",
           "args": {
             "reserve": "AAVE",
-
             "amount": "640",
             "user": "1"
           },
@@ -203,7 +197,6 @@
           "name": "setUseAsCollateral",
           "args": {
             "reserve": "WETH",
-
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -218,7 +211,6 @@
           "name": "setUseAsCollateral",
           "args": {
             "reserve": "AAVE",
-
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -233,7 +225,6 @@
           "name": "setUseAsCollateral",
           "args": {
             "reserve": "WETH",
-
             "user": "1",
             "useAsCollateral": "true"
           },
