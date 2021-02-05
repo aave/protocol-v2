@@ -65,7 +65,7 @@ library GenericLogic {
     if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
       return true;
     }
-    
+
     balanceDecreaseAllowedLocalVars memory vars;
 
     (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset]
@@ -73,7 +73,7 @@ library GenericLogic {
       .getParams();
 
     if (vars.liquidationThreshold == 0) {
-      return true; 
+      return true;
     }
 
     (
@@ -213,9 +213,7 @@ library GenericLogic {
       }
     }
 
-    vars.avgLtv = vars.totalCollateralInETH > 0
-      ? vars.avgLtv.div(vars.totalCollateralInETH)
-      : 0;
+    vars.avgLtv = vars.totalCollateralInETH > 0 ? vars.avgLtv.div(vars.totalCollateralInETH) : 0;
     vars.avgLiquidationThreshold = vars.totalCollateralInETH > 0
       ? vars.avgLiquidationThreshold.div(vars.totalCollateralInETH)
       : 0;
@@ -265,8 +263,7 @@ library GenericLogic {
     uint256 totalDebtInETH,
     uint256 ltv
   ) internal pure returns (uint256) {
-    
-    uint256 availableBorrowsETH = totalCollateralInETH.percentMul(ltv); 
+    uint256 availableBorrowsETH = totalCollateralInETH.percentMul(ltv);
 
     if (availableBorrowsETH < totalDebtInETH) {
       return 0;

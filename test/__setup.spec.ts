@@ -25,6 +25,7 @@ import {
   deployMockUniswapRouter,
   deployUniswapLiquiditySwapAdapter,
   deployUniswapRepayAdapter,
+  deployFlashLiquidationAdapter,
 } from '../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../helpers/types';
@@ -232,29 +233,19 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(
     await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
-
-  const mockFlashLoanReceiver = await deployMockFlashLoanReceiver(addressesProvider.address);
-  await insertContractAddressInDb(eContractid.MockFlashLoanReceiver, mockFlashLoanReceiver.address);
+  await deployMockFlashLoanReceiver(addressesProvider.address);
 
   const mockUniswapRouter = await deployMockUniswapRouter();
-  await insertContractAddressInDb(eContractid.MockUniswapV2Router02, mockUniswapRouter.address);
 
-  const UniswapLiquiditySwapAdapter = await deployUniswapLiquiditySwapAdapter([
+  const adapterParams: [string, string, string] = [
     addressesProvider.address,
     mockUniswapRouter.address,
     mockTokens.WETH.address,
-  ]);
-  await insertContractAddressInDb(
-    eContractid.UniswapLiquiditySwapAdapter,
-    UniswapLiquiditySwapAdapter.address
-  );
+  ];
 
-  const UniswapRepayAdapter = await deployUniswapRepayAdapter([
-    addressesProvider.address,
-    mockUniswapRouter.address,
-    mockTokens.WETH.address,
-  ]);
-  await insertContractAddressInDb(eContractid.UniswapRepayAdapter, UniswapRepayAdapter.address);
+  await deployUniswapLiquiditySwapAdapter(adapterParams);
+  await deployUniswapRepayAdapter(adapterParams);
+  await deployFlashLiquidationAdapter(adapterParams);
 
   await deployWalletBalancerProvider();
 

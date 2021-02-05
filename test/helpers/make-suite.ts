@@ -13,6 +13,7 @@ import {
   getWETHGateway,
   getUniswapLiquiditySwapAdapter,
   getUniswapRepayAdapter,
+  getFlashLiquidationAdapter,
 } from '../../helpers/contracts-getters';
 import { eEthereumNetwork, tEthereumAddress } from '../../helpers/types';
 import { LendingPool } from '../../types/LendingPool';
@@ -36,6 +37,9 @@ import { WETH9Mocked } from '../../types/WETH9Mocked';
 import { WETHGateway } from '../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../markets/aave';
+import { FlashLiquidationAdapter } from '../../types';
+import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { usingTenderly } from '../../helpers/tenderly-utils';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -63,13 +67,12 @@ export interface TestEnv {
   uniswapRepayAdapter: UniswapRepayAdapter;
   registry: LendingPoolAddressesProviderRegistry;
   wethGateway: WETHGateway;
+  flashLiquidationAdapter: FlashLiquidationAdapter;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
 const setBuidlerevmSnapshotId = (id: string) => {
-  if (DRE.network.name === 'hardhat') {
-    buidlerevmSnapshotId = id;
-  }
+  buidlerevmSnapshotId = id;
 };
 
 const testEnv: TestEnv = {
@@ -88,6 +91,7 @@ const testEnv: TestEnv = {
   addressesProvider: {} as LendingPoolAddressesProvider,
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
   uniswapRepayAdapter: {} as UniswapRepayAdapter,
+  flashLiquidationAdapter: {} as FlashLiquidationAdapter,
   registry: {} as LendingPoolAddressesProviderRegistry,
   wethGateway: {} as WETHGateway,
 } as TestEnv;
@@ -153,16 +157,35 @@ export async function initializeMakeSuite() {
 
   testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();
   testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter();
+  testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter();
 }
+
+const setSnapshot = async () => {
+  const hre = DRE as HardhatRuntimeEnvironment;
+  if (usingTenderly()) {
+    setBuidlerevmSnapshotId((await hre.tenderlyRPC.getHead()) || '0x1');
+    return;
+  }
+  setBuidlerevmSnapshotId(await evmSnapshot());
+};
+
+const revertHead = async () => {
+  const hre = DRE as HardhatRuntimeEnvironment;
+  if (usingTenderly()) {
+    await hre.tenderlyRPC.setHead(buidlerevmSnapshotId);
+    return;
+  }
+  await evmRevert(buidlerevmSnapshotId);
+};
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
   describe(name, () => {
     before(async () => {
-      setBuidlerevmSnapshotId(await evmSnapshot());
+      await setSnapshot();
     });
     tests(testEnv);
     after(async () => {
-      await evmRevert(buidlerevmSnapshotId);
+      await revertHead();
     });
   });
 }
