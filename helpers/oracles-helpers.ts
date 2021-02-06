@@ -7,13 +7,12 @@ import {
   SymbolMap,
 } from './types';
 
-import {LendingRateOracle} from '../types/LendingRateOracle';
-import {PriceOracle} from '../types/PriceOracle';
-import {MockAggregator} from '../types/MockAggregator';
-import {deployMockAggregator} from './contracts-deployments';
-import {chunk, waitForTx} from './misc-utils';
-import {getStableAndVariableTokensHelper} from './contracts-getters';
-import { addGas } from './gas-tracker';
+import { LendingRateOracle } from '../types/LendingRateOracle';
+import { PriceOracle } from '../types/PriceOracle';
+import { MockAggregator } from '../types/MockAggregator';
+import { deployMockAggregator } from './contracts-deployments';
+import { chunk, waitForTx } from './misc-utils';
+import { getStableAndVariableTokensHelper } from './contracts-getters';
 
 export const setInitialMarketRatesInRatesOracleByHelper = async (
   marketRates: iMultiPoolsAssets<IMarketRates>,
@@ -46,20 +45,12 @@ export const setInitialMarketRatesInRatesOracleByHelper = async (
   const chunkedSymbols = chunk(symbols, ratesChunks);
 
   // Set helper as owner
-  addGas(await lendingRateOracleInstance.estimateGas.transferOwnership(stableAndVariableTokenHelper.address));
   await waitForTx(
     await lendingRateOracleInstance.transferOwnership(stableAndVariableTokenHelper.address)
   );
 
   console.log(`- Oracle borrow initalization in ${chunkedTokens.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedTokens.length; chunkIndex++) {
-
-    addGas(await stableAndVariableTokenHelper.estimateGas.setOracleBorrowRates(
-      chunkedTokens[chunkIndex],
-      chunkedRates[chunkIndex],
-      lendingRateOracleInstance.address
-    ));
-
     const tx3 = await waitForTx(
       await stableAndVariableTokenHelper.setOracleBorrowRates(
         chunkedTokens[chunkIndex],
@@ -70,7 +61,6 @@ export const setInitialMarketRatesInRatesOracleByHelper = async (
     console.log(`  - Setted Oracle Borrow Rates for: ${chunkedSymbols[chunkIndex].join(', ')}`);
   }
   // Set back ownership
-  addGas(await stableAndVariableTokenHelper.estimateGas.setOracleOwnership(lendingRateOracleInstance.address, admin));
   await waitForTx(
     await stableAndVariableTokenHelper.setOracleOwnership(lendingRateOracleInstance.address, admin)
   );
@@ -88,7 +78,6 @@ export const setInitialAssetPricesInOracle = async (
     const [, assetAddress] = (Object.entries(assetsAddresses) as [string, string][])[
       assetAddressIndex
     ];
-    addGas(await priceOracleInstance.estimateGas.setAssetPrice(assetAddress, price));
     await waitForTx(await priceOracleInstance.setAssetPrice(assetAddress, price));
   }
 };
@@ -105,7 +94,6 @@ export const setAssetPricesInOracle = async (
     const [, assetAddress] = (Object.entries(assetsAddresses) as [string, string][])[
       assetAddressIndex
     ];
-    addGas(await priceOracleInstance.estimateGas.setAssetPrice(assetAddress, price));
     await waitForTx(await priceOracleInstance.setAssetPrice(assetAddress, price));
   }
 };

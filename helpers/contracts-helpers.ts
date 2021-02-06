@@ -18,7 +18,6 @@ import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyContract } from './etherscan-verification';
 import { getIErc20Detailed } from './contracts-getters';
 import { usingTenderly } from './tenderly-utils';
-import { addGas, totalGas } from './gas-tracker';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
@@ -90,9 +89,6 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   args: (string | string[])[],
   verify?: boolean
 ): Promise<ContractType> => {
-  addGas(instance.deployTransaction.gasLimit);
-  console.log("Current totalGas value:", totalGas);
-  console.log("Logged gas limit:", instance.deployTransaction.gasLimit);
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (usingTenderly()) {
@@ -167,8 +163,8 @@ export const getParamPerPool = <T>({ proto, uniswap }: iParamsPerPool<T>, pool: 
   switch (pool) {
     case AavePools.proto:
       return proto;
-    case AavePools.uniswap:
-      return uniswap;
+      case AavePools.uniswap:
+        return uniswap;
     default:
       return proto;
   }
