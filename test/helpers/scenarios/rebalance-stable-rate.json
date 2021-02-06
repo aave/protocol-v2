@@ -8,7 +8,7 @@
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "user": "0",
             "target": "1",
             "borrowRateMode": "variable"
@@ -19,12 +19,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 5 ETH, borrows 600 DAI at a variable rate, user 0 rebalances user 1 (revert expected)",
+      "description": "User 0 deposits 1000 USDC, user 1 deposits 5 ETH, borrows 250 USDC at a stable rate, user 0 rebalances user 1 (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -33,7 +33,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "user": "0"
           },
           "expected": "success"
@@ -41,7 +41,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -51,7 +51,7 @@
           "name": "mint",
           "args": {
             "reserve": "WETH",
-            "amount": "5",
+            "amount": "7",
             "user": "1"
           },
           "expected": "success"
@@ -69,7 +69,7 @@
           "args": {
             "reserve": "WETH",
 
-            "amount": "5",
+            "amount": "7",
             "user": "1"
           },
           "expected": "success"
@@ -77,18 +77,17 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "amount": "250",
             "borrowRateMode": "stable",
-            "user": "1",
-            "timeTravel": "365"
+            "user": "1"
           },
           "expected": "success"
         },
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -103,18 +102,17 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "amount": "200",
-            "borrowRateMode": "stable",
-            "user": "1",
-            "timeTravel": "365"
+            "borrowRateMode": "variable",
+            "user": "1"
           },
           "expected": "success"
         },
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -129,18 +127,17 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "amount": "200",
-            "borrowRateMode": "stable",
-            "user": "1",
-            "timeTravel": "365"
+            "borrowRateMode": "variable",
+            "user": "1"
           },
           "expected": "success"
         },
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -155,18 +152,17 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "DAI",
-            "amount": "100",
-            "borrowRateMode": "stable",
-            "user": "1",
-            "timeTravel": "365"
+            "reserve": "USDC",
+            "amount": "280",
+            "borrowRateMode": "variable",
+            "user": "1"
           },
           "expected": "success"
         },
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -175,75 +171,24 @@
         }
       ]
     },
-    {
-      "description": "User 2 deposits ETH and borrows the remaining DAI, causing the stable rates to rise (usage ratio = 94%). User 0 tries to rebalance user 1 (revert expected)",
-      "actions": [
-        {
-          "name": "mint",
-          "args": {
-            "reserve": "WETH",
-            "amount": "5",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "approve",
-          "args": {
-            "reserve": "WETH",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "WETH",
 
-            "amount": "5",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "borrow",
-          "args": {
-            "reserve": "DAI",
-            "amount": "190",
-            "borrowRateMode": "variable",
-            "user": "2"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "rebalanceStableBorrowRate",
-          "args": {
-            "reserve": "DAI",
-            "user": "0",
-            "target": "1"
-          },
-          "expected": "revert",
-          "revertMessage": "Interest rate rebalance conditions were not met"
-        }
-      ]
-    },
     {
-      "description": "User 2 borrows the remaining DAI (usage ratio = 100%). User 0 rebalances user 1",
+      "description": "User 0 borrows the remaining USDC (usage ratio = 100%). User 0 rebalances user 1",
       "actions": [
         {
           "name": "borrow",
           "args": {
-            "reserve": "DAI",
-            "amount": "60",
+            "reserve": "USDC",
+            "amount": "20",
             "borrowRateMode": "variable",
-            "user": "2"
+            "user": "1"
           },
           "expected": "success"
         },
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "DAI",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
