@@ -243,7 +243,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 WETH, user 1 deposits 100 LINK as collateral and borrows 0.5 ETH at variable rate",
+      "description": "User 0 deposits 1 WETH, user 1 deposits 100 LINK as collateral and borrows 0.5 WETH at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -312,7 +312,7 @@
       ]
     },
     {
-      "description": "User 1 tries to repay 0 ETH",
+      "description": "User 1 tries to repay 0 WETH",
       "actions": [
         {
           "name": "repay",
@@ -660,7 +660,7 @@
       ]
     },
     {
-      "description": "user 3 deposits 0.1 ETH collateral to borrow 100 DAI; 0.1 ETH is not enough to borrow 100 DAI (revert expected)",
+      "description": "user 3 deposits 0.1 WETH collateral to borrow 100 DAI; 0.1 WETH is not enough to borrow 100 DAI (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -702,7 +702,7 @@
       ]
     },
     {
-      "description": "user 3 withdraws the 0.1 ETH",
+      "description": "user 3 withdraws the 0.1 WETH",
       "actions": [
         {
           "name": "withdraw",
@@ -758,7 +758,7 @@
       ]
     },
     {
-      "description": "user 3 deposits 0.1 ETH collateral to borrow 100 USDC; 0.1 ETH is not enough to borrow 100 USDC (revert expected)",
+      "description": "user 3 deposits 0.1 WETH collateral to borrow 100 USDC; 0.1 WETH is not enough to borrow 100 USDC (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -800,7 +800,7 @@
       ]
     },
     {
-      "description": "user 3 withdraws the 0.1 ETH",
+      "description": "user 3 withdraws the 0.1 WETH",
       "actions": [
         {
           "name": "withdraw",

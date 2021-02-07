@@ -166,7 +166,7 @@
       ]
     },
     {
-      "description": "User 0 withdraws remaining half of the deposited ETH",
+      "description": "User 0 withdraws remaining half of the deposited WETH",
       "actions": [
         {
           "name": "withdraw",
