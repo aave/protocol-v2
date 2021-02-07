@@ -11,7 +11,7 @@
     "hardhat": "hardhat",
     "hardhat:kovan": "hardhat --network kovan",
     "hardhat:tenderly-main": "hardhat --network tenderlyMain",
-    "hardhat:ropsten": "hardhat--network ropsten",
+    "hardhat:ropsten": "hardhat --network ropsten",
     "hardhat:main": "hardhat --network main",
     "hardhat:docker": "hardhat --network hardhatevm_docker",
     "compile": "SKIP_LOAD=true hardhat compile",
