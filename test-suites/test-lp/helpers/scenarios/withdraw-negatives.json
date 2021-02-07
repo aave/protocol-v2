@@ -1,0 +1,114 @@
+{
+  "title": "LendingPool: Redeem negative test cases",
+  "description": "Redeem function.",
+  "stories": [
+    {
+      "description": "Users 0 Deposits 1000 UNIDAI and tries to redeem 0 UNIDAI (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIDAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "0",
+            "user": "0"
+          },
+          "expected": "revert",
+          "revertMessage": "Amount to redeem needs to be > 0"
+        }
+      ]
+    },
+    {
+      "description": "Users 0 tries to redeem 1100 UNIDAI from the 1000 UNIDAI deposited (revert expected)",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1100",
+            "user": "0"
+          },
+          "expected": "revert",
+          "revertMessage": "User cannot redeem more than the available balance"
+        }
+      ]
+    },
+    {
+      "description": "Users 1 deposits 1 UNIWETH, borrows 100 UNIDAI, tries to redeem the 1 UNIWETH deposited (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIWETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "100",
+            "user": "1",
+            "borrowRateMode": "stable"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "-1",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Transfer cannot be allowed."
+        }
+      ]
+    }
+  ]
+}

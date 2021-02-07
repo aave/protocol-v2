@@ -1,0 +1,266 @@
+{
+  "title": "LendingPool: Deposit",
+  "description": "Test cases for the deposit function.",
+  "stories": [
+    {
+      "description": "User 0 Deposits 1000 UNIDAI in an empty reserve",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIDAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 1 deposits 1000 UNIDAI after user 0",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIDAI",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 deposits 1000 UNIUSDC in an empty reserve",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIUSDC",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 1 deposits 1000 UNIUSDC after user 0",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIUSDC",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 deposits 1 UNIWETH in an empty reserve",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIWETH",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 1 deposits 1 UNIWETH after user 0",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIWETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 1 deposits 0 UNIWETH (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "0",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Amount must be greater than 0"
+        }
+      ]
+    },
+    {
+      "description": "User 1 deposits 0 UNIDAI",
+      "actions": [
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "0",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Amount must be greater than 0"
+        }
+      ]
+    },
+    {
+      "description": "User 1 deposits 100 UNIDAI on behalf of user 2, user 2 tries to borrow 0.1 UNIWETH",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "100",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "100",
+            "user": "1",
+            "onBehalfOf": "2"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "0.1",
+            "borrowRateMode": "variable",
+            "user": "2"
+          },
+          "expected": "success"
+        }
+      ]
+    }
+  ]
+}

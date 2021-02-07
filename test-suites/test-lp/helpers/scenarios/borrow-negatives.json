@@ -1,0 +1,142 @@
+{
+  "title": "LendingPool: Borrow negatives (reverts)",
+  "description": "Test cases for the deposit function.",
+  "stories": [
+    {
+      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 UNIWETH as collateral and tries to borrow 100 UNIDAI with rate mode NONE (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIDAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIWETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "100",
+            "borrowRateMode": "none",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Invalid interest rate mode selected"
+        }
+      ]
+    },
+    {
+      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 UNIWETH as collateral and tries to borrow 100 UNIDAI with an invalid rate mode (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIDAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIWETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "100",
+            "borrowRateMode": "invalid",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "Invalid interest rate mode selected"
+        }
+      ]
+    }
+  ]
+}

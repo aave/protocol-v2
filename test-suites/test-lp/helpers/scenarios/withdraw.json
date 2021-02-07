@@ -1,0 +1,340 @@
+{
+  "title": "LendingPool: withdraw",
+  "description": "withdraw function.",
+  "stories": [
+    {
+      "description": "User 0 Deposits 1000 UNIDAI in an empty reserve",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIDAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 withdraws half of the deposited UNIDAI",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "500",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 withdraws remaining half of the deposited UNIDAI",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "-1",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 Deposits 1000 UNIUSDC in an empty reserve",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIUSDC",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 withdraws half of the deposited UNIUSDC",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "500",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 withdraws remaining half of the deposited UNIUSDC",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "-1",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 Deposits 1 UNIWETH in an empty reserve",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIWETH",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 withdraws half of the deposited UNIWETH",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "0.5",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 0 withdraws remaining half of the deposited WETH",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "-1",
+            "user": "0"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "Users 0 and 1 Deposit 1000 UNIDAI, both withdraw",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIDAI",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "-1",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "-1",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "Users 0 deposits 1000 UNIDAI, user 1 Deposit 1000 UNIUSDC and 1 UNIWETH, borrows 100 UNIDAI. User 1 tries to withdraw all the UNIUSDC",
+      "actions": [
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIUSDC",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "UNIWETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "UNIDAI",
+            "amount": "100",
+            "user": "1",
+            "borrowRateMode": "stable"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIUSDC",
+            "amount": "-1",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "Users 1 tries to withdraw 0.05 UNIWETH, which does not bring the HF below 1",
+      "actions": [
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "UNIWETH",
+            "amount": "0.05",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    }
+  ]
+}
