@@ -34,7 +34,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 UNIWETH as collateral and borrows 100 UNIDAI at variable rate",
+      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 WETH as collateral and borrows 100 UNIDAI at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -65,7 +65,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },
@@ -74,7 +74,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -82,7 +82,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },
@@ -203,7 +203,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "-1",
             "user": "1"
           },
@@ -212,12 +212,12 @@
       ]
     },
     {
-      "description": "User 2 deposits a small amount of UNIWETH to account for rounding errors",
+      "description": "User 2 deposits a small amount of WETH to account for rounding errors",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0.001",
             "user": "2"
           },
@@ -226,7 +226,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "2"
           },
           "expected": "success"
@@ -234,7 +234,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0.001",
             "user": "2"
           },
@@ -243,12 +243,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 UNIWETH, user 1 deposits 100 UNILINKWETH as collateral and borrows 0.5 WETH at variable rate",
+      "description": "User 0 deposits 1 WETH, user 1 deposits 100 UNILINKWETH as collateral and borrows 0.5 WETH at variable rate",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "0"
           },
@@ -257,7 +257,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "0"
           },
           "expected": "success"
@@ -265,7 +265,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "0"
           },
@@ -301,7 +301,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0.5",
             "borrowRateMode": "variable",
             "user": "1",
@@ -317,7 +317,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0",
             "user": "1",
             "onBehalfOf": "1",
@@ -334,7 +334,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "-1",
             "user": "2",
             "borrowRateMode": "variable",
@@ -346,12 +346,12 @@
       ]
     },
     {
-      "description": "User 3 repays a small amount of UNIWETH on behalf of user 1",
+      "description": "User 3 repays a small amount of WETH on behalf of user 1",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "3"
           },
@@ -360,7 +360,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "3"
           },
           "expected": "success"
@@ -368,7 +368,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0.2",
             "user": "3",
             "borrowRateMode": "variable",
@@ -379,12 +379,12 @@
       ]
     },
     {
-      "description": "User 1 repays the UNIWETH borrow after one year",
+      "description": "User 1 repays the WETH borrow after one year",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "2"
           },
@@ -393,7 +393,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "2"
           },
           "expected": "success"
@@ -401,7 +401,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "-1",
             "borrowRateMode": "variable",
             "user": "1",
@@ -412,12 +412,12 @@
       ]
     },
     {
-      "description": "User 0 withdraws the deposited UNIWETH plus interest",
+      "description": "User 0 withdraws the deposited WETH plus interest",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "-1",
             "user": "0"
           },
@@ -472,7 +472,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 UNIUSDC, user 1 deposits 1 UNIWETH as collateral and borrows 100 UNIUSDC at variable rate",
+      "description": "User 0 deposits 1000 UNIUSDC, user 1 deposits 1 WETH as collateral and borrows 100 UNIUSDC at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -503,7 +503,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },
@@ -512,7 +512,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -520,7 +520,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },
@@ -609,7 +609,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "-1",
             "user": "1"
           },
@@ -665,7 +665,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0.1",
             "user": "1"
           },
@@ -674,7 +674,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -682,7 +682,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0.1",
             "user": "3"
           },
@@ -707,7 +707,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "-1",
             "user": "3"
           },
@@ -763,7 +763,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "3"
           },
@@ -772,7 +772,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -780,7 +780,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "0.1",
             "user": "3"
           },
@@ -805,7 +805,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "-1",
             "user": "3"
           },
@@ -814,7 +814,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 UNIDAI, user 6 deposits 2 UNIWETH and borrow 100 UNIDAI at variable rate first, then 100 UNIDAI at stable rate, repays everything. User 0 withdraws",
+      "description": "User 0 deposits 1000 UNIDAI, user 6 deposits 2 WETH and borrow 100 UNIDAI at variable rate first, then 100 UNIDAI at stable rate, repays everything. User 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -845,7 +845,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "2",
             "user": "6"
           },
@@ -854,7 +854,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "6"
           },
           "expected": "success"
@@ -862,7 +862,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "2",
             "user": "6"
           },

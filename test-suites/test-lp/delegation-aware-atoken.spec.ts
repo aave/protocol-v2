@@ -20,7 +20,7 @@ import {
 import { DelegationAwareATokenFactory } from '../../types';
 import { DelegationAwareAToken } from '../../types/DelegationAwareAToken';
 import { MintableDelegationERC20 } from '../../types/MintableDelegationERC20';
-import UniswapConfig from '../../markets/uniswap';
+import LpConfig from '../../markets/lp';
 
 const { parseEther } = ethers.utils;
 
@@ -35,7 +35,7 @@ makeSuite('AToken: underlying delegation', (testEnv: TestEnv) => {
     delegationERC20 = await deployMintableDelegationERC20(['DEL', 'DEL', '18']);
 
     delegationAToken = await deployDelegationAwareAToken(
-      [pool.address, delegationERC20.address, await getTreasuryAddress(UniswapConfig), ZERO_ADDRESS, 'aDEL', 'aDEL'],
+      [pool.address, delegationERC20.address, await getTreasuryAddress(LpConfig), ZERO_ADDRESS, 'aDEL', 'aDEL'],
       false
     );
     

@@ -43,12 +43,12 @@
       ]
     },
     {
-      "description": "User 1 Deposits 2 UNIWETH, disables UNIWETH as collateral, borrows 400 UNIDAI (revert expected)",
+      "description": "User 1 Deposits 2 WETH, disables WETH as collateral, borrows 400 UNIDAI (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "2",
             "user": "1"
           },
@@ -57,7 +57,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -65,7 +65,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "2",
             "user": "1"
           },
@@ -74,7 +74,7 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -94,12 +94,12 @@
       ]
     },
     {
-      "description": "User 1 enables UNIWETH as collateral, borrows 400 UNIDAI",
+      "description": "User 1 enables WETH as collateral, borrows 400 UNIDAI",
       "actions": [
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1",
             "useAsCollateral": "true"
           },
@@ -118,12 +118,12 @@
       ]
     },
     {
-      "description": "User 1 disables UNIWETH as collateral (revert expected)",
+      "description": "User 1 disables WETH as collateral (revert expected)",
       "actions": [
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -133,7 +133,7 @@
       ]
     },
     {
-      "description": "User 1 Deposits 10 UNILINKWETH, disables UNIWETH as collateral. Should revert as 10 UNILINKWETH are not enough to cover the debt (revert expected)",
+      "description": "User 1 Deposits 10 UNILINKWETH, disables WETH as collateral. Should revert as 10 UNILINKWETH are not enough to cover the debt (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -164,7 +164,7 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -173,7 +173,7 @@
       ]
     },
     {
-      "description": "User 1 Deposits 640 more UNILINKWETH (enough to cover the UNIDAI debt), disables UNIWETH as collateral",
+      "description": "User 1 Deposits 640 more UNILINKWETH (enough to cover the UNIDAI debt), disables WETH as collateral",
       "actions": [
         {
           "name": "mint",
@@ -196,7 +196,7 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1",
             "useAsCollateral": "false"
           },
@@ -219,12 +219,12 @@
       ]
     },
     {
-      "description": "User 1 reenables UNIWETH as collateral",
+      "description": "User 1 reenables WETH as collateral",
       "actions": [
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1",
             "useAsCollateral": "true"
           },

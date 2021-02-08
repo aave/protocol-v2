@@ -8,7 +8,7 @@ import {
 } from './types';
 import { getParamPerPool } from './contracts-helpers';
 import AaveConfig from '../markets/aave';
-import UniswapConfig from '../markets/uniswap';
+import LpConfig from '../markets/lp';
 import { CommonsConfig } from '../markets/aave/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
@@ -18,15 +18,15 @@ import { deployWETHMocked } from './contracts-deployments';
 export enum ConfigNames {
   Commons = 'Commons',
   Aave = 'Aave',
-  Uniswap = 'Uniswap',
+  Lp = 'Lp',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
   switch (configName) {
     case ConfigNames.Aave:
       return AaveConfig;
-    case ConfigNames.Uniswap:
-        return UniswapConfig;
+    case ConfigNames.Lp:
+        return LpConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -44,8 +44,8 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       [AavePools.proto]: {
         ...AaveConfig.ReservesConfig,
       },
-      [AavePools.uniswap]: {
-        ...UniswapConfig.ReservesConfig,
+      [AavePools.lp]: {
+        ...LpConfig.ReservesConfig,
       },
     },
     pool

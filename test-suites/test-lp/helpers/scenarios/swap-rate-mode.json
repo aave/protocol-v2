@@ -64,7 +64,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "2",
             "user": "1"
           },
@@ -73,7 +73,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -81,7 +81,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "2",
             "user": "1"
           },

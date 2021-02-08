@@ -18,6 +18,7 @@
     "console:fork": "MAINNET_FORK=true hardhat console",
     "test": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-aave/*.spec.ts",
     "test-lp": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-lp/*.spec.ts",
+    "test-lp-scenarios": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-lp/__setup.spec.ts test-suites/test-lp/scenario.spec.ts",
     "test-scenarios": "npx hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/scenario.spec.ts",
     "test-repay-with-collateral": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/flash-liquidation-with-collateral.spec.ts",

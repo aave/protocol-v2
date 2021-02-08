@@ -6,10 +6,10 @@ import {EthereumNetworkNames} from '../../helpers/types';
 import {printContracts} from '../../helpers/misc-utils';
 import {totalGas} from '../../helpers/gas-tracker';
 
-task('uniswap:mainnet', 'Deploy development enviroment')
+task('lp:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({verify}, DRE) => {
-    const POOL_NAME = ConfigNames.Uniswap;
+    const POOL_NAME = ConfigNames.Lp;
     const network = <EthereumNetworkNames>DRE.network.name;
     await DRE.run('set-DRE');
 

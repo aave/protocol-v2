@@ -36,7 +36,7 @@ import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { WETH9Mocked } from '../../../types/WETH9Mocked';
 import { WETHGateway } from '../../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
-import { UniswapConfig } from '../../../markets/uniswap';
+import { lpConfig } from '../../../markets/lp';
 import { FlashLiquidationAdapter } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -118,7 +118,7 @@ export async function initializeMakeSuite() {
 
   if (process.env.MAINNET_FORK === 'true') {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
-      getParamPerNetwork(UniswapConfig.ProviderRegistry, eEthereumNetwork.main)
+      getParamPerNetwork(lpConfig.ProviderRegistry, eEthereumNetwork.main)
     );
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();

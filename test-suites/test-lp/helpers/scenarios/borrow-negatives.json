@@ -3,7 +3,7 @@
   "description": "Test cases for the deposit function.",
   "stories": [
     {
-      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 UNIWETH as collateral and tries to borrow 100 UNIDAI with rate mode NONE (revert expected)",
+      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 WETH as collateral and tries to borrow 100 UNIDAI with rate mode NONE (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -34,7 +34,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },
@@ -43,7 +43,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -51,7 +51,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },
@@ -71,7 +71,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 UNIWETH as collateral and tries to borrow 100 UNIDAI with an invalid rate mode (revert expected)",
+      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 WETH as collateral and tries to borrow 100 UNIDAI with an invalid rate mode (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -102,7 +102,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },
@@ -111,7 +111,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "user": "1"
           },
           "expected": "success"
@@ -119,7 +119,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIWETH",
+            "reserve": "WETH",
             "amount": "1",
             "user": "1"
           },

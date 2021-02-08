@@ -4,7 +4,7 @@ import { configuration as calculationsConfiguration } from './helpers/utils/calc
 import BigNumber from 'bignumber.js';
 import { makeSuite } from './helpers/make-suite';
 import { getReservesConfigByPool } from '../../helpers/configuration';
-import { AavePools, iUniswapPoolAssets, IReserveParams } from '../../helpers/types';
+import { AavePools, iLpPoolAssets, IReserveParams } from '../../helpers/types';
 import { executeStory } from './helpers/scenario-engine';
 
 makeSuite('Subgraph scenario tests', async (testEnv) => {
@@ -18,8 +18,8 @@ makeSuite('Subgraph scenario tests', async (testEnv) => {
 
     actionsConfiguration.skipIntegrityCheck = false; //set this to true to execute solidity-coverage
 
-    calculationsConfiguration.reservesParams = <iUniswapPoolAssets<IReserveParams>>(
-      getReservesConfigByPool(AavePools.uniswap)
+    calculationsConfiguration.reservesParams = <iLpPoolAssets<IReserveParams>>(
+      getReservesConfigByPool(AavePools.lp)
     );
   });
   after('Reset', () => {

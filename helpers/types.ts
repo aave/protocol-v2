@@ -22,7 +22,7 @@ export enum EthereumNetworkNames {
 
 export enum AavePools {
   proto = 'proto',
-  uniswap = 'uniswap',
+  lp = 'lp',
 }
 
 export enum eContractid {
@@ -254,7 +254,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'ENJ'
 >;
 
-export type iUniswapPoolAssets<T> = Pick<
+export type iLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'UniDAI'
   | 'UniUSDC'
@@ -364,7 +364,7 @@ export interface iParamsPerNetwork<T> {
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
-  [AavePools.uniswap]: T;
+  [AavePools.lp]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -440,8 +440,8 @@ export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
 }
 
-export interface IUniswapConfiguration extends ICommonConfiguration {
-  ReservesConfig: iUniswapPoolAssets<IReserveParams>;
+export interface ILpConfiguration extends ICommonConfiguration {
+  ReservesConfig: iLpPoolAssets<IReserveParams>;
 }
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;

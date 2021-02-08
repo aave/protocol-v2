@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { IUniswapConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
+import { ILpConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -28,9 +28,9 @@ import {
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-export const UniswapConfig: IUniswapConfiguration = {
+export const lpConfig: ILpConfiguration = {
   ...CommonsConfig,
-  MarketId: 'Uniswap V2 market',
+  MarketId: 'Aave LP market',
   ProviderId: 2,
   ReservesConfig: {
     UniWETH: strategyWETH,
@@ -100,4 +100,4 @@ export const UniswapConfig: IUniswapConfiguration = {
   },
 };
 
-export default UniswapConfig;
+export default lpConfig;
