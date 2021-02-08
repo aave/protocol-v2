@@ -13,7 +13,7 @@ export const strategyWETH: IReserveParams = {
   liquidationThreshold: '8250',
   liquidationBonus: '10500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
@@ -25,12 +25,12 @@ export const strategyWBTC: IReserveParams = {
   variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
   stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '7000',
   liquidationThreshold: '7500',
   liquidationBonus: '11000',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000'
@@ -47,7 +47,7 @@ export const strategyDAI: IReserveParams = {
   liquidationThreshold: '8000',
   liquidationBonus: '10500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
@@ -57,14 +57,14 @@ export const strategyUSDC: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),
   stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
   stableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '8000',
   liquidationThreshold: '8500',
   liquidationBonus: '10500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
@@ -81,7 +81,7 @@ export const strategyUSDT: IReserveParams = {
   liquidationThreshold: '8500',
   liquidationBonus: '10500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
@@ -98,10 +98,10 @@ export const strategyDAIWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '500'
+  reserveFactor: '1000'
 };
 
 export const strategyWBTCWETH: IReserveParams = {
@@ -115,7 +115,7 @@ export const strategyWBTCWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
@@ -132,7 +132,7 @@ export const strategyAAVEWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '500'
@@ -149,7 +149,7 @@ export const strategyBATWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
@@ -166,7 +166,7 @@ export const strategyUSDCDAI: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
@@ -183,7 +183,7 @@ export const strategyCRVWETH: IReserveParams = {
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '500'
@@ -200,7 +200,7 @@ export const strategyLINKWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
@@ -217,7 +217,7 @@ export const strategyMKRWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
@@ -234,7 +234,7 @@ export const strategyRENWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
@@ -251,7 +251,7 @@ export const strategySNXWETH: IReserveParams = {
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000'
@@ -268,7 +268,7 @@ export const strategyUNIWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
@@ -285,7 +285,7 @@ export const strategyUSDCWETH: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
@@ -302,7 +302,7 @@ export const strategyWBTCUSDC: IReserveParams = {
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
@@ -319,7 +319,7 @@ export const strategyYFIWETH: IReserveParams = {
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500'
