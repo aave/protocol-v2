@@ -300,7 +300,7 @@ export const deployDefaultReserveInterestRateStrategy = async (
   );
 
 export const deployStableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
@@ -324,7 +324,7 @@ export const deployStableDebtToken = async (
  
 
 export const deployVariableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
