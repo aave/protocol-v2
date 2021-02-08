@@ -32,7 +32,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       dai.address,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      'Aave Interest bearing UniDAI updated',
+      'Aave Interest bearing LpDAI updated',
       'aUniDAI',
     ]);
 
@@ -40,7 +40,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       pool.address,
       dai.address,
       ZERO_ADDRESS,
-      'Aave stable debt bearing UniDAI updated',
+      'Aave stable debt bearing LpDAI updated',
       'stableDebtUniDAI',
     ]);
 
@@ -48,7 +48,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       pool.address,
       dai.address,
       ZERO_ADDRESS,
-      'Aave variable debt bearing UniDAI updated',
+      'Aave variable debt bearing LpDAI updated',
       'variableDebtUniDAI',
     ]);
 
@@ -108,7 +108,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const tokenName = await aDai.name();
 
-    expect(tokenName).to.be.eq('Aave Interest bearing UniDAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Aave Interest bearing LpDAI updated', 'Invalid token name');
   });
 
   it('Tries to update the DAI Stable debt token implementation with a different address than the lendingPoolManager', async () => {
@@ -168,7 +168,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const tokenName = await debtToken.name();
 
-    expect(tokenName).to.be.eq('Aave stable debt bearing UniDAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Aave stable debt bearing LpDAI updated', 'Invalid token name');
   });
 
   it('Tries to update the DAI variable debt token implementation with a different address than the lendingPoolManager', async () => {
@@ -229,6 +229,6 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const tokenName = await debtToken.name();
 
-    expect(tokenName).to.be.eq('Aave variable debt bearing UniDAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Aave variable debt bearing LpDAI updated', 'Invalid token name');
   });
 });

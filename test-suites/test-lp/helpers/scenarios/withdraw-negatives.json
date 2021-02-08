@@ -3,12 +3,12 @@
   "description": "Redeem function.",
   "stories": [
     {
-      "description": "Users 0 Deposits 1000 UNIDAI and tries to redeem 0 UNIDAI (revert expected)",
+      "description": "Users 0 Deposits 1000 LPDAI and tries to redeem 0 LPDAI (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -17,7 +17,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "0"
           },
           "expected": "success"
@@ -25,7 +25,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -35,7 +35,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "0",
             "user": "0"
           },
@@ -45,12 +45,12 @@
       ]
     },
     {
-      "description": "Users 0 tries to redeem 1100 UNIDAI from the 1000 UNIDAI deposited (revert expected)",
+      "description": "Users 0 tries to redeem 1100 LPDAI from the 1000 LPDAI deposited (revert expected)",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1100",
             "user": "0"
           },
@@ -60,7 +60,7 @@
       ]
     },
     {
-      "description": "Users 1 deposits 1 WETH, borrows 100 UNIDAI, tries to redeem the 1 WETH deposited (revert expected)",
+      "description": "Users 1 deposits 1 WETH, borrows 100 LPDAI, tries to redeem the 1 WETH deposited (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -91,7 +91,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "100",
             "user": "1",
             "borrowRateMode": "stable"

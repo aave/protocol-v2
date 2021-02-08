@@ -205,25 +205,25 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
-  UniWETH: T;
-  UniWBTC: T;
-  UniDAI: T;
-  UniUSDC: T;
-  UniUSDT: T;
-  UniDAIWETH: T;
-  UniWBTCWETH: T;
-  UniAAVEWETH: T;
-  UniBATWETH: T;
-  UniUSDCDAI: T;
-  UniCRVWETH: T;
-  UniLINKWETH: T;
-  UniMKRWETH: T;
-  UniRENWETH: T;
-  UniSNXWETH: T;
-  UniUNIWETH: T;
-  UniUSDCWETH: T;
-  UniWBTCUSDC: T;
-  UniYFIWETH: T;
+  LpWETH: T;
+  LpWBTC: T;
+  LpDAI: T;
+  LpUSDC: T;
+  LpUSDT: T;
+  LpDAIWETH: T;
+  LpWBTCWETH: T;
+  LpAAVEWETH: T;
+  LpBATWETH: T;
+  LpUSDCDAI: T;
+  LpCRVWETH: T;
+  LpLINKWETH: T;
+  LpMKRWETH: T;
+  LpRENWETH: T;
+  LpSNXWETH: T;
+  LpUNIWETH: T;
+  LpUSDCWETH: T;
+  LpWBTCUSDC: T;
+  LpYFIWETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -256,25 +256,25 @@ export type iAavePoolAssets<T> = Pick<
 
 export type iLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'UniDAI'
-  | 'UniUSDC'
-  | 'UniUSDT'
-  | 'UniWBTC'
-  | 'UniWETH'
-  | 'UniDAIWETH'
-  | 'UniWBTCWETH'
-  | 'UniAAVEWETH'
-  | 'UniBATWETH'
-  | 'UniUSDCDAI'
-  | 'UniCRVWETH'
-  | 'UniLINKWETH'
-  | 'UniMKRWETH'
-  | 'UniRENWETH'
-  | 'UniSNXWETH'
-  | 'UniUNIWETH'
-  | 'UniUSDCWETH'
-  | 'UniWBTCUSDC'
-  | 'UniYFIWETH'
+  | 'LpDAI'
+  | 'LpUSDC'
+  | 'LpUSDT'
+  | 'LpWBTC'
+  | 'LpWETH'
+  | 'LpDAIWETH'
+  | 'LpWBTCWETH'
+  | 'LpAAVEWETH'
+  | 'LpBATWETH'
+  | 'LpUSDCDAI'
+  | 'LpCRVWETH'
+  | 'LpLINKWETH'
+  | 'LpMKRWETH'
+  | 'LpRENWETH'
+  | 'LpSNXWETH'
+  | 'LpUNIWETH'
+  | 'LpUSDCWETH'
+  | 'LpWBTCUSDC'
+  | 'LpYFIWETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -305,25 +305,25 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  UniWETH = 'UniWETH',
-  UniWBTC = 'UniWBTC',
-  UniDAI = 'UniDAI',
-  UniUSDC = 'UniUSDC',
-  UniUSDT = 'UniUSDT',
-  UniDAIWETH = 'UniDAIWETH',
-  UniWBTCWETH = 'UniWBTCWETH',
-  UniAAVEWETH = 'UniAAVEWETH',
-  UniBATWETH = 'UniBATWETH',
-  UniUSDCDAI = 'UniUSDCDAI',
-  UniCRVWETH = 'UniCRVWETH',
-  UniLINKWETH = 'UniLINKWETH',
-  UniMKRWETH = 'UniMKRWETH',
-  UniRENWETH = 'UniRENWETH',
-  UniSNXWETH = 'UniSNXWETH',
-  UniUNIWETH = 'UniUNIWETH',
-  UniUSDCWETH = 'UniUSDCWETH',
-  UniWBTCUSDC = 'UniWBTCUSDC',
-  UniYFIWETH = 'UniYFIWETH',
+  LpWETH = 'LpWETH',
+  LpWBTC = 'LpWBTC',
+  LpDAI = 'LpDAI',
+  LpUSDC = 'LpUSDC',
+  LpUSDT = 'LpUSDT',
+  LpDAIWETH = 'LpDAIWETH',
+  LpWBTCWETH = 'LpWBTCWETH',
+  LpAAVEWETH = 'LpAAVEWETH',
+  LpBATWETH = 'LpBATWETH',
+  LpUSDCDAI = 'LpUSDCDAI',
+  LpCRVWETH = 'LpCRVWETH',
+  LpLINKWETH = 'LpLINKWETH',
+  LpMKRWETH = 'LpMKRWETH',
+  LpRENWETH = 'LpRENWETH',
+  LpSNXWETH = 'LpSNXWETH',
+  LpUNIWETH = 'LpUNIWETH',
+  LpUSDCWETH = 'LpUSDCWETH',
+  LpWBTCUSDC = 'LpWBTCUSDC',
+  LpYFIWETH = 'LpYFIWETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {

@@ -3,12 +3,12 @@
   "description": "Test cases for the borrow function, variable mode.",
   "stories": [
     {
-      "description": "User 2 deposits 1 UNIDAI to account for rounding errors",
+      "description": "User 2 deposits 1 LPDAI to account for rounding errors",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1",
             "user": "2"
           },
@@ -17,7 +17,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "2"
           },
           "expected": "success"
@@ -25,7 +25,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1",
             "user": "2"
           },
@@ -34,12 +34,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 UNIDAI, user 1 deposits 1 WETH as collateral and borrows 100 UNIDAI at variable rate",
+      "description": "User 0 deposits 1000 LPDAI, user 1 deposits 1 WETH as collateral and borrows 100 LPDAI at variable rate",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -48,7 +48,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "0"
           },
           "expected": "success"
@@ -56,7 +56,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -91,7 +91,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "100",
             "borrowRateMode": "variable",
             "user": "1",
@@ -102,12 +102,12 @@
       ]
     },
     {
-      "description": "User 1 tries to borrow the rest of the UNIDAI liquidity (revert expected)",
+      "description": "User 1 tries to borrow the rest of the LPDAI liquidity (revert expected)",
       "actions": [
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "900",
             "borrowRateMode": "variable",
             "user": "1"
@@ -118,12 +118,12 @@
       ]
     },
     {
-      "description": "User 1 tries to repay 0 UNIDAI (revert expected)",
+      "description": "User 1 tries to repay 0 LPDAI (revert expected)",
       "actions": [
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "0",
             "user": "1",
             "onBehalfOf": "1"
@@ -134,12 +134,12 @@
       ]
     },
     {
-      "description": "User 1 repays a small amount of UNIDAI, enough to cover a small part of the interest",
+      "description": "User 1 repays a small amount of LPDAI, enough to cover a small part of the interest",
       "actions": [
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "1"
           },
           "expected": "success"
@@ -147,7 +147,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1.25",
             "user": "1",
             "onBehalfOf": "1",
@@ -158,13 +158,13 @@
       ]
     },
     {
-      "description": "User 1 repays the UNIDAI borrow after one year",
+      "description": "User 1 repays the LPDAI borrow after one year",
       "actions": [
         {
           "name": "mint",
-          "description": "Mint 10 UNIDAI to cover the interest",
+          "description": "Mint 10 LPDAI to cover the interest",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "10",
             "user": "1"
           },
@@ -173,7 +173,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "-1",
             "user": "1",
             "onBehalfOf": "1",
@@ -184,12 +184,12 @@
       ]
     },
     {
-      "description": "User 0 withdraws the deposited UNIDAI plus interest",
+      "description": "User 0 withdraws the deposited LPDAI plus interest",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "-1",
             "user": "0"
           },
@@ -243,7 +243,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 WETH, user 1 deposits 100 UNILINKWETH as collateral and borrows 0.5 WETH at variable rate",
+      "description": "User 0 deposits 1 WETH, user 1 deposits 100 LPLINKWETH as collateral and borrows 0.5 WETH at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -274,7 +274,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "amount": "100",
             "user": "1"
           },
@@ -283,7 +283,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "user": "1"
           },
           "expected": "success"
@@ -292,7 +292,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "amount": "100",
             "user": "1"
           },
@@ -431,7 +431,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "amount": "-1",
             "user": "1"
           },
@@ -441,12 +441,12 @@
     },
 
     {
-      "description": "User 2 deposits 1 UNIUSDC to account for rounding errors",
+      "description": "User 2 deposits 1 LPUSDC to account for rounding errors",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "1",
             "user": "2"
           },
@@ -455,7 +455,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "user": "2"
           },
           "expected": "success"
@@ -463,7 +463,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "1",
             "user": "2"
           },
@@ -472,12 +472,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 UNIUSDC, user 1 deposits 1 WETH as collateral and borrows 100 UNIUSDC at variable rate",
+      "description": "User 0 deposits 1000 LPUSDC, user 1 deposits 1 WETH as collateral and borrows 100 LPUSDC at variable rate",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "1000",
             "user": "0"
           },
@@ -486,7 +486,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "user": "0"
           },
           "expected": "success"
@@ -494,7 +494,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "1000",
             "user": "0"
           },
@@ -529,7 +529,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "100",
             "borrowRateMode": "variable",
             "user": "1",
@@ -540,12 +540,12 @@
       ]
     },
     {
-      "description": "User 1 tries to borrow the rest of the UNIUSDC liquidity (revert expected)",
+      "description": "User 1 tries to borrow the rest of the LPUSDC liquidity (revert expected)",
       "actions": [
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "900",
             "borrowRateMode": "variable",
             "user": "1"
@@ -556,13 +556,13 @@
       ]
     },
     {
-      "description": "User 1 repays the UNIUSDC borrow after one year",
+      "description": "User 1 repays the LPUSDC borrow after one year",
       "actions": [
         {
           "name": "mint",
-          "description": "Mint 10 UNIUSDC to cover the interest",
+          "description": "Mint 10 LPUSDC to cover the interest",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "10",
             "user": "1"
           },
@@ -571,7 +571,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "user": "1"
           },
           "expected": "success"
@@ -579,7 +579,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "-1",
             "user": "1",
             "onBehalfOf": "1",
@@ -590,12 +590,12 @@
       ]
     },
     {
-      "description": "User 0 withdraws the deposited UNIUSDC plus interest",
+      "description": "User 0 withdraws the deposited LPUSDC plus interest",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "-1",
             "user": "0"
           },
@@ -618,12 +618,12 @@
       ]
     },
     {
-      "description": "User 1 deposits 1000 UNIDAI, user 3 tries to borrow 1000 UNIDAI without any collateral (revert expected)",
+      "description": "User 1 deposits 1000 LPDAI, user 3 tries to borrow 1000 LPDAI without any collateral (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "1"
           },
@@ -632,7 +632,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "1"
           },
           "expected": "success"
@@ -640,7 +640,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "1"
           },
@@ -649,7 +649,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "borrowRateMode": "variable",
             "user": "3"
@@ -660,7 +660,7 @@
       ]
     },
     {
-      "description": "user 3 deposits 0.1 WETH collateral to borrow 100 UNIDAI; 0.1 WETH is not enough to borrow 100 UNIDAI (revert expected)",
+      "description": "user 3 deposits 0.1 WETH collateral to borrow 100 LPDAI; 0.1 WETH is not enough to borrow 100 LPDAI (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -691,7 +691,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "100",
             "borrowRateMode": "variable",
             "user": "3"
@@ -716,12 +716,12 @@
       ]
     },
     {
-      "description": "User 1 deposits 1000 UNIUSDC, user 3 tries to borrow 1000 UNIUSDC without any collateral (revert expected)",
+      "description": "User 1 deposits 1000 LPUSDC, user 3 tries to borrow 1000 LPUSDC without any collateral (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "1000",
             "user": "1"
           },
@@ -730,7 +730,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "user": "1"
           },
           "expected": "success"
@@ -738,7 +738,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "1000",
             "user": "1"
           },
@@ -747,7 +747,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "1000",
             "borrowRateMode": "variable",
             "user": "3"
@@ -758,7 +758,7 @@
       ]
     },
     {
-      "description": "user 3 deposits 0.1 WETH collateral to borrow 100 UNIUSDC; 0.1 WETH is not enough to borrow 100 UNIUSDC (revert expected)",
+      "description": "user 3 deposits 0.1 WETH collateral to borrow 100 LPUSDC; 0.1 WETH is not enough to borrow 100 LPUSDC (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -789,7 +789,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIUSDC",
+            "reserve": "LPUSDC",
             "amount": "100",
             "borrowRateMode": "variable",
             "user": "3"
@@ -814,12 +814,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 UNIDAI, user 6 deposits 2 WETH and borrow 100 UNIDAI at variable rate first, then 100 UNIDAI at stable rate, repays everything. User 0 withdraws",
+      "description": "User 0 deposits 1000 LPDAI, user 6 deposits 2 WETH and borrow 100 LPDAI at variable rate first, then 100 LPDAI at stable rate, repays everything. User 0 withdraws",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -828,7 +828,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "0"
           },
           "expected": "success"
@@ -836,7 +836,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -871,7 +871,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "100",
             "borrowRateMode": "variable",
             "user": "6",
@@ -882,7 +882,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "100",
             "borrowRateMode": "stable",
             "user": "6",
@@ -892,9 +892,9 @@
         },
         {
           "name": "mint",
-          "description": "Mint 50 UNIDAI to cover the interest",
+          "description": "Mint 50 LPDAI to cover the interest",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "50",
             "user": "6"
           },
@@ -903,7 +903,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "6"
           },
           "expected": "success"
@@ -911,7 +911,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "-1",
             "user": "6",
             "onBehalfOf": "6",
@@ -922,7 +922,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "-1",
             "user": "6",
             "onBehalfOf": "6",
@@ -933,7 +933,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "-1",
             "user": "0"
           },

@@ -23,25 +23,25 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   WBTC: oneEther.multipliedBy('47.332685').toFixed(),
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
-  UniDAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  UniUSDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
-  UniUSDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  UniWBTC: oneEther.multipliedBy('47.332685').toFixed(),
-  UniWETH: oneEther.toFixed(),
-  UniDAIWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniAAVEWETH: oneEther.multipliedBy('0.003620948469').toFixed(),
-  UniBATWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniUSDCDAI: oneEther.multipliedBy('22.407436').toFixed(),
-  UniCRVWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniLINKWETH: oneEther.multipliedBy('0.009955').toFixed(),
-  UniMKRWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniRENWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniSNXWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniUNIWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniUSDCWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniWBTCUSDC: oneEther.multipliedBy('22.407436').toFixed(),
-  UniYFIWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpDAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  LpUSDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
+  LpUSDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  LpWBTC: oneEther.multipliedBy('47.332685').toFixed(),
+  LpWETH: oneEther.toFixed(),
+  LpDAIWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpAAVEWETH: oneEther.multipliedBy('0.003620948469').toFixed(),
+  LpBATWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpUSDCDAI: oneEther.multipliedBy('22.407436').toFixed(),
+  LpCRVWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpLINKWETH: oneEther.multipliedBy('0.009955').toFixed(),
+  LpMKRWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpRENWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpSNXWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpUNIWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpUSDCWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  LpWBTCUSDC: oneEther.multipliedBy('22.407436').toFixed(),
+  LpYFIWETH: oneEther.multipliedBy('22.407436').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
@@ -71,61 +71,61 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   // TODO: reorg alphabetically, checking the reason of tests failing
   LendingRateOracleRatesCommon: {
-    UniWETH: {
+    LpWETH: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    UniDAI: {
+    LpDAI: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    UniUSDC: {
+    LpUSDC: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    UniUSDT: {
+    LpUSDT: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     },
-    UniWBTC: {
+    LpWBTC: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    UniDAIWETH: {
+    LpDAIWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniWBTCWETH: {
+    LpWBTCWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniAAVEWETH:{
+    LpAAVEWETH:{
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniBATWETH: {
+    LpBATWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniUSDCDAI: {
+    LpUSDCDAI: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniCRVWETH: {
+    LpCRVWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniLINKWETH: {
+    LpLINKWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniMKRWETH: {
+    LpMKRWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniRENWETH: {
+    LpRENWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniSNXWETH: {
+    LpSNXWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniUNIWETH: {
+    LpUNIWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniUSDCWETH: {
+    LpUSDCWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniWBTCUSDC: {
+    LpWBTCUSDC: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniYFIWETH: {
+    LpYFIWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
   },
@@ -214,68 +214,68 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [EthereumNetwork.kovan]: {
-      UniUSDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
-      UniWBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
-      UniUSDC: '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838',
-      UniDAI:'0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541',
-      UniDAIWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',   // Mock oracles
-      UniWBTCWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',  
-      UniAAVEWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniBATWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniUSDCDAI: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniCRVWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniLINKWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniMKRWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniRENWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniSNXWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniUNIWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniUSDCWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniWBTCUSDC: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
-      UniYFIWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpUSDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
+      LpWBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
+      LpUSDC: '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838',
+      LpDAI:'0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541',
+      LpDAIWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',   // Mock oracles
+      LpWBTCWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',  
+      LpAAVEWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpBATWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpUSDCDAI: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpCRVWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpLINKWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpMKRWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpRENWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpSNXWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpUNIWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpUSDCWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpWBTCUSDC: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
+      LpYFIWETH: '0x90B86B501BF4d800a7F76E551952E214Cc58Fba3',
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
     [EthereumNetwork.ropsten]: {
     },
     [EthereumNetwork.main]: {
-      UniUSDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
-      UniWBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
-      UniUSDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
-      UniDAI:'0x773616E4d11A78F511299002da57A0a94577F1f4',
-      UniDAIWETH: '0xf4071801C4421Db7e63DaC15B9432e50C44a7F42',
-      UniWBTCWETH: ZERO_ADDRESS,
-      UniAAVEWETH: ZERO_ADDRESS,
-      UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
-      UniCRVWETH: ZERO_ADDRESS,
-      UniLINKWETH: ZERO_ADDRESS,
-      UniMKRWETH: ZERO_ADDRESS,
-      UniRENWETH: ZERO_ADDRESS,
-      UniSNXWETH: ZERO_ADDRESS,
-      UniUNIWETH: ZERO_ADDRESS,
-      UniUSDCWETH: ZERO_ADDRESS,
-      UniWBTCUSDC: ZERO_ADDRESS,
-      UniYFIWETH: ZERO_ADDRESS,
+      LpUSDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
+      LpWBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
+      LpUSDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
+      LpDAI:'0x773616E4d11A78F511299002da57A0a94577F1f4',
+      LpDAIWETH: '0xf4071801C4421Db7e63DaC15B9432e50C44a7F42',
+      LpWBTCWETH: ZERO_ADDRESS,
+      LpAAVEWETH: ZERO_ADDRESS,
+      LpBATWETH: ZERO_ADDRESS,
+      LpUSDCDAI: ZERO_ADDRESS,
+      LpCRVWETH: ZERO_ADDRESS,
+      LpLINKWETH: ZERO_ADDRESS,
+      LpMKRWETH: ZERO_ADDRESS,
+      LpRENWETH: ZERO_ADDRESS,
+      LpSNXWETH: ZERO_ADDRESS,
+      LpUNIWETH: ZERO_ADDRESS,
+      LpUSDCWETH: ZERO_ADDRESS,
+      LpWBTCUSDC: ZERO_ADDRESS,
+      LpYFIWETH: ZERO_ADDRESS,
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
     [EthereumNetwork.tenderlyMain]: {
-      UniUSDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
-      UniWBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
-      UniUSDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
-      UniDAI:'0x773616E4d11A78F511299002da57A0a94577F1f4',
-      UniDAIWETH: ZERO_ADDRESS,
-      UniWBTCWETH: ZERO_ADDRESS,
-      UniAAVEWETH: ZERO_ADDRESS,
-      UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
-      UniCRVWETH: ZERO_ADDRESS,
-      UniLINKWETH: ZERO_ADDRESS,
-      UniMKRWETH: ZERO_ADDRESS,
-      UniRENWETH: ZERO_ADDRESS,
-      UniSNXWETH: ZERO_ADDRESS,
-      UniUNIWETH: ZERO_ADDRESS,
-      UniUSDCWETH: ZERO_ADDRESS,
-      UniWBTCUSDC: ZERO_ADDRESS,
-      UniYFIWETH: ZERO_ADDRESS,
+      LpUSDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
+      LpWBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
+      LpUSDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
+      LpDAI:'0x773616E4d11A78F511299002da57A0a94577F1f4',
+      LpDAIWETH: ZERO_ADDRESS,
+      LpWBTCWETH: ZERO_ADDRESS,
+      LpAAVEWETH: ZERO_ADDRESS,
+      LpBATWETH: ZERO_ADDRESS,
+      LpUSDCDAI: ZERO_ADDRESS,
+      LpCRVWETH: ZERO_ADDRESS,
+      LpLINKWETH: ZERO_ADDRESS,
+      LpMKRWETH: ZERO_ADDRESS,
+      LpRENWETH: ZERO_ADDRESS,
+      LpSNXWETH: ZERO_ADDRESS,
+      LpUNIWETH: ZERO_ADDRESS,
+      LpUSDCWETH: ZERO_ADDRESS,
+      LpWBTCUSDC: ZERO_ADDRESS,
+      LpYFIWETH: ZERO_ADDRESS,
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
   },

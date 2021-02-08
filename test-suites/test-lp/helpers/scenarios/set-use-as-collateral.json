@@ -3,12 +3,12 @@
   "description": "Test cases for the setUserUseReserveAsCollateral() function.",
   "stories": [
     {
-      "description": "User 0 Deposits 1000 UNIDAI, disables UNIDAI as collateral",
+      "description": "User 0 Deposits 1000 LPDAI, disables LPDAI as collateral",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -17,7 +17,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "0"
           },
           "expected": "success"
@@ -25,7 +25,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "1000",
             "user": "0"
           },
@@ -34,7 +34,7 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "user": "0",
             "useAsCollateral": "false"
           },
@@ -43,7 +43,7 @@
       ]
     },
     {
-      "description": "User 1 Deposits 2 WETH, disables WETH as collateral, borrows 400 UNIDAI (revert expected)",
+      "description": "User 1 Deposits 2 WETH, disables WETH as collateral, borrows 400 LPDAI (revert expected)",
       "actions": [
         {
           "name": "mint",
@@ -83,7 +83,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "400",
             "borrowRateMode": "variable",
             "user": "1"
@@ -94,7 +94,7 @@
       ]
     },
     {
-      "description": "User 1 enables WETH as collateral, borrows 400 UNIDAI",
+      "description": "User 1 enables WETH as collateral, borrows 400 LPDAI",
       "actions": [
         {
           "name": "setUseAsCollateral",
@@ -108,7 +108,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "UNIDAI",
+            "reserve": "LPDAI",
             "amount": "400",
             "borrowRateMode": "variable",
             "user": "1"
@@ -133,12 +133,12 @@
       ]
     },
     {
-      "description": "User 1 Deposits 10 UNILINKWETH, disables WETH as collateral. Should revert as 10 UNILINKWETH are not enough to cover the debt (revert expected)",
+      "description": "User 1 Deposits 10 LPLINKWETH, disables WETH as collateral. Should revert as 10 LPLINKWETH are not enough to cover the debt (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "amount": "10",
             "user": "1"
           },
@@ -147,7 +147,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "user": "1"
           },
           "expected": "success"
@@ -155,7 +155,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "amount": "10",
             "user": "1"
           },
@@ -173,12 +173,12 @@
       ]
     },
     {
-      "description": "User 1 Deposits 640 more UNILINKWETH (enough to cover the UNIDAI debt), disables WETH as collateral",
+      "description": "User 1 Deposits 640 more LPLINKWETH (enough to cover the LPDAI debt), disables WETH as collateral",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "amount": "640",
             "user": "1"
           },
@@ -187,7 +187,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "amount": "640",
             "user": "1"
           },
@@ -205,12 +205,12 @@
       ]
     },
     {
-      "description": "User 1 disables UNILINKWETH as collateral (revert expected)",
+      "description": "User 1 disables LPLINKWETH as collateral (revert expected)",
       "actions": [
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "UNILINKWETH",
+            "reserve": "LPLINKWETH",
             "user": "1",
             "useAsCollateral": "false"
           },

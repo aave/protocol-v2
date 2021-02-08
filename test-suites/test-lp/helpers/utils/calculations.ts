@@ -1237,9 +1237,9 @@ export const calcExpectedInterestRates = (
 ): BigNumber[] => {
   const { reservesParams } = configuration;
 
-  // Fixes WETH - UniWETH mock token symbol mismatch 
+  // Fixes WETH - LpWETH mock token symbol mismatch 
   if(reserveSymbol === 'WETH') {
-    reserveSymbol = 'UniWETH';
+    reserveSymbol = 'LpWETH';
   }
   const reserveIndex = Object.keys(reservesParams).findIndex((value) => value === reserveSymbol);
   const [, reserveConfiguration] = (Object.entries(reservesParams) as [string, IReserveParams][])[
