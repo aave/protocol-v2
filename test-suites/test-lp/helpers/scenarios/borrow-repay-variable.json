@@ -814,7 +814,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 LPDAI, user 6 deposits 2 WETH and borrow 100 LPDAI at variable rate first, then 100 LPDAI at stable rate, repays everything. User 0 withdraws",
+      "description": "User 0 deposits 1000 LPDAI, user 6 deposits 2 WETH and borrow 100 LPDAI at variable rate first, then 100 LPDAI at stable rate (revert expected), then 100 LPDAI at variable again, repays everything. User 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -888,6 +888,17 @@
             "user": "6",
             "timeTravel": "365"
           },
+          "expected": "revert"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "LPDAI",
+            "amount": "100",
+            "borrowRateMode": "variable",
+            "user": "6",
+            "timeTravel": "365"
+          },
           "expected": "success"
         },
         {
@@ -917,7 +928,7 @@
             "onBehalfOf": "6",
             "borrowRateMode": "stable"
           },
-          "expected": "success"
+          "expected": "revert"
         },
         {
           "name": "repay",

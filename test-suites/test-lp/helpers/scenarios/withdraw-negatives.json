@@ -60,7 +60,7 @@
       ]
     },
     {
-      "description": "Users 1 deposits 1 WETH, borrows 100 LPDAI, tries to redeem the 1 WETH deposited (revert expected)",
+      "description": "Users 1 deposits 1 WETH, borrows 100 LPDAI stable (revert expected), redeems the 1 WETH deposited",
       "actions": [
         {
           "name": "mint",
@@ -95,6 +95,56 @@
             "amount": "100",
             "user": "1",
             "borrowRateMode": "stable"
+          },
+          "expected": "revert"
+        },
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "WETH",
+            "amount": "-1",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "Users 1 deposits 1 WETH, borrows 100 LPDAI at variable rate, tries to redeem the 1 WETH deposited (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "LPDAI",
+            "amount": "100",
+            "user": "1",
+            "borrowRateMode": "variable"
           },
           "expected": "success"
         },

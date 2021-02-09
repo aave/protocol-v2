@@ -462,7 +462,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const reserveData = await pool.getReserveData(weth.address);
 
-    const stableDebtToken = await getVariableDebtToken(reserveData.stableDebtTokenAddress);
+    const stableDebtToken = await getStableDebtToken(reserveData.stableDebtTokenAddress);
 
     // Deposited for onBehalfOf user already, delegate borrow allowance
     await stableDebtToken.connect(onBehalfOf.signer).approveDelegation(caller.address, flashAmount);

@@ -131,7 +131,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     // Try to execute liquidation
     await expect(
-      pool.connect(user.signer).borrow(dai.address, '1', '1', '0', user.address)
+      pool.connect(user.signer).borrow(dai.address, '1', '2', '0', user.address)
     ).revertedWith(LP_IS_PAUSED);
 
     // Unpause the pool
@@ -146,7 +146,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await configurator.connect(users[1].signer).setPoolPause(true);
 
     // Try to execute liquidation
-    await expect(pool.connect(user.signer).repay(dai.address, '1', '1', user.address)).revertedWith(
+    await expect(pool.connect(user.signer).repay(dai.address, '1', '2', user.address)).revertedWith(
       LP_IS_PAUSED
     );
 
@@ -173,7 +173,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
           _mockFlashLoanReceiver.address,
           [weth.address],
           [flashAmount],
-          [1],
+          [2],
           caller.address,
           '0x10',
           '0'
@@ -232,7 +232,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     await pool
       .connect(borrower.signer)
-      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Stable, '0', borrower.address);
+      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
 
     // Drops HF below 1
     await oracle.setAssetPrice(
@@ -249,7 +249,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
       borrower.address
     );
 
-    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
+    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
       .multipliedBy(0.5)
       .toFixed(0);
 
@@ -265,7 +265,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await configurator.connect(users[1].signer).setPoolPause(false);
   });
 
-  it('SwapBorrowRateMode', async () => {
+  it('SwapBorrowRateMode should fail because pool is paused', async () => {
     const { pool, weth, dai, usdc, users, configurator } = testEnv;
     const user = users[1];
     const amountWETHToDeposit = parseEther('10');
@@ -294,7 +294,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await configurator.connect(users[1].signer).setPoolPause(false);
   });
 
-  it('RebalanceStableBorrowRate', async () => {
+  it('RebalanceStableBorrowRate should fail because the pool is paused, even if there is no stable borrow', async () => {
     const { pool, dai, users, configurator } = testEnv;
     const user = users[1];
     // Pause pool

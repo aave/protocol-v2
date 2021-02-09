@@ -238,7 +238,7 @@
       ]
     },
     {
-      "description": "Users 0 deposits 1000 LPDAI, user 1 Deposit 1000 LPUSDC and 1 WETH, borrows 100 LPDAI. User 1 tries to withdraw all the LPUSDC",
+      "description": "Users 0 deposits 1000 LPDAI, user 1 Deposit 1000 LPUSDC and 1 WETH, borrows 100 LPDAI at stable rate (revert expected). User 1 tries to withdraw all the LPUSDC",
       "actions": [
         {
           "name": "deposit",
@@ -308,6 +308,100 @@
             "amount": "100",
             "user": "1",
             "borrowRateMode": "stable"
+          },
+          "expected": "revert"
+        },
+        {
+          "name": "withdraw",
+          "args": {
+            "reserve": "LPUSDC",
+            "amount": "-1",
+            "user": "1"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "Users 0 deposits 1000 LPDAI, user 1 Deposit 1000 LPUSDC and 1 WETH, borrows 100 LPDAI at variable rate. User 1 tries to withdraw all the LPUSDC",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "LPDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "LPDAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "LPUSDC",
+            "amount": "10000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "LPUSDC",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "LPUSDC",
+            "amount": "1000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "WETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "WETH",
+            "amount": "1",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "LPDAI",
+            "amount": "100",
+            "user": "1",
+            "borrowRateMode": "variable"
           },
           "expected": "success"
         },

@@ -6,6 +6,7 @@ import { DRE, waitForTx } from '../../helpers/misc-utils';
 import { BigNumber } from 'ethers';
 import { getStableDebtToken, getVariableDebtToken } from '../../helpers/contracts-getters';
 import { deploySelfdestructTransferMock } from '../../helpers/contracts-deployments';
+import { ProtocolErrors } from '../../helpers/types';
 
 const { expect } = require('chai');
 
@@ -101,7 +102,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     expect(afterFullATokensBalance).to.be.eq(0, 'User aWETH balance should be zero');
   });
 
-  it('Borrow stable WETH and Full Repay with ETH', async () => {
+  it('Borrowing stable WETH should fail since stable borrowing is disabled', async () => {
     const { users, wethGateway, aDai, weth, dai, pool, helpersContract } = testEnv;
     const borrowSize = parseEther('1');
     const repaySize = borrowSize.add(borrowSize.mul(5).div(100));
@@ -130,27 +131,28 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     expect(aTokensBalance).to.be.gte(daiSize);
 
     // Borrow WETH with WETH as collateral
-    await waitForTx(
-      await pool.connect(user.signer).borrow(weth.address, borrowSize, '1', '0', user.address)
-    );
+ 
+    await expect(pool.connect(user.signer).borrow(weth.address, borrowSize, '1', '0', user.address))
+      .to.be.revertedWith(ProtocolErrors.VL_STABLE_BORROWING_NOT_ENABLED);
 
-    const debtBalance = await stableDebtToken.balanceOf(user.address);
 
-    expect(debtBalance).to.be.gt(zero);
+    // const debtBalance = await stableDebtToken.balanceOf(user.address);
 
-    // Full Repay WETH with native ETH
-    await waitForTx(
-      await wethGateway
-        .connect(user.signer)
-        .repayETH(MAX_UINT_AMOUNT, '1', user.address, { value: repaySize })
-    );
+    // expect(debtBalance).to.be.gt(zero);
 
-    const debtBalanceAfterRepay = await stableDebtToken.balanceOf(user.address);
-    expect(debtBalanceAfterRepay).to.be.eq(zero);
+    // // Full Repay WETH with native ETH
+    // await waitForTx(
+    //   await wethGateway
+    //     .connect(user.signer)
+    //     .repayETH(MAX_UINT_AMOUNT, '1', user.address, { value: repaySize })
+    // );
 
-    // Withdraw DAI
-    await aDai.connect(user.signer).approve(pool.address, MAX_UINT_AMOUNT);
-    await pool.connect(user.signer).withdraw(dai.address, MAX_UINT_AMOUNT, user.address);
+    // const debtBalanceAfterRepay = await stableDebtToken.balanceOf(user.address);
+    // expect(debtBalanceAfterRepay).to.be.eq(zero);
+
+    // // Withdraw DAI
+    // await aDai.connect(user.signer).approve(pool.address, MAX_UINT_AMOUNT);
+    // await pool.connect(user.signer).withdraw(dai.address, MAX_UINT_AMOUNT, user.address);
   });
 
   it('Borrow variable WETH and Full Repay with ETH', async () => {
