@@ -83,7 +83,6 @@
           "name": "deposit",
           "args": {
             "reserve": "WETH",
-
             "amount": "1",
             "user": "1"
           },
@@ -103,7 +102,6 @@
           "name": "withdraw",
           "args": {
             "reserve": "WETH",
-
             "amount": "-1",
             "user": "1"
           },
