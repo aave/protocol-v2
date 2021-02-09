@@ -230,7 +230,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     ).to.be.true;
   });
 
-  it('User 3 deposits 1000 USDC, user 4 1 WETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
+  it('User 3 deposits 1000 USDC, user 4 1 WETH, user 4 borrows at variable - drops HF, liquidates the borrow', async () => {
     const { users, pool, usdc, oracle, weth, helpersContract } = testEnv;
     const depositor = users[3];
     const borrower = users[4];
@@ -278,7 +278,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await pool
       .connect(borrower.signer)
-      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Stable, '0', borrower.address);
+      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
 
     //drops HF below 1
 
@@ -302,7 +302,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
     const ethReserveDataBefore = await helpersContract.getReserveData(weth.address);
 
-    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentStableDebt.toString())
+    const amountToLiquidate = new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
       .multipliedBy(0.5)
       .toFixed(0);
 
@@ -345,8 +345,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       'Invalid health factor'
     );
 
-    expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
-      new BigNumber(userReserveDataBefore.currentStableDebt.toString())
+    expect(userReserveDataAfter.currentVariableDebt.toString()).to.be.bignumber.almostEqual(
+      new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
         .minus(amountToLiquidate)
         .toFixed(0),
       'Invalid user borrow balance after liquidation'

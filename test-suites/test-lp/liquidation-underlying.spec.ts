@@ -5,8 +5,8 @@ import { APPROVAL_AMOUNT_LENDING_POOL, oneEther } from '../../helpers/constants'
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite } from './helpers/make-suite';
 import { ProtocolErrors, RateMode } from '../../helpers/types';
-import { calcExpectedStableDebtTokenBalance } from './helpers/utils/calculations';
-import { getUserData } from './helpers/utils/helpers';
+import { calcExpectedVariableDebtTokenBalance } from './helpers/utils/calculations';
+import { getReserveData, getUserData } from './helpers/utils/helpers';
 import { CommonsConfig } from '../../markets/lp/commons';
 
 import { parseEther } from 'ethers/lib/utils';
@@ -91,7 +91,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     await pool
       .connect(borrower.signer)
-      .borrow(dai.address, amountDAIToBorrow, RateMode.Stable, '0', borrower.address);
+      .borrow(dai.address, amountDAIToBorrow, RateMode.Variable, '0', borrower.address);
 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -131,6 +131,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     //approve protocol to access the liquidator wallet
     await dai.connect(liquidator.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
+    const daiReserveBefore = await getReserveData(helpersContract, dai.address);
     const daiReserveDataBefore = await helpersContract.getReserveData(dai.address);
     const ethReserveDataBefore = await helpersContract.getReserveData(weth.address);
 
@@ -185,16 +186,15 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const txTimestamp = new BigNumber(
       (await DRE.ethers.provider.getBlock(tx.blockNumber)).timestamp
     );
-
-    const stableDebtBeforeTx = calcExpectedStableDebtTokenBalance(
-      userReserveDataBefore.principalStableDebt,
-      userReserveDataBefore.stableBorrowRate,
-      userReserveDataBefore.stableRateLastUpdated,
+    const reserve = await getReserveData
+    const variableDebtBeforeTx = calcExpectedVariableDebtTokenBalance(
+      daiReserveBefore,
+      userReserveDataBefore,
       txTimestamp
     );
 
     expect(userReserveDataAfter.currentStableDebt.toString()).to.be.bignumber.almostEqual(
-      stableDebtBeforeTx.minus(amountToLiquidate).toFixed(0),
+      variableDebtBeforeTx.minus(amountToLiquidate).toFixed(0),
       'Invalid user debt after liquidation'
     );
 
@@ -275,7 +275,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     await pool
       .connect(borrower.signer)
-      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Stable, '0', borrower.address);
+      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
 
     //drops HF below 1
     await oracle.setAssetPrice(

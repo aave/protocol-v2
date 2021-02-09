@@ -316,6 +316,32 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
   });
 
+  it('Disable stable borrow rate to return to the original state on the ETH reserve', async () => {
+    const { configurator, helpersContract, weth } = testEnv;
+    await configurator.disableReserveStableRate(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFrozen,
+    } = await helpersContract.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFrozen).to.be.equal(false);
+    expect(decimals).to.be.equal(strategyWETH.reserveDecimals);
+    expect(ltv).to.be.equal(strategyWETH.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
+    expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+  });
+
   it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(

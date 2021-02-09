@@ -45,7 +45,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
     );
   });
 
-  it('User 0 deposits 1 WETH and user 1 tries to borrow the WETH with the received DAI as collateral', async () => {
+  it('User 0 deposits 1 WETH and user 1 tries to borrow the WETH variable with the received DAI as collateral', async () => {
     const { users, pool, weth, helpersContract } = testEnv;
     const userAddress = await pool.signer.getAddress();
 
@@ -61,7 +61,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
       .borrow(
         weth.address,
         ethers.utils.parseEther('0.1'),
-        RateMode.Stable,
+        RateMode.Variable,
         AAVE_REFERRAL,
         users[1].address
       );
@@ -71,7 +71,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
       users[1].address
     );
 
-    expect(userReserveData.currentStableDebt.toString()).to.be.eq(ethers.utils.parseEther('0.1'));
+    expect(userReserveData.currentVariableDebt.toString()).to.be.eq(ethers.utils.parseEther('0.1'));
   });
 
   it('User 1 tries to transfer all the DAI used as collateral back to user 0 (revert expected)', async () => {

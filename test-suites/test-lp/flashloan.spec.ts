@@ -22,6 +22,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     VL_COLLATERAL_BALANCE_IS_0,
     TRANSFER_AMOUNT_EXCEEDS_BALANCE,
     LP_INVALID_FLASHLOAN_MODE,
+    VL_STABLE_BORROWING_NOT_ENABLED,
     SAFEERC20_LOWLEVEL_CALL,
     LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN,
     LP_BORROW_ALLOWANCE_NOT_ENOUGH,
@@ -384,7 +385,39 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     ).to.be.revertedWith(SAFEERC20_LOWLEVEL_CALL);
   });
 
-  it('Caller takes a WETH flashloan with mode = 1', async () => {
+  it('Caller takes a WETH flashloan with mode = 1, should revert since stable borrowing is disabled', async () => {
+    const { dai, pool, weth, users, helpersContract } = testEnv;
+
+    const caller = users[3];
+
+    const flashAmount = ethers.utils.parseEther('0.8');
+
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
+
+    await expect(pool
+      .connect(caller.signer)
+      .flashLoan(
+        _mockFlashLoanReceiver.address,
+        [weth.address],
+        [flashAmount],
+        [1],
+        caller.address,
+        '0x10',
+        '0'
+      )).to.be.revertedWith(VL_STABLE_BORROWING_NOT_ENABLED);
+
+    const { stableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
+      weth.address
+    );
+
+    const wethDebtToken = await getStableDebtToken(stableDebtTokenAddress);
+
+    const callerDebt = await wethDebtToken.balanceOf(caller.address);
+
+    expect(callerDebt.toString()).to.be.equal('0', 'Invalid user debt');
+  });
+
+  it('Caller takes a WETH flashloan with mode = 2', async () => {
     const { dai, pool, weth, users, helpersContract } = testEnv;
 
     const caller = users[3];
@@ -399,24 +432,24 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         _mockFlashLoanReceiver.address,
         [weth.address],
         [flashAmount],
-        [1],
+        [2],
         caller.address,
         '0x10',
         '0'
       );
 
-    const { stableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
+    const { variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
       weth.address
     );
 
-    const wethDebtToken = await getStableDebtToken(stableDebtTokenAddress);
+    const wethDebtToken = await getStableDebtToken(variableDebtTokenAddress);
 
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
-    expect(callerDebt.toString()).to.be.equal('800000000000000000', 'Invalid user debt');
+    expect(callerDebt.toString()).to.be.equal(ethers.utils.parseEther('0.8'), 'Invalid user debt');
   });
 
-  it('Caller takes a WETH flashloan with mode = 1 onBehalfOf user without allowance', async () => {
+  it('Caller takes a WETH flashloan with mode = 1 onBehalfOf user without allowance, should revert since stable borrowing is disabled', async () => {
     const { dai, pool, weth, users, helpersContract } = testEnv;
 
     const caller = users[5];
@@ -449,10 +482,46 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
           '0x10',
           '0'
         )
+    ).to.be.revertedWith(VL_STABLE_BORROWING_NOT_ENABLED);
+  });
+
+  it('Caller takes a WETH flashloan with mode = 2 onBehalfOf user without allowance, should revert since allowance is 0', async () => {
+    const { dai, pool, weth, users, helpersContract } = testEnv;
+
+    const caller = users[5];
+    const onBehalfOf = users[4];
+
+    // Deposit 1000 dai for onBehalfOf user
+    await dai.connect(onBehalfOf.signer).mint(await convertToCurrencyDecimals(dai.address, '1000'));
+
+    await dai.connect(onBehalfOf.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    const amountToDeposit = await convertToCurrencyDecimals(dai.address, '1000');
+
+    await pool
+      .connect(onBehalfOf.signer)
+      .deposit(dai.address, amountToDeposit, onBehalfOf.address, '0');
+
+    const flashAmount = ethers.utils.parseEther('0.8');
+
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
+
+    await expect(
+      pool
+        .connect(caller.signer)
+        .flashLoan(
+          _mockFlashLoanReceiver.address,
+          [weth.address],
+          [flashAmount],
+          [2],
+          onBehalfOf.address,
+          '0x10',
+          '0'
+        )
     ).to.be.revertedWith(LP_BORROW_ALLOWANCE_NOT_ENOUGH);
   });
 
-  it('Caller takes a WETH flashloan with mode = 1 onBehalfOf user with allowance. A loan for onBehalfOf is creatd.', async () => {
+  it('Caller takes a WETH flashloan with mode = 1 onBehalfOf user with allowance. Should revert since stable borrowing is disabled.', async () => {
     const { dai, pool, weth, users, helpersContract } = testEnv;
 
     const caller = users[5];
@@ -462,14 +531,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const reserveData = await pool.getReserveData(weth.address);
 
-    const stableDebtToken = await getVariableDebtToken(reserveData.stableDebtTokenAddress);
+    const stableDebtToken = await getStableDebtToken(reserveData.stableDebtTokenAddress);
 
     // Deposited for onBehalfOf user already, delegate borrow allowance
     await stableDebtToken.connect(onBehalfOf.signer).approveDelegation(caller.address, flashAmount);
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
-    await pool
+    await expect(pool
       .connect(caller.signer)
       .flashLoan(
         _mockFlashLoanReceiver.address,
@@ -479,7 +548,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         onBehalfOf.address,
         '0x10',
         '0'
-      );
+      )).to.be.revertedWith(VL_STABLE_BORROWING_NOT_ENABLED);
 
     const { stableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
       weth.address
@@ -490,7 +559,50 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const onBehalfOfDebt = await wethDebtToken.balanceOf(onBehalfOf.address);
 
     expect(onBehalfOfDebt.toString()).to.be.equal(
-      '800000000000000000',
+      '0',
+      'Invalid onBehalfOf user debt'
+    );
+  });
+
+  it('Caller takes a WETH flashloan with mode = 2 onBehalfOf user with allowance. A loan for onBehalfOf is created.', async () => {
+    const { dai, pool, weth, users, helpersContract } = testEnv;
+
+    const caller = users[5];
+    const onBehalfOf = users[4];
+
+    const flashAmount = ethers.utils.parseEther('0.8');
+
+    const reserveData = await pool.getReserveData(weth.address);
+
+    const variableDebtToken = await getVariableDebtToken(reserveData.variableDebtTokenAddress);
+
+    // Deposited for onBehalfOf user already, delegate borrow allowance
+    await variableDebtToken.connect(onBehalfOf.signer).approveDelegation(caller.address, flashAmount);
+
+    await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
+
+    await expect(pool
+      .connect(caller.signer)
+      .flashLoan(
+        _mockFlashLoanReceiver.address,
+        [weth.address],
+        [flashAmount],
+        [2],
+        onBehalfOf.address,
+        '0x10',
+        '0'
+      )).to.not.be.reverted;
+
+    const { variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
+      weth.address
+    );
+
+    const wethDebtToken = await getVariableDebtToken(variableDebtTokenAddress);
+
+    const onBehalfOfDebt = await wethDebtToken.balanceOf(onBehalfOf.address);
+
+    expect(onBehalfOfDebt.toString()).to.be.equal(
+      ethers.utils.parseEther('0.8'),
       'Invalid onBehalfOf user debt'
     );
   });
