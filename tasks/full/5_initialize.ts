@@ -45,7 +45,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       }
 
       const treasuryAddress = await getTreasuryAddress(poolConfig);
-      console.log("here");
+
       await initReservesByHelper(
         ReservesConfig,
         reserveAssets,
