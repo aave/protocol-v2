@@ -329,16 +329,26 @@ export enum TokenContractId {
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
   reserveFactor: string;
-  strategy: string;
+  strategy: IInterestRateStrategyParams;
 }
 
-export interface IReserveBorrowParams {
+export interface IInterestRateStrategyParams {
+  name: string,
   optimalUtilizationRate: string;
   baseVariableBorrowRate: string;
   variableRateSlope1: string;
   variableRateSlope2: string;
   stableRateSlope1: string;
   stableRateSlope2: string;
+}
+
+export interface IReserveBorrowParams {
+  // optimalUtilizationRate: string;
+  // baseVariableBorrowRate: string;
+  // variableRateSlope1: string;
+  // variableRateSlope2: string;
+  // stableRateSlope1: string;
+  // stableRateSlope2: string;
   borrowingEnabled: boolean;
   stableBorrowRateEnabled: boolean;
   reserveDecimals: string;

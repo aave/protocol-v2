@@ -52,7 +52,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
         variableRateSlope2,
         stableRateSlope1,
         stableRateSlope2,
-      } = tokenConfig[1];
+      } = tokenConfig[1].strategy;
 
       console.log;
       // Proxy Stable Debt

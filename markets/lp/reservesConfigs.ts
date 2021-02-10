@@ -1,15 +1,13 @@
-import BigNumber from 'bignumber.js';
-import { oneRay } from '../../helpers/constants';
-import { eContractid, IReserveParams } from '../../helpers/types';
+import { eContractid, IReserveParams} from '../../helpers/types';
+import {
+  rateStrategyLpBase,
+  rateStrategyStable,
+  rateStrategyBaseOne,
+} from './rateStrategies';
+
 
 export const strategyWETH: IReserveParams = {
-  strategy: 'WETH and WBTC',
-  optimalUtilizationRate: new BigNumber(0.65).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
+  strategy: rateStrategyBaseOne,
   baseLTVAsCollateral: '8000',
   liquidationThreshold: '8250',
   liquidationBonus: '10500',
@@ -21,13 +19,7 @@ export const strategyWETH: IReserveParams = {
 };
 
 export const strategyWBTC: IReserveParams = {
-  strategy: 'WETH and WBTC',
-  optimalUtilizationRate: new BigNumber(0.65).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(1).multipliedBy(oneRay).toFixed(),
+  strategy: rateStrategyBaseOne,
   baseLTVAsCollateral: '7000',
   liquidationThreshold: '7500',
   liquidationBonus: '11000',
@@ -39,13 +31,7 @@ export const strategyWBTC: IReserveParams = {
 };
 
 export const strategyDAI: IReserveParams = {
-  strategy: 'stablecoin',
-  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
+  strategy: rateStrategyStable,
   baseLTVAsCollateral: '7500',
   liquidationThreshold: '8000',
   liquidationBonus: '10500',
@@ -57,13 +43,7 @@ export const strategyDAI: IReserveParams = {
 };
 
 export const strategyUSDC: IReserveParams = {
-  strategy: 'stablecoin',
-  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
+  strategy: rateStrategyStable,
   baseLTVAsCollateral: '8000',
   liquidationThreshold: '8500',
   liquidationBonus: '10500',
@@ -75,13 +55,7 @@ export const strategyUSDC: IReserveParams = {
 };
 
 export const strategyUSDT: IReserveParams = {
-  strategy: 'stablecoin',
-  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
+  strategy: rateStrategyStable,
   baseLTVAsCollateral: '-1',
   liquidationThreshold: '8500',
   liquidationBonus: '10500',
@@ -93,13 +67,7 @@ export const strategyUSDT: IReserveParams = {
 };
 
 export const strategyDAIWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -111,13 +79,7 @@ export const strategyDAIWETH: IReserveParams = {
 };
 
 export const strategyWBTCWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -129,13 +91,7 @@ export const strategyWBTCWETH: IReserveParams = {
 };
 
 export const strategyAAVEWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -147,13 +103,7 @@ export const strategyAAVEWETH: IReserveParams = {
 };
 
 export const strategyBATWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -165,13 +115,7 @@ export const strategyBATWETH: IReserveParams = {
 };
 
 export const strategyUSDCDAI: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -183,13 +127,7 @@ export const strategyUSDCDAI: IReserveParams = {
 };
 
 export const strategyCRVWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '5000',
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
@@ -201,13 +139,7 @@ export const strategyCRVWETH: IReserveParams = {
 };
 
 export const strategyLINKWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -219,13 +151,7 @@ export const strategyLINKWETH: IReserveParams = {
 };
 
 export const strategyMKRWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -237,13 +163,7 @@ export const strategyMKRWETH: IReserveParams = {
 };
 
 export const strategyRENWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -255,13 +175,7 @@ export const strategyRENWETH: IReserveParams = {
 };
 
 export const strategySNXWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '4000',
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
@@ -273,13 +187,7 @@ export const strategySNXWETH: IReserveParams = {
 };
 
 export const strategyUNIWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -291,13 +199,7 @@ export const strategyUNIWETH: IReserveParams = {
 };
 
 export const strategyUSDCWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -309,13 +211,7 @@ export const strategyUSDCWETH: IReserveParams = {
 };
 
 export const strategyWBTCUSDC: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -327,13 +223,7 @@ export const strategyWBTCUSDC: IReserveParams = {
 };
 
 export const strategyYFIWETH: IReserveParams = {
-  strategy: 'uniswap LP base',
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: '0',
-  stableRateSlope2: '0',
+  strategy: rateStrategyLpBase,
   baseLTVAsCollateral: '5000',
   liquidationThreshold: '6000',
   liquidationBonus: '11500',

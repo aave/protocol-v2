@@ -58,16 +58,11 @@ export const initReservesByHelper = async (
 
   // Set aTokenAndRatesDeployer as temporal admin
   await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
-  console.log("Got deployer address");
+
   // CHUNK CONFIGURATION
-  const tokensChunks = 2;
   const initChunks = 4;
 
   // Initialize variables for future reserves initialization
-  let deployedStableTokens: string[] = [];
-  let deployedVariableTokens: string[] = [];
-  let deployedATokens: string[] = [];
-  let deployedRates: string[] = [];
   let reserveTokens: string[] = [];
   let reserveInitDecimals: string[] = [];
   let reserveSymbols: string[] = [];
@@ -100,7 +95,6 @@ export const initReservesByHelper = async (
     string,
     string
   ];
-  // TEST - replacing with two maps, like a mapping to mapping in solidity
   let rateStrategies: Record<string, typeof strategyRates> = {};
   let strategyAddresses: Record<string, tEthereumAddress> = {};
   let strategyAddressPerAsset: Record<string, string> = {};
@@ -109,7 +103,6 @@ export const initReservesByHelper = async (
   let aTokenImplementationAddress = "";
   let stableDebtTokenImplementationAddress = "";
   let variableDebtTokenImplementationAddress = "";
-  // --TEST
 
   const tx1 = await waitForTx(
     await stableAndVariableDeployer.initDeployment([ZERO_ADDRESS], ["1"])
@@ -120,12 +113,13 @@ export const initReservesByHelper = async (
     rawInsertContractAddressInDb(`stableDebtTokenImpl`, stableDebtTokenImplementationAddress);
     rawInsertContractAddressInDb(`variableDebtTokenImpl`, variableDebtTokenImplementationAddress);
   });
+  //gasUsage = gasUsage.add(tx1.gasUsed);
 
 
   const aTokenImplementation = await deployGenericATokenImpl(verify);
   aTokenImplementationAddress = aTokenImplementation.address;
   rawInsertContractAddressInDb(`aTokenImpl`, aTokenImplementationAddress);
-  // Deploy delegated aware reserves tokens
+
   const delegatedAwareReserves = Object.entries(reservesParams).filter(
     ([_, { aTokenImpl }]) => aTokenImpl === eContractid.DelegationAwareAToken
   ) as [string, IReserveParams][];
@@ -136,122 +130,28 @@ export const initReservesByHelper = async (
     rawInsertContractAddressInDb(`delegationAwareATokenImpl`, delegationAwareATokenImplementationAddress);
   }
 
-  // Deploy tokens and rates that uses common aToken in chunks
-  const reservesChunks = chunk(
-    Object.entries(reservesParams).filter(
-      ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
-    ) as [string, IReserveParams][],
-    tokensChunks
-  );
+  const reserves = Object.entries(reservesParams).filter(
+    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.DelegationAwareAToken ||
+    aTokenImpl === eContractid.AToken
+  ) as [string, IReserveParams][];
 
-  // const reserves = Object.entries(reservesParams).filter(
-  //   ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
-  // ) as [string, IReserveParams][];
-  
-
-  console.log(
-    `- Token deployments in ${reservesChunks.length * 2} txs instead of ${
-      Object.entries(reservesParams).length * 4
-    } txs`
-  );
-  // All of these use the same aToken implementation
-  // but they might use different rate strategy implementations,
-  // it is better to simply iterate through every reserve instead of chunks later
-  for (let reservesChunk of reservesChunks) {
-
-    // Prepare data
-    const tokens: string[] = [];
-    const symbols: string[] = [];
-
-    const reservesDecimals: string[] = [];
-
-    for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
-
-      const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
-        (value) => value === assetSymbol
-      );
-
-      const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
-        assetAddressIndex
-      ];
-
-      const reserveParamIndex = Object.keys(reservesParams).findIndex(
-        (value) => value === assetSymbol
-      );
-
-      const [
-        ,
-        {
-          strategy,
-          optimalUtilizationRate,
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        },
-      ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
-      // Add to lists
-
-      tokens.push(tokenAddress);
-      symbols.push(assetSymbol);
-
-      if (!strategyAddresses[strategy]) { 
-        // Strategy does not exist, create a new one
-        rateStrategies[strategy] = [
-          addressProvider.address,
-          optimalUtilizationRate,
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
-        ];
-        //lastStrategy = strategy;
-        strategyAddresses[strategy] = (await deployDefaultReserveInterestRateStrategy(
-          rateStrategies[strategy],
-          verify
-        )).address;
-      }
-      strategyAddressPerAsset[assetSymbol] = strategyAddresses[strategy];
-      console.log("Strategy address for asset %s: %s", assetSymbol, strategyAddressPerAsset[assetSymbol])
-
-      reservesDecimals.push(reserveDecimals);
-      aTokenType[assetSymbol] = "generic";
-      // inputParams.push({ 
-      //   asset: tokenAddress,
-      //   rates: [
-      //     optimalUtilizationRate,
-      //     baseVariableBorrowRate,
-      //     variableRateSlope1,
-      //     variableRateSlope2,
-      //     stableRateSlope1,
-      //     stableRateSlope2
-      //   ] 
-      // });
-    }
-    reserveInitDecimals = [...reserveInitDecimals, ...reservesDecimals];
-    reserveTokens = [...reserveTokens, ...tokens];
-    reserveSymbols = [...reserveSymbols, ...symbols];
-  }
-
-
-
-  for (let [symbol, params] of delegatedAwareReserves) {
-    console.log(`  - Deploy ${symbol} delegation aware aToken, debts tokens, and strategy`);
+  for (let [symbol, params] of reserves) {
     const {
       strategy,
+      aTokenImpl,
+      reserveDecimals,
+    } = params;
+    const { 
       optimalUtilizationRate,
       baseVariableBorrowRate,
       variableRateSlope1,
       variableRateSlope2,
       stableRateSlope1,
       stableRateSlope2,
-    } = params;
-
-    if (!strategyAddresses[strategy]) { 
+    } = strategy;
+    if (!strategyAddresses[strategy.name]) { 
       // Strategy does not exist, create a new one
-      rateStrategies[strategy] = [
+      rateStrategies[strategy.name] = [
         addressProvider.address,
         optimalUtilizationRate,
         baseVariableBorrowRate,
@@ -260,22 +160,27 @@ export const initReservesByHelper = async (
         stableRateSlope1,
         stableRateSlope2,
       ];
-      //lastStrategy = strategy;
-      strategyAddresses[strategy] = (await deployDefaultReserveInterestRateStrategy(
-        rateStrategies[strategy],
+      strategyAddresses[strategy.name] = (await deployDefaultReserveInterestRateStrategy(
+        rateStrategies[strategy.name],
         verify
       )).address;
+      // This causes the last strategy to be printed twice, once under "DefaultReserveInterestRateStrategy"
+      // and once under the actual `strategyASSET` key.
+      rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     }
-    strategyAddressPerAsset[symbol] = strategyAddresses[strategy];
+    strategyAddressPerAsset[symbol] = strategyAddresses[strategy.name];
     console.log("Strategy address for asset %s: %s", symbol, strategyAddressPerAsset[symbol])
 
-    aTokenType[symbol] = "delegation aware";
-    reserveInitDecimals.push(params.reserveDecimals);
+    if (aTokenImpl === eContractid.AToken) {
+      aTokenType[symbol] = "generic";
+    } else if (aTokenImpl === eContractid.DelegationAwareAToken) {
+      aTokenType[symbol] = "delegation aware";
+    }
+
+    reserveInitDecimals.push(reserveDecimals);
     reserveTokens.push(tokenAddresses[symbol]);
     reserveSymbols.push(symbol);
   }
-
-  //gasUsage = gasUsage.add(tx1.gasUsed);
 
   for (let i = 0; i < reserveSymbols.length; i ++) {
     let aTokenToUse: string;
@@ -319,7 +224,7 @@ export const initReservesByHelper = async (
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     console.log('    * gasUsed', tx3.gasUsed.toString());
-    gasUsage = gasUsage.add(tx3.gasUsed);
+    //gasUsage = gasUsage.add(tx3.gasUsed);
   }
 
 
@@ -490,7 +395,7 @@ export const initTokenReservesByHelper = async (
   let deployedVariableTokens: string[] = [];
   let deployedATokens: string[] = [];
   let deployedRates: string[] = [];
-  let reserveTokens: string[] = [];
+  //let reserveTokens: string[] = [];
   let reserveInitDecimals: string[] = [];
   let reserveSymbols: string[] = [];
 
@@ -529,10 +434,19 @@ export const initTokenReservesByHelper = async (
       console.log(`- Skipping ${symbol} due already initialized`);
       continue;
     }
-    let stableTokenImpl = await getAddressById(`stableDebt${symbol}`, network);
-    let variableTokenImpl = await getAddressById(`variableDebt${symbol}`, network);
-    let aTokenImplementation = await getAddressById(`a${symbol}`, network);
-    let strategyImpl = await getAddressById(`strategy${symbol}`, network);
+    let stableTokenImpl = await getAddressById(`stableDebtTokenImpl`, network);
+    let variableTokenImpl = await getAddressById(`variableDebtTokenImpl`, network);
+    let aTokenImplementation: string | undefined = "";
+    const [, { aTokenImpl, strategy }] = (Object.entries(reservesParams) as [string, IReserveParams][])[
+      reserveParamIndex
+    ];
+    if (aTokenImpl === eContractid.AToken) {
+      aTokenImplementation = await getAddressById(`aTokenImpl`, network);
+    } else if (aTokenImpl === eContractid.DelegationAwareAToken) {
+      aTokenImplementation = await getAddressById(`delegationAwareATokenImpl`, network);
+    }
+
+    let strategyImpl = await getAddressById(strategy.name, network);
 
     if (!stableTokenImpl) {
       const stableDebt = await deployStableDebtToken(
@@ -582,14 +496,17 @@ export const initTokenReservesByHelper = async (
       const [
         ,
         {
-          optimalUtilizationRate,
-          baseVariableBorrowRate,
-          variableRateSlope1,
-          variableRateSlope2,
-          stableRateSlope1,
-          stableRateSlope2,
+          strategy
         },
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
+      const {
+        optimalUtilizationRate,
+        baseVariableBorrowRate,
+        variableRateSlope1,
+        variableRateSlope2,
+        stableRateSlope1,
+        stableRateSlope2,
+      } = strategy;
       const rates = await deployDefaultReserveInterestRateStrategy(
         [
           tokenAddresses[symbol],
@@ -604,19 +521,19 @@ export const initTokenReservesByHelper = async (
       );
       strategyImpl = rates.address;
     }
-    const symbols = [`a${symbol}`, `variableDebt${symbol}`, `stableDebt${symbol}`];
-    const tokens = [aTokenImplementation, variableTokenImpl, stableTokenImpl];
-    for (let index = 0; index < symbols.length; index++) {
-      if (!(await isErc20SymbolCorrect(tokens[index], symbols[index]))) {
-        console.error(`${symbol} and implementation does not match: ${tokens[index]}`);
-        throw Error('Symbol does not match implementation.');
-      }
-    }
+    // --- REMOVED BECAUSE WE NOW USE THE SAME IMPLEMENTATIONS ---
+    // const symbols = [`a${symbol}`, `variableDebt${symbol}`, `stableDebt${symbol}`];
+    // const tokens = [aTokenImplementation, variableTokenImpl, stableTokenImpl];
+    // for (let index = 0; index < symbols.length; index++) {
+    //   if (!(await isErc20SymbolCorrect(tokens[index], symbols[index]))) {
+    //     console.error(`${symbol} and implementation does not match: ${tokens[index]}`);
+    //     throw Error('Symbol does not match implementation.');
+    //   }
+    // }
     console.log(`- Added ${symbol} to the initialize batch`);
     deployedStableTokens.push(stableTokenImpl);
     deployedVariableTokens.push(variableTokenImpl);
     deployedATokens.push(aTokenImplementation);
-    reserveTokens.push();
     deployedRates.push(strategyImpl);
     reserveInitDecimals.push(decimals.toString());
     reserveSymbols.push(symbol);
