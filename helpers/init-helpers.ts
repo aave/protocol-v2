@@ -230,7 +230,7 @@ export const initReservesByHelper = async (
 
   // Set deployer back as admin
   await waitForTx(await addressProvider.setPoolAdmin(admin));
-  return gasUsage;
+  return gasUsage;  // Deprecated
 };
 
 export const getPairsTokenAggregator = (
@@ -578,9 +578,10 @@ export const initTokenReservesByHelper = async (
 
   // Set deployer back as admin
   await waitForTx(await addressProvider.setPoolAdmin(admin));
-  return gasUsage;
+  return gasUsage;  // No longer relevant
 };
 
+// Function deprecated
 const isErc20SymbolCorrect = async (token: tEthereumAddress, symbol: string) => {
   const erc20 = await getAToken(token); // using aToken for ERC20 interface
   const erc20Symbol = await erc20.symbol();
