@@ -378,6 +378,15 @@ export const deployGenericAToken = async (
   return instance;
 };
 
+export const deployGenericATokenImpl = async (
+  verify: boolean
+) => withSaveAndVerify(
+    await new ATokenFactory(await getFirstSigner()).deploy(),
+    eContractid.AToken,
+    [],
+    verify
+  );
+
 export const deployDelegationAwareAToken = async (
   [pool, underlyingAssetAddress, treasuryAddress, incentivesController, name, symbol]: [
     tEthereumAddress,
@@ -408,6 +417,15 @@ export const deployDelegationAwareAToken = async (
 
   return instance;
 };
+
+export const deployDelegationAwareATokenImpl = async (
+  verify: boolean
+) => withSaveAndVerify(
+    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
+    eContractid.DelegationAwareAToken,
+    [],
+    verify
+  );
 
 export const deployAllMockTokens = async (verify?: boolean) => {
   const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};

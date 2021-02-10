@@ -20,12 +20,15 @@ import { BigNumber, BigNumberish, Signer } from 'ethers';
 import {
   deployDefaultReserveInterestRateStrategy,
   deployDelegationAwareAToken,
+  deployDelegationAwareATokenImpl,
   deployGenericAToken,
+  deployGenericATokenImpl,
   deployStableDebtToken,
   deployVariableDebtToken,
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
+import { DefaultReserveInterestRateStrategy, DelegationAwareAToken } from '../types';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -55,18 +58,11 @@ export const initReservesByHelper = async (
 
   // Set aTokenAndRatesDeployer as temporal admin
   await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
-
+  console.log("Got deployer address");
   // CHUNK CONFIGURATION
   const tokensChunks = 2;
   const initChunks = 4;
 
-  // Deploy tokens and rates that uses common aToken in chunks
-  const reservesChunks = chunk(
-    Object.entries(reservesParams).filter(
-      ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
-    ) as [string, IReserveParams][],
-    tokensChunks
-  );
   // Initialize variables for future reserves initialization
   let deployedStableTokens: string[] = [];
   let deployedVariableTokens: string[] = [];
@@ -94,42 +90,87 @@ export const initReservesByHelper = async (
     stableDebtTokenSymbol: string,
   }[] = [];
 
+  //let lastStrategy: string = "";
+  let strategyRates: [
+    string, // addresses provider
+    string,
+    string,
+    string,
+    string,
+    string,
+    string
+  ];
+  // TEST - replacing with two maps, like a mapping to mapping in solidity
+  let rateStrategies: Record<string, typeof strategyRates> = {};
+  let strategyAddresses: Record<string, tEthereumAddress> = {};
+  let strategyAddressPerAsset: Record<string, string> = {};
+  let aTokenType: Record<string, string> = {};
+  let delegationAwareATokenImplementationAddress = "";
+  let aTokenImplementationAddress = "";
+  let stableDebtTokenImplementationAddress = "";
+  let variableDebtTokenImplementationAddress = "";
+  // --TEST
+
+  const tx1 = await waitForTx(
+    await stableAndVariableDeployer.initDeployment([ZERO_ADDRESS], ["1"])
+  );
+  tx1.events?.forEach((event, index) => {
+    stableDebtTokenImplementationAddress = event?.args?.stableToken;
+    variableDebtTokenImplementationAddress = event?.args?.variableToken;
+    rawInsertContractAddressInDb(`stableDebtTokenImpl`, stableDebtTokenImplementationAddress);
+    rawInsertContractAddressInDb(`variableDebtTokenImpl`, variableDebtTokenImplementationAddress);
+  });
+
+
+  const aTokenImplementation = await deployGenericATokenImpl(verify);
+  aTokenImplementationAddress = aTokenImplementation.address;
+  rawInsertContractAddressInDb(`aTokenImpl`, aTokenImplementationAddress);
+  // Deploy delegated aware reserves tokens
+  const delegatedAwareReserves = Object.entries(reservesParams).filter(
+    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.DelegationAwareAToken
+  ) as [string, IReserveParams][];
+
+  if (delegatedAwareReserves.length > 0) {
+    const delegationAwareATokenImplementation = await deployDelegationAwareATokenImpl(verify);
+    delegationAwareATokenImplementationAddress = delegationAwareATokenImplementation.address;
+    rawInsertContractAddressInDb(`delegationAwareATokenImpl`, delegationAwareATokenImplementationAddress);
+  }
+
+  // Deploy tokens and rates that uses common aToken in chunks
+  const reservesChunks = chunk(
+    Object.entries(reservesParams).filter(
+      ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
+    ) as [string, IReserveParams][],
+    tokensChunks
+  );
+
+  // const reserves = Object.entries(reservesParams).filter(
+  //   ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
+  // ) as [string, IReserveParams][];
+  
+
   console.log(
     `- Token deployments in ${reservesChunks.length * 2} txs instead of ${
       Object.entries(reservesParams).length * 4
     } txs`
   );
-
+  // All of these use the same aToken implementation
+  // but they might use different rate strategy implementations,
+  // it is better to simply iterate through every reserve instead of chunks later
   for (let reservesChunk of reservesChunks) {
+
     // Prepare data
     const tokens: string[] = [];
     const symbols: string[] = [];
-    const strategyRates: [
-      BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish,
-      BigNumberish
-    ][] = [];
+
     const reservesDecimals: string[] = [];
 
-    const inputParams: {
-      asset: string, 
-      rates: [
-        BigNumberish,
-        BigNumberish,
-        BigNumberish,
-        BigNumberish,
-        BigNumberish,
-        BigNumberish
-      ]
-    }[] = [];
-
     for (let [assetSymbol, { reserveDecimals }] of reservesChunk) {
+
       const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
         (value) => value === assetSymbol
       );
+
       const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
         assetAddressIndex
       ];
@@ -137,9 +178,11 @@ export const initReservesByHelper = async (
       const reserveParamIndex = Object.keys(reservesParams).findIndex(
         (value) => value === assetSymbol
       );
+
       const [
         ,
         {
+          strategy,
           optimalUtilizationRate,
           baseVariableBorrowRate,
           variableRateSlope1,
@@ -149,76 +192,55 @@ export const initReservesByHelper = async (
         },
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
       // Add to lists
+
       tokens.push(tokenAddress);
       symbols.push(assetSymbol);
-      strategyRates.push([
-        optimalUtilizationRate,
-        baseVariableBorrowRate,
-        variableRateSlope1,
-        variableRateSlope2,
-        stableRateSlope1,
-        stableRateSlope2,
-      ]);
-      reservesDecimals.push(reserveDecimals);
 
-      inputParams.push({ 
-        asset: tokenAddress,
-        rates: [
+      if (!strategyAddresses[strategy]) { 
+        // Strategy does not exist, create a new one
+        rateStrategies[strategy] = [
+          addressProvider.address,
           optimalUtilizationRate,
           baseVariableBorrowRate,
           variableRateSlope1,
           variableRateSlope2,
           stableRateSlope1,
-          stableRateSlope2
-        ] 
-      });
+          stableRateSlope2,
+        ];
+        //lastStrategy = strategy;
+        strategyAddresses[strategy] = (await deployDefaultReserveInterestRateStrategy(
+          rateStrategies[strategy],
+          verify
+        )).address;
+      }
+      strategyAddressPerAsset[assetSymbol] = strategyAddresses[strategy];
+      console.log("Strategy address for asset %s: %s", assetSymbol, strategyAddressPerAsset[assetSymbol])
+
+      reservesDecimals.push(reserveDecimals);
+      aTokenType[assetSymbol] = "generic";
+      // inputParams.push({ 
+      //   asset: tokenAddress,
+      //   rates: [
+      //     optimalUtilizationRate,
+      //     baseVariableBorrowRate,
+      //     variableRateSlope1,
+      //     variableRateSlope2,
+      //     stableRateSlope1,
+      //     stableRateSlope2
+      //   ] 
+      // });
     }
-
-    // Deploy stable and variable deployers and save implementations
-    const tx1 = await waitForTx(
-      await stableAndVariableDeployer.initDeployment(tokens, symbols)
-    );
-    tx1.events?.forEach((event, index) => {
-      rawInsertContractAddressInDb(`stableDebt${symbols[index]}`, event?.args?.stableToken);
-      rawInsertContractAddressInDb(`variableDebt${symbols[index]}`, event?.args?.variableToken);
-    });
-
-    // Deploy atokens and rate strategies and save implementations
-    const tx2 = await waitForTx(
-      await atokenAndRatesDeployer.initDeployment(inputParams)
-    );
-    tx2.events?.forEach((event, index) => {
-      rawInsertContractAddressInDb(`a${symbols[index]}`, event?.args?.aToken);
-      rawInsertContractAddressInDb(`strategy${symbols[index]}`, event?.args?.strategy);
-    });
-
-    console.log(`  - Deployed aToken, DebtTokens and Strategy for: ${symbols.join(', ')} `);
-    console.log('    * gasUsed: debtTokens batch', tx1.gasUsed.toString());
-    console.log('    * gasUsed: aTokens and Strategy batch', tx2.gasUsed.toString());
-    gasUsage = gasUsage.add(tx1.gasUsed).add(tx2.gasUsed);
-    
-    const stableTokens: string[] = tx1.events?.map((e) => e.args?.stableToken) || [];
-    const variableTokens: string[] = tx1.events?.map((e) => e.args?.variableToken) || [];
-    const aTokens: string[] = tx2.events?.map((e) => e.args?.aToken) || [];
-    const strategies: string[] = tx2.events?.map((e) => e.args?.strategy) || [];
-
-    deployedStableTokens = [...deployedStableTokens, ...stableTokens];
-    deployedVariableTokens = [...deployedVariableTokens, ...variableTokens];
-    deployedATokens = [...deployedATokens, ...aTokens];
-    deployedRates = [...deployedRates, ...strategies];
     reserveInitDecimals = [...reserveInitDecimals, ...reservesDecimals];
     reserveTokens = [...reserveTokens, ...tokens];
     reserveSymbols = [...reserveSymbols, ...symbols];
   }
 
-  // Deploy delegated aware reserves tokens
-  const delegatedAwareReserves = Object.entries(reservesParams).filter(
-    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.DelegationAwareAToken
-  ) as [string, IReserveParams][];
+
 
   for (let [symbol, params] of delegatedAwareReserves) {
     console.log(`  - Deploy ${symbol} delegation aware aToken, debts tokens, and strategy`);
     const {
+      strategy,
       optimalUtilizationRate,
       baseVariableBorrowRate,
       variableRateSlope1,
@@ -226,67 +248,49 @@ export const initReservesByHelper = async (
       stableRateSlope1,
       stableRateSlope2,
     } = params;
-    const deployCustomAToken = chooseATokenDeployment(params.aTokenImpl);
-    const aToken = await deployCustomAToken(
-      [
-        poolAddress,
-        tokenAddresses[symbol],
-        treasuryAddress,
-        ZERO_ADDRESS,
-        `Aave interest bearing ${symbol}`,
-        `a${symbol}`,
-      ],
-      verify
-    );
-    const stableDebt = await deployStableDebtToken(
-      [
-        poolAddress,
-        tokenAddresses[symbol],
-        ZERO_ADDRESS, // Incentives controller
-        `Aave stable debt bearing ${symbol}`,
-        `stableDebt${symbol}`
-      ],
-      verify
-    );
-    const variableDebt = await deployVariableDebtToken(
-      [
-        poolAddress,
-        tokenAddresses[symbol],
-        ZERO_ADDRESS, // Incentives controller
-        `Aave variable debt bearing ${symbol}`,
-        `variableDebt${symbol}`,
-      ],
-      verify
-    );
-    const rates = await deployDefaultReserveInterestRateStrategy(
-      [
-        tokenAddresses[symbol],
+
+    if (!strategyAddresses[strategy]) { 
+      // Strategy does not exist, create a new one
+      rateStrategies[strategy] = [
+        addressProvider.address,
         optimalUtilizationRate,
         baseVariableBorrowRate,
         variableRateSlope1,
         variableRateSlope2,
         stableRateSlope1,
         stableRateSlope2,
-      ],
-      verify
-    );
+      ];
+      //lastStrategy = strategy;
+      strategyAddresses[strategy] = (await deployDefaultReserveInterestRateStrategy(
+        rateStrategies[strategy],
+        verify
+      )).address;
+    }
+    strategyAddressPerAsset[symbol] = strategyAddresses[strategy];
+    console.log("Strategy address for asset %s: %s", symbol, strategyAddressPerAsset[symbol])
 
-    deployedStableTokens.push(stableDebt.address);
-    deployedVariableTokens.push(variableDebt.address);
-    deployedATokens.push(aToken.address);
-    deployedRates.push(rates.address);
+    aTokenType[symbol] = "delegation aware";
     reserveInitDecimals.push(params.reserveDecimals);
     reserveTokens.push(tokenAddresses[symbol]);
     reserveSymbols.push(symbol);
   }
 
-  for (let i = 0; i < deployedATokens.length; i ++) {
+  //gasUsage = gasUsage.add(tx1.gasUsed);
+
+  for (let i = 0; i < reserveSymbols.length; i ++) {
+    let aTokenToUse: string;
+    if (aTokenType[reserveSymbols[i]] === 'generic') {
+      aTokenToUse = aTokenImplementationAddress;
+    } else {
+      aTokenToUse = delegationAwareATokenImplementationAddress;
+    }
+
     initInputParams.push({
-      aTokenImpl: deployedATokens[i],
-      stableDebtTokenImpl: deployedStableTokens[i], 
-      variableDebtTokenImpl: deployedVariableTokens[i],
+      aTokenImpl: aTokenToUse,
+      stableDebtTokenImpl: stableDebtTokenImplementationAddress, 
+      variableDebtTokenImpl: variableDebtTokenImplementationAddress,
       underlyingAssetDecimals: reserveInitDecimals[i],
-      interestRateStrategyAddress: deployedRates[i],
+      interestRateStrategyAddress: strategyAddressPerAsset[reserveSymbols[i]],
       underlyingAsset: reserveTokens[i],
       treasury: treasuryAddress,
       incentivesController: ZERO_ADDRESS,

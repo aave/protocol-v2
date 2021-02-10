@@ -254,17 +254,17 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   );
   await deployMockFlashLoanReceiver(addressesProvider.address);
 
-  // const mockUniswapRouter = await deployMockUniswapRouter();
+  const mockUniswapRouter = await deployMockUniswapRouter();
 
-  // const adapterParams: [string, string, string] = [
-  //   addressesProvider.address,
-  //   mockUniswapRouter.address,
-  //   mockTokens.WETH.address,
-  // ];
+  const adapterParams: [string, string, string] = [
+    addressesProvider.address,
+    mockUniswapRouter.address,
+    mockTokens.WETH.address,
+  ];
 
-  // await deployUniswapLiquiditySwapAdapter(adapterParams);
-  // await deployUniswapRepayAdapter(adapterParams);
-  // await deployFlashLiquidationAdapter(adapterParams);
+  await deployUniswapLiquiditySwapAdapter(adapterParams);
+  await deployUniswapRepayAdapter(adapterParams);
+  await deployFlashLiquidationAdapter(adapterParams);
 
   await deployWalletBalancerProvider();
 
