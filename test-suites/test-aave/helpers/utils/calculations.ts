@@ -8,6 +8,7 @@ import {
 } from '../../../../helpers/types';
 import './math';
 import { ReserveData, UserReserveData } from './interfaces';
+import { expect } from 'chai';
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
@@ -1243,29 +1244,29 @@ export const calcExpectedInterestRates = (
   ];
 
   let stableBorrowRate: BigNumber = marketStableRate;
-  let variableBorrowRate: BigNumber = new BigNumber(reserveConfiguration.baseVariableBorrowRate);
+  let variableBorrowRate: BigNumber = new BigNumber(reserveConfiguration.strategy.baseVariableBorrowRate);
 
-  const optimalRate = new BigNumber(reserveConfiguration.optimalUtilizationRate);
+  const optimalRate = new BigNumber(reserveConfiguration.strategy.optimalUtilizationRate);
   const excessRate = new BigNumber(RAY).minus(optimalRate);
   if (utilizationRate.gt(optimalRate)) {
     const excessUtilizationRateRatio = utilizationRate
-      .minus(reserveConfiguration.optimalUtilizationRate)
+      .minus(reserveConfiguration.strategy.optimalUtilizationRate)
       .rayDiv(excessRate);
 
     stableBorrowRate = stableBorrowRate
-      .plus(reserveConfiguration.stableRateSlope1)
+      .plus(reserveConfiguration.strategy.stableRateSlope1)
       .plus(
-        new BigNumber(reserveConfiguration.stableRateSlope2).rayMul(excessUtilizationRateRatio)
+        new BigNumber(reserveConfiguration.strategy.stableRateSlope2).rayMul(excessUtilizationRateRatio)
       );
 
     variableBorrowRate = variableBorrowRate
-      .plus(reserveConfiguration.variableRateSlope1)
+      .plus(reserveConfiguration.strategy.variableRateSlope1)
       .plus(
-        new BigNumber(reserveConfiguration.variableRateSlope2).rayMul(excessUtilizationRateRatio)
+        new BigNumber(reserveConfiguration.strategy.variableRateSlope2).rayMul(excessUtilizationRateRatio)
       );
   } else {
     stableBorrowRate = stableBorrowRate.plus(
-      new BigNumber(reserveConfiguration.stableRateSlope1).rayMul(
+      new BigNumber(reserveConfiguration.strategy.stableRateSlope1).rayMul(
         utilizationRate.rayDiv(new BigNumber(optimalRate))
       )
     );
@@ -1273,7 +1274,7 @@ export const calcExpectedInterestRates = (
     variableBorrowRate = variableBorrowRate.plus(
       utilizationRate
         .rayDiv(optimalRate)
-        .rayMul(new BigNumber(reserveConfiguration.variableRateSlope1))
+        .rayMul(new BigNumber(reserveConfiguration.strategy.variableRateSlope1))
     );
   }
 
