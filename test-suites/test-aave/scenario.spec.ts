@@ -8,7 +8,7 @@ import { getReservesConfigByPool } from '../../helpers/configuration';
 import { AavePools, iAavePoolAssets, IReserveParams } from '../../helpers/types';
 import { executeStory } from './helpers/scenario-engine';
 
-const scenarioFolder = './test/helpers/scenarios/';
+const scenarioFolder = './test-suites/test-aave/helpers/scenarios/';
 
 const selectedScenarios: string[] = [];
 

@@ -4,7 +4,6 @@ import {checkVerification} from '../../helpers/etherscan-verification';
 import {ConfigNames} from '../../helpers/configuration';
 import {EthereumNetworkNames} from '../../helpers/types';
 import {printContracts} from '../../helpers/misc-utils';
-import {totalGas} from '../../helpers/gas-tracker';
 
 task('lp:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -24,8 +23,6 @@ task('lp:mainnet', 'Deploy development enviroment')
       const provider = new DRE.ethers.providers.Web3Provider(DRE.tenderlyRPC as any);
       DRE.ethers.provider = provider;
     }
-    // addGas(1);
-    // console.log(totalGas);
 
     console.log('Migration started\n');
 
@@ -59,5 +56,4 @@ task('lp:mainnet', 'Deploy development enviroment')
     }
     console.log('\nFinished migrations');
     printContracts();
-    console.log("Total gas used:", totalGas.toString());
   });

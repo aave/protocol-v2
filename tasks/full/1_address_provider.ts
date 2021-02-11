@@ -20,7 +20,6 @@ import { formatEther, isAddress, parseEther } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
 import { Signer, BigNumber } from 'ethers';
 import { parse } from 'path';
-import { addGas } from '../../helpers/gas-tracker';
 //import BigNumber from 'bignumber.js';
 
 task(
@@ -95,10 +94,6 @@ task(
 
     // 4. Set pool admins
     
-
-    addGas(await addressesProvider.estimateGas.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
-    addGas(await addressesProvider.estimateGas.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
-
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 

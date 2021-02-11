@@ -21,7 +21,6 @@ import {
   getLendingPoolAddressesProvider,
 } from '../../helpers/contracts-getters';
 import { ZERO_ADDRESS } from '../../helpers/constants';
-import { addGas } from '../../helpers/gas-tracker';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -58,7 +57,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const collateralManager = await deployLendingPoolCollateralManager(verify);
 
-      addGas(await addressesProvider.estimateGas.setLendingPoolCollateralManager(collateralManager.address));
       await waitForTx(
         await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
       );
