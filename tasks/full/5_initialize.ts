@@ -3,7 +3,6 @@ import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
-  deployAaveProtocolDataProvider,
   deployWETHGateway,
 } from '../../helpers/contracts-deployments';
 import {
@@ -30,7 +29,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       await localBRE.run('set-DRE');
       const network = <eEthereumNetwork>localBRE.network.name;
       const poolConfig = loadPoolConfig(pool);
-      const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
+      const { ReserveAssets, ReservesConfig, LendingPoolCollateralManager } = poolConfig as ICommonConfiguration;
 
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
 
@@ -55,10 +54,17 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
-      const collateralManager = await deployLendingPoolCollateralManager(verify);
+      
+      
+      let collateralManagerAddress = await getParamPerNetwork(LendingPoolCollateralManager, network);
+      if (!collateralManagerAddress) {
+        const collateralManager = await deployLendingPoolCollateralManager(verify);
+        collateralManagerAddress = collateralManager.address;
+      }
+      // Seems unnecessary to register the collateral manager in the JSON db
 
       await waitForTx(
-        await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
+        await addressesProvider.setLendingPoolCollateralManager(collateralManagerAddress)
       );
 
       await deployWalletBalancerProvider(verify);
