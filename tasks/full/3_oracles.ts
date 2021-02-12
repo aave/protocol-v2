@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
-import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
+import { setInitialAssetPricesInOracle, setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
 import { ICommonConfiguration, eEthereumNetwork, SymbolMap } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
@@ -17,6 +17,7 @@ import {
   getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
+import { AaveOracle } from '../../types';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -47,25 +48,37 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       };
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
 
-      const aaveOracle = notFalsyOrZeroAddress(aaveOracleAddress)
-        ? await getAaveOracle(aaveOracleAddress)
-        : await deployAaveOracle(
-            [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
-            verify
-          );
+      // const aaveOracle = notFalsyOrZeroAddress(aaveOracleAddress)
+      //   ? await getAaveOracle(aaveOracleAddress)
+      //   : await deployAaveOracle(
+      //       [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
+      //       verify
+      //     );
+      
+      let aaveOracle: AaveOracle;
+      if (notFalsyOrZeroAddress(aaveOracleAddress)) {
+        aaveOracle = await getAaveOracle(aaveOracleAddress);
+        await aaveOracle.setAssetSources(tokens, aggregators);
+      } else {
+        aaveOracle = await deployAaveOracle(
+          [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
+          verify
+        ); 
+      }
       const lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)
         ? await getLendingRateOracle(lendingRateOracleAddress)
         : await deployLendingRateOracle(verify);
       const { USD, ...tokensAddressesWithoutUsd } = tokensToWatch;
 
-      if (!lendingRateOracleAddress) {
-        await setInitialMarketRatesInRatesOracleByHelper(
-          lendingRateOracles,
-          tokensAddressesWithoutUsd,
-          lendingRateOracle,
-          admin
-        );
-      }
+      // This must be done any time a new market is created I believe
+      //if (!lendingRateOracleAddress) {
+      await setInitialMarketRatesInRatesOracleByHelper(
+        lendingRateOracles,
+        tokensAddressesWithoutUsd,
+        lendingRateOracle,
+        admin
+      );
+      //}
       console.log("ORACLES: %s and %s", aaveOracle.address, lendingRateOracle.address);
       // Register the proxy price provider on the addressesProvider
       await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));
