@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
-import { setInitialAssetPricesInOracle, setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
+import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
 import { ICommonConfiguration, eEthereumNetwork, SymbolMap } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
