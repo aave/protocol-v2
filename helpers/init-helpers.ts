@@ -51,13 +51,8 @@ export const initReservesByHelper = async (
 ): Promise<BigNumber> => {
   let gasUsage = BigNumber.from('0');
   const stableAndVariableDeployer = await getStableAndVariableTokensHelper();
-  const atokenAndRatesDeployer = await getATokensAndRatesHelper();
 
   const addressProvider = await getLendingPoolAddressesProvider();
-  const poolAddress = await addressProvider.getLendingPool();
-
-  // Set aTokenAndRatesDeployer as temporal admin
-  await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
   const initChunks = 4;
@@ -85,7 +80,6 @@ export const initReservesByHelper = async (
     stableDebtTokenSymbol: string,
   }[] = [];
 
-  //let lastStrategy: string = "";
   let strategyRates: [
     string, // addresses provider
     string,
@@ -227,9 +221,6 @@ export const initReservesByHelper = async (
     //gasUsage = gasUsage.add(tx3.gasUsed);
   }
 
-
-  // Set deployer back as admin
-  await waitForTx(await addressProvider.setPoolAdmin(admin));
   return gasUsage;  // Deprecated
 };
 
@@ -360,6 +351,9 @@ const getAddressById = async (
 ): Promise<tEthereumAddress | undefined> =>
   (await getDb().get(`${id}.${network}`).value())?.address || undefined;
 
+// Function deprecated? Updated but untested, script is not updated on package.json.
+// This is not called during regular deployment, only in the "full:initialize-tokens"
+// hardhat task.
 export const initTokenReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
