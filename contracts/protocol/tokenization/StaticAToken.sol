@@ -306,7 +306,7 @@ contract StaticAToken is ERC20 {
 
     if (fromUnderlying) {
       ASSET.safeTransferFrom(depositor, address(this), amount);
-      LENDING_POOL.deposit(address(ASSET), amount, recipient, referralCode);
+      LENDING_POOL.deposit(address(ASSET), amount, address(this), referralCode);
     } else {
       ATOKEN.safeTransferFrom(depositor, address(this), amount);
     }
