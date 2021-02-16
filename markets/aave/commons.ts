@@ -23,6 +23,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   WBTC: oneEther.multipliedBy('47.332685').toFixed(),
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
+  '1INCH': oneEther.multipliedBy('0.00280293').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
