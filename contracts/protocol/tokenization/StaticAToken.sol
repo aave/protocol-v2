@@ -322,12 +322,15 @@ contract StaticAToken is ERC20 {
   ) internal {
     require(recipient != address(0), 'INVALID_RECIPIENT');
 
-    _burn(owner, amount);
+    uint256 userBalance = balanceOf(owner);
+    uint256 amountToWithdraw = (amount > userBalance) ? userBalance : amount;
+
+    _burn(owner, amountToWithdraw);
 
     if (toUnderlying) {
-      LENDING_POOL.withdraw(address(ASSET), staticToDynamicAmount(amount), recipient);
+      LENDING_POOL.withdraw(address(ASSET), staticToDynamicAmount(amountToWithdraw), recipient);
     } else {
-      ATOKEN.safeTransfer(recipient, staticToDynamicAmount(amount));
+      ATOKEN.safeTransfer(recipient, staticToDynamicAmount(amountToWithdraw));
     }
   }
 }
