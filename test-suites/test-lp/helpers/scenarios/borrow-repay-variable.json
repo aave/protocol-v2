@@ -243,7 +243,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 WETH, user 1 deposits 100 LPLINKWETH as collateral and borrows 0.5 WETH at variable rate",
+      "description": "User 0 deposits 1 WETH, user 1 deposits 100 LPUNILINKWETH as collateral and borrows 0.5 WETH at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -274,7 +274,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "LPLINKWETH",
+            "reserve": "LPUNILINKWETH",
             "amount": "100",
             "user": "1"
           },
@@ -283,7 +283,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPLINKWETH",
+            "reserve": "LPUNILINKWETH",
             "user": "1"
           },
           "expected": "success"
@@ -292,7 +292,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPLINKWETH",
+            "reserve": "LPUNILINKWETH",
             "amount": "100",
             "user": "1"
           },
@@ -431,7 +431,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPLINKWETH",
+            "reserve": "LPUNILINKWETH",
             "amount": "-1",
             "user": "1"
           },

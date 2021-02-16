@@ -210,20 +210,21 @@ export interface iAssetBase<T> {
   LpDAI: T;
   LpUSDC: T;
   LpUSDT: T;
-  LpDAIWETH: T;
-  LpWBTCWETH: T;
-  LpAAVEWETH: T;
-  LpBATWETH: T;
-  LpUSDCDAI: T;
-  LpCRVWETH: T;
-  LpLINKWETH: T;
-  LpMKRWETH: T;
-  LpRENWETH: T;
-  LpSNXWETH: T;
-  LpUNIWETH: T;
-  LpUSDCWETH: T;
-  LpWBTCUSDC: T;
-  LpYFIWETH: T;
+  LpUniDAIWETH: T;
+  LpUniWBTCWETH: T;
+  LpUniAAVEWETH: T;
+  LpUniBATWETH: T;
+  LpUniUSDCDAI: T;
+  LpUniCRVWETH: T;
+  LpUniLINKWETH: T;
+  LpUniMKRWETH: T;
+  LpUniRENWETH: T;
+  LpUniSNXWETH: T;
+  LpUniUNIWETH: T;
+  LpUniUSDCWETH: T;
+  LpUniWBTCUSDC: T;
+  LpUniYFIWETH: T;
+  LpBalWBTCWETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -261,20 +262,21 @@ export type iLpPoolAssets<T> = Pick<
   | 'LpUSDT'
   | 'LpWBTC'
   | 'LpWETH'
-  | 'LpDAIWETH'
-  | 'LpWBTCWETH'
-  | 'LpAAVEWETH'
-  | 'LpBATWETH'
-  | 'LpUSDCDAI'
-  | 'LpCRVWETH'
-  | 'LpLINKWETH'
-  | 'LpMKRWETH'
-  | 'LpRENWETH'
-  | 'LpSNXWETH'
-  | 'LpUNIWETH'
-  | 'LpUSDCWETH'
-  | 'LpWBTCUSDC'
-  | 'LpYFIWETH'
+  | 'LpUniDAIWETH'
+  | 'LpUniWBTCWETH'
+  | 'LpUniAAVEWETH'
+  | 'LpUniBATWETH'
+  | 'LpUniUSDCDAI'
+  | 'LpUniCRVWETH'
+  | 'LpUniLINKWETH'
+  | 'LpUniMKRWETH'
+  | 'LpUniRENWETH'
+  | 'LpUniSNXWETH'
+  | 'LpUniUNIWETH'
+  | 'LpUniUSDCWETH'
+  | 'LpUniWBTCUSDC'
+  | 'LpUniYFIWETH'
+  | 'LpBalWBTCWETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -310,20 +312,21 @@ export enum TokenContractId {
   LpDAI = 'LpDAI',
   LpUSDC = 'LpUSDC',
   LpUSDT = 'LpUSDT',
-  LpDAIWETH = 'LpDAIWETH',
-  LpWBTCWETH = 'LpWBTCWETH',
-  LpAAVEWETH = 'LpAAVEWETH',
-  LpBATWETH = 'LpBATWETH',
-  LpUSDCDAI = 'LpUSDCDAI',
-  LpCRVWETH = 'LpCRVWETH',
-  LpLINKWETH = 'LpLINKWETH',
-  LpMKRWETH = 'LpMKRWETH',
-  LpRENWETH = 'LpRENWETH',
-  LpSNXWETH = 'LpSNXWETH',
-  LpUNIWETH = 'LpUNIWETH',
-  LpUSDCWETH = 'LpUSDCWETH',
-  LpWBTCUSDC = 'LpWBTCUSDC',
-  LpYFIWETH = 'LpYFIWETH',
+  LpUniDAIWETH = 'LpUniDAIWETH',
+  LpUniWBTCWETH = 'LpUniWBTCWETH',
+  LpUniAAVEWETH = 'LpUniAAVEWETH',
+  LpUniBATWETH = 'LpUniBATWETH',
+  LpUniUSDCDAI = 'LpUniUSDCDAI',
+  LpUniCRVWETH = 'LpUniCRVWETH',
+  LpUniLINKWETH = 'LpUniLINKWETH',
+  LpUniMKRWETH = 'LpUniMKRWETH',
+  LpUniRENWETH = 'LpUniRENWETH',
+  LpUniSNXWETH = 'LpUniSNXWETH',
+  LpUniUNIWETH = 'LpUniUNIWETH',
+  LpUniUSDCWETH = 'LpUniUSDCWETH',
+  LpUniWBTCUSDC = 'LpUniWBTCUSDC',
+  LpUniYFIWETH = 'LpUniYFIWETH',
+  LpBalWBTCWETH = 'LpBalWBTCWETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
