@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -18,6 +19,12 @@ import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
 contract StaticAToken is ERC20 {
   using SafeERC20 for IERC20;
   using WadRayMath for uint256;
+
+  struct SignatureParams {
+    uint8 v;
+    bytes32 r;
+    bytes32 s;
+  }
 
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =
@@ -64,14 +71,15 @@ contract StaticAToken is ERC20 {
    * @param fromUnderlying bool
    * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
    * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
+   * @return uint256 The amount of StaticAToken minted, static balance
    **/
   function deposit(
     address recipient,
     uint256 amount,
     uint16 referralCode,
     bool fromUnderlying
-  ) external {
-    _deposit(msg.sender, recipient, amount, referralCode, fromUnderlying);
+  ) external returns (uint256) {
+    return _deposit(msg.sender, recipient, amount, referralCode, fromUnderlying);
   }
 
   /**
@@ -81,13 +89,15 @@ contract StaticAToken is ERC20 {
    * @param toUnderlying bool
    * - `true` for the recipient to get underlying tokens (e.g. USDC)
    * - `false` for the recipient to get aTokens (e.g. aUSDC)
+   * @return amountToBurn: StaticATokens burnt, static balance
+   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
    **/
   function withdraw(
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external {
-    _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
+  ) external returns (uint256, uint256) {
+    return _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
   }
 
   /**
@@ -97,13 +107,15 @@ contract StaticAToken is ERC20 {
    * @param toUnderlying bool
    * - `true` for the recipient to get underlying tokens (e.g. USDC)
    * - `false` for the recipient to get aTokens (e.g. aUSDC)
+   * @return amountToBurn: StaticATokens burnt, static balance
+   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
    **/
   function withdrawDynamicAmount(
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external {
-    _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
+  ) external returns (uint256, uint256) {
+    return _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
   }
 
   /**
@@ -157,10 +169,9 @@ contract StaticAToken is ERC20 {
    * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
    * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
    * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param v Signature param
-   * @param s Signature param
-   * @param r Signature param
+   * @param sigParams Signature params: v,r,s
    * @param chainId Passing the chainId in order to be fork-compatible
+   * @return uint256 The amount of StaticAToken minted, static balance
    */
   function metaDeposit(
     address depositor,
@@ -169,11 +180,9 @@ contract StaticAToken is ERC20 {
     uint16 referralCode,
     bool fromUnderlying,
     uint256 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s,
+    SignatureParams calldata sigParams,
     uint256 chainId
-  ) external {
+  ) external returns (uint256) {
     require(depositor != address(0), 'INVALID_DEPOSITOR');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
@@ -197,7 +206,10 @@ contract StaticAToken is ERC20 {
           )
         )
       );
-    require(depositor == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+    require(
+      depositor == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s),
+      'INVALID_SIGNATURE'
+    );
     _nonces[depositor] = currentValidNonce.add(1);
     _deposit(depositor, recipient, value, referralCode, fromUnderlying);
   }
@@ -213,10 +225,10 @@ contract StaticAToken is ERC20 {
    * - `true` for the recipient to get underlying tokens (e.g. USDC)
    * - `false` for the recipient to get aTokens (e.g. aUSDC)
    * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param v Signature param
-   * @param s Signature param
-   * @param r Signature param
+   * @param sigParams Signature params: v,r,s
    * @param chainId Passing the chainId in order to be fork-compatible
+   * @return amountToBurn: StaticATokens burnt, static balance
+   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
    */
   function metaWithdraw(
     address owner,
@@ -225,11 +237,9 @@ contract StaticAToken is ERC20 {
     uint256 dynamicAmount,
     bool toUnderlying,
     uint256 deadline,
-    uint8 v,
-    bytes32 r,
-    bytes32 s,
+    SignatureParams calldata sigParams,
     uint256 chainId
-  ) external {
+  ) external returns (uint256, uint256) {
     require(owner != address(0), 'INVALID_DEPOSITOR');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
@@ -253,9 +263,9 @@ contract StaticAToken is ERC20 {
           )
         )
       );
-    require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+    require(owner == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s), 'INVALID_SIGNATURE');
     _nonces[owner] = currentValidNonce.add(1);
-    _withdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying);
+    return _withdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying);
   }
 
   /**
@@ -320,7 +330,7 @@ contract StaticAToken is ERC20 {
     uint256 amount,
     uint16 referralCode,
     bool fromUnderlying
-  ) internal {
+  ) internal returns (uint256) {
     require(recipient != address(0), 'INVALID_RECIPIENT');
 
     if (fromUnderlying) {
@@ -330,7 +340,9 @@ contract StaticAToken is ERC20 {
       ATOKEN.safeTransferFrom(depositor, address(this), amount);
     }
 
-    _mint(recipient, dynamicToStaticAmount(amount));
+    uint256 amountToMint = dynamicToStaticAmount(amount);
+    _mint(recipient, amountToMint);
+    return amountToMint;
   }
 
   function _withdraw(
@@ -339,7 +351,7 @@ contract StaticAToken is ERC20 {
     uint256 staticAmount,
     uint256 dynamicAmount,
     bool toUnderlying
-  ) internal {
+  ) internal returns (uint256, uint256) {
     require(recipient != address(0), 'INVALID_RECIPIENT');
     require(staticAmount == 0 || dynamicAmount == 0, 'ONLY_ONE_AMOUNT_FORMAT_ALLOWED');
 
@@ -347,10 +359,14 @@ contract StaticAToken is ERC20 {
 
     uint256 amountToWithdraw;
     uint256 amountToBurn;
+
+    uint256 currentRate = rate();
     if (staticAmount > 0) {
-      amountToWithdraw = amountToBurn = (staticAmount > userBalance) ? userBalance : staticAmount;
+      amountToBurn = (staticAmount > userBalance) ? userBalance : staticAmount;
+      amountToWithdraw = (staticAmount > userBalance)
+        ? _staticToDynamicAmount(userBalance, currentRate)
+        : _staticToDynamicAmount(staticAmount, currentRate);
     } else {
-      uint256 currentRate = rate();
       uint256 dynamicUserBalance = _staticToDynamicAmount(userBalance, currentRate);
       amountToWithdraw = (dynamicAmount > dynamicUserBalance) ? dynamicUserBalance : dynamicAmount;
       amountToBurn = _dynamicToStaticAmount(amountToWithdraw, currentRate);
@@ -363,6 +379,8 @@ contract StaticAToken is ERC20 {
     } else {
       ATOKEN.safeTransfer(recipient, amountToWithdraw);
     }
+
+    return (amountToBurn, amountToWithdraw);
   }
 
   function _dynamicToStaticAmount(uint256 amount, uint256 rate) internal pure returns (uint256) {
