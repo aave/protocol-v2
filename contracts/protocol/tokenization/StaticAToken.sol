@@ -30,7 +30,7 @@ contract StaticAToken is ERC20 {
     );
   bytes32 public constant METAWITHDRAWAL_TYPEHASH =
     keccak256(
-      'Withdraw(address owner,address recipient,uint256 value, bool toUnderlying, uint256 nonce,uint256 deadline)'
+      'Withdraw(address owner,address recipient,uint256 staticAmount, uint256 dynamicAmount, bool toUnderlying, uint256 nonce,uint256 deadline)'
     );
 
   ILendingPool public immutable LENDING_POOL;
@@ -77,7 +77,7 @@ contract StaticAToken is ERC20 {
   /**
    * @dev Burns `amount` of static aToken, with recipient receiving the corresponding amount of `ASSET`
    * @param recipient The address that will receive the amount of `ASSET` withdrawn from the Aave protocol
-   * @param amount The amount of static aToken to burn
+   * @param amount The amount to withdraw, in static balance of StaticAToken
    * @param toUnderlying bool
    * - `true` for the recipient to get underlying tokens (e.g. USDC)
    * - `false` for the recipient to get aTokens (e.g. aUSDC)
@@ -87,7 +87,23 @@ contract StaticAToken is ERC20 {
     uint256 amount,
     bool toUnderlying
   ) external {
-    _withdraw(msg.sender, recipient, amount, toUnderlying);
+    _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
+  }
+
+  /**
+   * @dev Burns `amount` of static aToken, with recipient receiving the corresponding amount of `ASSET`
+   * @param recipient The address that will receive the amount of `ASSET` withdrawn from the Aave protocol
+   * @param amount The amount to withdraw, in dynamic balance of aToken/underlying asset
+   * @param toUnderlying bool
+   * - `true` for the recipient to get underlying tokens (e.g. USDC)
+   * - `false` for the recipient to get aTokens (e.g. aUSDC)
+   **/
+  function withdrawDynamicAmount(
+    address recipient,
+    uint256 amount,
+    bool toUnderlying
+  ) external {
+    _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
   }
 
   /**
@@ -191,7 +207,8 @@ contract StaticAToken is ERC20 {
    * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
    * @param owner Address owning the staticATokens
    * @param recipient Address that will receive the underlying withdrawn from Aave
-   * @param value The amount of staticAToken to withdraw
+   * @param staticAmount The amount of staticAToken to withdraw. If > 0, `dynamicAmount` needs to be 0
+   * @param dynamicAmount The amount of underlying/aToken to withdraw. If > 0, `staticAmount` needs to be 0
    * @param toUnderlying bool
    * - `true` for the recipient to get underlying tokens (e.g. USDC)
    * - `false` for the recipient to get aTokens (e.g. aUSDC)
@@ -204,7 +221,8 @@ contract StaticAToken is ERC20 {
   function metaWithdraw(
     address owner,
     address recipient,
-    uint256 value,
+    uint256 staticAmount,
+    uint256 dynamicAmount,
     bool toUnderlying,
     uint256 deadline,
     uint8 v,
@@ -226,7 +244,8 @@ contract StaticAToken is ERC20 {
               METAWITHDRAWAL_TYPEHASH,
               owner,
               recipient,
-              value,
+              staticAmount,
+              dynamicAmount,
               toUnderlying,
               currentValidNonce,
               deadline
@@ -236,7 +255,7 @@ contract StaticAToken is ERC20 {
       );
     require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
     _nonces[owner] = currentValidNonce.add(1);
-    _withdraw(owner, recipient, value, toUnderlying);
+    _withdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying);
   }
 
   /**
@@ -317,20 +336,40 @@ contract StaticAToken is ERC20 {
   function _withdraw(
     address owner,
     address recipient,
-    uint256 amount,
+    uint256 staticAmount,
+    uint256 dynamicAmount,
     bool toUnderlying
   ) internal {
     require(recipient != address(0), 'INVALID_RECIPIENT');
+    require(staticAmount == 0 || dynamicAmount == 0, 'ONLY_ONE_AMOUNT_FORMAT_ALLOWED');
 
     uint256 userBalance = balanceOf(owner);
-    uint256 amountToWithdraw = (amount > userBalance) ? userBalance : amount;
 
-    _burn(owner, amountToWithdraw);
+    uint256 amountToWithdraw;
+    uint256 amountToBurn;
+    if (staticAmount > 0) {
+      amountToWithdraw = amountToBurn = (staticAmount > userBalance) ? userBalance : staticAmount;
+    } else {
+      uint256 currentRate = rate();
+      uint256 dynamicUserBalance = _staticToDynamicAmount(userBalance, currentRate);
+      amountToWithdraw = (dynamicAmount > dynamicUserBalance) ? dynamicUserBalance : dynamicAmount;
+      amountToBurn = _dynamicToStaticAmount(amountToWithdraw, currentRate);
+    }
+
+    _burn(owner, amountToBurn);
 
     if (toUnderlying) {
-      LENDING_POOL.withdraw(address(ASSET), staticToDynamicAmount(amountToWithdraw), recipient);
+      LENDING_POOL.withdraw(address(ASSET), amountToWithdraw, recipient);
     } else {
-      ATOKEN.safeTransfer(recipient, staticToDynamicAmount(amountToWithdraw));
+      ATOKEN.safeTransfer(recipient, amountToWithdraw);
     }
+  }
+
+  function _dynamicToStaticAmount(uint256 amount, uint256 rate) internal pure returns (uint256) {
+    return amount.rayDiv(rate);
+  }
+
+  function _staticToDynamicAmount(uint256 amount, uint256 rate) internal pure returns (uint256) {
+    return amount.rayMul(rate);
   }
 }
