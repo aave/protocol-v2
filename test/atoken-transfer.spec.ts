@@ -1,10 +1,10 @@
-import {APPROVAL_AMOUNT_LENDING_POOL, MAX_UINT_AMOUNT, ZERO_ADDRESS} from '../helpers/constants';
-import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
-import {expect} from 'chai';
-import {ethers} from 'ethers';
-import {RateMode, ProtocolErrors} from '../helpers/types';
-import {makeSuite, TestEnv} from './helpers/make-suite';
-import {CommonsConfig} from '../markets/aave/commons';
+import { APPROVAL_AMOUNT_LENDING_POOL, MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../helpers/constants';
+import { convertToCurrencyDecimals } from '../helpers/contracts-helpers';
+import { expect } from 'chai';
+import { ethers } from 'ethers';
+import { RateMode, ProtocolErrors } from '../helpers/types';
+import { makeSuite, TestEnv } from './helpers/make-suite';
+import { CommonsConfig } from '../markets/aave/commons';
 
 const AAVE_REFERRAL = CommonsConfig.ProtocolGlobalParams.AaveReferral;
 
@@ -16,7 +16,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
-    const {users, pool, dai, aDai} = testEnv;
+    const { users, pool, dai, aDai } = testEnv;
 
     await dai.connect(users[0].signer).mint(await convertToCurrencyDecimals(dai.address, '1000'));
 
@@ -46,7 +46,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 0 deposits 1 WETH and user 1 tries to borrow the WETH with the received DAI as collateral', async () => {
-    const {users, pool, weth, helpersContract} = testEnv;
+    const { users, pool, weth, helpersContract } = testEnv;
     const userAddress = await pool.signer.getAddress();
 
     await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
@@ -75,7 +75,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 1 tries to transfer all the DAI used as collateral back to user 0 (revert expected)', async () => {
-    const {users, pool, aDai, dai, weth} = testEnv;
+    const { users, pool, aDai, dai, weth } = testEnv;
 
     const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '1000');
 
@@ -86,7 +86,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   });
 
   it('User 1 tries to transfer a small amount of DAI used as collateral back to user 0', async () => {
-    const {users, pool, aDai, dai, weth} = testEnv;
+    const { users, pool, aDai, dai, weth } = testEnv;
 
     const aDAItoTransfer = await convertToCurrencyDecimals(dai.address, '100');
 

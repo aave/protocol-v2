@@ -26,7 +26,7 @@ import {
 } from '../../helpers/contracts-getters';
 import { MAX_UINT_AMOUNT, ONE_YEAR } from '../../helpers/constants';
 import { SignerWithAddress, TestEnv } from './make-suite';
-import { DRE, increaseTime, timeLatest, waitForTx } from '../../helpers/misc-utils';
+import { advanceTimeAndBlock, DRE, timeLatest, waitForTx } from '../../helpers/misc-utils';
 
 import chai from 'chai';
 import { ReserveData, UserReserveData } from './utils/interfaces';
@@ -128,7 +128,9 @@ export const approve = async (reserveSymbol: string, user: SignerWithAddress, te
 
   const token = await getMintableERC20(reserve);
 
-  await token.connect(user.signer).approve(pool.address, '100000000000000000000000000000');
+  await waitForTx(
+    await token.connect(user.signer).approve(pool.address, '100000000000000000000000000000')
+  );
 };
 
 export const deposit = async (
@@ -314,7 +316,7 @@ export const delegateBorrowAllowance = async (
     await expect(delegateAllowancePromise, revertMessage).to.be.revertedWith(revertMessage);
     return;
   } else {
-    await delegateAllowancePromise;
+    await waitForTx(await delegateAllowancePromise);
     const allowance = await debtToken.borrowAllowance(user.address, receiver);
     expect(allowance.toString()).to.be.equal(
       amountToDelegate,
@@ -359,7 +361,7 @@ export const borrow = async (
     if (timeTravel) {
       const secondsToTravel = new BigNumber(timeTravel).multipliedBy(ONE_YEAR).div(365).toNumber();
 
-      await increaseTime(secondsToTravel);
+      await advanceTimeAndBlock(secondsToTravel);
     }
 
     const {

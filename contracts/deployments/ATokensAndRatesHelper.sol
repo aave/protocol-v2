@@ -112,10 +112,7 @@ contract ATokensAndRatesHelper is Ownable {
         liquidationBonuses[i]
       );
 
-      configurator.enableBorrowingOnReserve(
-        assets[i],
-        stableBorrowingEnabled[i]
-      );
+      configurator.enableBorrowingOnReserve(assets[i], stableBorrowingEnabled[i]);
       configurator.setReserveFactor(assets[i], reserveFactors[i]);
     }
   }

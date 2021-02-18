@@ -1,33 +1,33 @@
 import BigNumber from 'bignumber.js';
 
-import {DRE, increaseTime} from '../helpers/misc-utils';
-import {APPROVAL_AMOUNT_LENDING_POOL, oneEther} from '../helpers/constants';
-import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
-import {makeSuite} from './helpers/make-suite';
-import {ProtocolErrors, RateMode} from '../helpers/types';
-import {calcExpectedStableDebtTokenBalance} from './helpers/utils/calculations';
-import {getUserData} from './helpers/utils/helpers';
-import {CommonsConfig} from '../markets/aave/commons';
+import { DRE, increaseTime } from '../helpers/misc-utils';
+import { APPROVAL_AMOUNT_LENDING_POOL, oneEther } from '../helpers/constants';
+import { convertToCurrencyDecimals } from '../helpers/contracts-helpers';
+import { makeSuite } from './helpers/make-suite';
+import { ProtocolErrors, RateMode } from '../helpers/types';
+import { calcExpectedStableDebtTokenBalance } from './helpers/utils/calculations';
+import { getUserData } from './helpers/utils/helpers';
+import { CommonsConfig } from '../markets/aave/commons';
 
-import {parseEther} from 'ethers/lib/utils';
+import { parseEther } from 'ethers/lib/utils';
 
 const chai = require('chai');
 
-const {expect} = chai;
+const { expect } = chai;
 
 makeSuite('LendingPool liquidation - liquidator receiving the underlying asset', (testEnv) => {
-  const {INVALID_HF} = ProtocolErrors;
+  const { INVALID_HF } = ProtocolErrors;
 
   before('Before LendingPool liquidation: set config', () => {
-    BigNumber.config({DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN});
+    BigNumber.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumber.ROUND_DOWN });
   });
 
   after('After LendingPool liquidation: reset config', () => {
-    BigNumber.config({DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP});
+    BigNumber.config({ DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP });
   });
 
   it("It's not possible to liquidate on a non-active collateral or a non active principal", async () => {
-    const {configurator, weth, pool, users, dai} = testEnv;
+    const { configurator, weth, pool, users, dai } = testEnv;
     const user = users[1];
     await configurator.deactivateReserve(weth.address);
 
@@ -47,7 +47,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('Deposits WETH, borrows DAI', async () => {
-    const {dai, weth, users, pool, oracle} = testEnv;
+    const { dai, weth, users, pool, oracle } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
 
@@ -102,7 +102,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('Drop the health factor below 1', async () => {
-    const {dai, weth, users, pool, oracle} = testEnv;
+    const { dai, weth, users, pool, oracle } = testEnv;
     const borrower = users[1];
 
     const daiPrice = await oracle.getAssetPrice(dai.address);
@@ -121,7 +121,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('Liquidates the borrow', async () => {
-    const {dai, weth, users, pool, oracle, helpersContract} = testEnv;
+    const { dai, weth, users, pool, oracle, helpersContract } = testEnv;
     const liquidator = users[3];
     const borrower = users[1];
 
@@ -226,7 +226,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('User 3 deposits 1000 USDC, user 4 1 WETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const {usdc, users, pool, oracle, weth, helpersContract} = testEnv;
+    const { usdc, users, pool, oracle, weth, helpersContract } = testEnv;
 
     const depositor = users[3];
     const borrower = users[4];
@@ -379,7 +379,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('User 4 deposits 10 AAVE - drops HF, liquidates the AAVE, which results on a lower amount being liquidated', async () => {
-    const {aave, usdc, users, pool, oracle, helpersContract} = testEnv;
+    const { aave, usdc, users, pool, oracle, helpersContract } = testEnv;
 
     const depositor = users[3];
     const borrower = users[4];

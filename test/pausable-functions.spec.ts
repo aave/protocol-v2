@@ -1,13 +1,13 @@
-import {makeSuite, TestEnv} from './helpers/make-suite';
-import {ProtocolErrors, RateMode} from '../helpers/types';
-import {APPROVAL_AMOUNT_LENDING_POOL, oneEther} from '../helpers/constants';
-import {convertToCurrencyDecimals} from '../helpers/contracts-helpers';
-import {parseEther, parseUnits} from 'ethers/lib/utils';
-import {BigNumber} from 'bignumber.js';
-import {MockFlashLoanReceiver} from '../types/MockFlashLoanReceiver';
-import {getMockFlashLoanReceiver} from '../helpers/contracts-getters';
+import { makeSuite, TestEnv } from './helpers/make-suite';
+import { ProtocolErrors, RateMode } from '../helpers/types';
+import { APPROVAL_AMOUNT_LENDING_POOL, oneEther } from '../helpers/constants';
+import { convertToCurrencyDecimals } from '../helpers/contracts-helpers';
+import { parseEther, parseUnits } from 'ethers/lib/utils';
+import { BigNumber } from 'bignumber.js';
+import { MockFlashLoanReceiver } from '../types/MockFlashLoanReceiver';
+import { getMockFlashLoanReceiver } from '../helpers/contracts-getters';
 
-const {expect} = require('chai');
+const { expect } = require('chai');
 
 makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
@@ -23,7 +23,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('User 0 deposits 1000 DAI. Configurator pauses pool. Transfers to user 1 reverts. Configurator unpauses the network and next transfer succees', async () => {
-    const {users, pool, dai, aDai, configurator} = testEnv;
+    const { users, pool, dai, aDai, configurator } = testEnv;
 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
@@ -78,7 +78,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Deposit', async () => {
-    const {users, pool, dai, aDai, configurator} = testEnv;
+    const { users, pool, dai, aDai, configurator } = testEnv;
 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
@@ -98,7 +98,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Withdraw', async () => {
-    const {users, pool, dai, aDai, configurator} = testEnv;
+    const { users, pool, dai, aDai, configurator } = testEnv;
 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
 
@@ -123,7 +123,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Borrow', async () => {
-    const {pool, dai, users, configurator} = testEnv;
+    const { pool, dai, users, configurator } = testEnv;
 
     const user = users[1];
     // Pause the pool
@@ -139,7 +139,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Repay', async () => {
-    const {pool, dai, users, configurator} = testEnv;
+    const { pool, dai, users, configurator } = testEnv;
 
     const user = users[1];
     // Pause the pool
@@ -155,7 +155,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Flash loan', async () => {
-    const {dai, pool, weth, users, configurator} = testEnv;
+    const { dai, pool, weth, users, configurator } = testEnv;
 
     const caller = users[3];
 
@@ -185,7 +185,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Liquidation call', async () => {
-    const {users, pool, usdc, oracle, weth, configurator, helpersContract} = testEnv;
+    const { users, pool, usdc, oracle, weth, configurator, helpersContract } = testEnv;
     const depositor = users[3];
     const borrower = users[4];
 
@@ -266,7 +266,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('SwapBorrowRateMode', async () => {
-    const {pool, weth, dai, usdc, users, configurator} = testEnv;
+    const { pool, weth, dai, usdc, users, configurator } = testEnv;
     const user = users[1];
     const amountWETHToDeposit = parseEther('10');
     const amountDAIToDeposit = parseEther('120');
@@ -295,7 +295,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('RebalanceStableBorrowRate', async () => {
-    const {pool, dai, users, configurator} = testEnv;
+    const { pool, dai, users, configurator } = testEnv;
     const user = users[1];
     // Pause pool
     await configurator.connect(users[1].signer).setPoolPause(true);
@@ -309,7 +309,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('setUserUseReserveAsCollateral', async () => {
-    const {pool, weth, users, configurator} = testEnv;
+    const { pool, weth, users, configurator } = testEnv;
     const user = users[1];
 
     const amountWETHToDeposit = parseEther('1');
