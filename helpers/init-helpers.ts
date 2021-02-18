@@ -528,6 +528,7 @@ export const initTokenReservesByHelper = async (
     deployedStableTokens.push(stableTokenImpl);
     deployedVariableTokens.push(variableTokenImpl);
     deployedATokens.push(aTokenImplementation);
+    //reserveTokens.push();
     deployedRates.push(strategyImpl);
     reserveInitDecimals.push(decimals.toString());
     reserveSymbols.push(symbol);
