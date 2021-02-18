@@ -48,23 +48,17 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       };
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
 
-      // const aaveOracle = notFalsyOrZeroAddress(aaveOracleAddress)
-      //   ? await getAaveOracle(aaveOracleAddress)
-      //   : await deployAaveOracle(
-      //       [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
-      //       verify
-      //     );
-      
       let aaveOracle: AaveOracle;
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
         aaveOracle = await getAaveOracle(aaveOracleAddress);
-        await aaveOracle.setAssetSources(tokens, aggregators);
+        await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
       } else {
         aaveOracle = await deployAaveOracle(
           [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
           verify
         ); 
       }
+
       const lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)
         ? await getLendingRateOracle(lendingRateOracleAddress)
         : await deployLendingRateOracle(verify);
