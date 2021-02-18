@@ -1,19 +1,19 @@
-import {expect} from 'chai';
-import {createRandomAddress} from '../helpers/misc-utils';
-import {makeSuite, TestEnv} from './helpers/make-suite';
-import {ProtocolErrors} from '../helpers/types';
-import {ethers} from 'ethers';
-import {ZERO_ADDRESS} from '../helpers/constants';
-import {waitForTx} from '../helpers/misc-utils';
-import {deployLendingPool} from '../helpers/contracts-deployments';
+import { expect } from 'chai';
+import { createRandomAddress } from '../helpers/misc-utils';
+import { makeSuite, TestEnv } from './helpers/make-suite';
+import { ProtocolErrors } from '../helpers/types';
+import { ethers } from 'ethers';
+import { ZERO_ADDRESS } from '../helpers/constants';
+import { waitForTx } from '../helpers/misc-utils';
+import { deployLendingPool } from '../helpers/contracts-deployments';
 
-const {utils} = ethers;
+const { utils } = ethers;
 
 makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
   it('Test the accessibility of the LendingPoolAddressesProvider', async () => {
-    const {addressesProvider, users} = testEnv;
+    const { addressesProvider, users } = testEnv;
     const mockAddress = createRandomAddress();
-    const {INVALID_OWNER_REVERT_MSG} = ProtocolErrors;
+    const { INVALID_OWNER_REVERT_MSG } = ProtocolErrors;
 
     await addressesProvider.transferOwnership(users[1].address);
 
@@ -30,10 +30,7 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
     }
 
     await expect(
-      addressesProvider.setAddress(
-        utils.keccak256(utils.toUtf8Bytes('RANDOM_ID')),
-        mockAddress
-      )
+      addressesProvider.setAddress(utils.keccak256(utils.toUtf8Bytes('RANDOM_ID')), mockAddress)
     ).to.be.revertedWith(INVALID_OWNER_REVERT_MSG);
 
     await expect(
@@ -42,15 +39,13 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
         mockAddress
       )
     ).to.be.revertedWith(INVALID_OWNER_REVERT_MSG);
- 
   });
 
   it('Tests adding  a proxied address with `setAddressAsProxy()`', async () => {
-    const {addressesProvider, users} = testEnv;
-    const {INVALID_OWNER_REVERT_MSG} = ProtocolErrors;
+    const { addressesProvider, users } = testEnv;
+    const { INVALID_OWNER_REVERT_MSG } = ProtocolErrors;
 
     const currentAddressesProviderOwner = users[1];
-
 
     const mockLendingPool = await deployLendingPool();
     const proxiedAddressId = utils.keccak256(utils.toUtf8Bytes('RANDOM_PROXIED'));
@@ -74,10 +69,9 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
     expect(proxiedAddressSetReceipt.events[1].args?.hasProxy).to.be.equal(true);
   });
 
-
   it('Tests adding a non proxied address with `setAddress()`', async () => {
-    const {addressesProvider, users} = testEnv;
-    const {INVALID_OWNER_REVERT_MSG} = ProtocolErrors;
+    const { addressesProvider, users } = testEnv;
+    const { INVALID_OWNER_REVERT_MSG } = ProtocolErrors;
 
     const currentAddressesProviderOwner = users[1];
     const mockNonProxiedAddress = createRandomAddress();
@@ -103,6 +97,5 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
       mockNonProxiedAddress
     );
     expect(nonProxiedAddressSetReceipt.events[0].args?.hasProxy).to.be.equal(false);
-
   });
 });

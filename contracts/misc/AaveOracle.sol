@@ -80,7 +80,7 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
 
   /// @notice Gets an asset price by address
   /// @param asset The asset address
-  function getAssetPrice(address asset) public override view returns (uint256) {
+  function getAssetPrice(address asset) public view override returns (uint256) {
     IChainlinkAggregator source = assetsSources[asset];
 
     if (asset == WETH) {

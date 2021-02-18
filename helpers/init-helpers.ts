@@ -26,7 +26,7 @@ import {
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
 
-const chooseATokenDeployment = (id: eContractid) => {
+export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
     case eContractid.AToken:
       return deployGenericAToken;
