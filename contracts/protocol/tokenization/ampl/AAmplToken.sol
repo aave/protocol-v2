@@ -92,7 +92,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
     RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
 
-    // NEW
     DataTypes.ReserveData memory reserveData = pool.getReserveData(underlyingAssetAddress);
     STABLE_DEBT_TOKEN_ADDRESS = reserveData.stableDebtTokenAddress;
     VARIABLE_DEBT_TOKEN_ADDRESS = reserveData.variableDebtTokenAddress;

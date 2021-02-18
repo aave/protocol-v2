@@ -1,4 +1,7 @@
 import {
+  AAmplTokenFactory,
+  AmplStableDebtTokenFactory,
+  AmplVariableDebtTokenFactory,
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
@@ -86,6 +89,26 @@ export const getVariableDebtToken = async (address?: tEthereumAddress) =>
   await VariableDebtTokenFactory.connect(
     address ||
       (await getDb().get(`${eContractid.VariableDebtToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getAAmplToken = async (address?: tEthereumAddress) =>
+  await AAmplTokenFactory.connect(
+    address || (await getDb().get(`${eContractid.AToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getAmplStableDebtToken = async (address?: tEthereumAddress) =>
+  await AmplStableDebtTokenFactory.connect(
+    address ||
+    (await getDb().get(`${eContractid.StableDebtToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getAmplVariableDebtToken = async (address?: tEthereumAddress) =>
+  await AmplVariableDebtTokenFactory.connect(
+    address ||
+    (await getDb().get(`${eContractid.VariableDebtToken}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 
