@@ -31,6 +31,7 @@ import { WETH9Mocked } from '../../types/WETH9Mocked';
 import { WETHGateway } from '../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../markets/aave';
+import {AAmplToken} from "../../types/AAmplToken";
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -53,6 +54,9 @@ export interface TestEnv {
   aDai: AToken;
   usdc: MintableERC20;
   aave: MintableERC20;
+  aAMPL: AAmplToken;
+  // Change to mock AMPL
+  ampl: MintableERC20;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   wethGateway: WETHGateway;

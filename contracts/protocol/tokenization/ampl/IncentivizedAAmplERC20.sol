@@ -174,7 +174,7 @@ contract IncentivizedAAmplERC20 is Context, IERC20, IERC20Detailed {
     return true;
   }
 
-  /*
+  /**
     wkt, amount = _transferAmount/_totalSupply * totalSupply()
 
     internal transfer amount for book-keeping is calculated as:
