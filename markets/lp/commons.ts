@@ -168,8 +168,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
   },
-  ProviderRegistryOwner: { // TEMPORARILY USING MY DEPLOYER
-    [eEthereumNetwork.kovan]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9',//'0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
+  ProviderRegistryOwner: { // DEPLOYED WITH CORRECT ADDRESS 
+    [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0xbd723fc4f1d737dcfc48a07fe7336766d34cad5f',
     [eEthereumNetwork.coverage]: '',
@@ -181,7 +181,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '', //'0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a', // Need to re-deploy because of onlyOwner
+    [eEthereumNetwork.kovan]: '',//'0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a', // Need to re-deploy because of onlyOwner
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
     [eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',  // Need to re-deploy because of onlyOwner
     [eEthereumNetwork.tenderlyMain]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
@@ -208,7 +208,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [EthereumNetwork.kovan]: '',//'0xB8bE51E6563BB312Cbb2aa26e352516c25c26ac1', // Need to re-deploy because of onlyOwner
+    [EthereumNetwork.kovan]: '0x8fb777d67e9945e2c01936e319057f9d41d559e6', // Need to re-deploy because of onlyOwner
     [EthereumNetwork.ropsten]: ZERO_ADDRESS,
     [EthereumNetwork.main]: '',//'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',  // Need to re-deploy because of onlyOwner
     [EthereumNetwork.tenderlyMain]: '0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
