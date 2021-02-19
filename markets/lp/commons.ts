@@ -43,6 +43,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   UniWBTCUSDC: oneEther.multipliedBy('22.407436').toFixed(),
   UniYFIWETH: oneEther.multipliedBy('22.407436').toFixed(),
   BptWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  MATIC: oneEther.multipliedBy('0.003620948469').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
@@ -55,7 +56,7 @@ export const CommonsConfig: ICommonConfiguration = {
   StableDebtTokenNamePrefix: 'Aave AMM Market stable debt',
   VariableDebtTokenNamePrefix: 'Aave AMM Market variable debt',
   SymbolPrefix: 'Amm',
-  ProviderId: 0,
+  ProviderId: 0, // Overriden in index.ts
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '5848466240000000',

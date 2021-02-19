@@ -43,6 +43,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   UniWBTCUSDC: oneEther.multipliedBy('22.407436').toFixed(),
   UniYFIWETH: oneEther.multipliedBy('22.407436').toFixed(),
   BptWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
+  MATIC: oneEther.multipliedBy('0.003620948469').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
@@ -51,11 +52,11 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 
 export const CommonsConfig: ICommonConfiguration = {
   MarketId: 'Commons',
-  ATokenNamePrefix: 'Aave interest bearing',
-  StableDebtTokenNamePrefix: 'Aave stable debt bearing',
-  VariableDebtTokenNamePrefix: 'Aave variable debt bearing',
-  SymbolPrefix: '',
-  ProviderId: 0,
+  ATokenNamePrefix: 'Aave Matic Market',
+  StableDebtTokenNamePrefix: 'Aave Matic Market stable debt',
+  VariableDebtTokenNamePrefix: 'Aave Matic Market variable debt',
+  SymbolPrefix: 'Matic',
+  ProviderId: 0, // Overriden in index.ts
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '5848466240000000',
@@ -82,56 +83,17 @@ export const CommonsConfig: ICommonConfiguration = {
     DAI: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    TUSD: {
-      borrowRate: oneRay.multipliedBy(0.035).toFixed(),
-    },
     USDC: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
-    },
-    SUSD: {
-      borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     },
     USDT: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     },
-    BAT: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    AAVE: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    LINK: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    KNC: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    MKR: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    MANA: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
     WBTC: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    ZRX: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    SNX: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    YFI: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    REN: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    UNI: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    BUSD: {
-      borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+    MATIC: {
+      borrowRate: oneRay.multipliedBy(0.05).toFixed(), // TEMP
     },
   },
   // ----------------
