@@ -58,6 +58,8 @@ export const lpConfig: ILpConfiguration = {
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
+    [eEthereumNetwork.matic]: {},
+    [eEthereumNetwork.mumbai]: {},
     [EthereumNetwork.kovan]: {
       LpDAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',
       LpUSDC: '0xe22da380ee6B445bb8273C81944ADEB6E8450422',

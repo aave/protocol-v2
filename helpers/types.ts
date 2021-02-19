@@ -12,6 +12,8 @@ export enum eEthereumNetwork {
   coverage = 'coverage',
   hardhat = 'hardhat',
   tenderlyMain = 'tenderlyMain',
+  matic = 'matic',
+  mumbai = 'mumbai',
 }
 
 export enum EthereumNetworkNames {
@@ -374,6 +376,8 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
   [eEthereumNetwork.tenderlyMain]: T;
+  [eEthereumNetwork.mumbai]: T;
+  [eEthereumNetwork.matic]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -403,6 +407,8 @@ export enum EthereumNetwork {
   main = 'main',
   coverage = 'soliditycoverage',
   tenderlyMain = 'tenderlyMain',
+  matic = 'matic',
+  mumbai = 'mumbai',
 }
 
 export interface IProtocolGlobalConfig {
