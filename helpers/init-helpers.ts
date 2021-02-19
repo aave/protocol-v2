@@ -44,6 +44,10 @@ export const chooseATokenDeployment = (id: eContractid) => {
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
+  aTokenNamePrefix: string,
+  stableDebtTokenNamePrefix: string,
+  variableDebtTokenNamePrefix: string,
+  symbolPrefix: string,
   admin: tEthereumAddress,
   treasuryAddress: tEthereumAddress,
   incentivesController: tEthereumAddress,
@@ -194,12 +198,12 @@ export const initReservesByHelper = async (
       treasury: treasuryAddress,
       incentivesController: ZERO_ADDRESS,
       underlyingAssetName: reserveSymbols[i],
-      aTokenName: `Aave interest bearing ${reserveSymbols[i]}`,
-      aTokenSymbol: `a${reserveSymbols[i]}`,
-      variableDebtTokenName: `Aave variable debt bearing ${reserveSymbols[i]}`,
-      variableDebtTokenSymbol: `variableDebt${reserveSymbols[i]}`,
-      stableDebtTokenName: `Aave stable debt bearing ${reserveSymbols[i]}`,
-      stableDebtTokenSymbol: `stableDebt${reserveSymbols[i]}`
+      aTokenName: `${aTokenNamePrefix} ${reserveSymbols[i]}`,
+      aTokenSymbol: `a${symbolPrefix}${reserveSymbols[i]}`,
+      variableDebtTokenName: `${variableDebtTokenNamePrefix} ${symbolPrefix}${reserveSymbols[i]}`,
+      variableDebtTokenSymbol: `variableDebt${symbolPrefix}${reserveSymbols[i]}`,
+      stableDebtTokenName: `${stableDebtTokenNamePrefix} ${reserveSymbols[i]}`,
+      stableDebtTokenSymbol: `stableDebt${symbolPrefix}${reserveSymbols[i]}`
     });
   }
 
