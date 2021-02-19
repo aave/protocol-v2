@@ -32,24 +32,24 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       dai.address,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      'Aave Interest bearing LpDAI updated',
-      'aUniDAI',
+      'Aave AMM Market DAI updated',
+      'aAmmDAI',
     ]);
 
     const stableDebtTokenInstance = await deployMockStableDebtToken([
       pool.address,
       dai.address,
       ZERO_ADDRESS,
-      'Aave stable debt bearing LpDAI updated',
-      'stableDebtUniDAI',
+      'Aave AMM Market stable debt DAI updated',
+      'stableDebtAmmDAI',
     ]);
 
     const variableDebtTokenInstance = await deployMockVariableDebtToken([
       pool.address,
       dai.address,
       ZERO_ADDRESS,
-      'Aave variable debt bearing LpDAI updated',
-      'variableDebtUniDAI',
+      'Aave AMM Market variable debt DAI updated',
+      'variableDebtAmmDAI',
     ]);
 
     newATokenAddress = aTokenInstance.address;
@@ -108,7 +108,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const tokenName = await aDai.name();
 
-    expect(tokenName).to.be.eq('Aave Interest bearing LpDAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Aave AMM Market DAI updated', 'Invalid token name');
   });
 
   it('Tries to update the DAI Stable debt token implementation with a different address than the lendingPoolManager', async () => {
@@ -168,7 +168,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const tokenName = await debtToken.name();
 
-    expect(tokenName).to.be.eq('Aave stable debt bearing LpDAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Aave AMM Market stable debt DAI updated', 'Invalid token name');
   });
 
   it('Tries to update the DAI variable debt token implementation with a different address than the lendingPoolManager', async () => {
@@ -229,6 +229,6 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     const tokenName = await debtToken.name();
 
-    expect(tokenName).to.be.eq('Aave variable debt bearing LpDAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Aave AMM Market variable debt DAI updated', 'Invalid token name');
   });
 });

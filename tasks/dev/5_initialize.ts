@@ -31,7 +31,12 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .setAction(async ({ verify, pool }, localBRE) => {
     await localBRE.run('set-DRE');
     const poolConfig = loadPoolConfig(pool);
-
+    const {
+      ATokenNamePrefix,
+      StableDebtTokenNamePrefix,
+      VariableDebtTokenNamePrefix,
+      SymbolPrefix,
+    } = poolConfig;
     const mockTokens = await getAllMockedTokens();
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
 
@@ -52,6 +57,10 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     await initReservesByHelper(
       reservesParams,
       protoPoolReservesAddresses,
+      ATokenNamePrefix,
+      StableDebtTokenNamePrefix,
+      VariableDebtTokenNamePrefix,
+      SymbolPrefix,
       admin,
       treasuryAddress,
       ZERO_ADDRESS,

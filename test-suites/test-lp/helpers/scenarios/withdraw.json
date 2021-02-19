@@ -3,12 +3,12 @@
   "description": "withdraw function.",
   "stories": [
     {
-      "description": "User 0 Deposits 1000 LPDAI in an empty reserve",
+      "description": "User 0 Deposits 1000 DAI in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -17,7 +17,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "0"
           },
           "expected": "success"
@@ -25,7 +25,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -34,12 +34,12 @@
       ]
     },
     {
-      "description": "User 0 withdraws half of the deposited LPDAI",
+      "description": "User 0 withdraws half of the deposited DAI",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "500",
             "user": "0"
           },
@@ -48,12 +48,12 @@
       ]
     },
     {
-      "description": "User 0 withdraws remaining half of the deposited LPDAI",
+      "description": "User 0 withdraws remaining half of the deposited DAI",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "-1",
             "user": "0"
           },
@@ -62,12 +62,12 @@
       ]
     },
     {
-      "description": "User 0 Deposits 1000 LPUSDC in an empty reserve",
+      "description": "User 0 Deposits 1000 USDC in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -76,7 +76,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0"
           },
           "expected": "success"
@@ -84,7 +84,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -93,12 +93,12 @@
       ]
     },
     {
-      "description": "User 0 withdraws half of the deposited LPUSDC",
+      "description": "User 0 withdraws half of the deposited USDC",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "500",
             "user": "0"
           },
@@ -107,12 +107,12 @@
       ]
     },
     {
-      "description": "User 0 withdraws remaining half of the deposited LPUSDC",
+      "description": "User 0 withdraws remaining half of the deposited USDC",
       "actions": [
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "-1",
             "user": "0"
           },
@@ -180,12 +180,12 @@
       ]
     },
     {
-      "description": "Users 0 and 1 Deposit 1000 LPDAI, both withdraw",
+      "description": "Users 0 and 1 Deposit 1000 DAI, both withdraw",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "1"
           },
@@ -194,7 +194,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1"
           },
           "expected": "success"
@@ -202,7 +202,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -211,7 +211,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "1"
           },
@@ -220,7 +220,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "-1",
             "user": "0"
           },
@@ -229,7 +229,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "-1",
             "user": "1"
           },
@@ -238,12 +238,12 @@
       ]
     },
     {
-      "description": "Users 0 deposits 1000 LPDAI, user 1 Deposit 1000 LPUSDC and 1 WETH, borrows 100 LPDAI at stable rate (revert expected). User 1 tries to withdraw all the LPUSDC",
+      "description": "Users 0 deposits 1000 DAI, user 1 Deposit 1000 USDC and 1 WETH, borrows 100 DAI at stable rate (revert expected). User 1 tries to withdraw all the USDC",
       "actions": [
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -252,7 +252,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "1"
           },
@@ -261,7 +261,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "1"
           },
           "expected": "success"
@@ -269,7 +269,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "1"
           },
@@ -304,7 +304,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "user": "1",
             "borrowRateMode": "stable"
@@ -314,7 +314,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "-1",
             "user": "1"
           },
@@ -323,12 +323,12 @@
       ]
     },
     {
-      "description": "Users 0 deposits 1000 LPDAI, user 1 Deposit 1000 LPUSDC and 1 WETH, borrows 100 LPDAI at variable rate. User 1 tries to withdraw all the LPUSDC",
+      "description": "Users 0 deposits 1000 DAI, user 1 Deposit 1000 USDC and 1 WETH, borrows 100 DAI at variable rate. User 1 tries to withdraw all the USDC",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -337,7 +337,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -346,7 +346,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "10000",
             "user": "1"
           },
@@ -355,7 +355,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "1"
           },
           "expected": "success"
@@ -363,7 +363,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "1"
           },
@@ -398,7 +398,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "user": "1",
             "borrowRateMode": "variable"
@@ -408,7 +408,7 @@
         {
           "name": "withdraw",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "-1",
             "user": "1"
           },

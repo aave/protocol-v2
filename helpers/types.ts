@@ -207,26 +207,26 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
-  LpWETH: T;
-  LpWBTC: T;
-  LpDAI: T;
-  LpUSDC: T;
-  LpUSDT: T;
-  LpUniDAIWETH: T;
-  LpUniWBTCWETH: T;
-  LpUniAAVEWETH: T;
-  LpUniBATWETH: T;
-  LpUniUSDCDAI: T;
-  LpUniCRVWETH: T;
-  LpUniLINKWETH: T;
-  LpUniMKRWETH: T;
-  LpUniRENWETH: T;
-  LpUniSNXWETH: T;
-  LpUniUNIWETH: T;
-  LpUniUSDCWETH: T;
-  LpUniWBTCUSDC: T;
-  LpUniYFIWETH: T;
-  LpBalWBTCWETH: T;
+  // LpWETH: T;
+  // LpWBTC: T;
+  // LpDAI: T;
+  // LpUSDC: T;
+  // LpUSDT: T;
+  UniDAIWETH: T;
+  UniWBTCWETH: T;
+  UniAAVEWETH: T;
+  UniBATWETH: T;
+  UniUSDCDAI: T;
+  UniCRVWETH: T;
+  UniLINKWETH: T;
+  UniMKRWETH: T;
+  UniRENWETH: T;
+  UniSNXWETH: T;
+  UniUNIWETH: T;
+  UniUSDCWETH: T;
+  UniWBTCUSDC: T;
+  UniYFIWETH: T;
+  BptWBTCWETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -259,26 +259,26 @@ export type iAavePoolAssets<T> = Pick<
 
 export type iLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'LpDAI'
-  | 'LpUSDC'
-  | 'LpUSDT'
-  | 'LpWBTC'
-  | 'LpWETH'
-  | 'LpUniDAIWETH'
-  | 'LpUniWBTCWETH'
-  | 'LpUniAAVEWETH'
-  | 'LpUniBATWETH'
-  | 'LpUniUSDCDAI'
-  | 'LpUniCRVWETH'
-  | 'LpUniLINKWETH'
-  | 'LpUniMKRWETH'
-  | 'LpUniRENWETH'
-  | 'LpUniSNXWETH'
-  | 'LpUniUNIWETH'
-  | 'LpUniUSDCWETH'
-  | 'LpUniWBTCUSDC'
-  | 'LpUniYFIWETH'
-  | 'LpBalWBTCWETH'
+  | 'DAI'
+  | 'USDC'
+  | 'USDT'
+  | 'WBTC'
+  | 'WETH'
+  | 'UniDAIWETH'
+  | 'UniWBTCWETH'
+  | 'UniAAVEWETH'
+  | 'UniBATWETH'
+  | 'UniUSDCDAI'
+  | 'UniCRVWETH'
+  | 'UniLINKWETH'
+  | 'UniMKRWETH'
+  | 'UniRENWETH'
+  | 'UniSNXWETH'
+  | 'UniUNIWETH'
+  | 'UniUSDCWETH'
+  | 'UniWBTCUSDC'
+  | 'UniYFIWETH'
+  | 'BptWBTCWETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -309,26 +309,26 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  LpWETH = 'LpWETH',
-  LpWBTC = 'LpWBTC',
-  LpDAI = 'LpDAI',
-  LpUSDC = 'LpUSDC',
-  LpUSDT = 'LpUSDT',
-  LpUniDAIWETH = 'LpUniDAIWETH',
-  LpUniWBTCWETH = 'LpUniWBTCWETH',
-  LpUniAAVEWETH = 'LpUniAAVEWETH',
-  LpUniBATWETH = 'LpUniBATWETH',
-  LpUniUSDCDAI = 'LpUniUSDCDAI',
-  LpUniCRVWETH = 'LpUniCRVWETH',
-  LpUniLINKWETH = 'LpUniLINKWETH',
-  LpUniMKRWETH = 'LpUniMKRWETH',
-  LpUniRENWETH = 'LpUniRENWETH',
-  LpUniSNXWETH = 'LpUniSNXWETH',
-  LpUniUNIWETH = 'LpUniUNIWETH',
-  LpUniUSDCWETH = 'LpUniUSDCWETH',
-  LpUniWBTCUSDC = 'LpUniWBTCUSDC',
-  LpUniYFIWETH = 'LpUniYFIWETH',
-  LpBalWBTCWETH = 'LpBalWBTCWETH',
+  // LpWETH = 'LpWETH',
+  // LpWBTC = 'LpWBTC',
+  // LpDAI = 'LpDAI',
+  // LpUSDC = 'LpUSDC',
+  // LpUSDT = 'LpUSDT',
+  UniDAIWETH = 'UniDAIWETH',
+  UniWBTCWETH = 'UniWBTCWETH',
+  UniAAVEWETH = 'UniAAVEWETH',
+  UniBATWETH = 'UniBATWETH',
+  UniUSDCDAI = 'UniUSDCDAI',
+  UniCRVWETH = 'UniCRVWETH',
+  UniLINKWETH = 'UniLINKWETH',
+  UniMKRWETH = 'UniMKRWETH',
+  UniRENWETH = 'UniRENWETH',
+  UniSNXWETH = 'UniSNXWETH',
+  UniUNIWETH = 'UniUNIWETH',
+  UniUSDCWETH = 'UniUSDCWETH',
+  UniWBTCUSDC = 'UniWBTCUSDC',
+  UniYFIWETH = 'UniYFIWETH',
+  BptWBTCWETH = 'BptWBTCWETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -434,6 +434,10 @@ export interface ILendingRate {
 
 export interface ICommonConfiguration {
   MarketId: string;
+  ATokenNamePrefix: string;
+  StableDebtTokenNamePrefix: string;
+  VariableDebtTokenNamePrefix: string;
+  SymbolPrefix: string;
   ProviderId: number;
   ProtocolGlobalParams: IProtocolGlobalConfig;
   Mocks: IMocksConfig;

@@ -8,7 +8,7 @@
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -18,12 +18,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 LPUSDC, user 1 deposits 7 WETH, borrows 250 LPUSDC at a variable rate, user 0 rebalances user 1 (revert expected)",
+      "description": "User 0 deposits 1000 USDC, user 1 deposits 7 WETH, borrows 250 USDC at a variable rate, user 0 rebalances user 1 (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -32,7 +32,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0"
           },
           "expected": "success"
@@ -40,7 +40,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -75,7 +75,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "250",
             "borrowRateMode": "variable",
             "user": "1"
@@ -85,7 +85,7 @@
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -100,7 +100,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "200",
             "borrowRateMode": "variable",
             "user": "1"
@@ -110,7 +110,7 @@
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -125,7 +125,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "200",
             "borrowRateMode": "variable",
             "user": "1"
@@ -135,7 +135,7 @@
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -150,7 +150,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "280",
             "borrowRateMode": "variable",
             "user": "1"
@@ -160,7 +160,7 @@
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },
@@ -171,12 +171,12 @@
     },
 
     {
-      "description": "User 1 borrows the remaining LPUSDC (usage ratio = 100%) at variable. User 0 rebalances user 1, fails since there are no stable borrows (revert expected)",
+      "description": "User 1 borrows the remaining USDC (usage ratio = 100%) at variable. User 0 rebalances user 1, fails since there are no stable borrows (revert expected)",
       "actions": [
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "20",
             "borrowRateMode": "variable",
             "user": "1"
@@ -186,7 +186,7 @@
         {
           "name": "rebalanceStableBorrowRate",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0",
             "target": "1"
           },

@@ -3,12 +3,12 @@
   "description": "Test cases for the deposit function.",
   "stories": [
     {
-      "description": "User 0 Deposits 1000 LPDAI in an empty reserve",
+      "description": "User 0 Deposits 1000 DAI in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -17,7 +17,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "0"
           },
           "expected": "success"
@@ -25,7 +25,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -34,12 +34,12 @@
       ]
     },
     {
-      "description": "User 1 deposits 1000 LPDAI after user 0",
+      "description": "User 1 deposits 1000 DAI after user 0",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "1"
           },
@@ -48,7 +48,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1"
           },
           "expected": "success"
@@ -56,7 +56,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "1"
           },
@@ -65,12 +65,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 LPUSDC in an empty reserve",
+      "description": "User 0 deposits 1000 USDC in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -79,7 +79,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "0"
           },
           "expected": "success"
@@ -87,7 +87,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "0"
           },
@@ -96,12 +96,12 @@
       ]
     },
     {
-      "description": "User 1 deposits 1000 LPUSDC after user 0",
+      "description": "User 1 deposits 1000 USDC after user 0",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "1"
           },
@@ -110,7 +110,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "user": "1"
           },
           "expected": "success"
@@ -118,7 +118,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPUSDC",
+            "reserve": "USDC",
             "amount": "1000",
             "user": "1"
           },
@@ -214,12 +214,12 @@
       ]
     },
     {
-      "description": "User 1 deposits 0 LPDAI",
+      "description": "User 1 deposits 0 DAI",
       "actions": [
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "0",
             "user": "1"
           },
@@ -229,12 +229,12 @@
       ]
     },
     {
-      "description": "User 1 deposits 100 LPDAI on behalf of user 2, user 2 tries to borrow 0.1 WETH",
+      "description": "User 1 deposits 100 DAI on behalf of user 2, user 2 tries to borrow 0.1 WETH",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "user": "1"
           },
@@ -243,7 +243,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "user": "1",
             "onBehalfOf": "2"

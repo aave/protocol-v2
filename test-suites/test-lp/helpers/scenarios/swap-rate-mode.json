@@ -8,7 +8,7 @@
         {
           "name": "swapBorrowRateMode",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1",
             "borrowRateMode": "variable"
           },
@@ -23,7 +23,7 @@
         {
           "name": "swapBorrowRateMode",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1",
             "borrowRateMode": "stable"
           },
@@ -33,12 +33,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 LPDAI, user 1 deposits 2 WETH as collateral, borrows 100 LPDAI at variable rate and swaps to stable after one year, fails because stable borrowing is disabled (revert expected)",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 2 WETH as collateral, borrows 100 DAI at variable rate and swaps to stable after one year, fails because stable borrowing is disabled (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -47,7 +47,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "0"
           },
           "expected": "success"
@@ -55,7 +55,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -90,7 +90,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "borrowRateMode": "variable",
             "user": "1",
@@ -101,7 +101,7 @@
         {
           "name": "swapBorrowRateMode",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1",
             "borrowRateMode": "variable"
           },
@@ -110,12 +110,12 @@
       ]
     },
     {
-      "description": "User 1 borrows another 100 LPDAI at stable (revert expected), and swaps back to variable after one year (revert expected), repays the loan",
+      "description": "User 1 borrows another 100 DAI at stable (revert expected), and swaps back to variable after one year (revert expected), repays the loan",
       "actions": [
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "borrowRateMode": "stable",
             "user": "1",
@@ -126,7 +126,7 @@
         {
           "name": "swapBorrowRateMode",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1",
             "borrowRateMode": "stable"
           },
@@ -134,9 +134,9 @@
         },
         {
           "name": "mint",
-          "description": "Mint 50 LPDAI to cover the interest",
+          "description": "Mint 50 DAI to cover the interest",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "50",
             "user": "1"
           },
@@ -145,7 +145,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1"
           },
           "expected": "success"
@@ -153,7 +153,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "-1",
             "user": "1",
             "onBehalfOf": "1",
@@ -164,12 +164,12 @@
       ]
     },
     {
-      "description": "User 1 borrows another 100 LPDAI at variable, and tries to swap to stable after one year (revert expected), repays the loan",
+      "description": "User 1 borrows another 100 DAI at variable, and tries to swap to stable after one year (revert expected), repays the loan",
       "actions": [
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "borrowRateMode": "variable",
             "user": "1",
@@ -180,7 +180,7 @@
         {
           "name": "swapBorrowRateMode",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1",
             "borrowRateMode": "stable"
           },
@@ -188,9 +188,9 @@
         },
         {
           "name": "mint",
-          "description": "Mint 50 LPDAI to cover the interest",
+          "description": "Mint 50 DAI to cover the interest",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "50",
             "user": "1"
           },
@@ -199,7 +199,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "1"
           },
           "expected": "success"
@@ -207,7 +207,7 @@
         {
           "name": "repay",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "-1",
             "user": "1",
             "onBehalfOf": "1",
