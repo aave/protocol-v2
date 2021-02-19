@@ -227,6 +227,7 @@ export interface iAssetBase<T> {
   UniWBTCUSDC: T;
   UniYFIWETH: T;
   BptWBTCWETH: T;
+  MATIC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -279,6 +280,16 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniWBTCUSDC'
   | 'UniYFIWETH'
   | 'BptWBTCWETH'
+>;
+
+export type iMaticPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  | 'DAI'
+  | 'USDC'
+  | 'USDT'
+  | 'WBTC'
+  | 'WETH'
+  | 'MATIC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -468,6 +479,11 @@ export interface IAaveConfiguration extends ICommonConfiguration {
 export interface ILpConfiguration extends ICommonConfiguration {
   ReservesConfig: iLpPoolAssets<IReserveParams>;
 }
+
+export interface IMaticConfiguration extends ICommonConfiguration {
+  ReservesConfig: iMaticPoolAssets<IReserveParams>;
+}
+
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
