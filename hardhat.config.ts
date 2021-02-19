@@ -18,7 +18,7 @@ import '@tenderly/hardhat-tenderly';
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const DEFAULT_GAS_MUL = 5;
-const DEFAULT_GAS_PRICE = 65000000000;
+const DEFAULT_GAS_PRICE = 65 * 1000 * 1000 * 1000;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
@@ -45,6 +45,32 @@ require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   const net = networkName === 'main' ? 'mainnet' : networkName;
+  if (networkName == 'matic') return {
+    url: 'https://rpc-mainnet.matic.network',
+    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+    gasMultiplier: DEFAULT_GAS_MUL,
+    gasPrice: DEFAULT_GAS_PRICE,
+    chainId: networkId,
+    accounts: {
+      mnemonic: MNEMONIC,
+      path: MNEMONIC_PATH,
+      initialIndex: 0,
+      count: 20,
+    },
+  }
+  if (networkName == 'mumbai') return {
+    url: 'https://rpc-mumbai.maticvigil.com',
+    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+    gasMultiplier: DEFAULT_GAS_MUL,
+    gasPrice: 1 * 1000 * 1000 * 1000,
+    chainId: networkId,
+    accounts: {
+      mnemonic: MNEMONIC,
+      path: MNEMONIC_PATH,
+      initialIndex: 0,
+      count: 20,
+    },
+  }
   return {
     url: ALCHEMY_KEY
       ? `https://eth-${net}.alchemyapi.io/v2/${ALCHEMY_KEY}`
@@ -104,6 +130,8 @@ const buidlerConfig: HardhatUserConfig = {
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.main, 1),
+    matic: getCommonNetworkConfig(eEthereumNetwork.matic, 137),
+    mumbai: getCommonNetworkConfig(eEthereumNetwork.mumbai, 80001),
     hardhat: {
       hardfork: 'istanbul',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

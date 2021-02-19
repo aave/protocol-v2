@@ -58,6 +58,8 @@ export const AaveConfig: IAaveConfiguration = {
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
+    [eEthereumNetwork.matic]: {},
+    [eEthereumNetwork.mumbai]: {},
     [EthereumNetwork.kovan]: {
       AAVE: '0xB597cd8D3217ea6477232F9217fa70837ff667Af',
       BAT: '0x2d12186Fbb9f9a8C28B3FfdD4c42920f8539D738',
