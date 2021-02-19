@@ -1238,9 +1238,9 @@ export const calcExpectedInterestRates = (
   const { reservesParams } = configuration;
 
   // Fixes WETH - LpWETH mock token symbol mismatch 
-  if(reserveSymbol === 'WETH') {
-    reserveSymbol = 'LpWETH';
-  }
+  // if(reserveSymbol === 'WETH') {
+  //   reserveSymbol = 'LpWETH';
+  // }
   const reserveIndex = Object.keys(reservesParams).findIndex((value) => value === reserveSymbol);
   const [, reserveConfiguration] = (Object.entries(reservesParams) as [string, IReserveParams][])[
     reserveIndex

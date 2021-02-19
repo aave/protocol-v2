@@ -3,12 +3,12 @@
   "description": "Test cases for the deposit function.",
   "stories": [
     {
-      "description": "User 0 deposits 1000 LPDAI, user 1 deposits 1 WETH as collateral and tries to borrow 100 LPDAI with rate mode NONE (revert expected)",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 WETH as collateral and tries to borrow 100 DAI with rate mode NONE (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -17,7 +17,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "0"
           },
           "expected": "success"
@@ -25,7 +25,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -60,7 +60,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "borrowRateMode": "none",
             "user": "1"
@@ -71,12 +71,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 LPDAI, user 1 deposits 1 WETH as collateral and tries to borrow 100 LPDAI with an invalid rate mode (revert expected)",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 WETH as collateral and tries to borrow 100 DAI with an invalid rate mode (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -85,7 +85,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "user": "0"
           },
           "expected": "success"
@@ -93,7 +93,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "1000",
             "user": "0"
           },
@@ -128,7 +128,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "LPDAI",
+            "reserve": "DAI",
             "amount": "100",
             "borrowRateMode": "invalid",
             "user": "1"

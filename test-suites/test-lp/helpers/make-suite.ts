@@ -128,15 +128,15 @@ export async function initializeMakeSuite() {
   testEnv.helpersContract = await getAaveProtocolDataProvider();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
-  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aLpDAI')?.tokenAddress;
+  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aAmmDAI')?.tokenAddress;
 
-  const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aLpWETH')?.tokenAddress;
+  const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aAmmWETH')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
-  const daiAddress = reservesTokens.find((token) => token.symbol === 'LpDAI')?.tokenAddress;
-  const usdcAddress = reservesTokens.find((token) => token.symbol === 'LpUSDC')?.tokenAddress;
-  const aaveAddress = reservesTokens.find((token) => token.symbol === 'LpUniAAVEWETH')?.tokenAddress;
+  const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
+  const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
+  const aaveAddress = reservesTokens.find((token) => token.symbol === 'UniAAVEWETH')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
   if (!aDaiAddress || !aWEthAddress) {

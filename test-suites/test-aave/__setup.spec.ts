@@ -95,7 +95,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
-
+  console.log("Deployed mocks");
   const addressesProvider = await deployLendingPoolAddressesProvider(AaveConfig.MarketId);
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
@@ -165,33 +165,33 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       REN: mockTokens.REN.address,
       UNI: mockTokens.UNI.address,
       ENJ: mockTokens.ENJ.address,
-      LpDAI: mockTokens.LpDAI.address,
-      LpUSDC: mockTokens.LpUSDC.address,
-      LpUSDT: mockTokens.LpUSDT.address,
-      LpWBTC: mockTokens.LpWBTC.address,
-      LpWETH: mockTokens.LpWETH.address,
-      LpUniDAIWETH: mockTokens.LpUniDAIWETH.address,
-      LpUniWBTCWETH: mockTokens.LpUniWBTCWETH.address,
-      LpUniAAVEWETH: mockTokens.LpUniAAVEWETH.address,
-      LpUniBATWETH: mockTokens.LpUniBATWETH.address,
-      LpUniUSDCDAI: mockTokens.LpUniUSDCDAI.address,
-      LpUniCRVWETH: mockTokens.LpUniCRVWETH.address,
-      LpUniLINKWETH: mockTokens.LpUniLINKWETH.address,
-      LpUniMKRWETH: mockTokens.LpUniMKRWETH.address,
-      LpUniRENWETH: mockTokens.LpUniRENWETH.address,
-      LpUniSNXWETH: mockTokens.LpUniSNXWETH.address,
-      LpUniUNIWETH: mockTokens.LpUniUNIWETH.address,
-      LpUniUSDCWETH: mockTokens.LpUniUSDCWETH.address,
-      LpUniWBTCUSDC: mockTokens.LpUniWBTCUSDC.address,
-      LpUniYFIWETH: mockTokens.LpUniYFIWETH.address,
-      LpBalWBTCWETH: mockTokens.LpBalWBTCWETH.address,
+      // DAI: mockTokens.LpDAI.address,
+      // USDC: mockTokens.LpUSDC.address,
+      // USDT: mockTokens.LpUSDT.address,
+      // WBTC: mockTokens.LpWBTC.address,
+      // WETH: mockTokens.LpWETH.address,
+      UniDAIWETH: mockTokens.UniDAIWETH.address,
+      UniWBTCWETH: mockTokens.UniWBTCWETH.address,
+      UniAAVEWETH: mockTokens.UniAAVEWETH.address,
+      UniBATWETH: mockTokens.UniBATWETH.address,
+      UniUSDCDAI: mockTokens.UniUSDCDAI.address,
+      UniCRVWETH: mockTokens.UniCRVWETH.address,
+      UniLINKWETH: mockTokens.UniLINKWETH.address,
+      UniMKRWETH: mockTokens.UniMKRWETH.address,
+      UniRENWETH: mockTokens.UniRENWETH.address,
+      UniSNXWETH: mockTokens.UniSNXWETH.address,
+      UniUNIWETH: mockTokens.UniUNIWETH.address,
+      UniUSDCWETH: mockTokens.UniUSDCWETH.address,
+      UniWBTCUSDC: mockTokens.UniWBTCUSDC.address,
+      UniYFIWETH: mockTokens.UniYFIWETH.address,
+      BptWBTCWETH: mockTokens.BptWBTCWETH.address,
       USD: USD_ADDRESS,
     },
     fallbackOracle
   );
 
   const mockAggregators = await deployAllMockAggregators(MOCK_CHAINLINK_AGGREGATORS_PRICES);
-
+  console.log("Mock aggs deployed");
   const allTokenAddresses = Object.entries(mockTokens).reduce(
     (accum: { [tokenSymbol: string]: tEthereumAddress }, [tokenSymbol, tokenContract]) => ({
       ...accum,
@@ -237,16 +237,27 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const config = loadPoolConfig(ConfigNames.Aave);
 
+  const { 
+    ATokenNamePrefix,
+    StableDebtTokenNamePrefix,
+    VariableDebtTokenNamePrefix,
+    SymbolPrefix,
+  } = config;
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(
     reservesParams,
     allReservesAddresses,
+    ATokenNamePrefix,
+    StableDebtTokenNamePrefix,
+    VariableDebtTokenNamePrefix,
+    SymbolPrefix,
     admin,
     treasuryAddress,
     ZERO_ADDRESS,
     false
   );
+
   await configureReservesByHelper(reservesParams, allReservesAddresses, testHelpers, admin);
 
   const collateralManager = await deployLendingPoolCollateralManager();
