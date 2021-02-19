@@ -9,6 +9,7 @@ import {
 import { getParamPerPool } from './contracts-helpers';
 import AaveConfig from '../markets/aave';
 import LpConfig from '../markets/lp';
+import MaticConfig from '../markets/matic'
 import { CommonsConfig } from '../markets/aave/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
@@ -19,6 +20,7 @@ export enum ConfigNames {
   Commons = 'Commons',
   Aave = 'Aave',
   Lp = 'Lp',
+  Matic = 'Matic',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -27,6 +29,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return AaveConfig;
     case ConfigNames.Lp:
         return LpConfig;
+    case ConfigNames.Matic:
+        return MaticConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -46,6 +50,9 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.lp]: {
         ...LpConfig.ReservesConfig,
+      },
+      [AavePools.matic] : {
+        ...MaticConfig.ReservesConfig,
       },
     },
     pool

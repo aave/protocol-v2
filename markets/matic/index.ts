@@ -15,7 +15,7 @@ import {
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-export const AaveConfig: IMaticConfiguration = {
+export const MaticConfig: IMaticConfiguration = {
   ...CommonsConfig,
   MarketId: 'Matic Market',
   ProviderId: 3,    // Unknown?
@@ -68,4 +68,4 @@ export const AaveConfig: IMaticConfiguration = {
   },
 };
 
-export default AaveConfig;
+export default MaticConfig;

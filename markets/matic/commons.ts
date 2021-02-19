@@ -134,7 +134,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
-    [eEthereumNetwork.mumbai]: '',
+    [eEthereumNetwork.mumbai]: '0x569859d41499B4dDC28bfaA43915051FF0A38a6F', // TEMP
     [eEthereumNetwork.matic]: '',
   },
   ProviderRegistryOwner: {
@@ -145,7 +145,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0xbd723fc4f1d737dcfc48a07fe7336766d34cad5f',
-    [eEthereumNetwork.mumbai]: '',
+    [eEthereumNetwork.mumbai]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9', // TEMP
     [eEthereumNetwork.matic]: '',
   },
   LendingRateOracle: {
@@ -271,7 +271,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
     [eEthereumNetwork.main]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
     [eEthereumNetwork.tenderlyMain]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [EthereumNetwork.mumbai]: ZERO_ADDRESS,   // TEMP 
-    [EthereumNetwork.matic]: ZERO_ADDRESS,    // TEMP  
+    [EthereumNetwork.mumbai]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',   // TEMP 
+    [EthereumNetwork.matic]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',    // TEMP  
   },
 };

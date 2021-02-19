@@ -20,11 +20,14 @@ export enum EthereumNetworkNames {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
+  matic = 'matic',
+  mumbai = 'mumbai',
 }
 
 export enum AavePools {
   proto = 'proto',
   lp = 'lp',
+  matic = 'matic',
 }
 
 export enum eContractid {
@@ -394,6 +397,7 @@ export interface iParamsPerNetwork<T> {
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
   [AavePools.lp]: T;
+  [AavePools.matic]: T;
 }
 
 export interface iBasicDistributionParams {
