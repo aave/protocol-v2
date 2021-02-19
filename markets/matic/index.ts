@@ -39,8 +39,13 @@ export const AaveConfig: IMaticConfiguration = {
       WETH: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
       MATIC: '0x0000000000000000000000000000000000001010',
     },
-    [eEthereumNetwork.mumbai]: { 
-      // TODO: Deploy mock tokens for testing
+    [eEthereumNetwork.mumbai]: { // Mock tokens with a simple "mint" external function
+      DAI: '0x13b3fda609C1eeb23b4F4b69257840760dCa6C4a',
+      USDC: '0x52b63223994433FdE2F1350Ba69Dfd2779f06ABA',
+      USDT: '0xB3abd1912F586fDFFa13606882c28E27913853d2',
+      WBTC: '0x393E3512d45a956A628124665672312ea86930Ba',
+      WETH: '0x53CDb16B8C031B779e996406546614E5F05BC4Bf',
+      MATIC: '0x0000000000000000000000000000000000001010 ',
     },
     [EthereumNetwork.kovan]: {},
     [EthereumNetwork.ropsten]: {},
