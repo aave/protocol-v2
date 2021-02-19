@@ -39,8 +39,8 @@ export const AaveConfig: IMaticConfiguration = {
       WETH: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
       MATIC: '0x0000000000000000000000000000000000001010',
     },
-    [eEthereumNetwork.mumbai]: {
-      
+    [eEthereumNetwork.mumbai]: { 
+      // TODO: Deploy mock tokens for testing
     },
     [EthereumNetwork.kovan]: {
     //   AAVE: '0xB597cd8D3217ea6477232F9217fa70837ff667Af',
