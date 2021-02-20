@@ -49,7 +49,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
     url: 'https://rpc-mainnet.matic.network',
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
     gasMultiplier: DEFAULT_GAS_MUL,
-    gasPrice: DEFAULT_GAS_PRICE,
+    gasPrice: 7500000000,
     chainId: networkId,
     accounts: {
       mnemonic: MNEMONIC,
