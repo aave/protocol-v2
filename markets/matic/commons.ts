@@ -135,7 +135,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
     [eEthereumNetwork.mumbai]: '0x569859d41499B4dDC28bfaA43915051FF0A38a6F', // TEMP
-    [eEthereumNetwork.matic]: '',
+    [eEthereumNetwork.matic]: '0x3E7803614113F4199bE15b9dC915FA2f4EDE902B',  // TEMP
   },
   ProviderRegistryOwner: {
     [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
@@ -146,7 +146,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0xbd723fc4f1d737dcfc48a07fe7336766d34cad5f',
     [eEthereumNetwork.mumbai]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9', // TEMP
-    [eEthereumNetwork.matic]: '',
+    [eEthereumNetwork.matic]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9',  // TEMP
   },
   LendingRateOracle: {
     [eEthereumNetwork.coverage]: '',
@@ -207,8 +207,20 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.buidlerevm]: {},
-    [eEthereumNetwork.matic]: {},
-    [eEthereumNetwork.mumbai]: {},
+    [eEthereumNetwork.matic]: {
+      DAI: '0x4746DeC9e833A82EC7C2C1356372CcF2cfcD2F3D',
+      USDC: '0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7',
+      USDT: '0x0A6513e40db6EB1b165753AD52E80663aeA50545',
+      WBTC: '0xc907E116054Ad103354f2D350FD2514433D57F6f',
+      MATIC: '0xAB594600376Ec9fD91F8e885dADF0CE036862dE0',
+    },
+    [eEthereumNetwork.mumbai]: {
+      DAI: ZERO_ADDRESS,
+      USDC: ZERO_ADDRESS,
+      USDT: ZERO_ADDRESS,
+      WBTC: ZERO_ADDRESS,
+      MATIC: ZERO_ADDRESS,
+    },
     [EthereumNetwork.kovan]: {},
     [EthereumNetwork.ropsten]: {},
     [EthereumNetwork.main]: {
@@ -260,7 +272,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [eEthereumNetwork.tenderlyMain]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [EthereumNetwork.mumbai]: '', // No WETH gateway on L2
+    [EthereumNetwork.mumbai]: '0x53CDb16B8C031B779e996406546614E5F05BC4Bf', // No WETH gateway on L2
     [EthereumNetwork.matic]: '',  // No WETH gateway on L2
   },
   ReserveFactorTreasuryAddress: {
