@@ -23,6 +23,8 @@ import {
   deployDelegationAwareATokenImpl,
   deployGenericAToken,
   deployGenericATokenImpl,
+  deployGenericStableDebtToken,
+  deployGenericVariableDebtToken,
   deployStableDebtToken,
   deployVariableDebtToken,
 } from './contracts-deployments';
@@ -102,17 +104,20 @@ export const initReservesByHelper = async (
   let stableDebtTokenImplementationAddress = "";
   let variableDebtTokenImplementationAddress = "";
 
-  const tx1 = await waitForTx(
-    await stableAndVariableDeployer.initDeployment([ZERO_ADDRESS], ["1"])
-  );
-  tx1.events?.forEach((event, index) => {
-    stableDebtTokenImplementationAddress = event?.args?.stableToken;
-    variableDebtTokenImplementationAddress = event?.args?.variableToken;
-    rawInsertContractAddressInDb(`stableDebtTokenImpl`, stableDebtTokenImplementationAddress);
-    rawInsertContractAddressInDb(`variableDebtTokenImpl`, variableDebtTokenImplementationAddress);
-  });
+  // NOT WORKING ON MATIC
+  // const tx1 = await waitForTx(
+  //   await stableAndVariableDeployer.initDeployment([ZERO_ADDRESS], ["1"])
+  // );
+  // console.log(tx1.events);
+  // tx1.events?.forEach((event, index) => {
+  //   stableDebtTokenImplementationAddress = event?.args?.stableToken;
+  //   variableDebtTokenImplementationAddress = event?.args?.variableToken;
+  //   rawInsertContractAddressInDb(`stableDebtTokenImpl`, stableDebtTokenImplementationAddress);
+  //   rawInsertContractAddressInDb(`variableDebtTokenImpl`, variableDebtTokenImplementationAddress);
+  // });
   //gasUsage = gasUsage.add(tx1.gasUsed);
-
+  stableDebtTokenImplementationAddress = await (await deployGenericStableDebtToken()).address;
+  variableDebtTokenImplementationAddress = await (await deployGenericVariableDebtToken()).address;
 
   const aTokenImplementation = await deployGenericATokenImpl(verify);
   aTokenImplementationAddress = aTokenImplementation.address;
