@@ -343,6 +343,7 @@ export enum TokenContractId {
   UniWBTCUSDC = 'UniWBTCUSDC',
   UniYFIWETH = 'UniYFIWETH',
   BptWBTCWETH = 'BptWBTCWETH',
+  MATIC = 'MATIC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -493,3 +494,4 @@ export interface ITokenAddress {
 }
 
 export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration;
+
