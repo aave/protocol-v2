@@ -55,7 +55,7 @@ export const CommonsConfig: ICommonConfiguration = {
   ATokenNamePrefix: 'Aave Matic Market',
   StableDebtTokenNamePrefix: 'Aave Matic Market stable debt',
   VariableDebtTokenNamePrefix: 'Aave Matic Market variable debt',
-  SymbolPrefix: 'Matic',
+  SymbolPrefix: 'm',
   ProviderId: 0, // Overriden in index.ts
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
