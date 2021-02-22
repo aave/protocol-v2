@@ -91,7 +91,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
     [eEthereumNetwork.mumbai]: '0x569859d41499B4dDC28bfaA43915051FF0A38a6F', // TEMP
-    [eEthereumNetwork.matic]: '0x3E7803614113F4199bE15b9dC915FA2f4EDE902B',  // TEMP
+    [eEthereumNetwork.matic]: '0x28334e4791860a0c1eCF89a62B973ba04a5d643F',  // TEMP
   },
   ProviderRegistryOwner: {
     [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
@@ -102,7 +102,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0xbd723fc4f1d737dcfc48a07fe7336766d34cad5f',
     [eEthereumNetwork.mumbai]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9', // TEMP
-    [eEthereumNetwork.matic]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9',  // TEMP
+    [eEthereumNetwork.matic]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',  // TEMP
   },
   LendingRateOracle: {
     [eEthereumNetwork.coverage]: '',
