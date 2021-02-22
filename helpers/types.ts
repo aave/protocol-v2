@@ -12,8 +12,15 @@ export enum eEthereumNetwork {
   coverage = 'coverage',
   hardhat = 'hardhat',
   tenderlyMain = 'tenderlyMain',
+}
+
+export enum ePolygonNetwork {
   matic = 'matic',
-  mumbai = 'mumbai',
+  mumbai = 'mumbail',
+}
+
+export enum eXDaiNetwork {
+  xdai = 'xdai',
 }
 
 export enum EthereumNetworkNames {
@@ -22,6 +29,7 @@ export enum EthereumNetworkNames {
   main = 'main',
   matic = 'matic',
   mumbai = 'mumbai',
+  xdai = 'xdai',
 }
 
 export enum AavePools {
@@ -378,7 +386,12 @@ export interface IMarketRates {
   borrowRate: string;
 }
 
-export interface iParamsPerNetwork<T> {
+export type iParamsPerNetwork<T> =
+  | iEthereumParamsPerNetwork<T>
+  | iPolygonParamsPerNetwork<T>
+  | iXDaiParamsPerNetwork<T>;
+
+export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.coverage]: T;
   [eEthereumNetwork.buidlerevm]: T;
   [eEthereumNetwork.kovan]: T;
@@ -386,8 +399,15 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
   [eEthereumNetwork.tenderlyMain]: T;
-  [eEthereumNetwork.mumbai]: T;
-  [eEthereumNetwork.matic]: T;
+}
+
+export interface iPolygonParamsPerNetwork<T> {
+  [ePolygonNetwork.matic]: T;
+  [ePolygonNetwork.mumbai]: T;
+}
+
+export interface iXDaiParamsPerNetwork<T> {
+  [eXDaiNetwork.xdai]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -409,17 +429,6 @@ export enum RateMode {
 
 export interface ObjectString {
   [key: string]: string;
-}
-
-export enum EthereumNetwork {
-  kovan = 'kovan',
-  ropsten = 'ropsten',
-  development = 'development',
-  main = 'main',
-  coverage = 'soliditycoverage',
-  tenderlyMain = 'tenderlyMain',
-  matic = 'matic',
-  mumbai = 'mumbai',
 }
 
 export interface IProtocolGlobalConfig {
