@@ -336,7 +336,7 @@ export interface IReserveParams extends IReserveBorrowParams, IReserveCollateral
 }
 
 export interface IInterestRateStrategyParams {
-  name: string,
+  name: string;
   optimalUtilizationRate: string;
   baseVariableBorrowRate: string;
   variableRateSlope1: string;
@@ -452,6 +452,7 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
 }
 

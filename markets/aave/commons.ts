@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { oneEther, oneRay, RAY, ZERO_ADDRESS } from '../../helpers/constants';
 import { ICommonConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
 
@@ -195,6 +194,15 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
     [eEthereumNetwork.tenderlyMain]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
+  },
+  WethGateway: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderlyMain]: '',
   },
   TokenDistributor: {
     [eEthereumNetwork.coverage]: '',
