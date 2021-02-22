@@ -87,6 +87,10 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '',
   },
+  WethGateway: {
+    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.matic]: '',
+  },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '',
