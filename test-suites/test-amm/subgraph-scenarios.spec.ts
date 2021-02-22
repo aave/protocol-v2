@@ -19,7 +19,7 @@ makeSuite('Subgraph scenario tests', async (testEnv) => {
     actionsConfiguration.skipIntegrityCheck = false; //set this to true to execute solidity-coverage
 
     calculationsConfiguration.reservesParams = <iLpPoolAssets<IReserveParams>>(
-      getReservesConfigByPool(AavePools.lp)
+      getReservesConfigByPool(AavePools.amm)
     );
   });
   after('Reset', () => {

@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { ILpConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
+import { IAmmConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -28,9 +28,9 @@ import {
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-export const lpConfig: ILpConfiguration = {
+export const AmmConfig: IAmmConfiguration = {
   ...CommonsConfig,
-  MarketId: 'Aave LP market',
+  MarketId: 'Aave AMM market',
   ProviderId: 2,
   ReservesConfig: {
     WETH: strategyWETH,
@@ -129,4 +129,4 @@ export const lpConfig: ILpConfiguration = {
   },
 };
 
-export default lpConfig;
+export default AmmConfig;

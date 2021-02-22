@@ -1,6 +1,6 @@
 import { eContractid, IReserveParams} from '../../helpers/types';
 import {
-  rateStrategyLpBase,
+  rateStrategyAmmBase,
   rateStrategyStable,
   rateStrategyBaseOne,
 } from './rateStrategies';
@@ -67,7 +67,7 @@ export const strategyUSDT: IReserveParams = {
 };
 
 export const strategyDAIWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -79,7 +79,7 @@ export const strategyDAIWETH: IReserveParams = {
 };
 
 export const strategyWBTCWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -91,7 +91,7 @@ export const strategyWBTCWETH: IReserveParams = {
 };
 
 export const strategyAAVEWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -103,7 +103,7 @@ export const strategyAAVEWETH: IReserveParams = {
 };
 
 export const strategyBATWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -115,7 +115,7 @@ export const strategyBATWETH: IReserveParams = {
 };
 
 export const strategyUSDCDAI: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -127,7 +127,7 @@ export const strategyUSDCDAI: IReserveParams = {
 };
 
 export const strategyCRVWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '5000',
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
@@ -139,7 +139,7 @@ export const strategyCRVWETH: IReserveParams = {
 };
 
 export const strategyLINKWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -151,7 +151,7 @@ export const strategyLINKWETH: IReserveParams = {
 };
 
 export const strategyMKRWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -163,7 +163,7 @@ export const strategyMKRWETH: IReserveParams = {
 };
 
 export const strategyRENWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -175,7 +175,7 @@ export const strategyRENWETH: IReserveParams = {
 };
 
 export const strategySNXWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '4000',
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
@@ -187,7 +187,7 @@ export const strategySNXWETH: IReserveParams = {
 };
 
 export const strategyUNIWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -199,7 +199,7 @@ export const strategyUNIWETH: IReserveParams = {
 };
 
 export const strategyUSDCWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -211,7 +211,7 @@ export const strategyUSDCWETH: IReserveParams = {
 };
 
 export const strategyWBTCUSDC: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11500',
@@ -223,7 +223,7 @@ export const strategyWBTCUSDC: IReserveParams = {
 };
 
 export const strategyYFIWETH: IReserveParams = {
-  strategy: rateStrategyLpBase,
+  strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '5000',
   liquidationThreshold: '6000',
   liquidationBonus: '11500',
