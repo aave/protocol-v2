@@ -26,7 +26,9 @@ import {
   deployUniswapLiquiditySwapAdapter,
   deployUniswapRepayAdapter,
   deployFlashLiquidationAdapter,
+  authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
+import { eEthereumNetwork } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
@@ -95,7 +97,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const aaveAdmin = await deployer.getAddress();
 
   const mockTokens = await deployAllMockTokens(deployer);
-  console.log("Deployed mocks");
+  console.log('Deployed mocks');
   const addressesProvider = await deployLendingPoolAddressesProvider(AaveConfig.MarketId);
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
@@ -192,7 +194,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   );
 
   const mockAggregators = await deployAllMockAggregators(MOCK_CHAINLINK_AGGREGATORS_PRICES);
-  console.log("Mock aggs deployed");
+  console.log('Mock aggs deployed');
   const allTokenAddresses = Object.entries(mockTokens).reduce(
     (accum: { [tokenSymbol: string]: tEthereumAddress }, [tokenSymbol, tokenContract]) => ({
       ...accum,
@@ -238,7 +240,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const config = loadPoolConfig(ConfigNames.Aave);
 
-  const { 
+  const {
     ATokenNamePrefix,
     StableDebtTokenNamePrefix,
     VariableDebtTokenNamePrefix,
@@ -281,7 +283,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   await deployWalletBalancerProvider();
 
-  await deployWETHGateway([mockTokens.WETH.address, lendingPoolAddress]);
+  const gateWay = await deployWETHGateway([mockTokens.WETH.address]);
+  await authorizeWETHGateway(gateWay.address, lendingPoolAddress);
 
   console.timeEnd('setup');
 };

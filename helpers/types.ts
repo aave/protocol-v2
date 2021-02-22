@@ -287,12 +287,7 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'DAI'
-  | 'USDC'
-  | 'USDT'
-  | 'WBTC'
-  | 'WETH'
-  | 'WMATIC'
+  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -353,7 +348,7 @@ export interface IReserveParams extends IReserveBorrowParams, IReserveCollateral
 }
 
 export interface IInterestRateStrategyParams {
-  name: string,
+  name: string;
   optimalUtilizationRate: string;
   baseVariableBorrowRate: string;
   variableRateSlope1: string;
@@ -474,6 +469,7 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
 }
 
@@ -494,4 +490,3 @@ export interface ITokenAddress {
 }
 
 export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration;
-

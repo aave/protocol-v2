@@ -4,6 +4,7 @@ import {
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
   deployWETHGateway,
+  authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
 import {
   loadPoolConfig,
@@ -29,14 +30,15 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       await localBRE.run('set-DRE');
       const network = <eEthereumNetwork>localBRE.network.name;
       const poolConfig = loadPoolConfig(pool);
-      const { 
+      const {
         ATokenNamePrefix,
         StableDebtTokenNamePrefix,
         VariableDebtTokenNamePrefix,
         SymbolPrefix,
         ReserveAssets,
         ReservesConfig,
-        LendingPoolCollateralManager 
+        LendingPoolCollateralManager,
+        WethGateway,
       } = poolConfig as ICommonConfiguration;
 
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
@@ -66,9 +68,10 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
-      
-      
-      let collateralManagerAddress = await getParamPerNetwork(LendingPoolCollateralManager, network);
+      let collateralManagerAddress = await getParamPerNetwork(
+        LendingPoolCollateralManager,
+        network
+      );
       if (!collateralManagerAddress) {
         const collateralManager = await deployLendingPoolCollateralManager(verify);
         collateralManagerAddress = collateralManager.address;
@@ -81,11 +84,9 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       await deployWalletBalancerProvider(verify);
 
-      const wethAddress = await getWethAddress(poolConfig);
       const lendingPoolAddress = await addressesProvider.getLendingPool();
-
-      await deployWETHGateway([wethAddress, lendingPoolAddress]);
-
+      const gateWay = await getParamPerNetwork(WethGateway, network);
+      await authorizeWETHGateway(gateWay, lendingPoolAddress);
     } catch (err) {
       console.error(err);
       exit(1);

@@ -165,6 +165,15 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.mumbai]: '',
     [eEthereumNetwork.matic]: '',
   },
+  WethGateway: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderlyMain]: '',
+  },
   TokenDistributor: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.buidlerevm]: '',
