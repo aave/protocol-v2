@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { ILpConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
+import { ILpConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -58,9 +58,7 @@ export const lpConfig: ILpConfiguration = {
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
-    [eEthereumNetwork.matic]: {},
-    [eEthereumNetwork.mumbai]: {},
-    [EthereumNetwork.kovan]: {
+    [eEthereumNetwork.kovan]: {
       DAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',
       USDC: '0xe22da380ee6B445bb8273C81944ADEB6E8450422',
       USDT: '0x13512979ADE267AB5100878E2e0f485B568328a4',
@@ -82,9 +80,9 @@ export const lpConfig: ILpConfiguration = {
       UniYFIWETH: '0x5af95ddFACC150a1695A3Fc606459fd0dE57b91f',
       BptWBTCWETH: '0x110569E3261bC0934dA637b019f6f1b6F50ec574',
     },
-    [EthereumNetwork.ropsten]: {
+    [eEthereumNetwork.ropsten]: {
     },
-    [EthereumNetwork.main]: {
+    [eEthereumNetwork.main]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -106,7 +104,7 @@ export const lpConfig: ILpConfiguration = {
       UniYFIWETH: '0x2fDbAdf3C4D5A8666Bc06645B8358ab803996E28',
       BptWBTCWETH: '0x1efF8aF5D577060BA4ac8A29A13525bb0Ee2A3D5',
     },
-    [EthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderlyMain]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
