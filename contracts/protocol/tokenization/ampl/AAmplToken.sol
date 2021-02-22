@@ -45,6 +45,14 @@ interface IAMPLDebtToken {
         Thew new aAMPL supply should be 1080 aAMPL.
      => Say there are 1000 aAMPL, and 200 AMPL is lent out. AMPL contracts by 10%.
         Thew new aAMPL supply should be 920 aAMPL.
+
+    5) When AMPL's supply rebases, only the part of the balance of a user proportional to  the available liquidity ('unborrowed') should rebase.
+      => Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and 
+         20% of the total underlying AMPL is lent out. AMPL expands by 10%.
+         The new aAMPL user balance should be 1080 aAMPL.
+      => Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and 
+         20% of the total underlying AMPL is lent out. AMPL contracts by 10%.
+         The new aAMPL supply should be 920 aAMPL.
 */
 contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
   using WadRayMath for uint256;
