@@ -1,5 +1,5 @@
 // @ts-ignore
-import { eEthereumNetwork, iParamsPerNetwork } from './helpers/types';
+import { eEthereumNetwork, ePolygonNetwork, eXDaiNetwork, iParamsPerNetwork } from './helpers/types';
 
 require('dotenv').config();
 
@@ -24,9 +24,9 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eEthereumNetwork.tenderlyMain]: ALCHEMY_KEY
     ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
     : `https://mainnet.infura.io/v3/${INFURA_KEY}`,
-  [eEthereumNetwork.mumbai]: 'https://rpc-mumbai.maticvigil.com',
-  [eEthereumNetwork.matic]: 'https://rpc-mainnet.matic.network',
-  [eEthereumNetwork.xdai]: 'https://rpc.xdaichain.com/',
+  [ePolygonNetwork.mumbai]: 'https://rpc-mumbai.maticvigil.com',
+  [ePolygonNetwork.matic]: 'https://rpc-mainnet.matic.network',
+  [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
 }
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
@@ -37,7 +37,7 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eEthereumNetwork.hardhat]: 65 * GWEI ,
   [eEthereumNetwork.buidlerevm]: 65 * GWEI ,
   [eEthereumNetwork.tenderlyMain]: 65 * GWEI ,
-  [eEthereumNetwork.mumbai]: 1 * GWEI ,
-  [eEthereumNetwork.matic]: 2 * GWEI ,
-  [eEthereumNetwork.xdai]: 1 * GWEI,
+  [ePolygonNetwork.mumbai]: 1 * GWEI ,
+  [ePolygonNetwork.matic]: 2 * GWEI ,
+  [eXDaiNetwork.xdai]: 1 * GWEI,
 }
