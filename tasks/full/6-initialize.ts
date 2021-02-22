@@ -12,6 +12,7 @@ import {
   getWethAddress,
   getTreasuryAddress,
 } from '../../helpers/configuration';
+import { getWETHGateway } from '../../helpers/contracts-getters';
 import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
@@ -86,7 +87,10 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const lendingPoolAddress = await addressesProvider.getLendingPool();
 
-      const gateWay = await getParamPerNetwork(WethGateway, network);
+      let gateWay = getParamPerNetwork(WethGateway, network);
+      if (gateWay == '') {
+        gateWay = (await getWETHGateway()).address;
+      }
       await authorizeWETHGateway(gateWay, lendingPoolAddress);
     } catch (err) {
       console.error(err);

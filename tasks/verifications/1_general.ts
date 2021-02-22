@@ -89,10 +89,7 @@ task('verify:general', 'Deploy oracles for dev enviroment')
 
       // WETHGateway
       console.log('\n- Verifying  WETHGateway...\n');
-      await verifyContract(wethGateway.address, [
-        await getWethAddress(poolConfig),
-        lendingPoolProxy.address,
-      ]);
+      await verifyContract(wethGateway.address, [await getWethAddress(poolConfig)]);
     }
     // Lending Pool proxy
     console.log('\n- Verifying  Lending Pool Proxy...\n');
