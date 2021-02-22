@@ -3,9 +3,10 @@ import fs from 'fs';
 import { HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
-import { eEthereumNetwork } from './helpers/types';
+import { eEthereumNetwork, iParamsPerNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
-
+import { NETWORKS_RPC_URL, NETWORKS_DEFAULT_GAS } from './helper-hardhat-config';
+ 
 require('dotenv').config();
 
 import '@nomiclabs/hardhat-ethers';
@@ -43,58 +44,25 @@ if (!SKIP_LOAD) {
 
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
-const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
-  const net = networkName === 'main' ? 'mainnet' : networkName;
-  if (networkName == 'matic') return {
-    url: 'https://rpc-mainnet.matic.network',
-    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-    gasMultiplier: DEFAULT_GAS_MUL,
-    gasPrice: 7500000000,
-    chainId: networkId,
-    accounts: {
-      mnemonic: MNEMONIC,
-      path: MNEMONIC_PATH,
-      initialIndex: 0,
-      count: 20,
-    },
-  }
-  if (networkName == 'mumbai') return {
-    url: 'https://rpc-mumbai.maticvigil.com',
-    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-    gasMultiplier: DEFAULT_GAS_MUL,
-    gasPrice: 1 * 1000 * 1000 * 1000,
-    chainId: networkId,
-    accounts: {
-      mnemonic: MNEMONIC,
-      path: MNEMONIC_PATH,
-      initialIndex: 0,
-      count: 20,
-    },
-  }
-  return {
-    url: ALCHEMY_KEY
-      ? `https://eth-${net}.alchemyapi.io/v2/${ALCHEMY_KEY}`
-      : `https://${net}.infura.io/v3/${INFURA_KEY}`,
-    hardfork: HARDFORK,
-    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-    gasMultiplier: DEFAULT_GAS_MUL,
-    gasPrice: DEFAULT_GAS_PRICE,
-    chainId: networkId,
-    accounts: {
-      mnemonic: MNEMONIC,
-      path: MNEMONIC_PATH,
-      initialIndex: 0,
-      count: 20,
-    },
-  };
-};
+const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => ({
+  url: NETWORKS_RPC_URL[networkName],
+  hardfork: HARDFORK,
+  blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+  gasMultiplier: DEFAULT_GAS_MUL,
+  gasPrice: NETWORKS_DEFAULT_GAS[networkName],
+  chainId: networkId,
+  accounts: {
+    mnemonic: MNEMONIC,
+    path: MNEMONIC_PATH,
+    initialIndex: 0,
+    count: 20,
+  },
+});
 
 const mainnetFork = MAINNET_FORK
   ? {
       blockNumber: 11739065,
-      url: ALCHEMY_KEY
-        ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
-        : `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+      url: NETWORKS_RPC_URL['main'],
     }
   : undefined;
 
