@@ -18,20 +18,21 @@ contract WETHGateway is IWETHGateway, Ownable {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   IWETH internal immutable WETH;
-  ILendingPool internal immutable POOL;
-  IAToken internal immutable aWETH;
 
   /**
    * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
    * @param weth Address of the Wrapped Ether contract
-   * @param pool Address of the LendingPool contract
    **/
-  constructor(address weth, address pool) public {
-    ILendingPool poolInstance = ILendingPool(pool);
+  constructor(address weth) public {
     WETH = IWETH(weth);
-    POOL = poolInstance;
-    aWETH = IAToken(poolInstance.getReserveData(weth).aTokenAddress);
-    IWETH(weth).approve(pool, uint256(-1));
+  }
+
+  function authorizeLendingPool(address lendingPool) external onlyOwner {
+    require(
+      ILendingPool(lendingPool).getReserveData(address(WETH)).aTokenAddress != address(0),
+      'AWETH_NOT_SETUP'
+    );
+    WETH.approve(lendingPool, uint256(-1));
   }
 
   /**
@@ -40,9 +41,13 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
-  function depositETH(address onBehalfOf, uint16 referralCode) external payable override {
+  function depositETH(
+    address lendingPool,
+    address onBehalfOf,
+    uint16 referralCode
+  ) external payable override {
     WETH.deposit{value: msg.value}();
-    POOL.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
+    ILendingPool(lendingPool).deposit(address(WETH), msg.value, onBehalfOf, referralCode);
   }
 
   /**
@@ -50,7 +55,12 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param amount amount of aWETH to withdraw and receive native ETH
    * @param to address of the user who will receive native ETH
    */
-  function withdrawETH(uint256 amount, address to) external override {
+  function withdrawETH(
+    address lendingPool,
+    uint256 amount,
+    address to
+  ) external override {
+    IAToken aWETH = IAToken(ILendingPool(lendingPool).getReserveData(address(WETH)).aTokenAddress);
     uint256 userBalance = aWETH.balanceOf(msg.sender);
     uint256 amountToWithdraw = amount;
 
@@ -59,7 +69,7 @@ contract WETHGateway is IWETHGateway, Ownable {
       amountToWithdraw = userBalance;
     }
     aWETH.transferFrom(msg.sender, address(this), amountToWithdraw);
-    POOL.withdraw(address(WETH), amountToWithdraw, address(this));
+    ILendingPool(lendingPool).withdraw(address(WETH), amountToWithdraw, address(this));
     WETH.withdraw(amountToWithdraw);
     _safeTransferETH(to, amountToWithdraw);
   }
@@ -71,12 +81,16 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param onBehalfOf the address for which msg.sender is repaying
    */
   function repayETH(
+    address lendingPool,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
   ) external payable override {
     (uint256 stableDebt, uint256 variableDebt) =
-      Helpers.getUserCurrentDebtMemory(onBehalfOf, POOL.getReserveData(address(WETH)));
+      Helpers.getUserCurrentDebtMemory(
+        onBehalfOf,
+        ILendingPool(lendingPool).getReserveData(address(WETH))
+      );
 
     uint256 paybackAmount =
       DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE
@@ -88,7 +102,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     }
     require(msg.value >= paybackAmount, 'msg.value is less than repayment amount');
     WETH.deposit{value: paybackAmount}();
-    POOL.repay(address(WETH), msg.value, rateMode, onBehalfOf);
+    ILendingPool(lendingPool).repay(address(WETH), msg.value, rateMode, onBehalfOf);
 
     // refund remaining dust eth
     if (msg.value > paybackAmount) _safeTransferETH(msg.sender, msg.value - paybackAmount);
@@ -101,11 +115,18 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards
    */
   function borrowETH(
+    address lendingPool,
     uint256 amount,
     uint256 interesRateMode,
     uint16 referralCode
   ) external override {
-    POOL.borrow(address(WETH), amount, interesRateMode, referralCode, msg.sender);
+    ILendingPool(lendingPool).borrow(
+      address(WETH),
+      amount,
+      interesRateMode,
+      referralCode,
+      msg.sender
+    );
     WETH.withdraw(amount);
     _safeTransferETH(msg.sender, amount);
   }
@@ -150,20 +171,6 @@ contract WETHGateway is IWETHGateway, Ownable {
    */
   function getWETHAddress() external view returns (address) {
     return address(WETH);
-  }
-
-  /**
-   * @dev Get aWETH address used by WETHGateway
-   */
-  function getAWETHAddress() external view returns (address) {
-    return address(aWETH);
-  }
-
-  /**
-   * @dev Get LendingPool address used by WETHGateway
-   */
-  function getLendingPoolAddress() external view returns (address) {
-    return address(POOL);
   }
 
   /**
