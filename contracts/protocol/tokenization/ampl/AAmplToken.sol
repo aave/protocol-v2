@@ -53,6 +53,9 @@ interface IAMPLDebtToken {
     => Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and
        20% of the total underlying AMPL is lent out. AMPL contracts by 10%.
        The new aAMPL supply should be 920 aAMPL.
+
+  On mint and burn a private variable `_totalScaledAMPLSupply` keeps track of
+    the scaled AMPL principal deposited.
 */
 contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
   using WadRayMath for uint256;
@@ -77,6 +80,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
   uint256 private constant AMPL_DECIMALS = 9;
   uint256 private constant INITIAL_AMPL_SUPPLY = 50 * 10**6 * 10**AMPL_DECIMALS;
   uint256 private constant TOTAL_GONS = MAX_UINT256 - (MAX_UINT256 % INITIAL_AMPL_SUPPLY);
+
+  // ampl scaled supply
+  uint256 private _totalScaledAMPLSupply;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -154,6 +160,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
+    // NOTE: this additional book keeping to keep track of 'deposited' AMPLs
+    _totalScaledAMPLSupply = _totalScaledAMPLSupply.sub(amount.mul(getAMPLScalar()));
+
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
     emit Transfer(user, address(0), amount);
@@ -180,6 +189,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
+    // NOTE: this additional book keeping to keep track of 'deposited' AMPLs
+    _totalScaledAMPLSupply = _totalScaledAMPLSupply.add(amount.mul(getAMPLScalar()));
+
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
 
@@ -202,6 +214,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     // In that case, the treasury will experience a (very small) loss, but it
     // wont cause potentially valid transactions to fail.
     _mint(RESERVE_TREASURY_ADDRESS, amount.rayDiv(index));
+
+    // NOTE: this additional book keeping to keep track of 'deposited' AMPLs
+    _totalScaledAMPLSupply = _totalScaledAMPLSupply.add(amount.mul(getAMPLScalar()));
 
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
     emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
@@ -392,6 +407,11 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     _transfer(from, to, amount, true);
   }
 
+
+  // returns the totalAMPLDeposited and the totalScaledAMPLDeposited
+  function getAMPLDepositData() internal override view returns (uint256, uint256) {
+    return (super.totalSupply(), _totalScaledAMPLSupply);
+  }
 
   // returns the totalAMPLBorrowed and the totalScaledAMPLBorrowed
   function getAMPLBorrowData() internal override view returns (uint256, uint256) {

@@ -16,7 +16,6 @@ contract IncentivizedAAmplERC20 is Context, IERC20, IERC20Detailed {
   mapping(address => uint256) private _balances;
   mapping(address => mapping(address => uint256)) private _allowances;
 
-  uint256 internal _totalScaledAMPLDeposited;
   uint256 internal _totalSupply;
 
   string private _name;
@@ -68,7 +67,12 @@ contract IncentivizedAAmplERC20 is Context, IERC20, IERC20Detailed {
     uint256 totalAMPLBorrowed;
     uint256 totalScaledAMPLBorrowed;
     (totalAMPLBorrowed, totalScaledAMPLBorrowed) = getAMPLBorrowData();
-    return _totalScaledAMPLDeposited.sub(totalScaledAMPLBorrowed).div(getAMPLScalar()).add(totalAMPLBorrowed);
+
+    uint256 totalAMPLDeposited;
+    uint256 totalScaledAMPLDeposited;
+    (totalAMPLDeposited, totalScaledAMPLDeposited) = getAMPLDepositData();
+
+    return totalScaledAMPLDeposited.sub(totalScaledAMPLBorrowed).div(getAMPLScalar()).add(totalAMPLBorrowed);
   }
 
   /**
@@ -250,9 +254,6 @@ contract IncentivizedAAmplERC20 is Context, IERC20, IERC20Detailed {
     _totalSupply = _totalSupply.add(_mintAmount);
     _balances[account] = _oldAccountBalance.add(_mintAmount);
 
-    // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.add(amount.mul(getAMPLScalar()));
-
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }
@@ -285,9 +286,6 @@ contract IncentivizedAAmplERC20 is Context, IERC20, IERC20Detailed {
 
     _totalSupply = _totalSupply.sub(burnAmount);
     _balances[account] = _oldAccountBalance.sub(burnAmount, 'AAmplERC20: burn amount exceeds balance');
-
-    // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.sub(amount.mul(getAMPLScalar()));
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
@@ -327,6 +325,8 @@ contract IncentivizedAAmplERC20 is Context, IERC20, IERC20Detailed {
   /**
    * @return The scalar balance multiple
    **/
+
+  function getAMPLDepositData() internal virtual view returns (uint256, uint256) { }
   function getAMPLBorrowData() internal virtual view returns (uint256, uint256) { }
   function getAMPLScalar() internal virtual view returns (uint256) { }
 }
