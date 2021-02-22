@@ -230,7 +230,7 @@ export interface iAssetBase<T> {
   UniWBTCUSDC: T;
   UniYFIWETH: T;
   BptWBTCWETH: T;
-  MATIC: T;
+  WMATIC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -292,7 +292,7 @@ export type iMaticPoolAssets<T> = Pick<
   | 'USDT'
   | 'WBTC'
   | 'WETH'
-  | 'MATIC'
+  | 'WMATIC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -343,7 +343,7 @@ export enum TokenContractId {
   UniWBTCUSDC = 'UniWBTCUSDC',
   UniYFIWETH = 'UniYFIWETH',
   BptWBTCWETH = 'BptWBTCWETH',
-  MATIC = 'MATIC',
+  WMATIC = 'WMATIC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {

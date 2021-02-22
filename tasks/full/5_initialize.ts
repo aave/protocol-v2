@@ -83,9 +83,9 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const wethAddress = await getWethAddress(poolConfig);
       const lendingPoolAddress = await addressesProvider.getLendingPool();
-      if (network != 'mumbai' && network != 'matic') {
-        await deployWETHGateway([wethAddress, lendingPoolAddress]);
-      }
+
+      await deployWETHGateway([wethAddress, lendingPoolAddress]);
+
     } catch (err) {
       console.error(err);
       exit(1);
