@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import { AaveConfig } from '../../markets/aave/index';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { loadPoolConfig, ConfigNames } from '../../helpers/configuration';
+import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
 import { deployWETHGateway } from '../../helpers/contracts-deployments';
 import { DRE } from '../../helpers/misc-utils';
 import { eEthereumNetwork } from '../../helpers/types';
@@ -14,8 +14,8 @@ task(`full-deploy-weth-gateway`, `Deploys the ${CONTRACT_NAME} contract`)
   .setAction(async ({ verify, pool }, localBRE) => {
     await localBRE.run('set-DRE');
     const network = <eEthereumNetwork>localBRE.network.name;
-    const Weth = AaveConfig.ReserveAssets[DRE.network.name].WETH;
     const poolConfig = loadPoolConfig(pool);
+    const Weth = await getWethAddress(poolConfig);
     const { WethGateway } = poolConfig;
 
     if (!localBRE.network.config.chainId) {
