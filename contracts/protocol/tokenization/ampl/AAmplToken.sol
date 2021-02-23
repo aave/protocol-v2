@@ -45,7 +45,7 @@ interface IAMPLDebtToken {
       * Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and
         20% of the total underlying AMPL is lent out. AMPL contracts by 10%.
         The new aAMPL supply should be 920 aAMPL.
-  6) The totalSupply of aAMPL should always be equal to (totalAMPL held in the system) + (totalAMPL borrowed) + (interest)
+  6) The totalSupply of aAMPL should always be equal to (total AMPL held in the system) + (total principal borrowed denominated in AMPL) + (interest)
 
 
   Generic aToken:
