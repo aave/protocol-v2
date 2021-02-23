@@ -257,6 +257,23 @@ export const strategyREN: IReserveParams = {
   reserveFactor: '2000'
 };
 
+export const strategyRENFIL: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '3500'
+};
+
 export const strategySNX: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
