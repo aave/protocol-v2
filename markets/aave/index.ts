@@ -81,7 +81,7 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
       YFI: '0xb7c325266ec274fEb1354021D27FA3E3379D840d',
       ZRX: '0xD0d76886cF8D952ca26177EB7CfDf83bad08C00C',
-      RENFIL: ZERO_ADDRESS,
+      RENFIL: '0x84eCD4B7126ecA78E0880519035f09c731b54C57',
     },
     [EthereumNetwork.ropsten]: {
       AAVE: '',
