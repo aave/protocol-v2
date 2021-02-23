@@ -88,7 +88,7 @@ interface IAMPLDebtToken {
 
     * (_balances[u] . λ) is called userBalanceScaled1, aka principal deposited
 
-    * ( _balances[u] . λ ) . I  is the public userBalance, aka user's principal + interest
+    * (_balances[u] . λ) . I  is the public userBalance, aka user's principal + interest
 
     * I is AAVE's interest rate factor
 
@@ -103,7 +103,7 @@ interface IAMPLDebtToken {
 
     * (_totalSupply[u] . λ) is called totalSupplyScaled1, aka principal deposited
 
-    * ( _totalSupply[u] . λ ) . I  is the public totalSupply, aka principal + interest
+    * (_totalSupply[u] . λ) . I  is the public totalSupply, aka principal + interest
 
     * I is AAVE's interest rate factor
 
@@ -295,6 +295,7 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
     // In that case, the treasury will experience a (very small) loss, but it
     // wont cause potentially valid transactions to fail.
     uint256 amountScaled1 = amount.rayDiv(index);
+    // require(amountScaled1 != 0, Errors.CT_INVALID_MINT_AMOUNT);
 
     ExtData memory e = _fetchExtData();
     _mintScaled1(RESERVE_TREASURY_ADDRESS, amountScaled1, e);
@@ -586,6 +587,7 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   /**
    * @dev balanceOfScaled1 = balanceScaled2 / totalSupplyScaled2 * totalSupplyScaled1
+   *                       = balanceScaled2 . λ
    **/
   function _balanceOfScaled1(uint256 balanceScaled2, uint256 totalSupplyScaled2, uint256 totalSupplyScaled1) private pure returns (uint256) {
     return balanceScaled2.mul(totalSupplyScaled1).div(totalSupplyScaled2);
@@ -593,6 +595,7 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   /**
    * @dev totalSupplyScaled1 = (totalScaledAMPLDeposited - totalScaledAMPLBorrowed) / Λ + totalPrincipalBorrowed
+                             = λ . totalSupplyScaled2
    **/
   function _totalSupplyScaled1(ExtData memory e, uint256 totalScaledAMPLDeposited) private pure returns (uint256) {
     return totalScaledAMPLDeposited
