@@ -22,6 +22,7 @@ import {
   strategyWBTC,
   strategyWETH,
   strategyYFI,
+  strategyRENFIL,
 } from './reservesConfigs';
 
 // ----------------
@@ -53,6 +54,7 @@ export const AaveConfig: IAaveConfiguration = {
     WETH: strategyWETH,
     YFI: strategyYFI,
     ZRX: strategyZRX,
+    RENFIL: strategyRENFIL,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -79,6 +81,7 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
       YFI: '0xb7c325266ec274fEb1354021D27FA3E3379D840d',
       ZRX: '0xD0d76886cF8D952ca26177EB7CfDf83bad08C00C',
+      RENFIL: '0x84eCD4B7126ecA78E0880519035f09c731b54C57',
     },
     [EthereumNetwork.ropsten]: {
       AAVE: '',
@@ -101,6 +104,7 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xc778417e063141139fce010982780140aa0cd5ab',
       YFI: ZERO_ADDRESS,
       ZRX: '0x02d7055704EfF050323A2E5ee4ba05DB2A588959',
+      RENFIL: ZERO_ADDRESS,
     },
     [EthereumNetwork.main]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
@@ -123,6 +127,7 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
+      RENFIL: '0xD5147bc8e386d91Cc5DBE72099DAC6C9b99276F5',
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
@@ -145,6 +150,7 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
+      RENFIL: '0xD5147bc8e386d91Cc5DBE72099DAC6C9b99276F5',
     },
   },
 };
