@@ -14,7 +14,7 @@ import {
 } from '../../helpers/configuration';
 import { getWETHGateway } from '../../helpers/contracts-getters';
 import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
-import { waitForTx } from '../../helpers/misc-utils';
+import { notFalsyOrZeroAddress, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
 import { exit } from 'process';
 import {
@@ -73,12 +73,13 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         LendingPoolCollateralManager,
         network
       );
-      if (!collateralManagerAddress) {
+      if (!notFalsyOrZeroAddress(collateralManagerAddress)) {
         const collateralManager = await deployLendingPoolCollateralManager(verify);
         collateralManagerAddress = collateralManager.address;
       }
       // Seems unnecessary to register the collateral manager in the JSON db
 
+      console.log("\tSetting lending pool collateral manager implementation with address", collateralManagerAddress);
       await waitForTx(
         await addressesProvider.setLendingPoolCollateralManager(collateralManagerAddress)
       );
@@ -88,7 +89,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const lendingPoolAddress = await addressesProvider.getLendingPool();
 
       let gateWay = getParamPerNetwork(WethGateway, network);
-      if (gateWay == '') {
+      if (!notFalsyOrZeroAddress(gateWay)) {
         gateWay = (await getWETHGateway()).address;
       }
       await authorizeWETHGateway(gateWay, lendingPoolAddress);
