@@ -66,6 +66,14 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.mumbai]: undefined,
     [ePolygonNetwork.matic]: undefined,
   },
+  LendingPool: {
+    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.matic]: '0x15Ec48a46d2D26cf4ADf5A39123E4c75e6887fE0',
+  },
+  LendingPoolConfigurator: {
+    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.matic]: '0x268F48E09c72f6008DA50D6465a174C10167918e',
+  },
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
     [ePolygonNetwork.mumbai]: '0x569859d41499B4dDC28bfaA43915051FF0A38a6F', // TEMP

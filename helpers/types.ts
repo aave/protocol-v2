@@ -239,6 +239,7 @@ export interface iAssetBase<T> {
   UniYFIWETH: T;
   BptWBTCWETH: T;
   WMATIC: T;
+  STAKE: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -298,6 +299,11 @@ export type iMaticPoolAssets<T> = Pick<
   'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC'
 >;
 
+export type iXDAIPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'STAKE'
+>;
+
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
@@ -347,6 +353,7 @@ export enum TokenContractId {
   UniYFIWETH = 'UniYFIWETH',
   BptWBTCWETH = 'BptWBTCWETH',
   WMATIC = 'WMATIC',
+  STAKE = 'STAKE',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -494,6 +501,10 @@ export interface ILpConfiguration extends ICommonConfiguration {
 
 export interface IMaticConfiguration extends ICommonConfiguration {
   ReservesConfig: iMaticPoolAssets<IReserveParams>;
+}
+
+export interface IXDAIConfiguration extends ICommonConfiguration {
+  ReservesConfig: iXDAIPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {

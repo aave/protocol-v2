@@ -66,5 +66,6 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   UniYFIWETH: oneEther.multipliedBy('22.407436').toFixed(),
   BptWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
   WMATIC: oneEther.multipliedBy('0.003620948469').toFixed(),
+  STAKE: oneEther.multipliedBy('0.003620948469').toFixed(),
   USD: '5848466240000000',
 };

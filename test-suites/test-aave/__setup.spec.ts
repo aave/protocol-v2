@@ -189,6 +189,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       BptWBTCWETH: mockTokens.BptWBTCWETH.address,
       WMATIC: mockTokens.WMATIC.address,
       USD: USD_ADDRESS,
+      STAKE: mockTokens.STAKE.address,
     },
     fallbackOracle
   );
