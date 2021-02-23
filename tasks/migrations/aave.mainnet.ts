@@ -21,7 +21,7 @@ task('aave:mainnet', 'Deploy development enviroment')
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
 
     console.log('2. Deploy lending pool');
-    await DRE.run('full:deploy-lending-pool');
+    await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
 
     console.log('3. Deploy oracles');
     await DRE.run('full:deploy-oracles', { pool: POOL_NAME });

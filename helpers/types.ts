@@ -464,6 +464,8 @@ export interface ICommonConfiguration {
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
   ProviderRegistryOwner: iParamsPerNetwork<tEthereumAddress | undefined>;
   LendingPoolCollateralManager: iParamsPerNetwork<tEthereumAddress>;
+  LendingPoolConfigurator: iParamsPerNetwork<tEthereumAddress>;
+  LendingPool: iParamsPerNetwork<tEthereumAddress>;
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
