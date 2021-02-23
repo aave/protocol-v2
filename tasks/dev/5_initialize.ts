@@ -8,7 +8,7 @@ import {
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { eEthereumNetwork } from '../../helpers/types';
+import { eNetwork } from '../../helpers/types';
 import {
   ConfigNames,
   getReservesConfigByPool,
@@ -33,7 +33,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, pool }, localBRE) => {
     await localBRE.run('set-DRE');
-    const network = <eEthereumNetwork>localBRE.network.name;
+    const network = <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const {
       ATokenNamePrefix,

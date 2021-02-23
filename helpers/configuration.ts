@@ -4,12 +4,12 @@ import {
   IReserveParams,
   PoolConfiguration,
   ICommonConfiguration,
-  eEthereumNetwork,
+  eNetwork,
 } from './types';
 import { getParamPerPool } from './contracts-helpers';
 import AaveConfig from '../markets/aave';
 import LpConfig from '../markets/lp';
-import MaticConfig from '../markets/matic'
+import MaticConfig from '../markets/matic';
 import { CommonsConfig } from '../markets/aave/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
@@ -28,9 +28,9 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
     case ConfigNames.Aave:
       return AaveConfig;
     case ConfigNames.Lp:
-        return LpConfig;
+      return LpConfig;
     case ConfigNames.Matic:
-        return MaticConfig;
+      return MaticConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -51,7 +51,7 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       [AavePools.lp]: {
         ...LpConfig.ReservesConfig,
       },
-      [AavePools.matic] : {
+      [AavePools.matic]: {
         ...MaticConfig.ReservesConfig,
       },
     },
@@ -62,7 +62,7 @@ export const getGenesisPoolAdmin = async (
   config: ICommonConfiguration
 ): Promise<tEthereumAddress> => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
-  const targetAddress = getParamPerNetwork(config.PoolAdmin, <eEthereumNetwork>currentNetwork);
+  const targetAddress = getParamPerNetwork(config.PoolAdmin, <eNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
@@ -77,7 +77,7 @@ export const getEmergencyAdmin = async (
   config: ICommonConfiguration
 ): Promise<tEthereumAddress> => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
-  const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eEthereumNetwork>currentNetwork);
+  const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
@@ -92,17 +92,17 @@ export const getTreasuryAddress = async (
   config: ICommonConfiguration
 ): Promise<tEthereumAddress> => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
-  return getParamPerNetwork(config.ReserveFactorTreasuryAddress, <eEthereumNetwork>currentNetwork);
+  return getParamPerNetwork(config.ReserveFactorTreasuryAddress, <eNetwork>currentNetwork);
 };
 
 export const getATokenDomainSeparatorPerNetwork = (
-  network: eEthereumNetwork,
+  network: eNetwork,
   config: ICommonConfiguration
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
 
 export const getWethAddress = async (config: ICommonConfiguration) => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
-  const wethAddress = getParamPerNetwork(config.WETH, <eEthereumNetwork>currentNetwork);
+  const wethAddress = getParamPerNetwork(config.WETH, <eNetwork>currentNetwork);
   if (wethAddress) {
     return wethAddress;
   }

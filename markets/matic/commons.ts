@@ -97,7 +97,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   WethGateway: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0x4fAfE6704a78e21Fc43C01bEb153607604F6768a',
   },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '',

@@ -3,7 +3,7 @@ import fs from 'fs';
 import { HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
-import { eEthereumNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
+import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 import { NETWORKS_RPC_URL, NETWORKS_DEFAULT_GAS } from './helper-hardhat-config';
  
@@ -41,7 +41,7 @@ if (!SKIP_LOAD) {
 
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
-const getCommonNetworkConfig = (networkName: eEthereumNetwork | ePolygonNetwork | eXDaiNetwork, networkId: number) => ({
+const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   url: NETWORKS_RPC_URL[networkName],
   hardfork: HARDFORK,
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

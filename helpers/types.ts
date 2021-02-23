@@ -4,6 +4,8 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
+export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
+
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
   kovan = 'kovan',
@@ -16,7 +18,7 @@ export enum eEthereumNetwork {
 
 export enum ePolygonNetwork {
   matic = 'matic',
-  mumbai = 'mumbail',
+  mumbai = 'mumbai',
 }
 
 export enum eXDaiNetwork {
@@ -397,6 +399,11 @@ export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
   | iXDaiParamsPerNetwork<T>;
+
+export interface iParamsPerNetworkAll<T>
+  extends iEthereumParamsPerNetwork<T>,
+    iPolygonParamsPerNetwork<T>,
+    iXDaiParamsPerNetwork<T> {}
 
 export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.coverage]: T;
