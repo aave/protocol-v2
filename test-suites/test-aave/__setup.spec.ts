@@ -28,6 +28,7 @@ import {
   deployFlashLiquidationAdapter,
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
+import { eEthereumNetwork } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
