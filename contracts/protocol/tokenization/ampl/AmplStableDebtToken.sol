@@ -13,11 +13,11 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
   AMPL specific StableDebtToken implementation.
   The AmplStableDebtToken doesn't alter any logic but performs some additional book-keeping.
 
-  On mint and burn a private variable `_totalScaledAMPLSupply` keeps track of
+  On mint and burn a private variable `_totalScaledAMPLBorrowed` keeps track of
     the scaled AMPL principal borrowed.
 
-  * getAMPLBorrowData() returns the total AMPL borrowed and the total scaled AMPL borrowed
-  * getAMPLScalar() fetches AMPL's supply scaling factor
+  * fetchAMPLBorrowData() returns the total AMPL borrowed and the total scaled AMPL borrowed
+  * fetchAMPLScalar() fetches AMPL's supply scaling factor
 
 */
 contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
@@ -25,19 +25,24 @@ contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
 
-  // AMPL constants
-  uint256 private constant MAX_UINT256 = ~uint256(0); // (2^256) - 1
-  uint256 private constant AMPL_DECIMALS = 9;
-  uint256 private constant INITIAL_AMPL_SUPPLY = 50 * 10**6 * 10**AMPL_DECIMALS;
-  uint256 private constant TOTAL_GONS = MAX_UINT256 - (MAX_UINT256 % INITIAL_AMPL_SUPPLY);
-
-  // ampl scaled supply
-  uint256 private _totalScaledAMPLSupply;
-
   uint256 internal _avgStableRate;
   mapping(address => uint40) internal _timestamps;
   mapping(address => uint256) internal _usersStableRate;
   uint40 internal _totalSupplyTimestamp;
+
+  // ---------------------------------------------------------------------------
+  // aAMPL additions
+  // This is a constant on the AMPL contract, which is used to calculate the scalar
+  // which controls the AMPL expansion/contraction.
+  // TOTAL_GONS/ampl.scaledTotalSupply, saving an external call to the AMPL contract
+  // and setting it as a local contract constant.
+  // NOTE: This should line up EXACTLY with the value on the AMPL contract
+  uint256 private constant AMPL_SCALED_TOTAL_SUPPLY = 115792089237316195423570985008687907853269984665640564039457550000000000000000;
+
+  // Keeps track of the 'gons' borrowed from the aave system
+  uint256 private _totalScaledAMPLBorrowed;
+  // ---------------------------------------------------------------------------
+
 
   constructor(
     address pool,
@@ -349,7 +354,7 @@ contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
     _balances[account] = oldAccountBalance.add(amount);
 
     // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalScaledAMPLSupply = _totalScaledAMPLSupply.add(amount.mul(getAMPLScalar()));
+    _totalScaledAMPLBorrowed = _totalScaledAMPLBorrowed.add(amount.mul(fetchAMPLScalar()));
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
@@ -371,25 +376,22 @@ contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
     _balances[account] = oldAccountBalance.sub(amount, Errors.SDT_BURN_EXCEEDS_BALANCE);
 
     // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalScaledAMPLSupply = _totalScaledAMPLSupply.sub(amount.mul(getAMPLScalar()));
+    _totalScaledAMPLBorrowed = _totalScaledAMPLBorrowed.sub(amount.mul(fetchAMPLScalar()));
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }
   }
 
-  /**
-  * @dev Returns the scaledTotalSupply and the scaledTotalScaledAMPLSupply
-  * @return scaledTotalSupply scaledTotalScaledAMPLSupply
-  **/
+  // ---------------------------------------------------------------------------
+  // Custom methods for aAMPL
+
   function getAMPLBorrowData() external view returns (uint256, uint256) {
-    return (super.totalSupply(), _totalScaledAMPLSupply);
+    return (super.totalSupply(), _totalScaledAMPLBorrowed);
   }
 
-  /**
-  * @dev Equivelant to AMPL's internal gonsPerFragment
-  **/
-  function getAMPLScalar() internal view returns (uint256) {
-    return TOTAL_GONS.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
+
+  function fetchAMPLScalar() internal view returns (uint256) {
+    return AMPL_SCALED_TOTAL_SUPPLY.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
   }
 }
