@@ -514,28 +514,28 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
   // AAMPL custom methods
 
   /**
-   * @dev amountScaled2 = (amountScaled1 * totalSupplyScaled2) / totalSupplyScaled1
+   * @dev transferAmountScaled2 = (transferAmountScaled1 * totalSupplyScaled2) / totalSupplyScaled1
    **/
-  function _transferScaled1(address from, address to, uint256 amountScaled1, ExtData memory e) private returns (uint256) {
+  function _transferScaled1(address from, address to, uint256 transferAmountScaled1, ExtData memory e) private returns (uint256) {
     uint256 totalSupplyScaled2 = super.totalSupply();
     uint256 totalSupplyScaled1 = _totalSupplyScaled1(e, _totalScaledAMPLDeposited);
-    uint256 amountScaled2 = amountScaled1.mul(totalSupplyScaled2).div(totalSupplyScaled1);
-    super._transfer(from, to, amountScaled2);
+    uint256 transferAmountScaled2 = transferAmountScaled1.mul(totalSupplyScaled2).div(totalSupplyScaled1);
+    super._transfer(from, to, transferAmountScaled2);
   }
 
   /**
-   * @dev amountScaled2 is mint such that the following holds true
+   * @dev mintAmountScaled2 is mint such that the following holds true
    *
-   * (userBalanceScaled2Before+amountScaled2)/(totalSupplyScaled2Before+amountScaled2)
-   *    = (userBalanceScaled1Before+amountScaled1)/(totalSupplyScaled1Before+amountScaled1)
+   * (userBalanceScaled2Before+mintAmountScaled2)/(totalSupplyScaled2Before+mintAmountScaled2)
+   *    = (userBalanceScaled1Before+mintAmountScaled1)/(totalSupplyScaled1Before+mintAmountScaled1)
    *
-   * totalSupplyScaled1After = totalSupplyScaled1Before+amountScaled1
-   * userBalanceScaled1After = userBalanceScaled1Before+amountScaled1
+   * totalSupplyScaled1After = totalSupplyScaled1Before+mintAmountScaled1
+   * userBalanceScaled1After = userBalanceScaled1Before+mintAmountScaled1
    * otherBalanceScaled1Before = totalSupplyScaled1Before-userBalanceScaled1Before
    *
-   * amountScaled2 = (totalSupplyScaled2Before*userBalanceScaled1After - totalSupplyScaled1After*userBalanceScaled2Before)/otherBalanceScaled1Before
+   * mintAmountScaled2 = (totalSupplyScaled2Before*userBalanceScaled1After - totalSupplyScaled1After*userBalanceScaled2Before)/otherBalanceScaled1Before
    **/
-  function _mintScaled1(address user, uint256 amountScaled1, ExtData memory e) private returns (uint256) {
+  function _mintScaled1(address user, uint256 mintAmountScaled1, ExtData memory e) private returns (uint256) {
     uint256 totalSupplyScaled2Before = super.totalSupply();
     uint256 userBalanceScaled2Before = super.balanceOf(user);
 
@@ -543,30 +543,30 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 userBalanceScaled1Before = _balanceOfScaled1(userBalanceScaled2Before, totalSupplyScaled2Before, totalSupplyScaled1Before);
     uint256 otherBalanceScaled1Before = totalSupplyScaled1Before.sub(userBalanceScaled1Before);
 
-    uint256 totalSupplyScaled1After = totalSupplyScaled1Before.add(amountScaled1);
-    uint256 userBalanceScaled1After = userBalanceScaled1Before.add(amountScaled1);
+    uint256 totalSupplyScaled1After = totalSupplyScaled1Before.add(mintAmountScaled1);
+    uint256 userBalanceScaled1After = userBalanceScaled1Before.add(mintAmountScaled1);
 
-    uint256 amountScaled2 = totalSupplyScaled2Before
+    uint256 mintAmountScaled2 = totalSupplyScaled2Before
       .mul(userBalanceScaled1After)
       .sub(totalSupplyScaled1After.mul(userBalanceScaled2Before))
       .div(otherBalanceScaled1Before);
 
-    _mint(user, amountScaled2);
+    _mint(user, mintAmountScaled2);
   }
 
   /**
-   * @dev amountScaled2 is burnt such that the following holds true
+   * @dev burnAmountScaled2 is burnt such that the following holds true
    *
-   * (userBalanceScaled2Before-amountScaled2)/(totalSupplyScaled2Before-amountScaled2)
-   *    = (userBalanceScaled1Before-amountScaled1)/(totalSupplyScaled1Before-amountScaled1)
+   * (userBalanceScaled2Before-burnAmountScaled2)/(totalSupplyScaled2Before-burnAmountScaled2)
+   *    = (userBalanceScaled1Before-burnAmountScaled1)/(totalSupplyScaled1Before-burnAmountScaled1)
    *
-   * totalSupplyScaled1After = totalSupplyScaled1Before-amountScaled1
-   * userBalanceScaled1After = userBalanceScaled1Before-amountScaled1
+   * totalSupplyScaled1After = totalSupplyScaled1Before-burnAmountScaled1
+   * userBalanceScaled1After = userBalanceScaled1Before-burnAmountScaled1
    * otherBalanceScaled1Before = totalSupplyScaled1Before-userBalanceScaled1Before
    *
-   * amountScaled2 = (totalSupplyScaled1After*userBalanceScaled2Before - totalSupplyScaled2Before*userBalanceScaled1After)/otherBalanceScaled1Before
+   * burnAmountScaled2 = (totalSupplyScaled1After*userBalanceScaled2Before - totalSupplyScaled2Before*userBalanceScaled1After)/otherBalanceScaled1Before
    **/
-  function _burnScaled1(address user, uint256 amountScaled1, ExtData memory e) private returns (uint256) {
+  function _burnScaled1(address user, uint256 burnAmountScaled1, ExtData memory e) private returns (uint256) {
     uint256 totalSupplyScaled2Before = super.totalSupply();
     uint256 userBalanceScaled2Before = super.balanceOf(user);
 
@@ -574,15 +574,15 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 userBalanceScaled1Before = _balanceOfScaled1(userBalanceScaled2Before, totalSupplyScaled2Before, totalSupplyScaled1Before);
     uint256 otherBalanceScaled1Before = totalSupplyScaled1Before.sub(userBalanceScaled1Before);
 
-    uint256 totalSupplyScaled1After = totalSupplyScaled1Before.add(amountScaled1);
-    uint256 userBalanceScaled1After = userBalanceScaled1Before.add(amountScaled1);
+    uint256 totalSupplyScaled1After = totalSupplyScaled1Before.add(burnAmountScaled1);
+    uint256 userBalanceScaled1After = userBalanceScaled1Before.add(burnAmountScaled1);
 
-    uint256 amountScaled2 = totalSupplyScaled1After
+    uint256 burnAmountScaled2 = totalSupplyScaled1After
       .mul(userBalanceScaled2Before)
       .sub(totalSupplyScaled2Before.mul(userBalanceScaled1After))
       .div(otherBalanceScaled1Before);
 
-    _burn(user, amountScaled2);
+    _burn(user, burnAmountScaled2);
   }
 
   /**
