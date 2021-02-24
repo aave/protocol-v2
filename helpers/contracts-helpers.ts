@@ -167,7 +167,7 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
     case eEthereumNetwork.ropsten:
       return ropsten;
     case eEthereumNetwork.main:
-      return mumbai;
+      return main;
     case eEthereumNetwork.tenderlyMain:
       return tenderlyMain;
     case ePolygonNetwork.matic:
