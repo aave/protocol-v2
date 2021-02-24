@@ -183,8 +183,8 @@ export const getParamPerPool = <T>({ proto, amm }: iParamsPerPool<T>, pool: Aave
   switch (pool) {
     case AavePools.proto:
       return proto;
-      case AavePools.amm:
-        return amm;
+    case AavePools.amm:
+      return amm;
     default:
       return proto;
   }
