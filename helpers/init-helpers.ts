@@ -105,7 +105,7 @@ export const initReservesByHelper = async (
   let stableDebtTokenImplementationAddress = '';
   let variableDebtTokenImplementationAddress = '';
 
-  // NOT WORKING ON MATIC
+  // NOT WORKING ON MATIC, DEPLOYING INDIVIDUAL IMPLs INSTEAD
   // const tx1 = await waitForTx(
   //   await stableAndVariableDeployer.initDeployment([ZERO_ADDRESS], ["1"])
   // );
