@@ -235,6 +235,7 @@ export interface iAssetBase<T> {
   UniWBTCUSDC: T;
   UniYFIWETH: T;
   BptWBTCWETH: T;
+  BptBALWETH: T;
   WMATIC: T;
   STAKE: T;
 }
@@ -289,6 +290,7 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniWBTCUSDC'
   | 'UniYFIWETH'
   | 'BptWBTCWETH'
+  | 'BptBALWETH'
 >;
 
 export type iMaticPoolAssets<T> = Pick<
@@ -344,6 +346,7 @@ export enum TokenContractId {
   UniWBTCUSDC = 'UniWBTCUSDC',
   UniYFIWETH = 'UniYFIWETH',
   BptWBTCWETH = 'BptWBTCWETH',
+  BptBALWETH = 'BptBALWETH',
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
 }

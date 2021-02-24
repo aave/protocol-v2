@@ -93,6 +93,9 @@ export const CommonsConfig: ICommonConfiguration = {
     BptWBTCWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
+    BptBALWETH: {
+      borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+    }
   },
   // ----------------
   // COMMON PROTOCOL ADDRESSES ACROSS POOLS
@@ -234,6 +237,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCUSDC: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniYFIWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       BptWBTCWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
+      BptBALWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
     [eEthereumNetwork.ropsten]: {
@@ -258,6 +262,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCUSDC: ZERO_ADDRESS,
       UniYFIWETH: ZERO_ADDRESS,
       BptWBTCWETH: ZERO_ADDRESS,
+      BptBALWETH: ZERO_ADDRESS,
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
     [eEthereumNetwork.tenderlyMain]: {
@@ -280,6 +285,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCUSDC: ZERO_ADDRESS,
       UniYFIWETH: ZERO_ADDRESS,
       BptWBTCWETH: ZERO_ADDRESS,
+      BptBALWETH: ZERO_ADDRESS,
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
   },

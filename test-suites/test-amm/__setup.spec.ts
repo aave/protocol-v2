@@ -186,6 +186,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       UniWBTCUSDC: mockTokens.UniWBTCUSDC.address,
       UniYFIWETH: mockTokens.UniYFIWETH.address,
       BptWBTCWETH: mockTokens.BptWBTCWETH.address,
+      BptBALWETH: mockTokens.BptBALWETH.address,
       WMATIC: mockTokens.WMATIC.address,
       USD: USD_ADDRESS,
       STAKE: mockTokens.STAKE.address,

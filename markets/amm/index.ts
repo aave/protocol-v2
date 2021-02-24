@@ -22,6 +22,7 @@ import {
   strategyUSDCWETH,
   strategyWBTCUSDC,
   strategyYFIWETH,
+  strategyBALWETH,
 } from './reservesConfigs';
 
 // ----------------
@@ -53,6 +54,7 @@ export const AmmConfig: IAmmConfiguration = {
     UniWBTCUSDC: strategyWBTCUSDC,
     UniYFIWETH: strategyYFIWETH,
     BptWBTCWETH: strategyWBTCWETH,
+    BptBALWETH: strategyBALWETH,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -79,6 +81,7 @@ export const AmmConfig: IAmmConfiguration = {
       UniWBTCUSDC: '0x3d35B5F289f55A580e6F85eE22E6a8f57053b966',
       UniYFIWETH: '0x5af95ddFACC150a1695A3Fc606459fd0dE57b91f',
       BptWBTCWETH: '0x110569E3261bC0934dA637b019f6f1b6F50ec574',
+      BptBALWETH: '0xad01D8e0Fa9EAA8Fe76dA30CFb1BCe12707aE6c5',
     },
     [eEthereumNetwork.ropsten]: {
     },
@@ -103,6 +106,7 @@ export const AmmConfig: IAmmConfiguration = {
       UniWBTCUSDC: '0x004375Dff511095CC5A197A54140a24eFEF3A416',
       UniYFIWETH: '0x2fDbAdf3C4D5A8666Bc06645B8358ab803996E28',
       BptWBTCWETH: '0x1efF8aF5D577060BA4ac8A29A13525bb0Ee2A3D5',
+      BptBALWETH: '0x59A19D8c652FA0284f44113D0ff9aBa70bd46fB4',
     },
     [eEthereumNetwork.tenderlyMain]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -125,6 +129,7 @@ export const AmmConfig: IAmmConfiguration = {
       UniWBTCUSDC: '0x004375Dff511095CC5A197A54140a24eFEF3A416',
       UniYFIWETH: '0x2fDbAdf3C4D5A8666Bc06645B8358ab803996E28',
       BptWBTCWETH: '0x1efF8aF5D577060BA4ac8A29A13525bb0Ee2A3D5',
+      BptBALWETH: '0x59A19D8c652FA0284f44113D0ff9aBa70bd46fB4',
     },
   },
 };
