@@ -224,7 +224,7 @@ export interface iAssetBase<T> {
   UniWBTCWETH: T;
   UniAAVEWETH: T;
   UniBATWETH: T;
-  UniUSDCDAI: T;
+  UniDAIUSDC: T;
   UniCRVWETH: T;
   UniLINKWETH: T;
   UniMKRWETH: T;
@@ -278,7 +278,7 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniWBTCWETH'
   | 'UniAAVEWETH'
   | 'UniBATWETH'
-  | 'UniUSDCDAI'
+  | 'UniDAIUSDC'
   | 'UniCRVWETH'
   | 'UniLINKWETH'
   | 'UniMKRWETH'
@@ -333,7 +333,7 @@ export enum TokenContractId {
   UniWBTCWETH = 'UniWBTCWETH',
   UniAAVEWETH = 'UniAAVEWETH',
   UniBATWETH = 'UniBATWETH',
-  UniUSDCDAI = 'UniUSDCDAI',
+  UniDAIUSDC = 'UniDAIUSDC',
   UniCRVWETH = 'UniCRVWETH',
   UniLINKWETH = 'UniLINKWETH',
   UniMKRWETH = 'UniMKRWETH',

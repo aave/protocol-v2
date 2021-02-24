@@ -60,7 +60,7 @@ export const CommonsConfig: ICommonConfiguration = {
     UniBATWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniUSDCDAI: {
+    UniDAIUSDC: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
     UniCRVWETH: {
@@ -223,7 +223,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',  
       UniAAVEWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniBATWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
-      UniUSDCDAI: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
+      UniDAIUSDC: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniCRVWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniLINKWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniMKRWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
@@ -247,7 +247,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: ZERO_ADDRESS,
       UniAAVEWETH: ZERO_ADDRESS,
       UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
+      UniDAIUSDC: ZERO_ADDRESS,
       UniCRVWETH: ZERO_ADDRESS,
       UniLINKWETH: ZERO_ADDRESS,
       UniMKRWETH: ZERO_ADDRESS,
@@ -269,7 +269,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: ZERO_ADDRESS,
       UniAAVEWETH: ZERO_ADDRESS,
       UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
+      UniDAIUSDC: ZERO_ADDRESS,
       UniCRVWETH: ZERO_ADDRESS,
       UniLINKWETH: ZERO_ADDRESS,
       UniMKRWETH: ZERO_ADDRESS,

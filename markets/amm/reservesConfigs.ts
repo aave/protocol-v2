@@ -114,7 +114,7 @@ export const strategyBATWETH: IReserveParams = {
   reserveFactor: '1500'
 };
 
-export const strategyUSDCDAI: IReserveParams = {
+export const strategyDAIUSDC: IReserveParams = {
   strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
