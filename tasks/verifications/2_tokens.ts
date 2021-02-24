@@ -8,26 +8,35 @@ import {
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAddressById,
+  getFirstSigner,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { verifyContract } from '../../helpers/etherscan-verification';
-import { eEthereumNetwork, ICommonConfiguration, IReserveParams } from '../../helpers/types';
+import { eNetwork, ICommonConfiguration, IReserveParams } from '../../helpers/types';
+import { LendingPoolConfiguratorFactory, LendingPoolFactory } from '../../types';
 
 task('verify:tokens', 'Deploy oracles for dev enviroment')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, all, pool }, localDRE) => {
     await localDRE.run('set-DRE');
-    const network = localDRE.network.name as eEthereumNetwork;
+    const network = localDRE.network.name as eNetwork;
     const poolConfig = loadPoolConfig(pool);
     const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
     const treasuryAddress = await getTreasuryAddress(poolConfig);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const lendingPoolProxy = await getLendingPool();
-    const lendingPoolConfigurator = await getLendingPoolConfiguratorProxy();
+    const lendingPoolProxy = LendingPoolFactory.connect(
+      await addressesProvider.getLendingPool(),
+      await getFirstSigner()
+    );
+
+    const lendingPoolConfigurator = LendingPoolConfiguratorFactory.connect(
+      await addressesProvider.getLendingPoolConfigurator(),
+      await getFirstSigner()
+    );
 
     const configs = Object.entries(ReservesConfig) as [string, IReserveParams][];
     for (const entry of Object.entries(getParamPerNetwork(ReserveAssets, network))) {

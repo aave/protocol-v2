@@ -2,7 +2,7 @@ import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
-import { ICommonConfiguration, eEthereumNetwork, SymbolMap } from '../../helpers/types';
+import { ICommonConfiguration, eNetwork, SymbolMap } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
   ConfigNames,
@@ -25,7 +25,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .setAction(async ({ verify, pool }, DRE) => {
     try {
       await DRE.run('set-DRE');
-      const network = <eEthereumNetwork>DRE.network.name;
+      const network = <eNetwork>DRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const {
         ProtocolGlobalParams: { UsdAddress },
@@ -56,7 +56,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         aaveOracle = await deployAaveOracle(
           [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
           verify
-        ); 
+        );
       }
 
       const lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)
@@ -73,7 +73,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         admin
       );
       //}
-      console.log("ORACLES: %s and %s", aaveOracle.address, lendingRateOracle.address);
+      console.log('ORACLES: %s and %s', aaveOracle.address, lendingRateOracle.address);
       // Register the proxy price provider on the addressesProvider
       await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));

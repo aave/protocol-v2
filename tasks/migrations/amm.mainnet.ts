@@ -4,10 +4,10 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('lp:mainnet', 'Deploy development enviroment')
+task('amm:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify }, DRE) => {
-    const POOL_NAME = ConfigNames.Lp;
+    const POOL_NAME = ConfigNames.Amm;
     await DRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
@@ -21,7 +21,7 @@ task('lp:mainnet', 'Deploy development enviroment')
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
 
     console.log('2. Deploy lending pool');
-    await DRE.run('full:deploy-lending-pool');
+    await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
 
     console.log('3. Deploy oracles');
     await DRE.run('full:deploy-oracles', { pool: POOL_NAME });

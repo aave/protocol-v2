@@ -4,6 +4,8 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
+export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
+
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
   kovan = 'kovan',
@@ -12,8 +14,15 @@ export enum eEthereumNetwork {
   coverage = 'coverage',
   hardhat = 'hardhat',
   tenderlyMain = 'tenderlyMain',
+}
+
+export enum ePolygonNetwork {
   matic = 'matic',
   mumbai = 'mumbai',
+}
+
+export enum eXDaiNetwork {
+  xdai = 'xdai',
 }
 
 export enum EthereumNetworkNames {
@@ -22,12 +31,13 @@ export enum EthereumNetworkNames {
   main = 'main',
   matic = 'matic',
   mumbai = 'mumbai',
+  xdai = 'xdai',
 }
 
 export enum AavePools {
   proto = 'proto',
-  lp = 'lp',
   matic = 'matic',
+  amm = 'amm',
 }
 
 export enum eContractid {
@@ -210,16 +220,11 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
-  // LpWETH: T;
-  // LpWBTC: T;
-  // LpDAI: T;
-  // LpUSDC: T;
-  // LpUSDT: T;
   UniDAIWETH: T;
   UniWBTCWETH: T;
   UniAAVEWETH: T;
   UniBATWETH: T;
-  UniUSDCDAI: T;
+  UniDAIUSDC: T;
   UniCRVWETH: T;
   UniLINKWETH: T;
   UniMKRWETH: T;
@@ -231,6 +236,7 @@ export interface iAssetBase<T> {
   UniYFIWETH: T;
   BptWBTCWETH: T;
   WMATIC: T;
+  STAKE: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -272,7 +278,7 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniWBTCWETH'
   | 'UniAAVEWETH'
   | 'UniBATWETH'
-  | 'UniUSDCDAI'
+  | 'UniDAIUSDC'
   | 'UniCRVWETH'
   | 'UniLINKWETH'
   | 'UniMKRWETH'
@@ -288,6 +294,11 @@ export type iLpPoolAssets<T> = Pick<
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC'
+>;
+
+export type iXDAIPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'STAKE'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -318,16 +329,11 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  // LpWETH = 'LpWETH',
-  // LpWBTC = 'LpWBTC',
-  // LpDAI = 'LpDAI',
-  // LpUSDC = 'LpUSDC',
-  // LpUSDT = 'LpUSDT',
   UniDAIWETH = 'UniDAIWETH',
   UniWBTCWETH = 'UniWBTCWETH',
   UniAAVEWETH = 'UniAAVEWETH',
   UniBATWETH = 'UniBATWETH',
-  UniUSDCDAI = 'UniUSDCDAI',
+  UniDAIUSDC = 'UniDAIUSDC',
   UniCRVWETH = 'UniCRVWETH',
   UniLINKWETH = 'UniLINKWETH',
   UniMKRWETH = 'UniMKRWETH',
@@ -339,6 +345,7 @@ export enum TokenContractId {
   UniYFIWETH = 'UniYFIWETH',
   BptWBTCWETH = 'BptWBTCWETH',
   WMATIC = 'WMATIC',
+  STAKE = 'STAKE',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -378,7 +385,17 @@ export interface IMarketRates {
   borrowRate: string;
 }
 
-export interface iParamsPerNetwork<T> {
+export type iParamsPerNetwork<T> =
+  | iEthereumParamsPerNetwork<T>
+  | iPolygonParamsPerNetwork<T>
+  | iXDaiParamsPerNetwork<T>;
+
+export interface iParamsPerNetworkAll<T>
+  extends iEthereumParamsPerNetwork<T>,
+    iPolygonParamsPerNetwork<T>,
+    iXDaiParamsPerNetwork<T> {}
+
+export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.coverage]: T;
   [eEthereumNetwork.buidlerevm]: T;
   [eEthereumNetwork.kovan]: T;
@@ -386,14 +403,21 @@ export interface iParamsPerNetwork<T> {
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
   [eEthereumNetwork.tenderlyMain]: T;
-  [eEthereumNetwork.mumbai]: T;
-  [eEthereumNetwork.matic]: T;
+}
+
+export interface iPolygonParamsPerNetwork<T> {
+  [ePolygonNetwork.matic]: T;
+  [ePolygonNetwork.mumbai]: T;
+}
+
+export interface iXDaiParamsPerNetwork<T> {
+  [eXDaiNetwork.xdai]: T;
 }
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
-  [AavePools.lp]: T;
   [AavePools.matic]: T;
+  [AavePools.amm]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -409,17 +433,6 @@ export enum RateMode {
 
 export interface ObjectString {
   [key: string]: string;
-}
-
-export enum EthereumNetwork {
-  kovan = 'kovan',
-  ropsten = 'ropsten',
-  development = 'development',
-  main = 'main',
-  coverage = 'soliditycoverage',
-  tenderlyMain = 'tenderlyMain',
-  matic = 'matic',
-  mumbai = 'mumbai',
 }
 
 export interface IProtocolGlobalConfig {
@@ -455,6 +468,8 @@ export interface ICommonConfiguration {
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
   ProviderRegistryOwner: iParamsPerNetwork<tEthereumAddress | undefined>;
   LendingPoolCollateralManager: iParamsPerNetwork<tEthereumAddress>;
+  LendingPoolConfigurator: iParamsPerNetwork<tEthereumAddress>;
+  LendingPool: iParamsPerNetwork<tEthereumAddress>;
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
@@ -477,12 +492,16 @@ export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
 }
 
-export interface ILpConfiguration extends ICommonConfiguration {
+export interface IAmmConfiguration extends ICommonConfiguration {
   ReservesConfig: iLpPoolAssets<IReserveParams>;
 }
 
 export interface IMaticConfiguration extends ICommonConfiguration {
   ReservesConfig: iMaticPoolAssets<IReserveParams>;
+}
+
+export interface IXDAIConfiguration extends ICommonConfiguration {
+  ReservesConfig: iXDAIPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {
