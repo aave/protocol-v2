@@ -11,7 +11,7 @@ import {
   getGenesisPoolAdmin,
   getEmergencyAdmin,
 } from '../../helpers/configuration';
-import { eEthereumNetwork } from '../../helpers/types';
+import { eNetwork } from '../../helpers/types';
 import {
   getFirstSigner,
   getLendingPoolAddressesProviderRegistry,
@@ -31,7 +31,7 @@ task(
   .setAction(async ({ verify, pool }, DRE) => {
     await DRE.run('set-DRE');
     let signer: Signer;
-    const network = <eEthereumNetwork>DRE.network.name;
+    const network = <eNetwork>DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const { ProviderId, MarketId } = poolConfig;
 
@@ -81,7 +81,7 @@ task(
 
     // 2. Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(MarketId, verify);
-    
+
     // DISABLE SEC. 3 FOR GOVERNANCE USE!
     // 3. Set the provider at the Registry
     await waitForTx(
@@ -92,7 +92,7 @@ task(
     );
 
     // 4. Set pool admins
-    
+
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 

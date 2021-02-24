@@ -331,6 +331,22 @@ export const deployVariableDebtToken = async (
   return instance;
 };
 
+export const deployGenericStableDebtToken = async () =>
+  withSaveAndVerify(
+    await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
+    eContractid.StableDebtToken,
+    [],
+    false
+  );
+
+export const deployGenericVariableDebtToken = async () =>
+  withSaveAndVerify(
+    await new VariableDebtTokenFactory(await getFirstSigner()).deploy(),
+    eContractid.VariableDebtToken,
+    [],
+    false
+  );
+
 export const deployGenericAToken = async (
   [poolAddress, underlyingAssetAddress, treasuryAddress, incentivesController, name, symbol]: [
     tEthereumAddress,

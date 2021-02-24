@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { IAmmConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
+import { IAmmConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -12,7 +12,7 @@ import {
   strategyDAIWETH,
   strategyAAVEWETH,
   strategyBATWETH,
-  strategyUSDCDAI,
+  strategyDAIUSDC,
   strategyCRVWETH,
   strategyLINKWETH,
   strategyMKRWETH,
@@ -42,7 +42,7 @@ export const AmmConfig: IAmmConfiguration = {
     UniWBTCWETH: strategyWBTCWETH,
     UniAAVEWETH: strategyAAVEWETH,
     UniBATWETH: strategyBATWETH,
-    UniUSDCDAI: strategyUSDCDAI,
+    UniDAIUSDC: strategyDAIUSDC,
     UniCRVWETH: strategyCRVWETH,
     UniLINKWETH: strategyLINKWETH,
     UniMKRWETH: strategyMKRWETH,
@@ -58,7 +58,7 @@ export const AmmConfig: IAmmConfiguration = {
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
-    [EthereumNetwork.kovan]: {
+    [eEthereumNetwork.kovan]: {
       DAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',
       USDC: '0xe22da380ee6B445bb8273C81944ADEB6E8450422',
       USDT: '0x13512979ADE267AB5100878E2e0f485B568328a4',
@@ -68,7 +68,7 @@ export const AmmConfig: IAmmConfiguration = {
       UniWBTCWETH: '0x796d562B1dF5b9dc85A4612187B6f29Ed213d960',
       UniAAVEWETH: '0x657A7B8b46F35C5C6583AEF43824744B236EF826',
       UniBATWETH: '0xf8CEBA8b16579956B3aE4B5D09002a30f873F783',
-      UniUSDCDAI: '0x8e80b7a7531c276dD1dBEC2f1Cc281c11c859e62',
+      UniDAIUSDC: '0x8e80b7a7531c276dD1dBEC2f1Cc281c11c859e62',
       UniCRVWETH: '0x9c31b7538467bF0b01e6d5fA789e66Ce540a521e',
       UniLINKWETH: '0x5Acab7f8B79620ec7127A96E5D8837d2124D5D7c',
       UniMKRWETH: '0xB0C6EC5d58ddbF4cd1e419A56a19924E9904e4Dd',
@@ -80,9 +80,9 @@ export const AmmConfig: IAmmConfiguration = {
       UniYFIWETH: '0x5af95ddFACC150a1695A3Fc606459fd0dE57b91f',
       BptWBTCWETH: '0x110569E3261bC0934dA637b019f6f1b6F50ec574',
     },
-    [EthereumNetwork.ropsten]: {
+    [eEthereumNetwork.ropsten]: {
     },
-    [EthereumNetwork.main]: {
+    [eEthereumNetwork.main]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -92,7 +92,7 @@ export const AmmConfig: IAmmConfiguration = {
       UniWBTCWETH: '0xBb2b8038a1640196FbE3e38816F3e67Cba72D940',
       UniAAVEWETH: '0xDFC14d2Af169B0D36C4EFF567Ada9b2E0CAE044f',
       UniBATWETH: '0xB6909B960DbbE7392D405429eB2b3649752b4838',
-      UniUSDCDAI: '0xAE461cA67B15dc8dc81CE7615e0320dA1A9aB8D5',
+      UniDAIUSDC: '0xAE461cA67B15dc8dc81CE7615e0320dA1A9aB8D5',
       UniCRVWETH: '0x3dA1313aE46132A397D90d95B1424A9A7e3e0fCE',
       UniLINKWETH: '0xa2107FA5B38d9bbd2C461D6EDf11B11A50F6b974',
       UniMKRWETH: '0xC2aDdA861F89bBB333c90c492cB837741916A225',
@@ -104,7 +104,7 @@ export const AmmConfig: IAmmConfiguration = {
       UniYFIWETH: '0x2fDbAdf3C4D5A8666Bc06645B8358ab803996E28',
       BptWBTCWETH: '0x1efF8aF5D577060BA4ac8A29A13525bb0Ee2A3D5',
     },
-    [EthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderlyMain]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -114,7 +114,7 @@ export const AmmConfig: IAmmConfiguration = {
       UniWBTCWETH: '0xBb2b8038a1640196FbE3e38816F3e67Cba72D940',
       UniAAVEWETH: '0xDFC14d2Af169B0D36C4EFF567Ada9b2E0CAE044f',
       UniBATWETH: '0xB6909B960DbbE7392D405429eB2b3649752b4838',
-      UniUSDCDAI: '0xAE461cA67B15dc8dc81CE7615e0320dA1A9aB8D5',
+      UniDAIUSDC: '0xAE461cA67B15dc8dc81CE7615e0320dA1A9aB8D5',
       UniCRVWETH: '0x3dA1313aE46132A397D90d95B1424A9A7e3e0fCE',
       UniLINKWETH: '0xa2107FA5B38d9bbd2C461D6EDf11B11A50F6b974',
       UniMKRWETH: '0xC2aDdA861F89bBB333c90c492cB837741916A225',

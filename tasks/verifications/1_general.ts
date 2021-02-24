@@ -25,14 +25,14 @@ import {
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { verifyContract } from '../../helpers/etherscan-verification';
 import { notFalsyOrZeroAddress } from '../../helpers/misc-utils';
-import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
+import { eNetwork, ICommonConfiguration } from '../../helpers/types';
 
 task('verify:general', 'Verify contracts at Etherscan')
   .addFlag('all', 'Verify all contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ all, pool }, localDRE) => {
     await localDRE.run('set-DRE');
-    const network = localDRE.network.name as eEthereumNetwork;
+    const network = localDRE.network.name as eNetwork;
     const poolConfig = loadPoolConfig(pool);
     const {
       ReserveAssets,
@@ -52,7 +52,7 @@ task('verify:general', 'Verify contracts at Etherscan')
       ? await getLendingPoolAddressesProviderRegistry(registryAddress)
       : await getLendingPoolAddressesProviderRegistry();
     const lendingPoolAddress = await addressesProvider.getLendingPool();
-    const lendingPoolConfiguratorAddress = await addressesProvider.getLendingPoolConfigurator();//getLendingPoolConfiguratorProxy();
+    const lendingPoolConfiguratorAddress = await addressesProvider.getLendingPoolConfigurator(); //getLendingPoolConfiguratorProxy();
     const lendingPoolCollateralManagerAddress = await addressesProvider.getLendingPoolCollateralManager();
 
     if (all) {
@@ -61,13 +61,21 @@ task('verify:general', 'Verify contracts at Etherscan')
         ? await getLendingPoolImpl(lendingPoolImplAddress)
         : await getLendingPoolImpl();
 
-      const lendingPoolConfiguratorImplAddress = getParamPerNetwork(LendingPoolConfigurator, network);
+      const lendingPoolConfiguratorImplAddress = getParamPerNetwork(
+        LendingPoolConfigurator,
+        network
+      );
       const lendingPoolConfiguratorImpl = notFalsyOrZeroAddress(lendingPoolConfiguratorImplAddress)
         ? await getLendingPoolConfiguratorImpl(lendingPoolConfiguratorImplAddress)
         : await getLendingPoolConfiguratorImpl();
 
-      const lendingPoolCollateralManagerImplAddress = getParamPerNetwork(LendingPoolCollateralManager, network);
-      const lendingPoolCollateralManagerImpl = notFalsyOrZeroAddress(lendingPoolCollateralManagerImplAddress)
+      const lendingPoolCollateralManagerImplAddress = getParamPerNetwork(
+        LendingPoolCollateralManager,
+        network
+      );
+      const lendingPoolCollateralManagerImpl = notFalsyOrZeroAddress(
+        lendingPoolCollateralManagerImplAddress
+      )
         ? await getLendingPoolCollateralManagerImpl(lendingPoolCollateralManagerImplAddress)
         : await getLendingPoolCollateralManagerImpl();
 

@@ -1,50 +1,7 @@
 import BigNumber from 'bignumber.js';
-import { oneEther, oneRay, RAY, ZERO_ADDRESS } from '../../helpers/constants';
-import { ICommonConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
+import { oneEther, oneRay, RAY, ZERO_ADDRESS, MOCK_CHAINLINK_AGGREGATORS_PRICES } from '../../helpers/constants';
+import { ICommonConfiguration, eEthereumNetwork } from '../../helpers/types';
 
-const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
-  AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),
-  BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
-  BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
-  DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  ENJ: oneEther.multipliedBy('0.00029560').toFixed(),
-  KNC: oneEther.multipliedBy('0.001072').toFixed(),
-  LINK: oneEther.multipliedBy('0.009955').toFixed(),
-  MANA: oneEther.multipliedBy('0.000158').toFixed(),
-  MKR: oneEther.multipliedBy('2.508581').toFixed(),
-  REN: oneEther.multipliedBy('0.00065133').toFixed(),
-  SNX: oneEther.multipliedBy('0.00442616').toFixed(),
-  SUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),
-  TUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),
-  UNI: oneEther.multipliedBy('0.00536479').toFixed(),
-  USDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
-  USDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  WETH: oneEther.toFixed(),
-  WBTC: oneEther.multipliedBy('47.332685').toFixed(),
-  YFI: oneEther.multipliedBy('22.407436').toFixed(),
-  ZRX: oneEther.multipliedBy('0.001151').toFixed(),
-  // DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  // USDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
-  // USDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  // WBTC: oneEther.multipliedBy('47.332685').toFixed(),
-  // WETH: oneEther.toFixed(),
-  UniDAIWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniAAVEWETH: oneEther.multipliedBy('0.003620948469').toFixed(),
-  UniBATWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniUSDCDAI: oneEther.multipliedBy('22.407436').toFixed(),
-  UniCRVWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniLINKWETH: oneEther.multipliedBy('0.009955').toFixed(),
-  UniMKRWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniRENWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniSNXWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniUNIWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniUSDCWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  UniWBTCUSDC: oneEther.multipliedBy('22.407436').toFixed(),
-  UniYFIWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  BptWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
-  USD: '5848466240000000',
-};
 // ----------------
 // PROTOCOL GLOBAL PARAMS
 // ----------------
@@ -55,7 +12,7 @@ export const CommonsConfig: ICommonConfiguration = {
   StableDebtTokenNamePrefix: 'Aave AMM Market stable debt',
   VariableDebtTokenNamePrefix: 'Aave AMM Market variable debt',
   SymbolPrefix: 'Amm',
-  ProviderId: 0,
+  ProviderId: 0, // Overriden in index.ts
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '5848466240000000',
@@ -103,7 +60,7 @@ export const CommonsConfig: ICommonConfiguration = {
     UniBATWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniUSDCDAI: {
+    UniDAIUSDC: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
     UniCRVWETH: {
@@ -184,8 +141,8 @@ export const CommonsConfig: ICommonConfiguration = {
   LendingRateOracle: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
-    [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '',//'0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a', // Need to re-deploy because of onlyOwner
+    [eEthereumNetwork.buidlerevm]: '',// Updated to match Kovan deployment
+    [eEthereumNetwork.kovan]: '0xd00Bd28FAdDa9d5658D1D4e0c151973146C7A533',//'0xE48F95873855bfd97BF89572DDf5cBC44D9c545b'
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
     [eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',  // Need to re-deploy because of onlyOwner
     [eEthereumNetwork.tenderlyMain]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
@@ -221,7 +178,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.kovan]: '0x1c4A1cC35A477aa1cF35DF671d93ACc04d8131E0',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderlyMain]: '',
@@ -230,34 +187,34 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.hardhat]: '',
-    [EthereumNetwork.kovan]: '0x971efe90088f21dc6a36f610ffed77fc19710708',
-    [EthereumNetwork.ropsten]: '0xeba2ea67942b8250d870b12750b594696d02fc9c',
-    [EthereumNetwork.main]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
-    [EthereumNetwork.tenderlyMain]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
+    [eEthereumNetwork.kovan]: '0x971efe90088f21dc6a36f610ffed77fc19710708',
+    [eEthereumNetwork.ropsten]: '0xeba2ea67942b8250d870b12750b594696d02fc9c',
+    [eEthereumNetwork.main]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
+    [eEthereumNetwork.tenderlyMain]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
   },
   AaveOracle: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [EthereumNetwork.kovan]: '0x8fb777d67e9945e2c01936e319057f9d41d559e6', // Need to re-deploy because of onlyOwner
-    [EthereumNetwork.ropsten]: ZERO_ADDRESS,
-    [EthereumNetwork.main]: '',//'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',  // Need to re-deploy because of onlyOwner
-    [EthereumNetwork.tenderlyMain]: '0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
+    [eEthereumNetwork.kovan]: '0x8fb777d67e9945e2c01936e319057f9d41d559e6', // Need to re-deploy because of onlyOwner
+    [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
+    [eEthereumNetwork.main]: '',//'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',  // Need to re-deploy because of onlyOwner
+    [eEthereumNetwork.tenderlyMain]: '0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
   },
   FallbackOracle: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [EthereumNetwork.kovan]: '0x50913E8E1c650E790F8a1E741FF9B1B1bB251dfe',
-    [EthereumNetwork.ropsten]: '0xAD1a978cdbb8175b2eaeC47B01404f8AEC5f4F0d',
-    [EthereumNetwork.main]: ZERO_ADDRESS,
-    [EthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
+    [eEthereumNetwork.kovan]: '0x50913E8E1c650E790F8a1E741FF9B1B1bB251dfe',
+    [eEthereumNetwork.ropsten]: '0xAD1a978cdbb8175b2eaeC47B01404f8AEC5f4F0d',
+    [eEthereumNetwork.main]: ZERO_ADDRESS,
+    [eEthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
   },
   ChainlinkAggregator: {
     [eEthereumNetwork.coverage]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.buidlerevm]: {},
-    [EthereumNetwork.kovan]: {
+    [eEthereumNetwork.kovan]: {
       USDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
       WBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
       USDC: '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838',
@@ -266,7 +223,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',  
       UniAAVEWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniBATWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
-      UniUSDCDAI: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
+      UniDAIUSDC: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniCRVWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniLINKWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniMKRWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
@@ -279,9 +236,9 @@ export const CommonsConfig: ICommonConfiguration = {
       BptWBTCWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
-    [EthereumNetwork.ropsten]: {
+    [eEthereumNetwork.ropsten]: {
     },
-    [EthereumNetwork.main]: {
+    [eEthereumNetwork.main]: {
       USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
@@ -290,7 +247,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: ZERO_ADDRESS,
       UniAAVEWETH: ZERO_ADDRESS,
       UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
+      UniDAIUSDC: ZERO_ADDRESS,
       UniCRVWETH: ZERO_ADDRESS,
       UniLINKWETH: ZERO_ADDRESS,
       UniMKRWETH: ZERO_ADDRESS,
@@ -303,7 +260,7 @@ export const CommonsConfig: ICommonConfiguration = {
       BptWBTCWETH: ZERO_ADDRESS,
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
-    [EthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderlyMain]: {
       USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
@@ -312,7 +269,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: ZERO_ADDRESS,
       UniAAVEWETH: ZERO_ADDRESS,
       UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
+      UniDAIUSDC: ZERO_ADDRESS,
       UniCRVWETH: ZERO_ADDRESS,
       UniLINKWETH: ZERO_ADDRESS,
       UniMKRWETH: ZERO_ADDRESS,
@@ -330,10 +287,10 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.buidlerevm]: {},
-    [EthereumNetwork.main]: {},
-    [EthereumNetwork.kovan]: {},
-    [EthereumNetwork.ropsten]: {},
-    [EthereumNetwork.tenderlyMain]: {},
+    [eEthereumNetwork.main]: {},
+    [eEthereumNetwork.kovan]: {},
+    [eEthereumNetwork.ropsten]: {},
+    [eEthereumNetwork.tenderlyMain]: {},
   },
   ReservesConfig: {},
   ATokenDomainSeparator: {

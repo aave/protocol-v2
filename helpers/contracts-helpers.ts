@@ -11,6 +11,13 @@ import {
   AavePools,
   iParamsPerNetwork,
   iParamsPerPool,
+  ePolygonNetwork,
+  eXDaiNetwork,
+  eNetwork,
+  iParamsPerNetworkAll,
+  iEthereumParamsPerNetwork,
+  iPolygonParamsPerNetwork,
+  iXDaiParamsPerNetwork,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
@@ -132,10 +139,17 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
   return bytecode;
 };
 
-export const getParamPerNetwork = <T>(
-  { kovan, ropsten, main, buidlerevm, coverage, tenderlyMain }: iParamsPerNetwork<T>,
-  network: eEthereumNetwork
-) => {
+export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
+  const {
+    main,
+    ropsten,
+    kovan,
+    coverage,
+    buidlerevm,
+    tenderlyMain,
+  } = param as iEthereumParamsPerNetwork<T>;
+  const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
+  const { xdai } = param as iXDaiParamsPerNetwork<T>;
   const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
   if (MAINNET_FORK) {
     return main;
@@ -156,15 +170,23 @@ export const getParamPerNetwork = <T>(
       return main;
     case eEthereumNetwork.tenderlyMain:
       return tenderlyMain;
+    case ePolygonNetwork.matic:
+      return matic;
+    case ePolygonNetwork.mumbai:
+      return mumbai;
+    case eXDaiNetwork.xdai:
+      return xdai;
   }
 };
 
-export const getParamPerPool = <T>({ proto, amm }: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, pool: AavePools) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
-      case AavePools.amm:
-        return amm;
+    case AavePools.amm:
+      return amm;
+    case AavePools.matic:
+      return matic;
     default:
       return proto;
   }

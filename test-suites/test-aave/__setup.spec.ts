@@ -176,7 +176,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       UniWBTCWETH: mockTokens.UniWBTCWETH.address,
       UniAAVEWETH: mockTokens.UniAAVEWETH.address,
       UniBATWETH: mockTokens.UniBATWETH.address,
-      UniUSDCDAI: mockTokens.UniUSDCDAI.address,
+      UniDAIUSDC: mockTokens.UniDAIUSDC.address,
       UniCRVWETH: mockTokens.UniCRVWETH.address,
       UniLINKWETH: mockTokens.UniLINKWETH.address,
       UniMKRWETH: mockTokens.UniMKRWETH.address,
@@ -187,7 +187,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       UniWBTCUSDC: mockTokens.UniWBTCUSDC.address,
       UniYFIWETH: mockTokens.UniYFIWETH.address,
       BptWBTCWETH: mockTokens.BptWBTCWETH.address,
+      WMATIC: mockTokens.WMATIC.address,
       USD: USD_ADDRESS,
+      STAKE: mockTokens.STAKE.address,
     },
     fallbackOracle
   );
