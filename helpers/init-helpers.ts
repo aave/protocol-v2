@@ -105,7 +105,7 @@ export const initReservesByHelper = async (
   let stableDebtTokenImplementationAddress = '';
   let variableDebtTokenImplementationAddress = '';
 
-  // NOT WORKING ON MATIC
+  // NOT WORKING ON MATIC, DEPLOYING INDIVIDUAL IMPLs INSTEAD
   // const tx1 = await waitForTx(
   //   await stableAndVariableDeployer.initDeployment([ZERO_ADDRESS], ["1"])
   // );
@@ -216,7 +216,7 @@ export const initReservesByHelper = async (
   const chunkedInitInputParams = chunk(initInputParams, initChunks);
 
   const configurator = await getLendingPoolConfiguratorProxy();
-  await waitForTx(await addressProvider.setPoolAdmin(admin));
+  //await waitForTx(await addressProvider.setPoolAdmin(admin));
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
@@ -386,7 +386,7 @@ export const initTokenReservesByHelper = async (
   const poolAddress = await addressProvider.getLendingPool();
 
   // Set aTokenAndRatesDeployer as temporal admin
-  await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
+  //await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
   // CHUNK CONFIGURATION
   const initChunks = 4;
@@ -562,7 +562,7 @@ export const initTokenReservesByHelper = async (
   const chunkedInitInputParams = chunk(initInputParams, initChunks);
 
   const configurator = await getLendingPoolConfiguratorProxy();
-  await waitForTx(await addressProvider.setPoolAdmin(admin));
+  //await waitForTx(await addressProvider.setPoolAdmin(admin));
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
@@ -575,8 +575,8 @@ export const initTokenReservesByHelper = async (
   }
 
   // Set deployer back as admin
-  await waitForTx(await addressProvider.setPoolAdmin(admin));
-  return gasUsage; // No longer relevant
+  //await waitForTx(await addressProvider.setPoolAdmin(admin));
+  return gasUsage;  // No longer relevant
 };
 
 // Function deprecated

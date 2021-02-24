@@ -36,8 +36,8 @@ export enum EthereumNetworkNames {
 
 export enum AavePools {
   proto = 'proto',
-  lp = 'lp',
   matic = 'matic',
+  amm = 'amm',
 }
 
 export enum eContractid {
@@ -220,16 +220,11 @@ export interface iAssetBase<T> {
   USD: T;
   REN: T;
   ENJ: T;
-  // LpWETH: T;
-  // LpWBTC: T;
-  // LpDAI: T;
-  // LpUSDC: T;
-  // LpUSDT: T;
   UniDAIWETH: T;
   UniWBTCWETH: T;
   UniAAVEWETH: T;
   UniBATWETH: T;
-  UniUSDCDAI: T;
+  UniDAIUSDC: T;
   UniCRVWETH: T;
   UniLINKWETH: T;
   UniMKRWETH: T;
@@ -283,7 +278,7 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniWBTCWETH'
   | 'UniAAVEWETH'
   | 'UniBATWETH'
-  | 'UniUSDCDAI'
+  | 'UniDAIUSDC'
   | 'UniCRVWETH'
   | 'UniLINKWETH'
   | 'UniMKRWETH'
@@ -334,16 +329,11 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  // LpWETH = 'LpWETH',
-  // LpWBTC = 'LpWBTC',
-  // LpDAI = 'LpDAI',
-  // LpUSDC = 'LpUSDC',
-  // LpUSDT = 'LpUSDT',
   UniDAIWETH = 'UniDAIWETH',
   UniWBTCWETH = 'UniWBTCWETH',
   UniAAVEWETH = 'UniAAVEWETH',
   UniBATWETH = 'UniBATWETH',
-  UniUSDCDAI = 'UniUSDCDAI',
+  UniDAIUSDC = 'UniDAIUSDC',
   UniCRVWETH = 'UniCRVWETH',
   UniLINKWETH = 'UniLINKWETH',
   UniMKRWETH = 'UniMKRWETH',
@@ -426,8 +416,8 @@ export interface iXDaiParamsPerNetwork<T> {
 
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
-  [AavePools.lp]: T;
   [AavePools.matic]: T;
+  [AavePools.amm]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -502,7 +492,7 @@ export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
 }
 
-export interface ILpConfiguration extends ICommonConfiguration {
+export interface IAmmConfiguration extends ICommonConfiguration {
   ReservesConfig: iLpPoolAssets<IReserveParams>;
 }
 

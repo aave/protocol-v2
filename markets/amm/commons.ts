@@ -60,7 +60,7 @@ export const CommonsConfig: ICommonConfiguration = {
     UniBATWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-    UniUSDCDAI: {
+    UniDAIUSDC: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
     UniCRVWETH: {
@@ -141,8 +141,8 @@ export const CommonsConfig: ICommonConfiguration = {
   LendingRateOracle: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
-    [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '',//'0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a', // Need to re-deploy because of onlyOwner
+    [eEthereumNetwork.buidlerevm]: '',// Updated to match Kovan deployment
+    [eEthereumNetwork.kovan]: '0xd00Bd28FAdDa9d5658D1D4e0c151973146C7A533',//'0xE48F95873855bfd97BF89572DDf5cBC44D9c545b'
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
     [eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',  // Need to re-deploy because of onlyOwner
     [eEthereumNetwork.tenderlyMain]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
@@ -178,7 +178,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.kovan]: '0x1c4A1cC35A477aa1cF35DF671d93ACc04d8131E0',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderlyMain]: '',
@@ -223,7 +223,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',  
       UniAAVEWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniBATWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
-      UniUSDCDAI: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
+      UniDAIUSDC: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniCRVWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniLINKWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
       UniMKRWETH: '0x5699302154A020FB1DE2B1d39f4c73785A235d8F',
@@ -247,7 +247,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: ZERO_ADDRESS,
       UniAAVEWETH: ZERO_ADDRESS,
       UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
+      UniDAIUSDC: ZERO_ADDRESS,
       UniCRVWETH: ZERO_ADDRESS,
       UniLINKWETH: ZERO_ADDRESS,
       UniMKRWETH: ZERO_ADDRESS,
@@ -269,7 +269,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCWETH: ZERO_ADDRESS,
       UniAAVEWETH: ZERO_ADDRESS,
       UniBATWETH: ZERO_ADDRESS,
-      UniUSDCDAI: ZERO_ADDRESS,
+      UniDAIUSDC: ZERO_ADDRESS,
       UniCRVWETH: ZERO_ADDRESS,
       UniLINKWETH: ZERO_ADDRESS,
       UniMKRWETH: ZERO_ADDRESS,

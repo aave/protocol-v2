@@ -8,7 +8,7 @@ import { getReservesConfigByPool } from '../../helpers/configuration';
 import { AavePools, iLpPoolAssets, IReserveParams } from '../../helpers/types';
 import { executeStory } from './helpers/scenario-engine';
 
-const scenarioFolder = './test-suites/test-lp/helpers/scenarios/';
+const scenarioFolder = './test-suites/test-amm/helpers/scenarios/';
 
 const selectedScenarios: string[] = [];
 
@@ -25,7 +25,7 @@ fs.readdirSync(scenarioFolder).forEach((file) => {
       actionsConfiguration.skipIntegrityCheck = false; //set this to true to execute solidity-coverage
 
       calculationsConfiguration.reservesParams = <iLpPoolAssets<IReserveParams>>(
-        getReservesConfigByPool(AavePools.lp)
+        getReservesConfigByPool(AavePools.amm)
       );
     });
     after('Reset', () => {

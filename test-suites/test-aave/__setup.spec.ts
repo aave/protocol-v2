@@ -28,6 +28,7 @@ import {
   deployFlashLiquidationAdapter,
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
+import { eEthereumNetwork } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
@@ -175,7 +176,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       UniWBTCWETH: mockTokens.UniWBTCWETH.address,
       UniAAVEWETH: mockTokens.UniAAVEWETH.address,
       UniBATWETH: mockTokens.UniBATWETH.address,
-      UniUSDCDAI: mockTokens.UniUSDCDAI.address,
+      UniDAIUSDC: mockTokens.UniDAIUSDC.address,
       UniCRVWETH: mockTokens.UniCRVWETH.address,
       UniLINKWETH: mockTokens.UniLINKWETH.address,
       UniMKRWETH: mockTokens.UniMKRWETH.address,

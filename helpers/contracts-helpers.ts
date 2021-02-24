@@ -167,7 +167,7 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
     case eEthereumNetwork.ropsten:
       return ropsten;
     case eEthereumNetwork.main:
-      return mumbai;
+      return main;
     case eEthereumNetwork.tenderlyMain:
       return tenderlyMain;
     case ePolygonNetwork.matic:
@@ -179,12 +179,14 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
   }
 };
 
-export const getParamPerPool = <T>({ proto, lp }: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, pool: AavePools) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
-    case AavePools.lp:
-      return lp;
+    case AavePools.amm:
+      return amm;
+    case AavePools.matic:
+      return matic;
     default:
       return proto;
   }

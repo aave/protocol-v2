@@ -46,7 +46,7 @@ import {
 } from '../../helpers/oracles-helpers';
 import { DRE, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
-import LpConfig from '../../markets/lp';
+import AmmConfig from '../../markets/amm';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getLendingPool,
@@ -55,16 +55,16 @@ import {
 } from '../../helpers/contracts-getters';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 
-const MOCK_USD_PRICE_IN_WEI = LpConfig.ProtocolGlobalParams.MockUsdPriceInWei;
-const ALL_ASSETS_INITIAL_PRICES = LpConfig.Mocks.AllAssetsInitialPrices;
-const USD_ADDRESS = LpConfig.ProtocolGlobalParams.UsdAddress;
-const MOCK_CHAINLINK_AGGREGATORS_PRICES = LpConfig.Mocks.AllAssetsInitialPrices;
-const LENDING_RATE_ORACLE_RATES_COMMON = LpConfig.LendingRateOracleRatesCommon;
+const MOCK_USD_PRICE_IN_WEI = AmmConfig.ProtocolGlobalParams.MockUsdPriceInWei;
+const ALL_ASSETS_INITIAL_PRICES = AmmConfig.Mocks.AllAssetsInitialPrices;
+const USD_ADDRESS = AmmConfig.ProtocolGlobalParams.UsdAddress;
+const MOCK_CHAINLINK_AGGREGATORS_PRICES = AmmConfig.Mocks.AllAssetsInitialPrices;
+const LENDING_RATE_ORACLE_RATES_COMMON = AmmConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked } = {};
 
-  const lpConfigData = getReservesConfigByPool(AavePools.lp);
+  const ammConfigData = getReservesConfigByPool(AavePools.amm);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
     if (tokenSymbol === 'WETH') {
@@ -74,7 +74,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
     }
     let decimals = 18;
 
-    let configData = (<any>lpConfigData)[tokenSymbol];
+    let configData = (<any>ammConfigData)[tokenSymbol];
 
     if (!configData) {
       decimals = 18;
@@ -97,7 +97,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const mockTokens = await deployAllMockTokens(deployer);
 
-  const addressesProvider = await deployLendingPoolAddressesProvider(LpConfig.MarketId);
+  const addressesProvider = await deployLendingPoolAddressesProvider(AmmConfig.MarketId);
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
   //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
@@ -175,7 +175,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       UniWBTCWETH: mockTokens.UniWBTCWETH.address,
       UniAAVEWETH: mockTokens.UniAAVEWETH.address,
       UniBATWETH: mockTokens.UniBATWETH.address,
-      UniUSDCDAI: mockTokens.UniUSDCDAI.address,
+      UniDAIUSDC: mockTokens.UniDAIUSDC.address,
       UniCRVWETH: mockTokens.UniCRVWETH.address,
       UniLINKWETH: mockTokens.UniLINKWETH.address,
       UniMKRWETH: mockTokens.UniMKRWETH.address,
@@ -229,7 +229,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     aaveAdmin
   );
 
-  const reservesParams = getReservesConfigByPool(AavePools.lp);
+  const reservesParams = getReservesConfigByPool(AavePools.amm);
 
   const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address);
 
@@ -238,7 +238,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   console.log('Initialize configuration');
 
-  const config = loadPoolConfig(ConfigNames.Lp);
+  const config = loadPoolConfig(ConfigNames.Amm);
   
   const { 
     ATokenNamePrefix,
@@ -294,7 +294,7 @@ before(async () => {
   const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 
   if (MAINNET_FORK) {
-    await rawBRE.run('lp:mainnet');
+    await rawBRE.run('amm:mainnet');
   } else {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);

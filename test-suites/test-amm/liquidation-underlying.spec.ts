@@ -7,7 +7,7 @@ import { makeSuite } from './helpers/make-suite';
 import { ProtocolErrors, RateMode } from '../../helpers/types';
 import { calcExpectedVariableDebtTokenBalance } from './helpers/utils/calculations';
 import { getReserveData, getUserData } from './helpers/utils/helpers';
-import { CommonsConfig } from '../../markets/lp/commons';
+import { CommonsConfig } from '../../markets/amm/commons';
 
 import { parseEther } from 'ethers/lib/utils';
 
