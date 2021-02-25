@@ -243,7 +243,7 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     ExtData memory e = _fetchExtData();
     _burnScaled(RESERVE_TREASURY_ADDRESS, amountScaled, e);
-    _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.add(amount.mul(e.AMPLScalar));
+    _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.sub(amount.mul(e.AMPLScalar));
 
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
@@ -574,8 +574,8 @@ contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 userBalanceScaledBefore = _balanceOfScaled(userBalanceInternalBefore, totalSupplyInternalBefore, totalSupplyScaledBefore);
     uint256 otherBalanceScaledBefore = totalSupplyScaledBefore.sub(userBalanceScaledBefore);
 
-    uint256 totalSupplyScaledAfter = totalSupplyScaledBefore.add(burnAmountScaled);
-    uint256 userBalanceScaledAfter = userBalanceScaledBefore.add(burnAmountScaled);
+    uint256 totalSupplyScaledAfter = totalSupplyScaledBefore.sub(burnAmountScaled);
+    uint256 userBalanceScaledAfter = userBalanceScaledBefore.sub(burnAmountScaled);
 
     uint256 burnAmountInternal = totalSupplyScaledAfter
       .mul(userBalanceInternalBefore)
