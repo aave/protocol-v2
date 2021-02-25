@@ -128,7 +128,7 @@ interface IAMPLDebtToken {
     * On mint and burn a private variable `_totalScaledAMPLDeposited`
       keeps track of the scaled AMPL principal deposited.
  */
-contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
+contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
