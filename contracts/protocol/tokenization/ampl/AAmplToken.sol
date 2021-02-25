@@ -242,7 +242,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
 
     ExtData memory e = _fetchExtData();
-    _burnScaled(RESERVE_TREASURY_ADDRESS, amountScaled, e);
+    _burnScaled(user, amountScaled, e);
     _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.sub(amount.mul(e.AMPLScalar));
 
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
