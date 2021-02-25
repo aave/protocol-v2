@@ -9,55 +9,126 @@ import {IAToken} from '../../../interfaces/IAToken.sol';
 import {WadRayMath} from '../../libraries/math/WadRayMath.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
-import {IncentivizedAAmplERC20} from './IncentivizedAAmplERC20.sol';
+import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {DataTypes} from '../../libraries/types/DataTypes.sol';
 
 interface IAMPLDebtToken {
   function getAMPLBorrowData() external view returns (uint256, uint256);
 }
 
-/*
-  AMPL specific AToken implementation.
+/**
 
-  The AAmplToken inherits from `IncentivizedAAmplERC20` rather than the `IncentivizedERC20`
-  which the generic token inherits from. The AAmplToken also stores references to the STABLE_DEBT_TOKEN,
-  and the VARIABLE_DEBT_TOKEN contracts to calculate the total Principal borrowed (getAMPLBorrowData()),
-  at any time.
+  @title Aave-AMPL ERC20 AToken
+  @dev Implementation of the interest bearing AMPL token for the Aave protocol
+  @author AmpleforthOrg
 
   The AMPL AToken externally behaves similar to every other aTOKEN. It always maintains a 1:1 peg with
-  the underlying AMPL.
-
-  The following should always be true.
+  the underlying AMPL. The following should always be true.
 
   1) At any time, user can deposit x AMPLs to mint x aAMPLs.
-     Total aAMPL suppxly increases by exactly x.
-
+     Total aAMPL supply increases by exactly x.
   2) At any time, user can burn x aAMPLs for x AMPLs.
      Total aAMPL supply decreases by exactly x.
-
   3) At any time, userA can transfer x aAMPLs to userB.
      userA's aAMPL balance reduces by X.
      userB's aAMPL balance increases by X.
      Total aAMPL supply exactly remains same.
-
   4) When AMPL's supply rebases, only the 'unborrowed' aAMPL should rebase.
-     => Say there are 1000 aAMPL, and 200 AMPL is lent out. AMPL expands by 10%.
+      * Say there are 1000 aAMPL, and 200 AMPL is lent out. AMPL expands by 10%.
         Thew new aAMPL supply should be 1080 aAMPL.
-     => Say there are 1000 aAMPL, and 200 AMPL is lent out. AMPL contracts by 10%.
+      * Say there are 1000 aAMPL, and 200 AMPL is lent out. AMPL contracts by 10%.
         Thew new aAMPL supply should be 920 aAMPL.
-
   5) When AMPL's supply rebases, only the part of the balance of a user proportional to  the available liquidity ('unborrowed') should rebase.
-    => Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and
-       20% of the total underlying AMPL is lent out. AMPL expands by 10%.
-       The new aAMPL user balance should be 1080 aAMPL.
-    => Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and
-       20% of the total underlying AMPL is lent out. AMPL contracts by 10%.
-       The new aAMPL supply should be 920 aAMPL.
+      * Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and
+        20% of the total underlying AMPL is lent out. AMPL expands by 10%.
+        The new aAMPL user balance should be 1080 aAMPL.
+      * Say a user has deposited 1000 AMPL and receives 1000 aAMPL, and
+        20% of the total underlying AMPL is lent out. AMPL contracts by 10%.
+        The new aAMPL supply should be 920 aAMPL.
+  6) The totalSupply of aAMPL should always be equal to (total AMPL held in the system) + (total principal borrowed denominated in AMPL) + (interest)
 
-  On mint and burn a private variable `_totalScaledAMPLSupply` keeps track of
-    the scaled AMPL principal deposited.
-*/
-contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
+
+  Generic aToken:
+
+  ATokens have a private balance and public balance.
+
+  ```
+    # _balances[u] and _totalSupply from contract storage.
+    Balance(u) = _balances[u] . I
+    TotalSupply(supply) = _totalSupply . I
+  ```
+
+  The internal (fixed-supply) balance and totalSupply are referred to as balanceScaled and totalSupplyScaled
+  and correspond to the principal deposited.
+
+  The external (elastic-supply) balance and totalSupply correspond to the principal + interest.
+
+
+  AAMPL:
+
+  AAMPL tokens have an additional scaling factor (multiplier) on top of the existing AToken structure.
+  Thus they have 2 private balances and 1 public balance.
+
+    * The internal (fixed-supply) balance and totalSupply are referred to as balanceInternal and
+      totalSupplyInternal, used for book-keeping.
+
+    * The internal (elastic-supply) balance and totalSupply are referred to as balanceScaled and
+      totalSupplyScaled and correspond to the principal deposited.
+
+    * The external (elastic-supply) balance and totalSupply correspond to the principal + interest.
+
+  ```
+    # _balances[u] and _totalSupply from contract storage.
+
+    Balance(u) = ( _balances[u] . λ ) . I
+
+    where,
+
+    * _balances[u] is called userBalanceInternal, raw value in contract's storage
+
+    * (_balances[u] . λ) is called userBalanceScaled, aka principal deposited
+
+    * (_balances[u] . λ) . I  is the public userBalance, aka user's principal + interest
+
+    * I is AAVE's interest rate factor
+
+    * λ is the AAMPL scaling factor
+
+
+    AND
+
+    TotalSupply(u) = ( _totalSupply[u] . λ ) . I
+
+    * _totalSupply[u] is called totalSupplyInternal, raw value in contract's storage
+
+    * (_totalSupply[u] . λ) is called totalSupplyScaled, aka principal deposited
+
+    * (_totalSupply[u] . λ) . I  is the public totalSupply, aka principal + interest
+
+    * I is AAVE's interest rate factor
+
+    * λ is the AAMPL scaling factor
+
+  ```
+
+  The AAMPL scaling factor λ is calculated as follows:
+
+  ```
+    * Λ - Ampleforth co-efficient of expansion (retrieved from the AMPL contract)
+
+    totalSupplyScaled = (totalScaledAMPLDeposited - totalScaledAMPLBorrowed) / Λ + totalPrincipalBorrowed
+
+    λ = totalSupplyScaled / totalSupplyInternal
+  ```
+
+  Additions:
+    * The AAMPLToken stores references to the STABLE_DEBT_TOKEN,
+      and the VARIABLE_DEBT_TOKEN contracts to calculate the total
+      Principal borrowed (getAMPLBorrowData()), at any time.
+    * On mint and burn a private variable `_totalScaledAMPLDeposited`
+      keeps track of the scaled AMPL principal deposited.
+ */
+contract AAMPLToken is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -71,23 +142,34 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
   uint256 public constant ATOKEN_REVISION = 0x1;
   address public immutable UNDERLYING_ASSET_ADDRESS;
   address public immutable RESERVE_TREASURY_ADDRESS;
-  address public immutable STABLE_DEBT_TOKEN_ADDRESS;
-  address public immutable VARIABLE_DEBT_TOKEN_ADDRESS;
   ILendingPool public immutable POOL;
-
-  // AMPL constants
-  uint256 private constant MAX_UINT256 = ~uint256(0); // (2^256) - 1
-  uint256 private constant AMPL_DECIMALS = 9;
-  uint256 private constant INITIAL_AMPL_SUPPLY = 50 * 10**6 * 10**AMPL_DECIMALS;
-  uint256 private constant TOTAL_GONS = MAX_UINT256 - (MAX_UINT256 % INITIAL_AMPL_SUPPLY);
-
-  // ampl scaled supply
-  uint256 private _totalScaledAMPLSupply;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
 
   bytes32 public DOMAIN_SEPARATOR;
+
+  // ---------------------------------------------------------------------------
+  // aAMPL additions
+  address public immutable STABLE_DEBT_TOKEN_ADDRESS;
+  address public immutable VARIABLE_DEBT_TOKEN_ADDRESS;
+
+  // This is a constant on the AMPL contract, which is used to calculate the scalar
+  // which controls the AMPL expansion/contraction.
+  // TOTAL_GONS/ampl.scaledTotalSupply, saving an external call to the AMPL contract
+  // and setting it as a local contract constant.
+  // NOTE: This should line up EXACTLY with the value on the AMPL contract
+  uint256 private constant AMPL_SCALED_TOTAL_SUPPLY = 115792089237316195423570985008687907853269984665640564039457550000000000000000;
+
+  // Keeps track of the 'gons' deposited into the aave system
+  uint256 private _totalScaledAMPLDeposited;
+
+  struct ExtData {
+    uint256 AMPLScalar;
+    uint256 totalPrincipalBorrowed;
+    uint256 totalScaledAMPLBorrowed;
+  }
+  // ---------------------------------------------------------------------------
 
   modifier onlyLendingPool {
     require(_msgSender() == address(POOL), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
@@ -101,7 +183,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     string memory tokenName,
     string memory tokenSymbol,
     address incentivesController
-  ) public IncentivizedAAmplERC20(tokenName, tokenSymbol, 18, incentivesController, underlyingAssetAddress) {
+  ) public IncentivizedERC20(tokenName, tokenSymbol, 18, incentivesController) {
     POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
     RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
@@ -158,10 +240,10 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
-    _burn(user, amountScaled);
 
-    // NOTE: this additional book keeping to keep track of 'deposited' AMPLs
-    _totalScaledAMPLSupply = _totalScaledAMPLSupply.sub(amount.mul(getAMPLScalar()));
+    ExtData memory e = _fetchExtData();
+    _burnScaled(RESERVE_TREASURY_ADDRESS, amountScaled, e);
+    _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.sub(amount.mul(e.AMPLScalar));
 
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
@@ -182,20 +264,19 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool returns (bool) {
-
-    uint256 previousBalance = super.balanceOf(user);
+    uint256 previousBalanceInternal = super.balanceOf(user);
 
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
-    _mint(user, amountScaled);
 
-    // NOTE: this additional book keeping to keep track of 'deposited' AMPLs
-    _totalScaledAMPLSupply = _totalScaledAMPLSupply.add(amount.mul(getAMPLScalar()));
+    ExtData memory e = _fetchExtData();
+    _mintScaled(user, amountScaled, e);
+    _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.add(amount.mul(e.AMPLScalar));
 
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
 
-    return previousBalance == 0;
+    return previousBalanceInternal == 0;
   }
 
   /**
@@ -210,13 +291,15 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     }
 
     // Compared to the normal mint, we don't check for rounding errors.
-    // The amount to mint can easily be very small since it is a fraction of the interest ccrued.
+    // The amount to mint can easily be very small since it is a fraction of the interest accrued.
     // In that case, the treasury will experience a (very small) loss, but it
     // wont cause potentially valid transactions to fail.
-    _mint(RESERVE_TREASURY_ADDRESS, amount.rayDiv(index));
+    uint256 amountScaled = amount.rayDiv(index);
+    // require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
 
-    // NOTE: this additional book keeping to keep track of 'deposited' AMPLs
-    _totalScaledAMPLSupply = _totalScaledAMPLSupply.add(amount.mul(getAMPLScalar()));
+    ExtData memory e = _fetchExtData();
+    _mintScaled(RESERVE_TREASURY_ADDRESS, amountScaled, e);
+    _totalScaledAMPLDeposited = _totalScaledAMPLDeposited.add(amount.mul(e.AMPLScalar));
 
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
     emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
@@ -239,69 +322,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     _transfer(from, to, value, false);
 
     emit Transfer(from, to, value);
-  }
-
-  /**
-   * @dev Calculates the balance of the user: principal balance + interest generated by the principal
-   * @param user The user whose balance is calculated
-   * @return The balance of the user
-   **/
-  function balanceOf(address user)
-    public
-    view
-    override(IncentivizedAAmplERC20, IERC20)
-    returns (uint256)
-  {
-    return super.balanceOf(user).rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
-  }
-
-  /**
-   * @dev Returns the scaled balance of the user. The scaled balance is the sum of all the
-   * updated stored balance divided by the reserve's liquidity index at the moment of the update
-   * @param user The user whose balance is calculated
-   * @return The scaled balance of the user
-   **/
-  function scaledBalanceOf(address user) external view override returns (uint256) {
-    return super.balanceOf(user);
-  }
-
-  /**
-   * @dev Returns the scaled balance of the user and the scaled total supply.
-   * @param user The address of the user
-   * @return The scaled balance of the user
-   * @return The scaled balance and the scaled total supply
-   **/
-  function getScaledUserBalanceAndSupply(address user)
-    external
-    view
-    override
-    returns (uint256, uint256)
-  {
-    return (super.balanceOf(user), super.totalSupply());
-  }
-
-  /**
-   * @dev calculates the total supply of the specific aToken
-   * since the balance of every single user increases over time, the total supply
-   * does that too.
-   * @return the current total supply
-   **/
-  function totalSupply() public view override(IncentivizedAAmplERC20, IERC20) returns (uint256) {
-    uint256 currentSupplyScaled = super.totalSupply();
-
-    if (currentSupplyScaled == 0) {
-      return 0;
-    }
-
-    return currentSupplyScaled.rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
-  }
-
-  /**
-   * @dev Returns the scaled total supply of the variable debt token. Represents sum(debt/index)
-   * @return the scaled total supply
-   **/
-  function scaledTotalSupply() public view virtual override returns (uint256) {
-    return super.totalSupply();
   }
 
   /**
@@ -373,11 +393,19 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     bool validate
   ) internal {
     uint256 index = POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
+    uint256 amountScaled = amount.rayDiv(index);
 
-    uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
-    uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
+    ExtData memory e = _fetchExtData();
+    uint256 totalSupplyInternal = super.totalSupply();
 
-    super._transfer(from, to, amount.rayDiv(index));
+    uint256 totalSupplyScaled = _totalSupplyScaled(e, _totalScaledAMPLDeposited);
+    uint256 fromBalanceScaled = _balanceOfScaled(super.balanceOf(from), totalSupplyInternal, totalSupplyScaled);
+    uint256 toBalanceScaled = _balanceOfScaled(super.balanceOf(to), totalSupplyInternal, totalSupplyScaled);
+
+    uint256 fromBalanceBefore = fromBalanceScaled.rayMul(index);
+    uint256 toBalanceBefore = toBalanceScaled.rayMul(index);
+
+    _transferScaled(from, to, amountScaled, e);
 
     if (validate) {
       POOL.finalizeTransfer(
@@ -393,12 +421,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     emit BalanceTransfer(from, to, amount, index);
   }
 
-  /**
-   * @dev Overrides the parent _transfer to force validated transfer() and transferFrom()
-   * @param from The source address
-   * @param to The destination address
-   * @param amount The amount getting transferred
-   **/
   function _transfer(
     address from,
     address to,
@@ -407,29 +429,201 @@ contract AAmplToken is VersionedInitializable, IncentivizedAAmplERC20, IAToken {
     _transfer(from, to, amount, true);
   }
 
+  // ---------------------------------------------------------------------------
+  // View methods
 
-  // returns the totalAMPLDeposited and the totalScaledAMPLDeposited
-  function getAMPLDepositData() internal override view returns (uint256, uint256) {
-    return (super.totalSupply(), _totalScaledAMPLSupply);
+  /**
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(debt/index)
+   *      aka, totalSupplyScaled = (totalScaledAMPLDeposited - totalScaledAMPLBorrowed) / Λ + totalPrincipalBorrowed
+   * @return the scaled total supply
+   **/
+  function scaledTotalSupply() public view virtual override returns (uint256) {
+    return _totalSupplyScaled(_fetchExtData(), _totalScaledAMPLDeposited);
   }
 
-  // returns the totalAMPLBorrowed and the totalScaledAMPLBorrowed
-  function getAMPLBorrowData() internal override view returns (uint256, uint256) {
-    uint256 stablePrincipal;
-    uint256 stablePrincipalScaled;
-    uint256 variablePrincipal;
-    uint256 variablePrincipalScaled;
-
-    (stablePrincipal, stablePrincipalScaled) = IAMPLDebtToken(STABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
-    (variablePrincipal, variablePrincipalScaled) = IAMPLDebtToken(VARIABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
-
-    return (
-      stablePrincipal.add(variablePrincipal),
-      stablePrincipalScaled.add(variablePrincipalScaled)
+  /**
+   * @dev Returns the scaled balance of the user. The scaled balance is the sum of all the
+   *      updated stored balance divided by the reserve's liquidity index at the moment of the update.
+   *      aka, userBalanceScaled = userBalanceInternal/totalSupplyInternal * totalSupplyScaled
+   * @param user The user whose balance is calculated
+   * @return The scaled balance of the user
+   **/
+  function scaledBalanceOf(address user) external view override returns (uint256) {
+    return _balanceOfScaled(
+      super.balanceOf(user), super.totalSupply(),
+      _totalSupplyScaled(_fetchExtData(), _totalScaledAMPLDeposited)
     );
   }
 
-  function getAMPLScalar() internal override view returns (uint256) {
-    return TOTAL_GONS.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
+  /**
+   * @dev Returns the scaled balance of the user and the scaled total supply.
+   * @param user The address of the user
+   * @return The scaled balance of the user
+   * @return The scaled balance and the scaled total supply
+   **/
+  function getScaledUserBalanceAndSupply(address user)
+    external
+    view
+    override
+    returns (uint256, uint256)
+  {
+    uint256 totalSupplyScaled = _totalSupplyScaled(_fetchExtData(), _totalScaledAMPLDeposited);
+    return (
+      _balanceOfScaled(super.balanceOf(user), super.totalSupply(), totalSupplyScaled),
+      totalSupplyScaled
+    );
+  }
+
+  /**
+   * @dev calculates the total supply of the specific aToken
+   * since the balance of every single user increases over time, the total supply
+   * does that too.
+   * @return the current total supply
+   **/
+  function totalSupply() public view override(IncentivizedERC20, IERC20) returns (uint256) {
+    uint256 currentSupplyScaled = _totalSupplyScaled(_fetchExtData(), _totalScaledAMPLDeposited);
+
+    if (currentSupplyScaled == 0) {
+      // currentSupplyInternal should also be zero in this case (super.totalSupply())
+      return 0;
+    }
+
+    return currentSupplyScaled.rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
+  }
+
+  /**
+   * @dev Calculates the balance of the user: principal balance + interest generated by the principal
+   * @param user The user whose balance is calculated
+   * @return The balance of the user
+   **/
+  function balanceOf(address user)
+    public
+    view
+    override(IncentivizedERC20, IERC20)
+    returns (uint256)
+  {
+    uint256 userBalanceScaled = _balanceOfScaled(
+      super.balanceOf(user), super.totalSupply(),
+      _totalSupplyScaled(_fetchExtData(), _totalScaledAMPLDeposited)
+    );
+    return userBalanceScaled.rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
+  }
+
+
+  // ---------------------------------------------------------------------------
+  // AAMPL custom methods
+
+  /**
+   * @dev transferAmountInternal = (transferAmountScaled * totalSupplyInternal) / totalSupplyScaled
+   **/
+  function _transferScaled(address from, address to, uint256 transferAmountScaled, ExtData memory e) private returns (uint256) {
+    uint256 totalSupplyInternal = super.totalSupply();
+    uint256 totalSupplyScaled = _totalSupplyScaled(e, _totalScaledAMPLDeposited);
+    uint256 transferAmountInternal = transferAmountScaled.mul(totalSupplyInternal).div(totalSupplyScaled);
+    super._transfer(from, to, transferAmountInternal);
+  }
+
+  /**
+   * @dev mintAmountInternal is mint such that the following holds true
+   *
+   * (userBalanceInternalBefore+mintAmountInternal)/(totalSupplyInternalBefore+mintAmountInternal)
+   *    = (userBalanceScaledBefore+mintAmountScaled)/(totalSupplyScaledBefore+mintAmountScaled)
+   *
+   * totalSupplyScaledAfter = totalSupplyScaledBefore+mintAmountScaled
+   * userBalanceScaledAfter = userBalanceScaledBefore+mintAmountScaled
+   * otherBalanceScaledBefore = totalSupplyScaledBefore-userBalanceScaledBefore
+   *
+   * mintAmountInternal = (totalSupplyInternalBefore*userBalanceScaledAfter - totalSupplyScaledAfter*userBalanceInternalBefore)/otherBalanceScaledBefore
+   **/
+  function _mintScaled(address user, uint256 mintAmountScaled, ExtData memory e) private returns (uint256) {
+    uint256 totalSupplyInternalBefore = super.totalSupply();
+    uint256 userBalanceInternalBefore = super.balanceOf(user);
+
+    uint256 totalSupplyScaledBefore = _totalSupplyScaled(e, _totalScaledAMPLDeposited);
+    uint256 userBalanceScaledBefore = _balanceOfScaled(userBalanceInternalBefore, totalSupplyInternalBefore, totalSupplyScaledBefore);
+    uint256 otherBalanceScaledBefore = totalSupplyScaledBefore.sub(userBalanceScaledBefore);
+
+    uint256 totalSupplyScaledAfter = totalSupplyScaledBefore.add(mintAmountScaled);
+    uint256 userBalanceScaledAfter = userBalanceScaledBefore.add(mintAmountScaled);
+
+    uint256 mintAmountInternal = totalSupplyInternalBefore
+      .mul(userBalanceScaledAfter)
+      .sub(totalSupplyScaledAfter.mul(userBalanceInternalBefore))
+      .div(otherBalanceScaledBefore);
+
+    _mint(user, mintAmountInternal);
+  }
+
+  /**
+   * @dev burnAmountInternal is burnt such that the following holds true
+   *
+   * (userBalanceInternalBefore-burnAmountInternal)/(totalSupplyInternalBefore-burnAmountInternal)
+   *    = (userBalanceScaledBefore-burnAmountScaled)/(totalSupplyScaledBefore-burnAmountScaled)
+   *
+   * totalSupplyScaledAfter = totalSupplyScaledBefore-burnAmountScaled
+   * userBalanceScaledAfter = userBalanceScaledBefore-burnAmountScaled
+   * otherBalanceScaledBefore = totalSupplyScaledBefore-userBalanceScaledBefore
+   *
+   * burnAmountInternal = (totalSupplyScaledAfter*userBalanceInternalBefore - totalSupplyInternalBefore*userBalanceScaledAfter)/otherBalanceScaledBefore
+   **/
+  function _burnScaled(address user, uint256 burnAmountScaled, ExtData memory e) private returns (uint256) {
+    uint256 totalSupplyInternalBefore = super.totalSupply();
+    uint256 userBalanceInternalBefore = super.balanceOf(user);
+
+    uint256 totalSupplyScaledBefore = _totalSupplyScaled(e, _totalScaledAMPLDeposited);
+    uint256 userBalanceScaledBefore = _balanceOfScaled(userBalanceInternalBefore, totalSupplyInternalBefore, totalSupplyScaledBefore);
+    uint256 otherBalanceScaledBefore = totalSupplyScaledBefore.sub(userBalanceScaledBefore);
+
+    uint256 totalSupplyScaledAfter = totalSupplyScaledBefore.sub(burnAmountScaled);
+    uint256 userBalanceScaledAfter = userBalanceScaledBefore.sub(burnAmountScaled);
+
+    uint256 burnAmountInternal = totalSupplyScaledAfter
+      .mul(userBalanceInternalBefore)
+      .sub(totalSupplyInternalBefore.mul(userBalanceScaledAfter))
+      .div(otherBalanceScaledBefore);
+
+    _burn(user, burnAmountInternal);
+  }
+
+  /**
+   * @dev balanceOfScaled = balanceInternal / totalSupplyInternal * totalSupplyScaled
+   *                       = balanceInternal . λ
+   **/
+  function _balanceOfScaled(uint256 balanceInternal, uint256 totalSupplyInternal, uint256 totalSupplyScaled) private pure returns (uint256) {
+    return balanceInternal.mul(totalSupplyScaled).div(totalSupplyInternal);
+  }
+
+  /**
+   * @dev totalSupplyScaled = (totalScaledAMPLDeposited - totalScaledAMPLBorrowed) / Λ + totalPrincipalBorrowed
+                             = λ . totalSupplyInternal
+   **/
+  function _totalSupplyScaled(ExtData memory e, uint256 totalScaledAMPLDeposited) private pure returns (uint256) {
+    return totalScaledAMPLDeposited
+      .sub(e.totalScaledAMPLBorrowed)
+      .div(e.AMPLScalar)
+      .add(e.totalPrincipalBorrowed);
+  }
+
+  /**
+   * @dev Queries external contracts and fetches data used for aTokenMath
+   *      - AMPL scalar form Ampleforth ERC-20 (Λ)
+   *      - principal borrowed and scaledAMPL borrowed from the debt contracts
+   **/
+  function _fetchExtData() private view returns (ExtData memory) {
+    ExtData memory _extContractData;
+    _extContractData.AMPLScalar = AMPL_SCALED_TOTAL_SUPPLY.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
+
+    uint256 stablePrincipal;
+    uint256 stablePrincipalScaled;
+    (stablePrincipal, stablePrincipalScaled) = IAMPLDebtToken(STABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
+
+    uint256 variablePrincipal;
+    uint256 variablePrincipalScaled;
+    (variablePrincipal, variablePrincipalScaled) = IAMPLDebtToken(VARIABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
+
+    _extContractData.totalPrincipalBorrowed = stablePrincipal.add(variablePrincipal);
+    _extContractData.totalScaledAMPLBorrowed = stablePrincipalScaled.add(variablePrincipalScaled);
+
+    return _extContractData;
   }
 }
