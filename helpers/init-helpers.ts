@@ -85,6 +85,7 @@ export const initReservesByHelper = async (
     variableDebtTokenSymbol: string;
     stableDebtTokenName: string;
     stableDebtTokenSymbol: string;
+    params: string;
   }[] = [];
 
   let strategyRates: [
@@ -208,6 +209,7 @@ export const initReservesByHelper = async (
       variableDebtTokenSymbol: `variableDebt${symbolPrefix}${reserveSymbols[i]}`,
       stableDebtTokenName: `${stableDebtTokenNamePrefix} ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${symbolPrefix}${reserveSymbols[i]}`,
+      params: '0x10'
     });
   }
 
@@ -416,6 +418,7 @@ export const initTokenReservesByHelper = async (
     variableDebtTokenSymbol: string;
     stableDebtTokenName: string;
     stableDebtTokenSymbol: string;
+    params: string;
   }[] = [];
 
   const network =
@@ -554,6 +557,7 @@ export const initTokenReservesByHelper = async (
       variableDebtTokenSymbol: `variableDebt${reserveSymbols[i]}`,
       stableDebtTokenName: `Aave stable debt bearing ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${reserveSymbols[i]}`,
+      params: '0x10'
     });
   }
 

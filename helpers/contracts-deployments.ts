@@ -411,7 +411,8 @@ export const deployDelegationAwareAToken = async (
     incentivesController,
     '18',
     name,
-    symbol
+    symbol,
+    '0x10'
   );
 
   return instance;
@@ -504,7 +505,7 @@ export const authorizeWETHGateway = async (
     .authorizeLendingPool(lendingPool);
 
 export const deployMockStableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, string],
   verify?: boolean
 ) => {
   const instance = await withSaveAndVerify(
@@ -514,7 +515,7 @@ export const deployMockStableDebtToken = async (
     verify
   );
 
-  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4]);
+  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4], args[5]);
 
   return instance;
 };
@@ -528,7 +529,7 @@ export const deployWETHMocked = async (verify?: boolean) =>
   );
 
 export const deployMockVariableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, string],
   verify?: boolean
 ) => {
   const instance = await withSaveAndVerify(
@@ -538,13 +539,13 @@ export const deployMockVariableDebtToken = async (
     verify
   );
 
-  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4]);
+  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4], args[5]);
 
   return instance;
 };
 
 export const deployMockAToken = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, string],
   verify?: boolean
 ) => {
   const instance = await withSaveAndVerify(
@@ -554,7 +555,7 @@ export const deployMockAToken = async (
     verify
   );
 
-  await instance.initialize(args[0], args[2], args[1], args[3], '18', args[4], args[5]);
+  await instance.initialize(args[0], args[2], args[1], args[3], '18', args[4], args[5], args[6]);
 
   return instance;
 };

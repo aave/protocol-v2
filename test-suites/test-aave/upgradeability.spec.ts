@@ -34,6 +34,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
       'Aave Interest bearing DAI updated',
       'aDAI',
+      '0x10'
     ]);
 
     const stableDebtTokenInstance = await deployMockStableDebtToken([
@@ -42,6 +43,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
       'Aave stable debt bearing DAI updated',
       'stableDebtDAI',
+      '0x10'
     ]);
 
     const variableDebtTokenInstance = await deployMockVariableDebtToken([
@@ -50,6 +52,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
       'Aave variable debt bearing DAI updated',
       'variableDebtDAI',
+      '0x10'
     ]);
 
     newATokenAddress = aTokenInstance.address;
@@ -70,6 +73,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: string;
       symbol: string;
       implementation: string;
+      params: string
     } = {
       asset: dai.address,
       treasury: ZERO_ADDRESS,
@@ -77,6 +81,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: name,
       symbol: symbol,
       implementation: newATokenAddress,
+      params: "0x10"
     };
     await expect(
       configurator.connect(users[1].signer).updateAToken(updateATokenInputParams)
@@ -96,6 +101,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: string;
       symbol: string;
       implementation: string;
+      params: string
     } = {
       asset: dai.address,
       treasury: ZERO_ADDRESS,
@@ -103,6 +109,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: name,
       symbol: symbol,
       implementation: newATokenAddress,
+      params: "0x10"
     };
     await configurator.updateAToken(updateATokenInputParams);
 
@@ -124,12 +131,14 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: string;
       symbol: string;
       implementation: string;
+      params: string;
     } = {
       asset: dai.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
       implementation: newStableTokenAddress,
+      params: '0x10'
     }
 
     await expect(
@@ -152,12 +161,14 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: string;
       symbol: string;
       implementation: string;
+      params: string;
     } = {
       asset: dai.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
       implementation: newStableTokenAddress,
+      params: '0x10'
     }
 
     await configurator.updateStableDebtToken(updateDebtTokenInput);
@@ -183,12 +194,14 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: string;
       symbol: string;
       implementation: string;
+      params: string;
     } = {
       asset: dai.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
       implementation: newVariableTokenAddress,
+      params: '0x10'
     }
 
     await expect(
@@ -210,12 +223,14 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: string;
       symbol: string;
       implementation: string;
+      params: string;
     } = {
       asset: dai.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
       implementation: newVariableTokenAddress,
+      params: '0x10'
     }
     //const name = await (await getAToken(newATokenAddress)).name();
 

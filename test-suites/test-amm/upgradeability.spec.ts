@@ -34,6 +34,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
       'Aave AMM Market DAI updated',
       'aAmmDAI',
+      '0x10'
     ]);
 
     const stableDebtTokenInstance = await deployMockStableDebtToken([
@@ -42,6 +43,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
       'Aave AMM Market stable debt DAI updated',
       'stableDebtAmmDAI',
+      '0x10'
     ]);
 
     const variableDebtTokenInstance = await deployMockVariableDebtToken([
@@ -50,6 +52,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       ZERO_ADDRESS,
       'Aave AMM Market variable debt DAI updated',
       'variableDebtAmmDAI',
+      '0x10'
     ]);
 
     newATokenAddress = aTokenInstance.address;
@@ -70,6 +73,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: string;
       symbol: string;
       implementation: string;
+      params: string;
     } = {
       asset: dai.address,
       treasury: ZERO_ADDRESS,
@@ -77,6 +81,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       name: name,
       symbol: symbol,
       implementation: newATokenAddress,
+      params: '0x10'
     };
     await expect(
       configurator.connect(users[1].signer).updateAToken(updateATokenInputParams)
