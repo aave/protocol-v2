@@ -135,7 +135,7 @@ export const strategyCRVWETH: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '500'
+  reserveFactor: '1500'
 };
 
 export const strategyLINKWETH: IReserveParams = {
@@ -237,7 +237,7 @@ export const strategyYFIWETH: IReserveParams = {
 export const strategyBALWETH: IReserveParams = {
   strategy: rateStrategyAmmBase,
   baseLTVAsCollateral: '6000',
-  liquidationThreshold: '6500',
+  liquidationThreshold: '7000',
   liquidationBonus: '11500',
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,

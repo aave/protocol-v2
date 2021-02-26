@@ -9,8 +9,8 @@ export const rateStrategyAmmBase: IInterestRateStrategyParams = {
     baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
     variableRateSlope1: new BigNumber(0.10).multipliedBy(oneRay).toFixed(),
     variableRateSlope2: new BigNumber(3.00).multipliedBy(oneRay).toFixed(),
-    stableRateSlope1: '0',
-    stableRateSlope2: '0',
+    stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
+    stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
 }
 
 // WETH WBTC
