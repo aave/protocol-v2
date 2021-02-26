@@ -3,9 +3,10 @@ import fs from 'fs';
 import { HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
-import { eEthereumNetwork } from './helpers/types';
+import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
-
+import { NETWORKS_RPC_URL, NETWORKS_DEFAULT_GAS } from './helper-hardhat-config';
+ 
 require('dotenv').config();
 
 import '@nomiclabs/hardhat-ethers';
@@ -18,10 +19,7 @@ import '@tenderly/hardhat-tenderly';
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const DEFAULT_GAS_MUL = 5;
-const DEFAULT_GAS_PRICE = 65000000000;
 const HARDFORK = 'istanbul';
-const INFURA_KEY = process.env.INFURA_KEY || '';
-const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
@@ -43,32 +41,25 @@ if (!SKIP_LOAD) {
 
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
-const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
-  const net = networkName === 'main' ? 'mainnet' : networkName;
-  return {
-    url: ALCHEMY_KEY
-      ? `https://eth-${net}.alchemyapi.io/v2/${ALCHEMY_KEY}`
-      : `https://${net}.infura.io/v3/${INFURA_KEY}`,
-    hardfork: HARDFORK,
-    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-    gasMultiplier: DEFAULT_GAS_MUL,
-    gasPrice: DEFAULT_GAS_PRICE,
-    chainId: networkId,
-    accounts: {
-      mnemonic: MNEMONIC,
-      path: MNEMONIC_PATH,
-      initialIndex: 0,
-      count: 20,
-    },
-  };
-};
+const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
+  url: NETWORKS_RPC_URL[networkName],
+  hardfork: HARDFORK,
+  blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+  gasMultiplier: DEFAULT_GAS_MUL,
+  gasPrice: NETWORKS_DEFAULT_GAS[networkName],
+  chainId: networkId,
+  accounts: {
+    mnemonic: MNEMONIC,
+    path: MNEMONIC_PATH,
+    initialIndex: 0,
+    count: 20,
+  },
+});
 
 const mainnetFork = MAINNET_FORK
   ? {
-      blockNumber: 11608298,
-      url: ALCHEMY_KEY
-        ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
-        : `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+      blockNumber: 11739065,
+      url: NETWORKS_RPC_URL['main'],
     }
   : undefined;
 
@@ -104,6 +95,9 @@ const buidlerConfig: HardhatUserConfig = {
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.main, 1),
+    matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
+    mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
+    xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
     hardhat: {
       hardfork: 'istanbul',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
