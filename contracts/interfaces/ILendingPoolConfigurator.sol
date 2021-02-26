@@ -19,6 +19,7 @@ interface ILendingPoolConfigurator {
     string variableDebtTokenSymbol;
     string stableDebtTokenName;
     string stableDebtTokenSymbol;
+    bytes params;
   }
 
   struct UpdateATokenInput {
@@ -28,6 +29,7 @@ interface ILendingPoolConfigurator {
     string name;
     string symbol;
     address implementation;
+    bytes params;
   }
 
   struct UpdateDebtTokenInput {
@@ -36,6 +38,7 @@ interface ILendingPoolConfigurator {
     string name;
     string symbol;
     address implementation;
+    bytes params;
   }
 
   /**

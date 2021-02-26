@@ -38,7 +38,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     IAaveIncentivesController incentivesController,
     uint8 debtTokenDecimals,
     string memory debtTokenName,
-    string memory debtTokenSymbol
+    string memory debtTokenSymbol,
+    bytes calldata params
   ) public override initializer {
     _setName(debtTokenName);
     _setSymbol(debtTokenSymbol);
