@@ -587,7 +587,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   /**
    * @dev balanceOfScaled = balanceInternal / totalSupplyInternal * totalSupplyScaled
-   *                       = λ . balanceInternal
+   *                      = λ . balanceInternal
    **/
   function _balanceOfScaled(uint256 balanceInternal, uint256 totalSupplyInternal, uint256 totalSupplyScaled) private pure returns (uint256) {
     return balanceInternal.mul(totalSupplyScaled).div(totalSupplyInternal);
@@ -595,7 +595,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   /**
    * @dev totalSupplyScaled = (totalScaledAMPLDeposited - totalScaledAMPLBorrowed) / Λ + totalPrincipalBorrowed
-                             = λ . totalSupplyInternal
+   *                        = λ . totalSupplyInternal
    **/
   function _totalSupplyScaled(ExtData memory e, uint256 totalScaledAMPLDeposited) private pure returns (uint256) {
     return totalScaledAMPLDeposited
