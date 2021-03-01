@@ -7,6 +7,7 @@ import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingRateOracle} from '../../interfaces/ILendingRateOracle.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 
 /**
  * @title DefaultReserveInterestRateStrategy contract
@@ -102,12 +103,14 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 currentStableBorrowRate;
     uint256 currentLiquidityRate;
     uint256 utilizationRate;
+    uint256 availableLiquidity;
   }
 
   /**
    * @dev Calculates the interest rates depending on the reserve's state and configurations
    * @param reserve The address of the reserve
-   * @param availableLiquidity The liquidity available in the reserve
+   * @param liquidityAdded The liquidity added during the operation
+   * @param liquidityTaken The liquidity taken during the operation
    * @param totalStableDebt The total borrowed from the reserve a stable rate
    * @param totalVariableDebt The total borrowed from the reserve at a variable rate
    * @param averageStableBorrowRate The weighted average of all the stable rate loans
@@ -116,7 +119,9 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
    **/
   function calculateInterestRates(
     address reserve,
-    uint256 availableLiquidity,
+    address aToken,
+    uint256 liquidityAdded,
+    uint256 liquidityTaken,
     uint256 totalStableDebt,
     uint256 totalVariableDebt,
     uint256 averageStableBorrowRate,
@@ -137,9 +142,11 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     vars.currentVariableBorrowRate = 0;
     vars.currentStableBorrowRate = 0;
     vars.currentLiquidityRate = 0;
+    vars.availableLiquidity = IERC20(reserve).balanceOf(aToken);
+    vars.availableLiquidity = vars.availableLiquidity.add(liquidityAdded).sub(liquidityTaken);
 
     uint256 utilizationRate =
-      vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(availableLiquidity.add(vars.totalDebt));
+      vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(vars.availableLiquidity.add(vars.totalDebt));
 
     vars.currentStableBorrowRate = ILendingRateOracle(addressesProvider.getLendingRateOracle())
       .getMarketBorrowRate(reserve);
