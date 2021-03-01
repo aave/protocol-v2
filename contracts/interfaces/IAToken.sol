@@ -82,11 +82,18 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
   /**
    * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
    * assets in borrow(), withdraw() and flashLoan()
-   * @param user The recipient of the aTokens
+   * @param user The recipient of the underlying
    * @param amount The amount getting transferred
    * @return The amount transferred
    **/
   function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
+
+  /**
+   * @dev Invoked to execute actions on the aToken side after a repayment.
+   * @param user The user executing the repayment
+   * @param amount The amount getting repaid
+   **/
+  function handleRepayment(address user, uint256 amount) external;
 
   /**
    * @dev Returns the address of the incentives controller contract

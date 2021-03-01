@@ -305,6 +305,13 @@ contract AToken is
   }
 
   /**
+   * @dev Invoked to execute actions on the aToken side after a repayment.
+   * @param user The user executing the repayment
+   * @param amount The amount getting repaid
+   **/
+  function handleRepayment(address user, uint256 amount) external override onlyLendingPool {}
+
+  /**
    * @dev implements the permit function as for
    * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
    * @param owner The owner of the funds
