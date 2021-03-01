@@ -25,6 +25,7 @@ interface IInitializableDebtToken {
     IAaveIncentivesController incentivesController,
     uint8 debtTokenDecimals,
     string memory debtTokenName,
-    string memory debtTokenSymbol
+    string memory debtTokenSymbol,
+    bytes calldata params
   ) external;
 }

@@ -60,183 +60,186 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev Initializes reserves in batch
    **/
-  function batchInitReserve(InitReserveInput[] calldata inputParams) external onlyPoolAdmin {
+  function batchInitReserve(InitReserveInput[] calldata input) external onlyPoolAdmin {
     ILendingPool cachedPool = pool;
-    for (uint256 i = 0; i < inputParams.length; i++) {
-      _initReserve(cachedPool, inputParams[i]);
+    for (uint256 i = 0; i < input.length; i++) {
+      _initReserve(cachedPool, input[i]);
     }
   }
 
-  function _initReserve(ILendingPool pool, InitReserveInput calldata inputParams) internal {
+  function _initReserve(ILendingPool pool, InitReserveInput calldata input) internal {
     address aTokenProxyAddress =
       _initTokenWithProxy(
-        inputParams.aTokenImpl,
+        input.aTokenImpl,
         abi.encodeWithSelector(
           IInitializableAToken.initialize.selector,
           pool,
-          inputParams.treasury,
-          inputParams.underlyingAsset,
-          IAaveIncentivesController(inputParams.incentivesController),
-          inputParams.underlyingAssetDecimals,
-          inputParams.aTokenName,
-          inputParams.aTokenSymbol
+          input.treasury,
+          input.underlyingAsset,
+          IAaveIncentivesController(input.incentivesController),
+          input.underlyingAssetDecimals,
+          input.aTokenName,
+          input.aTokenSymbol,
+          input.params
         )
       );
 
     address stableDebtTokenProxyAddress =
       _initTokenWithProxy(
-        inputParams.stableDebtTokenImpl,
+        input.stableDebtTokenImpl,
         abi.encodeWithSelector(
           IInitializableDebtToken.initialize.selector,
           pool,
-          inputParams.underlyingAsset,
-          IAaveIncentivesController(inputParams.incentivesController),
-          inputParams.underlyingAssetDecimals,
-          inputParams.stableDebtTokenName,
-          inputParams.stableDebtTokenSymbol
+          input.underlyingAsset,
+          IAaveIncentivesController(input.incentivesController),
+          input.underlyingAssetDecimals,
+          input.stableDebtTokenName,
+          input.stableDebtTokenSymbol,
+          input.params
         )
       );
 
     address variableDebtTokenProxyAddress =
       _initTokenWithProxy(
-        inputParams.variableDebtTokenImpl,
+        input.variableDebtTokenImpl,
         abi.encodeWithSelector(
           IInitializableDebtToken.initialize.selector,
           pool,
-          inputParams.underlyingAsset,
-          IAaveIncentivesController(inputParams.incentivesController),
-          inputParams.underlyingAssetDecimals,
-          inputParams.variableDebtTokenName,
-          inputParams.variableDebtTokenSymbol
+          input.underlyingAsset,
+          IAaveIncentivesController(input.incentivesController),
+          input.underlyingAssetDecimals,
+          input.variableDebtTokenName,
+          input.variableDebtTokenSymbol,
+          input.params
         )
       );
 
     pool.initReserve(
-      inputParams.underlyingAsset,
+      input.underlyingAsset,
       aTokenProxyAddress,
       stableDebtTokenProxyAddress,
       variableDebtTokenProxyAddress,
-      inputParams.interestRateStrategyAddress
+      input.interestRateStrategyAddress
     );
 
     DataTypes.ReserveConfigurationMap memory currentConfig =
-      pool.getConfiguration(inputParams.underlyingAsset);
+      pool.getConfiguration(input.underlyingAsset);
 
-    currentConfig.setDecimals(inputParams.underlyingAssetDecimals);
+    currentConfig.setDecimals(input.underlyingAssetDecimals);
 
     currentConfig.setActive(true);
     currentConfig.setFrozen(false);
 
-    pool.setConfiguration(inputParams.underlyingAsset, currentConfig.data);
+    pool.setConfiguration(input.underlyingAsset, currentConfig.data);
 
     emit ReserveInitialized(
-      inputParams.underlyingAsset,
+      input.underlyingAsset,
       aTokenProxyAddress,
       stableDebtTokenProxyAddress,
       variableDebtTokenProxyAddress,
-      inputParams.interestRateStrategyAddress
+      input.interestRateStrategyAddress
     );
   }
 
   /**
    * @dev Updates the aToken implementation for the reserve
    **/
-  function updateAToken(UpdateATokenInput calldata inputParams) external onlyPoolAdmin {
+  function updateAToken(UpdateATokenInput calldata input) external onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
-    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(inputParams.asset);
+    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
-    DataTypes.ReserveConfigurationMap memory configuration =
-      cachedPool.getConfiguration(inputParams.asset);
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    (, , , uint256 decimals, ) = configuration.getParamsMemory();
+    bytes memory encodedCall = abi.encodeWithSelector(
+        IInitializableAToken.initialize.selector,
+        cachedPool,
+        input.treasury,
+        input.asset,
+        input.incentivesController,
+        decimals,
+        input.name,
+        input.symbol,
+        input.params
+      );
 
     _upgradeTokenImplementation(
       reserveData.aTokenAddress,
-      inputParams.implementation,
-      abi.encodeWithSelector(
-        IInitializableAToken.initialize.selector,
-        cachedPool,
-        inputParams.treasury,
-        inputParams.asset,
-        inputParams.incentivesController,
-        decimals,
-        inputParams.name,
-        inputParams.symbol
-      )
+      input.implementation,
+      encodedCall
     );
 
-    emit ATokenUpgraded(inputParams.asset, reserveData.aTokenAddress, inputParams.implementation);
+    emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
   }
 
   /**
    * @dev Updates the stable debt token implementation for the reserve
    **/
-  function updateStableDebtToken(UpdateDebtTokenInput calldata inputParams) external onlyPoolAdmin {
+  function updateStableDebtToken(UpdateDebtTokenInput calldata input) external onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
-    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(inputParams.asset);
+    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
+     
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    DataTypes.ReserveConfigurationMap memory configuration =
-      cachedPool.getConfiguration(inputParams.asset);
-
-    (, , , uint256 decimals, ) = configuration.getParamsMemory();
+    bytes memory encodedCall = abi.encodeWithSelector(
+        IInitializableDebtToken.initialize.selector,
+        cachedPool,
+        input.asset,
+        input.incentivesController,
+        decimals,
+        input.name,
+        input.symbol,
+        input.params
+      );
 
     _upgradeTokenImplementation(
       reserveData.stableDebtTokenAddress,
-      inputParams.implementation,
-      abi.encodeWithSelector(
-        IInitializableDebtToken.initialize.selector,
-        cachedPool,
-        inputParams.asset,
-        inputParams.incentivesController,
-        decimals,
-        inputParams.name,
-        inputParams.symbol
-      )
+      input.implementation,
+      encodedCall
     );
 
     emit StableDebtTokenUpgraded(
-      inputParams.asset,
+      input.asset,
       reserveData.stableDebtTokenAddress,
-      inputParams.implementation
+      input.implementation
     );
   }
 
   /**
    * @dev Updates the variable debt token implementation for the asset
    **/
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata inputParams)
+  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
     external
     onlyPoolAdmin
   {
     ILendingPool cachedPool = pool;
 
-    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(inputParams.asset);
+    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
-    DataTypes.ReserveConfigurationMap memory configuration =
-      cachedPool.getConfiguration(inputParams.asset);
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    (, , , uint256 decimals, ) = configuration.getParamsMemory();
+    bytes memory encodedCall = abi.encodeWithSelector(
+        IInitializableDebtToken.initialize.selector,
+        cachedPool,
+        input.asset,
+        input.incentivesController,
+        decimals,
+        input.name,
+        input.symbol,
+        input.params
+      );
 
     _upgradeTokenImplementation(
       reserveData.variableDebtTokenAddress,
-      inputParams.implementation,
-      abi.encodeWithSelector(
-        IInitializableDebtToken.initialize.selector,
-        cachedPool,
-        inputParams.asset,
-        inputParams.incentivesController,
-        decimals,
-        inputParams.name,
-        inputParams.symbol
-      )
+      input.implementation,
+      encodedCall
     );
 
     emit VariableDebtTokenUpgraded(
-      inputParams.asset,
+      input.asset,
       reserveData.variableDebtTokenAddress,
-      inputParams.implementation
+      input.implementation
     );
   }
 

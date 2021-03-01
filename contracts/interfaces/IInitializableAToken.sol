@@ -27,6 +27,7 @@ interface IInitializableAToken {
     IAaveIncentivesController incentivesController,
     uint8 aTokenDecimals,
     string calldata aTokenName,
-    string calldata aTokenSymbol
+    string calldata aTokenSymbol,
+    bytes calldata params
   ) external;
 }
