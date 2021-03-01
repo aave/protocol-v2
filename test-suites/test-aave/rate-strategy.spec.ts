@@ -1,165 +1,193 @@
-// import {
-//   IReserveParams,
-//   iAavePoolAssets,
-//   iAssetsWithoutETH,
-//   ITestEnvWithoutInstances,
-// } from "../utils/types"
-// import {
+import { TestEnv, makeSuite } from './helpers/make-suite';
+import { deployDefaultReserveInterestRateStrategy } from '../../helpers/contracts-deployments';
 
-//   LendingPoolAddressesProviderInstance,
+import { APPROVAL_AMOUNT_LENDING_POOL, PERCENTAGE_FACTOR, RAY } from '../../helpers/constants';
 
-//   DefaultReserveInterestRateStrategyInstance,
-//   MintableERC20Instance,
-// } from "../utils/typechain-types/truffle-contracts"
-// import { testEnvProviderWithoutInstances} from "../utils/truffle/dlp-tests-env"
-// import {RAY} from "../utils/constants"
-// import BigNumber from "bignumber.js"
+import { rateStrategyStableOne } from '../../markets/aave/rateStrategies';
 
-// const {expect} = require("chai")
+import { strategyDAI } from '../../markets/aave/reservesConfigs';
+import { AToken, DefaultReserveInterestRateStrategy, MintableERC20 } from '../../types';
+import BigNumber from 'bignumber.js';
+import './helpers/utils/math';
 
-// contract("Interest rate strategy", async ([deployer, ...users]) => {
-//   let _testEnvProvider: ITestEnvWithoutInstances
-//   let _strategyInstance: DefaultReserveInterestRateStrategyInstance
-//   let _tokenInstances: iAssetsWithoutETH<MintableERC20Instance>
-//   let _addressesProviderInstance: LendingPoolAddressesProviderInstance
-//   let _reservesParams: iAavePoolAssets<IReserveParams>
+const { expect } = require('chai');
 
-//   before("Initializing test variables", async () => {
-//     console.time('setup-test');
-//     _testEnvProvider = await testEnvProviderWithoutInstances(
-//       artifacts,
-//       [deployer, ...users],
-//     )
+makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
+  let strategyInstance: DefaultReserveInterestRateStrategy;
+  let dai: MintableERC20;
+  let aDai: AToken;
 
-//     const {
-//       getAllAssetsInstances,
-//       getLendingPoolAddressesProviderInstance,
-//       getAavePoolReservesParams,
-//     } = _testEnvProvider
+  before(async () => {
+    dai = testEnv.dai;
+    aDai = testEnv.aDai;
 
-//     const instances = await Promise.all([
-//       getAllAssetsInstances(),
-//       getLendingPoolAddressesProviderInstance()
-//     ])
+    const { addressesProvider } = testEnv;
 
-//     _tokenInstances = instances[0]
-//     _addressesProviderInstance = instances[1]
-//     _reservesParams = await getAavePoolReservesParams()
-//     console.timeEnd('setup-test');
-//   })
+    strategyInstance = await deployDefaultReserveInterestRateStrategy(
+      [
+        addressesProvider.address,
+        rateStrategyStableOne.optimalUtilizationRate,
+        rateStrategyStableOne.baseVariableBorrowRate,
+        rateStrategyStableOne.variableRateSlope1,
+        rateStrategyStableOne.variableRateSlope2,
+        rateStrategyStableOne.stableRateSlope1,
+        rateStrategyStableOne.stableRateSlope2,
+      ],
+      false
+    );
+  });
 
-//   it("Deploys a new instance of a DefaultReserveInterestRateStrategy contract", async () => {
-//     const {DAI: daiInstance} = _tokenInstances
+  it('Checks rates at 0% utilization rate, empty reserve', async () => {
+    const {
+      0: currentLiquidityRate,
+      1: currentStableBorrowRate,
+      2: currentVariableBorrowRate,
+    } = await strategyInstance.calculateInterestRates(
+      dai.address,
+      aDai.address,
+      0,
+      0,
+      0,
+      0,
+      0,
+      strategyDAI.reserveFactor
+    );
 
-//     const {DAI: daiConfiguration} = _reservesParams
+    expect(currentLiquidityRate.toString()).to.be.equal('0', 'Invalid liquidity rate');
+    expect(currentStableBorrowRate.toString()).to.be.equal(
+      new BigNumber(0.039).times(RAY).toFixed(0),
+      'Invalid stable rate'
+    );
+    expect(currentVariableBorrowRate.toString()).to.be.equal(
+      rateStrategyStableOne.baseVariableBorrowRate,
+      'Invalid variable rate'
+    );
+  });
 
-//     const contract: any = await artifacts.require("DefaultReserveInterestRateStrategy")
-//     const mathLibrary = await artifacts.require("WadRayMath")
-//     const mathLibraryInstance = await mathLibrary.new()
+  it('Checks rates at 80% utilization rate', async () => {
+    const {
+      0: currentLiquidityRate,
+      1: currentStableBorrowRate,
+      2: currentVariableBorrowRate,
+    } = await strategyInstance.calculateInterestRates(
+      dai.address,
+      aDai.address,
+      '200000000000000000',
+      '0',
+      '0',
+      '800000000000000000',
+      '0',
+      strategyDAI.reserveFactor
+    );
 
-//     await contract.link("WadRayMath", mathLibraryInstance.address)
+    const expectedVariableRate = new BigNumber(rateStrategyStableOne.baseVariableBorrowRate).plus(
+      rateStrategyStableOne.variableRateSlope1
+    );
 
-//     _strategyInstance = await contract.new(
-//       daiInstance.address,
-//       _addressesProviderInstance.address,
-//       daiConfiguration.baseVariableBorrowRate,
-//       daiConfiguration.variableRateSlope1,
-//       daiConfiguration.variableRateSlope2,
-//       daiConfiguration.stableRateSlope1,
-//       daiConfiguration.stableRateSlope2,
-//     )
-//   })
+    expect(currentLiquidityRate.toString()).to.be.equal(
+      expectedVariableRate
+        .times(0.8)
+        .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyDAI.reserveFactor))
+        .toFixed(0),
+      'Invalid liquidity rate'
+    );
 
-//   it("Checks rates at 0% utilization rate", async () => {
-//     const {DAI: daiInstance} = _tokenInstances
-//     const {DAI: daiConfiguration} = _reservesParams
-//     const data: any = await _strategyInstance.calculateInterestRates(
-//       daiInstance.address,
-//       "1000000000000000000",
-//       "0",
-//       "0",
-//       "0",
-//     )
+    expect(currentVariableBorrowRate.toString()).to.be.equal(
+      expectedVariableRate.toFixed(0),
+      'Invalid variable rate'
+    );
 
-//     expect(data.currentLiquidityRate.toString()).to.be.equal("0", "Invalid liquidity rate")
-//     expect(data.currentStableBorrowRate.toString()).to.be.equal(
-//       new BigNumber(0.039).times(RAY).toFixed(0),
-//       "Invalid stable rate",
-//     )
-//     expect(data.currentVariableBorrowRate.toString()).to.be.equal(
-//       daiConfiguration.baseVariableBorrowRate,
-//       "Invalid variable rate",
-//     )
-//   })
+    expect(currentStableBorrowRate.toString()).to.be.equal(
+      new BigNumber(0.039).times(RAY).plus(rateStrategyStableOne.stableRateSlope1).toFixed(0),
+      'Invalid stable rate'
+    );
+  });
 
-//   it("Checks rates at 80% utilization rate", async () => {
-//     const {DAI: daiInstance} = _tokenInstances
-//     const {DAI: daiConfiguration} = _reservesParams
-//     const data: any = await _strategyInstance.calculateInterestRates(
-//       daiInstance.address,
-//       "200000000000000000",
-//       "0",
-//       "800000000000000000",
-//       "0",
-//     )
+  it('Checks rates at 100% utilization rate', async () => {
+    const {
+      0: currentLiquidityRate,
+      1: currentStableBorrowRate,
+      2: currentVariableBorrowRate,
+    } = await strategyInstance.calculateInterestRates(
+      dai.address,
+      aDai.address,
+      '0',
+      '0',
+      '0',
+      '800000000000000000',
+      '0',
+      strategyDAI.reserveFactor
+    );
 
-//     const expectedVariableRate = new BigNumber(daiConfiguration.baseVariableBorrowRate)
-//     .plus(daiConfiguration.variableRateSlope1)
+    const expectedVariableRate = new BigNumber(rateStrategyStableOne.baseVariableBorrowRate)
+      .plus(rateStrategyStableOne.variableRateSlope1)
+      .plus(rateStrategyStableOne.variableRateSlope2);
 
-//     expect(data.currentLiquidityRate.toString()).to.be.equal(
-//       expectedVariableRate.times(0.8).toFixed(0),
-//       "Invalid liquidity rate",
-//     )
+    expect(currentLiquidityRate.toString()).to.be.equal(
+      expectedVariableRate
+        .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyDAI.reserveFactor))
+        .toFixed(0),
+      'Invalid liquidity rate'
+    );
 
-//     expect(data.currentVariableBorrowRate.toString()).to.be.equal(
-//       new BigNumber(daiConfiguration.baseVariableBorrowRate)
-//         .plus(daiConfiguration.variableRateSlope1)
-//         .toFixed(0),
-//       "Invalid variable rate",
-//     )
+    expect(currentVariableBorrowRate.toString()).to.be.equal(
+      expectedVariableRate.toFixed(0),
+      'Invalid variable rate'
+    );
 
-//     expect(data.currentStableBorrowRate.toString()).to.be.equal(
-//       new BigNumber(0.039)
-//         .times(RAY)
-//         .plus(daiConfiguration.stableRateSlope1)
-//         .toFixed(0),
-//       "Invalid stable rate",
-//     )
-//   })
+    expect(currentStableBorrowRate.toString()).to.be.equal(
+      new BigNumber(0.039)
+        .times(RAY)
+        .plus(rateStrategyStableOne.stableRateSlope1)
+        .plus(rateStrategyStableOne.stableRateSlope2)
+        .toFixed(0),
+      'Invalid stable rate'
+    );
+  });
 
-//   it("Checks rates at 100% utilization rate", async () => {
-//     const {DAI: daiInstance} = _tokenInstances
-//     const {DAI: daiConfiguration} = _reservesParams
-//     const data: any = await _strategyInstance.calculateInterestRates(
-//       daiInstance.address,
-//       "0",
-//       "0",
-//       "1000000000000000000",
-//       "0",
-//     )
+  it('Checks rates at 100% utilization rate, 50% stable debt and 50% variable debt, with a 10% avg stable rate', async () => {
+    const {
+      0: currentLiquidityRate,
+      1: currentStableBorrowRate,
+      2: currentVariableBorrowRate,
+    } = await strategyInstance.calculateInterestRates(
+      dai.address,
+      aDai.address,
+      '0',
+      '0',
+      '400000000000000000',
+      '400000000000000000',
+      '100000000000000000000000000',
+      strategyDAI.reserveFactor
+    );
 
-//     const expectedVariableRate = new BigNumber(daiConfiguration.baseVariableBorrowRate)
-//     .plus(daiConfiguration.variableRateSlope1)
-//     .plus(daiConfiguration.variableRateSlope2)
-//     .toFixed(0)
+    const expectedVariableRate = new BigNumber(rateStrategyStableOne.baseVariableBorrowRate)
+      .plus(rateStrategyStableOne.variableRateSlope1)
+      .plus(rateStrategyStableOne.variableRateSlope2);
 
-//     expect(data.currentLiquidityRate.toString()).to.be.equal(
-//       expectedVariableRate,
-//       "Invalid liquidity rate",
-//     )
+    const expectedLiquidityRate = new BigNumber(
+      currentVariableBorrowRate.add('100000000000000000000000000').div(2).toString()
+    )
+      .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyDAI.reserveFactor))
+      .toFixed(0);
 
-//     expect(data.currentVariableBorrowRate.toString()).to.be.equal(
-//       expectedVariableRate,
-//       "Invalid variable rate",
-//     )
+    expect(currentLiquidityRate.toString()).to.be.equal(
+      expectedLiquidityRate,
+      'Invalid liquidity rate'
+    );
 
-//     expect(data.currentStableBorrowRate.toString()).to.be.equal(
-//       new BigNumber(0.039)
-//         .times(RAY)
-//         .plus(daiConfiguration.stableRateSlope1)
-//         .plus(daiConfiguration.stableRateSlope2)
-//         .toFixed(0),
-//       "Invalid stable rate",
-//     )
-//   })
-// })
+    expect(currentVariableBorrowRate.toString()).to.be.equal(
+      expectedVariableRate.toFixed(0),
+      'Invalid variable rate'
+    );
+
+    expect(currentStableBorrowRate.toString()).to.be.equal(
+      new BigNumber(0.039)
+        .times(RAY)
+        .plus(rateStrategyStableOne.stableRateSlope1)
+        .plus(rateStrategyStableOne.stableRateSlope2)
+        .toFixed(0),
+      'Invalid stable rate'
+    );
+  });
+});

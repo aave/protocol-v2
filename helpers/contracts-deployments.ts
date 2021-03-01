@@ -310,7 +310,7 @@ export const deployStableDebtToken = async (
     verify
   );
 
-  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4]);
+  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4], '0x10');
 
   return instance;
 };
@@ -326,7 +326,7 @@ export const deployVariableDebtToken = async (
     verify
   );
 
-  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4]);
+  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4], '0x10');
 
   return instance;
 };
@@ -372,7 +372,8 @@ export const deployGenericAToken = async (
     incentivesController,
     '18',
     name,
-    symbol
+    symbol,
+    '0x10'
   );
 
   return instance;
