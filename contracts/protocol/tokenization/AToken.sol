@@ -96,6 +96,17 @@ contract AToken is
     _treasury = treasury;
     _underlyingAsset = underlyingAsset;
     _incentivesController = incentivesController;
+
+    emit Initialized(
+      underlyingAsset,
+      address(pool),
+      treasury,
+      address(incentivesController),
+      aTokenDecimals,
+      aTokenName,
+      aTokenSymbol,
+      params
+    );
   }
 
   /**

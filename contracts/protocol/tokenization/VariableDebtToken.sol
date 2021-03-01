@@ -48,6 +48,16 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _pool = pool;
     _underlyingAsset = underlyingAsset;
     _incentivesController = incentivesController;
+
+    emit Initialized(
+      underlyingAsset,
+      address(pool),
+      address(incentivesController),
+      debtTokenDecimals,
+      debtTokenName,
+      debtTokenSymbol,
+      params
+    );
   }
 
   /**
