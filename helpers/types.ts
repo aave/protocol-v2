@@ -28,6 +28,7 @@ export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
   MintableERC20 = 'MintableERC20',
+  MintableAmplERC20 = 'MintableAmplERC20',
   MintableDelegationERC20 = 'MintableDelegationERC20',
   LendingPoolAddressesProviderRegistry = 'LendingPoolAddressesProviderRegistry',
   LendingPoolParametersProvider = 'LendingPoolParametersProvider',
@@ -47,6 +48,9 @@ export enum eContractid {
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
+  AAmplToken = 'AAmplToken',
+  AmplStableDebtToken = 'StableDebtToken',
+  AmplVariableDebtToken = 'VariableDebtToken',
   MockAToken = 'MockAToken',
   DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
@@ -190,7 +194,7 @@ export interface iAssetBase<T> {
   USDT: T;
   SUSD: T;
   AAVE: T;
-  AMPL, T;
+  AMPL: T;
   BAT: T;
   MKR: T;
   LINK: T;

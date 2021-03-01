@@ -13,6 +13,7 @@ import {
 } from './types';
 
 import { MintableERC20 } from '../types/MintableERC20';
+import { MintableAmplERC20 } from '../types/MintableAmplERC20';
 import { MockContract } from 'ethereum-waffle';
 import { getReservesConfigByPool } from './configuration';
 import { getFirstSigner } from './contracts-getters';
@@ -20,6 +21,9 @@ import { ZERO_ADDRESS } from './constants';
 import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
+  AAmplTokenFactory,
+  AmplStableDebtTokenFactory,
+  AmplVariableDebtTokenFactory,
   ATokensAndRatesHelperFactory,
   AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
@@ -32,6 +36,7 @@ import {
   LendingPoolFactory,
   LendingRateOracleFactory,
   MintableDelegationERC20Factory,
+  MintableAmplERC20Factory,
   MintableERC20Factory,
   MockAggregatorFactory,
   MockATokenFactory,
@@ -62,6 +67,7 @@ import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
+import {AAmplToken} from "../types/AAmplToken";
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -278,6 +284,17 @@ export const deployMintableERC20 = async (
     verify
   );
 
+export const deployMintableAmplERC20 = async (
+  args: [string, string, string],
+  verify?: boolean
+): Promise<MintableAmplERC20> =>
+  withSaveAndVerify(
+    await new MintableAmplERC20Factory(await getFirstSigner()).deploy(),
+    eContractid.MintableAmplERC20,
+    args,
+    verify
+  );
+
 export const deployMintableDelegationERC20 = async (
   args: [string, string, string],
   verify?: boolean
@@ -347,6 +364,60 @@ export const deployGenericAToken = async (
     verify
   );
 };
+
+export const deployAAmplToken = async (
+  [poolAddress, underlyingAssetAddress, stableDebtTokenAddress, variableDebtTokenAddress, treasuryAddress,
+    name, symbol, incentivesController]: [
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    tEthereumAddress
+    ],
+  verify: boolean
+) => {
+  const args: [
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    tEthereumAddress,
+    tEthereumAddress
+    ] = [poolAddress, underlyingAssetAddress, stableDebtTokenAddress, variableDebtTokenAddress, treasuryAddress, name, symbol, incentivesController];
+  return withSaveAndVerify(
+    await new AAmplTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AAmplToken,
+    args,
+    verify
+  );
+};
+
+export const deployAmplStableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new AmplStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AmplStableDebtToken,
+    args,
+    verify
+  );
+
+export const deployAmplVariableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new AmplVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AmplVariableDebtToken,
+    args,
+    verify
+  );
 
 export const deployDelegationAwareAToken = async (
   [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [

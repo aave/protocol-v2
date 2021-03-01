@@ -8,6 +8,7 @@ import {
 import {
   deployLendingPoolAddressesProvider,
   deployMintableERC20,
+  deployMintableAmplERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
   deployLendingPool,
@@ -53,6 +54,7 @@ import {
   getPairsTokenAggregator,
 } from '../helpers/contracts-getters';
 import { WETH9Mocked } from '../types/WETH9Mocked';
+import {MintableAmplERC20} from "../types/MintableAmplERC20";
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -61,7 +63,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.AllAssetsInitialPrice
 const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
-  const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked } = {};
+  const tokens: { [symbol: string]: MockContract | MintableERC20 | MintableAmplERC20 | WETH9Mocked } = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
 
@@ -79,11 +81,20 @@ const deployAllMockTokens = async (deployer: Signer) => {
       decimals = 18;
     }
 
-    tokens[tokenSymbol] = await deployMintableERC20([
-      tokenSymbol,
-      tokenSymbol,
-      configData ? configData.reserveDecimals : 18,
-    ]);
+    if (tokenSymbol === 'AMPL') {
+      console.log('Deployer setup: ' + await deployer.getAddress());
+      tokens[tokenSymbol] = await deployMintableAmplERC20([
+        tokenSymbol,
+        tokenSymbol,
+        configData ? configData.reserveDecimals : 9,
+      ]);
+    } else {
+      tokens[tokenSymbol] = await deployMintableERC20([
+        tokenSymbol,
+        tokenSymbol,
+        configData ? configData.reserveDecimals : 18,
+      ]);
+}
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
   }
 
