@@ -11,11 +11,11 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
   AMPL specific AmplVariableDebtToken implementation.
   The AmplAmplVariableDebtToken doesn't alter any logic but performs some additional book-keeping.
 
-  On mint and burn a private variable `_totalScaledAMPLBorrowed` keeps track of
+  On mint and burn a private variable `_totalGonsBorrowed` keeps track of
     the scaled AMPL principal borrowed.
 
   * fetchAMPLBorrowData() returns the total AMPL borrowed and the total scaled AMPL borrowed
-  * fetchAMPLScalar() fetches AMPL's supply scaling factor
+  * fetchGonsPerAMPL() fetches AMPL's supply scaling factor
 */
 contract AmplVariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using WadRayMath for uint256;
@@ -29,10 +29,10 @@ contract AmplVariableDebtToken is DebtTokenBase, IVariableDebtToken {
   // TOTAL_GONS/ampl.scaledTotalSupply, saving an external call to the AMPL contract
   // and setting it as a local contract constant.
   // NOTE: This should line up EXACTLY with the value on the AMPL contract
-  uint256 private constant AMPL_SCALED_TOTAL_SUPPLY = 115792089237316195423570985008687907853269984665640564039457550000000000000000;
+  uint256 private constant AMPL_SCALED_TOTAL_SUPPLY = uint256(type(int128).max);
 
   // Keeps track of the 'gons' borrowed from the aave system
-  uint256 private _totalScaledAMPLBorrowed;
+  uint256 private _totalGonsBorrowed;
   // ---------------------------------------------------------------------------
 
   constructor(
@@ -92,7 +92,7 @@ contract AmplVariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _mint(onBehalfOf, amountScaled);
 
     // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalScaledAMPLBorrowed = _totalScaledAMPLBorrowed.add(amountScaled.mul(fetchAMPLScalar()));
+    _totalGonsBorrowed = _totalGonsBorrowed.add(amountScaled.mul(fetchGonsPerAMPL()));
 
     emit Transfer(address(0), onBehalfOf, amount);
     emit Mint(user, onBehalfOf, amount, index);
@@ -118,7 +118,7 @@ contract AmplVariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _burn(user, amountScaled);
 
     // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalScaledAMPLBorrowed = _totalScaledAMPLBorrowed.sub(amountScaled.mul(fetchAMPLScalar()));
+    _totalGonsBorrowed = _totalGonsBorrowed.sub(amountScaled.mul(fetchGonsPerAMPL()));
 
     emit Transfer(user, address(0), amount);
     emit Burn(user, amount, index);
@@ -168,10 +168,10 @@ contract AmplVariableDebtToken is DebtTokenBase, IVariableDebtToken {
   // Custom methods for aAMPL
 
   function getAMPLBorrowData() external view returns (uint256, uint256) {
-    return (super.totalSupply(), _totalScaledAMPLBorrowed);
+    return (super.totalSupply(), _totalGonsBorrowed);
   }
 
-  function fetchAMPLScalar() internal view returns (uint256) {
+  function fetchGonsPerAMPL() internal view returns (uint256) {
     return AMPL_SCALED_TOTAL_SUPPLY.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
   }
 }

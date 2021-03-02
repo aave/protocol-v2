@@ -61,7 +61,7 @@ export const AaveConfig: IAaveConfiguration = {
     [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       AAVE: '0xB597cd8D3217ea6477232F9217fa70837ff667Af',
-      AMPL: '',
+      AMPL: '0x3E0437898a5667a4769B1Ca5A34aAB1ae7E81377',
       BAT: '0x2d12186Fbb9f9a8C28B3FfdD4c42920f8539D738',
       BUSD: '0x4c6E1EFC12FDfD568186b7BAEc0A43fFfb4bCcCf',
       DAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',
