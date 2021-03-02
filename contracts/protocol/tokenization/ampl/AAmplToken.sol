@@ -611,7 +611,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   /**
    * @dev balanceOfScaled = balanceInternal / totalSupplyInternal * totalSupplyScaled
-   *                       = balanceInternal . λ
+   *                      = λ . balanceInternal
    **/
   function _balanceOfScaled(uint256 balanceInternal, uint256 totalSupplyInternal, uint256 totalSupplyScaled) private pure returns (uint256) {
     if (balanceInternal == 0 || totalSupplyScaled == 0) {
