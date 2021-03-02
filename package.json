@@ -50,6 +50,7 @@
     "aave:fork:main:tenderly": "npm run compile && npm run hardhat:tenderly-main -- aave:mainnet",
     "aave:fork:main": "npm run compile && MAINNET_FORK=true hardhat aave:mainnet",
     "amm:fork:main": "npm run compile && MAINNET_FORK=true hardhat amm:mainnet",
+    "amm:fork:main:tenderly": "npm run compile && npm run hardhat:tenderly-main -- amm:mainnet",
     "aave:main:full:migration": "npm run compile && npm run hardhat:main -- aave:mainnet --verify",
     "aave:main:full:initialize": "npm run compile && MAINNET_FORK=true full:initialize-tokens --pool Aave",
     "amm:main:full:migration": "npm run compile && npm run hardhat:main -- amm:mainnet --verify",

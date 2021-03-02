@@ -64,13 +64,7 @@ task(
       const firstAccount = await getFirstSigner();
       await firstAccount.sendTransaction({ value: parseEther('10'), to: providerRegistryOwner });
     } else {
-      signer = await getFirstSigner();
-      const deployerAddress = await signer.getAddress();
-      if (providerRegistryOwner !== (await signer.getAddress())) {
-        throw Error(
-          `Current signer is not provider registry owner. \nCurrent deployer address: ${deployerAddress} \nExpected address: ${poolConfig.ProviderRegistryOwner}`
-        );
-      }
+      signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
     }
     // 1. Address Provider Registry instance
     const addressesProviderRegistry = (

@@ -50,7 +50,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
 
       let aaveOracle: AaveOracle;
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
-        aaveOracle = await getAaveOracle(aaveOracleAddress);
+        aaveOracle = await await getAaveOracle(aaveOracleAddress);
+        const owner = await aaveOracle.owner();
+        const signer = DRE.ethers.provider.getSigner(owner);
+
+        aaveOracle = await (await getAaveOracle(aaveOracleAddress)).connect(signer);
         await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
       } else {
         aaveOracle = await deployAaveOracle(
@@ -59,11 +63,14 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         );
       }
 
-      const lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)
+      let lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)
         ? await getLendingRateOracle(lendingRateOracleAddress)
         : await deployLendingRateOracle(verify);
       const { USD, ...tokensAddressesWithoutUsd } = tokensToWatch;
 
+      lendingRateOracle = lendingRateOracle.connect(
+        DRE.ethers.provider.getSigner(await lendingRateOracle.owner())
+      );
       // This must be done any time a new market is created I believe
       //if (!lendingRateOracleAddress) {
       await setInitialMarketRatesInRatesOracleByHelper(

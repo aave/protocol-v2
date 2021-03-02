@@ -99,11 +99,14 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (usingTenderly()) {
-    console.log('doing verify of', id);
+    console.log();
+    console.log('Doing Tenderly contract verification of', id);
     await (DRE as any).tenderlyRPC.verify({
       name: id,
       address: instance.address,
     });
+    console.log(`Verified ${id} at Tenderly!`);
+    console.log();
   }
   if (verify) {
     await verifyContract(instance.address, args);

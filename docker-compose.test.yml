@@ -7,3 +7,4 @@ services:
     environment:
       - MNEMONIC
       - ALCHEMY_KEY
+      - TENDERLY_FORK_ID
