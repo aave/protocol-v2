@@ -29,65 +29,18 @@ makeSuite('Ampl aToken', (testEnv: TestEnv) => {
     LP_BORROW_ALLOWANCE_NOT_ENOUGH,
   } = ProtocolErrors;
 
-  // before(async () => {
-  // });
-
-  // it('Deposits WETH into the reserve', async () => {
-  //   const {pool, weth, ampl} = testEnv;
-  //   const userAddress = await pool.signer.getAddress();
-  //   const amountToDeposit = ethers.utils.parseEther('1');
-  //
-  //   await weth.mint(amountToDeposit);
-  //
-  //   await weth.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-  //
-  //   await pool.deposit(weth.address, amountToDeposit, userAddress, '0');
-  // });
-
-  it('Deposits UNI into the reserve', async () => {
-    const {pool, weth, uni, ampl, users} = testEnv;
-    const user = await users[0]
-    const amountToDeposit = await convertToCurrencyDecimals(uni.address, '20000');
-
-    await uni.mint(amountToDeposit);
-
-    await uni.approve(pool.address, amountToDeposit);
-
-    await pool.deposit(uni.address, amountToDeposit, user.address, '0');
+  before(async () => {
+    const {ampl, deployer} = testEnv;
+    ampl.setMonetaryPolicy(deployer.address);
   });
-  //
-  // it('Deposits DAI into the reserve', async () => {
-  //   const { pool, weth, users,dai } = testEnv;
-  //   const user = await users[0]
-  //   const amountToDeposit = await convertToCurrencyDecimals(dai.address, '20000');
-  //   await dai.mint(amountToDeposit);
-  //
-  //   await dai.approve(pool.address, amountToDeposit);
-  //
-  //   await pool.deposit(dai.address, amountToDeposit, user.address, '0');
-  // });
-  //
-  //
-  // it('Deposits AAVE into the reserve', async () => {
-  //   const { pool, weth, users,aave } = testEnv;
-  //   const user = await users[0]
-  //   const amountToDeposit = await convertToCurrencyDecimals(aave.address, '20000');
-  //   await aave.mint(amountToDeposit);
-  //
-  //   await aave.approve(pool.address, amountToDeposit);
-  //
-  //   await pool.deposit(aave.address, amountToDeposit, user.address, '0');
-  // });
 
   function printUserData(userData) {
-
     console.log('totalCollateralETH : ', userData.totalCollateralETH.toString());
-    console.log('totalDebtETH: ',userData.totalDebtETH.toNumber());
-    console.log('availableBorrowsETH: ', userData.availableBorrowsETH.toNumber());
-    console.log('currentLiquidationThreshold: ', userData.currentLiquidationThreshold.toNumber());
-    console.log('ltv: ', userData.ltv.toNumber());
-    console.log('healthFactor: ', userData.healthFactor.toNumber());
-    console.log('healthFactor: ', userData.healthFactor.toNumber());
+    console.log('totalDebtETH: ',userData.totalDebtETH.toString());
+    console.log('availableBorrowsETH: ', userData.availableBorrowsETH.toString());
+    console.log('currentLiquidationThreshold: ', userData.currentLiquidationThreshold.toString());
+    console.log('ltv: ', userData.ltv.toString());
+    console.log('healthFactor: ', userData.healthFactor.toString());
   }
 
   it('Deposits AMPL into the reserve', async () => {
@@ -95,12 +48,8 @@ makeSuite('Ampl aToken', (testEnv: TestEnv) => {
     const {pool, dai, ampl, users, addressesProvider, uni, aAMPL, aDai, deployer} = testEnv;
 
     let amplReserve = await pool.getReserveData(ampl.address);
-    let uniReserve = await pool.getReserveData(uni.address);
-    let daiReserve = await pool.getReserveData(dai.address);
     console.log('amplReserve:');
     console.log(amplReserve);
-    // console.log(uniReserve);
-    // console.log(daiReserve);
 
 
     // Borrower deposits
@@ -131,15 +80,19 @@ makeSuite('Ampl aToken', (testEnv: TestEnv) => {
     console.log(await aAMPL._fetchExtData());
 
     await pool.connect(lender.signer).deposit(ampl.address, amountToDeposit, lender.address, '0');
-    let lenderUserData = await pool.getUserAccountData(borrower.address);
+    let lenderUserData = await pool.getUserAccountData(borrower.address)
     printUserData(lenderUserData);
-
 
     // Borrowing
     const amountToBorrow = await convertToCurrencyDecimals(ampl.address, '1000');
     await pool.connect(borrower.signer).borrow(ampl.address, amountToBorrow, RateMode.Variable,'0', borrower.address);
 
     let borrowerUserData = await pool.getUserAccountData(borrower.address);
+
+    console.log((await ampl.balanceOf(borrower.address)).toString());
+    console.log((await aAMPL.balanceOf(borrower.address)).toString());
+    console.log((await ampl.balanceOf(lender.address)).toString());
+    console.log((await aAMPL.balanceOf(lender.address)).toString());
     printUserData(borrowerUserData);
   });
 });
