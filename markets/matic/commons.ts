@@ -85,7 +85,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingRateOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0xe48f95873855bfd97bf89572ddf5cbc44d9c545b',
   },  
   LendingPoolCollateralManager: {
     [ePolygonNetwork.mumbai]: '',
@@ -101,7 +101,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x1B38fa90596F2C25bCf1B193A6c6a718349AFDfC',
+    [ePolygonNetwork.matic]: '0x9447F83C0309FB62F2013e9752Ecf9B2C507652C',
   },
   FallbackOracle: {
     [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
