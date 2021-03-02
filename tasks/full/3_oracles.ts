@@ -1,8 +1,8 @@
 import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
+import { deployAaveOracle, deployLendingRateOracle, deployGenericOracle } from '../../helpers/contracts-deployments';
 import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
-import { ICommonConfiguration, eNetwork, SymbolMap } from '../../helpers/types';
+import { ICommonConfiguration, eNetwork, SymbolMap, ePolygonNetwork } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
   ConfigNames,
@@ -17,7 +17,7 @@ import {
   getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
-import { AaveOracle } from '../../types';
+import { AaveOracle, GenericOracle } from '../../types';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -47,16 +47,26 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         USD: UsdAddress,
       };
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
-
-      let aaveOracle: AaveOracle;
+      
+      // Check if network is ETH or generic
+      let aaveOracle: AaveOracle | GenericOracle;
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
         aaveOracle = await getAaveOracle(aaveOracleAddress);
         await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
       } else {
-        aaveOracle = await deployAaveOracle(
-          [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
-          verify
-        );
+        if (network === ePolygonNetwork.matic || network == ePolygonNetwork.mumbai) {
+          console.log("\tDeploying generic oracle...");
+          aaveOracle = await deployGenericOracle(
+            [tokens, aggregators, fallbackOracleAddress],
+            false
+          );
+        } else {
+          console.log("\tDeploying Aave oracle...");
+          aaveOracle = await deployAaveOracle(
+            [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
+            verify
+          );
+        }
       }
 
       const lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)

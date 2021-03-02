@@ -49,6 +49,7 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  GenericOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -208,6 +209,17 @@ export const deployAaveOracle = async (
 ) =>
   withSaveAndVerify(
     await new AaveOracleFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AaveOracle,
+    args,
+    verify
+  );
+
+export const deployGenericOracle = async (
+  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new GenericOracleFactory(await getFirstSigner()).deploy(...args),
     eContractid.AaveOracle,
     args,
     verify

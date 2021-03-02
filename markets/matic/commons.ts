@@ -101,7 +101,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x1B38fa90596F2C25bCf1B193A6c6a718349AFDfC',
+    [ePolygonNetwork.matic]: '',//'0x1B38fa90596F2C25bCf1B193A6c6a718349AFDfC',
   },
   FallbackOracle: {
     [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
