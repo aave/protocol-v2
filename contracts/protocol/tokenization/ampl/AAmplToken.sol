@@ -159,7 +159,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   // TOTAL_GONS/ampl.scaledTotalSupply, saving an external call to the AMPL contract
   // and setting it as a local contract constant.
   // NOTE: This should line up EXACTLY with the value on the AMPL contract
-  uint256 private constant AMPL_SCALED_TOTAL_SUPPLY = uint256(type(int128).max);
+  uint256 private constant GONS_TOTAL_SUPPLY = uint256(type(int128).max);
 
   // Keeps track of the 'gons' deposited into the aave system
   uint256 private _totalGonsDeposited;
@@ -636,9 +636,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
    *      - AMPL scalar form Ampleforth ERC-20 (Λ)
    *      - principal borrowed and Gons borrowed from the debt contracts
    **/
-  function _fetchExtData() public view returns (ExtData memory) {
+  function _fetchExtData() internal view returns (ExtData memory) {
     ExtData memory _extContractData;
-    _extContractData.GonsPerAMPL = AMPL_SCALED_TOTAL_SUPPLY.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
+    _extContractData.GonsPerAMPL = GONS_TOTAL_SUPPLY.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
 
     uint256 stablePrincipal;
     uint256 stablePrincipalScaled;
