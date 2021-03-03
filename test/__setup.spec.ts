@@ -94,7 +94,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
         tokenSymbol,
         configData ? configData.reserveDecimals : 18,
       ]);
-}
+    }
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
   }
 

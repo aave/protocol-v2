@@ -338,6 +338,28 @@ export const deployVariableDebtToken = async (
     verify
   );
 
+export const deployAmplStableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new AmplStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AmplStableDebtToken,
+    args,
+    verify
+  );
+
+export const deployAmplVariableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new AmplVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AmplVariableDebtToken,
+    args,
+    verify
+  );
+
 export const deployGenericAToken = async (
   [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [
     tEthereumAddress,
@@ -396,28 +418,6 @@ export const deployAAmplToken = async (
     verify
   );
 };
-
-export const deployAmplStableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
-  verify: boolean
-) =>
-  withSaveAndVerify(
-    await new AmplStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.AmplStableDebtToken,
-    args,
-    verify
-  );
-
-export const deployAmplVariableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
-  verify: boolean
-) =>
-  withSaveAndVerify(
-    await new AmplVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.AmplVariableDebtToken,
-    args,
-    verify
-  );
 
 export const deployDelegationAwareAToken = async (
   [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [

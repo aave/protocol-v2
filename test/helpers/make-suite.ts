@@ -99,6 +99,7 @@ const testEnv: TestEnv = {
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
   ampl: {} as MintableAmplERC20,
+  aAMPL: {} as AAmplToken,
   uni: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,

@@ -283,15 +283,12 @@ export const initReservesByHelper = async (
       ],
       verify
     );
-    // const deployCustomAToken = chooseATokenDeployment(params.aTokenImpl);
-    // console.log("stableDebt: " + stableDebt.address);
-    // console.log("VariableDebt: " + variableDebt.address);
     const aToken = await deployAAmplToken(
       [
         poolAddress,
         tokenAddresses[symbol],
-        stableDebt.address,
-        variableDebt.address,
+        '0xe1B0c18E836ad86eDeeb0DEbf36c68846B9Df2c3',
+        '0xEb260d0ce8543820b5D901BD2Cf68Be9003e428D',
         treasuryAddress,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
@@ -299,6 +296,9 @@ export const initReservesByHelper = async (
       ],
       verify
     );
+    console.log("aAMPL: " + aToken.address);
+    console.log("stableDebt: " + stableDebt.address);
+    console.log("VariableDebt: " + variableDebt.address);
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,  // Change for LendingPoolAddressesProvider(addressesProvider)
@@ -342,6 +342,7 @@ export const initReservesByHelper = async (
     );
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+    console.log(`  - Debt tokens: ${chunkedVariableTokens[chunkIndex].join(', ')}`);
     console.log('    * gasUsed', tx3.gasUsed.toString());
     gasUsage = gasUsage.add(tx3.gasUsed);
   }
@@ -552,6 +553,7 @@ export const initTokenReservesByHelper = async (
         ],
         verify
       );
+      // console.log("Not found : " + symbol + " : " + variableDebt.address);
       variableTokenImpl = variableDebt.address;
     }
     if (!aTokenImplementation) {

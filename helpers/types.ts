@@ -49,8 +49,8 @@ export enum eContractid {
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   AAmplToken = 'AAmplToken',
-  AmplStableDebtToken = 'StableDebtToken',
-  AmplVariableDebtToken = 'VariableDebtToken',
+  AmplStableDebtToken = 'AMPLStableDebtToken',
+  AmplVariableDebtToken = 'AMPLVariableDebtToken',
   MockAToken = 'MockAToken',
   DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
@@ -218,26 +218,26 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 export type iAavePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'DAI'
-  | 'TUSD'
+  // | 'TUSD'
   | 'USDC'
-  | 'USDT'
-  | 'SUSD'
+  // | 'USDT'
+  // | 'SUSD'
   | 'AAVE'
   | 'AMPL'
-  | 'BAT'
-  | 'MKR'
-  | 'LINK'
-  | 'KNC'
-  | 'WBTC'
-  | 'MANA'
-  | 'ZRX'
-  | 'SNX'
-  | 'BUSD'
+  // | 'BAT'
+  // | 'MKR'
+  // | 'LINK'
+  // | 'KNC'
+  // | 'WBTC'
+  // | 'MANA'
+  // | 'ZRX'
+  // | 'SNX'
+  // | 'BUSD'
   | 'WETH'
-  | 'YFI'
+  // | 'YFI'
   | 'UNI'
-  | 'REN'
-  | 'ENJ'
+  // | 'REN'
+  // | 'ENJ'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
