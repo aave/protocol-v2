@@ -98,15 +98,6 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _baseVariableBorrowRate.add(_variableRateSlope1).add(_variableRateSlope2);
   }
 
-  struct CalcInterestRatesLocalVars {
-    uint256 totalDebt;
-    uint256 currentVariableBorrowRate;
-    uint256 currentStableBorrowRate;
-    uint256 currentLiquidityRate;
-    uint256 utilizationRate;
-    uint256 availableLiquidity;
-  }
-
   /**
    * @dev Calculates the interest rates depending on the reserve's state and configurations
    * @param reserve The address of the reserve
@@ -137,17 +128,68 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       uint256
     )
   {
+    uint256 availableLiquidity = IERC20(reserve).balanceOf(aToken);
+    //avoid stack too deep
+    availableLiquidity = availableLiquidity.add(liquidityAdded).sub(liquidityTaken);
+
+    return
+      calculateInterestRates(
+        reserve,
+        availableLiquidity,
+        totalStableDebt,
+        totalVariableDebt,
+        averageStableBorrowRate,
+        reserveFactor
+      );
+  }
+
+  struct CalcInterestRatesLocalVars {
+    uint256 totalDebt;
+    uint256 currentVariableBorrowRate;
+    uint256 currentStableBorrowRate;
+    uint256 currentLiquidityRate;
+    uint256 utilizationRate;
+  }
+
+  /**
+   * @dev Calculates the interest rates depending on the reserve's state and configurations.
+   * NOTE This function is kept for compatibility with the previous DefaultInterestRateStrategy interface.
+   * New protocol implementation uses the new calculateInterestRates() interface
+   * @param reserve The address of the reserve
+   * @param availableLiquidity The liquidity available in the corresponding aToken
+   * @param totalStableDebt The total borrowed from the reserve a stable rate
+   * @param totalVariableDebt The total borrowed from the reserve at a variable rate
+   * @param averageStableBorrowRate The weighted average of all the stable rate loans
+   * @param reserveFactor The reserve portion of the interest that goes to the treasury of the market
+   * @return The liquidity rate, the stable borrow rate and the variable borrow rate
+   **/
+  function calculateInterestRates(
+    address reserve,
+    uint256 availableLiquidity,
+    uint256 totalStableDebt,
+    uint256 totalVariableDebt,
+    uint256 averageStableBorrowRate,
+    uint256 reserveFactor
+  )
+    public
+    view
+    override
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
     CalcInterestRatesLocalVars memory vars;
 
     vars.totalDebt = totalStableDebt.add(totalVariableDebt);
     vars.currentVariableBorrowRate = 0;
     vars.currentStableBorrowRate = 0;
     vars.currentLiquidityRate = 0;
-    vars.availableLiquidity = IERC20(reserve).balanceOf(aToken);
-    vars.availableLiquidity = vars.availableLiquidity.add(liquidityAdded).sub(liquidityTaken);
 
-    vars.utilizationRate =
-      vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(vars.availableLiquidity.add(vars.totalDebt));
+    vars.utilizationRate = vars.totalDebt == 0
+      ? 0
+      : vars.totalDebt.rayDiv(availableLiquidity.add(vars.totalDebt));
 
     vars.currentStableBorrowRate = ILendingRateOracle(addressesProvider.getLendingRateOracle())
       .getMarketBorrowRate(reserve);
