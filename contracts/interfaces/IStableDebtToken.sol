@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
+import {IInitializableDebtToken} from './IInitializableDebtToken.sol';
+import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
+
 /**
  * @title IStableDebtToken
  * @notice Defines the interface for the stable debt token
@@ -8,7 +11,7 @@ pragma solidity 0.6.12;
  * @author Aave
  **/
 
-interface IStableDebtToken {
+interface IStableDebtToken is IInitializableDebtToken {
   /**
    * @dev Emitted when new stable debt is minted
    * @param user The address of the user who triggered the minting
@@ -122,4 +125,9 @@ interface IStableDebtToken {
    * @return The debt balance of the user since the last burn/mint action
    **/
   function principalBalanceOf(address user) external view returns (uint256);
+
+  /**
+   * @dev Returns the address of the incentives controller contract
+   **/
+  function getIncentivesController() external view returns (IAaveIncentivesController);
 }

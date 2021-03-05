@@ -7,6 +7,8 @@ import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingRateOracle} from '../../interfaces/ILendingRateOracle.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import 'hardhat/console.sol';
 
 /**
  * @title DefaultReserveInterestRateStrategy contract
@@ -96,6 +98,51 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _baseVariableBorrowRate.add(_variableRateSlope1).add(_variableRateSlope2);
   }
 
+  /**
+   * @dev Calculates the interest rates depending on the reserve's state and configurations
+   * @param reserve The address of the reserve
+   * @param liquidityAdded The liquidity added during the operation
+   * @param liquidityTaken The liquidity taken during the operation
+   * @param totalStableDebt The total borrowed from the reserve a stable rate
+   * @param totalVariableDebt The total borrowed from the reserve at a variable rate
+   * @param averageStableBorrowRate The weighted average of all the stable rate loans
+   * @param reserveFactor The reserve portion of the interest that goes to the treasury of the market
+   * @return The liquidity rate, the stable borrow rate and the variable borrow rate
+   **/
+  function calculateInterestRates(
+    address reserve,
+    address aToken,
+    uint256 liquidityAdded,
+    uint256 liquidityTaken,
+    uint256 totalStableDebt,
+    uint256 totalVariableDebt,
+    uint256 averageStableBorrowRate,
+    uint256 reserveFactor
+  )
+    external
+    view
+    override
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    uint256 availableLiquidity = IERC20(reserve).balanceOf(aToken);
+    //avoid stack too deep
+    availableLiquidity = availableLiquidity.add(liquidityAdded).sub(liquidityTaken);
+
+    return
+      calculateInterestRates(
+        reserve,
+        availableLiquidity,
+        totalStableDebt,
+        totalVariableDebt,
+        averageStableBorrowRate,
+        reserveFactor
+      );
+  }
+
   struct CalcInterestRatesLocalVars {
     uint256 totalDebt;
     uint256 currentVariableBorrowRate;
@@ -105,9 +152,11 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   }
 
   /**
-   * @dev Calculates the interest rates depending on the reserve's state and configurations
+   * @dev Calculates the interest rates depending on the reserve's state and configurations.
+   * NOTE This function is kept for compatibility with the previous DefaultInterestRateStrategy interface.
+   * New protocol implementation uses the new calculateInterestRates() interface
    * @param reserve The address of the reserve
-   * @param availableLiquidity The liquidity available in the reserve
+   * @param availableLiquidity The liquidity available in the corresponding aToken
    * @param totalStableDebt The total borrowed from the reserve a stable rate
    * @param totalVariableDebt The total borrowed from the reserve at a variable rate
    * @param averageStableBorrowRate The weighted average of all the stable rate loans
@@ -122,7 +171,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 averageStableBorrowRate,
     uint256 reserveFactor
   )
-    external
+    public
     view
     override
     returns (
@@ -138,15 +187,16 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     vars.currentStableBorrowRate = 0;
     vars.currentLiquidityRate = 0;
 
-    uint256 utilizationRate =
-      vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(availableLiquidity.add(vars.totalDebt));
+    vars.utilizationRate = vars.totalDebt == 0
+      ? 0
+      : vars.totalDebt.rayDiv(availableLiquidity.add(vars.totalDebt));
 
     vars.currentStableBorrowRate = ILendingRateOracle(addressesProvider.getLendingRateOracle())
       .getMarketBorrowRate(reserve);
 
-    if (utilizationRate > OPTIMAL_UTILIZATION_RATE) {
+    if (vars.utilizationRate > OPTIMAL_UTILIZATION_RATE) {
       uint256 excessUtilizationRateRatio =
-        utilizationRate.sub(OPTIMAL_UTILIZATION_RATE).rayDiv(EXCESS_UTILIZATION_RATE);
+        vars.utilizationRate.sub(OPTIMAL_UTILIZATION_RATE).rayDiv(EXCESS_UTILIZATION_RATE);
 
       vars.currentStableBorrowRate = vars.currentStableBorrowRate.add(_stableRateSlope1).add(
         _stableRateSlope2.rayMul(excessUtilizationRateRatio)
@@ -157,10 +207,10 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       );
     } else {
       vars.currentStableBorrowRate = vars.currentStableBorrowRate.add(
-        _stableRateSlope1.rayMul(utilizationRate.rayDiv(OPTIMAL_UTILIZATION_RATE))
+        _stableRateSlope1.rayMul(vars.utilizationRate.rayDiv(OPTIMAL_UTILIZATION_RATE))
       );
       vars.currentVariableBorrowRate = _baseVariableBorrowRate.add(
-        utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE)
+        vars.utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE)
       );
     }
 
@@ -171,7 +221,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
         .currentVariableBorrowRate,
       averageStableBorrowRate
     )
-      .rayMul(utilizationRate)
+      .rayMul(vars.utilizationRate)
       .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(reserveFactor));
 
     return (

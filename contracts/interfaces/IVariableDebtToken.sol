@@ -2,13 +2,15 @@
 pragma solidity 0.6.12;
 
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
+import {IInitializableDebtToken} from './IInitializableDebtToken.sol';
+import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
 
 /**
  * @title IVariableDebtToken
  * @author Aave
  * @notice Defines the basic interface for a variable debt token.
  **/
-interface IVariableDebtToken is IScaledBalanceToken {
+interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {
   /**
    * @dev Emitted after the mint action
    * @param from The address performing the mint
@@ -52,4 +54,9 @@ interface IVariableDebtToken is IScaledBalanceToken {
     uint256 amount,
     uint256 index
   ) external;
+
+  /**
+   * @dev Returns the address of the incentives controller contract
+   **/
+  function getIncentivesController() external view returns (IAaveIncentivesController);
 }

@@ -11,15 +11,16 @@ import {
   getGenesisPoolAdmin,
   getEmergencyAdmin,
 } from '../../helpers/configuration';
-import { eEthereumNetwork } from '../../helpers/types';
+import { eNetwork } from '../../helpers/types';
 import {
   getFirstSigner,
   getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-getters';
 import { formatEther, isAddress, parseEther } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
-import { Signer } from 'ethers';
+import { Signer, BigNumber } from 'ethers';
 import { parse } from 'path';
+//import BigNumber from 'bignumber.js';
 
 task(
   'full:deploy-address-provider',
@@ -30,7 +31,7 @@ task(
   .setAction(async ({ verify, pool }, DRE) => {
     await DRE.run('set-DRE');
     let signer: Signer;
-    const network = <eEthereumNetwork>DRE.network.name;
+    const network = <eNetwork>DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const { ProviderId, MarketId } = poolConfig;
 
@@ -63,13 +64,7 @@ task(
       const firstAccount = await getFirstSigner();
       await firstAccount.sendTransaction({ value: parseEther('10'), to: providerRegistryOwner });
     } else {
-      signer = await getFirstSigner();
-      const deployerAddress = await signer.getAddress();
-      if (providerRegistryOwner !== (await signer.getAddress())) {
-        throw Error(
-          `Current signer is not provider registry owner. \nCurrent deployer address: ${deployerAddress} \nExpected address: ${poolConfig.ProviderRegistryOwner}`
-        );
-      }
+      signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
     }
     // 1. Address Provider Registry instance
     const addressesProviderRegistry = (
@@ -81,6 +76,7 @@ task(
     // 2. Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(MarketId, verify);
 
+    // DISABLE SEC. 3 FOR GOVERNANCE USE!
     // 3. Set the provider at the Registry
     await waitForTx(
       await addressesProviderRegistry.registerAddressesProvider(

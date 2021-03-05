@@ -16,52 +16,18 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
  */
 
 abstract contract DebtTokenBase is
-  IncentivizedERC20,
+  IncentivizedERC20('DEBTTOKEN_IMPL', 'DEBTTOKEN_IMPL', 0),
   VersionedInitializable,
   ICreditDelegationToken
 {
-  address public immutable UNDERLYING_ASSET_ADDRESS;
-  ILendingPool public immutable POOL;
-
   mapping(address => mapping(address => uint256)) internal _borrowAllowances;
 
   /**
    * @dev Only lending pool can call functions marked by this modifier
    **/
   modifier onlyLendingPool {
-    require(_msgSender() == address(POOL), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(_getLendingPool()), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
-  }
-
-  /**
-   * @dev The metadata of the token will be set on the proxy, that the reason of
-   * passing "NULL" and 0 as metadata
-   */
-  constructor(
-    address pool,
-    address underlyingAssetAddress,
-    string memory name,
-    string memory symbol,
-    address incentivesController
-  ) public IncentivizedERC20(name, symbol, 18, incentivesController) {
-    POOL = ILendingPool(pool);
-    UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
-  }
-
-  /**
-   * @dev Initializes the debt token.
-   * @param name The name of the token
-   * @param symbol The symbol of the token
-   * @param decimals The decimals of the token
-   */
-  function initialize(
-    uint8 decimals,
-    string memory name,
-    string memory symbol
-  ) public initializer {
-    _setName(name);
-    _setSymbol(symbol);
-    _setDecimals(decimals);
   }
 
   /**
@@ -73,7 +39,7 @@ abstract contract DebtTokenBase is
    **/
   function approveDelegation(address delegatee, uint256 amount) external override {
     _borrowAllowances[_msgSender()][delegatee] = amount;
-    emit BorrowAllowanceDelegated(_msgSender(), delegatee, UNDERLYING_ASSET_ADDRESS, amount);
+    emit BorrowAllowanceDelegated(_msgSender(), delegatee, _getUnderlyingAssetAddress(), amount);
   }
 
   /**
@@ -162,6 +128,10 @@ abstract contract DebtTokenBase is
 
     _borrowAllowances[delegator][delegatee] = newAllowance;
 
-    emit BorrowAllowanceDelegated(delegator, delegatee, UNDERLYING_ASSET_ADDRESS, newAllowance);
+    emit BorrowAllowanceDelegated(delegator, delegatee, _getUnderlyingAssetAddress(), newAllowance);
   }
+
+  function _getUnderlyingAssetAddress() internal view virtual returns (address);
+
+  function _getLendingPool() internal view virtual returns (ILendingPool);
 }

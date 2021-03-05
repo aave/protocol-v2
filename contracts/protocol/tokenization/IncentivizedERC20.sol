@@ -12,10 +12,8 @@ import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesControl
  * @notice Basic ERC20 implementation
  * @author Aave, inspired by the Openzeppelin ERC20 implementation
  **/
-contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
+abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   using SafeMath for uint256;
-
-  IAaveIncentivesController internal immutable _incentivesController;
 
   mapping(address => uint256) internal _balances;
 
@@ -28,13 +26,11 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   constructor(
     string memory name,
     string memory symbol,
-    uint8 decimals,
-    address incentivesController
+    uint8 decimals
   ) public {
     _name = name;
     _symbol = symbol;
     _decimals = decimals;
-    _incentivesController = IAaveIncentivesController(incentivesController);
   }
 
   /**
@@ -71,6 +67,12 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   function balanceOf(address account) public view virtual override returns (uint256) {
     return _balances[account];
   }
+
+  /**
+   * @return Abstract function implemented by the child aToken/debtToken. 
+   * Done this way in order to not break compatibility with previous versions of aTokens/debtTokens
+   **/
+  function _getIncentivesController() internal view virtual returns(IAaveIncentivesController);
 
   /**
    * @dev Executes a transfer of tokens from _msgSender() to recipient
@@ -180,11 +182,11 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldRecipientBalance = _balances[recipient];
     _balances[recipient] = _balances[recipient].add(amount);
 
-    if (address(_incentivesController) != address(0)) {
+    if (address(_getIncentivesController()) != address(0)) {
       uint256 currentTotalSupply = _totalSupply;
-      _incentivesController.handleAction(sender, currentTotalSupply, oldSenderBalance);
+      _getIncentivesController().handleAction(sender, currentTotalSupply, oldSenderBalance);
       if (sender != recipient) {
-        _incentivesController.handleAction(recipient, currentTotalSupply, oldRecipientBalance);
+        _getIncentivesController().handleAction(recipient, currentTotalSupply, oldRecipientBalance);
       }
     }
   }
@@ -200,8 +202,8 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.add(amount);
 
-    if (address(_incentivesController) != address(0)) {
-      _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
+    if (address(_getIncentivesController()) != address(0)) {
+      _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
     }
   }
 
@@ -216,8 +218,8 @@ contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
 
-    if (address(_incentivesController) != address(0)) {
-      _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
+    if (address(_getIncentivesController()) != address(0)) {
+      _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
     }
   }
 
