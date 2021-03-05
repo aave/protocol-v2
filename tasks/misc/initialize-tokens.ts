@@ -60,13 +60,7 @@ task('full:initialize-tokens', 'Initialize lending pool configuration.')
         const balance = await signer.getBalance();
         console.log('signer balance', formatEther(balance));
       } else {
-        signer = await getFirstSigner();
-        const deployerAddress = await signer.getAddress();
-        if (providerRegistryOwner !== (await signer.getAddress())) {
-          throw Error(
-            `Current signer is not provider registry owner. \nCurrent deployer address: ${deployerAddress} \nExpected address: ${poolConfig.ProviderRegistryOwner}`
-          );
-        }
+        signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
       }
 
       // Init unitilialized reserves

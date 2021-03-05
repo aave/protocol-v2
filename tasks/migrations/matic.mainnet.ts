@@ -21,7 +21,7 @@ task('matic:mainnet', 'Deploy development enviroment')
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
 
     console.log('2. Deploy lending pool');
-    await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME});
+    await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
 
     console.log('3. Deploy oracles');
     await DRE.run('full:deploy-oracles', { pool: POOL_NAME });
@@ -43,7 +43,10 @@ task('matic:mainnet', 'Deploy development enviroment')
 
     if (usingTenderly()) {
       const postDeployHead = DRE.tenderlyRPC.getHead();
-      console.log('Tenderly UUID', postDeployHead);
+      const postDeployFork = DRE.tenderlyRPC.getFork();
+      console.log('Tenderly Info');
+      console.log('- Head', postDeployHead);
+      console.log('- Fork', postDeployFork);
     }
     console.log('\nFinished migrations');
     printContracts();
