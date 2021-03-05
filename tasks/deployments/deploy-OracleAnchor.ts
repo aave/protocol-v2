@@ -13,22 +13,12 @@ task(`deploy-OracleAnchor`, `Deploys the OracleAnchor contract`)
       throw new Error('INVALID_CHAIN_ID');
     }
 
-    const aaveOracleAssets = {
-      [EthereumNetwork.main]: [
-        '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd', // GUSD
-        '0x8798249c2e607446efb7ad49ec89dd1865ff4272', // XSUSHI
-      ],
-      [EthereumNetwork.kovan]: [],
-    }; // token assets that are complex
-    const aaveOracleSources = {
-      [EthereumNetwork.main]: [
-        '0xec6f4cd64d28ef32507e2dc399948aae9bbedd7e', // GUSD
-        '0x9b26214bec078e68a394aaebfbfff406ce14893f', // XSUSHI
-      ],
-      [EthereumNetwork.kovan]: [],
-    }; // custom oracles for complex tokens
     const aggregatorAssets = {
       [EthereumNetwork.main]: [
+        // custom assets
+        // '0x056fd409e1d7a124bd7017459dfea2f387b6d5cd', // GUSD
+        // '0x8798249c2e607446efb7ad49ec89dd1865ff4272', // XSUSHI
+        // Chainlink assets
         '0x0000000000085d4780b73119b644ae5ecd22b376', // TUSD
         '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e', // YFI
         '0x0d8775f648430679a709e98d2b0cb6250d2887ef', // BAT
@@ -78,51 +68,55 @@ task(`deploy-OracleAnchor`, `Deploys the OracleAnchor contract`)
     }; // assets directly related to chainlink
     const aggregatorSources = {
       [EthereumNetwork.main]: [
-        '0x0c632ec5982e3a8dc116a02eba7a419efec170b1', //TUSD
-        '0x4a03707a1bfefc2836a69b1a6a6bd752270041a9', // YFI
-        '0x3146392934da3ae09447cd7fe4061d8aa96b50ae', // BAT
-        '0x3162c2de0c254b97d869a070929b518b5b9b56b3', // MANA
-        '0x5977d45ba0a1ffc3740506d07f5693bbc45df3c7', // UNI
-        '0xbd72da70007e47aaf1bbd84918675392cf6885f7', // WBTC
-        '0x1a53bf1bfffb7a2b33e1931d33423c7c94f675ee', // REN
-        '0x661be809784e094ea70f980939cf3f09337a3178', // BUSD
-        '0x7e6c635d6a53b5033d1b0cee84eccea9096859e4', // LINK
-        '0x060f728deb96875f992c97414eff2b3ef6c58ec7', // SUSD
-        '0xd866a07dea5ee3c093e21d33660b5579c21f140b', // DAI
-        '0x42f3b59f72772eb5794b04d2d85afac0d30a5683', // AAVE
-        '0x204a6fe11de66aa463879f47f3533dd87d47020d', // MKR
-        '0x00d02526ca08488342ab634de3b2d0050ecc7f60', // USDC
-        '0x4f5e9704b1d7cc032553f63471d96fcb63ff2bc3', // BAL => different contract than others
-        '0xbafe3cb0e563e914806a99d547bdbf2cfcf5fdf6', // SNX => same
-        '0x7f67ca2ce5299a67acd83d52a064c5b8e41ddb80', // CRV => same
-        '0x1058a82c25f55ab8ab0ce717f3e6e164e80f1a0b', // USDT
-        '0x075fe11b3dd9c605f7fd09ff9310e3e37baabc9e', // KNC
-        '0xe03b49682965a1eb5230d41f96e10896dc563f0d', // ZRX
-        '0x20aff4833e5d261bb34bc3980d88ad17a3fe90dc', // ENJ
-        '0x00c7A37B03690fb9f41b5C5AF8131735C7275446', // USD
-        '0x00377d6c82df8f63163ff828760b2a5d935734cf', // SUSHI
+        // Custom sources
+        // '0xec6f4cd64d28ef32507e2dc399948aae9bbedd7e', // GUSD
+        // '0x9b26214bec078e68a394aaebfbfff406ce14893f', // XSUSHI
+        // Chainlink sources
+        '0x3886BA987236181D98F2401c507Fb8BeA7871dF2', //TUSD
+        '0x7c5d4F8345e66f68099581Db340cd65B078C41f4', // YFI
+        '0x0d16d4528239e9ee52fa531af613AcdB23D88c94', // BAT
+        '0x82A44D92D6c329826dc557c5E1Be6ebeC5D5FeB9', // MANA
+        '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e', // UNI
+        '0xdeb288F737066589598e9214E782fa5A8eD689e8', // WBTC
+        '0x3147D7203354Dc06D9fd350c7a2437bcA92387a4', // REN
+        '0x614715d2Af89E6EC99A233818275142cE88d1Cfd', // BUSD
+        '0xDC530D9457755926550b59e8ECcdaE7624181557', // LINK
+        '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757', // SUSD
+        '0x773616E4d11A78F511299002da57A0a94577F1f4', // DAI
+        '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012', // AAVE
+        '0x24551a8Fb2A7211A25a17B1481f043A8a8adC7f2', // MKR
+        '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4', // USDC
+        '0xC1438AA3823A6Ba0C159CfA8D98dF5A994bA120b', // BAL => different contract than others
+        '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c', // SNX => same
+        '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e', // CRV => same
+        '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46', // USDT
+        '0x656c0544eF4C98A6a98491833A89204Abb045d6b', // KNC
+        '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962', // ZRX
+        '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B', // ENJ
+        '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', // USD
+        '0xe572CeF69f43c2E488b33924AF04BDacE19079cf', // SUSHI
       ],
       [EthereumNetwork.kovan]: [
-        '0x5d233bc41d345646f855502892eb11173f4b807b', //TUSD
-        '0xe45f3ed2218e7e411bf8dfde66069e57f46b26ef', // YFI
-        '0x7eeffd6a9d145f558b793f3aa65141bcd0c86312', // BAT
-        '0x3e360e4db87a34738fa9d4ac819f208d8275a66b', // MANA
-        '0x8d592e53fb1243657a51e531bfc30a3617a4173e', // UNI
-        '0x222d3bd9bc8aef87afa9c8e4c7468da3f2c7130d', // WBTC
-        '0x0fd41f0160c3567ae149b1564c080df208cba3b9', // REN
-        '0x361e36e9d6f47f8312e9709312e088304b013d8b', // BUSD
-        '0xb44aa3a6fc6419fac0a4fb9b9b8bfd69939503ff', // LINK
-        '0x55dca5e95d271f2d074a5e6cf4bf95b7db80d67d', // SUSD
-        '0x30fde1d82a4e58e579a64dbbcd8d4650805cf3c8', // DAI
-        '0xde222c97adb2bb443c381edf4bb3f5bccd533808', // AAVE
-        '0x0df8bbcd897fef6717d1cc44ac45cf2dd6e290bc', // MKR
-        '0xdcfc14bc921e189497d4e63f4de1b418b521b1c4', // USDC
-        '0x28a0fba7b73679d052c9b66bf4c83f6df7c349ce', // SNX => same
-        '0xccc6f61b7ad1ea539705ed4237a85e23277eb341', // USDT
-        '0x64e8b221bd554fe995c2fcf2490a3b979fe14776', // KNC
-        '0xf8e4d2a782dbe31a7f8db2c2bc5b3645338321e9', // ZRX
-        '0xf0e696e4b8b8d571c139e82a8a874022713fde52', // ENJ
-        '0x10b3c106c4ed7D22B0e7Abe5Dc43BdFA970a153c', // USD
+        '0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660', //TUSD
+        '0xC5d1B1DEb2992738C0273408ac43e1e906086B6C', // YFI
+        '0x0e4fcEC26c9f85c3D714370c98f43C4E02Fc35Ae', // BAT
+        '0x1b93D8E109cfeDcBb3Cc74eD761DE286d5771511', // MANA
+        '0x17756515f112429471F86f98D5052aCB6C47f6ee', // UNI
+        '0xF7904a295A029a3aBDFFB6F12755974a958C7C25', // WBTC
+        '0xF1939BECE7708382b5fb5e559f630CB8B39a10ee', // REN
+        '0xbF7A18ea5DE0501f7559144e702b29c55b055CcB', // BUSD
+        '0x3Af8C569ab77af5230596Acf0E8c2F9351d24C38', // LINK
+        '0xb343e7a1aF578FA35632435243D814e7497622f7', // SUSD
+        '0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541', // DAI
+        '0xd04647B7CB523bb9f26730E9B6dE1174db7591Ad', // AAVE
+        '0x0B156192e04bAD92B6C1C13cf8739d14D78D5701', // MKR
+        '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838', // USDC
+        '0xF9A76ae7a1075Fe7d646b06fF05Bd48b9FA5582e', // SNX => same
+        '0x0bF499444525a23E7Bb61997539725cA2e928138', // USDT
+        '0xb8E8130d244CFd13a75D6B9Aee029B1C33c808A7', // KNC
+        '0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883', // ZRX
+        '0xfaDbe2ee798889F02d1d39eDaD98Eff4c7fe95D4', // ENJ
+        '0x9326BFA02ADD2366b30bacB125260Af641031331', // USD
       ],
     }; // chainlink aggregator contract
 
@@ -131,12 +125,7 @@ task(`deploy-OracleAnchor`, `Deploys the OracleAnchor contract`)
     console.log(`\tDeploying OracleAnchor implementation ...`);
     const oracleAnchor = await new OracleAnchorFactory(
       await localBRE.ethers.provider.getSigner()
-    ).deploy(
-      aaveOracleAssets[localBRE.network.name],
-      aaveOracleSources[localBRE.network.name],
-      aggregatorAssets[localBRE.network.name],
-      aggregatorSources[localBRE.network.name]
-    );
+    ).deploy(aggregatorAssets[localBRE.network.name], aggregatorSources[localBRE.network.name]);
     await oracleAnchor.deployTransaction.wait();
     console.log('oracleAnchor.address', oracleAnchor.address);
     await verifyContract(oracleAnchor.address, []);
