@@ -1,6 +1,5 @@
-// import BigNumber from 'bignumber.js';
-// import { oneRay } from '../../helpers/constants';
 import { eContractid, IReserveParams } from '../../helpers/types';
+
 import { 
   rateStrategyStableOne,
   rateStrategyStableTwo,
@@ -10,6 +9,7 @@ import {
   rateStrategyVolatileOne,
   rateStrategyVolatileTwo,
   rateStrategyVolatileThree,
+  rateStrategyVolatileFour,
 } from './rateStrategies';
 
 export const strategyBUSD: IReserveParams = {
@@ -251,4 +251,16 @@ export const strategyZRX: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000'
+};
+
+export const strategyXSUSHI: IReserveParams = {
+  strategy: rateStrategyVolatileFour,
+  baseLTVAsCollateral: '2500',
+  liquidationThreshold: '4500',
+  liquidationBonus: '11500',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '3500',
 };
