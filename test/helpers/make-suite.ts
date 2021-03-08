@@ -6,6 +6,7 @@ import {
   getAaveProtocolDataProvider,
   getAToken,
   getMintableERC20,
+  getMintableAmplERC20,
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
   getLendingPoolAddressesProviderRegistry,
@@ -13,12 +14,14 @@ import {
   getWETHGateway,
   getUniswapLiquiditySwapAdapter,
   getUniswapRepayAdapter,
+  getAAmplToken,
   getFlashLiquidationAdapter,
 } from '../../helpers/contracts-getters';
 import { eEthereumNetwork, tEthereumAddress } from '../../helpers/types';
 import { LendingPool } from '../../types/LendingPool';
 import { AaveProtocolDataProvider } from '../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../types/MintableERC20';
+import { MintableAmplERC20 } from '../../types/MintableAmplERC20';
 import { AToken } from '../../types/AToken';
 import { LendingPoolConfigurator } from '../../types/LendingPoolConfigurator';
 
@@ -37,6 +40,7 @@ import { WETH9Mocked } from '../../types/WETH9Mocked';
 import { WETHGateway } from '../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../markets/aave';
+import { AAmplToken } from "../../types/AAmplToken";
 import { FlashLiquidationAdapter } from '../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../helpers/tenderly-utils';
@@ -61,7 +65,12 @@ export interface TestEnv {
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
+  uni: MintableERC20;
+  aUSDC: AToken;
   aave: MintableERC20;
+  aAMPL: AAmplToken;
+  // Change to mock AMPL
+  ampl: MintableAmplERC20;
   addressesProvider: LendingPoolAddressesProvider;
   uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
   uniswapRepayAdapter: UniswapRepayAdapter;
@@ -84,10 +93,14 @@ const testEnv: TestEnv = {
   oracle: {} as PriceOracle,
   weth: {} as WETH9Mocked,
   aWETH: {} as AToken,
+  aUSDC: {} as AToken,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
+  ampl: {} as MintableAmplERC20,
+  aAMPL: {} as AAmplToken,
+  uni: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
   uniswapRepayAdapter: {} as UniswapRepayAdapter,
@@ -131,28 +144,34 @@ export async function initializeMakeSuite() {
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
+  const aAmplAddress = allTokens.find((aToken) => aToken.symbol === 'aAMPL')?.tokenAddress;
+  console.log('aAMPL address: ' + aAmplAddress);
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
+  const amplAddress = reservesTokens.find((token) => token.symbol === 'AMPL')?.tokenAddress;
+  const uniAddress = reservesTokens.find((token) => token.symbol === 'UNI')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
-
   if (!aDaiAddress || !aWEthAddress) {
     process.exit(1);
   }
   if (!daiAddress || !usdcAddress || !aaveAddress || !wethAddress) {
     process.exit(1);
   }
-
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
+  testEnv.aAMPL = await getAAmplToken(aAmplAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.aave = await getMintableERC20(aaveAddress);
+  console.log('ampl address :' + amplAddress);
+  testEnv.ampl = await getMintableAmplERC20(amplAddress || '');
   testEnv.weth = await getWETHMocked(wethAddress);
+  testEnv.uni = await getMintableERC20(uniAddress || '');
   testEnv.wethGateway = await getWETHGateway();
 
   testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();

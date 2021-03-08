@@ -11,7 +11,7 @@ require('dotenv').config();
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import 'temp-hardhat-etherscan';
-import 'hardhat-gas-reporter';
+// import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
 
@@ -74,11 +74,22 @@ const mainnetFork = MAINNET_FORK
 
 const buidlerConfig: HardhatUserConfig = {
   solidity: {
-    version: '0.6.12',
-    settings: {
-      optimizer: { enabled: true, runs: 200 },
-      evmVersion: 'istanbul',
-    },
+    compilers: [
+      {
+        version: '0.6.12',
+        settings: {
+          optimizer: {enabled: true, runs: 200},
+          evmVersion: 'istanbul',
+        },
+      },
+      {
+        version: '0.7.6',
+        settings: {
+          optimizer: {enabled: true, runs: 200},
+          evmVersion: 'istanbul',
+        },
+      },
+      ]
   },
   typechain: {
     outDir: 'types',

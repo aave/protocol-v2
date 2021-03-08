@@ -4,6 +4,7 @@ import { ICommonConfiguration, EthereumNetwork, eEthereumNetwork } from '../../h
 
 const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),
+  AMPL: oneEther.multipliedBy('0.00367714136416').toFixed(),
   BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
   DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
@@ -77,6 +78,9 @@ export const CommonsConfig: ICommonConfiguration = {
     AAVE: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
+    AMPL: {
+      borrowRate: oneRay.multipliedBy(0.039).toFixed(),
+    },
     LINK: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
@@ -109,6 +113,9 @@ export const CommonsConfig: ICommonConfiguration = {
     },
     BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+    },
+    xSUSHI: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
   },
   // ----------------
@@ -197,6 +204,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: {},
     [EthereumNetwork.kovan]: {
       AAVE: '0xd04647B7CB523bb9f26730E9B6dE1174db7591Ad',
+      AMPL: '',
       BAT: '0x0e4fcEC26c9f85c3D714370c98f43C4E02Fc35Ae',
       BUSD: '0xbF7A18ea5DE0501f7559144e702b29c55b055CcB',
       DAI: '0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541',
@@ -219,6 +227,7 @@ export const CommonsConfig: ICommonConfiguration = {
     },
     [EthereumNetwork.ropsten]: {
       AAVE: ZERO_ADDRESS,
+      AMPL: '',
       BAT: '0xafd8186c962daf599f171b8600f3e19af7b52c92',
       BUSD: '0x0A32D96Ff131cd5c3E0E5AAB645BF009Eda61564',
       DAI: '0x64b8e49baded7bfb2fd5a9235b2440c0ee02971b',
@@ -241,6 +250,7 @@ export const CommonsConfig: ICommonConfiguration = {
     },
     [EthereumNetwork.main]: {
       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
+      AMPL: '0x492575FDD11a0fCf2C6C719867890a7648d526eB',
       BAT: '0x0d16d4528239e9ee52fa531af613AcdB23D88c94',
       BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd',
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
@@ -263,6 +273,7 @@ export const CommonsConfig: ICommonConfiguration = {
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
+      AMPL: '',
       BAT: '0x0d16d4528239e9ee52fa531af613AcdB23D88c94',
       BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd',
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',

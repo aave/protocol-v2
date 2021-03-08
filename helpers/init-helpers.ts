@@ -17,6 +17,9 @@ import {
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import {
+  deployAAmplToken,
+  deployAmplStableDebtToken,
+  deployAmplVariableDebtToken,
   deployDefaultReserveInterestRateStrategy,
   deployDelegationAwareAToken,
   deployGenericAToken,
@@ -32,6 +35,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
       return deployGenericAToken;
     case eContractid.DelegationAwareAToken:
       return deployDelegationAwareAToken;
+    // case eContractid.AAmplToken:
+    //   return deployAAmplToken;
     default:
       throw Error(`Missing aToken deployment script for: ${id}`);
   }
@@ -222,7 +227,81 @@ export const initReservesByHelper = async (
     );
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
+        addressProvider.address,
+        optimalUtilizationRate,
+        baseVariableBorrowRate,
+        variableRateSlope1,
+        variableRateSlope2,
+        stableRateSlope1,
+        stableRateSlope2,
+      ],
+      verify
+    );
+
+    deployedStableTokens.push(stableDebt.address);
+    deployedVariableTokens.push(variableDebt.address);
+    deployedATokens.push(aToken.address);
+    deployedRates.push(rates.address);
+    reserveInitDecimals.push(params.reserveDecimals);
+    reserveTokens.push(tokenAddresses[symbol]);
+    reserveSymbols.push(symbol);
+  }
+
+  // Deploy elastic reserves tokens
+  const ElasticSupplyReserves = Object.entries(reservesParams).filter(
+    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AAmplToken
+  ) as [string, IReserveParams][];
+
+  for (let [symbol, params] of ElasticSupplyReserves) {
+    console.log(`  - Deploy ${symbol} elastic supply aToken, debts tokens, and strategy`);
+    const {
+      optimalUtilizationRate,
+      baseVariableBorrowRate,
+      variableRateSlope1,
+      variableRateSlope2,
+      stableRateSlope1,
+      stableRateSlope2,
+    } = params;
+
+    const stableDebt = await deployAmplStableDebtToken(
+      [
+        poolAddress,
         tokenAddresses[symbol],
+        `Aave stable debt bearing ${symbol}`,
+        `stableDebt${symbol}`,
+        ZERO_ADDRESS,
+      ],
+      verify
+    );
+    const variableDebt = await deployAmplVariableDebtToken(
+      [
+        poolAddress,
+        tokenAddresses[symbol],
+        `Aave variable debt bearing ${symbol}`,
+        `variableDebt${symbol}`,
+        ZERO_ADDRESS,
+      ],
+      verify
+    );
+    const aToken = await deployAAmplToken(
+      [
+        poolAddress,
+        tokenAddresses[symbol],
+        '0x52812aF7A6D3e680A6571200dF1EFFddfbaeFF09',
+        '0x74ec96fEF25F6D64E77aF39F1ec9096B33Aa92D2',
+        treasuryAddress,
+        `Aave interest bearing ${symbol}`,
+        `a${symbol}`,
+        ZERO_ADDRESS,
+      ],
+      verify
+    );
+    console.log("aAMPL: " + aToken.address);
+    console.log("stableDebt: " + stableDebt.address);
+    console.log("VariableDebt: " + variableDebt.address);
+    const rates = await deployDefaultReserveInterestRateStrategy(
+      [
+        addressProvider.address,  // Change for LendingPoolAddressesProvider(addressesProvider)
         optimalUtilizationRate,
         baseVariableBorrowRate,
         variableRateSlope1,
@@ -263,6 +342,7 @@ export const initReservesByHelper = async (
     );
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+    console.log(`  - Debt tokens: ${chunkedVariableTokens[chunkIndex].join(', ')}`);
     console.log('    * gasUsed', tx3.gasUsed.toString());
     gasUsage = gasUsage.add(tx3.gasUsed);
   }
@@ -473,6 +553,7 @@ export const initTokenReservesByHelper = async (
         ],
         verify
       );
+      // console.log("Not found : " + symbol + " : " + variableDebt.address);
       variableTokenImpl = variableDebt.address;
     }
     if (!aTokenImplementation) {
@@ -507,7 +588,7 @@ export const initTokenReservesByHelper = async (
       ] = (Object.entries(reservesParams) as [string, IReserveParams][])[reserveParamIndex];
       const rates = await deployDefaultReserveInterestRateStrategy(
         [
-          tokenAddresses[symbol],
+          addressProvider.address,
           optimalUtilizationRate,
           baseVariableBorrowRate,
           variableRateSlope1,
