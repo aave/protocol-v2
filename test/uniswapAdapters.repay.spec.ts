@@ -121,7 +121,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         );
 
         // Open user Debt
-        await pool.connect(useyr).borrow(dai.address, expectedDaiAmount, 1, 0, userAddress);
+        await pool.connect(user).borrow(dai.address, expectedDaiAmount, 1, 0, userAddress);
 
         const daiStableDebtTokenAddress = (
           await helpersContract.getReserveTokensAddresses(dai.address)
