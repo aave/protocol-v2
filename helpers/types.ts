@@ -28,6 +28,7 @@ export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
   MintableERC20 = 'MintableERC20',
+  MintableAmplERC20 = 'MintableAmplERC20',
   MintableDelegationERC20 = 'MintableDelegationERC20',
   LendingPoolAddressesProviderRegistry = 'LendingPoolAddressesProviderRegistry',
   LendingPoolParametersProvider = 'LendingPoolParametersProvider',
@@ -47,6 +48,9 @@ export enum eContractid {
   MockFlashLoanReceiver = 'MockFlashLoanReceiver',
   WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
+  AAmplToken = 'AAmplToken',
+  AmplStableDebtToken = 'AMPLStableDebtToken',
+  AmplVariableDebtToken = 'AMPLVariableDebtToken',
   MockAToken = 'MockAToken',
   DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
@@ -190,6 +194,7 @@ export interface iAssetBase<T> {
   USDT: T;
   SUSD: T;
   AAVE: T;
+  AMPL: T;
   BAT: T;
   MKR: T;
   LINK: T;
@@ -213,25 +218,26 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 export type iAavePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'DAI'
-  | 'TUSD'
+  // | 'TUSD'
   | 'USDC'
-  | 'USDT'
-  | 'SUSD'
+  // | 'USDT'
+  // | 'SUSD'
   | 'AAVE'
-  | 'BAT'
-  | 'MKR'
-  | 'LINK'
-  | 'KNC'
-  | 'WBTC'
-  | 'MANA'
-  | 'ZRX'
-  | 'SNX'
-  | 'BUSD'
+  | 'AMPL'
+  // | 'BAT'
+  // | 'MKR'
+  // | 'LINK'
+  // | 'KNC'
+  // | 'WBTC'
+  // | 'MANA'
+  // | 'ZRX'
+  // | 'SNX'
+  // | 'BUSD'
   | 'WETH'
-  | 'YFI'
+  // | 'YFI'
   | 'UNI'
-  | 'REN'
-  | 'ENJ'
+  // | 'REN'
+  // | 'ENJ'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -243,6 +249,7 @@ export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 export enum TokenContractId {
   DAI = 'DAI',
   AAVE = 'AAVE',
+  AMPL = 'AMPL',
   TUSD = 'TUSD',
   BAT = 'BAT',
   WETH = 'WETH',
