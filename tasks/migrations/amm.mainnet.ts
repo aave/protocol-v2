@@ -3,6 +3,8 @@ import { checkVerification } from '../../helpers/etherscan-verification';
 import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
+import { gasCostsCounter, gasCounter } from '../../helpers/contracts-helpers';
+import { formatEther } from 'ethers/lib/utils';
 
 task('amm:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -19,7 +21,6 @@ task('amm:mainnet', 'Deploy development enviroment')
 
     console.log('1. Deploy address provider');
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
-
     console.log('2. Deploy lending pool');
     await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
 
@@ -31,7 +32,6 @@ task('amm:mainnet', 'Deploy development enviroment')
 
     console.log('5. Deploy WETH Gateway');
     await DRE.run('full-deploy-weth-gateway', { pool: POOL_NAME });
-
     console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
@@ -51,6 +51,10 @@ task('amm:mainnet', 'Deploy development enviroment')
       console.log('- Head', postDeployHead);
       console.log('- Fork', postDeployFork);
     }
-    console.log('\nFinished migrations');
+
     printContracts();
+
+    console.log('\nFinished migrations');
+    console.log('Total GAS wei: ', gasCounter.toString());
+    console.log('Total ETH costs: ', formatEther(gasCostsCounter));
   });

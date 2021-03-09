@@ -2,6 +2,7 @@ import { Contract, Signer, utils, ethers, BigNumberish } from 'ethers';
 import { signTypedData_v4 } from 'eth-sig-util';
 import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
+import { BigNumber as BigNumberEthers } from 'ethers';
 import { getDb, DRE, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
@@ -14,7 +15,6 @@ import {
   ePolygonNetwork,
   eXDaiNetwork,
   eNetwork,
-  iParamsPerNetworkAll,
   iEthereumParamsPerNetwork,
   iPolygonParamsPerNetwork,
   iXDaiParamsPerNetwork,
@@ -26,11 +26,23 @@ import { verifyContract } from './etherscan-verification';
 import { getIErc20Detailed } from './contracts-getters';
 import { usingTenderly } from './tenderly-utils';
 
+export let gasCounter = BigNumberEthers.from('0');
+export let gasCostsCounter = BigNumberEthers.from('0');
+
+export const setGasCounter = (gas: BigNumberish, price: BigNumberish) => {
+  gasCounter = gasCounter.add(gas);
+  gasCostsCounter = gasCostsCounter.add(BigNumberEthers.from(gas).mul(price));
+};
+
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = DRE.network.name;
   const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+  const tx = await contractInstance.deployTransaction.wait();
+
+  setGasCounter(tx.gasUsed, contractInstance.deployTransaction.gasPrice);
+
   if (MAINNET_FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);

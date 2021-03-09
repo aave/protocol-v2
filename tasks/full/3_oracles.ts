@@ -71,15 +71,14 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       lendingRateOracle = lendingRateOracle.connect(
         DRE.ethers.provider.getSigner(await lendingRateOracle.owner())
       );
-      // This must be done any time a new market is created I believe
-      //if (!lendingRateOracleAddress) {
-      await setInitialMarketRatesInRatesOracleByHelper(
-        lendingRateOracles,
-        tokensAddressesWithoutUsd,
-        lendingRateOracle,
-        admin
-      );
-      //}
+      if (!lendingRateOracleAddress) {
+        await setInitialMarketRatesInRatesOracleByHelper(
+          lendingRateOracles,
+          tokensAddressesWithoutUsd,
+          lendingRateOracle,
+          admin
+        );
+      }
       console.log('ORACLES: %s and %s', aaveOracle.address, lendingRateOracle.address);
       // Register the proxy price provider on the addressesProvider
       await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));

@@ -31,7 +31,6 @@ import {
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
-import { DefaultReserveInterestRateStrategy, DelegationAwareAToken } from '../types';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -209,7 +208,7 @@ export const initReservesByHelper = async (
       variableDebtTokenSymbol: `variableDebt${symbolPrefix}${reserveSymbols[i]}`,
       stableDebtTokenName: `${stableDebtTokenNamePrefix} ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${symbolPrefix}${reserveSymbols[i]}`,
-      params: '0x10'
+      params: '0x10',
     });
   }
 
@@ -296,8 +295,6 @@ export const configureReservesByHelper = async (
       stableBorrowRateEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
-    if (baseLTVAsCollateral === '-1') continue;
-
     const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
       (value) => value === assetSymbol
     );
@@ -343,9 +340,7 @@ export const configureReservesByHelper = async (
     console.log(`- Configure reserves in ${chunkedInputParams.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedInputParams.length; chunkIndex++) {
       await waitForTx(
-        await atokenAndRatesDeployer.configureReserves(chunkedInputParams[chunkIndex], {
-          gasLimit: 12000000,
-        })
+        await atokenAndRatesDeployer.configureReserves(chunkedInputParams[chunkIndex])
       );
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
@@ -557,7 +552,7 @@ export const initTokenReservesByHelper = async (
       variableDebtTokenSymbol: `variableDebt${reserveSymbols[i]}`,
       stableDebtTokenName: `Aave stable debt bearing ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${reserveSymbols[i]}`,
-      params: '0x10'
+      params: '0x10',
     });
   }
 
@@ -580,7 +575,7 @@ export const initTokenReservesByHelper = async (
 
   // Set deployer back as admin
   //await waitForTx(await addressProvider.setPoolAdmin(admin));
-  return gasUsage;  // No longer relevant
+  return gasUsage; // No longer relevant
 };
 
 // Function deprecated

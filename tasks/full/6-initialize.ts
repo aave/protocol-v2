@@ -77,7 +77,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         const collateralManager = await deployLendingPoolCollateralManager(verify);
         collateralManagerAddress = collateralManager.address;
       }
-      // Seems unnecessary to register the collateral manager in the JSON db
 
       console.log(
         '\tSetting lending pool collateral manager implementation with address',
@@ -89,13 +88,13 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       await deployWalletBalancerProvider(verify);
 
-      const lendingPoolAddress = await addressesProvider.getLendingPool();
-
       let gateWay = getParamPerNetwork(WethGateway, network);
       if (!notFalsyOrZeroAddress(gateWay)) {
         gateWay = (await getWETHGateway()).address;
       }
-      await authorizeWETHGateway(gateWay, lendingPoolAddress);
+      // Next action should be done separately to prevent script to break, if the owner of Gateway is different than current deployer address
+      // const lendingPoolAddress = await addressesProvider.getLendingPool();
+      // await authorizeWETHGateway(gateWay, lendingPoolAddress);
     } catch (err) {
       console.error(err);
       exit(1);
