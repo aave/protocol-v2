@@ -58,7 +58,7 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
 
 const mainnetFork = MAINNET_FORK
   ? {
-      blockNumber: 11739065,
+      blockNumber: 12012081,
       url: NETWORKS_RPC_URL['main'],
     }
   : undefined;
