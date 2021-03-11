@@ -95,6 +95,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       if (!notFalsyOrZeroAddress(gateWay)) {
         gateWay = (await getWETHGateway()).address;
       }
+      console.log('GATEWAY', gateWay);
       await authorizeWETHGateway(gateWay, lendingPoolAddress);
     } catch (err) {
       console.error(err);

@@ -21,12 +21,7 @@ task(`full-deploy-weth-gateway`, `Deploys the ${CONTRACT_NAME} contract`)
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');
     }
-    let gateWay = getParamPerNetwork(WethGateway, network);
-    if (gateWay === '') {
-      const wethGateWay = await deployWETHGateway([Weth], verify);
-      console.log(`${CONTRACT_NAME}.address`, wethGateWay.address);
-      console.log(`\tFinished ${CONTRACT_NAME} deployment`);
-    } else {
-      console.log(`Weth gateway already deployed. Address: ${gateWay}`);
-    }
+    const wethGateWay = await deployWETHGateway([Weth], verify);
+    console.log(`${CONTRACT_NAME}.address`, wethGateWay.address);
+    console.log(`\tFinished ${CONTRACT_NAME} deployment`);
   });

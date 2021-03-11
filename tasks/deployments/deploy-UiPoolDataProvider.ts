@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 
 import { UiPoolDataProviderFactory } from '../../types';
-import { verifyContract } from '../../helpers/etherscan-verification';
+import { verifyContract } from '../../helpers/contracts-helpers';
 import { eContractid } from '../../helpers/types';
 
 task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider contract`)
@@ -21,7 +21,9 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
     ).deploy();
     await uiPoolDataProvider.deployTransaction.wait();
     console.log('uiPoolDataProvider.address', uiPoolDataProvider.address);
-    await verifyContract(uiPoolDataProvider.address, []);
+    if (verify) {
+      await verifyContract(eContractid.UiPoolDataProvider, uiPoolDataProvider, []);
+    }
 
     console.log(`\tFinished UiPoolDataProvider proxy and implementation deployment`);
   });

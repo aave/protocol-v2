@@ -69,6 +69,10 @@
     "kovan:verify": "npm run hardhat:kovan verify:general -- --all --pool Aave",
     "ropsten:verify": "npm run hardhat:ropsten verify:general -- --all --pool Aave",
     "mainnet:verify": "npm run hardhat:main verify:general -- --all --pool Aave",
+    "matic:mumbai:verify": "npm run hardhat:mumbai verify:general -- --all --pool Matic",
+    "matic:mainnet:verify": "npm run hardhat:matic verify:general -- --all --pool Matic",
+    "matic:mumbai:verify:tokens": "npm run hardhat:mumbai verify:tokens -- --pool Matic",
+    "matic:mainnet:verify:tokens": "npm run hardhat:matic verify:tokens -- --pool Matic",
     "kovan:verify:tokens": "npm run hardhat:kovan verify:tokens -- --pool Aave",
     "ropsten:verify:tokens": "npm run hardhat:ropsten verify:tokens -- --pool Aave",
     "mainnet:verify:tokens": "npm run hardhat:main verify:tokens -- --pool Aave",
@@ -144,6 +148,7 @@
   ],
   "license": "AGPLv3",
   "dependencies": {
+    "axios-curlirize": "^1.3.7",
     "tmp-promise": "^3.0.2"
   },
   "keywords": [

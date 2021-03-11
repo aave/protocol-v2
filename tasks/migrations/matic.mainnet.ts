@@ -4,7 +4,7 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('matic:mainnet', 'Deploy development enviroment')
+task('matic:mainnet', 'Deploy Matic market at Polygon network')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify }, DRE) => {
     const POOL_NAME = ConfigNames.Matic;
@@ -28,16 +28,18 @@ task('matic:mainnet', 'Deploy development enviroment')
 
     console.log('4. Deploy Data Provider');
     await DRE.run('full:data-provider', { pool: POOL_NAME });
+    console.log('5. Deploy WETH Gateway');
+    await DRE.run('full-deploy-weth-gateway', { pool: POOL_NAME });
 
-    console.log('5. Initialize lending pool');
+    console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
     if (verify) {
       printContracts();
-      console.log('4. Veryfing contracts');
+      console.log('7. Veryfing contracts');
       await DRE.run('verify:general', { all: true, pool: POOL_NAME });
 
-      console.log('5. Veryfing aTokens and debtTokens');
+      console.log('8. Veryfing aTokens and debtTokens');
       await DRE.run('verify:tokens', { pool: POOL_NAME });
     }
 

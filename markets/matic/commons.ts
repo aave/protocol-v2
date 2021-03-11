@@ -1,5 +1,11 @@
 import BigNumber from 'bignumber.js';
-import { oneEther, oneRay, RAY, ZERO_ADDRESS, MOCK_CHAINLINK_AGGREGATORS_PRICES } from '../../helpers/constants';
+import {
+  oneEther,
+  oneRay,
+  RAY,
+  ZERO_ADDRESS,
+  MOCK_CHAINLINK_AGGREGATORS_PRICES,
+} from '../../helpers/constants';
 import { ICommonConfiguration, ePolygonNetwork } from '../../helpers/types';
 
 // ----------------
@@ -74,19 +80,19 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '0x17c4A170FFF882862F656597889016D3a6073534',
   },
-  EmergencyAdminIndex: 1,
+  EmergencyAdminIndex: 0,
   ProviderRegistry: {
-    [ePolygonNetwork.mumbai]: '0x569859d41499B4dDC28bfaA43915051FF0A38a6F', // TEMP
-    [ePolygonNetwork.matic]: '0x28334e4791860a0c1eCF89a62B973ba04a5d643F',  // TEMP
+    [ePolygonNetwork.mumbai]: '0x27453A916e91Fb922d309D92e637C0b6625846dF', // TEMP
+    [ePolygonNetwork.matic]: '0x28334e4791860a0c1eCF89a62B973ba04a5d643F', // TEMP
   },
   ProviderRegistryOwner: {
-    [ePolygonNetwork.mumbai]: '0x18d9bA2baEfBdE0FF137C4ad031427EF205f1Fd9', // TEMP
-    [ePolygonNetwork.matic]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',  // TEMP
+    [ePolygonNetwork.mumbai]: '0xa6842C2C7fece4Cdc6a4aaaD331eb1c7910e419A', // TEMP
+    [ePolygonNetwork.matic]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F', // TEMP
   },
   LendingRateOracle: {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '',
-  },  
+  },
   LendingPoolCollateralManager: {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '0x9Af76e0575D139570D3B4c821567Fe935E8c25C5',
@@ -95,9 +101,9 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '',
   },
-  WethGateway: {
+  WethGateway: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x15A46f5073789b7D16F6F46632aE50Bae838d938',
+    [ePolygonNetwork.matic]: '',
   },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '',
@@ -135,10 +141,10 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   WETH: {
     [ePolygonNetwork.mumbai]: '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889', // WMATIC address (untested)
-    [ePolygonNetwork.matic]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',  // WMATIC address
+    [ePolygonNetwork.matic]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270', // WMATIC address
   },
   ReserveFactorTreasuryAddress: {
-    [ePolygonNetwork.mumbai]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',   // TEMP 
-    [ePolygonNetwork.matic]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',    // TEMP  
+    [ePolygonNetwork.mumbai]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c', // TEMP
+    [ePolygonNetwork.matic]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c', // TEMP
   },
 };
