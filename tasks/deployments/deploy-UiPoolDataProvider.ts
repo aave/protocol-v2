@@ -25,5 +25,5 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
       await verifyContract(eContractid.UiPoolDataProvider, uiPoolDataProvider, []);
     }
 
-    console.log(`\tFinished UiPoolDataProvider proxy and implementation deployment`);
+    console.log(`\tFinished UiPoolDataProvider deployment`);
   });

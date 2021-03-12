@@ -74,28 +74,28 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingPool: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0xABdC61Cd16e5111f335f4135B7A0e65Cc7F86327',
+    [ePolygonNetwork.matic]: '',
   },
   LendingPoolConfigurator: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x17c4A170FFF882862F656597889016D3a6073534',
+    [ePolygonNetwork.matic]: '',
   },
   EmergencyAdminIndex: 0,
   ProviderRegistry: {
     [ePolygonNetwork.mumbai]: '0x27453A916e91Fb922d309D92e637C0b6625846dF', // TEMP
-    [ePolygonNetwork.matic]: '0x28334e4791860a0c1eCF89a62B973ba04a5d643F', // TEMP
+    [ePolygonNetwork.matic]: '0x5572463B58087f2849309E863C63b7beb10f812D',
   },
   ProviderRegistryOwner: {
     [ePolygonNetwork.mumbai]: '0xa6842C2C7fece4Cdc6a4aaaD331eb1c7910e419A', // TEMP
-    [ePolygonNetwork.matic]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F', // TEMP
+    [ePolygonNetwork.matic]: '0x7606c4AEca065d373b3F0b048536174908FcA853',
   },
   LendingRateOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0xAD41Cb02f7BFb6D00e99F47cde6669e44c7C1CC0',
   },
   LendingPoolCollateralManager: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x9Af76e0575D139570D3B4c821567Fe935E8c25C5',
+    [ePolygonNetwork.matic]: '',
   },
   TokenDistributor: {
     [ePolygonNetwork.mumbai]: '',

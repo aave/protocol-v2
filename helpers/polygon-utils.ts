@@ -1,14 +1,8 @@
 import axios from 'axios';
 import { Contract } from 'ethers/lib/ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { source } from 'lowdb/adapters/FileSync';
-import { file } from 'tmp-promise';
 import { DRE } from './misc-utils';
-import { eEthereumNetwork, ePolygonNetwork, EthereumNetworkNames } from './types';
-import curlirize from 'axios-curlirize';
-
-// Initialize Curlizie to add curl logs
-curlirize(axios);
+import { ePolygonNetwork, EthereumNetworkNames } from './types';
 
 const TASK_FLATTEN_GET_FLATTENED_SOURCE = 'flatten:get-flattened-sources';
 const TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS = 'compile:solidity:get-source-paths';
