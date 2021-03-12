@@ -145,6 +145,6 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   ReserveFactorTreasuryAddress: {
     [ePolygonNetwork.mumbai]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c', // TEMP
-    [ePolygonNetwork.matic]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c', // TEMP
+    [ePolygonNetwork.matic]: '0x7734280A4337F37Fbf4651073Db7c28C80B339e9',
   },
 };

@@ -82,17 +82,17 @@ export const verifyAtPolygon = async (
   */
   const network = (DRE as HardhatRuntimeEnvironment).network.name;
   const net = network === EthereumNetworkNames.matic ? 'mainnet' : network;
-  try {
-    const filePath = await findPath(id);
-    const encodedConstructorParams = encodeDeployParams(instance, args);
-    const flattenSourceCode = await hardhatFlattener(filePath);
+  const filePath = await findPath(id);
+  const encodedConstructorParams = encodeDeployParams(instance, args);
+  const flattenSourceCode = await hardhatFlattener(filePath);
 
-    // Remove pragmas and license identifier after first match, required by block explorers like explorer-mainnet.maticgivil.com or Etherscan
-    const cleanedSourceCode = removeLines(
-      removeLines(removeLines(flattenSourceCode, LICENSE_IDENTIFIER, 1), SOLIDITY_PRAGMA, 1),
-      EXPERIMENTAL_ABIENCODER,
-      1
-    );
+  // Remove pragmas and license identifier after first match, required by block explorers like explorer-mainnet.maticgivil.com or Etherscan
+  const cleanedSourceCode = removeLines(
+    removeLines(removeLines(flattenSourceCode, LICENSE_IDENTIFIER, 1), SOLIDITY_PRAGMA, 1),
+    EXPERIMENTAL_ABIENCODER,
+    1
+  );
+  try {
     console.log(
       `[Polygon Verify] Verifying ${id} with address ${instance.address} at Matic ${net} network`
     );
@@ -134,6 +134,15 @@ export const verifyAtPolygon = async (
       return;
     }
     console.error('[Polygon Verify] Error:', error.toString());
-    throw error;
+    console.log(
+      `[Polygon Verify] Skipping verification for ${id} with ${instance.address} due an unknown error.`
+    );
+    console.log(
+      `Please proceed with manual verification at https://explorer-${net}.maticvigil.com/address/${instance.address}/contracts`
+    );
+    console.log(`- Use the following as encoded constructor params`);
+    console.log(encodedConstructorParams);
+    console.log(`- Flattened and cleaned source code`);
+    console.log(cleanedSourceCode);
   }
 };
