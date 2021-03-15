@@ -68,6 +68,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: undefined,
   },
   PoolAdminIndex: 0,
+  EmergencyAdminIndex: 0,
   EmergencyAdmin: {
     [ePolygonNetwork.mumbai]: undefined,
     [ePolygonNetwork.matic]: undefined,
@@ -80,14 +81,13 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '',
   },
-  EmergencyAdminIndex: 0,
   ProviderRegistry: {
     [ePolygonNetwork.mumbai]: '0x27453A916e91Fb922d309D92e637C0b6625846dF', // TEMP
-    [ePolygonNetwork.matic]: '0x5572463B58087f2849309E863C63b7beb10f812D',
+    [ePolygonNetwork.matic]: '0xCfb7Fc3176566368188ad36CFC2Adbf3130785Af',
   },
   ProviderRegistryOwner: {
     [ePolygonNetwork.mumbai]: '0xa6842C2C7fece4Cdc6a4aaaD331eb1c7910e419A', // TEMP
-    [ePolygonNetwork.matic]: '0x7606c4AEca065d373b3F0b048536174908FcA853',
+    [ePolygonNetwork.matic]: '0x252B4e4Ed857e05c6deA76076A9275A34eE0a451',
   },
   LendingRateOracle: {
     [ePolygonNetwork.mumbai]: '',
