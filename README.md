@@ -35,6 +35,7 @@ A more detailed and technical description of the protocol can be found in this r
 - Consensys Diligence (09/09/2020 - 09/10/2020): [report](https://consensys.net/diligence/audits/2020/09/aave-protocol-v2/)
 - Certora, formal verification (02/08/2020 - 29/10/2020): [report](./audits/Certora-FV-aave-v2-03-12-2020.pdf)
 - SigmaPrime (January 2021): [report](./audits/SigmaPrime-aave-v2-01-2021.pdf)
+- PeckShield (March 2021): [report](./audits/Peckshield-aave-v2-light-16-03-2021.pdf)
 
 ## Connect with the community
 
