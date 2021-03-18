@@ -26,6 +26,8 @@ import {
   deployUniswapLiquiditySwapAdapter,
   deployUniswapRepayAdapter,
   deployFlashLiquidationAdapter,
+  deployMockParaSwapAugustus,
+  deployParaSwapLiquiditySwapAdapter,
 } from '../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../helpers/types';
@@ -246,6 +248,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await deployUniswapLiquiditySwapAdapter(adapterParams);
   await deployUniswapRepayAdapter(adapterParams);
   await deployFlashLiquidationAdapter(adapterParams);
+
+  await deployMockParaSwapAugustus();
+
+  await deployParaSwapLiquiditySwapAdapter([addressesProvider.address]);
 
   await deployWalletBalancerProvider();
 

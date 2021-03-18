@@ -32,6 +32,7 @@
     "test-subgraph:scenarios": "hardhat --network hardhatevm_docker test test/__setup.spec.ts test/subgraph-scenarios.spec.ts",
     "test-weth": "hardhat test test/__setup.spec.ts test/weth-gateway.spec.ts",
     "test-uniswap": "hardhat test test/__setup.spec.ts test/uniswapAdapters*.spec.ts",
+    "test-paraswap": "hardhat test test/__setup.spec.ts test/paraswapAdapters*.spec.ts",
     "test:main:check-list": "MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1 hardhat test  test/__setup.spec.ts test/mainnet/check-list.spec.ts",
     "dev:coverage": "buidler compile --force && buidler coverage --network coverage",
     "aave:evm:dev:migration": "npm run compile && hardhat aave:dev",

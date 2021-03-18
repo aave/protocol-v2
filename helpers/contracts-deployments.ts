@@ -36,9 +36,11 @@ import {
   MockAggregatorFactory,
   MockATokenFactory,
   MockFlashLoanReceiverFactory,
+  MockParaSwapAugustusFactory,
   MockStableDebtTokenFactory,
   MockVariableDebtTokenFactory,
   MockUniswapV2Router02Factory,
+  ParaSwapLiquiditySwapAdapterFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
   SelfdestructTransferFactory,
@@ -534,6 +536,25 @@ export const deployFlashLiquidationAdapter = async (
   withSaveAndVerify(
     await new FlashLiquidationAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.FlashLiquidationAdapter,
+    args,
+    verify
+  );
+
+export const deployMockParaSwapAugustus = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new MockParaSwapAugustusFactory(await getFirstSigner()).deploy(),
+    eContractid.MockParaSwapAugustus,
+    [],
+    verify
+  );
+
+export const deployParaSwapLiquiditySwapAdapter = async (
+  args: [tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ParaSwapLiquiditySwapAdapter,
     args,
     verify
   );

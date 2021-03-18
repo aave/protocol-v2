@@ -50,7 +50,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
       it('should revert if not valid addresses provider', async () => {
         const { weth } = testEnv;
-        expect(
+        await expect(
           deployUniswapLiquiditySwapAdapter([
             mockUniswapRouter.address,
             mockUniswapRouter.address,
@@ -196,6 +196,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .div(
               new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
             )
+            .div(new BigNumber(10).pow(principalDecimals))
             .toFixed(0)
         );
 
@@ -318,6 +319,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .div(
               new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
             )
+            .div(new BigNumber(10).pow(principalDecimals))
             .toFixed(0)
         );
 
@@ -871,6 +873,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .div(
               new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
             )
+            .div(new BigNumber(10).pow(principalDecimals))
             .toFixed(0)
         );
 
@@ -1493,6 +1496,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .div(
               new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
             )
+            .div(new BigNumber(10).pow(principalDecimals))
             .toFixed(0)
         );
 
@@ -1601,6 +1605,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
             .div(
               new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
             )
+            .div(new BigNumber(10).pow(principalDecimals))
             .toFixed(0)
         );
 

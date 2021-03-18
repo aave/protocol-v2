@@ -18,6 +18,8 @@ import {
   MockStableDebtTokenFactory,
   MockVariableDebtTokenFactory,
   MockUniswapV2Router02Factory,
+  MockParaSwapAugustusFactory,
+  ParaSwapLiquiditySwapAdapterFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
   SelfdestructTransferFactory,
@@ -360,6 +362,22 @@ export const getFlashLiquidationAdapter = async (address?: tEthereumAddress) =>
   await FlashLiquidationAdapterFactory.connect(
     address ||
       (await getDb().get(`${eContractid.FlashLiquidationAdapter}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getMockParaSwapAugustus = async (address?: tEthereumAddress) =>
+  await MockParaSwapAugustusFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.MockParaSwapAugustus}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getParaSwapLiquiditySwapAdapter = async (address?: tEthereumAddress) =>
+  await ParaSwapLiquiditySwapAdapterFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.ParaSwapLiquiditySwapAdapter}.${DRE.network.name}`).value())
         .address,
     await getFirstSigner()
   );

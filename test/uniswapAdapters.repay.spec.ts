@@ -87,7 +87,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
       it('should revert if not valid addresses provider', async () => {
         const { weth } = testEnv;
-        expect(
+        await expect(
           deployUniswapRepayAdapter([
             mockUniswapRouter.address,
             mockUniswapRouter.address,

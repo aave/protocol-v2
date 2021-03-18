@@ -71,6 +71,8 @@ export enum eContractid {
   UniswapLiquiditySwapAdapter = 'UniswapLiquiditySwapAdapter',
   UniswapRepayAdapter = 'UniswapRepayAdapter',
   FlashLiquidationAdapter = 'FlashLiquidationAdapter',
+  MockParaSwapAugustus = 'MockParaSwapAugustus',
+  ParaSwapLiquiditySwapAdapter = 'ParaSwapLiquiditySwapAdapter',
 }
 
 /*
