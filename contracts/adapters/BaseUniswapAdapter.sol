@@ -386,7 +386,6 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     }
 
     uint256 bestAmountOut;
-
     try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
       uint256[] memory resultAmounts
     ) {

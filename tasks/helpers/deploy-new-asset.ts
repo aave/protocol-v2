@@ -1,5 +1,5 @@
 import { task } from 'hardhat/config';
-import { EthereumNetwork } from '../../helpers/types';
+import { eEthereumNetwork } from '../../helpers/types';
 import { getTreasuryAddress } from '../../helpers/configuration';
 import * as marketConfigs from '../../markets/aave';
 import * as reserveConfigs from '../../markets/aave/reservesConfigs';
@@ -18,7 +18,7 @@ const LENDING_POOL_ADDRESS_PROVIDER = {
   kovan: '0x652B2937Efd0B5beA1c8d54293FC1289672AFC6b',
 };
 
-const isSymbolValid = (symbol: string, network: EthereumNetwork) =>
+const isSymbolValid = (symbol: string, network: eEthereumNetwork) =>
   Object.keys(reserveConfigs).includes('strategy' + symbol) &&
   marketConfigs.AaveConfig.ReserveAssets[network][symbol] &&
   marketConfigs.AaveConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol];
@@ -28,7 +28,7 @@ task('external:deploy-new-asset', 'Deploy A token, Debt Tokens, Risk Parameters'
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify, symbol }, localBRE) => {
     const network = localBRE.network.name;
-    if (!isSymbolValid(symbol, network as EthereumNetwork)) {
+    if (!isSymbolValid(symbol, network as eEthereumNetwork)) {
       throw new Error(
         `
 WRONG RESERVE ASSET SETUP:
@@ -53,9 +53,9 @@ WRONG RESERVE ASSET SETUP:
         poolAddress,
         reserveAssetAddress,
         treasuryAddress,
+        ZERO_ADDRESS, // Incentives Controller
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );
@@ -63,9 +63,9 @@ WRONG RESERVE ASSET SETUP:
       [
         poolAddress,
         reserveAssetAddress,
+        ZERO_ADDRESS, // Incentives Controller
         `Aave stable debt bearing ${symbol}`,
         `stableDebt${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );
@@ -73,9 +73,9 @@ WRONG RESERVE ASSET SETUP:
       [
         poolAddress,
         reserveAssetAddress,
+        ZERO_ADDRESS, // Incentives Controller
         `Aave variable debt bearing ${symbol}`,
         `variableDebt${symbol}`,
-        ZERO_ADDRESS,
       ],
       verify
     );

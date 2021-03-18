@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { loadPoolConfig, ConfigNames, getTreasuryAddress } from '../../helpers/configuration';
-import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
+import { eEthereumNetwork, eNetwork, ICommonConfiguration } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
 import { initTokenReservesByHelper } from '../../helpers/init-helpers';
 import { exit } from 'process';
@@ -23,9 +23,7 @@ task('full:initialize-tokens', 'Initialize lending pool configuration.')
       await DRE.run('set-DRE');
       let signer: Signer;
       const network =
-        process.env.MAINNET_FORK === 'true'
-          ? eEthereumNetwork.main
-          : <eEthereumNetwork>DRE.network.name;
+        process.env.MAINNET_FORK === 'true' ? eEthereumNetwork.main : <eNetwork>DRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
 
@@ -62,13 +60,7 @@ task('full:initialize-tokens', 'Initialize lending pool configuration.')
         const balance = await signer.getBalance();
         console.log('signer balance', formatEther(balance));
       } else {
-        signer = await getFirstSigner();
-        const deployerAddress = await signer.getAddress();
-        if (providerRegistryOwner !== (await signer.getAddress())) {
-          throw Error(
-            `Current signer is not provider registry owner. \nCurrent deployer address: ${deployerAddress} \nExpected address: ${poolConfig.ProviderRegistryOwner}`
-          );
-        }
+        signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
       }
 
       // Init unitilialized reserves
