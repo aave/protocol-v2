@@ -77,10 +77,8 @@ abstract contract BaseParaSwapSellAdapter is BaseParaSwapAdapter {
     if (!success) {
       // Copy revert reason from call
       assembly {
-        let ptr := mload(0x40)
-        let size := returndatasize()
-        returndatacopy(ptr, 0, size)
-        revert(ptr, size)
+        returndatacopy(0, 0, returndatasize())
+        revert(0, returndatasize())
       }
     }
     require(IERC20(assetToSwapFrom).balanceOf(address(this)) == balanceBeforeAssetFrom - amountToSwap, 'WRONG_BALANCE_AFTER_SWAP');
