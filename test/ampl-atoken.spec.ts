@@ -131,6 +131,7 @@ makeSuite('Ampl aToken', (testEnv: TestEnv) => {
     // Lender deposits
     const lender = await users[0];
     const amountToDeposit = await convertToCurrencyDecimals(ampl.address, '5000');
+
     await ampl.connect(deployer.signer).transfer(lender.address, amountToDeposit);
     await ampl.connect(lender.signer).approve(pool.address, amountToDeposit);
     await pool.connect(lender.signer).deposit(ampl.address, amountToDeposit, lender.address, '0');
@@ -165,61 +166,72 @@ makeSuite('Ampl aToken', (testEnv: TestEnv) => {
       (await convertToCurrencyDecimals(ampl.address, '15000')).toString());
   });
 
-  // it('Negative rebase', async () => {
-  //
-  //   const {pool, dai, ampl, users, addressesProvider, uni, aAMPL, aDai, deployer} = testEnv;
-  //
-  //   // let amplReserve = await pool.getReserveData(ampl.address);
-  //   // console.log('amplReserve:');
-  //   // console.log(amplReserve);
-  //   //
-  //   // // Borrower deposits
-  //   const borrower = await users[1];
-  //   // const collateralAmount = await convertToCurrencyDecimals(dai.address, '20000');
-  //   // await dai.mint(collateralAmount);
-  //   // await dai.approve(pool.address, collateralAmount);
-  //   // await pool.deposit(dai.address, collateralAmount, borrower.address, '0');
-  //   //
-  //   // // Lender deposits
-  //   const lender = await users[0];
-  //   // const amountToDeposit = await convertToCurrencyDecimals(ampl.address, '10000');
-  //   //
-  //   // console.log('Deployer test: ' + deployer.address);
-  //   // console.log('balance : ' + (await ampl.balanceOf(deployer.address)).toString());
-  //   //
-  //   // await ampl.connect(deployer.signer).transfer(lender.address, amountToDeposit);
-  //   //
-  //   // console.log('Balance: ' +  (await ampl.balanceOf(lender.address)).toNumber());
-  //   // await ampl.connect(lender.signer).approve(pool.address, amountToDeposit);
-  //   // console.log('Allowance: ' +  (await ampl.allowance(lender.address, pool.address)).toNumber());
-  //   //
-  //   // console.log(await aAMPL._fetchExtData());
-  //   //
-  //   // await pool.connect(lender.signer).deposit(ampl.address, amountToDeposit, lender.address, '0');
-  //   //
-  //   //
-  //   // // Borrowing
-  //   // const amountToBorrow = await convertToCurrencyDecimals(ampl.address, '1000');
-  //   // await pool.connect(borrower.signer).borrow(ampl.address, amountToBorrow, RateMode.Variable,'0', borrower.address);
-  //   // const amountToBorrow = await convertToCurrencyDecimals(ampl.address, '1000');
-  //   // await pool.connect(borrower.signer).borrow(ampl.address, amountToBorrow, RateMode.Variable,'0', borrower.address);
-  //
-  //   let lenderUserData = await pool.getUserAccountData(lender.address);
-  //   printUserData(lenderUserData);
-  //   let borrowerUserData = await pool.getUserAccountData(borrower.address);
-  //   printUserData(borrowerUserData);
-  //
-  //   const rebase_amount = new BigNumber((await ampl.totalSupply()).toString()).multipliedBy(-0.1);
-  //   // -10% Rebase
-  //   await ampl.rebase(1, rebase_amount.toString());
-  //   // await expect(ampl.balanceOf(borrower.address)).to.be.equal(
-  //   //   await convertToCurrencyDecimals(ampl.address, '10000'));
-  //   console.log((await ampl.balanceOf(borrower.address)).toString());
-  //   console.log((await aAMPL.balanceOf(borrower.address)).toString());
-  //   console.log((await ampl.balanceOf(lender.address)).toString());
-  //   console.log((await aAMPL.balanceOf(lender.address)).toString());
-  //
-  // });
+  it('Negative rebase', async () => {
+
+    const {pool, dai, ampl, users, addressesProvider, uni, aAMPL, aDai, deployer} = testEnv;
+
+    // let amplReserve = await pool.getReserveData(ampl.address);
+    // console.log('amplReserve:');
+    // console.log(amplReserve);
+    //
+    // // Borrower deposits
+    const borrower = await users[1];
+    // const collateralAmount = await convertToCurrencyDecimals(dai.address, '20000');
+    // await dai.mint(collateralAmount);
+    // await dai.approve(pool.address, collateralAmount);
+    // await pool.deposit(dai.address, collateralAmount, borrower.address, '0');
+    //
+    // // Lender deposits
+    const lender = await users[0];
+    // const amountToDeposit = await convertToCurrencyDecimals(ampl.address, '10000');
+    //
+    // console.log('Deployer test: ' + deployer.address);
+    // console.log('balance : ' + (await ampl.balanceOf(deployer.address)).toString());
+    //
+    // await ampl.connect(deployer.signer).transfer(lender.address, amountToDeposit);
+    //
+    // console.log('Balance: ' +  (await ampl.balanceOf(lender.address)).toNumber());
+    // await ampl.connect(lender.signer).approve(pool.address, amountToDeposit);
+    // console.log('Allowance: ' +  (await ampl.allowance(lender.address, pool.address)).toNumber());
+    //
+    // console.log(await aAMPL._fetchExtData());
+    //
+    // await pool.connect(lender.signer).deposit(ampl.address, amountToDeposit, lender.address, '0');
+    //
+    //
+    // // Borrowing
+    // const amountToBorrow = await convertToCurrencyDecimals(ampl.address, '1000');
+    // await pool.connect(borrower.signer).borrow(ampl.address, amountToBorrow, RateMode.Variable,'0', borrower.address);
+    // const amountToBorrow = await convertToCurrencyDecimals(ampl.address, '1000');
+    // await pool.connect(borrower.signer).borrow(ampl.address, amountToBorrow, RateMode.Variable,'0', borrower.address);
+
+    let lenderUserData = await pool.getUserAccountData(lender.address);
+    printUserData(lenderUserData);
+    let borrowerUserData = await pool.getUserAccountData(borrower.address);
+    printUserData(borrowerUserData);
+
+    const rebase_amount = new BigNumber((await ampl.totalSupply()).toString()).multipliedBy(-0.1);
+    // -10% Rebase
+    await ampl.rebase(1, rebase_amount.toString());
+    // await expect(ampl.balanceOf(borrower.address)).to.be.equal(
+    //   await convertToCurrencyDecimals(ampl.address, '10000'));
+    console.log((await ampl.balanceOf(borrower.address)).toString());
+    console.log((await aAMPL.balanceOf(borrower.address)).toString());
+    console.log((await ampl.balanceOf(lender.address)).toString());
+    console.log((await aAMPL.balanceOf(lender.address)).toString());
+
+    const other = await users[2];
+    const amountToTrasfer = await convertToCurrencyDecimals(aAMPL.address, '5000');
+
+    await aAMPL.connect(lender.signer).transfer(other.address, amountToTrasfer);
+
+    console.log((await ampl.balanceOf(borrower.address)).toString());
+    console.log((await aAMPL.balanceOf(borrower.address)).toString());
+    console.log((await ampl.balanceOf(lender.address)).toString());
+    console.log((await aAMPL.balanceOf(lender.address)).toString());
+    console.log((await aAMPL.balanceOf(other.address)).toString());
+
+  });
   //
   // it('Positive rebase', async () => {
   //

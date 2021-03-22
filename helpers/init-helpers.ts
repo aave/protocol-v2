@@ -31,12 +31,12 @@ import { isZeroAddress } from 'ethereumjs-util';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
+    // case eContractid.AAmplToken:
+    //   return deployAAmplToken;
     case eContractid.AToken:
       return deployGenericAToken;
     case eContractid.DelegationAwareAToken:
       return deployDelegationAwareAToken;
-    // case eContractid.AAmplToken:
-    //   return deployAAmplToken;
     default:
       throw Error(`Missing aToken deployment script for: ${id}`);
   }

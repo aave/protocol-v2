@@ -292,12 +292,12 @@ export const strategyUNI: IReserveParams = {
 };
 
 export const strategyAMPL: IReserveParams = {
-  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  optimalUtilizationRate: new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '6500',
   liquidationBonus: '10500',
