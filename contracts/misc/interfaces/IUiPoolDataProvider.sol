@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
+import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 
 interface IUiPoolDataProvider {
   struct AggregatedReserveData {
@@ -41,7 +42,18 @@ interface IUiPoolDataProvider {
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
+    // incentives
+    uint128 emissionPerSecond;
   }
+
+  struct IncentivesDataUser {
+    address rewardToken;
+    uint256 claimableRewards;
+    uint256 rewardTokenDecimals;
+    uint256 rewardTokenPriceEth;
+    uint128 emissionPerSecond;
+  }
+
   //
   //  struct ReserveData {
   //    uint256 averageStableBorrowRate;
@@ -67,7 +79,11 @@ interface IUiPoolDataProvider {
   //    address aTokenAddress;
   //  }
 
-  function getReservesData(ILendingPoolAddressesProvider provider, address user)
+  function getReservesData(
+    ILendingPoolAddressesProvider provider,
+    IAaveIncentivesController incentives,
+    address user
+  )
     external
     view
     returns (
@@ -75,6 +91,12 @@ interface IUiPoolDataProvider {
       UserReserveData[] memory,
       uint256
     );
+
+  function getUserIncentivesBalance(
+    ILendingPoolAddressesProvider provider,
+    IAaveIncentivesController incentives,
+    address user
+  ) external view returns (IncentivesDataUser memory);
 
   //  function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
   //    external

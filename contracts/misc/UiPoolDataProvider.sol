@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
+import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController.sol';
 import {IUiPoolDataProvider} from './interfaces/IUiPoolDataProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -43,7 +44,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     );
   }
 
-  function getReservesData(ILendingPoolAddressesProvider provider, address user)
+  function getReservesData(
+    ILendingPoolAddressesProvider provider,
+    IAaveIncentivesController incentivesControllerAddr,
+    address user
+  )
     external
     view
     override
@@ -53,6 +58,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       uint256
     )
   {
+    IAaveIncentivesController incentivesController =
+      IAaveIncentivesController(incentivesControllerAddr);
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
@@ -122,6 +129,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
       );
 
+      // incentives
+      reserveData.emissionPerSecond = incentivesController
+        .assets(reserveData.underlyingAsset)
+        .emissionPerSecond;
+
       if (user != address(0)) {
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
@@ -155,6 +167,43 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         }
       }
     }
+
     return (reservesData, userReservesData, oracle.getAssetPrice(MOCK_USD_ADDRESS));
+  }
+
+  function getUserIncentivesBalance(
+    ILendingPoolAddressesProvider provider,
+    IAaveIncentivesController incentivesControllerAddr,
+    address user
+  ) external view override returns (IncentivesDataUser memory) {
+    IAaveIncentivesController incentivesController =
+      IAaveIncentivesController(incentivesControllerAddr);
+    ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
+    address[] memory reserves = lendingPool.getReservesList();
+
+    // array of atokens that have incentives
+    address[] memory incentivesATokens = new address[](user != address(0) ? reserves.length : 0);
+
+    for (uint256 i = 0; i < reserves.length; i++) {
+      DataTypes.ReserveData memory baseData = lendingPool.getReserveData(reserves[i]);
+      if (user != address(0)) {
+        incentivesATokens[i] = baseData.aTokenAddress;
+      }
+    }
+
+    IncentivesDataUser memory userRewardsBalance;
+    if (user != address(0)) {
+      userRewardsBalance.rewardToken = incentivesController.REWARD_TOKEN();
+      userRewardsBalance.claimableRewards = incentivesController.getRewardsBalance(
+        incentivesATokens,
+        user
+      );
+      userRewardsBalance.rewardTokenDecimals = IERC20Detailed(userRewardsBalance.rewardToken)
+        .decimals();
+      userRewardsBalance.rewardTokenPriceEth = oracle.getAssetPrice(userRewardsBalance.rewardToken);
+    }
+
+    return (userRewardsBalance);
   }
 }
