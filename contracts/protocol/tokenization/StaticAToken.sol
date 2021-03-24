@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {IStaticAToken} from '../../interfaces/IStaticAToken.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
@@ -16,33 +17,27 @@ import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
  * - Only supporting deposits and withdrawals
  * @author Aave
  **/
-contract StaticAToken is ERC20 {
+contract StaticAToken is IStaticAToken, ERC20 {
   using SafeERC20 for IERC20;
   using WadRayMath for uint256;
 
-  struct SignatureParams {
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
-  }
-
-  bytes public constant EIP712_REVISION = bytes('1');
-  bytes32 internal constant EIP712_DOMAIN =
+  bytes public constant override EIP712_REVISION = bytes('1');
+  bytes32 public constant override EIP712_DOMAIN =
     keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
-  bytes32 public constant PERMIT_TYPEHASH =
+  bytes32 public constant override PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
-  bytes32 public constant METADEPOSIT_TYPEHASH =
+  bytes32 public constant override METADEPOSIT_TYPEHASH =
     keccak256(
       'Deposit(address depositor,address recipient,uint256 value,uint16 referralCode,bool fromUnderlying,uint256 nonce,uint256 deadline)'
     );
-  bytes32 public constant METAWITHDRAWAL_TYPEHASH =
+  bytes32 public constant override METAWITHDRAWAL_TYPEHASH =
     keccak256(
-      'Withdraw(address owner,address recipient,uint256 staticAmount, uint256 dynamicAmount, bool toUnderlying, uint256 nonce,uint256 deadline)'
+      'Withdraw(address owner,address recipient,uint256 staticAmount,uint256 dynamicAmount,bool toUnderlying,uint256 nonce,uint256 deadline)'
     );
 
-  ILendingPool public immutable LENDING_POOL;
-  IERC20 public immutable ATOKEN;
-  IERC20 public immutable ASSET;
+  ILendingPool public immutable override LENDING_POOL;
+  IERC20 public immutable override ATOKEN;
+  IERC20 public immutable override ASSET;
 
   /// @dev owner => next valid nonce to submit with permit(), metaDeposit() and metaWithdraw()
   /// We choose to have sequentiality on them for each user to avoid potentially dangerous/bad UX cases
@@ -78,7 +73,7 @@ contract StaticAToken is ERC20 {
     uint256 amount,
     uint16 referralCode,
     bool fromUnderlying
-  ) external returns (uint256) {
+  ) external override returns (uint256) {
     return _deposit(msg.sender, recipient, amount, referralCode, fromUnderlying);
   }
 
@@ -96,7 +91,7 @@ contract StaticAToken is ERC20 {
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external returns (uint256, uint256) {
+  ) external override returns (uint256, uint256) {
     return _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
   }
 
@@ -114,7 +109,7 @@ contract StaticAToken is ERC20 {
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external returns (uint256, uint256) {
+  ) external override returns (uint256, uint256) {
     return _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
   }
 
@@ -139,7 +134,7 @@ contract StaticAToken is ERC20 {
     bytes32 r,
     bytes32 s,
     uint256 chainId
-  ) external {
+  ) external override {
     require(owner != address(0), 'INVALID_OWNER');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
@@ -182,7 +177,7 @@ contract StaticAToken is ERC20 {
     uint256 deadline,
     SignatureParams calldata sigParams,
     uint256 chainId
-  ) external returns (uint256) {
+  ) external override returns (uint256) {
     require(depositor != address(0), 'INVALID_DEPOSITOR');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
@@ -239,7 +234,7 @@ contract StaticAToken is ERC20 {
     uint256 deadline,
     SignatureParams calldata sigParams,
     uint256 chainId
-  ) external returns (uint256, uint256) {
+  ) external override returns (uint256, uint256) {
     require(owner != address(0), 'INVALID_DEPOSITOR');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
@@ -273,7 +268,7 @@ contract StaticAToken is ERC20 {
    * @param account The address of the user
    * @return uint256 The aToken balance
    **/
-  function dynamicBalanceOf(address account) external view returns (uint256) {
+  function dynamicBalanceOf(address account) external view override returns (uint256) {
     return staticToDynamicAmount(balanceOf(account));
   }
 
@@ -283,7 +278,7 @@ contract StaticAToken is ERC20 {
    * @param amount The amount to convert from
    * @return uint256 The dynamic amount
    **/
-  function staticToDynamicAmount(uint256 amount) public view returns (uint256) {
+  function staticToDynamicAmount(uint256 amount) public view override returns (uint256) {
     return amount.rayMul(rate());
   }
 
@@ -293,7 +288,7 @@ contract StaticAToken is ERC20 {
    * @param amount The amount to convert from
    * @return uint256 The static (scaled) amount
    **/
-  function dynamicToStaticAmount(uint256 amount) public view returns (uint256) {
+  function dynamicToStaticAmount(uint256 amount) public view override returns (uint256) {
     return amount.rayDiv(rate());
   }
 
@@ -302,7 +297,7 @@ contract StaticAToken is ERC20 {
    * as it can be considered as an ever-increasing exchange rate
    * @return bytes32 The domain separator
    **/
-  function rate() public view returns (uint256) {
+  function rate() public view override returns (uint256) {
     return LENDING_POOL.getReserveNormalizedIncome(address(ASSET));
   }
 
@@ -311,7 +306,7 @@ contract StaticAToken is ERC20 {
    * @param chainId The chain id
    * @return bytes32 The domain separator
    **/
-  function getDomainSeparator(uint256 chainId) public view returns (bytes32) {
+  function getDomainSeparator(uint256 chainId) public view override returns (bytes32) {
     return
       keccak256(
         abi.encode(

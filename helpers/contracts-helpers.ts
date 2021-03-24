@@ -225,6 +225,102 @@ export const buildPermitParams = (
   },
 });
 
+export const buildMetaDepositParams = (
+  chainId: number,
+  token: tEthereumAddress,
+  revision: string,
+  tokenName: string,
+  depositor: tEthereumAddress,
+  recipient: tEthereumAddress,
+  nonce: number,
+  deadline: string,
+  fromUnderlying: boolean,
+  referralCode: number,
+  value: tStringTokenSmallUnits
+) => ({
+  types: {
+    EIP712Domain: [
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+      { name: 'verifyingContract', type: 'address' },
+    ],
+    Deposit: [
+      { name: 'depositor', type: 'address' },
+      { name: 'recipient', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'referralCode', type: 'uint16' },
+      { name: 'fromUnderlying', type: 'bool' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  primaryType: 'Deposit' as const,
+  domain: {
+    name: tokenName,
+    version: revision,
+    chainId: chainId,
+    verifyingContract: token,
+  },
+  message: {
+    depositor,
+    fromUnderlying,
+    recipient,
+    value,
+    nonce,
+    deadline,
+    referralCode,
+  },
+});
+
+export const buildMetaWithdrawParams = (
+  chainId: number,
+  token: tEthereumAddress,
+  revision: string,
+  tokenName: string,
+  owner: tEthereumAddress,
+  recipient: tEthereumAddress,
+  nonce: number,
+  deadline: string,
+  toUnderlying: boolean,
+  staticAmount: tStringTokenSmallUnits,
+  dynamicAmount: tStringTokenSmallUnits
+) => ({
+  types: {
+    EIP712Domain: [
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+      { name: 'verifyingContract', type: 'address' },
+    ],
+    Withdraw: [
+      { name: 'owner', type: 'address' },
+      { name: 'recipient', type: 'address' },
+      { name: 'staticAmount', type: 'uint256' },
+      { name: 'dynamicAmount', type: 'uint256' },
+      { name: 'toUnderlying', type: 'bool' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  primaryType: 'Withdraw' as const,
+  domain: {
+    name: tokenName,
+    version: revision,
+    chainId: chainId,
+    verifyingContract: token,
+  },
+  message: {
+    owner,
+    toUnderlying,
+    recipient,
+    staticAmount,
+    dynamicAmount,
+    nonce,
+    deadline,
+  },
+});
+
 export const getSignatureFromTypedData = (
   privateKey: string,
   typedData: any // TODO: should be TypedData, from eth-sig-utils, but TS doesn't accept it

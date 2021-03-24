@@ -26,7 +26,7 @@ const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-
+const FORKING_BLOCK = Number(process.env.FORKING_BLOCK || '11608298');
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
   ['misc', 'migrations', 'dev', 'full', 'verifications', 'deployments', 'helpers'].forEach(
@@ -65,7 +65,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
 
 const mainnetFork = MAINNET_FORK
   ? {
-      blockNumber: 11608298,
+      blockNumber: FORKING_BLOCK,
       url: ALCHEMY_KEY
         ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
         : `https://mainnet.infura.io/v3/${INFURA_KEY}`,
