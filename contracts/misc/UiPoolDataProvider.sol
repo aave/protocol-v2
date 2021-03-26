@@ -46,7 +46,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
 
   function getReservesData(
     ILendingPoolAddressesProvider provider,
-    IAaveIncentivesController incentivesControllerAddr,
+    IAaveIncentivesController incentivesController,
     address user
   )
     external
@@ -179,7 +179,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
 
   function getUserIncentivesBalance(
     ILendingPoolAddressesProvider provider,
-    IAaveIncentivesController incentivesControllerAddr,
+    IAaveIncentivesController incentivesController,
     address user
   ) external view override returns (IncentivesDataUser memory) {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
