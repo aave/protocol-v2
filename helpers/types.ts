@@ -351,7 +351,7 @@ export enum TokenContractId {
   BptBALWETH = 'BptBALWETH',
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
-  xSUSHI = 'xSUSHI'
+  xSUSHI = 'xSUSHI',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -492,6 +492,7 @@ export interface ICommonConfiguration {
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
+  IncentivesController: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

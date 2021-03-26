@@ -335,4 +335,13 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.main]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
     [eEthereumNetwork.tenderlyMain]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
   },
+  IncentivesController: {
+    [eEthereumNetwork.coverage]: ZERO_ADDRESS,
+    [eEthereumNetwork.hardhat]: ZERO_ADDRESS,
+    [eEthereumNetwork.buidlerevm]: ZERO_ADDRESS,
+    [eEthereumNetwork.kovan]: ZERO_ADDRESS,
+    [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
+    [eEthereumNetwork.main]: ZERO_ADDRESS,
+    [eEthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
+  },
 };

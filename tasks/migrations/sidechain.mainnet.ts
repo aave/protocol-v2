@@ -4,10 +4,11 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('matic:mainnet', 'Deploy Matic market at Polygon network')
+task('sidechain:mainnet', 'Deploy market at sidechain')
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ verify }, DRE) => {
-    const POOL_NAME = ConfigNames.Matic;
+  .addParam('pool', `Market pool configuration, one of ${Object.keys(ConfigNames)}`)
+  .setAction(async ({ verify, pool }, DRE) => {
+    const POOL_NAME = pool;
     await DRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
@@ -16,6 +17,9 @@ task('matic:mainnet', 'Deploy Matic market at Polygon network')
     }
 
     console.log('Migration started\n');
+
+    console.log('0. Deploy address provider registry');
+    await DRE.run('full:deploy-address-provider-registry', { pool: POOL_NAME });
 
     console.log('1. Deploy address provider');
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });

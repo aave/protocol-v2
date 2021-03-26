@@ -33,7 +33,7 @@ import {
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { MockTokenMap } from './contracts-helpers';
-import { DRE, getDb } from './misc-utils';
+import { DRE, getDb, notFalsyOrZeroAddress } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
 
 export const getFirstSigner = async () => (await DRE.ethers.getSigners())[0];
@@ -196,12 +196,13 @@ export const getPairsTokenAggregator = (
 
 export const getLendingPoolAddressesProviderRegistry = async (address?: tEthereumAddress) =>
   await LendingPoolAddressesProviderRegistryFactory.connect(
-    address ||
-      (
-        await getDb()
-          .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${DRE.network.name}`)
-          .value()
-      ).address,
+    notFalsyOrZeroAddress(address)
+      ? address
+      : (
+          await getDb()
+            .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${DRE.network.name}`)
+            .value()
+        ).address,
     await getFirstSigner()
   );
 
