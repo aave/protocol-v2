@@ -130,8 +130,16 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       );
 
       // incentives
-      reserveData.emissionPerSecond = incentivesController
-        .assets(reserveData.underlyingAsset)
+      reserveData.aEmissionPerSecond = incentivesController
+        .assets(reserveData.aTokenAddress)
+        .emissionPerSecond;
+
+      reserveData.vEmissionPerSecond = incentivesController
+        .assets(reserveData.variableDebtTokenAddress)
+        .emissionPerSecond;
+
+      reserveData.sEmissionPerSecond = incentivesController
+        .assets(reserveData.stableDebtTokenAddress)
         .emissionPerSecond;
 
       if (user != address(0)) {

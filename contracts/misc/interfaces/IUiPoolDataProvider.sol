@@ -43,7 +43,9 @@ interface IUiPoolDataProvider {
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
     // incentives
-    uint128 emissionPerSecond;
+    uint128 aEmissionPerSecond;
+    uint128 vEmissionPerSecond;
+    uint128 sEmissionPerSecond;
   }
 
   struct IncentivesDataUser {
