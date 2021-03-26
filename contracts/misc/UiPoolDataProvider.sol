@@ -58,8 +58,6 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       uint256
     )
   {
-    IAaveIncentivesController incentivesController =
-      IAaveIncentivesController(incentivesControllerAddr);
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
@@ -184,8 +182,6 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     IAaveIncentivesController incentivesControllerAddr,
     address user
   ) external view override returns (IncentivesDataUser memory) {
-    IAaveIncentivesController incentivesController =
-      IAaveIncentivesController(incentivesControllerAddr);
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
