@@ -11,6 +11,8 @@ interface IAaveIncentivesController {
 
   function REWARD_TOKEN() external view returns (address rewardToken);
 
+  function PRECISION() external view returns (uint8);
+
   function assets(address underlying) external view returns (AssetData memory assets);
 
   function handleAction(
@@ -23,4 +25,8 @@ interface IAaveIncentivesController {
     external
     view
     returns (uint256);
+
+  function getUserUnclaimedRewards(address _user) external view returns (uint256);
+
+  function getUserAssetData(address user, address asset) external view returns (uint256);
 }

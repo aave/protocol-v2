@@ -46,14 +46,20 @@ interface IUiPoolDataProvider {
     uint128 aEmissionPerSecond;
     uint128 vEmissionPerSecond;
     uint128 sEmissionPerSecond;
+    uint256 aIncentivesLastUpdateTimestamp;
+    uint256 vIncentivesLastUpdateTimestamp;
+    uint256 sIncentivesLastUpdateTimestamp;
+    uint256 aTokenIncentivesIndex;
+    uint256 vTokenIncentivesIndex;
+    uint256 sTokenIncentivesIndex;
   }
 
   struct IncentivesDataUser {
     address rewardToken;
-    uint256 claimableRewards;
+    uint256 userUnclaimedRewards;
     uint256 rewardTokenDecimals;
     uint256 rewardTokenPriceEth;
-    uint128 emissionPerSecond;
+    uint8 precision;
   }
 
   //
@@ -70,6 +76,16 @@ interface IUiPoolDataProvider {
     uint256 scaledVariableDebt;
     uint256 principalStableDebt;
     uint256 stableBorrowLastUpdateTimestamp;
+    // incentives
+    uint256 aTokenincentivesUserIndex;
+    uint256 vTokenincentivesUserIndex;
+    uint256 sTokenincentivesUserIndex;
+  }
+
+  struct IncentivesAssetData {
+    uint128 emissionPerSecond;
+    uint128 lastUpdateTimestamp;
+    uint256 index;
   }
 
   //
@@ -91,14 +107,15 @@ interface IUiPoolDataProvider {
     returns (
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
-      uint256
+      uint256,
+      IncentivesDataUser memory
     );
 
-  function getUserIncentivesBalance(
-    ILendingPoolAddressesProvider provider,
-    IAaveIncentivesController incentives,
-    address user
-  ) external view returns (IncentivesDataUser memory);
+  // function getUserIncentivesBalance(
+  //   ILendingPoolAddressesProvider provider,
+  //   IAaveIncentivesController incentives,
+  //   address user
+  // ) external view returns (IncentivesDataUser memory);
 
   //  function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
   //    external
