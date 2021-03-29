@@ -57,6 +57,9 @@ export const CommonsConfig: ICommonConfiguration = {
     WMATIC: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(), // TEMP
     },
+    AAVE: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
   },
   // ----------------
   // COMMON PROTOCOL ADDRESSES ACROSS POOLS
