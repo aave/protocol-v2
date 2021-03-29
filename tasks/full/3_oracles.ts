@@ -62,7 +62,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       }
 
       if (notFalsyOrZeroAddress(lendingRateOracleAddress)) {
-        lendingRateOracle = await getLendingRateOracle(lendingRateOracleAddress)
+        lendingRateOracle = await getLendingRateOracle(lendingRateOracleAddress);
       } else {
         lendingRateOracle = await deployLendingRateOracle(verify);
         const { USD, ...tokensAddressesWithoutUsd } = tokensToWatch;
@@ -73,10 +73,10 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
           admin
         );
       }
-      
+
       console.log('Aave Oracle: %s', lendingRateOracle.address);
       console.log('Lending Rate Oracle: %s', lendingRateOracle.address);
-      
+
       // Register the proxy price provider on the addressesProvider
       await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
