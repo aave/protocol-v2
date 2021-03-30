@@ -54,7 +54,7 @@ interface IUiPoolDataProvider {
     uint256 sTokenIncentivesIndex;
   }
 
-  struct IncentivesDataUser {
+  struct IncentivesUserData {
     address rewardToken;
     uint256 userUnclaimedRewards;
     uint256 rewardTokenDecimals;
@@ -83,6 +83,6 @@ interface IUiPoolDataProvider {
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
       uint256,
-      IncentivesDataUser memory
+      IncentivesUserData memory
     );
 }

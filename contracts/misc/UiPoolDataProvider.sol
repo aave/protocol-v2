@@ -59,7 +59,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
       uint256,
-      IncentivesDataUser memory
+      IncentivesUserData memory
     )
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
@@ -194,21 +194,21 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       }
     }
 
-    IncentivesDataUser memory incentivesDataUser;
+    IncentivesUserData memory incentivesUserData;
     if (user != address(0)) {
-      incentivesDataUser.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
-      incentivesDataUser.rewardToken = incentivesController.REWARD_TOKEN();
-      incentivesDataUser.precision = incentivesController.PRECISION();
-      incentivesDataUser.rewardTokenDecimals = IERC20Detailed(incentivesDataUser.rewardToken)
+      incentivesUserData.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
+      incentivesUserData.rewardToken = incentivesController.REWARD_TOKEN();
+      incentivesUserData.precision = incentivesController.PRECISION();
+      incentivesUserData.rewardTokenDecimals = IERC20Detailed(incentivesUserData.rewardToken)
         .decimals();
-      incentivesDataUser.rewardTokenPriceEth = oracle.getAssetPrice(incentivesDataUser.rewardToken);
+      incentivesUserData.rewardTokenPriceEth = oracle.getAssetPrice(incentivesUserData.rewardToken);
     }
 
     return (
       reservesData,
       userReservesData,
       oracle.getAssetPrice(MOCK_USD_ADDRESS),
-      incentivesDataUser
+      incentivesUserData
     );
   }
 }
