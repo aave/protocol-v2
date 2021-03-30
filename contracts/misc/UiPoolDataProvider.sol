@@ -25,6 +25,21 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
+  IAaveIncentivesController immutable incentivesController;
+  IPriceOracleGetter immutable oracle;
+
+  constructor(IAaveIncentivesController _incentivesController, IPriceOracleGetter _oracle) public {
+    incentivesController = _incentivesController;
+    oracle = _oracle;
+  }
+
+  function getPriceOracle() public view override returns (address) {
+    return address(oracle);
+  }
+
+  function getIncentivesController() public view override returns (address) {
+    return address(incentivesController);
+  }
 
   function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
     internal
@@ -44,11 +59,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     );
   }
 
-  function getReservesData(
-    ILendingPoolAddressesProvider provider,
-    IAaveIncentivesController incentivesController,
-    address user
-  )
+  function getReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
     override
@@ -60,7 +71,6 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     )
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
-    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
     DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
@@ -129,42 +139,24 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       );
 
       // incentives
-      // IncentivesAssetData memory aTokenIncentives = incentivesController.assets(reserveData.aTokenAddress);
-      reserveData.aEmissionPerSecond = incentivesController
-        .assets(reserveData.aTokenAddress)
-        .emissionPerSecond;
-      reserveData.aIncentivesLastUpdateTimestamp = incentivesController
-        .assets(reserveData.aTokenAddress)
-        .lastUpdateTimestamp;
-      reserveData.aTokenIncentivesIndex = incentivesController
-        .assets(reserveData.aTokenAddress)
-        .index;
+      IAaveIncentivesController.AssetData memory tokenIncentivesInfo =
+        incentivesController.assets(reserveData.aTokenAddress);
+      reserveData.aEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
+      reserveData.aIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
+      reserveData.aTokenIncentivesIndex = tokenIncentivesInfo.index;
 
-      // IncentivesAssetData memory sTokenIncentives = incentivesController.assets(reserveData.stableDebtTokenAddress);
-      reserveData.sEmissionPerSecond = incentivesController
-        .assets(reserveData.stableDebtTokenAddress)
-        .emissionPerSecond;
-      reserveData.sIncentivesLastUpdateTimestamp = incentivesController
-        .assets(reserveData.stableDebtTokenAddress)
-        .lastUpdateTimestamp;
-      reserveData.sTokenIncentivesIndex = incentivesController
-        .assets(reserveData.stableDebtTokenAddress)
-        .index;
+      tokenIncentivesInfo = incentivesController.assets(reserveData.stableDebtTokenAddress);
+      reserveData.sEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
+      reserveData.sIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
+      reserveData.sTokenIncentivesIndex = tokenIncentivesInfo.index;
 
-      // IncentivesAssetData memory vTokenIncentives = incentivesController.assets(reserveData.variableDebtTokenAddress);
-      reserveData.vEmissionPerSecond = incentivesController
-        .assets(reserveData.variableDebtTokenAddress)
-        .emissionPerSecond;
-      reserveData.vIncentivesLastUpdateTimestamp = incentivesController
-        .assets(reserveData.variableDebtTokenAddress)
-        .lastUpdateTimestamp;
-      reserveData.vTokenIncentivesIndex = incentivesController
-        .assets(reserveData.variableDebtTokenAddress)
-        .index;
+      tokenIncentivesInfo = incentivesController.assets(reserveData.variableDebtTokenAddress);
+      reserveData.vEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
+      reserveData.vIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
+      reserveData.vTokenIncentivesIndex = tokenIncentivesInfo.index;
 
       if (user != address(0)) {
         // incentives
-        // userIncentives.incentivesLastUpdated =
         userReservesData[i].aTokenincentivesUserIndex = incentivesController.getUserAssetData(
           user,
           reserveData.aTokenAddress

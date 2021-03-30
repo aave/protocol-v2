@@ -62,12 +62,6 @@ interface IUiPoolDataProvider {
     uint8 precision;
   }
 
-  //
-  //  struct ReserveData {
-  //    uint256 averageStableBorrowRate;
-  //    uint256 totalLiquidity;
-  //  }
-
   struct UserReserveData {
     address underlyingAsset;
     uint256 scaledATokenBalance;
@@ -82,26 +76,7 @@ interface IUiPoolDataProvider {
     uint256 sTokenincentivesUserIndex;
   }
 
-  struct IncentivesAssetData {
-    uint128 emissionPerSecond;
-    uint128 lastUpdateTimestamp;
-    uint256 index;
-  }
-
-  //
-  //  struct ATokenSupplyData {
-  //    string name;
-  //    string symbol;
-  //    uint8 decimals;
-  //    uint256 totalSupply;
-  //    address aTokenAddress;
-  //  }
-
-  function getReservesData(
-    ILendingPoolAddressesProvider provider,
-    IAaveIncentivesController incentives,
-    address user
-  )
+  function getReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
     returns (
@@ -111,24 +86,7 @@ interface IUiPoolDataProvider {
       IncentivesDataUser memory
     );
 
-  // function getUserIncentivesBalance(
-  //   ILendingPoolAddressesProvider provider,
-  //   IAaveIncentivesController incentives,
-  //   address user
-  // ) external view returns (IncentivesDataUser memory);
+  function getPriceOracle() external view returns (address);
 
-  //  function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
-  //    external
-  //    view
-  //    returns (UserReserveData[] memory);
-  //
-  //  function getAllATokenSupply(ILendingPoolAddressesProvider provider)
-  //    external
-  //    view
-  //    returns (ATokenSupplyData[] memory);
-  //
-  //  function getATokenSupply(address[] calldata aTokens)
-  //    external
-  //    view
-  //    returns (ATokenSupplyData[] memory);
+  function getIncentivesController() external view returns (address);
 }
