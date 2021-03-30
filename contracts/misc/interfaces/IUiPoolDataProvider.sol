@@ -85,8 +85,4 @@ interface IUiPoolDataProvider {
       uint256,
       IncentivesDataUser memory
     );
-
-  function getPriceOracle() external view returns (address);
-
-  function getIncentivesController() external view returns (address);
 }

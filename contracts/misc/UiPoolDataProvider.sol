@@ -25,20 +25,12 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
-  IAaveIncentivesController immutable incentivesController;
-  IPriceOracleGetter immutable oracle;
+  IAaveIncentivesController public immutable incentivesController;
+  IPriceOracleGetter public immutable oracle;
 
   constructor(IAaveIncentivesController _incentivesController, IPriceOracleGetter _oracle) public {
     incentivesController = _incentivesController;
     oracle = _oracle;
-  }
-
-  function getPriceOracle() public view override returns (address) {
-    return address(oracle);
-  }
-
-  function getIncentivesController() public view override returns (address) {
-    return address(incentivesController);
   }
 
   function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
