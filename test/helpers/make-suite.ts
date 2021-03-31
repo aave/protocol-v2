@@ -141,8 +141,8 @@ export async function initializeMakeSuite() {
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
-
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
+  const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
   const aAmplAddress = allTokens.find((aToken) => aToken.symbol === 'aAMPL')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
@@ -161,6 +161,7 @@ export async function initializeMakeSuite() {
   }
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
+  testEnv.aUSDC = await getAToken(aUsdcAddress);
   testEnv.aAMPL = await getAAmplToken(aAmplAddress);
   console.log("aAMPL suite: " + await testEnv.aAMPL.address);
   testEnv.dai = await getMintableERC20(daiAddress);
