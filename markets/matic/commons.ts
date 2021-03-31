@@ -86,7 +86,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   ProviderRegistry: {
     [ePolygonNetwork.mumbai]: '0x27453A916e91Fb922d309D92e637C0b6625846dF', // TEMP
-    [ePolygonNetwork.matic]: '0xeD03247f4858E60ad682B9865d64eCb46322ECfd',
+    [ePolygonNetwork.matic]: '',
   },
   ProviderRegistryOwner: {
     [ePolygonNetwork.mumbai]: '0xa6842C2C7fece4Cdc6a4aaaD331eb1c7910e419A', // TEMP
@@ -94,7 +94,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingRateOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x37Ce325Df9c92A994cC662443Dda6276a4BBBaf1',
+    [ePolygonNetwork.matic]: '',
   },
   LendingPoolCollateralManager: {
     [ePolygonNetwork.mumbai]: '',
@@ -106,11 +106,11 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   WethGateway: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x8746445fF50469B406C5642763979280AFe3e426',
+    [ePolygonNetwork.matic]: '',
   },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '0x21451bD7b528896B4AB2b9764b521D6ed641708d',
+    [ePolygonNetwork.matic]: '',
   },
   FallbackOracle: {
     [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
