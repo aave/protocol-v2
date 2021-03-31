@@ -32,6 +32,7 @@ contract ATokensAndRatesHelper is Ownable {
     uint256 liquidationBonus;
     uint256 reserveFactor;
     bool stableBorrowingEnabled;
+    bool borrowingEnabled;
   }
 
   constructor(
@@ -73,10 +74,12 @@ contract ATokensAndRatesHelper is Ownable {
         inputParams[i].liquidationBonus
       );
 
-      configurator.enableBorrowingOnReserve(
-        inputParams[i].asset,
-        inputParams[i].stableBorrowingEnabled
-      );
+      if (inputParams[i].borrowingEnabled) {
+        configurator.enableBorrowingOnReserve(
+          inputParams[i].asset,
+          inputParams[i].stableBorrowingEnabled
+        );
+      }
       configurator.setReserveFactor(inputParams[i].asset, inputParams[i].reserveFactor);
     }
   }

@@ -271,11 +271,6 @@ export const configureReservesByHelper = async (
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
   const tokens: string[] = [];
   const symbols: string[] = [];
-  const baseLTVA: string[] = [];
-  const liquidationThresholds: string[] = [];
-  const liquidationBonuses: string[] = [];
-  const reserveFactors: string[] = [];
-  const stableRatesEnabled: boolean[] = [];
 
   const inputParams: {
     asset: string;
@@ -284,6 +279,7 @@ export const configureReservesByHelper = async (
     liquidationBonus: BigNumberish;
     reserveFactor: BigNumberish;
     stableBorrowingEnabled: boolean;
+    borrowingEnabled: boolean;
   }[] = [];
 
   for (const [
@@ -294,6 +290,7 @@ export const configureReservesByHelper = async (
       liquidationThreshold,
       reserveFactor,
       stableBorrowRateEnabled,
+      borrowingEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
     if (baseLTVAsCollateral === '-1') continue;
@@ -321,15 +318,11 @@ export const configureReservesByHelper = async (
       liquidationBonus: liquidationBonus,
       reserveFactor: reserveFactor,
       stableBorrowingEnabled: stableBorrowRateEnabled,
+      borrowingEnabled: borrowingEnabled,
     });
 
     tokens.push(tokenAddress);
     symbols.push(assetSymbol);
-    baseLTVA.push(baseLTVAsCollateral);
-    liquidationThresholds.push(liquidationThreshold);
-    liquidationBonuses.push(liquidationBonus);
-    reserveFactors.push(reserveFactor);
-    stableRatesEnabled.push(stableBorrowRateEnabled);
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
