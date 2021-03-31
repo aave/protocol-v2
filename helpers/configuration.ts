@@ -30,7 +30,7 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
     case ConfigNames.Matic:
       return MaticConfig;
     case ConfigNames.Amm:
-        return AmmConfig;
+      return AmmConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -103,6 +103,19 @@ export const getATokenDomainSeparatorPerNetwork = (
 export const getWethAddress = async (config: ICommonConfiguration) => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WETH, <eNetwork>currentNetwork);
+  if (wethAddress) {
+    return wethAddress;
+  }
+  if (currentNetwork.includes('main')) {
+    throw new Error('WETH not set at mainnet configuration.');
+  }
+  const weth = await deployWETHMocked();
+  return weth.address;
+};
+
+export const getWrappedNativeTokenddress = async (config: ICommonConfiguration) => {
+  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const wethAddress = getParamPerNetwork(config.WrappedNativeToken, <eNetwork>currentNetwork);
   if (wethAddress) {
     return wethAddress;
   }

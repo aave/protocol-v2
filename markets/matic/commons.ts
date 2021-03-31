@@ -55,7 +55,7 @@ export const CommonsConfig: ICommonConfiguration = {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     WMATIC: {
-      borrowRate: oneRay.multipliedBy(0.05).toFixed(), // TEMP
+      borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
     AAVE: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
@@ -85,16 +85,16 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '',
   },
   ProviderRegistry: {
-    [ePolygonNetwork.mumbai]: '0x27453A916e91Fb922d309D92e637C0b6625846dF', // TEMP
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.matic]: '0x3ac4e9aa29940770aeC38fe853a4bbabb2dA9C19',
   },
   ProviderRegistryOwner: {
-    [ePolygonNetwork.mumbai]: '0xa6842C2C7fece4Cdc6a4aaaD331eb1c7910e419A', // TEMP
-    [ePolygonNetwork.matic]: '0x88505CB63c1679145053c758ebb7b37ac241Bd2C',
+    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.matic]: '0xD7D86236d6c463521920fCC50A9CB56f8C8Bf008',
   },
   LendingRateOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0x17F73aEaD876CC4059089ff815EDA37052960dFB',
   },
   LendingPoolCollateralManager: {
     [ePolygonNetwork.mumbai]: '',
@@ -110,7 +110,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0x0229F777B0fAb107F9591a41d5F02E4e98dB6f2d',
   },
   FallbackOracle: {
     [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
@@ -144,11 +144,15 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '',
   },
   WETH: {
-    [ePolygonNetwork.mumbai]: '0x53CDb16B8C031B779e996406546614E5F05BC4Bf',
+    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
     [ePolygonNetwork.matic]: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
   },
+  WrappedNativeToken: {
+    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.matic]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+  },
   ReserveFactorTreasuryAddress: {
-    [ePolygonNetwork.mumbai]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c', // TEMP
+    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
     [ePolygonNetwork.matic]: '0x7734280A4337F37Fbf4651073Db7c28C80B339e9',
   },
   IncentivesController: {

@@ -120,6 +120,9 @@ export const CommonsConfig: ICommonConfiguration = {
   WETH: {
     [eXDaiNetwork.xdai]: '', // DAI: xDAI is the base token, DAI is also there, We need WXDAI
   },
+  WrappedNativeToken: {
+    [eXDaiNetwork.xdai]: '', // DAI: xDAI is the base token, DAI is also there, We need WXDAI
+  },
   ReserveFactorTreasuryAddress: {
     [eXDaiNetwork.xdai]: '', // TEMP
   },

@@ -490,6 +490,7 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;

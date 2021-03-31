@@ -88,6 +88,18 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         await addressesProvider.setLendingPoolCollateralManager(collateralManagerAddress)
       );
 
+      console.log(
+        '\tSetting AaveProtocolDataProvider at AddressesProvider at id: 0x01',
+        collateralManagerAddress
+      );
+      const aaveProtocolDataProvider = await getAaveProtocolDataProvider();
+      await waitForTx(
+        await addressesProvider.setAddress(
+          '0x0100000000000000000000000000000000000000000000000000000000000000',
+          aaveProtocolDataProvider.address
+        )
+      );
+
       await deployWalletBalancerProvider(verify);
 
       const lendingPoolAddress = await addressesProvider.getLendingPool();
