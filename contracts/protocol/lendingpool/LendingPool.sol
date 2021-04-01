@@ -144,43 +144,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address to
   ) external override whenNotPaused returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    address aToken = reserve.aTokenAddress;
-
-    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
-
-    uint256 amountToWithdraw = amount;
-
-    if (amount == type(uint256).max) {
-      amountToWithdraw = userBalance;
-    }
-
-    ValidationLogic.validateWithdraw(
-      asset,
-      amountToWithdraw,
-      userBalance,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
-
-    reserve.updateState();
-
-    reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
-
-    if (amountToWithdraw == userBalance) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
-    }
-
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
-
-    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
-
-    return amountToWithdraw;
+    return _executeWithdraw(asset, amount, to);
   }
 
   /**
@@ -206,7 +170,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf
   ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-
     _executeBorrow(
       ExecuteBorrowParams(
         asset,
@@ -239,54 +202,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
-
-    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
-
-    ValidationLogic.validateRepay(
-      reserve,
-      amount,
-      interestRateMode,
-      onBehalfOf,
-      stableDebt,
-      variableDebt
-    );
-
-    uint256 paybackAmount =
-      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
-
-    if (amount < paybackAmount) {
-      paybackAmount = amount;
-    }
-
-    reserve.updateState();
-
-    if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
-      IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
-    } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
-        onBehalfOf,
-        paybackAmount,
-        reserve.variableBorrowIndex
-      );
-    }
-
-    address aToken = reserve.aTokenAddress;
-    reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
-
-    if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
-      _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
-    }
-
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
-
-    IAToken(aToken).handleRepayment(msg.sender, paybackAmount);
-
-    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
-
-    return paybackAmount;
+    return _executeRepay(asset, amount, rateMode, onBehalfOf);
   }
 
   /**
@@ -927,6 +843,106 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         : reserve.currentVariableBorrowRate,
       vars.referralCode
     );
+  }
+
+  function _executeWithdraw(
+    address asset,
+    uint256 amount,
+    address to
+  ) internal returns (uint256) {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+
+    address aToken = reserve.aTokenAddress;
+
+    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
+
+    uint256 amountToWithdraw = amount;
+
+    if (amount == type(uint256).max) {
+      amountToWithdraw = userBalance;
+    }
+
+    ValidationLogic.validateWithdraw(
+      asset,
+      amountToWithdraw,
+      userBalance,
+      _reserves,
+      _usersConfig[msg.sender],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+
+    reserve.updateState();
+
+    reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
+
+    if (amountToWithdraw == userBalance) {
+      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
+      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+    }
+
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+
+    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
+
+    return amountToWithdraw;
+  }
+
+  function _executeRepay(
+    address asset,
+    uint256 amount,
+    uint256 rateMode,
+    address onBehalfOf
+  ) internal returns (uint256) {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+
+    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
+
+    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
+
+    ValidationLogic.validateRepay(
+      reserve,
+      amount,
+      interestRateMode,
+      onBehalfOf,
+      stableDebt,
+      variableDebt
+    );
+
+    uint256 paybackAmount =
+      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
+
+    if (amount < paybackAmount) {
+      paybackAmount = amount;
+    }
+
+    reserve.updateState();
+
+    if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
+      IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
+    } else {
+      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
+        onBehalfOf,
+        paybackAmount,
+        reserve.variableBorrowIndex
+      );
+    }
+
+    address aToken = reserve.aTokenAddress;
+    reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
+
+    if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
+      _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
+    }
+
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
+
+    IAToken(aToken).handleRepayment(msg.sender, paybackAmount);
+
+    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+
+    return paybackAmount;
   }
 
   function _addReserveToList(address asset) internal {
