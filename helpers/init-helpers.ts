@@ -44,10 +44,10 @@ export const chooseATokenDeployment = (id: eContractid) => {
 };
 
 // deploy all
-// const FILTER_DEPLOY = [];
+const FILTER_DEPLOY = [];
 
 // deploy subset
-const FILTER_DEPLOY = ["WBTC", "WETH", "DAI", "AMPL", "UNI", "AAVE", "USDC"];
+// const FILTER_DEPLOY = ["WBTC", "WETH", "DAI", "AMPL", "UNI", "AAVE", "USDC"];
 
 function deployTokenSubset(reservesParams: iMultiPoolsAssets<IReserveParams>):string[] {
   return Object.keys(reservesParams).filter(a => FILTER_DEPLOY.length == 0 || FILTER_DEPLOY.includes(a))
