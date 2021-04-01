@@ -366,10 +366,8 @@ export const deployGenericAToken = async (
 };
 
 export const deployAAmplToken = async (
-  [poolAddress, underlyingAssetAddress, stableDebtTokenAddress, variableDebtTokenAddress, treasuryAddress,
+  [poolAddress, underlyingAssetAddress, treasuryAddress,
     name, symbol, incentivesController]: [
-    tEthereumAddress,
-    tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
@@ -382,13 +380,11 @@ export const deployAAmplToken = async (
   const args: [
     tEthereumAddress,
     tEthereumAddress,
-    tEthereumAddress,
-    tEthereumAddress,
     string,
     string,
     tEthereumAddress,
     tEthereumAddress
-    ] = [poolAddress, underlyingAssetAddress, stableDebtTokenAddress, variableDebtTokenAddress, treasuryAddress, name, symbol, incentivesController];
+    ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
   return withSaveAndVerify(
     await (new AAmplTokenFactory(await getFirstSigner()).deploy(...args)),
     eContractid.AAmplToken,

@@ -11,6 +11,7 @@ import {
   getAaveProtocolDataProvider,
   getAToken,
   getATokensAndRatesHelper,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getStableAndVariableTokensHelper,
 } from './contracts-getters';
@@ -267,6 +268,7 @@ export const initReservesByHelper = async (
     ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AAmplToken
   ) as [string, IReserveParams][];
 
+  let aAMPLToken, amplStableDebt, amplVariableDebt;
   for (let [symbol, params] of ElasticSupplyReserves) {
     console.log(`  - Deploy ${symbol} elastic supply aToken, debts tokens, and strategy`);
     const {
@@ -278,7 +280,7 @@ export const initReservesByHelper = async (
       stableRateSlope2,
     } = params;
 
-    const stableDebt = await deployAmplStableDebtToken(
+    amplStableDebt = await deployAmplStableDebtToken(
       [
         poolAddress,
         tokenAddresses[symbol],
@@ -288,7 +290,7 @@ export const initReservesByHelper = async (
       ],
       verify
     );
-    const variableDebt = await deployAmplVariableDebtToken(
+    amplVariableDebt = await deployAmplVariableDebtToken(
       [
         poolAddress,
         tokenAddresses[symbol],
@@ -298,12 +300,10 @@ export const initReservesByHelper = async (
       ],
       verify
     );
-    const aToken = await deployAAmplToken(
+    aAMPLToken = await deployAAmplToken(
       [
         poolAddress,
         tokenAddresses[symbol],
-        '0xe3fF8ef8d24163E606dbC255A12D0219CDBE5eDd',
-        '0x9FCc06356965e77dac8eF173439c8Fa67a4A7A07',
         treasuryAddress,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
@@ -311,10 +311,7 @@ export const initReservesByHelper = async (
       ],
       verify
     );
-    console.log("ampl: ", tokenAddresses[symbol]);
-    console.log("aAMPL: ", aToken.address);
-    console.log("stableDebt: ", stableDebt.address);
-    console.log("VariableDebt: ", variableDebt.address);
+
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,  // Change for LendingPoolAddressesProvider(addressesProvider)
@@ -328,9 +325,9 @@ export const initReservesByHelper = async (
       verify
     );
 
-    deployedStableTokens.push(stableDebt.address);
-    deployedVariableTokens.push(variableDebt.address);
-    deployedATokens.push(aToken.address);
+    deployedStableTokens.push(amplStableDebt.address);
+    deployedVariableTokens.push(amplVariableDebt.address);
+    deployedATokens.push(aAMPLToken.address);
     deployedRates.push(rates.address);
     reserveInitDecimals.push(params.reserveDecimals);
     reserveTokens.push(tokenAddresses[symbol]);
@@ -361,6 +358,12 @@ export const initReservesByHelper = async (
     console.log('    * gasUsed', tx3.gasUsed.toString());
     gasUsage = gasUsage.add(tx3.gasUsed);
   }
+
+  let pool = await getLendingPool(poolAddress);
+  let reserve = await pool.getReserveData(tokenAddresses['AMPL']);
+
+  // Set AMPL debt tokens
+  await aAMPLToken.setDebtTokens(reserve.stableDebtTokenAddress, reserve.variableDebtTokenAddress);
 
   // Set deployer back as admin
   await waitForTx(await addressProvider.setPoolAdmin(admin));

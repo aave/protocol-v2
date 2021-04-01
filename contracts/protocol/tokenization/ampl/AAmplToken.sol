@@ -155,8 +155,8 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   // ---------------------------------------------------------------------------
   // aAMPL additions
-  address public immutable STABLE_DEBT_TOKEN_ADDRESS;
-  address public immutable VARIABLE_DEBT_TOKEN_ADDRESS;
+  address public STABLE_DEBT_TOKEN_ADDRESS;
+  address public VARIABLE_DEBT_TOKEN_ADDRESS;
 
   // This is a constant on the AMPL contract, which is used to calculate the scalar
   // which controls the AMPL expansion/contraction.
@@ -183,8 +183,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   constructor(
     ILendingPool pool,
     address underlyingAssetAddress,
-    address stableDebtTokenAddress,
-    address variableDebtTokenAddress,
     address reserveTreasuryAddress,
     string memory tokenName,
     string memory tokenSymbol,
@@ -193,13 +191,16 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
     RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
-
-    STABLE_DEBT_TOKEN_ADDRESS = stableDebtTokenAddress;
-    VARIABLE_DEBT_TOKEN_ADDRESS = variableDebtTokenAddress;
   }
 
   function getRevision() internal pure virtual override returns (uint256) {
     return ATOKEN_REVISION;
+  }
+
+  function setDebtTokens (address stableDebtTokenAddress, address variableDebtTokenAddress) public {
+    require(STABLE_DEBT_TOKEN_ADDRESS == address(0) && VARIABLE_DEBT_TOKEN_ADDRESS == address(0));
+    STABLE_DEBT_TOKEN_ADDRESS = stableDebtTokenAddress;
+    VARIABLE_DEBT_TOKEN_ADDRESS = variableDebtTokenAddress;
   }
 
   function initialize(

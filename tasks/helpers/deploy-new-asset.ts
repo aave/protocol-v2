@@ -76,8 +76,6 @@ WRONG RESERVE ASSET SETUP:
         [
           poolAddress,
           reserveAssetAddress,
-          stableDebt.address,
-          variableDebt.address,
           treasuryAddress,
           `Aave interest bearing ${symbol}`,
           `a${symbol}`,
@@ -85,6 +83,7 @@ WRONG RESERVE ASSET SETUP:
         ],
         verify
       );
+      aToken.setDebtTokens(stableDebt.address, variableDebt.address);
     } else {
       const deployCustomAToken = chooseATokenDeployment(strategyParams.aTokenImpl);
       aToken = await deployCustomAToken(

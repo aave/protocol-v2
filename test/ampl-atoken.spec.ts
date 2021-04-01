@@ -101,6 +101,7 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
     adminAddress = admin.address;
 
     reserveData = await pool.getReserveData(ampl.address);
+    await aAMPL.setDebtTokens(reserveData.stableDebtTokenAddress, reserveData.variableDebtTokenAddress);
 
     await ampl.connect(deployer.signer).transfer(lenderAAddress, await fxtPt(ampl, '100000'));
     await ampl.connect(deployer.signer).transfer(lenderBAddress, await fxtPt(ampl, '100000'));
@@ -118,15 +119,6 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
     describe("first deposit", function() {
       it('should mint correct number of aAMPL tokens', async () => {
         const {pool, ampl, aAMPL, aDai, helpersContract} = testEnv;
-
-        console.log("adai", aDai.address);
-        console.log("ampl", ampl.address);
-        console.log("aAMPL", aAMPL.address);
-        const { stableDebtTokenAddress,variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
-          ampl.address
-        );
-        console.log("stable", stableDebtTokenAddress);
-        console.log("variable", variableDebtTokenAddress);
 
         await checkBal(ampl, lenderAAddress, '100000');
         await checkBal(aAMPL, lenderAAddress, '0');
