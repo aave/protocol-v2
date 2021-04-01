@@ -13,7 +13,7 @@ import {
 } from './types';
 
 import { MintableERC20 } from '../types/MintableERC20';
-import { MintableAmplERC20 } from '../types/MintableAmplERC20';
+import { MockAmplERC20 } from '../types/MockAmplERC20';
 import { MockContract } from 'ethereum-waffle';
 import { getReservesConfigByPool } from './configuration';
 import { getFirstSigner } from './contracts-getters';
@@ -36,7 +36,7 @@ import {
   LendingPoolFactory,
   LendingRateOracleFactory,
   MintableDelegationERC20Factory,
-  MintableAmplERC20Factory,
+  MockAmplERC20Factory,
   MintableERC20Factory,
   MockAggregatorFactory,
   MockATokenFactory,
@@ -284,13 +284,13 @@ export const deployMintableERC20 = async (
     verify
   );
 
-export const deployMintableAmplERC20 = async (
+export const deployMockAmplERC20 = async (
   args: [string, string, string],
   verify?: boolean
-): Promise<MintableAmplERC20> =>
+): Promise<MockAmplERC20> =>
   withSaveAndVerify(
-    await new MintableAmplERC20Factory(await getFirstSigner()).deploy(),
-    eContractid.MintableAmplERC20,
+    await new MockAmplERC20Factory(await getFirstSigner()).deploy(),
+    eContractid.MockAmplERC20,
     args,
     verify
   );
@@ -334,28 +334,6 @@ export const deployVariableDebtToken = async (
   withSaveAndVerify(
     await new VariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.VariableDebtToken,
-    args,
-    verify
-  );
-
-export const deployAmplStableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
-  verify: boolean
-) =>
-  withSaveAndVerify(
-    await new AmplStableDebtTokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.AmplStableDebtToken,
-    args,
-    verify
-  );
-
-export const deployAmplVariableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
-  verify: boolean
-) =>
-  withSaveAndVerify(
-    await new AmplVariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.AmplVariableDebtToken,
     args,
     verify
   );
@@ -412,12 +390,34 @@ export const deployAAmplToken = async (
     tEthereumAddress
     ] = [poolAddress, underlyingAssetAddress, stableDebtTokenAddress, variableDebtTokenAddress, treasuryAddress, name, symbol, incentivesController];
   return withSaveAndVerify(
-    await new AAmplTokenFactory(await getFirstSigner()).deploy(...args),
+    await (new AAmplTokenFactory(await getFirstSigner()).deploy(...args)),
     eContractid.AAmplToken,
     args,
     verify
   );
 };
+
+export const deployAmplStableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await (new AmplStableDebtTokenFactory(await getFirstSigner()).deploy(...args)),
+    eContractid.AmplStableDebtToken,
+    args,
+    verify
+  );
+
+export const deployAmplVariableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await (new AmplVariableDebtTokenFactory(await getFirstSigner()).deploy(...args)),
+    eContractid.AmplVariableDebtToken,
+    args,
+    verify
+  );
 
 export const deployDelegationAwareAToken = async (
   [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [

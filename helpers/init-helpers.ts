@@ -31,8 +31,6 @@ import { isZeroAddress } from 'ethereumjs-util';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
-    // case eContractid.AAmplToken:
-    //   return deployAAmplToken;
     case eContractid.AToken:
       return deployGenericAToken;
     case eContractid.DelegationAwareAToken:
@@ -287,8 +285,10 @@ export const initReservesByHelper = async (
       [
         poolAddress,
         tokenAddresses[symbol],
-        '0x52812aF7A6D3e680A6571200dF1EFFddfbaeFF09',
-        '0x74ec96fEF25F6D64E77aF39F1ec9096B33Aa92D2',
+        stableDebt.address,
+        variableDebt.address,
+        // '0x52812aF7A6D3e680A6571200dF1EFFddfbaeFF09',
+        // '0x74ec96fEF25F6D64E77aF39F1ec9096B33Aa92D2',
         treasuryAddress,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
@@ -553,7 +553,6 @@ export const initTokenReservesByHelper = async (
         ],
         verify
       );
-      // console.log("Not found : " + symbol + " : " + variableDebt.address);
       variableTokenImpl = variableDebt.address;
     }
     if (!aTokenImplementation) {

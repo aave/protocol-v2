@@ -45,7 +45,6 @@ WRONG RESERVE ASSET SETUP:
     const strategyParams = reserveConfigs['strategy' + symbol];
     const reserveAssetAddress =
       marketConfigs.AaveConfig.ReserveAssets[localBRE.network.name][symbol];
-    // const deployCustomAToken = chooseATokenDeployment(strategyParams.aTokenImpl);
     const addressProvider = await getLendingPoolAddressesProvider(
       LENDING_POOL_ADDRESS_PROVIDER[network]
     );
@@ -71,19 +70,36 @@ WRONG RESERVE ASSET SETUP:
       ],
       verify
     );
-    const aToken = await deployAAmplToken(
-      [
-        poolAddress,
-        reserveAssetAddress,
-        stableDebt.address,
-        variableDebt.address,
-        treasuryAddress,
-        `Aave interest bearing ${symbol}`,
-        `a${symbol}`,
-        ZERO_ADDRESS,
-      ],
-      verify
-    );
+    let aToken;
+    if (symbol == 'AMPL') {
+      aToken = await deployAAmplToken(
+        [
+          poolAddress,
+          reserveAssetAddress,
+          stableDebt.address,
+          variableDebt.address,
+          treasuryAddress,
+          `Aave interest bearing ${symbol}`,
+          `a${symbol}`,
+          ZERO_ADDRESS,
+        ],
+        verify
+      );
+    } else {
+      const deployCustomAToken = chooseATokenDeployment(strategyParams.aTokenImpl);
+      aToken = await deployCustomAToken(
+        [
+          poolAddress,
+          reserveAssetAddress,
+          treasuryAddress,
+          `Aave interest bearing ${symbol}`,
+          `a${symbol}`,
+          ZERO_ADDRESS,
+        ],
+        verify
+      );
+    }
+
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,

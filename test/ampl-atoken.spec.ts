@@ -13,7 +13,7 @@ import {
   getAAmplToken,
   getAmplStableDebtToken,
   getAmplVariableDebtToken,
-  getLendingRateOracle,
+  getLendingRateOracle, getProxy,
   getReserveLogic,
 } from '../helpers/contracts-getters';
 import {BigNumberish, ethers} from "ethers";
@@ -59,9 +59,15 @@ makeSuite('Ampl aToken', (testEnv: TestEnv) => {
     const { stableDebtTokenAddress,variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
       ampl.address
     );
-    console.log("stable :  ", stableDebtTokenAddress);
+    console.log("stable :  ", stableDebtTokenAddress); // Proxy
     console.log("variable : ", variableDebtTokenAddress);
-
+    // console.log(await (await getProxy(stableDebtTokenAddress)).address);
+    // console.log(await (await getProxy(stableDebtTokenAddress)).implementation());
+    // let stable = await aAMPL.STABLE_DEBT_TOKEN_ADDRESS();
+    console.log("ampl.stable :  ", await aAMPL.STABLE_DEBT_TOKEN_ADDRESS()); // Impl
+    // console.log(await (await getProxy(stable)).address);
+    // console.log(await (await getProxy(stable)).implementation());
+    console.log("ampl.variable : ", await aAMPL.VARIABLE_DEBT_TOKEN_ADDRESS());
     let amplReserve = await getReserveData(helpersContract, ampl.address);
     // Borrower deposits
     const borrower = await users[1];
@@ -84,9 +90,15 @@ makeSuite('Ampl aToken', (testEnv: TestEnv) => {
       ampl.address, amountToBorrow, RateMode.Stable,'0', borrower.address);
 
     console.log("Borrow rate: " + amplReserve.stableBorrowRate);
-    let variableDebtToken = await getAmplVariableDebtToken((await aAMPL.VARIABLE_DEBT_TOKEN_ADDRESS()));
+    // let variableDebtToken = await getAmplVariableDebtToken((await aAMPL.VARIABLE_DEBT_TOKEN_ADDRESS()));
+    //
+    // let stableDebtToken = await getAmplStableDebtToken((await aAMPL.STABLE_DEBT_TOKEN_ADDRESS()));
+    let stableDebtToken = await getAmplStableDebtToken();
+    console.log("getAmplStableDebtToken(): " + stableDebtToken.address);
+    console.log(await (await getProxy(stableDebtToken.address)).implementation());
+    let variableDebtToken = await getAmplVariableDebtToken();
 
-    let stableDebtToken = await getAmplStableDebtToken((await aAMPL.STABLE_DEBT_TOKEN_ADDRESS()));
+
 
     const debt = await stableDebtToken.balanceOf(borrower.address);
     expect(debt.toString()).to.be.bignumber.equal((await convertToCurrencyDecimals(ampl.address, '2000')).toString());

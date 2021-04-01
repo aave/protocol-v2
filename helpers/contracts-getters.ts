@@ -16,7 +16,7 @@ import {
   LendingPoolFactory,
   LendingRateOracleFactory,
   MintableERC20Factory,
-  MintableAmplERC20Factory,
+  MockAmplERC20Factory,
   MockATokenFactory,
   MockFlashLoanReceiverFactory,
   MockStableDebtTokenFactory,
@@ -120,10 +120,10 @@ export const getMintableERC20 = async (address: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getMintableAmplERC20 = async (address: tEthereumAddress) =>
-  await MintableAmplERC20Factory.connect(
+export const getMockAmplERC20 = async (address: tEthereumAddress) =>
+  await MockAmplERC20Factory.connect(
     address ||
-    (await getDb().get(`${eContractid.MintableAmplERC20}.${DRE.network.name}`).value()).address,
+    (await getDb().get(`${eContractid.MockAmplERC20}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 
