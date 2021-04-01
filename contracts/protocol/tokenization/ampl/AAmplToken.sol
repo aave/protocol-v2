@@ -142,7 +142,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   bytes32 public constant PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
 
-  uint256 public constant UINT_MAX_VALUE = uint256(-1);
   uint256 public constant ATOKEN_REVISION = 0x1;
   address public immutable UNDERLYING_ASSET_ADDRESS;
   address public immutable RESERVE_TREASURY_ADDRESS;
@@ -250,7 +249,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     ExtData memory e = _fetchExtData();
     _burnScaled(user, amountScaled, e);
     _totalGonsDeposited = _totalGonsDeposited.sub(
-      _amplToGons(e, amountScaled).toInt256Safe()
+      _amplToGons(e.totalAMPLSupply, amountScaled).toInt256Safe()
     );
 
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
@@ -280,7 +279,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     ExtData memory e = _fetchExtData();
     _mintScaled(user, amountScaled, e);
     _totalGonsDeposited = _totalGonsDeposited.add(
-      _amplToGons(e, amountScaled).toInt256Safe()
+      _amplToGons(e.totalAMPLSupply, amountScaled).toInt256Safe()
     );
 
     emit Transfer(address(0), user, amount);
@@ -310,7 +309,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     ExtData memory e = _fetchExtData();
     _mintScaled(RESERVE_TREASURY_ADDRESS, amountScaled, e);
     _totalGonsDeposited = _totalGonsDeposited.add(
-      _amplToGons(e, amountScaled).toInt256Safe()
+      _amplToGons(e.totalAMPLSupply, amountScaled).toInt256Safe()
     );
 
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
@@ -553,7 +552,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     // First mint
     if(totalSupplyInternalBefore == 0) {
-      uint256 mintAmountInternal = _amplToGons(e, mintAmountScaled);
+      uint256 mintAmountInternal = _amplToGons(e.totalAMPLSupply, mintAmountScaled);
       _mint(user, mintAmountInternal);
       return;
     }
@@ -637,22 +636,22 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
    **/
   function _scaledTotalSupply(ExtData memory e, int256 totalGonsDeposited) private pure returns (uint256) {
     // require(totalGonsDeposited>=e.totalGonsBorrowed);
-    return _gonsToAMPL(e, uint256(totalGonsDeposited.sub(e.totalGonsBorrowed)))
+    return _gonsToAMPL(e.totalAMPLSupply, uint256(totalGonsDeposited.sub(e.totalGonsBorrowed)))
       .add(e.totalPrincipalBorrowed);
   }
 
   /**
    * @dev Helper method to convert gons to AMPL
    **/
-  function _gonsToAMPL(ExtData memory e, uint256 gonValue) private pure returns (uint256) {
-    return gonValue.mul(e.totalAMPLSupply).div(GONS_TOTAL_SUPPLY);
+  function _gonsToAMPL(uint256 totalAMPLSupply, uint256 gonValue) private pure returns (uint256) {
+    return gonValue.mul(totalAMPLSupply).div(GONS_TOTAL_SUPPLY);
   }
 
   /**
    * @dev Helper method to convert AMPL to gons
    **/
-  function _amplToGons(ExtData memory e, uint256 amplValue) private pure returns (uint256) {
-    return amplValue.mul(GONS_TOTAL_SUPPLY).div(e.totalAMPLSupply);
+  function _amplToGons(uint256 totalAMPLSupply, uint256 amplValue) private pure returns (uint256) {
+    return amplValue.mul(GONS_TOTAL_SUPPLY).div(totalAMPLSupply);
   }
 
   /**
