@@ -7,7 +7,8 @@ import {WadRayMath} from '../../libraries/math/WadRayMath.sol';
 import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-
+import {SignedSafeMath} from '../../../dependencies/openzeppelin/contracts/SignedSafeMath.sol';
+import {UInt256Lib} from '../../../dependencies/uFragments/UInt256Lib.sol';
 /*
 
   AMPL specific StableDebtToken implementation.
@@ -17,11 +18,13 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
     the scaled AMPL principal borrowed.
 
   * fetchAMPLBorrowData() returns the total AMPL borrowed and the total scaled AMPL borrowed
-  * fetchGonsPerAMPL() fetches AMPL's supply scaling factor
+  * fetchAMPLTotalSupply() fetches AMPL's current supply
 
 */
 contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
   using WadRayMath for uint256;
+  using UInt256Lib for uint256;
+  using SignedSafeMath for int256;
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
 
@@ -40,7 +43,7 @@ contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
   uint256 private constant GONS_TOTAL_SUPPLY = uint256(type(int128).max);
 
   // Keeps track of the 'gons' borrowed from the aave system
-  uint256 private _totalGonsBorrowed;
+  int256 private _totalGonsBorrowed;
   // ---------------------------------------------------------------------------
 
 
@@ -354,7 +357,9 @@ contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
     _balances[account] = oldAccountBalance.add(amount);
 
     // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalGonsBorrowed = _totalGonsBorrowed.add(amount.mul(fetchGonsPerAMPL()));
+    _totalGonsBorrowed = _totalGonsBorrowed.add(
+      amount.mul(GONS_TOTAL_SUPPLY).div(fetchAMPLTotalSupply()).toInt256Safe()
+    );
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
@@ -376,7 +381,9 @@ contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
     _balances[account] = oldAccountBalance.sub(amount, Errors.SDT_BURN_EXCEEDS_BALANCE);
 
     // NOTE: this additional book keeping to keep track of 'unborrowed' AMPLs
-    _totalGonsBorrowed = _totalGonsBorrowed.sub(amount.mul(fetchGonsPerAMPL()));
+    _totalGonsBorrowed = _totalGonsBorrowed.sub(
+      amount.mul(GONS_TOTAL_SUPPLY).div(fetchAMPLTotalSupply()).toInt256Safe()
+    );
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
@@ -386,12 +393,11 @@ contract AmplStableDebtToken is IStableDebtToken, DebtTokenBase {
   // ---------------------------------------------------------------------------
   // Custom methods for aAMPL
 
-  function getAMPLBorrowData() external view returns (uint256, uint256) {
+  function getAMPLBorrowData() external view returns (uint256, int256) {
     return (super.totalSupply(), _totalGonsBorrowed);
   }
 
-
-  function fetchGonsPerAMPL() internal view returns (uint256) {
-    return GONS_TOTAL_SUPPLY.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
+  function fetchAMPLTotalSupply() internal view returns (uint256) {
+    return IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply();
   }
 }

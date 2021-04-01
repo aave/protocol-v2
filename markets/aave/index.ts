@@ -134,7 +134,7 @@ export const AaveConfig: IAaveConfiguration = {
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
-      AMPL: '0xd46ba6d942050d489dbd938a2c909a5d5039a161',
+      AMPL: '',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',

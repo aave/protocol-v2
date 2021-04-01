@@ -6,7 +6,7 @@ import {
   getAaveProtocolDataProvider,
   getAToken,
   getMintableERC20,
-  getMintableAmplERC20,
+  getMockAmplERC20,
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
   getLendingPoolAddressesProviderRegistry,
@@ -21,7 +21,7 @@ import { eEthereumNetwork, tEthereumAddress } from '../../helpers/types';
 import { LendingPool } from '../../types/LendingPool';
 import { AaveProtocolDataProvider } from '../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../types/MintableERC20';
-import { MintableAmplERC20 } from '../../types/MintableAmplERC20';
+import { MockAmplERC20 } from '../../types/MockAmplERC20';
 import { AToken } from '../../types/AToken';
 import { LendingPoolConfigurator } from '../../types/LendingPoolConfigurator';
 
@@ -69,8 +69,7 @@ export interface TestEnv {
   aUSDC: AToken;
   aave: MintableERC20;
   aAMPL: AAmplToken;
-  // Change to mock AMPL
-  ampl: MintableAmplERC20;
+  ampl: MockAmplERC20;
   addressesProvider: LendingPoolAddressesProvider;
   uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
   uniswapRepayAdapter: UniswapRepayAdapter;
@@ -98,7 +97,7 @@ const testEnv: TestEnv = {
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
-  ampl: {} as MintableAmplERC20,
+  ampl: {} as MockAmplERC20,
   aAMPL: {} as AAmplToken,
   uni: {} as MintableERC20,
   addressesProvider: {} as LendingPoolAddressesProvider,
@@ -142,10 +141,9 @@ export async function initializeMakeSuite() {
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
-
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
+  const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
   const aAmplAddress = allTokens.find((aToken) => aToken.symbol === 'aAMPL')?.tokenAddress;
-  console.log('aAMPL address: ' + aAmplAddress);
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
@@ -163,13 +161,12 @@ export async function initializeMakeSuite() {
   }
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
+  testEnv.aUSDC = await getAToken(aUsdcAddress);
   testEnv.aAMPL = await getAAmplToken(aAmplAddress);
-
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.aave = await getMintableERC20(aaveAddress);
-  console.log('ampl address :' + amplAddress);
-  testEnv.ampl = await getMintableAmplERC20(amplAddress || '');
+  testEnv.ampl = await getMockAmplERC20(amplAddress || '');
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.uni = await getMintableERC20(uniAddress || '');
   testEnv.wethGateway = await getWETHGateway();

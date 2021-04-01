@@ -11,9 +11,11 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {DataTypes} from '../../libraries/types/DataTypes.sol';
+import {SignedSafeMath} from '../../../dependencies/openzeppelin/contracts/SignedSafeMath.sol';
+import {UInt256Lib} from '../../../dependencies/uFragments/UInt256Lib.sol';
 
 interface IAMPLDebtToken {
-  function getAMPLBorrowData() external view returns (uint256, uint256);
+  function getAMPLBorrowData() external view returns (uint256, int256);
 }
 
 /**
@@ -131,6 +133,8 @@ interface IAMPLDebtToken {
 contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
+  using UInt256Lib for uint256;
+  using SignedSafeMath for int256;
 
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =
@@ -138,7 +142,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   bytes32 public constant PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
 
-  uint256 public constant UINT_MAX_VALUE = uint256(-1);
   uint256 public constant ATOKEN_REVISION = 0x1;
   address public immutable UNDERLYING_ASSET_ADDRESS;
   address public immutable RESERVE_TREASURY_ADDRESS;
@@ -151,8 +154,8 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   // ---------------------------------------------------------------------------
   // aAMPL additions
-  address public immutable STABLE_DEBT_TOKEN_ADDRESS;
-  address public immutable VARIABLE_DEBT_TOKEN_ADDRESS;
+  address public STABLE_DEBT_TOKEN_ADDRESS;
+  address public VARIABLE_DEBT_TOKEN_ADDRESS;
 
   // This is a constant on the AMPL contract, which is used to calculate the scalar
   // which controls the AMPL expansion/contraction.
@@ -162,12 +165,12 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   uint256 private constant GONS_TOTAL_SUPPLY = uint256(type(int128).max);
 
   // Keeps track of the 'gons' deposited into the aave system
-  uint256 private _totalGonsDeposited;
+  int256 private _totalGonsDeposited;
 
   struct ExtData {
-    uint256 GonsPerAMPL;
+    uint256 totalAMPLSupply;
     uint256 totalPrincipalBorrowed;
-    uint256 totalGonsBorrowed;
+    int256 totalGonsBorrowed;
   }
   // ---------------------------------------------------------------------------
 
@@ -179,8 +182,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
   constructor(
     ILendingPool pool,
     address underlyingAssetAddress,
-    address stableDebtTokenAddress,
-    address variableDebtTokenAddress,
     address reserveTreasuryAddress,
     string memory tokenName,
     string memory tokenSymbol,
@@ -189,13 +190,16 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     POOL = pool;
     UNDERLYING_ASSET_ADDRESS = underlyingAssetAddress;
     RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
-
-    STABLE_DEBT_TOKEN_ADDRESS = stableDebtTokenAddress;
-    VARIABLE_DEBT_TOKEN_ADDRESS = variableDebtTokenAddress;
   }
 
   function getRevision() internal pure virtual override returns (uint256) {
     return ATOKEN_REVISION;
+  }
+
+  function setDebtTokens (address stableDebtTokenAddress, address variableDebtTokenAddress) public {
+    require(STABLE_DEBT_TOKEN_ADDRESS == address(0) && VARIABLE_DEBT_TOKEN_ADDRESS == address(0));
+    STABLE_DEBT_TOKEN_ADDRESS = stableDebtTokenAddress;
+    VARIABLE_DEBT_TOKEN_ADDRESS = variableDebtTokenAddress;
   }
 
   function initialize(
@@ -244,7 +248,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     ExtData memory e = _fetchExtData();
     _burnScaled(user, amountScaled, e);
-    _totalGonsDeposited = _totalGonsDeposited.sub(amount.mul(e.GonsPerAMPL));
+    _totalGonsDeposited = _totalGonsDeposited.sub(
+      _amplToGons(e.totalAMPLSupply, amountScaled).toInt256Safe()
+    );
 
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
@@ -272,7 +278,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     ExtData memory e = _fetchExtData();
     _mintScaled(user, amountScaled, e);
-    _totalGonsDeposited = _totalGonsDeposited.add(amount.mul(e.GonsPerAMPL));
+    _totalGonsDeposited = _totalGonsDeposited.add(
+      _amplToGons(e.totalAMPLSupply, amountScaled).toInt256Safe()
+    );
 
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
@@ -300,7 +308,9 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     ExtData memory e = _fetchExtData();
     _mintScaled(RESERVE_TREASURY_ADDRESS, amountScaled, e);
-    _totalGonsDeposited = _totalGonsDeposited.add(amount.mul(e.GonsPerAMPL));
+    _totalGonsDeposited = _totalGonsDeposited.add(
+      _amplToGons(e.totalAMPLSupply, amountScaled).toInt256Safe()
+    );
 
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
     emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
@@ -542,7 +552,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
     // First mint
     if(totalSupplyInternalBefore == 0) {
-      uint256 mintAmountInternal = mintAmountScaled.mul(e.GonsPerAMPL);
+      uint256 mintAmountInternal = _amplToGons(e.totalAMPLSupply, mintAmountScaled);
       _mint(user, mintAmountInternal);
       return;
     }
@@ -622,13 +632,26 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
 
   /**
    * @dev scaledTotalSupply = (totalGonsDeposited - totalGonsBorrowed) / Λ + totalPrincipalBorrowed
-                             = λ . totalSupplyInternal
+   *                        = λ . totalSupplyInternal
    **/
-  function _scaledTotalSupply(ExtData memory e, uint256 totalGonsDeposited) private pure returns (uint256) {
-    return totalGonsDeposited
-      .sub(e.totalGonsBorrowed)
-      .div(e.GonsPerAMPL)
+  function _scaledTotalSupply(ExtData memory e, int256 totalGonsDeposited) private pure returns (uint256) {
+    // require(totalGonsDeposited>=e.totalGonsBorrowed);
+    return _gonsToAMPL(e.totalAMPLSupply, uint256(totalGonsDeposited.sub(e.totalGonsBorrowed)))
       .add(e.totalPrincipalBorrowed);
+  }
+
+  /**
+   * @dev Helper method to convert gons to AMPL
+   **/
+  function _gonsToAMPL(uint256 totalAMPLSupply, uint256 gonValue) private pure returns (uint256) {
+    return gonValue.mul(totalAMPLSupply).div(GONS_TOTAL_SUPPLY);
+  }
+
+  /**
+   * @dev Helper method to convert AMPL to gons
+   **/
+  function _amplToGons(uint256 totalAMPLSupply, uint256 amplValue) private pure returns (uint256) {
+    return amplValue.mul(GONS_TOTAL_SUPPLY).div(totalAMPLSupply);
   }
 
   /**
@@ -638,14 +661,14 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
    **/
   function _fetchExtData() internal view returns (ExtData memory) {
     ExtData memory _extContractData;
-    _extContractData.GonsPerAMPL = GONS_TOTAL_SUPPLY.div(IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply());
+    _extContractData.totalAMPLSupply = IERC20(UNDERLYING_ASSET_ADDRESS).totalSupply();
 
     uint256 stablePrincipal;
-    uint256 stablePrincipalScaled;
+    int256 stablePrincipalScaled;
     (stablePrincipal, stablePrincipalScaled) = IAMPLDebtToken(STABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
 
     uint256 variablePrincipal;
-    uint256 variablePrincipalScaled;
+    int256 variablePrincipalScaled;
     (variablePrincipal, variablePrincipalScaled) = IAMPLDebtToken(VARIABLE_DEBT_TOKEN_ADDRESS).getAMPLBorrowData();
 
     _extContractData.totalPrincipalBorrowed = stablePrincipal.add(variablePrincipal);
