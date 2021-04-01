@@ -294,7 +294,7 @@ export const strategyUNI: IReserveParams = {
 export const strategyAMPL: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
-  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
   variableRateSlope2: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
   stableRateSlope1: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   stableRateSlope2: new BigNumber(0).multipliedBy(oneRay).toFixed(),

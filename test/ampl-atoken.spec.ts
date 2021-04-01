@@ -40,13 +40,7 @@ async function rebase(pool, ampl, perc){
   const currentSupply = new BigNumber((await ampl.totalSupply()).toString());
   const supplyDelta = currentSupply.multipliedBy(perc);
 
-
-  // Interest rate changes up or down after rebase
-  // Option 1: tell lending pool to recalculate rate
-  // await ampl.rebase(1, supplyDelta.toString(10));
-  // await pool.syncInterestRates(ampl.address);
-
-  // Option 2: tiny deposit to get the pool in sync
+  // tiny deposit to get the pool in sync
   await ampl.connect(admin.signer).approve(pool.address, await fxtPt(ampl, '1'));
   await pool.connect(admin.signer).deposit(ampl.address, await fxtPt(ampl, '0.000001'), adminAddress, '0');
   await ampl.rebase(1, supplyDelta.toString(10));
@@ -852,39 +846,37 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
       await checkBal(ampl, lenderAAddress, '90000');
       await checkScaledBal(aAMPL, lenderAAddress, '10000');         // P = 7500 + 2500
-      await checkBal(aAMPL, lenderAAddress, '10250.0');             // T = P + 250 (I)
-      await checkSupply(aAMPL, '10250.0');
+      await checkBal(aAMPL, lenderAAddress, '10187.50');            // T = P + 187.50 (I)
+      await checkSupply(aAMPL, '10187.50');
       await checkBal(ampl, reserveData.aTokenAddress, '7500');      // unborrowed pool balance
       await checkBal(ampl, borrowerAAddress, '2500');               // borrower AMPL balance
-      await checkBal(debtToken, borrowerAAddress, '2793.20');       // 2500 (principal) + 250 (interest owed to pool) + 43.20 (interest owed to treasury)
+      await checkBal(debtToken, borrowerAAddress, '2717.01');       // 2500 (principal) + 217.01 (I)
       await checkBal(aAMPL, treasuryAddress, '0');
 
       // borrower gets some AMPL to close out debt
       await ampl.connect(lenderC.signer).transfer(borrowerAAddress, await fxtPt(ampl, '300'));
       await checkBal(ampl, borrowerAAddress, '2800', 1);
 
-      // borrower repays 2500 + 250 + 43.2 AMPL
+      // borrower repays 2500 + 187.50 + 29.51 AMPL
       await ampl.connect(borrowerA.signer).approve(pool.address, MAX_UINT_AMOUNT);
       await pool.connect(borrowerA.signer).repay(
         ampl.address, MAX_UINT_AMOUNT, RateMode.Variable, borrowerAAddress);
 
       await checkBal(ampl, lenderAAddress, '90000');
-      await checkBal(aAMPL, lenderAAddress, '10250.0');            // 7500 (unborrowed) + 2500 (borrowed) + 250 (interest paid)
-      await checkSupply(aAMPL, '10279.32');                        // NOTE: mismatch here!
-      await checkBal(ampl, reserveData.aTokenAddress, '10293.20'); // 10250 + 43.2
-      await checkBal(ampl, borrowerAAddress, '6.80');
+      await checkBal(aAMPL, lenderAAddress, '10187.50');           // 7500 (unborrowed) + 2500 (borrowed) + 187.50 + 29.51 (interest paid)
+      await checkSupply(aAMPL, '10209.20');
+      await checkBal(ampl, reserveData.aTokenAddress, '10217.01');
+      await checkBal(ampl, borrowerAAddress, '82.99');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '29.32');
+      await checkBal(aAMPL, treasuryAddress, '21.70');
 
       await pool.connect(lenderA.signer).withdraw(ampl.address, MAX_UINT_AMOUNT, lenderAAddress);
 
-      await checkBal(ampl, lenderAAddress, '100250.0');
+      await checkBal(ampl, lenderAAddress, '100187.50');
       await checkBal(aAMPL, lenderAAddress, '0');
-      await checkSupply(aAMPL, '29.32');
-      await checkBal(ampl, reserveData.aTokenAddress, '43.2');
-      await checkBal(aAMPL, treasuryAddress, '29.32');
-      // treasury minted 29.32 aAMPL but 43.2 AMPL in the pool
-      // However, this is  consistent with borrowing usdc with dai
+      await checkSupply(aAMPL, '21.70');
+      await checkBal(ampl, reserveData.aTokenAddress, '29.51');
+      await checkBal(aAMPL, treasuryAddress, '21.70');
     });
   });
 
@@ -910,72 +902,42 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
       await rebase(pool, ampl, +0.25) // 25% rebase
 
-      // console.log((await ampl.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.scaledBalanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.totalSupply()).toString());
-      // console.log((await ampl.balanceOf(reserveData.aTokenAddress)).toString());
-      // console.log((await ampl.balanceOf(borrowerAAddress)).toString());
-      // console.log((await debtToken.balanceOf(borrowerAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(treasuryAddress)).toString());
-      // console.log("------")
-
       await checkBal(ampl, lenderAAddress, '112500');
-      await checkScaledBal(aAMPL, lenderAAddress, '11876.78');    // P = (7500*1.25) + 2500
-      await checkBal(aAMPL, lenderAAddress, '12173.70');          // T = P + 298.7 (I)
-      await checkSupply(aAMPL, '12208.52');
+      await checkScaledBal(aAMPL, lenderAAddress, '11876.32');    // P = (7500*1.25) + 2500
+      await checkBal(aAMPL, lenderAAddress, '12099.00');          // T = P + 298.7 (I)
+      await checkSupply(aAMPL, '12124.78');
       await checkBal(ampl, reserveData.aTokenAddress, '9375');    // unborrowed principal balance (7500*1.25)
       await checkBal(ampl, borrowerAAddress, '3125.00');          // Borrowed AMPL balance
-      await checkBal(debtToken, borrowerAAddress, '2793.20');     // 2500 (principal) + 293.20 (I)
-      await checkBal(aAMPL, treasuryAddress, '34.82');            // Treasury
+      await checkBal(debtToken, borrowerAAddress, '2717.01');     // 2500 (principal) + 217.01 (I)
+      await checkBal(aAMPL, treasuryAddress, '25.77');            // Treasury
 
       // borrower repays 2500 + 244.86 AMPL
       await ampl.connect(borrowerA.signer).approve(pool.address, MAX_UINT_AMOUNT);
       await pool.connect(borrowerA.signer).repay(
         ampl.address, MAX_UINT_AMOUNT, RateMode.Variable, borrowerAAddress);
 
-      // console.log((await ampl.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.scaledBalanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.totalSupply()).toString());
-      // console.log((await ampl.balanceOf(reserveData.aTokenAddress)).toString());
-      // console.log((await ampl.balanceOf(borrowerAAddress)).toString());
-      // console.log((await debtToken.balanceOf(borrowerAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(treasuryAddress)).toString());
-      // console.log("------")
-
       await checkBal(ampl, lenderAAddress, '112500');
-      await checkScaledBal(aAMPL, lenderAAddress, '11876.78');
-      await checkBal(aAMPL, lenderAAddress, '12173.70');
-      await checkSupply(aAMPL, '12208.52');
-      await checkBal(ampl, reserveData.aTokenAddress, '12168.21');
-      await checkBal(ampl, borrowerAAddress, '331.79');
+      await checkScaledBal(aAMPL, lenderAAddress, '11876.32');
+      await checkBal(aAMPL, lenderAAddress, '12099.00');
+      await checkSupply(aAMPL, '12124.78');
+      await checkBal(ampl, reserveData.aTokenAddress, '12092.01');
+      await checkBal(ampl, borrowerAAddress, '407.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '34.82');
+      await checkBal(aAMPL, treasuryAddress, '25.77');
 
       await pool.connect(lenderA.signer).withdraw(ampl.address,
-        await fxtPt(ampl, '12160'),
+        await fxtPt(ampl, '12090'),
         // MAX_UINT_AMOUNT,
         lenderAAddress);
 
-      // console.log((await ampl.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.scaledBalanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.totalSupply()).toString());
-      // console.log((await ampl.balanceOf(reserveData.aTokenAddress)).toString());
-      // console.log((await ampl.balanceOf(borrowerAAddress)).toString());
-      // console.log((await debtToken.balanceOf(borrowerAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(treasuryAddress)).toString());
-      // console.log("------")
-
-      await checkBal(ampl, lenderAAddress, '124660');
-      await checkScaledBal(aAMPL, lenderAAddress, '13.36');
-      await checkBal(aAMPL, lenderAAddress, '13.70');
-      await checkSupply(aAMPL, '48.52');
-      await checkBal(ampl, reserveData.aTokenAddress, '8.20');
-      await checkBal(ampl, borrowerAAddress, '331.79');
+      await checkBal(ampl, lenderAAddress, '124590.00');
+      await checkScaledBal(aAMPL, lenderAAddress, '8.84');
+      await checkBal(aAMPL, lenderAAddress, '9.00');
+      await checkSupply(aAMPL, '34.78');
+      await checkBal(ampl, reserveData.aTokenAddress, '2.01');
+      await checkBal(ampl, borrowerAAddress, '407.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '34.82');
+      await checkBal(aAMPL, treasuryAddress, '25.77');
     });
   });
 
@@ -1000,24 +962,14 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
       await advanceTimeAndBlock(10*3600*24*365); // 10 years
       await rebase(pool, ampl, -0.25) // -25% rebase
 
-      // console.log((await ampl.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.scaledBalanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.totalSupply()).toString());
-      // console.log((await ampl.balanceOf(reserveData.aTokenAddress)).toString());
-      // console.log((await ampl.balanceOf(borrowerAAddress)).toString());
-      // console.log((await debtToken.balanceOf(borrowerAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(treasuryAddress)).toString());
-      // console.log("------")
-
       await checkBal(ampl, lenderAAddress, '67500.00');
-      await checkScaledBal(aAMPL, lenderAAddress, '8123.21');     // P = (7500*0.75) + 2500
-      await checkBal(aAMPL, lenderAAddress, '8326.29');           // T = P + 203.08 (I)
-      await checkSupply(aAMPL, '8350.11');
+      await checkScaledBal(aAMPL, lenderAAddress, '8123.67');     // P = (7500*0.75) + 2500
+      await checkBal(aAMPL, lenderAAddress, '8275.99');           // T = P + 150.99 (I)
+      await checkSupply(aAMPL, '8293.61');
       await checkBal(ampl, reserveData.aTokenAddress, '5625.00'); // unborrowed principal balance (7500*0.75)
       await checkBal(ampl, borrowerAAddress, '1875.00');          // Borrowed AMPL balance
-      await checkBal(debtToken, borrowerAAddress, '2793.20');     // 2500 (principal) + 293.20 (I)
-      await checkBal(aAMPL, treasuryAddress, '23.81');            // Treasury
+      await checkBal(debtToken, borrowerAAddress, '2717.01');     // 2500 (principal) + 217.01 (I)
+      await checkBal(aAMPL, treasuryAddress, '17.62');            // Treasury
 
       // friend sends borrower some ampl to pay back interest
       await ampl.connect(lenderC.signer).transfer(borrowerAAddress, await fxtPt(ampl, '1000'));
@@ -1027,45 +979,26 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
       await pool.connect(borrowerA.signer).repay(
         ampl.address, MAX_UINT_AMOUNT, RateMode.Variable, borrowerAAddress);
 
-      // console.log((await ampl.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.scaledBalanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.totalSupply()).toString());
-      // console.log((await ampl.balanceOf(reserveData.aTokenAddress)).toString());
-      // console.log((await ampl.balanceOf(borrowerAAddress)).toString());
-      // console.log((await debtToken.balanceOf(borrowerAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(treasuryAddress)).toString());
-      // console.log("------")
 
       await checkBal(ampl, lenderAAddress, '67500.00');
-      await checkScaledBal(aAMPL, lenderAAddress, '8123.21');
-      await checkBal(aAMPL, lenderAAddress, '8326.29');
-      await checkSupply(aAMPL, '8350.11');
-      await checkBal(ampl, reserveData.aTokenAddress, '8418.20');
-      await checkBal(ampl, borrowerAAddress, '81.79');
+      await checkScaledBal(aAMPL, lenderAAddress, '8123.67');
+      await checkBal(aAMPL, lenderAAddress, '8275.99');
+      await checkSupply(aAMPL, '8293.61');
+      await checkBal(ampl, reserveData.aTokenAddress, '8342.01');
+      await checkBal(ampl, borrowerAAddress, '157.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '23.81');
+      await checkBal(aAMPL, treasuryAddress, '17.62');
 
       await pool.connect(lenderA.signer).withdraw(ampl.address, MAX_UINT_AMOUNT, lenderAAddress);
 
-      // console.log((await ampl.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.scaledBalanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(lenderAAddress)).toString());
-      // console.log((await aAMPL.totalSupply()).toString());
-      // console.log((await ampl.balanceOf(reserveData.aTokenAddress)).toString());
-      // console.log((await ampl.balanceOf(borrowerAAddress)).toString());
-      // console.log((await debtToken.balanceOf(borrowerAAddress)).toString());
-      // console.log((await aAMPL.balanceOf(treasuryAddress)).toString());
-      // console.log("------")
-
-      await checkBal(ampl, lenderAAddress, '75826.29');
+      await checkBal(ampl, lenderAAddress, '75775.99');
       await checkScaledBal(aAMPL, lenderAAddress, '0');
       await checkBal(aAMPL, lenderAAddress, '0');
-      await checkSupply(aAMPL, '23.81');
-      await checkBal(ampl, reserveData.aTokenAddress, '91.91');
-      await checkBal(ampl, borrowerAAddress, '81.79');
+      await checkSupply(aAMPL, '17.62');
+      await checkBal(ampl, reserveData.aTokenAddress, '66.02');
+      await checkBal(ampl, borrowerAAddress, '157.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '23.81');
+      await checkBal(aAMPL, treasuryAddress, '17.62');
     });
   });
 
@@ -1125,17 +1058,16 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
       // lenders pull out
       await pool.connect(lenderA.signer).withdraw(ampl.address, MAX_UINT_AMOUNT, lenderAAddress);
-      await pool.connect(lenderB.signer).withdraw(ampl.address, MAX_UINT_AMOUNT, lenderAAddress);
+      await pool.connect(lenderB.signer).withdraw(ampl.address, await fxtPt(ampl, '5900'), lenderAAddress);
 
       await checkBal(aAMPL, lenderAAddress, '0');
-      await checkBal(aAMPL, lenderBAddress, '0');
+      await checkBal(aAMPL, lenderBAddress, '77.25');
       await checkBal(aAMPL, lenderCAddress, '0');
       await checkBal(debtToken, borrowerAAddress, '0');
       await checkBal(debtToken, borrowerBAddress, '0');
-
-      await checkSupply(aAMPL, '240.20');
-      await checkBal(ampl, reserveData.aTokenAddress, '42.28');
-      await checkBal(aAMPL, treasuryAddress, '240.20');
+      await checkSupply(aAMPL, '249.48');
+      await checkBal(ampl, reserveData.aTokenAddress, '74.11');
+      await checkBal(aAMPL, treasuryAddress, '172.24');
     });
   });
 });
