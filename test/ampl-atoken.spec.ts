@@ -44,7 +44,7 @@ async function rebase(pool, ampl, perc){
   // Interest rate changes up or down after rebase
   // Option 1: tell lending pool to recalculate rate
   await ampl.rebase(1, supplyDelta.toString(10));
-  await pool.syncInterestRates(ampl.address);
+  // await pool.syncInterestRates(ampl.address);
 
   // Option 2: tiny deposit to get the pool in sync
   // await ampl.connect(admin.signer).approve(pool.address, await fxtPt(ampl, '1'));
@@ -83,15 +83,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
     const {users, ampl, aAMPL, deployer, helpersContract, pool} = testEnv;
     await ampl.setMonetaryPolicy(deployer.address);
-    const { stableDebtTokenAddress,variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
-      ampl.address
-    );
 
     treasuryAddress = await aAMPL.RESERVE_TREASURY_ADDRESS();
-    // console.log("ampl", ampl.address);
-    // console.log("aAMPL", aAMPL.address);
-    // console.log("stable", stableDebtTokenAddress);
-    // console.log("variable", variableDebtTokenAddress);
 
     lenderA = users[1];
     lenderB = users[2];
@@ -124,7 +117,16 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
   describe("user deposit", function(){
     describe("first deposit", function() {
       it('should mint correct number of aAMPL tokens', async () => {
-        const {pool, ampl, aAMPL} = testEnv;
+        const {pool, ampl, aAMPL, aDai, helpersContract} = testEnv;
+
+        console.log("adai", aDai.address);
+        console.log("ampl", ampl.address);
+        console.log("aAMPL", aAMPL.address);
+        const { stableDebtTokenAddress,variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
+          ampl.address
+        );
+        console.log("stable", stableDebtTokenAddress);
+        console.log("variable", variableDebtTokenAddress);
 
         await checkBal(ampl, lenderAAddress, '100000');
         await checkBal(aAMPL, lenderAAddress, '0');

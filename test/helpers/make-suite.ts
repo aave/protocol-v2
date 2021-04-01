@@ -163,7 +163,6 @@ export async function initializeMakeSuite() {
   testEnv.aWETH = await getAToken(aWEthAddress);
   testEnv.aUSDC = await getAToken(aUsdcAddress);
   testEnv.aAMPL = await getAAmplToken(aAmplAddress);
-  console.log("aAMPL suite: " + await testEnv.aAMPL.address);
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.aave = await getMintableERC20(aaveAddress);
