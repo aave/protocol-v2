@@ -92,16 +92,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Function is invoked by rebasing tokens which inform the lending pool that
-   *      balances have changed and interest rate needs to be re-calculated.
-   * @param asset The address of the underlying asset
-   **/
-  function syncInterestRates(address asset) external whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
-  }
-
-  /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
    * @param asset The address of the underlying asset to deposit
