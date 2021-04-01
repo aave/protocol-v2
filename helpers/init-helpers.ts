@@ -44,7 +44,7 @@ export const chooseATokenDeployment = (id: eContractid) => {
 };
 
 // deploy all
-const FILTER_DEPLOY = [];
+const FILTER_DEPLOY: string[]=[];
 
 // deploy subset
 // const FILTER_DEPLOY = ["WBTC", "WETH", "DAI", "AMPL", "UNI", "AAVE", "USDC"];
