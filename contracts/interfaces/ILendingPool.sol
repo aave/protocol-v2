@@ -263,6 +263,7 @@ interface ILendingPool {
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode,
+    uint256 deadline,
     uint8 permitV,
     bytes32 permitR,
     bytes32 permitS
@@ -288,6 +289,7 @@ interface ILendingPool {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf,
+    uint256 deadline,
     uint8 permitV,
     bytes32 permitR,
     bytes32 permitS
