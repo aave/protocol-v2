@@ -57,9 +57,7 @@ interface IUiPoolDataProvider {
   struct IncentivesUserData {
     address rewardToken;
     uint256 userUnclaimedRewards;
-    uint256 rewardTokenDecimals;
     uint256 rewardTokenPriceEth;
-    uint8 precision;
   }
 
   struct UserReserveData {

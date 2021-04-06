@@ -198,9 +198,6 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     if (user != address(0)) {
       incentivesUserData.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
       incentivesUserData.rewardToken = incentivesController.REWARD_TOKEN();
-      incentivesUserData.precision = incentivesController.PRECISION();
-      incentivesUserData.rewardTokenDecimals = IERC20Detailed(incentivesUserData.rewardToken)
-        .decimals();
       incentivesUserData.rewardTokenPriceEth = oracle.getAssetPrice(incentivesUserData.rewardToken);
     }
 
