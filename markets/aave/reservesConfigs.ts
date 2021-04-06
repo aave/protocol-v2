@@ -300,12 +300,12 @@ export const strategyAMPL: IReserveParams = {
   stableRateSlope2: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '0',
   liquidationThreshold: '0',
-  liquidationBonus: '10500',
+  liquidationBonus: '0',
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '9',
   aTokenImpl: eContractid.AAmplToken,
-  reserveFactor: '1000'
+  reserveFactor: '0'
 };
 
 export const strategyWBTC: IReserveParams = {
