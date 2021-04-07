@@ -129,25 +129,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
       );
 
-      // incentives
-      reserveData.aEmissionPerSecond = 0;
-      reserveData.aIncentivesLastUpdateTimestamp = block.timestamp;
-      reserveData.aTokenIncentivesIndex = 0;
-
-      reserveData.sEmissionPerSecond = 0;
-      reserveData.sIncentivesLastUpdateTimestamp = block.timestamp;
-      reserveData.sTokenIncentivesIndex = 0;
-
-      reserveData.vEmissionPerSecond = 0;
-      reserveData.vIncentivesLastUpdateTimestamp = block.timestamp;
-      reserveData.vTokenIncentivesIndex = 0;
-
       if (user != address(0)) {
-        // incentives
-        userReservesData[i].aTokenincentivesUserIndex = 0;
-        userReservesData[i].sTokenincentivesUserIndex = 0;
-        userReservesData[i].vTokenincentivesUserIndex = 0;
-
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
         userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
