@@ -53,8 +53,8 @@ import {ILendingPool} from "@aave/protocol-v2/contracts/interfaces/ILendingPool.
 
 contract Misc {
 
-  function deposit(address pool, address token, address user, uint256 amount) {
-    ILendingPool(pool).deposit(token, amount, user, '0');
+  function deposit(address pool, address token, address user, uint256 amount) public {
+    ILendingPool(pool).deposit(token, amount, user, 0);
     {...}
   }
 }
