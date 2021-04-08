@@ -74,6 +74,7 @@ interface IUiPoolDataProvider {
     returns (
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
+      uint256,
       uint256
     );
 }

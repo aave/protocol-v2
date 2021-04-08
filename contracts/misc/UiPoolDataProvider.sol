@@ -58,6 +58,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     returns (
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
+      uint256,
       uint256
     )
   {
@@ -193,6 +194,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       }
     }
 
-    return (reservesData, userReservesData, oracle.getAssetPrice(MOCK_USD_ADDRESS));
+    return (
+      reservesData,
+      userReservesData,
+      oracle.getAssetPrice(MOCK_USD_ADDRESS),
+      incentivesController.getUserUnclaimedRewards(user)
+    );
   }
 }
