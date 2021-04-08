@@ -1,6 +1,6 @@
 {
   "name": "@aave/protocol-v2",
-  "version": "1.0.1",
+  "version": "1.0.2-fat.0",
   "description": "Aave Protocol V2 smart contracts",
   "files": [
     "contracts",
