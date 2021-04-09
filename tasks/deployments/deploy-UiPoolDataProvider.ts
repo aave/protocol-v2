@@ -6,7 +6,6 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
   .addFlag('verify', 'Verify UiPoolDataProvider contract via Etherscan API.')
   .setAction(async ({ verify }, localBRE) => {
     await localBRE.run('set-DRE');
-    console.log('founds: ', await localBRE.ethers.getSigners());
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');
     }
@@ -25,8 +24,8 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
         aaveOracle: '0x21451bD7b528896B4AB2b9764b521D6ed641708d',
       },
       [ePolygonNetwork.mumbai]: {
-        incentivesController: '0xc31c45a46e55f714f9CB2b43Ae688487C16616e2',
-        aaveOracle: '0x584c84AA7aE807e18957f8E3693BccBD482357E2',
+        incentivesController: '0xa20493558dB697369ffB1b4A4Dc6455ee26aEeff',
+        aaveOracle: '0xE6d947B89c837B761bf3B7D48bB406a7a2EEc3e0',
       },
     };
 
