@@ -7,6 +7,7 @@ import {IStaticAToken} from '../../interfaces/IStaticAToken.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
+import {ReentrancyGuard} from '../../dependencies/openzeppelin/contracts/ReentrancyGuard.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
 
@@ -17,7 +18,7 @@ import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
  * - Only supporting deposits and withdrawals
  * @author Aave
  **/
-contract StaticAToken is IStaticAToken, ERC20 {
+contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
   using SafeERC20 for IERC20;
   using WadRayMath for uint256;
 
@@ -73,7 +74,7 @@ contract StaticAToken is IStaticAToken, ERC20 {
     uint256 amount,
     uint16 referralCode,
     bool fromUnderlying
-  ) external override returns (uint256) {
+  ) external override nonReentrant returns (uint256) {
     return _deposit(msg.sender, recipient, amount, referralCode, fromUnderlying);
   }
 
@@ -91,7 +92,7 @@ contract StaticAToken is IStaticAToken, ERC20 {
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external override returns (uint256, uint256) {
+  ) external override nonReentrant returns (uint256, uint256) {
     return _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
   }
 
@@ -109,7 +110,7 @@ contract StaticAToken is IStaticAToken, ERC20 {
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external override returns (uint256, uint256) {
+  ) external override nonReentrant returns (uint256, uint256) {
     return _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
   }
 
@@ -177,7 +178,7 @@ contract StaticAToken is IStaticAToken, ERC20 {
     uint256 deadline,
     SignatureParams calldata sigParams,
     uint256 chainId
-  ) external override returns (uint256) {
+  ) external override nonReentrant returns (uint256) {
     require(depositor != address(0), 'INVALID_DEPOSITOR');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
@@ -234,7 +235,7 @@ contract StaticAToken is IStaticAToken, ERC20 {
     uint256 deadline,
     SignatureParams calldata sigParams,
     uint256 chainId
-  ) external override returns (uint256, uint256) {
+  ) external override nonReentrant returns (uint256, uint256) {
     require(owner != address(0), 'INVALID_DEPOSITOR');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
