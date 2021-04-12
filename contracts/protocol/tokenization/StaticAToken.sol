@@ -51,10 +51,10 @@ contract StaticAToken is IStaticAToken, ERC20 {
   ) public ERC20(wrappedTokenName, wrappedTokenSymbol) {
     LENDING_POOL = lendingPool;
     ATOKEN = IERC20(aToken);
-
-    IERC20 underlyingAsset = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS());
-    ASSET = underlyingAsset;
-    underlyingAsset.approve(address(lendingPool), type(uint256).max);
+    (ASSET = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS())).safeApprove(
+      address(lendingPool),
+      type(uint256).max
+    );
   }
 
   /**
@@ -206,7 +206,7 @@ contract StaticAToken is IStaticAToken, ERC20 {
       'INVALID_SIGNATURE'
     );
     _nonces[depositor] = currentValidNonce.add(1);
-    _deposit(depositor, recipient, value, referralCode, fromUnderlying);
+    return _deposit(depositor, recipient, value, referralCode, fromUnderlying);
   }
 
   /**
@@ -370,7 +370,10 @@ contract StaticAToken is IStaticAToken, ERC20 {
     _burn(owner, amountToBurn);
 
     if (toUnderlying) {
-      LENDING_POOL.withdraw(address(ASSET), amountToWithdraw, recipient);
+      require(
+        LENDING_POOL.withdraw(address(ASSET), amountToWithdraw, recipient) == amountToWithdraw,
+        'INCONSISTENT_WITHDRAWN_AMOUNT'
+      );
     } else {
       ATOKEN.safeTransfer(recipient, amountToWithdraw);
     }
