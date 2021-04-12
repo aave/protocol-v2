@@ -378,11 +378,19 @@ contract StaticAToken is IStaticAToken, ERC20 {
     return (amountToBurn, amountToWithdraw);
   }
 
-  function _dynamicToStaticAmount(uint256 amount, uint256 rate) internal pure returns (uint256) {
-    return amount.rayDiv(rate);
+  function _dynamicToStaticAmount(uint256 amount, uint256 cachedRate)
+    internal
+    pure
+    returns (uint256)
+  {
+    return amount.rayDiv(cachedRate);
   }
 
-  function _staticToDynamicAmount(uint256 amount, uint256 rate) internal pure returns (uint256) {
-    return amount.rayMul(rate);
+  function _staticToDynamicAmount(uint256 amount, uint256 cachedRate)
+    internal
+    pure
+    returns (uint256)
+  {
+    return amount.rayMul(cachedRate);
   }
 }
