@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
+import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
 
 interface IAToken is IERC20, IScaledBalanceToken {
   /**
@@ -85,4 +86,9 @@ interface IAToken is IERC20, IScaledBalanceToken {
    * @return The amount transferred
    **/
   function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
+
+  /**
+   * @dev Returns the address of the incentives controller contract
+   **/
+  function getIncentivesController() external view returns (IAaveIncentivesController);
 }

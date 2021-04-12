@@ -5,6 +5,7 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
+import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 
 /**
  * @title VariableDebtToken
@@ -138,5 +139,13 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     returns (uint256, uint256)
   {
     return (super.balanceOf(user), super.totalSupply());
+  }
+
+  /**
+   * @dev Returns the address of the incentives controller contract
+   * @return incentives address
+   **/
+  function getIncentivesController() external view override returns (IAaveIncentivesController) {
+    return _incentivesController;
   }
 }
