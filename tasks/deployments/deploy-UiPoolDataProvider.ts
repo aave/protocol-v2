@@ -24,8 +24,8 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
         aaveOracle: '0x21451bD7b528896B4AB2b9764b521D6ed641708d',
       },
       [ePolygonNetwork.mumbai]: {
-        incentivesController: '0xa20493558dB697369ffB1b4A4Dc6455ee26aEeff',
-        aaveOracle: '0xE6d947B89c837B761bf3B7D48bB406a7a2EEc3e0',
+        incentivesController: '0xCA8f76C244271A857CE76263e60d294EB24186A8',
+        aaveOracle: '0x3cC6db8dBBa233Fe342c2c8379993aCa231674bd',
       },
     };
 
