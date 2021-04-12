@@ -85,11 +85,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '',
   },
   ProviderRegistry: {
-    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '0x3ac4e9aa29940770aeC38fe853a4bbabb2dA9C19',
   },
   ProviderRegistryOwner: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0x943E44157dC0302a5CEb172374d1749018a00994', // in keeper
     [ePolygonNetwork.matic]: '0xD7D86236d6c463521920fCC50A9CB56f8C8Bf008',
   },
   LendingRateOracle: {
@@ -113,7 +113,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '0x0229F777B0fAb107F9591a41d5F02E4e98dB6f2d',
   },
   FallbackOracle: {
-    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.mumbai]: '0x82576fA4B84943Be657474a7df4429F8b7E87455',
     [ePolygonNetwork.matic]: ZERO_ADDRESS,
   },
   ChainlinkAggregator: {
@@ -127,11 +127,13 @@ export const CommonsConfig: ICommonConfiguration = {
       USD: '0xF9680D99D6C9589e2a93a78A04A279e509205945',
     },
     [ePolygonNetwork.mumbai]: {
-      DAI: ZERO_ADDRESS,
-      USDC: ZERO_ADDRESS,
-      USDT: ZERO_ADDRESS,
-      WBTC: ZERO_ADDRESS,
-      WMATIC: ZERO_ADDRESS,
+      DAI: '0x0000000000000000000000000000000000000000',
+      USDC: '0x0000000000000000000000000000000000000000',
+      USDT: '0x0000000000000000000000000000000000000000',
+      WBTC: '0x0000000000000000000000000000000000000000',
+      WMATIC: '0x0000000000000000000000000000000000000000',
+      AAVE: '0x0000000000000000000000000000000000000000',
+      USD: '0x0000000000000000000000000000000000000000',
     },
   },
   ReserveAssets: {
@@ -144,11 +146,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '',
   },
   WETH: {
-    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.mumbai]: '0x3C68CE8504087f89c640D02d133646d98e64ddd9',
     [ePolygonNetwork.matic]: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
   },
   WrappedNativeToken: {
-    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.mumbai]: '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889',
     [ePolygonNetwork.matic]: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   },
   ReserveFactorTreasuryAddress: {
@@ -156,7 +158,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '0x7734280A4337F37Fbf4651073Db7c28C80B339e9',
   },
   IncentivesController: {
-    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.mumbai]: '0xd3aC1EBa90c21D70464dDafd30E3Ff8941002929',
     [ePolygonNetwork.matic]: '0x357D51124f59836DeD84c8a1730D72B749d8BC23',
   },
 };
