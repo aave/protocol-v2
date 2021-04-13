@@ -37,6 +37,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     keccak256(
       'Withdraw(address owner,address recipient,uint256 staticAmount,uint256 dynamicAmount,bool toUnderlying,uint256 nonce,uint256 deadline)'
     );
+  string internal constant ENCODE_HEADER = '\x19\x01';
 
   ILendingPool public immutable override LENDING_POOL;
   IERC20 public immutable override ATOKEN;
@@ -112,7 +113,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     bytes32 digest =
       keccak256(
         abi.encodePacked(
-          '\x19\x01',
+          ENCODE_HEADER,
           getDomainSeparator(chainId),
           keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
         )
@@ -140,7 +141,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     bytes32 digest =
       keccak256(
         abi.encodePacked(
-          '\x19\x01',
+          ENCODE_HEADER,
           getDomainSeparator(chainId),
           keccak256(
             abi.encode(
@@ -182,7 +183,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     bytes32 digest =
       keccak256(
         abi.encodePacked(
-          '\x19\x01',
+          ENCODE_HEADER,
           getDomainSeparator(chainId),
           keccak256(
             abi.encode(
