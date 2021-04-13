@@ -65,7 +65,6 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     ASSET.safeApprove(address(LENDING_POOL), type(uint256).max);
   }
 
-  
   /// @inheritdoc IStaticAToken
   function deposit(
     address recipient,
@@ -258,6 +257,10 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     return amountToMint;
   }
 
+  /**
+   * @dev only one of `staticAmount` or `dynamicAmount` can be > 0 at a time. For gas optimization that
+   * is verified not at the beginning, but in the conditional blocks before the tokens' burning
+   **/
   function _withdraw(
     address owner,
     address recipient,
@@ -266,7 +269,6 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     bool toUnderlying
   ) internal returns (uint256, uint256) {
     require(recipient != address(0), 'INVALID_RECIPIENT');
-    require(staticAmount == 0 || dynamicAmount == 0, 'ONLY_ONE_AMOUNT_FORMAT_ALLOWED');
 
     uint256 userBalance = balanceOf(owner);
 
@@ -274,11 +276,17 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     uint256 amountToBurn;
 
     uint256 currentRate = rate();
+
     if (staticAmount > 0) {
-      amountToBurn = (staticAmount > userBalance) ? userBalance : staticAmount;
-      amountToWithdraw = (staticAmount > userBalance)
-        ? _staticToDynamicAmount(userBalance, currentRate)
-        : _staticToDynamicAmount(staticAmount, currentRate);
+      require(dynamicAmount == 0, 'ONLY_ONE_AMOUNT_INPUT_ALLOWED');
+
+      if (staticAmount > userBalance) {
+        amountToBurn = userBalance;
+        amountToWithdraw = _staticToDynamicAmount(userBalance, currentRate);
+      } else {
+        amountToBurn = staticAmount;
+        amountToWithdraw = _staticToDynamicAmount(staticAmount, currentRate);
+      }
     } else {
       uint256 dynamicUserBalance = _staticToDynamicAmount(userBalance, currentRate);
       amountToWithdraw = (dynamicAmount > dynamicUserBalance) ? dynamicUserBalance : dynamicAmount;
