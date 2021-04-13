@@ -846,8 +846,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
       await checkBal(ampl, lenderAAddress, '90000');
       await checkScaledBal(aAMPL, lenderAAddress, '10000');         // P = 7500 + 2500
-      await checkBal(aAMPL, lenderAAddress, '10187.50');            // T = P + 187.50 (I)
-      await checkSupply(aAMPL, '10187.50');
+      await checkBal(aAMPL, lenderAAddress, '10208.33');            // T = P + 208.33 (I)
+      await checkSupply(aAMPL, '10208.33');
       await checkBal(ampl, reserveData.aTokenAddress, '7500');      // unborrowed pool balance
       await checkBal(ampl, borrowerAAddress, '2500');               // borrower AMPL balance
       await checkBal(debtToken, borrowerAAddress, '2717.01');       // 2500 (principal) + 217.01 (I)
@@ -857,26 +857,26 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
       await ampl.connect(lenderC.signer).transfer(borrowerAAddress, await fxtPt(ampl, '300'));
       await checkBal(ampl, borrowerAAddress, '2800', 1);
 
-      // borrower repays 2500 + 187.50 + 29.51 AMPL
+      // borrower repays 2500 + 208.33 + 29.51 AMPL
       await ampl.connect(borrowerA.signer).approve(pool.address, MAX_UINT_AMOUNT);
       await pool.connect(borrowerA.signer).repay(
         ampl.address, MAX_UINT_AMOUNT, RateMode.Variable, borrowerAAddress);
 
       await checkBal(ampl, lenderAAddress, '90000');
-      await checkBal(aAMPL, lenderAAddress, '10187.50');           // 7500 (unborrowed) + 2500 (borrowed) + 187.50 + 29.51 (interest paid)
-      await checkSupply(aAMPL, '10209.20');
+      await checkBal(aAMPL, lenderAAddress, '10208.33');
+      await checkSupply(aAMPL, '10208.33');
       await checkBal(ampl, reserveData.aTokenAddress, '10217.01');
       await checkBal(ampl, borrowerAAddress, '82.99');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '21.70');
+      await checkBal(aAMPL, treasuryAddress, '0');
 
       await pool.connect(lenderA.signer).withdraw(ampl.address, MAX_UINT_AMOUNT, lenderAAddress);
 
-      await checkBal(ampl, lenderAAddress, '100187.50');
+      await checkBal(ampl, lenderAAddress, '100208.33');
       await checkBal(aAMPL, lenderAAddress, '0');
-      await checkSupply(aAMPL, '21.70');
-      await checkBal(ampl, reserveData.aTokenAddress, '29.51');
-      await checkBal(aAMPL, treasuryAddress, '21.70');
+      await checkSupply(aAMPL, '0');
+      await checkBal(ampl, reserveData.aTokenAddress, '8.68');
+      await checkBal(aAMPL, treasuryAddress, '0');
     });
   });
 
@@ -903,13 +903,13 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
       await rebase(pool, ampl, +0.25) // 25% rebase
 
       await checkBal(ampl, lenderAAddress, '112500');
-      await checkScaledBal(aAMPL, lenderAAddress, '11876.32');    // P = (7500*1.25) + 2500
-      await checkBal(aAMPL, lenderAAddress, '12099.00');          // T = P + 298.7 (I)
-      await checkSupply(aAMPL, '12124.78');
+      await checkScaledBal(aAMPL, lenderAAddress, '11875.00');    // P = (7500*1.25) + 2500
+      await checkBal(aAMPL, lenderAAddress, '12122.39');          // T = P + 247.39 (I)
+      await checkSupply(aAMPL, '12122.39');
       await checkBal(ampl, reserveData.aTokenAddress, '9375');    // unborrowed principal balance (7500*1.25)
       await checkBal(ampl, borrowerAAddress, '3125.00');          // Borrowed AMPL balance
       await checkBal(debtToken, borrowerAAddress, '2717.01');     // 2500 (principal) + 217.01 (I)
-      await checkBal(aAMPL, treasuryAddress, '25.77');            // Treasury
+      await checkBal(aAMPL, treasuryAddress, '0');                // Treasury
 
       // borrower repays 2500 + 244.86 AMPL
       await ampl.connect(borrowerA.signer).approve(pool.address, MAX_UINT_AMOUNT);
@@ -917,13 +917,13 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         ampl.address, MAX_UINT_AMOUNT, RateMode.Variable, borrowerAAddress);
 
       await checkBal(ampl, lenderAAddress, '112500');
-      await checkScaledBal(aAMPL, lenderAAddress, '11876.32');
-      await checkBal(aAMPL, lenderAAddress, '12099.00');
-      await checkSupply(aAMPL, '12124.78');
+      await checkScaledBal(aAMPL, lenderAAddress, '11875.00');
+      await checkBal(aAMPL, lenderAAddress, '12122.39');
+      await checkSupply(aAMPL, '12122.39');
       await checkBal(ampl, reserveData.aTokenAddress, '12092.01');
       await checkBal(ampl, borrowerAAddress, '407.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '25.77');
+      await checkBal(aAMPL, treasuryAddress, '0');
 
       await pool.connect(lenderA.signer).withdraw(ampl.address,
         await fxtPt(ampl, '12090'),
@@ -931,13 +931,13 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         lenderAAddress);
 
       await checkBal(ampl, lenderAAddress, '124590.00');
-      await checkScaledBal(aAMPL, lenderAAddress, '8.84');
-      await checkBal(aAMPL, lenderAAddress, '9.00');
-      await checkSupply(aAMPL, '34.78');
+      await checkScaledBal(aAMPL, lenderAAddress, '31.73');
+      await checkBal(aAMPL, lenderAAddress, '32.39');
+      await checkSupply(aAMPL, '32.39');
       await checkBal(ampl, reserveData.aTokenAddress, '2.01');
       await checkBal(ampl, borrowerAAddress, '407.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '25.77');
+      await checkBal(aAMPL, treasuryAddress, '0');
     });
   });
 
@@ -963,13 +963,13 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
       await rebase(pool, ampl, -0.25) // -25% rebase
 
       await checkBal(ampl, lenderAAddress, '67500.00');
-      await checkScaledBal(aAMPL, lenderAAddress, '8123.67');     // P = (7500*0.75) + 2500
-      await checkBal(aAMPL, lenderAAddress, '8275.99');           // T = P + 150.99 (I)
-      await checkSupply(aAMPL, '8293.61');
+      await checkScaledBal(aAMPL, lenderAAddress, '8125');        // P = (7500*0.75) + 2500
+      await checkBal(aAMPL, lenderAAddress, '8294.27');           // T = P + 169.27 (I)
+      await checkSupply(aAMPL, '8294.27');
       await checkBal(ampl, reserveData.aTokenAddress, '5625.00'); // unborrowed principal balance (7500*0.75)
       await checkBal(ampl, borrowerAAddress, '1875.00');          // Borrowed AMPL balance
       await checkBal(debtToken, borrowerAAddress, '2717.01');     // 2500 (principal) + 217.01 (I)
-      await checkBal(aAMPL, treasuryAddress, '17.62');            // Treasury
+      await checkBal(aAMPL, treasuryAddress, '0');                // Treasury
 
       // friend sends borrower some ampl to pay back interest
       await ampl.connect(lenderC.signer).transfer(borrowerAAddress, await fxtPt(ampl, '1000'));
@@ -979,26 +979,25 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
       await pool.connect(borrowerA.signer).repay(
         ampl.address, MAX_UINT_AMOUNT, RateMode.Variable, borrowerAAddress);
 
-
       await checkBal(ampl, lenderAAddress, '67500.00');
-      await checkScaledBal(aAMPL, lenderAAddress, '8123.67');
-      await checkBal(aAMPL, lenderAAddress, '8275.99');
-      await checkSupply(aAMPL, '8293.61');
+      await checkScaledBal(aAMPL, lenderAAddress, '8125');
+      await checkBal(aAMPL, lenderAAddress, '8294.27');
+      await checkSupply(aAMPL, '8294.27');
       await checkBal(ampl, reserveData.aTokenAddress, '8342.01');
       await checkBal(ampl, borrowerAAddress, '157.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '17.62');
+      await checkBal(aAMPL, treasuryAddress, '0');
 
       await pool.connect(lenderA.signer).withdraw(ampl.address, MAX_UINT_AMOUNT, lenderAAddress);
 
-      await checkBal(ampl, lenderAAddress, '75775.99');
+      await checkBal(ampl, lenderAAddress, '75794.27');
       await checkScaledBal(aAMPL, lenderAAddress, '0');
       await checkBal(aAMPL, lenderAAddress, '0');
-      await checkSupply(aAMPL, '17.62');
-      await checkBal(ampl, reserveData.aTokenAddress, '66.02');
+      await checkSupply(aAMPL, '0');
+      await checkBal(ampl, reserveData.aTokenAddress, '47.74');
       await checkBal(ampl, borrowerAAddress, '157.98');
       await checkBal(debtToken, borrowerAAddress, '0');
-      await checkBal(aAMPL, treasuryAddress, '17.62');
+      await checkBal(aAMPL, treasuryAddress, '0');
     });
   });
 
@@ -1028,6 +1027,7 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
       await pool.connect(borrowerA.signer).borrow(
         ampl.address, await fxtPt(ampl, '2500'), RateMode.Variable, '0', borrowerAAddress);
+
       await pool.connect(borrowerB.signer).borrow(
         ampl.address, await fxtPt(ampl, '5000'), RateMode.Variable, '0', borrowerBAddress);
 
@@ -1055,19 +1055,18 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
       await advanceTimeAndBlock(10*3600*24*365); // 10 years
       await rebase(pool, ampl, -0.1) // -10% rebase
 
-
       // lenders pull out
       await pool.connect(lenderA.signer).withdraw(ampl.address, MAX_UINT_AMOUNT, lenderAAddress);
-      await pool.connect(lenderB.signer).withdraw(ampl.address, await fxtPt(ampl, '5900'), lenderAAddress);
+      await pool.connect(lenderB.signer).withdraw(ampl.address, await fxtPt(ampl, '5872'), lenderAAddress);
 
       await checkBal(aAMPL, lenderAAddress, '0');
-      await checkBal(aAMPL, lenderBAddress, '77.25');
+      await checkBal(aAMPL, lenderBAddress, '146.08');
       await checkBal(aAMPL, lenderCAddress, '0');
       await checkBal(debtToken, borrowerAAddress, '0');
       await checkBal(debtToken, borrowerBAddress, '0');
-      await checkSupply(aAMPL, '249.48');
-      await checkBal(ampl, reserveData.aTokenAddress, '74.11');
-      await checkBal(aAMPL, treasuryAddress, '172.24');
+      await checkSupply(aAMPL, '146.08');
+      await checkBal(ampl, reserveData.aTokenAddress, '0.04');
+      await checkBal(aAMPL, treasuryAddress, '0');
     });
   });
 });
