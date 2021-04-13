@@ -13,9 +13,10 @@ import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
 
 /**
  * @title StaticAToken
- * @dev Wrapper token that allows to deposit tokens on the Aave protocol and receive
+ * @dev Implementation of wrapper token that allows to deposit tokens on the Aave protocol and receive
  * a token which balance doesn't increase automatically, but uses an ever-increasing exchange rate
  * - Only supporting deposits and withdrawals
+ * - It supports entering/exit with both underlying tokens and aTokens
  * @author Aave
  **/
 contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
@@ -58,17 +59,14 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     );
   }
 
-  /**
-   * @dev Deposits `ASSET` in the Aave protocol and mints static aTokens to msg.sender
-   * @param recipient The address that will receive the static aTokens
-   * @param amount The amount of underlying `ASSET` to deposit (e.g. deposit of 100 USDC)
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   * @param fromUnderlying bool
-   * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
-   * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
-   * @return uint256 The amount of StaticAToken minted, static balance
-   **/
+  /// @inheritdoc IStaticAToken
+  function maxApproveLendingPool() external override {
+    ASSET.safeApprove(address(LENDING_POOL), 0);
+    ASSET.safeApprove(address(LENDING_POOL), type(uint256).max);
+  }
+
+  
+  /// @inheritdoc IStaticAToken
   function deposit(
     address recipient,
     uint256 amount,
@@ -78,16 +76,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     return _deposit(msg.sender, recipient, amount, referralCode, fromUnderlying);
   }
 
-  /**
-   * @dev Burns `amount` of static aToken, with recipient receiving the corresponding amount of `ASSET`
-   * @param recipient The address that will receive the amount of `ASSET` withdrawn from the Aave protocol
-   * @param amount The amount to withdraw, in static balance of StaticAToken
-   * @param toUnderlying bool
-   * - `true` for the recipient to get underlying tokens (e.g. USDC)
-   * - `false` for the recipient to get aTokens (e.g. aUSDC)
-   * @return amountToBurn: StaticATokens burnt, static balance
-   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
-   **/
+  /// @inheritdoc IStaticAToken
   function withdraw(
     address recipient,
     uint256 amount,
@@ -96,16 +85,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     return _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
   }
 
-  /**
-   * @dev Burns `amount` of static aToken, with recipient receiving the corresponding amount of `ASSET`
-   * @param recipient The address that will receive the amount of `ASSET` withdrawn from the Aave protocol
-   * @param amount The amount to withdraw, in dynamic balance of aToken/underlying asset
-   * @param toUnderlying bool
-   * - `true` for the recipient to get underlying tokens (e.g. USDC)
-   * - `false` for the recipient to get aTokens (e.g. aUSDC)
-   * @return amountToBurn: StaticATokens burnt, static balance
-   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
-   **/
+  /// @inheritdoc IStaticAToken
   function withdrawDynamicAmount(
     address recipient,
     uint256 amount,
@@ -114,18 +94,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     return _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
   }
 
-  /**
-   * @dev Implements the permit function as for
-   * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
-   * @param owner The owner of the funds
-   * @param spender The spender
-   * @param value The amount
-   * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param v Signature param
-   * @param s Signature param
-   * @param r Signature param
-   * @param chainId Passing the chainId in order to be fork-compatible
-   */
+  /// @inheritdoc IStaticAToken
   function permit(
     address owner,
     address spender,
@@ -153,22 +122,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     _approve(owner, spender, value);
   }
 
-  /**
-   * @dev Allows to deposit on Aave via meta-transaction
-   * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
-   * @param depositor Address from which the funds to deposit are going to be pulled
-   * @param recipient Address that will receive the staticATokens, in the average case, same as the `depositor`
-   * @param value The amount to deposit
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   * @param fromUnderlying bool
-   * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
-   * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
-   * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param sigParams Signature params: v,r,s
-   * @param chainId Passing the chainId in order to be fork-compatible
-   * @return uint256 The amount of StaticAToken minted, static balance
-   */
+  /// @inheritdoc IStaticAToken
   function metaDeposit(
     address depositor,
     address recipient,
@@ -210,22 +164,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     return _deposit(depositor, recipient, value, referralCode, fromUnderlying);
   }
 
-  /**
-   * @dev Allows to withdraw from Aave via meta-transaction
-   * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
-   * @param owner Address owning the staticATokens
-   * @param recipient Address that will receive the underlying withdrawn from Aave
-   * @param staticAmount The amount of staticAToken to withdraw. If > 0, `dynamicAmount` needs to be 0
-   * @param dynamicAmount The amount of underlying/aToken to withdraw. If > 0, `staticAmount` needs to be 0
-   * @param toUnderlying bool
-   * - `true` for the recipient to get underlying tokens (e.g. USDC)
-   * - `false` for the recipient to get aTokens (e.g. aUSDC)
-   * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param sigParams Signature params: v,r,s
-   * @param chainId Passing the chainId in order to be fork-compatible
-   * @return amountToBurn: StaticATokens burnt, static balance
-   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
-   */
+  /// @inheritdoc IStaticAToken
   function metaWithdraw(
     address owner,
     address recipient,
@@ -264,49 +203,27 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     return _withdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying);
   }
 
-  /**
-   * @dev Utility method to get the current aToken balance of an user, from his staticAToken balance
-   * @param account The address of the user
-   * @return uint256 The aToken balance
-   **/
+  /// @inheritdoc IStaticAToken
   function dynamicBalanceOf(address account) external view override returns (uint256) {
     return staticToDynamicAmount(balanceOf(account));
   }
 
-  /**
-   * @dev Converts a static amount (scaled balance on aToken) to the aToken/underlying value,
-   * using the current liquidity index on Aave
-   * @param amount The amount to convert from
-   * @return uint256 The dynamic amount
-   **/
+  /// @inheritdoc IStaticAToken
   function staticToDynamicAmount(uint256 amount) public view override returns (uint256) {
     return amount.rayMul(rate());
   }
 
-  /**
-   * @dev Converts an aToken or underlying amount to the what it is denominated on the aToken as
-   * scaled balance, function of the principal and the liquidity index
-   * @param amount The amount to convert from
-   * @return uint256 The static (scaled) amount
-   **/
+  /// @inheritdoc IStaticAToken
   function dynamicToStaticAmount(uint256 amount) public view override returns (uint256) {
     return amount.rayDiv(rate());
   }
 
-  /**
-   * @dev Returns the Aave liquidity index of the underlying aToken, denominated rate here
-   * as it can be considered as an ever-increasing exchange rate
-   * @return bytes32 The domain separator
-   **/
+  /// @inheritdoc IStaticAToken
   function rate() public view override returns (uint256) {
     return LENDING_POOL.getReserveNormalizedIncome(address(ASSET));
   }
 
-  /**
-   * @dev Function to return a dynamic domain separator, in order to be compatible with forks changing chainId
-   * @param chainId The chain id
-   * @return bytes32 The domain separator
-   **/
+  /// @inheritdoc IStaticAToken
   function getDomainSeparator(uint256 chainId) public view override returns (bytes32) {
     return
       keccak256(

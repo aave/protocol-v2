@@ -20,6 +20,13 @@ interface IStaticAToken {
   }
 
   /**
+   * @dev Increments to max uint256 the allowance of the LENDING_POOL on ASSET
+   * - Needed for an edge case where the allowance set to max on constructor becomes 0
+   * - Resetting to 0 first to avoid issues with certain tokens
+   **/
+  function maxApproveLendingPool() external;
+
+  /**
    * @dev Deposits `ASSET` in the Aave protocol and mints static aTokens to msg.sender
    * @param recipient The address that will receive the static aTokens
    * @param amount The amount of underlying `ASSET` to deposit (e.g. deposit of 100 USDC)
