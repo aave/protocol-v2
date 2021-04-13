@@ -383,7 +383,7 @@ describe('StaticAToken: aToken wrapper with static balances', () => {
     const amountToWithdraw = parseEther('2.0');
 
     await waitForTx(
-      await staticAWeth.withdrawDynamicAmount(
+      await staticAWeth.withdrawInDynamicAmount(
         user1Signer._address,
         amountToWithdraw,
         false,
@@ -482,7 +482,7 @@ describe('StaticAToken: aToken wrapper with static balances', () => {
     const amountToWithdraw = parseEther('2.0');
 
     await waitForTx(
-      await staticAWeth.withdrawDynamicAmount(
+      await staticAWeth.withdrawInDynamicAmount(
         user1Signer._address,
         amountToWithdraw,
         false,

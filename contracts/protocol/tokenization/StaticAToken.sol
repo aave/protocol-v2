@@ -86,7 +86,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
   }
 
   /// @inheritdoc IStaticAToken
-  function withdrawDynamicAmount(
+  function withdrawInDynamicAmount(
     address recipient,
     uint256 amount,
     bool toUnderlying

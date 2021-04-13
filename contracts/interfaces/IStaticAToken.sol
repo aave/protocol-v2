@@ -72,7 +72,7 @@ interface IStaticAToken {
    * @return amountToBurn: StaticATokens burnt, static balance
    * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
    **/
-  function withdrawDynamicAmount(
+  function withdrawInDynamicAmount(
     address recipient,
     uint256 amount,
     bool toUnderlying
