@@ -30,8 +30,10 @@ interface IStaticAToken {
    * @dev Deposits `ASSET` in the Aave protocol and mints static aTokens to msg.sender
    * @param recipient The address that will receive the static aTokens
    * @param amount The amount of underlying `ASSET` to deposit (e.g. deposit of 100 USDC)
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards
+   *  - For example, a wallet application could use a referral code 1 and later on request part of the fees on
+   *     the Aave Protocol
+   *  - 0 if the action is executed directly by the user, without any middle-man
    * @param fromUnderlying bool
    * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
    * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
@@ -105,8 +107,10 @@ interface IStaticAToken {
    * @param depositor Address from which the funds to deposit are going to be pulled
    * @param recipient Address that will receive the staticATokens, in the average case, same as the `depositor`
    * @param value The amount to deposit
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards
+   *  - For example, a wallet application could use a referral code 1 and later on request part of the fees on
+   *     the Aave Protocol
+   *  - 0 if the action is executed directly by the user, without any middle-man
    * @param fromUnderlying bool
    * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
    * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
