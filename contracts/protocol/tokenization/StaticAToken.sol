@@ -10,6 +10,7 @@ import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
 import {ReentrancyGuard} from '../../dependencies/openzeppelin/contracts/ReentrancyGuard.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
+import {ErrorsStaticAToken} from '../../protocol/libraries/helpers/ErrorsStaticAToken.sol';
 
 /**
  * @title StaticAToken
@@ -104,9 +105,9 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     bytes32 s,
     uint256 chainId
   ) external override {
-    require(owner != address(0), 'INVALID_OWNER');
+    require(owner != address(0), ErrorsStaticAToken.INVALID_OWNER_ON_PERMIT);
     //solium-disable-next-line
-    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    require(block.timestamp <= deadline, ErrorsStaticAToken.INVALID_EXPIRATION_ON_PERMIT);
     uint256 currentValidNonce = _nonces[owner];
     bytes32 digest =
       keccak256(
@@ -116,7 +117,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
           keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
         )
       );
-    require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+    require(owner == ecrecover(digest, v, r, s), ErrorsStaticAToken.INVALID_SIGNATURE_ON_PERMIT);
     _nonces[owner] = currentValidNonce.add(1);
     _approve(owner, spender, value);
   }
@@ -132,9 +133,9 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     SignatureParams calldata sigParams,
     uint256 chainId
   ) external override nonReentrant returns (uint256) {
-    require(depositor != address(0), 'INVALID_DEPOSITOR');
+    require(depositor != address(0), ErrorsStaticAToken.INVALID_DEPOSITOR_ON_METADEPOSIT);
     //solium-disable-next-line
-    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    require(block.timestamp <= deadline, ErrorsStaticAToken.INVALID_EXPIRATION_ON_METADEPOSIT);
     uint256 currentValidNonce = _nonces[depositor];
     bytes32 digest =
       keccak256(
@@ -157,7 +158,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
       );
     require(
       depositor == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s),
-      'INVALID_SIGNATURE'
+      ErrorsStaticAToken.INVALID_SIGNATURE_ON_METADEPOSIT
     );
     _nonces[depositor] = currentValidNonce.add(1);
     return _deposit(depositor, recipient, value, referralCode, fromUnderlying);
@@ -174,9 +175,9 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     SignatureParams calldata sigParams,
     uint256 chainId
   ) external override nonReentrant returns (uint256, uint256) {
-    require(owner != address(0), 'INVALID_DEPOSITOR');
+    require(owner != address(0), ErrorsStaticAToken.INVALID_OWNER_ON_METAWITHDRAW);
     //solium-disable-next-line
-    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    require(block.timestamp <= deadline, ErrorsStaticAToken.INVALID_EXPIRATION_ON_METAWITHDRAW);
     uint256 currentValidNonce = _nonces[owner];
     bytes32 digest =
       keccak256(
@@ -197,7 +198,10 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
           )
         )
       );
-    require(owner == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s), 'INVALID_SIGNATURE');
+    require(
+      owner == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s),
+      ErrorsStaticAToken.INVALID_SIGNATURE_ON_METAWITHDRAW
+    );
     _nonces[owner] = currentValidNonce.add(1);
     return _withdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying);
   }
@@ -243,7 +247,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     uint16 referralCode,
     bool fromUnderlying
   ) internal returns (uint256) {
-    require(recipient != address(0), 'INVALID_RECIPIENT');
+    require(recipient != address(0), ErrorsStaticAToken.INVALID_ZERO_RECIPIENT);
 
     if (fromUnderlying) {
       ASSET.safeTransferFrom(depositor, address(this), amount);
@@ -268,7 +272,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     uint256 dynamicAmount,
     bool toUnderlying
   ) internal returns (uint256, uint256) {
-    require(recipient != address(0), 'INVALID_RECIPIENT');
+    require(recipient != address(0), ErrorsStaticAToken.INVALID_ZERO_RECIPIENT);
 
     uint256 userBalance = balanceOf(owner);
 
@@ -278,7 +282,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     uint256 currentRate = rate();
 
     if (staticAmount > 0) {
-      require(dynamicAmount == 0, 'ONLY_ONE_AMOUNT_INPUT_ALLOWED');
+      require(dynamicAmount == 0, ErrorsStaticAToken.ONLY_ONE_INPUT_AMOUNT_AT_A_TIME);
 
       if (staticAmount > userBalance) {
         amountToBurn = userBalance;
@@ -298,7 +302,7 @@ contract StaticAToken is IStaticAToken, ReentrancyGuard, ERC20 {
     if (toUnderlying) {
       require(
         LENDING_POOL.withdraw(address(ASSET), amountToWithdraw, recipient) == amountToWithdraw,
-        'INCONSISTENT_WITHDRAWN_AMOUNT'
+        ErrorsStaticAToken.INCONSISTENT_WITHDRAWN_AMOUNT
       );
     } else {
       ATOKEN.safeTransfer(recipient, amountToWithdraw);
