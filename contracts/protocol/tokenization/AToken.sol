@@ -84,6 +84,17 @@ contract AToken is VersionedInitializable, IncentivizedERC20, IAToken {
     _setName(tokenName);
     _setSymbol(tokenSymbol);
     _setDecimals(underlyingAssetDecimals);
+
+    emit Initialized(
+      UNDERLYING_ASSET_ADDRESS,
+      address(POOL),
+      RESERVE_TREASURY_ADDRESS,
+      address(_incentivesController),
+      underlyingAssetDecimals,
+      tokenName,
+      tokenSymbol,
+      ''
+    );
   }
 
   /**

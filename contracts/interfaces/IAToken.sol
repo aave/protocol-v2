@@ -15,6 +15,28 @@ interface IAToken is IERC20, IScaledBalanceToken {
   event Mint(address indexed from, uint256 value, uint256 index);
 
   /**
+   * @dev Emitted when an aToken is initialized
+   * @param underlyingAsset The address of the underlying asset
+   * @param pool The address of the associated lending pool
+   * @param treasury The address of the treasury
+   * @param incentivesController The address of the incentives controller for this aToken
+   * @param aTokenDecimals the decimals of the underlying
+   * @param aTokenName the name of the aToken
+   * @param aTokenSymbol the symbol of the aToken
+   * @param params A set of encoded parameters for additional initialization
+   **/
+  event Initialized(
+    address indexed underlyingAsset,
+    address indexed pool,
+    address treasury,
+    address incentivesController,
+    uint8 aTokenDecimals,
+    string aTokenName,
+    string aTokenSymbol,
+    bytes params
+  );
+
+  /**
    * @dev Mints `amount` aTokens to `user`
    * @param user The address receiving the minted tokens
    * @param amount The amount of tokens getting minted

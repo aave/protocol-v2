@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
 import {ICreditDelegationToken} from '../../../interfaces/ICreditDelegationToken.sol';
+import {IDebtTokenBase} from '../../../interfaces/IDebtTokenBase.sol';
 import {
   VersionedInitializable
 } from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
@@ -18,7 +19,8 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 abstract contract DebtTokenBase is
   IncentivizedERC20,
   VersionedInitializable,
-  ICreditDelegationToken
+  ICreditDelegationToken,
+  IDebtTokenBase
 {
   address public immutable UNDERLYING_ASSET_ADDRESS;
   ILendingPool public immutable POOL;
@@ -62,6 +64,16 @@ abstract contract DebtTokenBase is
     _setName(name);
     _setSymbol(symbol);
     _setDecimals(decimals);
+
+    emit Initialized(
+      UNDERLYING_ASSET_ADDRESS,
+      address(POOL),
+      address(_incentivesController),
+      decimals,
+      name,
+      symbol,
+      ''
+    );
   }
 
   /**
