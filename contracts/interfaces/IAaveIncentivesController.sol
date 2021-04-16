@@ -13,6 +13,8 @@ interface IAaveIncentivesController {
 
   function PRECISION() external view returns (uint8);
 
+  function DISTRIBUTION_END() external view returns (uint256);
+
   function assets(address underlying) external view returns (AssetData memory assets);
 
   function handleAction(
