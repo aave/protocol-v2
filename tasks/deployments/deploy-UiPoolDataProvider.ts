@@ -15,10 +15,10 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
       //   incentivesController: '',
       //   aaveOracle: '',
       // },
-      // [eEthereumNetwork.main]: {
-      //   incentivesController: '',
-      //   aaveOracle: '0xa50ba011c48153de246e5192c8f9258a2ba79ca9',
-      // },
+      [eEthereumNetwork.main]: {
+        incentivesController: '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5',
+        aaveOracle: '0xa50ba011c48153de246e5192c8f9258a2ba79ca9',
+      },
       [ePolygonNetwork.matic]: {
         incentivesController: '0x357D51124f59836DeD84c8a1730D72B749d8BC23',
         aaveOracle: '0x21451bD7b528896B4AB2b9764b521D6ed641708d',
