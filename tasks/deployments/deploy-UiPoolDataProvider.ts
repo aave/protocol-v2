@@ -16,7 +16,7 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
       //   aaveOracle: '',
       // },
       [eEthereumNetwork.main]: {
-        incentivesController: '0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5',
+        incentivesController: '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
         aaveOracle: '0xa50ba011c48153de246e5192c8f9258a2ba79ca9',
       },
       [ePolygonNetwork.matic]: {
