@@ -130,37 +130,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
       );
 
-      // incentives
-      IAaveIncentivesController.AssetData memory tokenIncentivesInfo =
-        incentivesController.assets(reserveData.aTokenAddress);
-      reserveData.aEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
-      reserveData.aIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
-      reserveData.aTokenIncentivesIndex = tokenIncentivesInfo.index;
-
-      tokenIncentivesInfo = incentivesController.assets(reserveData.stableDebtTokenAddress);
-      reserveData.sEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
-      reserveData.sIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
-      reserveData.sTokenIncentivesIndex = tokenIncentivesInfo.index;
-
-      tokenIncentivesInfo = incentivesController.assets(reserveData.variableDebtTokenAddress);
-      reserveData.vEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
-      reserveData.vIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
-      reserveData.vTokenIncentivesIndex = tokenIncentivesInfo.index;
-
       if (user != address(0)) {
-        // incentives
-        userReservesData[i].aTokenincentivesUserIndex = incentivesController.getUserAssetData(
-          user,
-          reserveData.aTokenAddress
-        );
-        userReservesData[i].sTokenincentivesUserIndex = incentivesController.getUserAssetData(
-          user,
-          reserveData.stableDebtTokenAddress
-        );
-        userReservesData[i].vTokenincentivesUserIndex = incentivesController.getUserAssetData(
-          user,
-          reserveData.variableDebtTokenAddress
-        );
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
         userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
@@ -194,20 +164,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       }
     }
 
-    
-    IncentivesControllerData memory incentivesControllerData;
-    incentivesControllerData.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
-    // incentivesControllerData.rewardToken = incentivesController.REWARD_TOKEN();
-    // incentivesControllerData.rewardTokenDecimals = IERC20Detailed(incentivesControllerData.rewardToken).decimals();
-    // incentivesControllerData.rewardTokenSymbol = IERC20Detailed(incentivesControllerData.rewardToken).symbol();
-    // incentivesControllerData.precision = incentivesController.PRECISION();
-    incentivesControllerData.emissionEndTimestamp = incentivesController.DISTRIBUTION_END();
-
     return (
       reservesData,
       userReservesData,
       oracle.getAssetPrice(MOCK_USD_ADDRESS),
-      incentivesControllerData
+      IncentivesControllerData(0,0)
     );
   }
 }
