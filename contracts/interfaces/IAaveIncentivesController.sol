@@ -3,19 +3,9 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 interface IAaveIncentivesController {
-  struct AssetData {
-    uint104 emissionPerSecond;
-    uint104 index;
-    uint40 lastUpdateTimestamp;
-  }
-
   event RewardsAccrued(address indexed user, uint256 amount);
 
-  event RewardsClaimed(
-    address indexed user,
-    address indexed to,
-    uint256 amount
-  );
+  event RewardsClaimed(address indexed user, address indexed to, uint256 amount);
 
   event RewardsClaimed(
     address indexed user,
@@ -26,7 +16,19 @@ interface IAaveIncentivesController {
 
   event ClaimerSet(address indexed user, address indexed claimer);
 
-  function assets(address underlying) external view returns (AssetData memory assets);
+  /*
+   * @dev Returns the configuration of the distribution for a certain asset
+   * @param asset The address of the reference asset of the distribution
+   * @return The asset index, the emission per second and the last updated timestamp
+   **/
+  function getAssetData(address asset)
+    external
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    );
 
   /**
    * @dev Whitelists an address to claim the rewards on behalf of another address
@@ -49,7 +51,6 @@ interface IAaveIncentivesController {
    */
   function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
     external;
-
 
   /**
    * @dev Called by the corresponding asset on any update that affects the rewards distribution
@@ -116,12 +117,12 @@ interface IAaveIncentivesController {
   function getUserAssetData(address user, address asset) external view returns (uint256);
 
   /**
-  * @dev for backward compatibility with previous implementation of the Incentives controller
-  */
+   * @dev for backward compatibility with previous implementation of the Incentives controller
+   */
   function REWARD_TOKEN() external view returns (address);
 
   /**
-  * @dev for backward compatibility with previous implementation of the Incentives controller
-  */
+   * @dev for backward compatibility with previous implementation of the Incentives controller
+   */
   function PRECISION() external view returns (uint8);
 }

@@ -43,9 +43,9 @@ interface IUiPoolDataProvider {
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
     // incentives
-    uint128 aEmissionPerSecond;
-    uint128 vEmissionPerSecond;
-    uint128 sEmissionPerSecond;
+    uint256 aEmissionPerSecond;
+    uint256 vEmissionPerSecond;
+    uint256 sEmissionPerSecond;
     uint256 aIncentivesLastUpdateTimestamp;
     uint256 vIncentivesLastUpdateTimestamp;
     uint256 sIncentivesLastUpdateTimestamp;
