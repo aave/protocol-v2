@@ -4,9 +4,9 @@ pragma experimental ABIEncoderV2;
 
 interface IAaveIncentivesController {
   struct AssetData {
-    uint128 emissionPerSecond;
-    uint128 lastUpdateTimestamp;
-    uint256 index;
+    uint104 emissionPerSecond;
+    uint104 index;
+    uint40 lastUpdateTimestamp;
   }
 
   event RewardsAccrued(address indexed user, uint256 amount);
