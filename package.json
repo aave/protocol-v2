@@ -33,7 +33,7 @@
     "test-weth": "hardhat test test/__setup.spec.ts test/weth-gateway.spec.ts",
     "test-uniswap": "hardhat test test/__setup.spec.ts test/uniswapAdapters*.spec.ts",
     "test:main:check-list": "MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1 hardhat test  test/__setup.spec.ts test/mainnet/check-list.spec.ts",
-    "test:main:staticAToken": "MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1 hardhat test test/mainnet/static-atoken.spec.ts",
+    "test:main:staticAToken": "MAINNET_FORK=true FORKING_BLOCK=12225650 TS_NODE_TRANSPILE_ONLY=1 hardhat test test/mainnet/static-atoken.spec.ts",
     "dev:coverage": "buidler compile --force && buidler coverage --network coverage",
     "aave:evm:dev:migration": "npm run compile && hardhat aave:dev",
     "aave:docker:full:migration": "npm run compile && npm run hardhat:docker -- aave:mainnet",
