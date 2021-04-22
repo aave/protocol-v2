@@ -132,21 +132,21 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
 
       // incentives
       (
+        reserveData.aTokenIncentivesIndex,
         reserveData.aEmissionPerSecond,
-        reserveData.aIncentivesLastUpdateTimestamp,
-        reserveData.aTokenIncentivesIndex
+        reserveData.aIncentivesLastUpdateTimestamp
       ) = incentivesController.getAssetData(reserveData.aTokenAddress);
 
       (
+        reserveData.sTokenIncentivesIndex,
         reserveData.sEmissionPerSecond,
-        reserveData.sIncentivesLastUpdateTimestamp,
-        reserveData.sTokenIncentivesIndex
+        reserveData.sIncentivesLastUpdateTimestamp
       ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
 
       (
+        reserveData.vTokenIncentivesIndex,
         reserveData.vEmissionPerSecond,
-        reserveData.vIncentivesLastUpdateTimestamp,
-        reserveData.vTokenIncentivesIndex
+        reserveData.vIncentivesLastUpdateTimestamp
       ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);
 
       if (user != address(0)) {
