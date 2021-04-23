@@ -110,7 +110,7 @@
     "ethereumjs-util": "7.0.2",
     "ethers": "^5.0.19",
     "globby": "^11.0.1",
-    "hardhat": "^2.0.8",
+    "hardhat": "^2.2.0",
     "hardhat-gas-reporter": "^1.0.0",
     "hardhat-typechain": "^0.3.3",
     "husky": "^4.2.5",
