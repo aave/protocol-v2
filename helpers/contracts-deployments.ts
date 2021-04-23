@@ -49,6 +49,8 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  PermissionedVariableDebtTokenFactory,
+  PermissionedStableDebtTokenFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -331,7 +333,62 @@ export const deployVariableDebtToken = async (
   return instance;
 };
 
-export const deployGenericStableDebtToken = async () =>
+export const deployStableDebtTokenByType = async (type: string) => {
+
+  //if no instance type is provided, deploying the generic one by default
+  if(!type) {
+    return deployGenericStableDebtToken();
+  }
+
+  console.log("Deploying instance of ", type);
+
+  switch(type) {
+    case eContractid.StableDebtToken:
+      return deployGenericStableDebtToken();
+    case eContractid.PermissionedStableDebtToken:
+      return deployPermissionedStableDebtToken();
+    default:
+      console.log("[stable]Cant find token type ", type);
+      throw "Invalid debt token type";
+  }
+}
+
+export const deployVariableDebtTokenByType = async (type: string) => {
+
+  //if no instance type is provided, deploying the generic one by default
+  if(!type) {
+    return deployGenericVariableDebtToken();;
+  }
+
+  switch(type) {
+    case eContractid.VariableDebtToken:
+      return deployGenericVariableDebtToken();
+    case eContractid.PermissionedVariableDebtToken:
+      return deployPermissionedVariableDebtToken();
+    default:
+      console.log("[variable]Cant find token type ", type);
+      throw "Invalid debt token type";
+  }
+}
+
+
+export const deployPermissionedStableDebtToken = async () =>
+  withSaveAndVerify(
+    await new PermissionedStableDebtTokenFactory(await getFirstSigner()).deploy(),
+    eContractid.PermissionedStableDebtToken,
+    [],
+    false
+  );
+
+export const deployPermissionedVariableDebtToken = async () =>
+  withSaveAndVerify(
+    await new PermissionedVariableDebtTokenFactory(await getFirstSigner()).deploy(),
+    eContractid.PermissionedVariableDebtToken,
+    [],
+    false
+  );
+
+  export const deployGenericStableDebtToken = async () =>
   withSaveAndVerify(
     await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.StableDebtToken,

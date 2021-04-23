@@ -46,4 +46,6 @@ library DataTypes {
   }
 
   enum InterestRateMode {NONE, STABLE, VARIABLE}
+
+  enum Roles {DEPOSITOR, BORROWER, LIQUIDATOR, STABLE_RATE_MANAGER}
 }

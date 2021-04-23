@@ -8,6 +8,7 @@ import {
 } from './types';
 import { getParamPerPool } from './contracts-helpers';
 import AaveConfig from '../markets/aave';
+import AaveProConfig from '../markets/aave-pro';
 import MaticConfig from '../markets/matic';
 import AmmConfig from '../markets/amm';
 import { CommonsConfig } from '../markets/aave/commons';
@@ -21,6 +22,7 @@ export enum ConfigNames {
   Aave = 'Aave',
   Matic = 'Matic',
   Amm = 'Amm',
+  AavePro = 'AavePro'
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -33,11 +35,12 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
         return AmmConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
+    case ConfigNames.AavePro:
+      return AaveProConfig;
     default:
       throw new Error(`Unsupported pool configuration: ${Object.values(ConfigNames)}`);
   }
 };
-
 // ----------------
 // PROTOCOL PARAMS PER POOL
 // ----------------

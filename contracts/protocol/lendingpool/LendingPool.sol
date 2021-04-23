@@ -106,7 +106,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
-  ) external override whenNotPaused {
+  ) public virtual override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -143,7 +143,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     address to
-  ) external override whenNotPaused returns (uint256) {
+  ) public virtual override whenNotPaused returns (uint256) {
     return _executeWithdraw(asset, amount, to);
   }
 
@@ -168,7 +168,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
-  ) external override whenNotPaused {
+  ) public virtual override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     _executeBorrow(
       ExecuteBorrowParams(
@@ -201,7 +201,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external override whenNotPaused returns (uint256) {
+  ) public virtual override whenNotPaused returns (uint256) {
     return _executeRepay(asset, amount, rateMode, onBehalfOf);
   }
 
@@ -210,7 +210,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset borrowed
    * @param rateMode The rate mode that the user wants to swap to
    **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
+  function swapBorrowRateMode(address asset, uint256 rateMode) public virtual override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -263,7 +263,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset borrowed
    * @param user The address of the user to be rebalanced
    **/
-  function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
+  function rebalanceStableBorrowRate(address asset, address user) public virtual override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
@@ -301,7 +301,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
    **/
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
-    external
+    public
+    virtual
     override
     whenNotPaused
   {
@@ -344,7 +345,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address user,
     uint256 debtToCover,
     bool receiveAToken
-  ) external override whenNotPaused {
+  ) public virtual override whenNotPaused {
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
@@ -404,7 +405,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
-  ) external override whenNotPaused {
+  ) public virtual override whenNotPaused {
     FlashLoanLocalVars memory vars;
 
     ValidationLogic.validateFlashloan(assets, amounts);
@@ -629,7 +630,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -659,7 +660,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     uint256 balanceFromBefore,
     uint256 balanceToBefore
-  ) external override whenNotPaused {
+  ) public virtual override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
     ValidationLogic.validateTransfer(
