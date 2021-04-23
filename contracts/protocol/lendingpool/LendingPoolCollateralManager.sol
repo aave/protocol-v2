@@ -286,7 +286,7 @@ contract LendingPoolCollateralManager is
     vars.collateralPrice = oracle.getAssetPrice(collateralAsset);
     vars.debtAssetPrice = oracle.getAssetPrice(debtAsset);
 
-    (, , vars.liquidationBonus, vars.collateralDecimals, ) = collateralReserve
+    (, , vars.liquidationBonus, vars.collateralDecimals, , ) = collateralReserve
       .configuration
       .getParams();
     vars.debtAssetDecimals = debtReserve.configuration.getDecimals();
