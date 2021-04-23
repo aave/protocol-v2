@@ -15,6 +15,7 @@ import 'temp-hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
+import 'solidity-coverage';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
