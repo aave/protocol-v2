@@ -99,7 +99,7 @@ const buidlerConfig: HardhatUserConfig = {
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
     hardhat: {
-      hardfork: 'istanbul',
+      hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
       gasPrice: 8000000000,
@@ -113,7 +113,7 @@ const buidlerConfig: HardhatUserConfig = {
       forking: mainnetFork,
     },
     buidlerevm_docker: {
-      hardfork: 'istanbul',
+      hardfork: 'berlin',
       blockGasLimit: 9500000,
       gas: 9500000,
       gasPrice: 8000000000,
