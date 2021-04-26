@@ -27,7 +27,6 @@ import {
 import {getTxCostAndTimestamp} from "./helpers/actions";
 import {DRE, waitForTx, advanceTimeAndBlock, evmSnapshot, evmRevert} from "../helpers/misc-utils";
 import {getReserveData, getUserData} from "./helpers/utils/helpers";
-
 const {expect} = require('chai');
 
 
@@ -108,6 +107,84 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
   afterEach(async () => {
     await evmRevert(evmSnapshotId);
   });
+
+  describe('user Transfer', () => {
+    describe("when lenderA deposits 1000 AMPL, transfers all to himself", function(){
+      it('should update balances correctly', async () => {
+        const {pool, ampl, aAMPL } = testEnv;
+
+        await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
+        await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
+
+        const beforeBalance = await aAMPL.scaledBalanceOf(lenderAAddress);
+        await aAMPL.connect(lenderA.signer).transfer(lenderAAddress,
+          await aAMPL.balanceOf(lenderAAddress));
+        const afterBalance = await aAMPL.scaledBalanceOf(lenderAAddress);
+
+        expect(beforeBalance.toString()).to.be.equal(afterBalance.toString());
+      });
+    });
+
+    describe("when lenderA deposits 1000 AMPL, transfers more than he has", function(){
+      it('should update balances correctly', async () => {
+        const {pool, ampl, aAMPL } = testEnv;
+
+        await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
+        await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
+
+        await expect(
+          aAMPL.connect(lenderA.signer).transfer(lenderAAddress, await fxtPt(ampl, '1001'))
+        ).to.be.revertedWith('transfer amount exceeds balance');
+      });
+    });
+
+    describe("when borrowed amount > 0", function() {
+      describe("when lenderA deposits 1000 AMPL, transfers all to himself", function(){
+        it('should update balances correctly', async () => {
+          const {pool, dai, ampl, aAMPL, aDai} = testEnv;
+
+          await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
+          await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
+
+          await dai.mint(await fxtPt(dai, '2000'));
+          await dai.transfer(borrowerAAddress, await fxtPt(dai, '2000'));
+          await dai.connect(borrowerA.signer).approve(pool.address, await fxtPt(dai, '2000'));
+          await pool.connect(borrowerA.signer).deposit(dai.address, await fxtPt(dai, '2000'), borrowerAAddress, '0');
+
+          await pool.connect(borrowerA.signer).borrow(
+            ampl.address, await fxtPt(ampl, '250'), RateMode.Variable, '0', borrowerAAddress);
+
+          const beforeBalance = await aAMPL.scaledBalanceOf(lenderAAddress);
+          await aAMPL.connect(lenderA.signer).transfer(lenderAAddress, await aAMPL.balanceOf(lenderAAddress));
+          const afterBalance = await aAMPL.scaledBalanceOf(lenderAAddress);
+
+          expect(beforeBalance.toString()).to.be.equal(afterBalance.toString());
+        });
+      });
+
+      describe("when lenderA deposits 1000 AMPL, transfers more than he has", function(){
+        it('should update balances correctly', async () => {
+          const {pool, dai, ampl, aAMPL, aDai} = testEnv;
+
+          await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
+          await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
+
+          await dai.mint(await fxtPt(dai, '2000'));
+          await dai.transfer(borrowerAAddress, await fxtPt(dai, '2000'));
+          await dai.connect(borrowerA.signer).approve(pool.address, await fxtPt(dai, '2000'));
+          await pool.connect(borrowerA.signer).deposit(dai.address, await fxtPt(dai, '2000'), borrowerAAddress, '0');
+
+          await pool.connect(borrowerA.signer).borrow(
+            ampl.address, await fxtPt(ampl, '250'), RateMode.Variable, '0', borrowerAAddress);
+
+          await expect(
+            aAMPL.connect(lenderA.signer).transfer(lenderAAddress, await fxtPt(ampl, '1001'))
+          ).to.be.revertedWith('transfer amount exceeds balance');
+        });
+      });
+    });
+  });
+
 
   describe("user deposit", function(){
     describe("first deposit", function() {
