@@ -95,7 +95,7 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
     adminAddress = admin.address;
 
     reserveData = await pool.getReserveData(ampl.address);
-    await aAMPL.setDebtTokens(reserveData.stableDebtTokenAddress, reserveData.variableDebtTokenAddress);
+    await aAMPL.initializeDebtTokens();
 
     await ampl.connect(deployer.signer).transfer(lenderAAddress, await fxtPt(ampl, '100000'));
     await ampl.connect(deployer.signer).transfer(lenderBAddress, await fxtPt(ampl, '100000'));

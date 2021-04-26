@@ -13,6 +13,7 @@ import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {DataTypes} from '../../libraries/types/DataTypes.sol';
 import {SignedSafeMath} from '../../../dependencies/openzeppelin/contracts/SignedSafeMath.sol';
 import {UInt256Lib} from '../../../dependencies/uFragments/UInt256Lib.sol';
+import {DataTypes} from '../../libraries/types/DataTypes.sol';
 
 interface IAMPLDebtToken {
   function getAMPLBorrowData() external view returns (uint256, int256);
@@ -192,14 +193,16 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
   }
 
-  function getRevision() internal pure virtual override returns (uint256) {
-    return ATOKEN_REVISION;
+  function initializeDebtTokens () external {
+    require(STABLE_DEBT_TOKEN_ADDRESS == address(0) && VARIABLE_DEBT_TOKEN_ADDRESS == address(0));
+
+    DataTypes.ReserveData memory reserveData = ILendingPool(POOL).getReserveData(UNDERLYING_ASSET_ADDRESS);
+    STABLE_DEBT_TOKEN_ADDRESS = reserveData.stableDebtTokenAddress;
+    VARIABLE_DEBT_TOKEN_ADDRESS = reserveData.variableDebtTokenAddress;
   }
 
-  function setDebtTokens (address stableDebtTokenAddress, address variableDebtTokenAddress) public {
-    require(STABLE_DEBT_TOKEN_ADDRESS == address(0) && VARIABLE_DEBT_TOKEN_ADDRESS == address(0));
-    STABLE_DEBT_TOKEN_ADDRESS = stableDebtTokenAddress;
-    VARIABLE_DEBT_TOKEN_ADDRESS = variableDebtTokenAddress;
+  function getRevision() internal pure virtual override returns (uint256) {
+    return ATOKEN_REVISION;
   }
 
   function initialize(
