@@ -644,14 +644,14 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
    * @dev Helper method to convert gons to AMPL
    **/
   function _gonsToAMPL(uint256 totalAMPLSupply, uint256 gonValue) private pure returns (uint256) {
-    return gonValue.mul(totalAMPLSupply).div(GONS_TOTAL_SUPPLY);
+    return gonValue.rayMul(totalAMPLSupply).rayDiv(GONS_TOTAL_SUPPLY);
   }
 
   /**
    * @dev Helper method to convert AMPL to gons
    **/
   function _amplToGons(uint256 totalAMPLSupply, uint256 amplValue) private pure returns (uint256) {
-    return amplValue.mul(GONS_TOTAL_SUPPLY).div(totalAMPLSupply);
+    return amplValue.rayMul(GONS_TOTAL_SUPPLY).rayDiv(totalAMPLSupply);
   }
 
   /**

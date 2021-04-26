@@ -27,7 +27,13 @@ import {
 import {getTxCostAndTimestamp} from "./helpers/actions";
 import {DRE, waitForTx, advanceTimeAndBlock, evmSnapshot, evmRevert} from "../helpers/misc-utils";
 import {getReserveData, getUserData} from "./helpers/utils/helpers";
-
+const {
+  INVALID_FROM_BALANCE_AFTER_TRANSFER,
+  INVALID_TO_BALANCE_AFTER_TRANSFER,
+  VL_TRANSFER_NOT_ALLOWED,
+} = ProtocolErrors;
+import { CommonsConfig } from '../markets/aave/commons';
+const AAVE_REFERRAL = CommonsConfig.ProtocolGlobalParams.AaveReferral;
 const {expect} = require('chai');
 
 
@@ -108,6 +114,42 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
   afterEach(async () => {
     await evmRevert(evmSnapshotId);
   });
+
+  describe('user Transfer', () => {
+    it('lenderA deposits 1000 AMPL, transfers to himself', async () => {
+      const {pool, ampl, aAMPL } = testEnv;
+
+      await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
+      await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
+
+      const beforeBalance = await aAMPL.balanceOf(lenderAAddress);
+      await aAMPL.connect(lenderA.signer).transfer(lenderAAddress, beforeBalance);
+      const afterBalance = await aAMPL.balanceOf(lenderAAddress);
+
+      expect(beforeBalance.toString()).to.be.equal(afterBalance.toString());
+    });
+
+    it('lenderA deposits 1000 AMPL, transfers to lenderB and back', async () => {
+      const {pool, ampl, aAMPL } = testEnv;
+
+      await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
+      await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
+      await aAMPL.connect(lenderA.signer).transfer(lenderBAddress, await fxtPt(ampl, '1000'));
+
+      expect((await aAMPL.balanceOf(lenderAAddress)).toString()).to.be.equal('0');
+      expect((await aAMPL.balanceOf(lenderBAddress))).to.be.equal(
+        await fxtPt(ampl, '1000'),
+      );
+
+      await aAMPL.connect(lenderB.signer).transfer(lenderAAddress, await fxtPt(ampl, '1000'));
+
+      expect((await aAMPL.balanceOf(lenderAAddress))).to.be.equal(
+        await fxtPt(ampl, '1000'),
+      );
+      expect((await aAMPL.balanceOf(lenderBAddress)).toString()).to.be.equal('0');
+    });
+  });
+
 
   describe("user deposit", function(){
     describe("first deposit", function() {
