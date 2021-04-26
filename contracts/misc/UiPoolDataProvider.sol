@@ -132,57 +132,40 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
 
       // incentives
       if (address(0) != address(incentivesController)) {
-        try incentivesController.getAssetData(reserveData.aTokenAddress) returns (
-          uint256 aEmissionPerSecond, uint256 aIncentivesLastUpdateTimestamp, uint256 aTokenIncentivesIndex) {
+        (
+          reserveData.aEmissionPerSecond,
+          reserveData.aIncentivesLastUpdateTimestamp,
+          reserveData.aTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.aTokenAddress);
 
-          reserveData.aEmissionPerSecond = aEmissionPerSecond;
-          reserveData.aIncentivesLastUpdateTimestamp = aIncentivesLastUpdateTimestamp;
-          reserveData.aTokenIncentivesIndex = aTokenIncentivesIndex;
-        } catch Error(string memory) {} catch (bytes memory) {}
+        (
+          reserveData.sEmissionPerSecond,
+          reserveData.sIncentivesLastUpdateTimestamp,
+          reserveData.sTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
 
-        try incentivesController.getAssetData(reserveData.variableDebtTokenAddress) returns (
-          uint256 vEmissionPerSecond, uint256 vIncentivesLastUpdateTimestamp, uint256 vTokenIncentivesIndex) {
-
-          reserveData.vEmissionPerSecond = vEmissionPerSecond;
-          reserveData.vIncentivesLastUpdateTimestamp = vIncentivesLastUpdateTimestamp;
-          reserveData.vTokenIncentivesIndex = vTokenIncentivesIndex;
-        } catch Error(string memory) {} catch (bytes memory) {}
-
-        try incentivesController.getAssetData(reserveData.stableDebtTokenAddress) returns (
-          uint256 sEmissionPerSecond, uint256 sIncentivesLastUpdateTimestamp, uint256 sTokenIncentivesIndex) {
-
-          reserveData.sEmissionPerSecond = sEmissionPerSecond;
-          reserveData.sIncentivesLastUpdateTimestamp = sIncentivesLastUpdateTimestamp;
-          reserveData.sTokenIncentivesIndex = sTokenIncentivesIndex;
-        } catch Error(string memory) {} catch (bytes memory) {}
+        (
+          reserveData.vEmissionPerSecond,
+          reserveData.vIncentivesLastUpdateTimestamp,
+          reserveData.vTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);
       }
 
       if (user != address(0)) {
         // incentives
         if (address(0) != address(incentivesController)) {
-          try incentivesController.getUserAssetData(
+          userReservesData[i].aTokenincentivesUserIndex = incentivesController.getUserAssetData(
             user,
             reserveData.aTokenAddress
-          ) returns (
-          uint256 aTokenincentivesUserIndex) {
-            userReservesData[i].aTokenincentivesUserIndex = aTokenincentivesUserIndex;
-          } catch Error(string memory) {} catch (bytes memory) {}
-
-          try incentivesController.getUserAssetData(
+          );
+          userReservesData[i].vTokenincentivesUserIndex = incentivesController.getUserAssetData(
             user,
             reserveData.variableDebtTokenAddress
-          ) returns (
-          uint256 vTokenincentivesUserIndex) {
-            userReservesData[i].vTokenincentivesUserIndex = vTokenincentivesUserIndex;
-          } catch Error(string memory) {} catch (bytes memory) {}
-
-          try incentivesController.getUserAssetData(
+          );
+          userReservesData[i].sTokenincentivesUserIndex = incentivesController.getUserAssetData(
             user,
             reserveData.stableDebtTokenAddress
-          ) returns (
-          uint256 sTokenincentivesUserIndex) {
-            userReservesData[i].sTokenincentivesUserIndex = sTokenincentivesUserIndex;
-          } catch Error(string memory) {} catch (bytes memory) {}
+          );
         }
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
@@ -217,18 +200,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       }
     }
 
-    uint256 unclaimedRewards;
-    if (address(0) != address(incentivesController)) {
-      try incentivesController.getUserUnclaimedRewards(user) returns (uint256 rewards) { 
-        unclaimedRewards = rewards; 
-      } catch {}
-    }
-
     return (
       reservesData,
       userReservesData,
       oracle.getAssetPrice(MOCK_USD_ADDRESS),
-      unclaimedRewards
+      incentivesController.getUserUnclaimedRewards(user)
     );
   }
 }
