@@ -363,7 +363,7 @@ export const initReservesByHelper = async (
   let reserve = await pool.getReserveData(tokenAddresses['AMPL']);
 
   // Set AMPL debt tokens
-  await aAMPLToken.setDebtTokens(reserve.stableDebtTokenAddress, reserve.variableDebtTokenAddress);
+  await aAMPLToken.initializeDebtTokens();
 
   // Set deployer back as admin
   await waitForTx(await addressProvider.setPoolAdmin(admin));

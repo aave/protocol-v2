@@ -83,7 +83,7 @@ WRONG RESERVE ASSET SETUP:
         ],
         verify
       );
-      aToken.setDebtTokens(stableDebt.address, variableDebt.address);
+      await aToken.initializeDebtTokens();
     } else {
       const deployCustomAToken = chooseATokenDeployment(strategyParams.aTokenImpl);
       aToken = await deployCustomAToken(
