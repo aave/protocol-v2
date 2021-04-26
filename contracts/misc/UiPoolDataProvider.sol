@@ -138,7 +138,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           reserveData.aEmissionPerSecond = aEmissionPerSecond;
           reserveData.aIncentivesLastUpdateTimestamp = aIncentivesLastUpdateTimestamp;
           reserveData.aTokenIncentivesIndex = aTokenIncentivesIndex;
-        } catch {}
+        } catch Error(string memory) {} catch (bytes memory) {}
 
         try incentivesController.getAssetData(reserveData.variableDebtTokenAddress) returns (
           uint256 vEmissionPerSecond, uint256 vIncentivesLastUpdateTimestamp, uint256 vTokenIncentivesIndex) {
@@ -146,7 +146,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           reserveData.vEmissionPerSecond = vEmissionPerSecond;
           reserveData.vIncentivesLastUpdateTimestamp = vIncentivesLastUpdateTimestamp;
           reserveData.vTokenIncentivesIndex = vTokenIncentivesIndex;
-        } catch {}
+        } catch Error(string memory) {} catch (bytes memory) {}
 
         try incentivesController.getAssetData(reserveData.stableDebtTokenAddress) returns (
           uint256 sEmissionPerSecond, uint256 sIncentivesLastUpdateTimestamp, uint256 sTokenIncentivesIndex) {
@@ -154,7 +154,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           reserveData.sEmissionPerSecond = sEmissionPerSecond;
           reserveData.sIncentivesLastUpdateTimestamp = sIncentivesLastUpdateTimestamp;
           reserveData.sTokenIncentivesIndex = sTokenIncentivesIndex;
-        } catch {}
+        } catch Error(string memory) {} catch (bytes memory) {}
       }
 
       if (user != address(0)) {
@@ -166,7 +166,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           ) returns (
           uint256 aTokenincentivesUserIndex) {
             userReservesData[i].aTokenincentivesUserIndex = aTokenincentivesUserIndex;
-          } catch {}
+          } catch Error(string memory) {} catch (bytes memory) {}
 
           try incentivesController.getUserAssetData(
             user,
@@ -174,7 +174,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           ) returns (
           uint256 vTokenincentivesUserIndex) {
             userReservesData[i].vTokenincentivesUserIndex = vTokenincentivesUserIndex;
-          } catch {}
+          } catch Error(string memory) {} catch (bytes memory) {}
 
           try incentivesController.getUserAssetData(
             user,
@@ -182,7 +182,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           ) returns (
           uint256 sTokenincentivesUserIndex) {
             userReservesData[i].sTokenincentivesUserIndex = sTokenincentivesUserIndex;
-          } catch {}
+          } catch Error(string memory) {} catch (bytes memory) {}
         }
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
