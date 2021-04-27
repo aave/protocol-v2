@@ -166,6 +166,7 @@ library ValidationLogic {
       vars.totalSupplyStableDebt
         .add(vars.totalSupplyVariableDebt)
         .add(amount)
+        .div(10 ** reserve.configuration.getDecimals())
         < reserve.configuration.getBorrowCap(),
       Errors.VL_BORROW_CAP_EXCEEDED);
 
