@@ -193,14 +193,6 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     RESERVE_TREASURY_ADDRESS = reserveTreasuryAddress;
   }
 
-  function initializeDebtTokens () external {
-    require(STABLE_DEBT_TOKEN_ADDRESS == address(0) && VARIABLE_DEBT_TOKEN_ADDRESS == address(0));
-
-    DataTypes.ReserveData memory reserveData = ILendingPool(POOL).getReserveData(UNDERLYING_ASSET_ADDRESS);
-    STABLE_DEBT_TOKEN_ADDRESS = reserveData.stableDebtTokenAddress;
-    VARIABLE_DEBT_TOKEN_ADDRESS = reserveData.variableDebtTokenAddress;
-  }
-
   function getRevision() internal pure virtual override returns (uint256) {
     return ATOKEN_REVISION;
   }
@@ -230,6 +222,14 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     _setName(tokenName);
     _setSymbol(tokenSymbol);
     _setDecimals(underlyingAssetDecimals);
+  }
+
+  function initializeDebtTokens () external {
+    require(STABLE_DEBT_TOKEN_ADDRESS == address(0) && VARIABLE_DEBT_TOKEN_ADDRESS == address(0));
+
+    DataTypes.ReserveData memory reserveData = ILendingPool(POOL).getReserveData(UNDERLYING_ASSET_ADDRESS);
+    STABLE_DEBT_TOKEN_ADDRESS = reserveData.stableDebtTokenAddress;
+    VARIABLE_DEBT_TOKEN_ADDRESS = reserveData.variableDebtTokenAddress;
   }
 
   /**
