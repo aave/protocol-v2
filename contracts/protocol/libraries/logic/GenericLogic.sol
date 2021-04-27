@@ -117,10 +117,12 @@ library GenericLogic {
   }
 
   struct CalculateUserAccountDataVars {
-    uint256 reserveUnitPrice;
-    uint256 tokenUnit;
-    uint256 compoundedLiquidityBalance;
-    uint256 compoundedBorrowBalance;
+    uint256 assetPrice;
+    uint256 assetUnit;
+    uint256 userBalance;
+    uint256 userBalanceETH;
+    uint256 userDebt;
+    uint256 userDebtETH;
     uint256 decimals;
     uint256 ltv;
     uint256 liquidationThreshold;
@@ -185,44 +187,41 @@ library GenericLogic {
         .configuration
         .getParams();
 
-      vars.tokenUnit = 10**vars.decimals;
-      vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
+      vars.assetUnit = 10**vars.decimals;
+      vars.assetPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
-        vars.compoundedLiquidityBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(user);
-        if(vars.compoundedLiquidityBalance > 0){
+        vars.userBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(user);
+        if (vars.userBalance > 0) {
           vars.normalizedIncome = currentReserve.getNormalizedIncome();
-          vars.compoundedLiquidityBalance = vars.compoundedLiquidityBalance.rayMul(vars.normalizedIncome);
+          vars.userBalance = vars.userBalance.rayMul(vars.normalizedIncome);
         }
 
-        uint256 liquidityBalanceETH =
-          vars.reserveUnitPrice.mul(vars.compoundedLiquidityBalance).div(vars.tokenUnit);
+        vars.userBalanceETH = vars.assetPrice.mul(vars.userBalance).div(vars.assetUnit);
 
-        vars.totalCollateralInETH = vars.totalCollateralInETH.add(liquidityBalanceETH);
+        vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
 
-        vars.avgLtv = vars.avgLtv.add(liquidityBalanceETH.mul(vars.ltv));
+        vars.avgLtv = vars.avgLtv.add(vars.userBalanceETH.mul(vars.ltv));
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
-          liquidityBalanceETH.mul(vars.liquidationThreshold)
+          vars.userBalanceETH.mul(vars.liquidationThreshold)
         );
       }
 
       if (userConfig.isBorrowing(vars.i)) {
-        vars.compoundedBorrowBalance = 
-          IScaledBalanceToken(currentReserve.variableDebtTokenAddress).scaledBalanceOf(user);
-        
-        if(vars.compoundedBorrowBalance > 0) {
+        vars.userDebt = IScaledBalanceToken(currentReserve.variableDebtTokenAddress)
+          .scaledBalanceOf(user);
+
+        if (vars.userDebt > 0) {
           vars.normalizedDebt = currentReserve.getNormalizedDebt();
-          vars.compoundedLiquidityBalance = vars.compoundedBorrowBalance.rayMul(vars.normalizedDebt);
+          vars.userDebt = vars.userDebt.rayMul(vars.normalizedDebt);
         }
 
-        vars.compoundedBorrowBalance = vars.compoundedBorrowBalance.add(IERC20(currentReserve.stableDebtTokenAddress).balanceOf(
-          user
-        ));
-       
-
-        vars.totalDebtInETH = vars.totalDebtInETH.add(
-          vars.reserveUnitPrice.mul(vars.compoundedBorrowBalance).div(vars.tokenUnit)
+        vars.userDebt = vars.userDebt.add(
+          IERC20(currentReserve.stableDebtTokenAddress).balanceOf(user)
         );
+        vars.userDebtETH = vars.assetPrice.mul(vars.userDebt).div(vars.assetUnit);
+        vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);
+          
       }
     }
 
