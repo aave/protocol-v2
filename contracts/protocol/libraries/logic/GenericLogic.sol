@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IScaledBalanceToken} from '../../../interfaces/IScaledBalanceToken.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
@@ -130,6 +131,8 @@ library GenericLogic {
     uint256 avgLtv;
     uint256 avgLiquidationThreshold;
     uint256 reservesLength;
+    uint256 normalizedIncome;
+    uint256 normalizedDebt;
     bool healthFactorBelowThreshold;
     address currentReserveAddress;
     bool usageAsCollateralEnabled;
@@ -186,7 +189,11 @@ library GenericLogic {
       vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
-        vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(user);
+        vars.compoundedLiquidityBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(user);
+        if(vars.compoundedLiquidityBalance > 0){
+          vars.normalizedIncome = currentReserve.getNormalizedIncome();
+          vars.compoundedLiquidityBalance = vars.compoundedLiquidityBalance.rayMul(vars.normalizedIncome);
+        }
 
         uint256 liquidityBalanceETH =
           vars.reserveUnitPrice.mul(vars.compoundedLiquidityBalance).div(vars.tokenUnit);
@@ -200,12 +207,18 @@ library GenericLogic {
       }
 
       if (userConfig.isBorrowing(vars.i)) {
-        vars.compoundedBorrowBalance = IERC20(currentReserve.stableDebtTokenAddress).balanceOf(
+        vars.compoundedBorrowBalance = 
+          IScaledBalanceToken(currentReserve.variableDebtTokenAddress).scaledBalanceOf(user);
+        
+        if(vars.compoundedBorrowBalance > 0) {
+          vars.normalizedDebt = currentReserve.getNormalizedDebt();
+          vars.compoundedLiquidityBalance = vars.compoundedBorrowBalance.rayMul(vars.normalizedDebt);
+        }
+
+        vars.compoundedBorrowBalance = vars.compoundedBorrowBalance.add(IERC20(currentReserve.stableDebtTokenAddress).balanceOf(
           user
-        );
-        vars.compoundedBorrowBalance = vars.compoundedBorrowBalance.add(
-          IERC20(currentReserve.variableDebtTokenAddress).balanceOf(user)
-        );
+        ));
+       
 
         vars.totalDebtInETH = vars.totalDebtInETH.add(
           vars.reserveUnitPrice.mul(vars.compoundedBorrowBalance).div(vars.tokenUnit)
