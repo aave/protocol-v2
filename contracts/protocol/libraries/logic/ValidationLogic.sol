@@ -98,6 +98,8 @@ library ValidationLogic {
     uint256 userBorrowBalanceETH;
     uint256 availableLiquidity;
     uint256 healthFactor;
+    uint256 totalSupplyStableDebt;
+    uint256 totalSupplyVariableDebt;
     bool isActive;
     bool isFrozen;
     bool borrowingEnabled;
@@ -152,17 +154,18 @@ library ValidationLogic {
       Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
     );
     
-    // not using this because stack too deep
-    // uint256 totalStableDebt;
-    // (totalStableDebt, ) = IStableDebtToken(reserve.stableDebtTokenAddress)
-    //   .getTotalSupplyAndAvgRate();
+    (vars.totalSupplyStableDebt, ) = IStableDebtToken(reserve.stableDebtTokenAddress)
+      .getTotalSupplyAndAvgRate();
+
+    vars.totalSupplyVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress)
+          .scaledTotalSupply()
+          .rayMul(reserve.variableBorrowIndex);
+        
       
     require(
-      IERC20(reserve.stableDebtTokenAddress).totalSupply()
-        .add(IVariableDebtToken(reserve.variableDebtTokenAddress)
-          .scaledTotalSupply()
-          .rayMul(reserve.variableBorrowIndex)
-        ).add(amount)
+      vars.totalSupplyStableDebt
+        .add(vars.totalSupplyVariableDebt)
+        .add(amount)
         < reserve.configuration.getBorrowCap(),
       Errors.VL_BORROW_CAP_EXCEEDED);
 
