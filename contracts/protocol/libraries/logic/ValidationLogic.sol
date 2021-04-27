@@ -14,6 +14,8 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
+import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
 /**
@@ -149,6 +151,20 @@ library ValidationLogic {
         uint256(DataTypes.InterestRateMode.STABLE) == interestRateMode,
       Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
     );
+    
+    // not using this because stack too deep
+    // uint256 totalStableDebt;
+    // (totalStableDebt, ) = IStableDebtToken(reserve.stableDebtTokenAddress)
+    //   .getTotalSupplyAndAvgRate();
+      
+    require(
+      IERC20(reserve.stableDebtTokenAddress).totalSupply()
+        .add(IVariableDebtToken(reserve.variableDebtTokenAddress)
+          .scaledTotalSupply()
+          .rayMul(reserve.variableBorrowIndex)
+        ).add(amount)
+        < reserve.configuration.getBorrowCap(),
+      Errors.VL_BORROW_CAP_EXCEEDED);
 
     (
       vars.userCollateralBalanceETH,

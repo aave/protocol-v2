@@ -103,6 +103,7 @@ library Errors {
   string public constant LP_NOT_CONTRACT = '78';
   string public constant SDT_STABLE_DEBT_OVERFLOW = '79';
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
+  string public constant VL_BORROW_CAP_EXCEEDED = '81';
   string public constant RC_INVALID_BORROW_CAP = '82';
 
   enum CollateralManagerErrors {
