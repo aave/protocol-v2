@@ -247,6 +247,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    *   is a different wallet
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
    *   0 if the action is executed directly by the user, without any middle-man
+   * @param deadline validity deadline of permit and so depositWithPermit signature
    * @param permitV V parameter of ERC712 permit sig
    * @param permitR R parameter of ERC712 permit sig
    * @param permitS S parameter of ERC712 permit sig
@@ -275,6 +276,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
    * user calling the function if he wants to reduce/remove his own debt, or the address of any other
    * other borrower whose debt should be removed
+   * @param deadline validity deadline of permit and so depositWithPermit signature
    * @param permitV V parameter of ERC712 permit sig
    * @param permitR R parameter of ERC712 permit sig
    * @param permitS S parameter of ERC712 permit sig

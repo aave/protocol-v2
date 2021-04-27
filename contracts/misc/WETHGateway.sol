@@ -136,6 +136,10 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param lendingPool address of the targeted underlying lending pool
    * @param amount amount of aWETH to withdraw and receive native ETH
    * @param to address of the user who will receive native ETH
+   * @param deadline validity deadline of permit and so depositWithPermit signature
+   * @param permitV V parameter of ERC712 permit sig
+   * @param permitR R parameter of ERC712 permit sig
+   * @param permitS S parameter of ERC712 permit sig
    */
   function withdrawETHWithPermit(
     address lendingPool,
