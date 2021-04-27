@@ -248,13 +248,14 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
-  function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled)
+  function enableBorrowingOnReserve(address asset, uint256 borrowCap, bool stableBorrowRateEnabled)
     external
     onlyPoolAdmin
   {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(true);
+    currentConfig.setBorrowCap(borrowCap);
     currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
 
     pool.setConfiguration(asset, currentConfig.data);
