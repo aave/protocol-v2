@@ -275,6 +275,7 @@ export const configureReservesByHelper = async (
   const liquidationThresholds: string[] = [];
   const liquidationBonuses: string[] = [];
   const reserveFactors: string[] = [];
+  const borrowCaps: string[] = [];
   const stableRatesEnabled: boolean[] = [];
 
   const inputParams: {
@@ -283,6 +284,7 @@ export const configureReservesByHelper = async (
     liquidationThreshold: BigNumberish;
     liquidationBonus: BigNumberish;
     reserveFactor: BigNumberish;
+    borrowCap: BigNumberish;
     stableBorrowingEnabled: boolean;
   }[] = [];
 
@@ -293,6 +295,7 @@ export const configureReservesByHelper = async (
       liquidationBonus,
       liquidationThreshold,
       reserveFactor,
+      borrowCap,
       stableBorrowRateEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
@@ -317,9 +320,10 @@ export const configureReservesByHelper = async (
     inputParams.push({
       asset: tokenAddress,
       baseLTV: baseLTVAsCollateral,
-      liquidationThreshold: liquidationThreshold,
-      liquidationBonus: liquidationBonus,
-      reserveFactor: reserveFactor,
+      liquidationThreshold,
+      liquidationBonus,
+      reserveFactor,
+      borrowCap,
       stableBorrowingEnabled: stableBorrowRateEnabled,
     });
 
@@ -329,6 +333,7 @@ export const configureReservesByHelper = async (
     liquidationThresholds.push(liquidationThreshold);
     liquidationBonuses.push(liquidationBonus);
     reserveFactors.push(reserveFactor);
+    borrowCaps.push(borrowCap);
     stableRatesEnabled.push(stableBorrowRateEnabled);
   }
   if (tokens.length) {
@@ -342,6 +347,7 @@ export const configureReservesByHelper = async (
 
     console.log(`- Configure reserves in ${chunkedInputParams.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedInputParams.length; chunkIndex++) {
+      console.log('chunk ', chunkedInputParams[chunkIndex]);
       await waitForTx(
         await atokenAndRatesDeployer.configureReserves(chunkedInputParams[chunkIndex], {
           gasLimit: 12000000,
