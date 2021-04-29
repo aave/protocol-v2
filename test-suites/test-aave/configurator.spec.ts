@@ -73,6 +73,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -83,6 +84,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
   });
 
   it('Unfreezes the ETH reserve', async () => {
@@ -100,6 +102,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -110,6 +113,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
   });
 
   it('Check the onlyAaveAdmin on freezeReserve ', async () => {
@@ -142,6 +146,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(false);
     expect(isActive).to.be.equal(true);
@@ -152,6 +157,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
@@ -170,6 +176,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -180,6 +187,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
 
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
@@ -217,6 +225,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -227,6 +236,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(0);
     expect(stableBorrowRateEnabled).to.be.equal(true);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
   });
 
   it('Activates the ETH reserve as collateral', async () => {
@@ -244,6 +254,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -254,6 +265,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
   });
 
   it('Check the onlyAaveAdmin on configureReserveAsCollateral ', async () => {
@@ -280,6 +292,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -290,6 +303,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(false);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
   });
 
   it('Enables stable borrow rate on the ETH reserve', async () => {
@@ -306,6 +320,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -316,6 +331,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(true);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
   });
 
   it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {
@@ -348,6 +364,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
