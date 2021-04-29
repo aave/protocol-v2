@@ -26,6 +26,7 @@
     "test-liquidate-with-collateral": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/flash-liquidation-with-collateral.spec.ts",
     "test-liquidate-underlying": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/liquidation-underlying.spec.ts",
     "test-configurator": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/configurator.spec.ts",
+    "test-borrow-cap": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/borrow-cap.spec.ts",
     "test-transfers": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/atoken-transfer.spec.ts",
     "test-flash": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/flashloan.spec.ts",
     "test-liquidate": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/liquidation-atoken.spec.ts",
