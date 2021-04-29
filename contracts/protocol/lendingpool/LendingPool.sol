@@ -480,6 +480,26 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
+   * @dev Mints the assets accrued through the reserve factor to the treasury in the form of aTokens
+   **/
+  function mintToTreasury() public {
+    for (uint256 i = 0; i < _reservesCount; i++) {
+      address reserveAddress = _reservesList[i];
+      DataTypes.ReserveData storage reserve = _reserves[reserveAddress];
+      uint256 accruedToTreasury = reserve.accruedToTreasury;
+
+      if (accruedToTreasury != 0) {
+        uint256 normalizedIncome = reserve.getNormalizedIncome();
+        uint256 amountToMint = accruedToTreasury.rayMul(normalizedIncome);
+        IAToken(reserve.aTokenAddress).mintToTreasury(amountToMint, normalizedIncome);
+
+        reserve.accruedToTreasury = 0;
+        emit TreasuryUpdated(reserveAddress, amountToMint);
+      }
+    }
+  }
+
+  /**
    * @dev Returns the state and configuration of the reserve
    * @param asset The address of the underlying asset of the reserve
    * @return The state of the reserve
