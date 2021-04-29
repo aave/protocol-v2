@@ -15,6 +15,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     RC_INVALID_LIQ_BONUS,
     RC_INVALID_DECIMALS,
     RC_INVALID_RESERVE_FACTOR,
+    RC_INVALID_BORROW_CAP,
   } = ProtocolErrors;
 
   it('Reverts trying to set an invalid reserve factor', async () => {
@@ -350,6 +351,22 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
+  it('Check the onlyAaveAdmin on setReserveFactor', async () => {
+    const { configurator, users, weth } = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).setReserveFactor(weth.address, '1000'),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+  });
+
+  it('Check the onlyAaveAdmin on setBorrowCap', async () => {
+    const { configurator, users, weth } = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).setBorrowCap(weth.address, '3000000000'),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+  });
+
   it('Changes the reserve factor of WETH', async () => {
     const { configurator, helpersContract, weth } = testEnv;
     await configurator.setReserveFactor(weth.address, '1000');
@@ -374,15 +391,44 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(reserveFactor).to.be.equal(1000);
   });
 
-  it('Check the onlyLendingPoolManager on setReserveFactor', async () => {
+  it('Fails to change to too high borrowCap', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(
-      configurator.connect(users[2].signer).setReserveFactor(weth.address, '2000'),
+      configurator.setBorrowCap(weth.address, '4294967296'),
       CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+    ).to.be.revertedWith(RC_INVALID_BORROW_CAP);
+  });
+
+  it('Changes the borrow Cap of WETH', async () => {
+    const { configurator, helpersContract, weth } = testEnv;
+    await configurator.setBorrowCap(weth.address, '3000000');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFrozen,
+    } = await helpersContract.getReserveConfigurationData(weth.address);
+    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFrozen).to.be.equal(false);
+    expect(decimals).to.be.equal(strategyWETH.reserveDecimals);
+    expect(ltv).to.be.equal(strategyWETH.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
+    expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(reserveFactor).to.be.equal(1000);
+    expect(borrowCap).to.be.equal('3000000');
   });
 
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
