@@ -432,6 +432,21 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /**
+   * @dev Updates the borrow cap of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param borrowCap The new borrow of the reserve
+   **/
+  function setBorrowCap(address asset, uint256 borrowCap) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setBorrowCap(borrowCap);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit BorrowCapChanged(asset, borrowCap);
+  }
+
+  /**
    * @dev Sets the interest rate strategy of a reserve
    * @param asset The address of the underlying asset of the reserve
    * @param rateStrategyAddress The new address of the interest strategy contract
