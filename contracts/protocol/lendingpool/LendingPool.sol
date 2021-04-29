@@ -156,16 +156,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       amountToWithdraw = userBalance;
     }
 
-    ValidationLogic.validateWithdraw(
-      asset,
-      amountToWithdraw,
-      userBalance,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
+    ValidationLogic.validateWithdraw(reserve, amountToWithdraw, userBalance);
 
     reserve.updateState();
 
@@ -177,6 +168,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+
+    ValidationLogic.validateHealthFactor(
+      msg.sender,
+      _reserves,
+      _usersConfig[msg.sender],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
 
@@ -391,22 +391,22 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
-    ValidationLogic.validateSetUseReserveAsCollateral(
-      reserve,
-      asset,
-      useAsCollateral,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
+    ValidationLogic.validateSetUseReserveAsCollateral(reserve);
 
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
     if (useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
     } else {
+      ValidationLogic.validateHealthFactor(
+        msg.sender,
+        _reserves,
+        _usersConfig[msg.sender],
+        _reservesList,
+        _reservesCount,
+        _addressesProvider.getPriceOracle()
+      );
+
       emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
     }
   }
@@ -713,7 +713,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -746,7 +746,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
-    ValidationLogic.validateTransfer(
+    ValidationLogic.validateHealthFactor(
       from,
       _reserves,
       _usersConfig[from],
