@@ -1,5 +1,6 @@
 // import BigNumber from 'bignumber.js';
 // import { oneRay } from '../../helpers/constants';
+import { MAX_BORROW_CAP } from '../../helpers/constants';
 import { eContractid, IReserveParams } from '../../helpers/types';
 import { 
   rateStrategyStableOne,
@@ -21,7 +22,8 @@ export const strategyDAI: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: MAX_BORROW_CAP,
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -33,7 +35,8 @@ export const strategyUSDC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: MAX_BORROW_CAP,
 };
 
 export const strategyUSDT: IReserveParams = {
@@ -45,7 +48,8 @@ export const strategyUSDT: IReserveParams = {
     stableBorrowRateEnabled: true,
     reserveDecimals: '6',
     aTokenImpl: eContractid.AToken,
-    reserveFactor: '1000'
+    reserveFactor: '1000',
+    borrowCap: MAX_BORROW_CAP,
 };
 
 export const strategyWETH: IReserveParams = {
@@ -57,7 +61,8 @@ export const strategyWETH: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: MAX_BORROW_CAP,
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -69,7 +74,8 @@ export const strategyWBTC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: MAX_BORROW_CAP,
 };
 
 export const strategyMATIC: IReserveParams = {
@@ -81,5 +87,6 @@ export const strategyMATIC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: MAX_BORROW_CAP,
 };
