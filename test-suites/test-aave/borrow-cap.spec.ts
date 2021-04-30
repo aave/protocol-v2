@@ -12,7 +12,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 
 const { expect } = require('chai');
 
-makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
+makeSuite('Borrow Cap', (testEnv: TestEnv) => {
   const { VL_BORROW_CAP_EXCEEDED } = ProtocolErrors;
 
   const miliUnitToPrecision = async (token: WETH9Mocked | MintableERC20, nb: string) =>
@@ -73,6 +73,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const { usdc, pool, dai, deployer, helpersContract } = testEnv;
     const borrowedAmount = 10;
     const borrowedMilimount = (borrowedAmount * 1000).toString();
+    console.log('hihi', await usdc.decimals());
 
     await expect(
       pool.borrow(
