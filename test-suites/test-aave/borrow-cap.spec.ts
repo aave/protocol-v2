@@ -216,7 +216,7 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     const borrowedAmount = 100;
     const borrowedMilimount = (borrowedAmount * 1000).toString();
 
-    pool.borrow(
+    await pool.borrow(
       usdc.address,
       await miliUnitToPrecision(usdc, borrowedMilimount),
       1,
@@ -224,7 +224,7 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       deployer.address
     );
 
-    pool.borrow(
+    await pool.borrow(
       dai.address,
       await miliUnitToPrecision(dai, borrowedMilimount),
       2,
@@ -292,7 +292,7 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     const borrowedAmount = 100;
     const borrowedMilimount = (borrowedAmount * 1000).toString();
 
-    pool.borrow(
+    await pool.borrow(
       usdc.address,
       await miliUnitToPrecision(usdc, borrowedMilimount),
       1,
@@ -300,7 +300,7 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       deployer.address
     );
 
-    pool.borrow(
+    await pool.borrow(
       dai.address,
       await miliUnitToPrecision(dai, borrowedMilimount),
       2,
