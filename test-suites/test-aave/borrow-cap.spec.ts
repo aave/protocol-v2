@@ -151,7 +151,7 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       deployer.address
     );
   });
-  it('should fail to borrow 100 variable dai and 100 stable usdc (interests accrued)', async () => {
+  it('should fail to borrow 100 variable dai and 100 stable usdc', async () => {
     const { usdc, pool, dai, deployer, helpersContract } = testEnv;
     const borrowedAmount = 100;
     const borrowedMilimount = (borrowedAmount * 1000).toString();
