@@ -17,6 +17,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     RC_INVALID_DECIMALS,
     RC_INVALID_RESERVE_FACTOR,
     RC_INVALID_BORROW_CAP,
+    RC_INVALID_SUPPLY_CAP,
   } = ProtocolErrors;
 
   it('Reverts trying to set an invalid reserve factor', async () => {
@@ -87,6 +88,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
   it('Unfreezes the ETH reserve', async () => {
@@ -116,6 +118,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
   it('Check the onlyAaveAdmin on freezeReserve ', async () => {
@@ -160,6 +163,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
@@ -190,6 +194,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
 
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
@@ -239,6 +244,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(true);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
   it('Activates the ETH reserve as collateral', async () => {
@@ -268,6 +274,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
   it('Check the onlyAaveAdmin on configureReserveAsCollateral ', async () => {
@@ -306,6 +313,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(false);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
   it('Enables stable borrow rate on the ETH reserve', async () => {
@@ -334,6 +342,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(true);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
   it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {
@@ -367,6 +376,13 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
+  it('Check the onlyAaveAdmin on setSupplyCap', async () => {
+    const { configurator, users, weth } = testEnv;
+    await expect(
+      configurator.connect(users[2].signer).setSupplyCap(weth.address, '3000000000'),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+  });
 
   it('Changes the reserve factor of WETH', async () => {
     const { configurator, helpersContract, weth } = testEnv;
@@ -393,6 +409,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
     expect(reserveFactor).to.be.equal(1000);
   });
 
@@ -402,6 +419,13 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       configurator.setBorrowCap(weth.address, BigNumber.from(MAX_BORROW_CAP).add(1)),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(RC_INVALID_BORROW_CAP);
+  });
+  it('Fails to change to too high supplyCap', async () => {
+    const { configurator, users, weth } = testEnv;
+    await expect(
+      configurator.setSupplyCap(weth.address, BigNumber.from(MAX_BORROW_CAP).add(1)),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(RC_INVALID_SUPPLY_CAP);
   });
 
   it('Changes the borrow Cap of WETH', async () => {
@@ -430,6 +454,36 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(reserveFactor).to.be.equal(1000);
     expect(borrowCap).to.be.equal('3000000');
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+  });
+
+  it('Changes the borrow Cap of WETH', async () => {
+    const { configurator, helpersContract, weth } = testEnv;
+    await configurator.setSupplyCap(weth.address, '3000000');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFrozen,
+    } = await helpersContract.getReserveConfigurationData(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isFrozen).to.be.equal(false);
+    expect(decimals).to.be.equal(strategyWETH.reserveDecimals);
+    expect(ltv).to.be.equal(strategyWETH.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
+    expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(reserveFactor).to.be.equal(1000);
+    expect(borrowCap).to.be.equal('3000000');
+    expect(supplyCap).to.be.equal('3000000');
   });
 
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
