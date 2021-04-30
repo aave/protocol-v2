@@ -39,6 +39,7 @@ library DataTypes {
     //bit 60-63: reserved
     //bit 64-79: reserve factor
     //bit 80-127 borrow cap
+    //bit 128-175 borrow cap
     uint256 data;
   }
 
