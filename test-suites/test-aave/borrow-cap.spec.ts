@@ -113,9 +113,9 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
     daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
   });
-  it('Sets the borrow cap for usdc and DAI to 100 Units', async () => {
+  it('Sets the borrow cap for usdc and DAI to 110 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
-    const newCap = '100';
+    const newCap = '110';
     let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
     let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
 
@@ -151,7 +151,7 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       deployer.address
     );
   });
-  it('should fail to borrow 100 variable dai and 100 stable usdc', async () => {
+  it('should fail to borrow 100 variable dai and 100 stable usdc (interests accrued)', async () => {
     const { usdc, pool, dai, deployer, helpersContract } = testEnv;
     const borrowedAmount = 100;
     const borrowedMilimount = (borrowedAmount * 1000).toString();
@@ -175,6 +175,26 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
         deployer.address
       )
     ).to.be.revertedWith(VL_BORROW_CAP_EXCEEDED);
+  });
+  it('Should succeed to borrow 99 variable dai and 99 stable usdc', async () => {
+    const { usdc, pool, dai, deployer, helpersContract } = testEnv;
+    const borrowedAmount = 99;
+    const borrowedMilimount = (borrowedAmount * 1000).toString();
+    await pool.borrow(
+      usdc.address,
+      await miliUnitToPrecision(usdc, borrowedMilimount),
+      2,
+      0,
+      deployer.address
+    );
+
+    await pool.borrow(
+      dai.address,
+      await miliUnitToPrecision(dai, borrowedMilimount),
+      1,
+      0,
+      deployer.address
+    );
   });
   it('Raises the borrow cap for usdc and DAI to 1000 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
