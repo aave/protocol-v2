@@ -3,6 +3,7 @@ import { APPROVAL_AMOUNT_LENDING_POOL, MAX_UINT_AMOUNT, RAY, MAX_BORROW_CAP } fr
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { ProtocolErrors } from '../../helpers/types';
 import { strategyWETH } from '../../markets/aave/reservesConfigs';
+import { BigNumber } from '@ethersproject/bignumber';
 
 const { expect } = require('chai');
 
@@ -398,7 +399,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Fails to change to too high borrowCap', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(
-      configurator.setBorrowCap(weth.address, '4294967296'),
+      configurator.setBorrowCap(weth.address, BigNumber.from(MAX_BORROW_CAP).add(1)),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(RC_INVALID_BORROW_CAP);
   });
