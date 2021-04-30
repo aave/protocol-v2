@@ -105,6 +105,8 @@ library Errors {
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
   string public constant VL_BORROW_CAP_EXCEEDED = '81';
   string public constant RC_INVALID_BORROW_CAP = '82';
+  string public constant VL_SUPPLY_CAP_EXCEEDED = '83';
+  string public constant RC_INVALID_SUPPLY_CAP = '84';
 
   enum CollateralManagerErrors {
     NO_ERROR,

@@ -149,7 +149,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
-    (, , , uint256 decimals, , ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
     bytes memory encodedCall = abi.encodeWithSelector(
         IInitializableAToken.initialize.selector,
@@ -180,7 +180,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
      
-    (, , , uint256 decimals, , ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
     bytes memory encodedCall = abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
@@ -217,7 +217,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
-    (, , , uint256 decimals, , ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
     bytes memory encodedCall = abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
@@ -444,6 +444,21 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     pool.setConfiguration(asset, currentConfig.data);
 
     emit BorrowCapChanged(asset, borrowCap);
+  }
+
+  /**
+   * @dev Updates the supply cap of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param supplyCap The new supply of the reserve
+   **/
+  function setSupplyCap(address asset, uint256 supplyCap) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setSupplyCap(supplyCap);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit SupplyCapChanged(asset, supplyCap);
   }
 
   /**
