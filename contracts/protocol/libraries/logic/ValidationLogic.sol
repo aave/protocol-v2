@@ -46,6 +46,13 @@ library ValidationLogic {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
+    require(
+      IERC20(reserve.aTokenAddress)
+        .totalSupply()
+        .add(amount)
+        .div(10 ** reserve.configuration.getDecimals()) < reserve.configuration.getSupplyCap(),
+      Errors.VL_SUPPLY_CAP_EXCEEDED
+    );
   }
 
   /**
