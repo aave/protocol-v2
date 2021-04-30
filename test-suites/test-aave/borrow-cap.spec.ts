@@ -13,7 +13,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 const { expect } = require('chai');
 
 makeSuite('Borrow Cap', (testEnv: TestEnv) => {
-  const { VL_BORROW_CAP_EXCEEDED } = ProtocolErrors;
+  const { VL_BORROW_CAP_EXCEEDED, RC_INVALID_BORROW_CAP } = ProtocolErrors;
 
   const miliUnitToPrecision = async (token: WETH9Mocked | MintableERC20, nb: string) =>
     BigNumber.from(nb).mul(BigNumber.from('10').pow((await token.decimals()) - 3));
@@ -73,7 +73,6 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     const { usdc, pool, dai, deployer, helpersContract } = testEnv;
     const borrowedAmount = 10;
     const borrowedMilimount = (borrowedAmount * 1000).toString();
-    console.log('hihi', await usdc.decimals());
 
     await expect(
       pool.borrow(
@@ -95,6 +94,25 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       )
     ).to.be.revertedWith(VL_BORROW_CAP_EXCEEDED);
   });
+  it('Should fail to set the borrow cap for usdc and DAI to max cap + 1 Units', async () => {
+    const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
+    const newCap = Number(MAX_BORROW_CAP) + 1;
+    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
+    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+
+    expect(usdcBorrowCap).to.be.equal(0);
+    expect(daiBorrowCap).to.be.equal(0);
+
+    await expect(configurator.setBorrowCap(usdc.address, newCap)).to.be.revertedWith(
+      RC_INVALID_BORROW_CAP
+    );
+    await expect(configurator.setBorrowCap(dai.address, newCap)).to.be.revertedWith(
+      RC_INVALID_BORROW_CAP
+    );
+
+    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
+    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+  });
   it('Sets the borrow cap for usdc and DAI to 100 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
     const newCap = '100';
@@ -113,7 +131,7 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     expect(usdcBorrowCap).to.be.equal(newCap);
     expect(daiBorrowCap).to.be.equal(newCap);
   });
-  it('should succeed to borrow 10 stable dai and 10 variable usdc', async () => {
+  it('Should succeed to borrow 10 stable dai and 10 variable usdc', async () => {
     const { usdc, pool, dai, deployer, helpersContract } = testEnv;
     const borrowedAmount = 10;
     const borrowedMilimount = (borrowedAmount * 1000).toString();
@@ -233,5 +251,41 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
         deployer.address
       )
     ).to.be.revertedWith(VL_BORROW_CAP_EXCEEDED);
+  });
+  it('Raises the borrow cap for usdc and DAI to max cap Units', async () => {
+    const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
+    const newCap = MAX_BORROW_CAP;
+    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
+    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+
+    await configurator.setBorrowCap(usdc.address, newCap);
+    await configurator.setBorrowCap(dai.address, newCap);
+
+    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
+    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+
+    expect(usdcBorrowCap).to.be.equal(newCap);
+    expect(daiBorrowCap).to.be.equal(newCap);
+  });
+  it('should succeed to borrow 100 variable dai and 100 stable usdc', async () => {
+    const { usdc, pool, dai, deployer, helpersContract } = testEnv;
+    const borrowedAmount = 100;
+    const borrowedMilimount = (borrowedAmount * 1000).toString();
+
+    pool.borrow(
+      usdc.address,
+      await miliUnitToPrecision(usdc, borrowedMilimount),
+      1,
+      0,
+      deployer.address
+    );
+
+    pool.borrow(
+      dai.address,
+      await miliUnitToPrecision(dai, borrowedMilimount),
+      2,
+      0,
+      deployer.address
+    );
   });
 });
