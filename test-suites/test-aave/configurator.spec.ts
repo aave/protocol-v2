@@ -75,7 +75,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -104,7 +104,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -148,7 +148,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(false);
     expect(isActive).to.be.equal(true);
@@ -178,7 +178,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -227,7 +227,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -256,7 +256,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -294,7 +294,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -322,7 +322,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -382,7 +382,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
@@ -418,7 +418,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const borrowCap = await helpersContract.getReserveBorrowCap(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);

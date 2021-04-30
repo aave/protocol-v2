@@ -276,6 +276,7 @@ export const configureReservesByHelper = async (
   const liquidationBonuses: string[] = [];
   const reserveFactors: string[] = [];
   const borrowCaps: string[] = [];
+  const supplyCaps: string[] = [];
   const stableRatesEnabled: boolean[] = [];
 
   const inputParams: {
@@ -285,6 +286,7 @@ export const configureReservesByHelper = async (
     liquidationBonus: BigNumberish;
     reserveFactor: BigNumberish;
     borrowCap: BigNumberish;
+    supplyCap: BigNumberish;
     stableBorrowingEnabled: boolean;
   }[] = [];
 
@@ -296,6 +298,7 @@ export const configureReservesByHelper = async (
       liquidationThreshold,
       reserveFactor,
       borrowCap,
+      supplyCap,
       stableBorrowRateEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
@@ -324,6 +327,7 @@ export const configureReservesByHelper = async (
       liquidationBonus,
       reserveFactor,
       borrowCap,
+      supplyCap,
       stableBorrowingEnabled: stableBorrowRateEnabled,
     });
 
@@ -334,6 +338,7 @@ export const configureReservesByHelper = async (
     liquidationBonuses.push(liquidationBonus);
     reserveFactors.push(reserveFactor);
     borrowCaps.push(borrowCap);
+    supplyCaps.push(supplyCap);
     stableRatesEnabled.push(stableBorrowRateEnabled);
   }
   if (tokens.length) {

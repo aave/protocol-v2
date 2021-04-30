@@ -353,12 +353,13 @@ export enum TokenContractId {
   BptBALWETH = 'BptBALWETH',
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
-  xSUSHI = 'xSUSHI'
+  xSUSHI = 'xSUSHI',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
   reserveFactor: string;
+  supplyCap: string;
   strategy: IInterestRateStrategyParams;
 }
 
@@ -382,13 +383,13 @@ export interface IReserveBorrowParams {
   borrowingEnabled: boolean;
   stableBorrowRateEnabled: boolean;
   reserveDecimals: string;
+  borrowCap: string;
 }
 
 export interface IReserveCollateralParams {
   baseLTVAsCollateral: string;
   liquidationThreshold: string;
   liquidationBonus: string;
-  borrowCap: string;
 }
 export interface IMarketRates {
   borrowRate: string;

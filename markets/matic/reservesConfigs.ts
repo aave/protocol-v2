@@ -1,8 +1,8 @@
 // import BigNumber from 'bignumber.js';
 // import { oneRay } from '../../helpers/constants';
-import { MAX_BORROW_CAP } from '../../helpers/constants';
+import { MAX_BORROW_CAP, MAX_SUPPLY_CAP } from '../../helpers/constants';
 import { eContractid, IReserveParams } from '../../helpers/types';
-import { 
+import {
   rateStrategyStableOne,
   rateStrategyStableTwo,
   rateStrategyStableThree,
@@ -24,6 +24,7 @@ export const strategyDAI: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -37,19 +38,21 @@ export const strategyUSDC: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyUSDT: IReserveParams = {
-    strategy: rateStrategyStableThree,
-    baseLTVAsCollateral: '8000',
-    liquidationThreshold: '8500',
-    liquidationBonus: '10500',
-    borrowingEnabled: true,
-    stableBorrowRateEnabled: true,
-    reserveDecimals: '6',
-    aTokenImpl: eContractid.AToken,
-    reserveFactor: '1000',
-    borrowCap: MAX_BORROW_CAP,
+  strategy: rateStrategyStableThree,
+  baseLTVAsCollateral: '8000',
+  liquidationThreshold: '8500',
+  liquidationBonus: '10500',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: true,
+  reserveDecimals: '6',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyWETH: IReserveParams = {
@@ -63,6 +66,7 @@ export const strategyWETH: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -76,10 +80,11 @@ export const strategyWBTC: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyMATIC: IReserveParams = {
-  strategy: rateStrategyVolatileOne,    //Temp?
+  strategy: rateStrategyVolatileOne, //Temp?
   baseLTVAsCollateral: '5000',
   liquidationThreshold: '6500',
   liquidationBonus: '11000',
@@ -89,4 +94,5 @@ export const strategyMATIC: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };

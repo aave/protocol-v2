@@ -42,8 +42,8 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     await dai.connect(user1.signer).approve(pool.address, MAX_UINT_AMOUNT);
     await weth.connect(user1.signer).approve(pool.address, MAX_UINT_AMOUNT);
     await usdc.connect(user1.signer).approve(pool.address, MAX_UINT_AMOUNT);
-    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    let usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(MAX_BORROW_CAP);
     expect(daiBorrowCap).to.be.equal(MAX_BORROW_CAP);
@@ -53,8 +53,8 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     await configurator.setBorrowCap(usdc.address, 0);
     await configurator.setBorrowCap(dai.address, 0);
 
-    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(0);
     expect(daiBorrowCap).to.be.equal(0);
@@ -97,8 +97,8 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
   it('Should fail to set the borrow cap for usdc and DAI to max cap + 1 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
     const newCap = Number(MAX_BORROW_CAP) + 1;
-    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    let usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(0);
     expect(daiBorrowCap).to.be.equal(0);
@@ -110,14 +110,14 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       RC_INVALID_BORROW_CAP
     );
 
-    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
   });
   it('Sets the borrow cap for usdc and DAI to 110 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
     const newCap = '110';
-    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    let usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(0);
     expect(daiBorrowCap).to.be.equal(0);
@@ -125,8 +125,8 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     await configurator.setBorrowCap(usdc.address, newCap);
     await configurator.setBorrowCap(dai.address, newCap);
 
-    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(newCap);
     expect(daiBorrowCap).to.be.equal(newCap);
@@ -199,14 +199,14 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
   it('Raises the borrow cap for usdc and DAI to 1000 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
     const newCap = '1000';
-    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    let usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     await configurator.setBorrowCap(usdc.address, newCap);
     await configurator.setBorrowCap(dai.address, newCap);
 
-    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(newCap);
     expect(daiBorrowCap).to.be.equal(newCap);
@@ -235,14 +235,14 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
   it('Lowers the borrow cap for usdc and DAI to 200 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
     const newCap = '200';
-    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    let usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     await configurator.setBorrowCap(usdc.address, newCap);
     await configurator.setBorrowCap(dai.address, newCap);
 
-    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(newCap);
     expect(daiBorrowCap).to.be.equal(newCap);
@@ -275,14 +275,14 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
   it('Raises the borrow cap for usdc and DAI to max cap Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
     const newCap = MAX_BORROW_CAP;
-    let usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    let daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    let usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     await configurator.setBorrowCap(usdc.address, newCap);
     await configurator.setBorrowCap(dai.address, newCap);
 
-    usdcBorrowCap = await helpersContract.getReserveBorrowCap(usdc.address);
-    daiBorrowCap = await helpersContract.getReserveBorrowCap(dai.address);
+    usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
+    daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
 
     expect(usdcBorrowCap).to.be.equal(newCap);
     expect(daiBorrowCap).to.be.equal(newCap);
