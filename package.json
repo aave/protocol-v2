@@ -21,7 +21,7 @@
     "test": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-aave/*.spec.ts",
     "test-amm": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-amm/*.spec.ts",
     "test-amm-scenarios": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-amm/__setup.spec.ts test-suites/test-amm/scenario.spec.ts",
-    "test-scenarios": "npx hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/scenario.spec.ts",
+    "test-scenarios": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/scenario.spec.ts",
     "test-repay-with-collateral": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/flash-liquidation-with-collateral.spec.ts",
     "test-liquidate-underlying": "hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/liquidation-underlying.spec.ts",
