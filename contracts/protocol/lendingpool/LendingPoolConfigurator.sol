@@ -46,6 +46,16 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _;
   }
 
+  modifier onlyEmergencyOrPoolAdmin {
+    require(
+      addressesProvider.getEmergencyAdmin() == msg.sender
+        || addressesProvider.getPoolAdmin() == msg.sender,
+      Errors.LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN
+    );
+    _;
+  }
+
+
   uint256 internal constant CONFIGURATOR_REVISION = 0x1;
 
   function getRevision() internal pure override returns (uint256) {
@@ -128,6 +138,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     currentConfig.setDecimals(input.underlyingAssetDecimals);
 
     currentConfig.setActive(true);
+    currentConfig.setPaused(false);
     currentConfig.setFrozen(false);
 
     pool.setConfiguration(input.underlyingAsset, currentConfig.data);
@@ -414,6 +425,34 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     pool.setConfiguration(asset, currentConfig.data);
 
     emit ReserveUnfrozen(asset);
+  }
+
+  /**
+   * @dev Pauses a reserve. A paused reserve allow now user moves such as deposit, borrow, repay, swap interestrate, liquidate
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function pauseReserve(address asset) external onlyEmergencyOrPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setPaused(true);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit ReservePaused(asset);
+  }
+
+  /**
+   * @dev Unpauses a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function unpauseReserve(address asset) external onlyEmergencyOrPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setPaused(false);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit ReserveUnpaused(asset);
   }
 
   /**

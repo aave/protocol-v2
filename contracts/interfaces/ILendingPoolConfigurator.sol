@@ -121,6 +121,18 @@ interface ILendingPoolConfigurator {
   event ReserveUnfrozen(address indexed asset);
 
   /**
+   * @dev Emitted when a reserve is paused
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event ReservePaused(address indexed asset);
+
+  /**
+   * @dev Emitted when a reserve is unpaused
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event ReserveUnpaused(address indexed asset);
+
+  /**
    * @dev Emitted when a reserve factor is updated
    * @param asset The address of the underlying asset of the reserve
    * @param factor The new reserve factor

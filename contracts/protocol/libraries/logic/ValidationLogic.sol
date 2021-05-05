@@ -40,8 +40,8 @@ library ValidationLogic {
    * @param reserve The reserve object on which the user is depositing
    * @param amount The amount to be deposited
    */
-  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) internal view {
-    (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
+  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
+    (bool isActive, bool isFrozen, , , ) = reserve.configuration.getFlags();
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
@@ -70,7 +70,7 @@ library ValidationLogic {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
-    (bool isActive, , , ) = reserve.configuration.getFlags();
+    (bool isActive, , , , ) = reservesData[reserveAddress].configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
   }
 
@@ -86,6 +86,7 @@ library ValidationLogic {
     uint256 totalSupplyVariableDebt;
     bool isActive;
     bool isFrozen;
+    bool isPaused;
     bool borrowingEnabled;
     bool stableRateBorrowingEnabled;
   }
@@ -121,11 +122,12 @@ library ValidationLogic {
   ) internal view {
     ValidateBorrowLocalVars memory vars;
 
-    (vars.isActive, vars.isFrozen, vars.borrowingEnabled, vars.stableRateBorrowingEnabled) = reserve
+    (vars.isActive, vars.isFrozen, vars.borrowingEnabled, vars.stableRateBorrowingEnabled, vars.isPaused) = reserve
       .configuration
       .getFlags();
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!vars.isPaused, Errors.VL_RESERVE_PAUSED);
     require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
 
@@ -267,9 +269,10 @@ library ValidationLogic {
     uint256 variableDebt,
     DataTypes.InterestRateMode currentRateMode
   ) external view {
-    (bool isActive, bool isFrozen, , bool stableRateEnabled) = reserve.configuration.getFlags();
+    (bool isActive, bool isFrozen, , bool stableRateEnabled, bool isPaused) = reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
     if (currentRateMode == DataTypes.InterestRateMode.STABLE) {
@@ -311,9 +314,10 @@ library ValidationLogic {
     IERC20 variableDebtToken,
     address aTokenAddress
   ) external view {
-    (bool isActive, , , ) = reserve.configuration.getFlags();
+    (bool isActive, , , , bool isPaused) = reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     //if the usage ratio is below 95%, no rebalances are needed
     uint256 totalDebt =
