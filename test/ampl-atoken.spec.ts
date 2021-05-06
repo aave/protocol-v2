@@ -59,15 +59,15 @@ async function check(amt, cmpAmt, token, tolarance){
 
 // tolarance 1 AMPL cent ~= 0.01 AMPL
 async function checkBal(token, addr, amt, tolarance=0.01){
- return check(await token.balanceOf(addr), await fxtPt(token, amt), token, tolarance);
+  return check(await token.balanceOf(addr), await fxtPt(token, amt), token, tolarance);
 }
 
 async function checkScaledBal(token, addr, amt, tolarance=0.01){
- return check(await token.scaledBalanceOf(addr), await fxtPt(token, amt), token, tolarance);
+  return check(await token.scaledBalanceOf(addr), await fxtPt(token, amt), token, tolarance);
 }
 
 async function checkSupply(token, amt, tolarance=0.01){
- return check(await token.totalSupply(), await fxtPt(token, amt), token, tolarance);
+  return check(await token.totalSupply(), await fxtPt(token, amt), token, tolarance);
 }
 
 makeSuite('AMPL aToken', (testEnv: TestEnv) => {
@@ -199,6 +199,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '1000'));
+
         await checkBal(ampl, lenderAAddress, '99000');
         await checkBal(aAMPL, lenderAAddress, '1000');
         await checkBal(ampl, reserveData.aTokenAddress, '1000');
@@ -217,6 +219,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await checkSupply(aAMPL, '1000');
 
         await rebase(pool, ampl, 0.1); // + 10%
+
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '1100'));
 
         await checkBal(ampl, lenderAAddress, '108900');
         await checkBal(aAMPL, lenderAAddress, '1100');
@@ -237,6 +241,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
         await rebase(pool, ampl, -0.1); // - 10%
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '900'));
+
         await checkBal(ampl, lenderAAddress, '89100');
         await checkBal(aAMPL, lenderAAddress, '900');
         await checkBal(ampl, reserveData.aTokenAddress, '900');
@@ -255,6 +261,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await checkSupply(aAMPL, '1000');
 
         await rebase(pool, ampl, 0);
+
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '1000'));
 
         await checkBal(ampl, lenderAAddress, '99000');
         await checkBal(aAMPL, lenderAAddress, '1000');
@@ -277,6 +285,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '10000'), lenderAAddress, '0');
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '11000'));
+
         await checkBal(ampl, lenderAAddress, '89000');
         await checkBal(aAMPL, lenderAAddress, '11000');
         await checkBal(ampl, reserveData.aTokenAddress, '11000');
@@ -297,6 +307,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
         await rebase(pool, ampl, +0.1);
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '12100'));
+
         await checkBal(ampl, lenderAAddress, '97900');
         await checkBal(aAMPL, lenderAAddress, '12100');
         await checkBal(ampl, reserveData.aTokenAddress, '12100');
@@ -316,6 +328,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await checkSupply(aAMPL, '11000');
 
         await rebase(pool, ampl, -0.1);
+
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '9900'));
 
         await checkBal(ampl, lenderAAddress, '80100');
         await checkBal(aAMPL, lenderAAddress, '9900');
@@ -347,6 +361,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '3000'), lenderAAddress, '0');
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '33000'));
+
         await checkBal(ampl, lenderAAddress, '67000');
         await checkBal(ampl, lenderBAddress, '95000');
         await checkBal(ampl, lenderCAddress, '99650');
@@ -370,6 +386,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '3000'), lenderAAddress, '0');
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '33000'));
+
         await checkBal(ampl, lenderAAddress, '67000');
         await checkBal(ampl, lenderBAddress, '95000');
         await checkBal(ampl, lenderCAddress, '99650');
@@ -380,6 +398,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await checkSupply(aAMPL, '38350');
 
         await rebase(pool, ampl, +0.1);
+
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '36300'));
 
         await checkBal(ampl, lenderAAddress, '73700');
         await checkBal(ampl, lenderBAddress, '104500');
@@ -404,6 +424,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '3000'), lenderAAddress, '0');
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '33000'));
+
         await checkBal(ampl, lenderAAddress, '67000');
         await checkBal(ampl, lenderBAddress, '95000');
         await checkBal(ampl, lenderCAddress, '99650');
@@ -414,6 +436,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await checkSupply(aAMPL, '38350');
 
         await rebase(pool, ampl, -0.1);
+
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '29700'));
 
         await checkBal(ampl, lenderAAddress, '60300');
         await checkBal(ampl, lenderBAddress, '85500');
@@ -451,6 +475,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '1000'));
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '1000'), lenderAAddress, '0');
 
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.eq(await fxtPt(ampl, '1000000001000'));
+
         await checkBal(ampl, lenderAAddress, '999999999000');
         await checkBal(ampl, lenderBAddress, '500000000000', 10000);
         await checkBal(ampl, lenderCAddress, '500000000000', 10000);
@@ -462,11 +488,11 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
 
     describe("when borrow>0", function() {
       it('should mint correct number of aAMPL tokens', async () => {
-        const {deployer, dai, pool, ampl, aAMPL} = testEnv;
+        const {deployer, dai, pool, ampl, aAMPL, aDai} = testEnv;
 
         await ampl.connect(lenderA.signer).approve(pool.address, await fxtPt(ampl, '33000'));
         await ampl.connect(lenderB.signer).approve(pool.address, await fxtPt(ampl, '5000'));
-        await ampl.connect(lenderC.signer).approve(pool.address, await fxtPt(ampl, '350'));
+        await ampl.connect(lenderC.signer).approve(pool.address, await fxtPt(ampl, '400'));
 
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '30000'), lenderAAddress, '0');
         await pool.connect(lenderB.signer).deposit(ampl.address, await fxtPt(ampl, '5000'), lenderBAddress, '0');
@@ -490,6 +516,8 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await checkSupply(aAMPL, '35350');
 
         await pool.connect(lenderA.signer).deposit(ampl.address, await fxtPt(ampl, '3000'), lenderAAddress, '0');
+
+        expect(await aAMPL.balanceOf(lenderAAddress)).to.be.bignumber.gte(await fxtPt(ampl, '33000'));
 
         await checkBal(ampl, lenderAAddress, '67000');
         await checkBal(ampl, lenderBAddress, '95000');
@@ -517,7 +545,6 @@ makeSuite('AMPL aToken', (testEnv: TestEnv) => {
         await pool.connect(borrowerA.signer).deposit(dai.address, await fxtPt(dai, '20000'), borrowerAAddress, '0');
         await pool.connect(borrowerA.signer).borrow(
           ampl.address, await fxtPt(ampl, '2500'), RateMode.Variable, '0', borrowerAAddress);
-
 
         await checkBal(ampl, lenderAAddress, '67000');
         await checkBal(ampl, lenderBAddress, '95000');

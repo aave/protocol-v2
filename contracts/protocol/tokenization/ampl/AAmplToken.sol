@@ -630,7 +630,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
     if (balanceInternal == 0 || scaledTotalSupply == 0) {
       return 0;
     }
-    return balanceInternal.mul(scaledTotalSupply).div(totalSupplyInternal);
+    return balanceInternal.wayMul(scaledTotalSupply).wayDiv(totalSupplyInternal);
   }
 
   /**
@@ -647,7 +647,7 @@ contract AAmplToken is VersionedInitializable, IncentivizedERC20, IAToken {
    * @dev Helper method to convert gons to AMPL
    **/
   function _gonsToAMPL(uint256 totalAMPLSupply, uint256 gonValue) private pure returns (uint256) {
-    return gonValue.mul(totalAMPLSupply).div(GONS_TOTAL_SUPPLY);
+    return gonValue.wayMul(totalAMPLSupply).wayDiv(GONS_TOTAL_SUPPLY);
   }
 
   /**
