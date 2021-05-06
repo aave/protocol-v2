@@ -10,6 +10,9 @@ import {Errors} from '../helpers/Errors.sol';
  **/
 
 library WadRayMath {
+  uint256 internal constant WAY = 1e9;
+  uint256 internal constant halfWAY = WAY / 2;
+
   uint256 internal constant WAD = 1e18;
   uint256 internal constant halfWAD = WAD / 2;
 
@@ -17,6 +20,10 @@ library WadRayMath {
   uint256 internal constant halfRAY = RAY / 2;
 
   uint256 internal constant WAD_RAY_RATIO = 1e9;
+
+  uint256 internal constant WAY_WAD_RATIO = 1e9;
+
+  uint256 internal constant WAY_RAY_RATIO = 1e18;
 
   /**
    * @return One ray, 1e27
@@ -34,6 +41,14 @@ library WadRayMath {
   }
 
   /**
+ * @return One way, 1e9
+ **/
+
+  function way() internal pure returns (uint256) {
+    return WAD;
+  }
+
+  /**
    * @return Half ray, 1e27/2
    **/
   function halfRay() internal pure returns (uint256) {
@@ -41,10 +56,48 @@ library WadRayMath {
   }
 
   /**
-   * @return Half ray, 1e18/2
+   * @return Half wad, 1e18/2
    **/
   function halfWad() internal pure returns (uint256) {
     return halfWAD;
+  }
+
+  /**
+ * @return Half way, 1e9/2
+ **/
+  function halfWay() internal pure returns (uint256) {
+    return halfWAY;
+  }
+
+  /**
+ * @dev Multiplies two way, rounding half up to the nearest way
+ * @param a Wad
+ * @param b Wad
+ * @return The result of a*b, in way
+ **/
+  function wayMul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0 || b == 0) {
+      return 0;
+    }
+
+    require(a <= (type(uint256).max - halfWAY) / b, Errors.MATH_MULTIPLICATION_OVERFLOW);
+
+    return (a * b + halfWAY) / WAY;
+  }
+
+  /**
+   * @dev Divides two way, rounding half up to the nearest way
+   * @param a Wad
+   * @param b Wad
+   * @return The result of a/b, in way
+   **/
+  function wayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+    require(b != 0, Errors.MATH_DIVISION_BY_ZERO);
+    uint256 halfB = b / 2;
+
+    require(a <= (type(uint256).max - halfB) / WAY, Errors.MATH_MULTIPLICATION_OVERFLOW);
+
+    return (a * WAY + halfB) / b;
   }
 
   /**
@@ -132,4 +185,48 @@ library WadRayMath {
     require(result / WAD_RAY_RATIO == a, Errors.MATH_MULTIPLICATION_OVERFLOW);
     return result;
   }
+
+  function rayToWay(uint256 a) internal pure returns (uint256) {
+    uint256 halfRatio = WAY_RAY_RATIO / 2;
+    uint256 result = halfRatio + a;
+    require(result >= halfRatio, Errors.MATH_ADDITION_OVERFLOW);
+
+    return result / WAY_RAY_RATIO;
+  }
+
+  /**
+   * @dev Converts way up to ray
+   * @param a Way
+   * @return a converted in ray
+   **/
+  function wayToRay(uint256 a) internal pure returns (uint256) {
+    uint256 result = a * WAY_RAY_RATIO;
+    require(result / WAY_RAY_RATIO == a, Errors.MATH_MULTIPLICATION_OVERFLOW);
+    return result;
+  }
+
+  /**
+   * @dev Casts wad down to way
+   * @param a Wad
+   * @return a casted to way, rounded half up to the nearest way
+   **/
+  function wadToWay(uint256 a) internal pure returns (uint256) {
+    uint256 halfRatio = WAY_WAD_RATIO / 2;
+    uint256 result = halfRatio + a;
+    require(result >= halfRatio, Errors.MATH_ADDITION_OVERFLOW);
+
+    return result / WAY_WAD_RATIO;
+  }
+
+  /**
+  * @dev Converts way up to wad
+  * @param a Way
+  * @return a converted in wad
+  **/
+  function wayToWad(uint256 a) internal pure returns (uint256) {
+    uint256 result = a * WAY_WAD_RATIO;
+    require(result / WAY_WAD_RATIO == a, Errors.MATH_MULTIPLICATION_OVERFLOW);
+    return result;
+  }
+
 }
