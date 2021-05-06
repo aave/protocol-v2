@@ -71,8 +71,8 @@ library WadRayMath {
 
   /**
  * @dev Multiplies two way, rounding half up to the nearest way
- * @param a Wad
- * @param b Wad
+ * @param a Way
+ * @param b Way
  * @return The result of a*b, in way
  **/
   function wayMul(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -87,8 +87,8 @@ library WadRayMath {
 
   /**
    * @dev Divides two way, rounding half up to the nearest way
-   * @param a Wad
-   * @param b Wad
+   * @param a Way
+   * @param b Way
    * @return The result of a/b, in way
    **/
   function wayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
