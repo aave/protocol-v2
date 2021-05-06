@@ -23,6 +23,7 @@ import {
   strategyWETH,
   strategyYFI,
   strategyXSUSHI,
+  strategyAMPL,
 } from './reservesConfigs';
 
 // ----------------
@@ -35,6 +36,7 @@ export const AaveConfig: IAaveConfiguration = {
   ProviderId: 1,
   ReservesConfig: {
     AAVE: strategyAAVE,
+    AMPL: strategyAMPL,
     BAT: strategyBAT,
     BUSD: strategyBUSD,
     DAI: strategyDAI,
@@ -62,6 +64,7 @@ export const AaveConfig: IAaveConfiguration = {
     [eEthereumNetwork.coverage]: {},
     [EthereumNetwork.kovan]: {
       AAVE: '0xB597cd8D3217ea6477232F9217fa70837ff667Af',
+      AMPL: '0x3E0437898a5667a4769B1Ca5A34aAB1ae7E81377',
       BAT: '0x2d12186Fbb9f9a8C28B3FfdD4c42920f8539D738',
       BUSD: '0x4c6E1EFC12FDfD568186b7BAEc0A43fFfb4bCcCf',
       DAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',
@@ -84,6 +87,7 @@ export const AaveConfig: IAaveConfiguration = {
     },
     [EthereumNetwork.ropsten]: {
       AAVE: '',
+      AMPL: '',
       BAT: '0x85B24b3517E3aC7bf72a14516160541A60cFF19d',
       BUSD: '0xFA6adcFf6A90c11f31Bc9bb59eC0a6efB38381C6',
       DAI: '0xf80A32A835F79D7787E8a8ee5721D0fEaFd78108',
@@ -106,6 +110,7 @@ export const AaveConfig: IAaveConfiguration = {
     },
     [EthereumNetwork.main]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
+      AMPL: '0xd46ba6d942050d489dbd938a2c909a5d5039a161',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -129,6 +134,7 @@ export const AaveConfig: IAaveConfiguration = {
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
+      AMPL: '',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',

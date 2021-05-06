@@ -1,4 +1,7 @@
 import {
+  AAmplTokenFactory,
+  AmplStableDebtTokenFactory,
+  AmplVariableDebtTokenFactory,
   AaveProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
@@ -13,6 +16,7 @@ import {
   LendingPoolFactory,
   LendingRateOracleFactory,
   MintableERC20Factory,
+  MockAmplERC20Factory,
   MockATokenFactory,
   MockFlashLoanReceiverFactory,
   MockStableDebtTokenFactory,
@@ -89,10 +93,37 @@ export const getVariableDebtToken = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getAAmplToken = async (address?: tEthereumAddress) =>
+  await AAmplTokenFactory.connect(
+    address || (await getDb().get(`${eContractid.AToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getAmplStableDebtToken = async (address?: tEthereumAddress) =>
+  await AmplStableDebtTokenFactory.connect(
+    address ||
+    (await getDb().get(`${eContractid.StableDebtToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getAmplVariableDebtToken = async (address?: tEthereumAddress) =>
+  await AmplVariableDebtTokenFactory.connect(
+    address ||
+    (await getDb().get(`${eContractid.VariableDebtToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
 export const getMintableERC20 = async (address: tEthereumAddress) =>
   await MintableERC20Factory.connect(
     address ||
       (await getDb().get(`${eContractid.MintableERC20}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockAmplERC20 = async (address: tEthereumAddress) =>
+  await MockAmplERC20Factory.connect(
+    address ||
+    (await getDb().get(`${eContractid.MockAmplERC20}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 

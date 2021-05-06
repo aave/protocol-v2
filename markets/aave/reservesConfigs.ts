@@ -291,6 +291,23 @@ export const strategyUNI: IReserveParams = {
   reserveFactor: '2000'
 };
 
+export const strategyAMPL: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0).multipliedBy(oneRay).toFixed(),
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: true,
+  reserveDecimals: '9',
+  aTokenImpl: eContractid.AAmplToken,
+  reserveFactor: '0'
+};
+
 export const strategyWBTC: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.65).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: '0',
