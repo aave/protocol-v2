@@ -341,7 +341,7 @@ contract AToken is
     uint8 v,
     bytes32 r,
     bytes32 s
-  ) external {
+  ) external override {
     require(owner != address(0), 'INVALID_OWNER');
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');

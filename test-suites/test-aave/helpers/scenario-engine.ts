@@ -10,8 +10,11 @@ import {
   swapBorrowRateMode,
   rebalanceStableBorrowRate,
   delegateBorrowAllowance,
+  repayWithPermit,
+  depositWithPermit,
 } from './actions';
 import { RateMode } from '../../../helpers/types';
+import { Wallet } from '@ethersproject/wallet';
 
 export interface Action {
   name: string;
@@ -73,6 +76,12 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
 
   const user = users[parseInt(userIndex)];
 
+  const userPrivateKey = require('../../../test-wallets.js').accounts[parseInt(userIndex) + 1]
+    .secretKey;
+  if (!userPrivateKey) {
+    throw new Error('INVALID_OWNER_PK');
+  }
+
   switch (name) {
     case 'mint':
       const { amount } = action.args;
@@ -103,6 +112,30 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
           reserve,
           amount,
           user,
+          onBehalfOf,
+          sendValue,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
+    case 'depositWithPermit':
+      {
+        const { amount, sendValue, onBehalfOf: onBehalfOfIndex } = action.args;
+        const onBehalfOf = onBehalfOfIndex
+          ? users[parseInt(onBehalfOfIndex)].address
+          : user.address;
+
+        if (!amount || amount === '') {
+          throw `Invalid amount to deposit into the ${reserve} reserve`;
+        }
+
+        await depositWithPermit(
+          reserve,
+          amount,
+          user,
+          userPrivateKey,
           onBehalfOf,
           sendValue,
           expected,
@@ -194,6 +227,40 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
           amount,
           rateMode,
           user,
+          userToRepayOnBehalf,
+          sendValue,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
+      break;
+
+    case 'repayWithPermit':
+      {
+        const { amount, borrowRateMode, sendValue, deadline } = action.args;
+        let { onBehalfOf: onBehalfOfIndex } = action.args;
+
+        if (!amount || amount === '') {
+          throw `Invalid amount to repay into the ${reserve} reserve`;
+        }
+
+        let userToRepayOnBehalf: SignerWithAddress;
+        if (!onBehalfOfIndex || onBehalfOfIndex === '') {
+          console.log(
+            'WARNING: No onBehalfOf specified for a repay action. Defaulting to the repayer address'
+          );
+          userToRepayOnBehalf = user;
+        } else {
+          userToRepayOnBehalf = users[parseInt(onBehalfOfIndex)];
+        }
+
+        await repayWithPermit(
+          reserve,
+          amount,
+          rateMode,
+          user,
+          userPrivateKey,
           userToRepayOnBehalf,
           sendValue,
           expected,
