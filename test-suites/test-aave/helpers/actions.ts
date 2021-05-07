@@ -16,6 +16,7 @@ import {
   calcExpectedUserDataAfterWithdraw,
 } from './utils/calculations';
 import { getReserveAddressFromSymbol, getReserveData, getUserData } from './utils/helpers';
+import { buildPermitParams, getSignatureFromTypedData } from '../../../helpers/contracts-helpers';
 
 import { convertToCurrencyDecimals } from '../../../helpers/contracts-helpers';
 import {
@@ -23,6 +24,7 @@ import {
   getMintableERC20,
   getStableDebtToken,
   getVariableDebtToken,
+  getChainId,
 } from '../../../helpers/contracts-getters';
 import { MAX_UINT_AMOUNT, ONE_YEAR } from '../../../helpers/constants';
 import { SignerWithAddress, TestEnv } from './make-suite';
@@ -30,9 +32,10 @@ import { advanceTimeAndBlock, DRE, timeLatest, waitForTx } from '../../../helper
 
 import chai from 'chai';
 import { ReserveData, UserReserveData } from './utils/interfaces';
-import { ContractReceipt } from 'ethers';
+import { ContractReceipt, Wallet } from 'ethers';
 import { AToken } from '../../../types/AToken';
 import { RateMode, tEthereumAddress } from '../../../helpers/types';
+import { MintableERC20Factory } from '../../../types';
 
 const { expect } = chai;
 
@@ -349,7 +352,7 @@ export const borrow = async (
   );
 
   const amountToBorrow = await convertToCurrencyDecimals(reserve, amount);
-  
+
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
       await pool
@@ -510,6 +513,257 @@ export const repay = async (
       pool
         .connect(user.signer)
         .repay(reserve, amountToRepay, rateMode, onBehalfOf.address, txOptions),
+      revertMessage
+    ).to.be.reverted;
+  }
+};
+
+export const depositWithPermit = async (
+  reserveSymbol: string,
+  amount: string,
+  sender: SignerWithAddress,
+  senderPk: string,
+  onBehalfOf: tEthereumAddress,
+  sendValue: string,
+  expectedResult: string,
+  testEnv: TestEnv,
+  revertMessage?: string
+) => {
+  const { pool } = testEnv;
+
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
+  const amountToDeposit = await convertToCurrencyDecimals(reserve, amount);
+
+  const chainId = await getChainId();
+  const token = new MintableERC20Factory(sender.signer).attach(reserve);
+  const highDeadline = '100000000000000000000000000';
+  const nonce = await token._nonces(sender.address);
+
+  const msgParams = buildPermitParams(
+    chainId,
+    reserve,
+    '1',
+    reserveSymbol,
+    sender.address,
+    pool.address,
+    nonce.toNumber(),
+    highDeadline,
+    amountToDeposit.toString()
+  );
+  const { v, r, s } = getSignatureFromTypedData(senderPk, msgParams);
+
+  const txOptions: any = {};
+
+  const { reserveData: reserveDataBefore, userData: userDataBefore } = await getContractsData(
+    reserve,
+    onBehalfOf,
+    testEnv,
+    sender.address
+  );
+
+  if (sendValue) {
+    txOptions.value = await convertToCurrencyDecimals(reserve, sendValue);
+  }
+
+  if (expectedResult === 'success') {
+    const txResult = await waitForTx(
+      await pool
+        .connect(sender.signer)
+        .depositWithPermit(
+          reserve,
+          amountToDeposit,
+          onBehalfOf,
+          '0',
+          highDeadline,
+          v,
+          r,
+          s,
+          txOptions
+        )
+    );
+
+    const {
+      reserveData: reserveDataAfter,
+      userData: userDataAfter,
+      timestamp,
+    } = await getContractsData(reserve, onBehalfOf, testEnv, sender.address);
+
+    const { txCost, txTimestamp } = await getTxCostAndTimestamp(txResult);
+
+    const expectedReserveData = calcExpectedReserveDataAfterDeposit(
+      amountToDeposit.toString(),
+      reserveDataBefore,
+      txTimestamp
+    );
+
+    const expectedUserReserveData = calcExpectedUserDataAfterDeposit(
+      amountToDeposit.toString(),
+      reserveDataBefore,
+      expectedReserveData,
+      userDataBefore,
+      txTimestamp,
+      timestamp,
+      txCost
+    );
+
+    expectEqual(reserveDataAfter, expectedReserveData);
+    expectEqual(userDataAfter, expectedUserReserveData);
+
+    // truffleAssert.eventEmitted(txResult, "Deposit", (ev: any) => {
+    //   const {_reserve, _user, _amount} = ev;
+    //   return (
+    //     _reserve === reserve &&
+    //     _user === user &&
+    //     new BigNumber(_amount).isEqualTo(new BigNumber(amountToDeposit))
+    //   );
+    // });
+  } else if (expectedResult === 'revert') {
+    await expect(
+      pool
+        .connect(sender.signer)
+        .depositWithPermit(
+          reserve,
+          amountToDeposit,
+          onBehalfOf,
+          '0',
+          highDeadline,
+          v,
+          r,
+          s,
+          txOptions
+        ),
+      revertMessage
+    ).to.be.reverted;
+  }
+};
+
+export const repayWithPermit = async (
+  reserveSymbol: string,
+  amount: string,
+  rateMode: string,
+  user: SignerWithAddress,
+  userPk: string,
+  onBehalfOf: SignerWithAddress,
+  sendValue: string,
+  expectedResult: string,
+  testEnv: TestEnv,
+  revertMessage?: string
+) => {
+  const { pool } = testEnv;
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
+  const highDeadline = '100000000000000000000000000';
+
+  const { reserveData: reserveDataBefore, userData: userDataBefore } = await getContractsData(
+    reserve,
+    onBehalfOf.address,
+    testEnv
+  );
+
+  let amountToRepay = '0';
+
+  if (amount !== '-1') {
+    amountToRepay = (await convertToCurrencyDecimals(reserve, amount)).toString();
+  } else {
+    amountToRepay = MAX_UINT_AMOUNT;
+  }
+  amountToRepay = '0x' + new BigNumber(amountToRepay).toString(16);
+
+  const chainId = await getChainId();
+  const token = new MintableERC20Factory(user.signer).attach(reserve);
+  const nonce = await token._nonces(user.address);
+
+  const msgParams = buildPermitParams(
+    chainId,
+    reserve,
+    '1',
+    reserveSymbol,
+    user.address,
+    pool.address,
+    nonce.toNumber(),
+    highDeadline,
+    amountToRepay
+  );
+  const { v, r, s } = getSignatureFromTypedData(userPk, msgParams);
+  const txOptions: any = {};
+
+  if (sendValue) {
+    const valueToSend = await convertToCurrencyDecimals(reserve, sendValue);
+    txOptions.value = '0x' + new BigNumber(valueToSend.toString()).toString(16);
+  }
+
+  if (expectedResult === 'success') {
+    const txResult = await waitForTx(
+      await pool
+        .connect(user.signer)
+        .repayWithPermit(
+          reserve,
+          amountToRepay,
+          rateMode,
+          onBehalfOf.address,
+          highDeadline,
+          v,
+          r,
+          s,
+          txOptions
+        )
+    );
+
+    const { txCost, txTimestamp } = await getTxCostAndTimestamp(txResult);
+
+    const {
+      reserveData: reserveDataAfter,
+      userData: userDataAfter,
+      timestamp,
+    } = await getContractsData(reserve, onBehalfOf.address, testEnv);
+
+    const expectedReserveData = calcExpectedReserveDataAfterRepay(
+      amountToRepay,
+      <RateMode>rateMode,
+      reserveDataBefore,
+      userDataBefore,
+      txTimestamp,
+      timestamp
+    );
+
+    const expectedUserData = calcExpectedUserDataAfterRepay(
+      amountToRepay,
+      <RateMode>rateMode,
+      reserveDataBefore,
+      expectedReserveData,
+      userDataBefore,
+      user.address,
+      onBehalfOf.address,
+      txTimestamp,
+      timestamp
+    );
+
+    expectEqual(reserveDataAfter, expectedReserveData);
+    expectEqual(userDataAfter, expectedUserData);
+
+    // truffleAssert.eventEmitted(txResult, "Repay", (ev: any) => {
+    //   const {_reserve, _user, _repayer} = ev;
+
+    //   return (
+    //     _reserve.toLowerCase() === reserve.toLowerCase() &&
+    //     _user.toLowerCase() === onBehalfOf.toLowerCase() &&
+    //     _repayer.toLowerCase() === user.toLowerCase()
+    //   );
+    // });
+  } else if (expectedResult === 'revert') {
+    await expect(
+      pool
+        .connect(user.signer)
+        .repayWithPermit(
+          reserve,
+          amountToRepay,
+          rateMode,
+          onBehalfOf.address,
+          highDeadline,
+          v,
+          r,
+          s,
+          txOptions
+        ),
       revertMessage
     ).to.be.reverted;
   }
