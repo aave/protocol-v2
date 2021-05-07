@@ -144,6 +144,10 @@ export const initReservesByHelper = async (
   ) as [string, IReserveParams][];
 
   for (let [symbol, params] of reserves) {
+    if (!tokenAddresses[symbol]) {
+      console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
+      continue;
+    }
     const { strategy, aTokenImpl, reserveDecimals } = params;
     const {
       optimalUtilizationRate,
@@ -209,7 +213,7 @@ export const initReservesByHelper = async (
       variableDebtTokenSymbol: `variableDebt${symbolPrefix}${reserveSymbols[i]}`,
       stableDebtTokenName: `${stableDebtTokenNamePrefix} ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${symbolPrefix}${reserveSymbols[i]}`,
-      params: '0x10'
+      params: '0x10',
     });
   }
 
@@ -222,6 +226,7 @@ export const initReservesByHelper = async (
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
+    console.log('batchInit', chunkedInitInputParams[chunkIndex]);
     const tx3 = await waitForTx(
       await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
     );
@@ -267,6 +272,7 @@ export const configureReservesByHelper = async (
   helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
+  console.log('entering');
   const addressProvider = await getLendingPoolAddressesProvider();
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
   const tokens: string[] = [];
@@ -296,6 +302,12 @@ export const configureReservesByHelper = async (
       stableBorrowRateEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
+    if (!tokenAddresses[assetSymbol]) {
+      console.log(
+        `- Skipping init of ${assetSymbol} due token address is not set at markets config`
+      );
+      continue;
+    }
     if (baseLTVAsCollateral === '-1') continue;
 
     const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
@@ -304,6 +316,7 @@ export const configureReservesByHelper = async (
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
+    console.log(assetSymbol);
     const { usageAsCollateralEnabled: alreadyEnabled } = await helpers.getReserveConfigurationData(
       tokenAddress
     );
@@ -557,7 +570,7 @@ export const initTokenReservesByHelper = async (
       variableDebtTokenSymbol: `variableDebt${reserveSymbols[i]}`,
       stableDebtTokenName: `Aave stable debt bearing ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${reserveSymbols[i]}`,
-      params: '0x10'
+      params: '0x10',
     });
   }
 
@@ -580,7 +593,7 @@ export const initTokenReservesByHelper = async (
 
   // Set deployer back as admin
   //await waitForTx(await addressProvider.setPoolAdmin(admin));
-  return gasUsage;  // No longer relevant
+  return gasUsage; // No longer relevant
 };
 
 // Function deprecated

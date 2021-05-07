@@ -1,5 +1,11 @@
 import BigNumber from 'bignumber.js';
-import { oneEther, oneRay, RAY, ZERO_ADDRESS, MOCK_CHAINLINK_AGGREGATORS_PRICES } from '../../helpers/constants';
+import {
+  oneEther,
+  oneRay,
+  RAY,
+  ZERO_ADDRESS,
+  MOCK_CHAINLINK_AGGREGATORS_PRICES,
+} from '../../helpers/constants';
 import { ICommonConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 // ----------------
@@ -87,6 +93,9 @@ export const CommonsConfig: ICommonConfiguration = {
     UNI: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
+    ENJ: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
     BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
@@ -139,11 +148,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '',//'0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a',
+    [eEthereumNetwork.kovan]: '', //'0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a',
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
-    [eEthereumNetwork.main]: '',//'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
+    [eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
     [eEthereumNetwork.tenderlyMain]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
-  },  
+  },
   LendingPoolCollateralManager: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
@@ -175,7 +184,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '0xf99b8E67a0E044734B01EC4586D1c88C9a869718',
+    [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderlyMain]: '',
@@ -193,9 +202,9 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '',//'0xB8bE51E6563BB312Cbb2aa26e352516c25c26ac1',
+    [eEthereumNetwork.kovan]: '', //'0xB8bE51E6563BB312Cbb2aa26e352516c25c26ac1',
     [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
-    [eEthereumNetwork.main]: '',//'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
+    [eEthereumNetwork.main]: '', //'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
     [eEthereumNetwork.tenderlyMain]: '0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
   },
   FallbackOracle: {

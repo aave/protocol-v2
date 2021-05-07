@@ -6,7 +6,8 @@ import { usingTenderly } from '../../helpers/tenderly-utils';
 
 task('matic:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ verify }, DRE) => {
+  .addFlag('deployRegistry')
+  .setAction(async ({ verify, deployRegistry }, DRE) => {
     const POOL_NAME = ConfigNames.Matic;
     await DRE.run('set-DRE');
 
@@ -18,7 +19,10 @@ task('matic:mainnet', 'Deploy development enviroment')
     console.log('Migration started\n');
 
     console.log('1. Deploy address provider');
-    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
+    await DRE.run('full:deploy-address-provider', {
+      pool: POOL_NAME,
+      deployRegistry,
+    });
 
     console.log('2. Deploy lending pool');
     await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });

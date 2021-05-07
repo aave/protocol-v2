@@ -28,22 +28,29 @@ task(
 )
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({ verify, pool }, DRE) => {
+  .addFlag('deployRegistry', 'Deploy a new address provider registry')
+  .setAction(async ({ verify, pool, deployRegistry }, DRE) => {
     await DRE.run('set-DRE');
     let signer: Signer;
     const network = <eNetwork>DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
     const { ProviderId, MarketId } = poolConfig;
 
-    const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
-    const providerRegistryOwner = getParamPerNetwork(poolConfig.ProviderRegistryOwner, network);
+    let providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
+    let providerRegistryOwner = getParamPerNetwork(poolConfig.ProviderRegistryOwner, network);
 
     if (
+      deployRegistry ||
       !providerRegistryAddress ||
       !isAddress(providerRegistryAddress) ||
       isZeroAddress(providerRegistryAddress)
     ) {
-      throw Error('config.ProviderRegistry is missing or is not an address.');
+      console.log('- Deploying a new Address Providers Registry:');
+
+      await DRE.run('full:deploy-address-provider-registry');
+
+      providerRegistryAddress = (await getLendingPoolAddressesProviderRegistry()).address;
+      providerRegistryOwner = await (await getFirstSigner()).getAddress();
     }
 
     if (
