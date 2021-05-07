@@ -363,3 +363,5 @@ export const getFlashLiquidationAdapter = async (address?: tEthereumAddress) =>
         .address,
     await getFirstSigner()
   );
+
+export const getChainId = async () => (await DRE.ethers.provider.getNetwork()).chainId;

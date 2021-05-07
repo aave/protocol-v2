@@ -55,12 +55,28 @@ import {
   registerContractInJsonDb,
   linkBytecode,
   insertContractAddressInDb,
+  deployContract,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
+import { UiPoolDataProvider } from '../types';
+import { verifyContract } from './etherscan-verification';
+
+export const deployUiPoolDataProvider = async (
+  [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const id = eContractid.UiPoolDataProvider;
+  const args: string[] = [incentivesController, aaveOracle];
+  const instance = await deployContract<UiPoolDataProvider>(id, args);
+  if (verify) {
+    await verifyContract(instance.address, args);
+  }
+  return instance;
+};
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -546,7 +562,15 @@ export const deployMockVariableDebtToken = async (
 };
 
 export const deployMockAToken = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, string],
+  args: [
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    string
+  ],
   verify?: boolean
 ) => {
   const instance = await withSaveAndVerify(

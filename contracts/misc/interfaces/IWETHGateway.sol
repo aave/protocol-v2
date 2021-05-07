@@ -27,4 +27,14 @@ interface IWETHGateway {
     uint256 interesRateMode,
     uint16 referralCode
   ) external;
+
+  function withdrawETHWithPermit(
+    address lendingPool,
+    uint256 amount,
+    address to,
+    uint256 deadline,
+    uint8 permitV,
+    bytes32 permitR,
+    bytes32 permitS
+  ) external;
 }
