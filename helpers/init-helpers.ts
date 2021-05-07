@@ -226,7 +226,6 @@ export const initReservesByHelper = async (
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
-    console.log('batchInit', chunkedInitInputParams[chunkIndex]);
     const tx3 = await waitForTx(
       await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
     );
@@ -272,7 +271,6 @@ export const configureReservesByHelper = async (
   helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
-  console.log('entering');
   const addressProvider = await getLendingPoolAddressesProvider();
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
   const tokens: string[] = [];
@@ -316,7 +314,6 @@ export const configureReservesByHelper = async (
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
-    console.log(assetSymbol);
     const { usageAsCollateralEnabled: alreadyEnabled } = await helpers.getReserveConfigurationData(
       tokenAddress
     );
