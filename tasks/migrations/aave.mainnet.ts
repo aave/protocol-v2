@@ -6,8 +6,7 @@ import { usingTenderly } from '../../helpers/tenderly-utils';
 
 task('aave:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .addFlag('deployRegistry')
-  .setAction(async ({ verify, deployRegistry }, DRE) => {
+  .setAction(async ({ verify }, DRE) => {
     const POOL_NAME = ConfigNames.Aave;
     await DRE.run('set-DRE');
 
@@ -19,10 +18,7 @@ task('aave:mainnet', 'Deploy development enviroment')
     console.log('Migration started\n');
 
     console.log('1. Deploy address provider');
-    await DRE.run('full:deploy-address-provider', {
-      pool: POOL_NAME,
-      deployRegistry,
-    });
+    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
 
     console.log('2. Deploy lending pool');
     await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
