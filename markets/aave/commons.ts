@@ -138,11 +138,11 @@ export const CommonsConfig: ICommonConfiguration = {
   ProviderRegistryOwner: {
     [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
     [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '0xbd723fc4f1d737dcfc48a07fe7336766d34cad5f',
+    [eEthereumNetwork.main]: '0xB9062896ec3A615a4e4444DF183F0531a77218AE',
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.tenderlyMain]: '0xbd723fc4f1d737dcfc48a07fe7336766d34cad5f',
+    [eEthereumNetwork.tenderlyMain]: '0xB9062896ec3A615a4e4444DF183F0531a77218AE',
   },
   LendingRateOracle: {
     [eEthereumNetwork.coverage]: '',
@@ -285,6 +285,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      xSUSHI: '0x9b26214bEC078E68a394AaEbfbffF406Ce14893F',
     },
     [eEthereumNetwork.tenderlyMain]: {
       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
@@ -307,6 +308,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      xSUSHI: '0x9b26214bEC078E68a394AaEbfbffF406Ce14893F',
     },
   },
   ReserveAssets: {

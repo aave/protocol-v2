@@ -12,6 +12,7 @@ import {
   getAaveProtocolDataProvider,
   getAToken,
   getATokensAndRatesHelper,
+  getFirstSigner,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
@@ -32,6 +33,7 @@ import {
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
 import { DefaultReserveInterestRateStrategy, DelegationAwareAToken } from '../types';
+import { config } from 'process';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -226,8 +228,19 @@ export const initReservesByHelper = async (
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
+    console.log('address', await (await getFirstSigner()).getAddress());
+    const prov = await getLendingPoolAddressesProvider();
+    console.log('admin', await prov.getPoolAdmin());
+    console.log('conf add', await prov.getLendingPoolConfigurator());
+    console.log(
+      'prior batch init',
+      configurator.address,
+      chunkedInitInputParams[chunkIndex].slice(0, 1)
+    );
     const tx3 = await waitForTx(
-      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
+      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex].slice(0, 1), {
+        gasLimit: '11000000',
+      })
     );
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
@@ -431,8 +444,9 @@ export const initTokenReservesByHelper = async (
     params: string;
   }[] = [];
 
-  const network =
-    process.env.MAINNET_FORK === 'true' ? eEthereumNetwork.main : (DRE.network.name as eNetwork);
+  const network = process.env.FORK
+    ? (process.env.FORK as eEthereumNetwork)
+    : (DRE.network.name as eNetwork);
   // Grab config from DB
   for (const [symbol, address] of Object.entries(tokenAddresses)) {
     const { aTokenAddress } = await protocolDataProvider.getReserveTokensAddresses(address);

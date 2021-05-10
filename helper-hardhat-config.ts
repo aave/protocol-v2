@@ -45,3 +45,16 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [ePolygonNetwork.matic]: 2 * GWEI,
   [eXDaiNetwork.xdai]: 1 * GWEI,
 };
+
+export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
+  [eEthereumNetwork.main]: 12406069,
+  [eEthereumNetwork.kovan]: undefined,
+  [eEthereumNetwork.ropsten]: undefined,
+  [eEthereumNetwork.coverage]: undefined,
+  [eEthereumNetwork.hardhat]: undefined,
+  [eEthereumNetwork.buidlerevm]: undefined,
+  [eEthereumNetwork.tenderlyMain]: 12406069,
+  [ePolygonNetwork.mumbai]: undefined,
+  [ePolygonNetwork.matic]: undefined,
+  [eXDaiNetwork.xdai]: undefined,
+};

@@ -5,7 +5,7 @@ import { HardhatUserConfig } from 'hardhat/types';
 import { accounts } from './test-wallets.js';
 import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
-import { NETWORKS_RPC_URL, NETWORKS_DEFAULT_GAS } from './helper-hardhat-config';
+import { NETWORKS_RPC_URL, NETWORKS_DEFAULT_GAS, BLOCK_TO_FORK } from './helper-hardhat-config';
 
 require('dotenv').config();
 
@@ -24,7 +24,7 @@ const HARDFORK = 'istanbul';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
-const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+const FORK = process.env.FORK || '';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
@@ -57,10 +57,13 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   },
 });
 
-const mainnetFork = MAINNET_FORK
+const forkMode = FORK
   ? {
-      blockNumber: 12012081,
-      url: NETWORKS_RPC_URL['main'],
+      url: NETWORKS_RPC_URL[FORK],
+      ...(FORK &&
+        BLOCK_TO_FORK[FORK] && {
+          blockNumber: BLOCK_TO_FORK[FORK],
+        }),
     }
   : undefined;
 
@@ -111,7 +114,7 @@ const buidlerConfig: HardhatUserConfig = {
         privateKey: secretKey,
         balance,
       })),
-      forking: mainnetFork,
+      forking: forkMode,
     },
     buidlerevm_docker: {
       hardfork: 'berlin',

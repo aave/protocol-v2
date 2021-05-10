@@ -191,7 +191,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       WMATIC: mockTokens.WMATIC.address,
       USD: USD_ADDRESS,
       STAKE: mockTokens.STAKE.address,
-      xSUSHI: mockTokens.xSUSHI.address
+      xSUSHI: mockTokens.xSUSHI.address,
     },
     fallbackOracle
   );
@@ -295,9 +295,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
-  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+  const FORK = process.env.FORK;
 
-  if (MAINNET_FORK) {
+  if (FORK) {
     await rawBRE.run('aave:mainnet');
   } else {
     console.log('-> Deploying test environment...');

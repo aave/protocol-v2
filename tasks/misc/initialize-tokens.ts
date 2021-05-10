@@ -22,8 +22,9 @@ task('full:initialize-tokens', 'Initialize lending pool configuration.')
     try {
       await DRE.run('set-DRE');
       let signer: Signer;
-      const network =
-        process.env.MAINNET_FORK === 'true' ? eEthereumNetwork.main : <eNetwork>DRE.network.name;
+      const network = process.env.FORK
+        ? (process.env.FORK as eNetwork)
+        : <eNetwork>DRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
 
@@ -46,7 +47,7 @@ task('full:initialize-tokens', 'Initialize lending pool configuration.')
         throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
       }
 
-      if (process.env.MAINNET_FORK === 'true') {
+      if (process.env.FORK) {
         await DRE.network.provider.request({
           method: 'hardhat_impersonateAccount',
           params: [providerRegistryOwner],

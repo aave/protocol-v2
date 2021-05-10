@@ -56,7 +56,7 @@ task('add-market-to-registry', 'Adds address provider to registry')
     }
 
     // Checks if deployer address is registry owner
-    if (process.env.MAINNET_FORK === 'true') {
+    if (process.env.FORK) {
       await DRE.network.provider.request({
         method: 'hardhat_impersonateAccount',
         params: [providerRegistryOwner],
@@ -64,8 +64,7 @@ task('add-market-to-registry', 'Adds address provider to registry')
       signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
       const firstAccount = await getFirstSigner();
       await firstAccount.sendTransaction({ value: parseEther('10'), to: providerRegistryOwner });
-    }
-    if (
+    } else if (
       !deployed &&
       providerRegistryOwner.toLocaleLowerCase() !== currentSignerAddress.toLocaleLowerCase()
     ) {
