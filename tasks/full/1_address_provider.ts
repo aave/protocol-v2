@@ -1,12 +1,15 @@
 import { task } from 'hardhat/config';
 import { deployLendingPoolAddressesProvider } from '../../helpers/contracts-deployments';
-import { waitForTx } from '../../helpers/misc-utils';
+import { notFalsyOrZeroAddress, waitForTx } from '../../helpers/misc-utils';
 import {
   ConfigNames,
   loadPoolConfig,
   getGenesisPoolAdmin,
   getEmergencyAdmin,
 } from '../../helpers/configuration';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { eNetwork } from '../../helpers/types';
+import { isZeroAddress } from 'ethereumjs-util';
 //import BigNumber from 'bignumber.js';
 
 task(
@@ -15,7 +18,8 @@ task(
 )
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({ verify, pool }, DRE) => {
+  .addFlag('skipRegistry')
+  .setAction(async ({ verify, pool, skipRegistry }, DRE) => {
     await DRE.run('set-DRE');
     const poolConfig = loadPoolConfig(pool);
     const { MarketId } = poolConfig;
@@ -23,8 +27,20 @@ task(
     // 1. Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(MarketId, verify);
 
-    // 2. Set pool admins
+    // 2. Add to registry or setup a new one
+    if (!skipRegistry) {
+      const providerRegistryAddress = getParamPerNetwork(
+        poolConfig.ProviderRegistry,
+        <eNetwork>DRE.network.name
+      );
 
+      await DRE.run('add-market-to-registry', {
+        pool,
+        addressesProvider: addressesProvider.address,
+        deployRegistry: !notFalsyOrZeroAddress(providerRegistryAddress),
+      });
+    }
+    // 3. Set pool admins
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 

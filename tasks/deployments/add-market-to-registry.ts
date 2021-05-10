@@ -11,6 +11,7 @@ import {
 import { isAddress, parseEther } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
 import { Signer } from 'ethers';
+import { exit } from 'process';
 
 task('add-market-to-registry', 'Adds address provider to registry')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
@@ -26,6 +27,10 @@ task('add-market-to-registry', 'Adds address provider to registry')
 
     let providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
     let providerRegistryOwner = getParamPerNetwork(poolConfig.ProviderRegistryOwner, network);
+    const currentSignerAddress = await (
+      await (await getFirstSigner()).getAddress()
+    ).toLocaleLowerCase();
+    let deployed = false;
 
     if (
       deployRegistry ||
@@ -39,6 +44,7 @@ task('add-market-to-registry', 'Adds address provider to registry')
 
       providerRegistryAddress = (await getLendingPoolAddressesProviderRegistry()).address;
       providerRegistryOwner = await (await getFirstSigner()).getAddress();
+      deployed = true;
     }
 
     if (
@@ -58,6 +64,15 @@ task('add-market-to-registry', 'Adds address provider to registry')
       signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
       const firstAccount = await getFirstSigner();
       await firstAccount.sendTransaction({ value: parseEther('10'), to: providerRegistryOwner });
+    }
+    if (
+      !deployed &&
+      providerRegistryOwner.toLocaleLowerCase() !== currentSignerAddress.toLocaleLowerCase()
+    ) {
+      console.error('ProviderRegistryOwner config does not match current signer:');
+      console.error('Expected:', providerRegistryOwner);
+      console.error('Current:', currentSignerAddress);
+      exit(2);
     } else {
       signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
     }
