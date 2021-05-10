@@ -283,7 +283,7 @@ library ValidationLogic {
     IERC20 stableDebtToken,
     IERC20 variableDebtToken,
     address aTokenAddress
-  ) internal view {
+  ) external view {
     (bool isActive, , , ) = reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
@@ -315,7 +315,7 @@ library ValidationLogic {
    */
   function validateSetUseReserveAsCollateral(
     DataTypes.ReserveData storage reserve
-  ) internal view {
+  ) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
 
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);

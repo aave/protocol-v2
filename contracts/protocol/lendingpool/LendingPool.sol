@@ -936,6 +936,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address to
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
 
     address aToken = reserve.aTokenAddress;
 
@@ -953,21 +954,24 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
-    if (amountToWithdraw == userBalance) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
-    }
-
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
-    ValidationLogic.validateHealthFactor(
-      msg.sender,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
+    if (userConfig.isUsingAsCollateral(reserve.id)) {
+
+      ValidationLogic.validateHealthFactor(
+        msg.sender,
+        _reserves,
+        userConfig,
+        _reservesList,
+        _reservesCount,
+        _addressesProvider.getPriceOracle()
+      );
+
+      if (amountToWithdraw == userBalance) {
+        userConfig.setUsingAsCollateral(reserve.id, false);
+        emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+      }
+    }
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
 
