@@ -228,19 +228,8 @@ export const initReservesByHelper = async (
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
-    console.log('address', await (await getFirstSigner()).getAddress());
-    const prov = await getLendingPoolAddressesProvider();
-    console.log('admin', await prov.getPoolAdmin());
-    console.log('conf add', await prov.getLendingPoolConfigurator());
-    console.log(
-      'prior batch init',
-      configurator.address,
-      chunkedInitInputParams[chunkIndex].slice(0, 1)
-    );
     const tx3 = await waitForTx(
-      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex].slice(0, 1), {
-        gasLimit: '11000000',
-      })
+      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
     );
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
