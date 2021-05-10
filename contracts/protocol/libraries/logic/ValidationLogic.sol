@@ -40,19 +40,15 @@ library ValidationLogic {
    * @param reserve The reserve object on which the user is depositing
    * @param amount The amount to be deposited
    */
-<<<<<<< HEAD
   function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) internal view {
     DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
-    (bool isActive, bool isFrozen, , ) = reserveConfiguration.getFlagsMemory();
+    (bool isActive, bool isFrozen, , bool isPaused) = reserveConfiguration.getFlagsMemory();
     (, , , uint256 reserveDecimals, ) = reserveConfiguration.getParamsMemory();
     uint256 supplyCap = reserveConfiguration.getSupplyCapMemory();
-=======
-  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
-    (bool isActive, bool isFrozen, , , ) = reserve.configuration.getFlags();
->>>>>>> 2e1af3c (feat: added bool isPaused in data reserve config)
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
     require(
       supplyCap == 0 ||
@@ -76,8 +72,9 @@ library ValidationLogic {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
-    (bool isActive, , , , ) = reservesData[reserveAddress].configuration.getFlags();
+    (bool isActive, , , , bool isPaused) = reservesData[reserveAddress].configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
   }
 
   struct ValidateBorrowLocalVars {
@@ -130,7 +127,6 @@ library ValidationLogic {
   ) internal view {
     ValidateBorrowLocalVars memory vars;
 
-<<<<<<< HEAD
     DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
     (, , , vars.reserveDecimals, ) = reserveConfiguration.getParamsMemory();
 
@@ -138,13 +134,9 @@ library ValidationLogic {
       vars.isActive,
       vars.isFrozen,
       vars.borrowingEnabled,
-      vars.stableRateBorrowingEnabled
+      vars.stableRateBorrowingEnabled,
+      vars.isPaused
     ) = reserveConfiguration.getFlagsMemory();
-=======
-    (vars.isActive, vars.isFrozen, vars.borrowingEnabled, vars.stableRateBorrowingEnabled, vars.isPaused) = reserve
-      .configuration
-      .getFlags();
->>>>>>> 2e1af3c (feat: added bool isPaused in data reserve config)
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!vars.isPaused, Errors.VL_RESERVE_PAUSED);
@@ -251,9 +243,9 @@ library ValidationLogic {
     uint256 stableDebt,
     uint256 variableDebt
   ) external view {
-    bool isActive = reserve.configuration.getActive();
-
+    (bool isActive, , , , bool isPaused) = reserve.configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
@@ -363,6 +355,9 @@ library ValidationLogic {
    */
   function validateSetUseReserveAsCollateral(DataTypes.ReserveData storage reserve) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
+    bool isPaused = reserve.configuration.getPaused();
+
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
   }
@@ -372,7 +367,17 @@ library ValidationLogic {
    * @param assets The assets being flashborrowed
    * @param amounts The amounts for each asset being borrowed
    **/
-  function validateFlashloan(address[] memory assets, uint256[] memory amounts) external pure {
+  function validateFlashloan(
+    address[] memory assets, 
+    uint256[] memory amounts,
+    mapping(address => DataTypes.ReserveData) storage reservesData
+  ) external view {
+    for (uint i = 0; i < assets.length; i++) { 
+      require(
+        !reservesData[assets[i]].configuration.getPaused(),
+        Errors.VL_RESERVE_PAUSED
+      );
+    } 
     require(assets.length == amounts.length, Errors.VL_INCONSISTENT_FLASHLOAN_PARAMS);
   }
 
@@ -399,6 +404,14 @@ library ValidationLogic {
       return (
         uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE),
         Errors.VL_NO_ACTIVE_RESERVE
+      );
+    }
+    if (
+      collateralReserve.configuration.getPaused() || principalReserve.configuration.getPaused()
+    ) {
+      return (
+        uint256(Errors.CollateralManagerErrors.PAUSED_RESERVE),
+        Errors.VL_RESERVE_PAUSED
       );
     }
 
@@ -441,6 +454,7 @@ library ValidationLogic {
    * @param oracle The price oracle
    */
   function validateHealthFactor(
+    address reserveAddress,
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -448,6 +462,8 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) internal view {
+    bool isPaused = reservesData[reserveAddress].configuration.getPaused();
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
     (, , , , uint256 healthFactor) =
       GenericLogic.calculateUserAccountData(
         from,
