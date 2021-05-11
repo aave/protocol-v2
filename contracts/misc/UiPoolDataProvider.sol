@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
+import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController.sol';
 import {IUiPoolDataProvider} from './interfaces/IUiPoolDataProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -24,6 +25,13 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
+  IAaveIncentivesController public immutable incentivesController;
+  IPriceOracleGetter public immutable oracle;
+
+  constructor(IAaveIncentivesController _incentivesController, IPriceOracleGetter _oracle) public {
+    incentivesController = _incentivesController;
+    oracle = _oracle;
+  }
 
   function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
     internal
@@ -50,11 +58,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     returns (
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
+      uint256,
       uint256
     )
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
-    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     address[] memory reserves = lendingPool.getReservesList();
     DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
@@ -122,7 +130,43 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
       );
 
+      // incentives
+      if (address(0) != address(incentivesController)) {
+        (
+          reserveData.aEmissionPerSecond,
+          reserveData.aIncentivesLastUpdateTimestamp,
+          reserveData.aTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.aTokenAddress);
+
+        (
+          reserveData.sEmissionPerSecond,
+          reserveData.sIncentivesLastUpdateTimestamp,
+          reserveData.sTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
+
+        (
+          reserveData.vEmissionPerSecond,
+          reserveData.vIncentivesLastUpdateTimestamp,
+          reserveData.vTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);
+      }
+
       if (user != address(0)) {
+        // incentives
+        if (address(0) != address(incentivesController)) {
+          userReservesData[i].aTokenincentivesUserIndex = incentivesController.getUserAssetData(
+            user,
+            reserveData.aTokenAddress
+          );
+          userReservesData[i].vTokenincentivesUserIndex = incentivesController.getUserAssetData(
+            user,
+            reserveData.variableDebtTokenAddress
+          );
+          userReservesData[i].sTokenincentivesUserIndex = incentivesController.getUserAssetData(
+            user,
+            reserveData.stableDebtTokenAddress
+          );
+        }
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
         userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
@@ -155,6 +199,12 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         }
       }
     }
-    return (reservesData, userReservesData, oracle.getAssetPrice(MOCK_USD_ADDRESS));
+
+    return (
+      reservesData,
+      userReservesData,
+      oracle.getAssetPrice(MOCK_USD_ADDRESS),
+      incentivesController.getUserUnclaimedRewards(user)
+    );
   }
 }
