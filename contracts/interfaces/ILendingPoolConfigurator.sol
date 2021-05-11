@@ -202,4 +202,14 @@ interface ILendingPoolConfigurator {
     address indexed proxy,
     address indexed implementation
   );
+
+  event RiskAdminRegistered(address indexed admin);
+
+  event RiskAdminUnregistered(address indexed admin);
+
+  function registerRiskAdmin(address admin) external;
+
+  function unregisterRiskAdmin(address admin) external;
+
+  function isRiskAdmin(address admin) external view returns (bool);
 }

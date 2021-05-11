@@ -33,6 +33,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   ILendingPoolAddressesProvider internal addressesProvider;
   ILendingPool internal pool;
 
+  mapping(address => bool) private _riskAdmins;
+
   modifier onlyPoolAdmin {
     require(addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
     _;
@@ -48,13 +50,20 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   modifier onlyEmergencyOrPoolAdmin {
     require(
-      addressesProvider.getEmergencyAdmin() == msg.sender
-        || addressesProvider.getPoolAdmin() == msg.sender,
+      addressesProvider.getEmergencyAdmin() == msg.sender ||
+        addressesProvider.getPoolAdmin() == msg.sender,
       Errors.LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN
     );
     _;
   }
 
+  modifier onlyRiskOrPoolAdmins {
+    require(
+      _riskAdmins[msg.sender] || addressesProvider.getPoolAdmin() == msg.sender,
+      Errors.LPC_CALLER_NOT_RISK_OR_POOL_ADMIN
+    );
+    _;
+  }
 
   uint256 internal constant CONFIGURATOR_REVISION = 0x1;
 
@@ -162,7 +171,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableAToken.initialize.selector,
         cachedPool,
         input.treasury,
@@ -174,11 +184,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
         input.params
       );
 
-    _upgradeTokenImplementation(
-      reserveData.aTokenAddress,
-      input.implementation,
-      encodedCall
-    );
+    _upgradeTokenImplementation(reserveData.aTokenAddress, input.implementation, encodedCall);
 
     emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
   }
@@ -190,10 +196,11 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
-     
+
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -220,17 +227,15 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev Updates the variable debt token implementation for the asset
    **/
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
-    external
-    onlyPoolAdmin
-  {
+  function updateVariableDebtToken(UpdateDebtTokenInput calldata input) external onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -259,10 +264,11 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
-  function enableBorrowingOnReserve(address asset, uint256 borrowCap, bool stableBorrowRateEnabled)
-    external
-    onlyPoolAdmin
-  {
+  function enableBorrowingOnReserve(
+    address asset,
+    uint256 borrowCap,
+    bool stableBorrowRateEnabled
+  ) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(true);
@@ -278,7 +284,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @dev Disables borrowing on a reserve
    * @param asset The address of the underlying asset of the reserve
    **/
-  function disableBorrowingOnReserve(address asset) external onlyPoolAdmin {
+  function disableBorrowingOnReserve(address asset) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(false);
@@ -301,7 +307,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     uint256 ltv,
     uint256 liquidationThreshold,
     uint256 liquidationBonus
-  ) external onlyPoolAdmin {
+  ) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     //validation of the parameters: the LTV can
@@ -344,7 +350,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @dev Enable stable rate borrowing on a reserve
    * @param asset The address of the underlying asset of the reserve
    **/
-  function enableReserveStableRate(address asset) external onlyPoolAdmin {
+  function enableReserveStableRate(address asset) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setStableRateBorrowingEnabled(true);
@@ -358,7 +364,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @dev Disable stable rate borrowing on a reserve
    * @param asset The address of the underlying asset of the reserve
    **/
-  function disableReserveStableRate(address asset) external onlyPoolAdmin {
+  function disableReserveStableRate(address asset) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setStableRateBorrowingEnabled(false);
@@ -460,7 +466,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param reserveFactor The new reserve factor of the reserve
    **/
-  function setReserveFactor(address asset, uint256 reserveFactor) external onlyPoolAdmin {
+  function setReserveFactor(address asset, uint256 reserveFactor) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setReserveFactor(reserveFactor);
@@ -475,7 +481,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param borrowCap The new borrow of the reserve
    **/
-  function setBorrowCap(address asset, uint256 borrowCap) external onlyPoolAdmin {
+  function setBorrowCap(address asset, uint256 borrowCap) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowCap(borrowCap);
@@ -490,7 +496,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param supplyCap The new supply of the reserve
    **/
-  function setSupplyCap(address asset, uint256 supplyCap) external onlyPoolAdmin {
+  function setSupplyCap(address asset, uint256 supplyCap) external onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setSupplyCap(supplyCap);
@@ -507,7 +513,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    **/
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
-    onlyPoolAdmin
+    onlyRiskOrPoolAdmins
   {
     pool.setReserveInterestRateStrategyAddress(asset, rateStrategyAddress);
     emit ReserveInterestRateStrategyChanged(asset, rateStrategyAddress);
@@ -519,6 +525,20 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    **/
   function setPoolPause(bool val) external onlyEmergencyAdmin {
     pool.setPause(val);
+  }
+
+  function registerRiskAdmin(address admin) external override onlyPoolAdmin {
+    _riskAdmins[admin] = true;
+    emit RiskAdminRegistered(admin);
+  }
+
+  function unregisterRiskAdmin(address admin) external override onlyPoolAdmin {
+    _riskAdmins[admin] = false;
+    emit RiskAdminUnregistered(admin);
+  }
+
+  function isRiskAdmin(address admin) external view override onlyPoolAdmin returns (bool) {
+    return _riskAdmins[admin];
   }
 
   function _initTokenWithProxy(address implementation, bytes memory initParams)
