@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { IAaveConfiguration, EthereumNetwork, eEthereumNetwork } from '../../helpers/types';
+import { IAaveConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -22,6 +22,7 @@ import {
   strategyWBTC,
   strategyWETH,
   strategyYFI,
+  strategyXSUSHI,
   strategyOneInch,
 } from './reservesConfigs';
 
@@ -54,13 +55,14 @@ export const AaveConfig: IAaveConfiguration = {
     WETH: strategyWETH,
     YFI: strategyYFI,
     ZRX: strategyZRX,
+    xSUSHI: strategyXSUSHI,
     '1INCH': strategyOneInch,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
-    [EthereumNetwork.kovan]: {
+    [eEthereumNetwork.kovan]: {
       AAVE: '0xB597cd8D3217ea6477232F9217fa70837ff667Af',
       BAT: '0x2d12186Fbb9f9a8C28B3FfdD4c42920f8539D738',
       BUSD: '0x4c6E1EFC12FDfD568186b7BAEc0A43fFfb4bCcCf',
@@ -83,7 +85,7 @@ export const AaveConfig: IAaveConfiguration = {
       ZRX: '0xD0d76886cF8D952ca26177EB7CfDf83bad08C00C',
       '1INCH': '0x111111111117dC0aa78b770fA6A738034120C302',
     },
-    [EthereumNetwork.ropsten]: {
+    [eEthereumNetwork.ropsten]: {
       AAVE: '',
       BAT: '0x85B24b3517E3aC7bf72a14516160541A60cFF19d',
       BUSD: '0xFA6adcFf6A90c11f31Bc9bb59eC0a6efB38381C6',
@@ -106,7 +108,7 @@ export const AaveConfig: IAaveConfiguration = {
       ZRX: '0x02d7055704EfF050323A2E5ee4ba05DB2A588959',
       '1INCH': '0x111111111117dC0aa78b770fA6A738034120C302',
     },
-    [EthereumNetwork.main]: {
+    [eEthereumNetwork.main]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
@@ -127,9 +129,10 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
+      xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272',
       '1INCH': '0x111111111117dC0aa78b770fA6A738034120C302',
     },
-    [EthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderlyMain]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
@@ -150,6 +153,7 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
+      xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272',
       '1INCH': '0x111111111117dC0aa78b770fA6A738034120C302',
     },
   },

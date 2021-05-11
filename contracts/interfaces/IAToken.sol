@@ -3,8 +3,10 @@ pragma solidity 0.6.12;
 
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
+import {IInitializableAToken} from './IInitializableAToken.sol';
+import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
 
-interface IAToken is IERC20, IScaledBalanceToken {
+interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
   /**
    * @dev Emitted after the mint action
    * @param from The address performing the mint
@@ -80,9 +82,26 @@ interface IAToken is IERC20, IScaledBalanceToken {
   /**
    * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
    * assets in borrow(), withdraw() and flashLoan()
-   * @param user The recipient of the aTokens
+   * @param user The recipient of the underlying
    * @param amount The amount getting transferred
    * @return The amount transferred
    **/
   function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
+
+  /**
+   * @dev Invoked to execute actions on the aToken side after a repayment.
+   * @param user The user executing the repayment
+   * @param amount The amount getting repaid
+   **/
+  function handleRepayment(address user, uint256 amount) external;
+
+  /**
+   * @dev Returns the address of the incentives controller contract
+   **/
+  function getIncentivesController() external view returns (IAaveIncentivesController);
+
+  /**
+   * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
+   **/
+  function UNDERLYING_ASSET_ADDRESS() external view returns (address);
 }

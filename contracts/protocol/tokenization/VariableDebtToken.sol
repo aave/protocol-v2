@@ -5,6 +5,8 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
+import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 
 /**
  * @title VariableDebtToken
@@ -17,13 +19,46 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   uint256 public constant DEBT_TOKEN_REVISION = 0x1;
 
-  constructor(
-    address pool,
+  ILendingPool internal _pool;
+  address internal _underlyingAsset;
+  IAaveIncentivesController internal _incentivesController;
+
+  /**
+   * @dev Initializes the debt token.
+   * @param pool The address of the lending pool where this aToken will be used
+   * @param underlyingAsset The address of the underlying asset of this aToken (E.g. WETH for aWETH)
+   * @param incentivesController The smart contract managing potential incentives distribution
+   * @param debtTokenDecimals The decimals of the debtToken, same as the underlying asset's
+   * @param debtTokenName The name of the token
+   * @param debtTokenSymbol The symbol of the token
+   */
+  function initialize(
+    ILendingPool pool,
     address underlyingAsset,
-    string memory name,
-    string memory symbol,
-    address incentivesController
-  ) public DebtTokenBase(pool, underlyingAsset, name, symbol, incentivesController) {}
+    IAaveIncentivesController incentivesController,
+    uint8 debtTokenDecimals,
+    string memory debtTokenName,
+    string memory debtTokenSymbol,
+    bytes calldata params
+  ) public override initializer {
+    _setName(debtTokenName);
+    _setSymbol(debtTokenSymbol);
+    _setDecimals(debtTokenDecimals);
+
+    _pool = pool;
+    _underlyingAsset = underlyingAsset;
+    _incentivesController = incentivesController;
+
+    emit Initialized(
+      underlyingAsset,
+      address(pool),
+      address(incentivesController),
+      debtTokenDecimals,
+      debtTokenName,
+      debtTokenSymbol,
+      params
+    );
+  }
 
   /**
    * @dev Gets the revision of the stable debt token implementation
@@ -44,7 +79,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       return 0;
     }
 
-    return scaledBalance.rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET_ADDRESS));
+    return scaledBalance.rayMul(_pool.getReserveNormalizedVariableDebt(_underlyingAsset));
   }
 
   /**
@@ -113,8 +148,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return The total supply
    **/
   function totalSupply() public view virtual override returns (uint256) {
-    return
-      super.totalSupply().rayMul(POOL.getReserveNormalizedVariableDebt(UNDERLYING_ASSET_ADDRESS));
+    return super.totalSupply().rayMul(_pool.getReserveNormalizedVariableDebt(_underlyingAsset));
   }
 
   /**
@@ -138,5 +172,38 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     returns (uint256, uint256)
   {
     return (super.balanceOf(user), super.totalSupply());
+  }
+
+  /**
+   * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
+   **/
+  function UNDERLYING_ASSET_ADDRESS() public view returns (address) {
+    return _underlyingAsset;
+  }
+
+  /**
+   * @dev Returns the address of the incentives controller contract
+   **/
+  function getIncentivesController() external view override returns (IAaveIncentivesController) {
+    return _getIncentivesController();
+  }
+
+  /**
+   * @dev Returns the address of the lending pool where this aToken is used
+   **/
+  function POOL() public view returns (ILendingPool) {
+    return _pool;
+  }
+
+  function _getIncentivesController() internal view override returns (IAaveIncentivesController) {
+    return _incentivesController;
+  }
+
+  function _getUnderlyingAssetAddress() internal view override returns (address) {
+    return _underlyingAsset;
+  }
+
+  function _getLendingPool() internal view override returns (ILendingPool) {
+    return _pool;
   }
 }
