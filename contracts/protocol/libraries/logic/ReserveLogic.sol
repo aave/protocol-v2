@@ -216,15 +216,15 @@ library ReserveLogic {
       .scaledTotalSupply()
       .rayMul(reserve.variableBorrowIndex);
 
-    vars.availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress);
-
     (
       vars.newLiquidityRate,
       vars.newStableRate,
       vars.newVariableRate
     ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
       reserveAddress,
-      vars.availableLiquidity.add(liquidityAdded).sub(liquidityTaken),
+      aTokenAddress,
+      liquidityAdded,
+      liquidityTaken,
       vars.totalStableDebt,
       vars.totalVariableDebt,
       vars.avgStableRate,

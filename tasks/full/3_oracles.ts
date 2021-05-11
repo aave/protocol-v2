@@ -2,7 +2,7 @@ import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
-import { ICommonConfiguration, eEthereumNetwork, SymbolMap } from '../../helpers/types';
+import { ICommonConfiguration, eNetwork, SymbolMap } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
   ConfigNames,
@@ -17,6 +17,7 @@ import {
   getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
+import { AaveOracle } from '../../types';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -24,7 +25,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .setAction(async ({ verify, pool }, DRE) => {
     try {
       await DRE.run('set-DRE');
-      const network = <eEthereumNetwork>DRE.network.name;
+      const network = <eNetwork>DRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const {
         ProtocolGlobalParams: { UsdAddress },
@@ -47,26 +48,39 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       };
       const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
 
-      const aaveOracle = notFalsyOrZeroAddress(aaveOracleAddress)
-        ? await getAaveOracle(aaveOracleAddress)
-        : await deployAaveOracle(
-            [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
-            verify
-          );
-      const lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)
+      let aaveOracle: AaveOracle;
+      if (notFalsyOrZeroAddress(aaveOracleAddress)) {
+        aaveOracle = await await getAaveOracle(aaveOracleAddress);
+        const owner = await aaveOracle.owner();
+        const signer = DRE.ethers.provider.getSigner(owner);
+
+        aaveOracle = await (await getAaveOracle(aaveOracleAddress)).connect(signer);
+        await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
+      } else {
+        aaveOracle = await deployAaveOracle(
+          [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
+          verify
+        );
+      }
+
+      let lendingRateOracle = notFalsyOrZeroAddress(lendingRateOracleAddress)
         ? await getLendingRateOracle(lendingRateOracleAddress)
         : await deployLendingRateOracle(verify);
       const { USD, ...tokensAddressesWithoutUsd } = tokensToWatch;
 
-      if (!lendingRateOracleAddress) {
-        await setInitialMarketRatesInRatesOracleByHelper(
-          lendingRateOracles,
-          tokensAddressesWithoutUsd,
-          lendingRateOracle,
-          admin
-        );
-      }
-
+      lendingRateOracle = lendingRateOracle.connect(
+        DRE.ethers.provider.getSigner(await lendingRateOracle.owner())
+      );
+      // This must be done any time a new market is created I believe
+      //if (!lendingRateOracleAddress) {
+      await setInitialMarketRatesInRatesOracleByHelper(
+        lendingRateOracles,
+        tokensAddressesWithoutUsd,
+        lendingRateOracle,
+        admin
+      );
+      //}
+      console.log('ORACLES: %s and %s', aaveOracle.address, lendingRateOracle.address);
       // Register the proxy price provider on the addressesProvider
       await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));

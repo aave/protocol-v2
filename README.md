@@ -1,3 +1,5 @@
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Build pass](https://github.com/AAVE/protocol-v2/actions/workflows/node.js.yml/badge.svg)](https://github.com/aave/protocol-v2/actions/workflows/node.js.yml)
 ```
         .///.                .///.     //.            .//  `/////////////-
        `++:++`              .++:++`    :++`          `++:  `++:......---.`
@@ -53,8 +55,8 @@ import {ILendingPool} from "@aave/protocol-v2/contracts/interfaces/ILendingPool.
 
 contract Misc {
 
-  function deposit(address pool, address token, address user, uint256 amount) {
-    ILendingPool(pool).deposit(token, amount, user, '0');
+  function deposit(address pool, address token, address user, uint256 amount) public {
+    ILendingPool(pool).deposit(token, amount, user, 0);
     {...}
   }
 }
