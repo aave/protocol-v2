@@ -1,7 +1,7 @@
-import {exit} from 'process';
+import { exit } from 'process';
 import fs from 'fs';
-import {file} from 'tmp-promise';
-import {DRE} from './misc-utils';
+import { file } from 'tmp-promise';
+import { DRE } from './misc-utils';
 
 const fatalErrors = [
   `The address provided as argument contains a contract, but its bytecode`,
@@ -43,7 +43,7 @@ export const verifyContract = async (
     const msDelay = 3000;
     const times = 4;
     // Write a temporal file to host complex parameters for buidler-etherscan https://github.com/nomiclabs/buidler/tree/development/packages/buidler-etherscan#complex-arguments
-    const {fd, path, cleanup} = await file({
+    const { fd, path, cleanup } = await file({
       prefix: 'verify-params-',
       postfix: '.js',
     });

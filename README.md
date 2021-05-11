@@ -1,3 +1,5 @@
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Build pass](https://github.com/AAVE/protocol-v2/actions/workflows/node.js.yml/badge.svg)](https://github.com/aave/protocol-v2/actions/workflows/node.js.yml)
 ```
         .///.                .///.     //.            .//  `/////////////-
        `++:++`              .++:++`    :++`          `++:  `++:......---.`
@@ -39,6 +41,37 @@ A more detailed and technical description of the protocol can be found in this r
 ## Connect with the community
 
 You can join at the [Discord](http://aave.com/discord) channel or at the [Governance Forum](https://governance.aave.com/) for asking questions about the protocol or talk about Aave with other peers.
+
+## Getting Started
+
+You can install `@aave/protocol-v2` as an NPM package in your Hardhat, Buidler or Truffle project to import the contracts and interfaces:
+
+`npm install @aave/protocol-v2`
+
+Import at Solidity files:
+
+```
+import {ILendingPool} from "@aave/protocol-v2/contracts/interfaces/ILendingPool.sol";
+
+contract Misc {
+
+  function deposit(address pool, address token, address user, uint256 amount) public {
+    ILendingPool(pool).deposit(token, amount, user, 0);
+    {...}
+  }
+}
+```
+
+The JSON artifacts with the ABI and Bytecode are also included into the bundled NPM package at `artifacts/` directory.
+
+Import JSON file via Node JS `require`:
+
+```
+const LendingPoolV2Artifact = require('@aave/protocol-v2/artifacts/contracts/protocol/lendingpool/LendingPool.sol/LendingPool.json');
+
+// Log the ABI into console
+console.log(LendingPoolV2Artifact.abi)
+```
 
 ## Setup
 

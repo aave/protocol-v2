@@ -10,11 +10,14 @@ import {
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {ITokenConfiguration} from '../../interfaces/ITokenConfiguration.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
+import {IInitializableDebtToken} from '../../interfaces/IInitializableDebtToken.sol';
+import {IInitializableAToken} from '../../interfaces/IInitializableAToken.sol';
+import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ILendingPoolConfigurator} from '../../interfaces/ILendingPoolConfigurator.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -22,146 +25,10 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
  * @dev Implements the configuration methods for the Aave protocol
  **/
 
-contract LendingPoolConfigurator is VersionedInitializable {
+contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigurator {
   using SafeMath for uint256;
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
-
-  /**
-   * @dev Emitted when a reserve is initialized.
-   * @param asset The address of the underlying asset of the reserve
-   * @param aToken The address of the associated aToken contract
-   * @param stableDebtToken The address of the associated stable rate debt token
-   * @param variableDebtToken The address of the associated variable rate debt token
-   * @param interestRateStrategyAddress The address of the interest rate strategy for the reserve
-   **/
-  event ReserveInitialized(
-    address indexed asset,
-    address indexed aToken,
-    address stableDebtToken,
-    address variableDebtToken,
-    address interestRateStrategyAddress
-  );
-
-  /**
-   * @dev Emitted when borrowing is enabled on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @param stableRateEnabled True if stable rate borrowing is enabled, false otherwise
-   **/
-  event BorrowingEnabledOnReserve(address indexed asset, bool stableRateEnabled);
-
-  /**
-   * @dev Emitted when borrowing is disabled on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event BorrowingDisabledOnReserve(address indexed asset);
-
-  /**
-   * @dev Emitted when the collateralization risk parameters for the specified asset are updated.
-   * @param asset The address of the underlying asset of the reserve
-   * @param ltv The loan to value of the asset when used as collateral
-   * @param liquidationThreshold The threshold at which loans using this asset as collateral will be considered undercollateralized
-   * @param liquidationBonus The bonus liquidators receive to liquidate this asset
-   **/
-  event CollateralConfigurationChanged(
-    address indexed asset,
-    uint256 ltv,
-    uint256 liquidationThreshold,
-    uint256 liquidationBonus
-  );
-
-  /**
-   * @dev Emitted when stable rate borrowing is enabled on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event StableRateEnabledOnReserve(address indexed asset);
-
-  /**
-   * @dev Emitted when stable rate borrowing is disabled on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event StableRateDisabledOnReserve(address indexed asset);
-
-  /**
-   * @dev Emitted when a reserve is activated
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event ReserveActivated(address indexed asset);
-
-  /**
-   * @dev Emitted when a reserve is deactivated
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event ReserveDeactivated(address indexed asset);
-
-  /**
-   * @dev Emitted when a reserve is frozen
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event ReserveFrozen(address indexed asset);
-
-  /**
-   * @dev Emitted when a reserve is unfrozen
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event ReserveUnfrozen(address indexed asset);
-
-  /**
-   * @dev Emitted when a reserve factor is updated
-   * @param asset The address of the underlying asset of the reserve
-   * @param factor The new reserve factor
-   **/
-  event ReserveFactorChanged(address indexed asset, uint256 factor);
-
-  /**
-   * @dev Emitted when the reserve decimals are updated
-   * @param asset The address of the underlying asset of the reserve
-   * @param decimals The new decimals
-   **/
-  event ReserveDecimalsChanged(address indexed asset, uint256 decimals);
-
-  /**
-   * @dev Emitted when a reserve interest strategy contract is updated
-   * @param asset The address of the underlying asset of the reserve
-   * @param strategy The new address of the interest strategy contract
-   **/
-  event ReserveInterestRateStrategyChanged(address indexed asset, address strategy);
-
-  /**
-   * @dev Emitted when an aToken implementation is upgraded
-   * @param asset The address of the underlying asset of the reserve
-   * @param proxy The aToken proxy address
-   * @param implementation The new aToken implementation
-   **/
-  event ATokenUpgraded(
-    address indexed asset,
-    address indexed proxy,
-    address indexed implementation
-  );
-
-  /**
-   * @dev Emitted when the implementation of a stable debt token is upgraded
-   * @param asset The address of the underlying asset of the reserve
-   * @param proxy The stable debt token proxy address
-   * @param implementation The new aToken implementation
-   **/
-  event StableDebtTokenUpgraded(
-    address indexed asset,
-    address indexed proxy,
-    address indexed implementation
-  );
-
-  /**
-   * @dev Emitted when the implementation of a variable debt token is upgraded
-   * @param asset The address of the underlying asset of the reserve
-   * @param proxy The variable debt token proxy address
-   * @param implementation The new aToken implementation
-   **/
-  event VariableDebtTokenUpgraded(
-    address indexed asset,
-    address indexed proxy,
-    address indexed implementation
-  );
 
   ILendingPoolAddressesProvider internal addressesProvider;
   ILendingPool internal pool;
@@ -191,114 +58,189 @@ contract LendingPoolConfigurator is VersionedInitializable {
   }
 
   /**
-   * @dev Initializes a reserve
-   * @param aTokenImpl  The address of the aToken contract implementation
-   * @param stableDebtTokenImpl The address of the stable debt token contract
-   * @param variableDebtTokenImpl The address of the variable debt token contract
-   * @param underlyingAssetDecimals The decimals of the reserve underlying asset
-   * @param interestRateStrategyAddress The address of the interest rate strategy contract for this reserve
+   * @dev Initializes reserves in batch
    **/
-  function initReserve(
-    address aTokenImpl,
-    address stableDebtTokenImpl,
-    address variableDebtTokenImpl,
-    uint8 underlyingAssetDecimals,
-    address interestRateStrategyAddress
-  ) public onlyPoolAdmin {
-    address asset = ITokenConfiguration(aTokenImpl).UNDERLYING_ASSET_ADDRESS();
+  function batchInitReserve(InitReserveInput[] calldata input) external onlyPoolAdmin {
+    ILendingPool cachedPool = pool;
+    for (uint256 i = 0; i < input.length; i++) {
+      _initReserve(cachedPool, input[i]);
+    }
+  }
 
-    require(
-      address(pool) == ITokenConfiguration(aTokenImpl).POOL(),
-      Errors.LPC_INVALID_ATOKEN_POOL_ADDRESS
-    );
-    require(
-      address(pool) == ITokenConfiguration(stableDebtTokenImpl).POOL(),
-      Errors.LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS
-    );
-    require(
-      address(pool) == ITokenConfiguration(variableDebtTokenImpl).POOL(),
-      Errors.LPC_INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS
-    );
-    require(
-      asset == ITokenConfiguration(stableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
-      Errors.LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
-    );
-    require(
-      asset == ITokenConfiguration(variableDebtTokenImpl).UNDERLYING_ASSET_ADDRESS(),
-      Errors.LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS
-    );
-
-    address aTokenProxyAddress = _initTokenWithProxy(aTokenImpl, underlyingAssetDecimals);
+  function _initReserve(ILendingPool pool, InitReserveInput calldata input) internal {
+    address aTokenProxyAddress =
+      _initTokenWithProxy(
+        input.aTokenImpl,
+        abi.encodeWithSelector(
+          IInitializableAToken.initialize.selector,
+          pool,
+          input.treasury,
+          input.underlyingAsset,
+          IAaveIncentivesController(input.incentivesController),
+          input.underlyingAssetDecimals,
+          input.aTokenName,
+          input.aTokenSymbol,
+          input.params
+        )
+      );
 
     address stableDebtTokenProxyAddress =
-      _initTokenWithProxy(stableDebtTokenImpl, underlyingAssetDecimals);
+      _initTokenWithProxy(
+        input.stableDebtTokenImpl,
+        abi.encodeWithSelector(
+          IInitializableDebtToken.initialize.selector,
+          pool,
+          input.underlyingAsset,
+          IAaveIncentivesController(input.incentivesController),
+          input.underlyingAssetDecimals,
+          input.stableDebtTokenName,
+          input.stableDebtTokenSymbol,
+          input.params
+        )
+      );
 
     address variableDebtTokenProxyAddress =
-      _initTokenWithProxy(variableDebtTokenImpl, underlyingAssetDecimals);
+      _initTokenWithProxy(
+        input.variableDebtTokenImpl,
+        abi.encodeWithSelector(
+          IInitializableDebtToken.initialize.selector,
+          pool,
+          input.underlyingAsset,
+          IAaveIncentivesController(input.incentivesController),
+          input.underlyingAssetDecimals,
+          input.variableDebtTokenName,
+          input.variableDebtTokenSymbol,
+          input.params
+        )
+      );
 
     pool.initReserve(
-      asset,
+      input.underlyingAsset,
       aTokenProxyAddress,
       stableDebtTokenProxyAddress,
       variableDebtTokenProxyAddress,
-      interestRateStrategyAddress
+      input.interestRateStrategyAddress
     );
 
-    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig =
+      pool.getConfiguration(input.underlyingAsset);
 
-    currentConfig.setDecimals(underlyingAssetDecimals);
+    currentConfig.setDecimals(input.underlyingAssetDecimals);
 
     currentConfig.setActive(true);
     currentConfig.setFrozen(false);
 
-    pool.setConfiguration(asset, currentConfig.data);
+    pool.setConfiguration(input.underlyingAsset, currentConfig.data);
 
     emit ReserveInitialized(
-      asset,
+      input.underlyingAsset,
       aTokenProxyAddress,
       stableDebtTokenProxyAddress,
       variableDebtTokenProxyAddress,
-      interestRateStrategyAddress
+      input.interestRateStrategyAddress
     );
   }
 
   /**
    * @dev Updates the aToken implementation for the reserve
-   * @param asset The address of the underlying asset of the reserve to be updated
-   * @param implementation The address of the new aToken implementation
    **/
-  function updateAToken(address asset, address implementation) external onlyPoolAdmin {
-    DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
+  function updateAToken(UpdateATokenInput calldata input) external onlyPoolAdmin {
+    ILendingPool cachedPool = pool;
 
-    _upgradeTokenImplementation(asset, reserveData.aTokenAddress, implementation);
+    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
-    emit ATokenUpgraded(asset, reserveData.aTokenAddress, implementation);
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
+
+    bytes memory encodedCall = abi.encodeWithSelector(
+        IInitializableAToken.initialize.selector,
+        cachedPool,
+        input.treasury,
+        input.asset,
+        input.incentivesController,
+        decimals,
+        input.name,
+        input.symbol,
+        input.params
+      );
+
+    _upgradeTokenImplementation(
+      reserveData.aTokenAddress,
+      input.implementation,
+      encodedCall
+    );
+
+    emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
   }
 
   /**
    * @dev Updates the stable debt token implementation for the reserve
-   * @param asset The address of the underlying asset of the reserve to be updated
-   * @param implementation The address of the new aToken implementation
    **/
-  function updateStableDebtToken(address asset, address implementation) external onlyPoolAdmin {
-    DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
+  function updateStableDebtToken(UpdateDebtTokenInput calldata input) external onlyPoolAdmin {
+    ILendingPool cachedPool = pool;
 
-    _upgradeTokenImplementation(asset, reserveData.stableDebtTokenAddress, implementation);
+    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
+     
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    emit StableDebtTokenUpgraded(asset, reserveData.stableDebtTokenAddress, implementation);
+    bytes memory encodedCall = abi.encodeWithSelector(
+        IInitializableDebtToken.initialize.selector,
+        cachedPool,
+        input.asset,
+        input.incentivesController,
+        decimals,
+        input.name,
+        input.symbol,
+        input.params
+      );
+
+    _upgradeTokenImplementation(
+      reserveData.stableDebtTokenAddress,
+      input.implementation,
+      encodedCall
+    );
+
+    emit StableDebtTokenUpgraded(
+      input.asset,
+      reserveData.stableDebtTokenAddress,
+      input.implementation
+    );
   }
 
   /**
    * @dev Updates the variable debt token implementation for the asset
-   * @param asset The address of the underlying asset of the reserve to be updated
-   * @param implementation The address of the new aToken implementation
    **/
-  function updateVariableDebtToken(address asset, address implementation) external onlyPoolAdmin {
-    DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
+  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
+    external
+    onlyPoolAdmin
+  {
+    ILendingPool cachedPool = pool;
 
-    _upgradeTokenImplementation(asset, reserveData.variableDebtTokenAddress, implementation);
+    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
-    emit VariableDebtTokenUpgraded(asset, reserveData.variableDebtTokenAddress, implementation);
+    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
+
+    bytes memory encodedCall = abi.encodeWithSelector(
+        IInitializableDebtToken.initialize.selector,
+        cachedPool,
+        input.asset,
+        input.incentivesController,
+        decimals,
+        input.name,
+        input.symbol,
+        input.params
+      );
+
+    _upgradeTokenImplementation(
+      reserveData.variableDebtTokenAddress,
+      input.implementation,
+      encodedCall
+    );
+
+    emit VariableDebtTokenUpgraded(
+      input.asset,
+      reserveData.variableDebtTokenAddress,
+      input.implementation
+    );
   }
 
   /**
@@ -509,44 +451,27 @@ contract LendingPoolConfigurator is VersionedInitializable {
     pool.setPause(val);
   }
 
-  function _initTokenWithProxy(address implementation, uint8 decimals) internal returns (address) {
+  function _initTokenWithProxy(address implementation, bytes memory initParams)
+    internal
+    returns (address)
+  {
     InitializableImmutableAdminUpgradeabilityProxy proxy =
       new InitializableImmutableAdminUpgradeabilityProxy(address(this));
 
-    bytes memory params =
-      abi.encodeWithSignature(
-        'initialize(uint8,string,string)',
-        decimals,
-        IERC20Detailed(implementation).name(),
-        IERC20Detailed(implementation).symbol()
-      );
-
-    proxy.initialize(implementation, params);
+    proxy.initialize(implementation, initParams);
 
     return address(proxy);
   }
 
   function _upgradeTokenImplementation(
-    address asset,
     address proxyAddress,
-    address implementation
+    address implementation,
+    bytes memory initParams
   ) internal {
     InitializableImmutableAdminUpgradeabilityProxy proxy =
       InitializableImmutableAdminUpgradeabilityProxy(payable(proxyAddress));
 
-    DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(asset);
-
-    (, , , uint256 decimals, ) = configuration.getParamsMemory();
-
-    bytes memory params =
-      abi.encodeWithSignature(
-        'initialize(uint8,string,string)',
-        uint8(decimals),
-        IERC20Detailed(implementation).name(),
-        IERC20Detailed(implementation).symbol()
-      );
-
-    proxy.upgradeToAndCall(implementation, params);
+    proxy.upgradeToAndCall(implementation, initParams);
   }
 
   function _checkNoLiquidity(address asset) internal view {

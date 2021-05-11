@@ -5,7 +5,10 @@ import {
   deployWalletBalancerProvider,
   deployAaveProtocolDataProvider,
   deployWETHGateway,
+  authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { eNetwork } from '../../helpers/types';
 import {
   ConfigNames,
   getReservesConfigByPool,
@@ -16,10 +19,7 @@ import {
 
 import { tEthereumAddress, AavePools, eContractid } from '../../helpers/types';
 import { waitForTx, filterMapBy } from '../../helpers/misc-utils';
-import {
-  configureReservesByHelper,
-  initReservesByHelper,
-} from '../../helpers/init-helpers';
+import { configureReservesByHelper, initReservesByHelper } from '../../helpers/init-helpers';
 import { getAllTokenAddresses } from '../../helpers/mock-helpers';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
@@ -33,8 +33,15 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, pool }, localBRE) => {
     await localBRE.run('set-DRE');
+    const network = <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-
+    const {
+      ATokenNamePrefix,
+      StableDebtTokenNamePrefix,
+      VariableDebtTokenNamePrefix,
+      SymbolPrefix,
+      WethGateway,
+    } = poolConfig;
     const mockTokens = await getAllMockedTokens();
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
 
@@ -55,17 +62,16 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     await initReservesByHelper(
       reservesParams,
       protoPoolReservesAddresses,
+      ATokenNamePrefix,
+      StableDebtTokenNamePrefix,
+      VariableDebtTokenNamePrefix,
+      SymbolPrefix,
       admin,
       treasuryAddress,
       ZERO_ADDRESS,
       verify
     );
-    await configureReservesByHelper(
-      reservesParams,
-      protoPoolReservesAddresses,
-      testHelpers,
-      admin
-    );
+    await configureReservesByHelper(reservesParams, protoPoolReservesAddresses, testHelpers, admin);
 
     const collateralManager = await deployLendingPoolCollateralManager(verify);
     await waitForTx(
@@ -86,6 +92,6 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
 
     const lendingPoolAddress = await addressesProvider.getLendingPool();
-    const wethAddress = await getWethAddress(poolConfig);
-    await deployWETHGateway([wethAddress, lendingPoolAddress]);
+    const gateWay = await getParamPerNetwork(WethGateway, network);
+    await authorizeWETHGateway(gateWay, lendingPoolAddress);
   });

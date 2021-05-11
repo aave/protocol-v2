@@ -7,7 +7,7 @@ import {
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { DRE } from '../../helpers/misc-utils';
-import { eEthereumNetwork } from '../../helpers/types';
+import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from '../../helpers/types';
 
 task('print-config', 'Inits the DRE, to have access to all the plugins')
   .addParam('dataProvider', 'Address of AaveProtocolDataProvider')
@@ -17,7 +17,7 @@ task('print-config', 'Inits the DRE, to have access to all the plugins')
     const network =
       process.env.MAINNET_FORK === 'true'
         ? eEthereumNetwork.main
-        : (localBRE.network.name as eEthereumNetwork);
+        : (localBRE.network.name as eNetwork);
     const poolConfig = loadPoolConfig(pool);
 
     const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
