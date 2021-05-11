@@ -266,7 +266,7 @@ export const strategyXSUSHI: IReserveParams = {
 };
 
 export const strategyOneInch: IReserveParams = {
-  strategy: rateStrategyStableOne,
+  strategy: rateStrategyVolatileOne,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '6500',
   liquidationBonus: '11000',
