@@ -351,7 +351,7 @@ export const strategyOneInch: IReserveParams = {
   stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  liquidationBonus: '10000',
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
