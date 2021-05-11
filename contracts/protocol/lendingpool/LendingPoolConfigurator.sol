@@ -113,6 +113,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
           input.params
         )
       );
+
     pool.initReserve(
       input.underlyingAsset,
       aTokenProxyAddress,
