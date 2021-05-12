@@ -8,12 +8,10 @@ export const usingTenderly = () =>
     process.env.TENDERLY === 'true');
 
 export const verifyAtTenderly = async (id: string, instance: Contract) => {
-  console.log();
-  console.log('Doing Tenderly contract verification of', id);
+  console.log('\n- Doing Tenderly contract verification of', id);
   await (DRE as any).tenderlyRPC.verify({
     name: id,
     address: instance.address,
   });
-  console.log(`Verified ${id} at Tenderly!`);
-  console.log();
+  console.log(`  - Verified ${id} at Tenderly!`);
 };
