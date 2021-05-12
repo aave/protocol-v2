@@ -1,8 +1,7 @@
 import { task } from 'hardhat/config';
-import { UiPoolDataProviderFactory } from '../../types';
-import { verifyContract } from '../../helpers/contracts-helpers';
-import { eContractid } from '../../helpers/types';
-
+import { eContractid, eEthereumNetwork, eNetwork, ePolygonNetwork } from '../../helpers/types';
+import { deployUiPoolDataProvider } from '../../helpers/contracts-deployments';
+import { exit } from 'process';
 
 task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider contract`)
   .addFlag('verify', 'Verify UiPoolDataProvider contract via Etherscan API.')
@@ -11,8 +10,11 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');
     }
+    const network = localBRE.network.name;
 
-    const addressesByNetwork = {
+    const addressesByNetwork: {
+      [key: string]: { incentivesController: string; aaveOracle: string };
+    } = {
       [eEthereumNetwork.kovan]: {
         incentivesController: '0x0000000000000000000000000000000000000000',
         aaveOracle: '0x8fb777d67e9945e2c01936e319057f9d41d559e6',
@@ -30,18 +32,25 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
         aaveOracle: '0xC365C653f7229894F93994CD0b30947Ab69Ff1D5',
       },
     };
+    const supportedNetworks = Object.keys(addressesByNetwork);
+
+    if (!supportedNetworks.includes(network)) {
+      console.error(
+        `[task][error] Network "${network}" not supported, please use one of: ${supportedNetworks.join()}`
+      );
+      exit(2);
+    }
+
+    const oracle = addressesByNetwork[network].aaveOracle;
+    const incentivesController = addressesByNetwork[network].aaveOracle;
 
     console.log(`\n- UiPoolDataProvider deployment`);
 
-    console.log(`\tDeploying UiPoolDataProvider implementation ...`);
-    const uiPoolDataProvider = await new UiPoolDataProviderFactory(
-      await localBRE.ethers.provider.getSigner()
-    ).deploy();
-    await uiPoolDataProvider.deployTransaction.wait();
-    console.log('uiPoolDataProvider.address', uiPoolDataProvider.address);
-    if (verify) {
-      await verifyContract(eContractid.UiPoolDataProvider, uiPoolDataProvider, []);
-    }
+    const uiPoolDataProvider = await deployUiPoolDataProvider(
+      [incentivesController, oracle],
+      verify
+    );
 
+    console.log('UiPoolDataProvider deployed at:', uiPoolDataProvider.address);
     console.log(`\tFinished UiPoolDataProvider deployment`);
   });
