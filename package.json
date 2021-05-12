@@ -28,8 +28,8 @@
     "aave:evm:dev:migration": "npm run compile && hardhat aave:dev",
     "aave:docker:full:migration": "npm run compile && npm run hardhat:docker -- aave:mainnet",
     "aave:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- aave:mainnet --verify",
-    "matic:mumbai:full:migration": "npm run compile && npm run hardhat:mumbai matic:mainnet",
-    "matic:matic:full:migration": "npm run compile && npm run hardhat:matic matic:mainnet",
+    "matic:mumbai:full:migration": "npm run compile && npm run hardhat:mumbai sidechain:mainnet -- --pool Matic",
+    "matic:matic:full:migration": "npm run compile && npm run hardhat:matic sidechain:mainnet -- --pool Matic",
     "amm:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- amm:mainnet --verify",
     "aave:kovan:full:initialize": "npm run hardhat:kovan -- full:initialize-lending-pool --verify --pool Aave",
     "aave:ropsten:full:migration": "npm run compile && npm run hardhat:ropsten -- aave:mainnet --verify",
@@ -58,14 +58,15 @@
     "kovan:verify": "npm run hardhat:kovan verify:general -- --all --pool Aave",
     "ropsten:verify": "npm run hardhat:ropsten verify:general -- --all --pool Aave",
     "mainnet:verify": "npm run hardhat:main verify:general -- --all --pool Aave",
+    "matic:mumbai:verify": "npm run hardhat:mumbai verify:general -- --all --pool Matic",
+    "matic:mainnet:verify": "npm run hardhat:matic verify:general -- --all --pool Matic",
+    "matic:mumbai:verify:tokens": "npm run hardhat:mumbai verify:tokens -- --pool Matic",
+    "matic:mainnet:verify:tokens": "npm run hardhat:matic verify:tokens -- --pool Matic",
     "kovan:verify:tokens": "npm run hardhat:kovan verify:tokens -- --pool Aave",
     "ropsten:verify:tokens": "npm run hardhat:ropsten verify:tokens -- --pool Aave",
     "mainnet:verify:tokens": "npm run hardhat:main verify:tokens -- --pool Aave",
     "print-config:fork:mainnet": "MAINNET_FORK=true hardhat print-config:fork",
     "print-config:kovan": "hardhat --network kovan print-config --pool Aave --data-provider 0xA1901785c29cBd48bfA74e46b67C736b26054fa4",
-    "main:fork:initialize-tokens": "npm run compile && MAINNET_FORK=true hardhat full:initialize-tokens --pool Aave",
-    "main:initialize-tokens": "npm run compile && hardhat --network main full:initialize-tokens --pool Aave",
-    "kovan:initialize-tokens": "npm run compile && hardhat --network kovan full:initialize-tokens --pool Aave",
     "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --verify",
     "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify",
     "prepublishOnly": "npm run compile"
@@ -133,6 +134,7 @@
   ],
   "license": "AGPLv3",
   "dependencies": {
+    "axios-curlirize": "^1.3.7",
     "tmp-promise": "^3.0.2"
   },
   "keywords": [
