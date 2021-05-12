@@ -33,8 +33,7 @@ export const initReservesByHelper = async (
   incentivesController: tEthereumAddress,
   poolName: ConfigNames,
   verify: boolean
-): Promise<BigNumber> => {
-  let gasUsage = BigNumber.from('0');
+) => {
   const addressProvider = await getLendingPoolAddressesProvider();
 
   // CHUNK CONFIGURATION
@@ -147,8 +146,6 @@ export const initReservesByHelper = async (
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     console.log('    * gasUsed', tx3.gasUsed.toString());
   }
-
-  return gasUsage;
 };
 
 export const getPairsTokenAggregator = (
