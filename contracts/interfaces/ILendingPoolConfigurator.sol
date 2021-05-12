@@ -207,17 +207,17 @@ interface ILendingPoolConfigurator {
 
   event RiskAdminUnregistered(address indexed admin);
 
-  event FlashloanerAuthorized(address indexed flashloaner);
+  event FlashBorrowerAuthorized(address indexed flashBorrower);
 
-  event FlashloanerUnauthorized(address indexed flashloaner);
+  event FlashBorrowerUnauthorized(address indexed flashBorrower);
 
   function registerRiskAdmin(address admin) external;
 
   function unregisterRiskAdmin(address admin) external;
 
-  function authorizeFlashloaner(address flashloaner) external;
+  function authorizeFlashBorrower(address flashBorrower) external;
 
-  function unauthorizeFlashloaner(address flashloaner) external;
+  function unauthorizeFlashBorrower(address flashBorrower) external;
 
   function isRiskAdmin(address admin) external view returns (bool);
 }
