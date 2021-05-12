@@ -128,6 +128,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
     await addressesProvider.getLendingPoolConfigurator()
   );
+  await waitForTx(await lendingPoolConfiguratorProxy.registerRiskAdmin(addressList[3]));
   await insertContractAddressInDb(
     eContractid.LendingPoolConfigurator,
     lendingPoolConfiguratorProxy.address
