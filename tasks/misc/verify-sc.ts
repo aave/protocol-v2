@@ -1,6 +1,5 @@
 import { task } from 'hardhat/config';
-import { verifyContract, checkVerification } from '../../helpers/etherscan-verification';
-
+import { verifyEtherscanContract, checkVerification } from '../../helpers/etherscan-verification';
 interface VerifyParams {
   contractName: string;
   address: string;
@@ -24,6 +23,6 @@ task('verify-sc', 'Inits the DRE, to have access to all the plugins')
 
     checkVerification();
 
-    const result = await verifyContract(address, constructorArguments, libraries);
+    const result = await verifyEtherscanContract(address, constructorArguments, libraries);
     return result;
   });

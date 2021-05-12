@@ -56,6 +56,7 @@ import {
   linkBytecode,
   insertContractAddressInDb,
   deployContract,
+  verifyContract,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
@@ -63,7 +64,6 @@ import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins'
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
-import { verifyContract } from './etherscan-verification';
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
@@ -73,7 +73,7 @@ export const deployUiPoolDataProvider = async (
   const args: string[] = [incentivesController, aaveOracle];
   const instance = await deployContract<UiPoolDataProvider>(id, args);
   if (verify) {
-    await verifyContract(instance.address, args);
+    await verifyContract(id, instance, args);
   }
   return instance;
 };

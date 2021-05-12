@@ -22,9 +22,10 @@ import {
 import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
-import { verifyContract } from './etherscan-verification';
+import { verifyEtherscanContract } from './etherscan-verification';
 import { getIErc20Detailed } from './contracts-getters';
-import { usingTenderly } from './tenderly-utils';
+import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
+import { usingPolygon, verifyAtPolygon } from './polygon-utils';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
@@ -98,18 +99,8 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
 ): Promise<ContractType> => {
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
-  if (usingTenderly()) {
-    console.log();
-    console.log('Doing Tenderly contract verification of', id);
-    await (DRE as any).tenderlyRPC.verify({
-      name: id,
-      address: instance.address,
-    });
-    console.log(`Verified ${id} at Tenderly!`);
-    console.log();
-  }
   if (verify) {
-    await verifyContract(instance.address, args);
+    await verifyContract(id, instance, args);
   }
   return instance;
 };
@@ -327,4 +318,20 @@ export const buildFlashLiquidationAdapterParams = (
     ['address', 'address', 'address', 'uint256', 'bool'],
     [collateralAsset, debtAsset, user, debtToCover, useEthPath]
   );
+};
+
+export const verifyContract = async (
+  id: string,
+  instance: Contract,
+  args: (string | string[])[]
+) => {
+  if (usingPolygon()) {
+    await verifyAtPolygon(id, instance, args);
+  } else {
+    if (usingTenderly()) {
+      await verifyAtTenderly(id, instance);
+    }
+    await verifyEtherscanContract(instance.address, args);
+  }
+  return instance;
 };

@@ -39,14 +39,6 @@ task(
     const providerRegistryOwner = getParamPerNetwork(poolConfig.ProviderRegistryOwner, network);
 
     if (
-      !providerRegistryAddress ||
-      !isAddress(providerRegistryAddress) ||
-      isZeroAddress(providerRegistryAddress)
-    ) {
-      throw Error('config.ProviderRegistry is missing or is not an address.');
-    }
-
-    if (
       !providerRegistryOwner ||
       !isAddress(providerRegistryOwner) ||
       isZeroAddress(providerRegistryOwner)

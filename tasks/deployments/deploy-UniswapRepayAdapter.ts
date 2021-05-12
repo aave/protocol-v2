@@ -1,8 +1,9 @@
 import { task } from 'hardhat/config';
 
 import { UniswapRepayAdapterFactory } from '../../types';
-import { verifyContract } from '../../helpers/etherscan-verification';
+import { verifyContract } from '../../helpers/contracts-helpers';
 import { getFirstSigner } from '../../helpers/contracts-getters';
+import { eContractid } from '../../helpers/types';
 
 const CONTRACT_NAME = 'UniswapRepayAdapter';
 
@@ -30,7 +31,14 @@ task(`deploy-${CONTRACT_NAME}`, `Deploys the ${CONTRACT_NAME} contract`)
     );
     await uniswapRepayAdapter.deployTransaction.wait();
     console.log(`${CONTRACT_NAME}.address`, uniswapRepayAdapter.address);
-    await verifyContract(uniswapRepayAdapter.address, [provider, router, weth]);
+
+    if (verify) {
+      await verifyContract(eContractid.UniswapRepayAdapter, uniswapRepayAdapter, [
+        provider,
+        router,
+        weth,
+      ]);
+    }
 
     console.log(
       `\tFinished ${CONTRACT_NAME}${CONTRACT_NAME}lDataProvider proxy and implementation deployment`
