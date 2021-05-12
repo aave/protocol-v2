@@ -22,7 +22,7 @@ task('full:deploy-address-provider-registry', 'Deploy address provider registry'
     console.log('Balance', formatEther(await signer.getBalance()));
 
     if (notFalsyOrZeroAddress(providerRegistryAddress)) {
-      console.log('Already deployed Provider RRegistry Address at', providerRegistryAddress);
+      console.log('Already deployed Provider Registry Address at', providerRegistryAddress);
     } else {
       const contract = await deployLendingPoolAddressesProviderRegistry(verify);
       console.log('Deployed Registry Address:', contract.address);
