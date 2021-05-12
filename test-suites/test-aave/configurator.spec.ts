@@ -971,4 +971,23 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       LPC_RESERVE_LIQUIDITY_NOT_0
     ).to.be.revertedWith(LPC_RESERVE_LIQUIDITY_NOT_0);
   });
+  it('Register a new risk Admin', async () => {
+    const { dai, pool, configurator, users, riskAdmin } = testEnv;
+    await configurator.registerRiskAdmin(users[3].address);
+
+    const isRiskAdminRegistered = await configurator.isRiskAdmin(riskAdmin.address);
+    const isNewRegistered = await configurator.isRiskAdmin(users[3].address);
+    expect(isNewRegistered).to.be.true;
+    expect(isRiskAdminRegistered).to.be.true;
+  });
+  it('Unregister a risk Admins', async () => {
+    const { dai, pool, configurator, users, riskAdmin } = testEnv;
+    await configurator.unregisterRiskAdmin(users[3].address);
+    await configurator.unregisterRiskAdmin(riskAdmin.address);
+
+    const isRiskAdminRegistered = await configurator.isRiskAdmin(riskAdmin.address);
+    const isNewRegistered = await configurator.isRiskAdmin(users[3].address);
+    expect(isNewRegistered).to.be.false;
+    expect(isRiskAdminRegistered).to.be.false;
+  });
 });
