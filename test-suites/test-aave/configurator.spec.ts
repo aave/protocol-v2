@@ -717,7 +717,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
-  it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {
+  it('Check the onlyRiskOrPoolAdmin on disableReserveStableRate', async () => {
     const { configurator, users, weth, emergencyAdmin } = testEnv;
     await expect(
       configurator.connect(emergencyAdmin.signer).disableReserveStableRate(weth.address),
@@ -725,7 +725,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(LPC_CALLER_NOT_RISK_OR_POOL_ADMIN);
   });
 
-  it('Check the onlyAaveAdmin on enableReserveStableRate', async () => {
+  it('Check the onlyRiskOrPoolAdmin on enableReserveStableRate', async () => {
     const { configurator, users, weth, emergencyAdmin } = testEnv;
     await expect(
       configurator.connect(emergencyAdmin.signer).enableReserveStableRate(weth.address),
