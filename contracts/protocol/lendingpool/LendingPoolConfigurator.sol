@@ -537,6 +537,16 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit RiskAdminUnregistered(admin);
   }
 
+  function authorizeFlashloaner(address flashloaner) external override onlyPoolAdmin {
+    pool.authorizeFlashloaner(flashloaner);
+    emit FlashloanerAuthorized(flashloaner);
+  }
+
+  function unauthorizeFlashloaner(address flashloaner) external override onlyPoolAdmin {
+    pool.unauthorizeFlashloaner(flashloaner);
+    emit FlashloanerUnauthorized(flashloaner);
+  }
+
   function isRiskAdmin(address admin) external view override onlyPoolAdmin returns (bool) {
     return _riskAdmins[admin];
   }

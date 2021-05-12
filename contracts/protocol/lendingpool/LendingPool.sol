@@ -435,6 +435,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 currentPremium;
     uint256 currentAmountPlusPremium;
     address debtToken;
+    uint256 flashloanPremiumTotal;
   }
 
   /**
@@ -469,13 +470,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address[] memory aTokenAddresses = new address[](assets.length);
     uint256[] memory premiums = new uint256[](assets.length);
-
     vars.receiver = IFlashLoanReceiver(receiverAddress);
+    vars.flashloanPremiumTotal = _authorizedFlashloaners[msg.sender] ? 0 : _flashLoanPremiumTotal;
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
 
-      premiums[vars.i] = amounts[vars.i].mul(_flashLoanPremiumTotal).div(10000);
+      premiums[vars.i] = amounts[vars.i].mul(vars.flashloanPremiumTotal).div(10000);
 
       IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
@@ -819,6 +820,22 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     } else {
       emit Unpaused();
     }
+  }
+
+  function authorizeFlashloaner(address flashloaner) external override onlyLendingPoolConfigurator {
+    _authorizedFlashloaners[flashloaner] = true;
+  }
+
+  function unauthorizeFlashloaner(address flashloaner)
+    external
+    override
+    onlyLendingPoolConfigurator
+  {
+    _authorizedFlashloaners[flashloaner] = false;
+  }
+
+  function isFlashloanerAuthorized(address flashloaner) external view override returns (bool) {
+    return _authorizedFlashloaners[flashloaner];
   }
 
   struct ExecuteBorrowParams {

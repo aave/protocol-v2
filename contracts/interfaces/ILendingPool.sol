@@ -458,4 +458,10 @@ interface ILendingPool {
   function setPause(bool val) external;
 
   function paused() external view returns (bool);
+
+  function authorizeFlashloaner(address flashloaner) external;
+
+  function unauthorizeFlashloaner(address flashloaner) external;
+
+  function isFlashloanerAuthorized(address flashloaner) external view returns (bool);
 }
