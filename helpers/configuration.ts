@@ -113,7 +113,7 @@ export const getWethAddress = async (config: ICommonConfiguration) => {
   return weth.address;
 };
 
-export const getWrappedNativeTokenddress = async (config: ICommonConfiguration) => {
+export const getWrappedNativeTokenAddress = async (config: ICommonConfiguration) => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WrappedNativeToken, <eNetwork>currentNetwork);
   if (wethAddress) {

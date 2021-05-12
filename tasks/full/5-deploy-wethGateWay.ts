@@ -2,7 +2,7 @@ import { task } from 'hardhat/config';
 import {
   loadPoolConfig,
   ConfigNames,
-  getWrappedNativeTokenddress,
+  getWrappedNativeTokenAddress,
 } from '../../helpers/configuration';
 import { deployWETHGateway } from '../../helpers/contracts-deployments';
 
@@ -14,7 +14,7 @@ task(`full-deploy-weth-gateway`, `Deploys the ${CONTRACT_NAME} contract`)
   .setAction(async ({ verify, pool }, localBRE) => {
     await localBRE.run('set-DRE');
     const poolConfig = loadPoolConfig(pool);
-    const Weth = await getWrappedNativeTokenddress(poolConfig);
+    const Weth = await getWrappedNativeTokenAddress(poolConfig);
 
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');
