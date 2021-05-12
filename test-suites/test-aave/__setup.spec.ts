@@ -102,7 +102,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
   //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
-  const addressList = await Promise.all(
+  //     .. users[2] as risk admin ..                position 3
+  const addressList: string[] = await Promise.all(
     (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
   );
 
@@ -129,6 +130,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
     await addressesProvider.getLendingPoolConfigurator()
   );
+  await waitForTx(await lendingPoolConfiguratorProxy.registerRiskAdmin(addressList[3]));
   await insertContractAddressInDb(
     eContractid.LendingPoolConfigurator,
     lendingPoolConfiguratorProxy.address
