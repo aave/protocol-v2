@@ -101,5 +101,13 @@ export const rateStrategyVolatileFour: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
 }
 
-
-
+// DPI
+export const rateStrategyVolatileFive: IInterestRateStrategyParams = {
+  name: "rateStrategyVolatileFive",
+  optimalUtilizationRate: new BigNumber(0.5).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: new BigNumber(0.07).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(2).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+}

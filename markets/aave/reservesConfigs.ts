@@ -10,6 +10,7 @@ import {
   rateStrategyVolatileTwo,
   rateStrategyVolatileThree,
   rateStrategyVolatileFour,
+  rateStrategyVolatileFive,
 } from './rateStrategies';
 
 export const strategyBUSD: IReserveParams = {
@@ -263,4 +264,16 @@ export const strategyXSUSHI: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '3500',
+};
+
+export const strategyDPI: IReserveParams = {
+  strategy: rateStrategyVolatileFive,
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11000',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '2000',
 };
