@@ -1,5 +1,5 @@
 import { Contract } from 'ethers';
-import { DRE } from './misc-utils';
+import { DRE, notFalsyOrZeroAddress } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -10,12 +10,12 @@ import {
   IReserveParams,
   PoolConfiguration,
   eEthereumNetwork,
+  eNetwork,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
-import { getReservesConfigByPool } from './configuration';
+import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import { getFirstSigner } from './contracts-getters';
-import { ZERO_ADDRESS } from './constants';
 import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
@@ -49,6 +49,8 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  RewardsTokenFactory,
+  RewardsATokenMockFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -57,6 +59,8 @@ import {
   insertContractAddressInDb,
   deployContract,
   verifyContract,
+  getParamPerNetwork,
+  getOptionalParamAddressPerNetwork,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
@@ -347,20 +351,20 @@ export const deployVariableDebtToken = async (
   return instance;
 };
 
-export const deployGenericStableDebtToken = async () =>
+export const deployGenericStableDebtToken = async (verify?: boolean) =>
   withSaveAndVerify(
     await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.StableDebtToken,
     [],
-    false
+    verify
   );
 
-export const deployGenericVariableDebtToken = async () =>
+export const deployGenericVariableDebtToken = async (verify?: boolean) =>
   withSaveAndVerify(
     await new VariableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.VariableDebtToken,
     [],
-    false
+    verify
   );
 
 export const deployGenericAToken = async (
@@ -395,7 +399,7 @@ export const deployGenericAToken = async (
   return instance;
 };
 
-export const deployGenericATokenImpl = async (verify: boolean) =>
+export const deployGenericATokenImpl = async (verify?: boolean) =>
   withSaveAndVerify(
     await new ATokenFactory(await getFirstSigner()).deploy(),
     eContractid.AToken,
@@ -435,7 +439,7 @@ export const deployDelegationAwareAToken = async (
   return instance;
 };
 
-export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
+export const deployDelegationAwareATokenImpl = async (verify?: boolean) =>
   withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
     eContractid.DelegationAwareAToken,
@@ -473,8 +477,7 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
       [
         tokenSymbol,
         tokenSymbol,
-        configData[tokenSymbol as keyof iMultiPoolsAssets<IReserveParams>].reserveDecimals ||
-          defaultDecimals.toString(),
+        configData[tokenSymbol]?.reserveDecimals || defaultDecimals.toString(),
       ],
       verify
     );
@@ -633,3 +636,81 @@ export const deployFlashLiquidationAdapter = async (
     args,
     verify
   );
+
+export const deployRewardsMockedToken = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new RewardsTokenFactory(await getFirstSigner()).deploy(),
+    eContractid.RewardsToken,
+    [],
+    verify
+  );
+
+export const deployRewardATokenMock = async (verify?: boolean) => {
+  return withSaveAndVerify(
+    await new RewardsATokenMockFactory(await getFirstSigner()).deploy(),
+    eContractid.RewardsATokenMock,
+    [],
+    verify
+  );
+};
+
+export const chooseATokenDeployment = (id: eContractid) => {
+  switch (id) {
+    case eContractid.AToken:
+      return deployGenericATokenImpl;
+    case eContractid.DelegationAwareAToken:
+      return deployDelegationAwareATokenImpl;
+    case eContractid.RewardsATokenMock:
+      return deployRewardATokenMock;
+    default:
+      throw Error(`Missing aToken implementation deployment script for: ${id}`);
+  }
+};
+
+export const deployATokenImplementations = async (
+  pool: ConfigNames,
+  reservesConfig: { [key: string]: IReserveParams },
+  verify?: boolean
+) => {
+  const poolConfig = loadPoolConfig(pool);
+  const network = <eNetwork>DRE.network.name;
+
+  // Obtain the different AToken implementations of all reserves inside the Market config
+  const aTokenImplementations = [
+    ...Object.entries(reservesConfig).reduce<Set<eContractid>>((acc, [, entry]) => {
+      acc.add(entry.aTokenImpl);
+      return acc;
+    }, new Set<eContractid>()),
+  ];
+
+  console.log(aTokenImplementations);
+
+  for (let x = 0; x < aTokenImplementations.length; x++) {
+    const aTokenAddress = getOptionalParamAddressPerNetwork(
+      poolConfig[aTokenImplementations[x].toString()],
+      network
+    );
+    if (!notFalsyOrZeroAddress(aTokenAddress)) {
+      const deployImplementationMethod = chooseATokenDeployment(aTokenImplementations[x]);
+      console.log(`Deploying implementation`, aTokenImplementations[x]);
+      await deployImplementationMethod(verify);
+    }
+  }
+
+  // Debt tokens, for now all Market configs follows same implementations
+  const genericStableDebtTokenAddress = getOptionalParamAddressPerNetwork(
+    poolConfig.StableDebtTokenImplementation,
+    network
+  );
+  const geneticVariableDebtTokenAddress = getOptionalParamAddressPerNetwork(
+    poolConfig.VariableDebtTokenImplementation,
+    network
+  );
+
+  if (!notFalsyOrZeroAddress(genericStableDebtTokenAddress)) {
+    await deployGenericStableDebtToken(verify);
+  }
+  if (!notFalsyOrZeroAddress(geneticVariableDebtTokenAddress)) {
+    await deployGenericVariableDebtToken(verify);
+  }
+};

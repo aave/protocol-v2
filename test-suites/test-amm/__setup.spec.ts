@@ -26,7 +26,8 @@ import {
   deployUniswapLiquiditySwapAdapter,
   deployUniswapRepayAdapter,
   deployFlashLiquidationAdapter,
-  authorizeWETHGateway
+  authorizeWETHGateway,
+  deployATokenImplementations,
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
@@ -94,6 +95,14 @@ const deployAllMockTokens = async (deployer: Signer) => {
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');
   const aaveAdmin = await deployer.getAddress();
+  const config = loadPoolConfig(ConfigNames.Amm);
+  const {
+    ATokenNamePrefix,
+    StableDebtTokenNamePrefix,
+    VariableDebtTokenNamePrefix,
+    SymbolPrefix,
+    ReservesConfig,
+  } = config;
 
   const mockTokens = await deployAllMockTokens(deployer);
 
@@ -229,8 +238,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingRateOracle,
     aaveAdmin
   );
-
-  const reservesParams = getReservesConfigByPool(AavePools.amm);
+  await deployATokenImplementations(ConfigNames.Amm, ReservesConfig);
 
   const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address);
 
@@ -239,18 +247,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   console.log('Initialize configuration');
 
-  const config = loadPoolConfig(ConfigNames.Amm);
-  
-  const { 
-    ATokenNamePrefix,
-    StableDebtTokenNamePrefix,
-    VariableDebtTokenNamePrefix,
-    SymbolPrefix,
-  } = config;
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(
-    reservesParams,
+    ReservesConfig,
     allReservesAddresses,
     ATokenNamePrefix,
     StableDebtTokenNamePrefix,
@@ -259,9 +259,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     admin,
     treasuryAddress,
     ZERO_ADDRESS,
+    ConfigNames.Amm,
     false
   );
-  await configureReservesByHelper(reservesParams, allReservesAddresses, testHelpers, admin);
+  await configureReservesByHelper(ReservesConfig, allReservesAddresses, testHelpers, admin);
 
   const collateralManager = await deployLendingPoolCollateralManager();
   await waitForTx(
