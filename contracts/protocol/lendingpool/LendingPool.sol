@@ -476,7 +476,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
 
-      premiums[vars.i] = amounts[vars.i].mul(vars.flashloanPremiumTotal).div(10000);
+      premiums[vars.i] = amounts[vars.i].percentMul(vars.flashloanPremiumTotal);
 
       IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
