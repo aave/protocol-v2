@@ -943,7 +943,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address aToken = reserve.aTokenAddress;
 
-    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
+    reserve.updateState();
+
+    uint256 liquidityIndex = reserve.liquidityIndex;
+
+    uint256 userBalance = IAToken(aToken).scaledBalanceOf(msg.sender).rayMul(liquidityIndex);
 
     uint256 amountToWithdraw = amount;
 
@@ -953,11 +957,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ValidationLogic.validateWithdraw(reserve, amountToWithdraw, userBalance);
 
-    reserve.updateState();
-
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, liquidityIndex);
 
     if (userConfig.isUsingAsCollateral(reserve.id)) {
       if (userConfig.isBorrowingAny()) {
