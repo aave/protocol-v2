@@ -391,6 +391,7 @@ library ValidationLogic {
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
    * @param reserves The addresses of all the active reserves
+   * @param reservesCount The number of available reserves
    * @param oracle The price oracle
    */
   function validateHealthFactor(
