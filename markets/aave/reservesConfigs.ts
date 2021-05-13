@@ -10,7 +10,6 @@ import {
   rateStrategyVolatileTwo,
   rateStrategyVolatileThree,
   rateStrategyVolatileFour,
-  rateStrategyVolatileFive,
 } from './rateStrategies';
 
 export const strategyBUSD: IReserveParams = {
@@ -267,7 +266,7 @@ export const strategyXSUSHI: IReserveParams = {
 };
 
 export const strategyDPI: IReserveParams = {
-  strategy: rateStrategyVolatileFive,
+  strategy: rateStrategyVolatileFour,
   baseLTVAsCollateral: '6000',
   liquidationThreshold: '7000',
   liquidationBonus: '11000',
