@@ -990,4 +990,62 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(isNewRegistered).to.be.false;
     expect(isRiskAdminRegistered).to.be.false;
   });
+  it('Checks only pool admin can register/unregister a risk Admins', async () => {
+    const { dai, pool, configurator, users, riskAdmin, emergencyAdmin } = testEnv;
+
+    await expect(
+      configurator.connect(riskAdmin.signer).registerRiskAdmin(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+
+    await expect(
+      configurator.connect(riskAdmin.signer).unregisterRiskAdmin(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+
+    await expect(
+      configurator.connect(emergencyAdmin.signer).registerRiskAdmin(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+    await expect(
+      configurator.connect(emergencyAdmin.signer).unregisterRiskAdmin(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+  });
+  it('Authorized a new flashborrower', async () => {
+    const { dai, pool, configurator, users, riskAdmin } = testEnv;
+    await configurator.authorizeFlashBorrower(users[4].address);
+
+    const isFlashBorrowerAuthorized = await pool.isFlashBorrowerAuthorized(users[4].address);
+    expect(isFlashBorrowerAuthorized).to.be.true;
+  });
+  it('Unauthorized flashborrower', async () => {
+    const { dai, pool, configurator, users } = testEnv;
+    await configurator.unauthorizeFlashBorrower(users[4].address);
+
+    const isFlashBorrowerAuthorized = await pool.isFlashBorrowerAuthorized(users[4].address);
+    expect(isFlashBorrowerAuthorized).to.be.false;
+  });
+  it('Checks only pool admin can authorize/unauthorize a flash borrower', async () => {
+    const { dai, pool, configurator, users, riskAdmin, emergencyAdmin } = testEnv;
+
+    await expect(
+      configurator.connect(riskAdmin.signer).authorizeFlashBorrower(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+
+    await expect(
+      configurator.connect(riskAdmin.signer).authorizeFlashBorrower(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+
+    await expect(
+      configurator.connect(emergencyAdmin.signer).unauthorizeFlashBorrower(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+    await expect(
+      configurator.connect(emergencyAdmin.signer).unauthorizeFlashBorrower(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+  });
 });
