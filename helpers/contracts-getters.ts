@@ -33,19 +33,19 @@ import {
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { MockTokenMap } from './contracts-helpers';
-import { DRE, getDb } from './misc-utils';
+import { DRE, getDb, notFalsyOrZeroAddress } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
 
 export const getFirstSigner = async () => (await DRE.ethers.getSigners())[0];
 
-export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) =>
-  await LendingPoolAddressesProviderFactory.connect(
+export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) => {
+  return await LendingPoolAddressesProviderFactory.connect(
     address ||
       (await getDb().get(`${eContractid.LendingPoolAddressesProvider}.${DRE.network.name}`).value())
         .address,
     await getFirstSigner()
   );
-
+};
 export const getLendingPoolConfiguratorProxy = async (address?: tEthereumAddress) => {
   return await LendingPoolConfiguratorFactory.connect(
     address ||
@@ -172,7 +172,7 @@ export const getPairsTokenAggregator = (
   },
   aggregatorsAddresses: { [tokenSymbol: string]: tEthereumAddress }
 ): [string[], string[]] => {
-  const { ETH, USD, WETH, ...assetsAddressesWithoutEth } = allAssetsAddresses;
+  const { ETH, WETH, ...assetsAddressesWithoutEth } = allAssetsAddresses;
 
   const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
     //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
@@ -195,12 +195,13 @@ export const getPairsTokenAggregator = (
 
 export const getLendingPoolAddressesProviderRegistry = async (address?: tEthereumAddress) =>
   await LendingPoolAddressesProviderRegistryFactory.connect(
-    address ||
-      (
-        await getDb()
-          .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${DRE.network.name}`)
-          .value()
-      ).address,
+    notFalsyOrZeroAddress(address)
+      ? address
+      : (
+          await getDb()
+            .get(`${eContractid.LendingPoolAddressesProviderRegistry}.${DRE.network.name}`)
+            .value()
+        ).address,
     await getFirstSigner()
   );
 
