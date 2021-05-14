@@ -5,9 +5,10 @@ import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
 task('sidechain:mainnet', 'Deploy market at sidechain')
-  .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Market pool configuration, one of ${Object.keys(ConfigNames)}`)
-  .setAction(async ({ verify, pool }, DRE) => {
+  .addFlag('verify', 'Verify contracts at Etherscan')
+  .addFlag('skipRegistry', 'Skip addresses provider registration at Addresses Provider Registry')
+  .setAction(async ({ verify, pool, skipRegistry }, DRE) => {
     const POOL_NAME = pool;
     await DRE.run('set-DRE');
 
@@ -22,7 +23,7 @@ task('sidechain:mainnet', 'Deploy market at sidechain')
     await DRE.run('full:deploy-address-provider-registry', { pool: POOL_NAME });
 
     console.log('1. Deploy address provider');
-    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
+    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
 
     console.log('2. Deploy lending pool');
     await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });

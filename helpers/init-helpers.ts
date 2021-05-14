@@ -12,6 +12,7 @@ import {
   getAaveProtocolDataProvider,
   getAToken,
   getATokensAndRatesHelper,
+  getFirstSigner,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
@@ -32,6 +33,7 @@ import {
 import { ZERO_ADDRESS } from './constants';
 import { isZeroAddress } from 'ethereumjs-util';
 import { DefaultReserveInterestRateStrategy, DelegationAwareAToken } from '../types';
+import { config } from 'process';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -144,6 +146,10 @@ export const initReservesByHelper = async (
   ) as [string, IReserveParams][];
 
   for (let [symbol, params] of reserves) {
+    if (!tokenAddresses[symbol]) {
+      console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
+      continue;
+    }
     const { strategy, aTokenImpl, reserveDecimals } = params;
     const {
       optimalUtilizationRate,
@@ -293,6 +299,12 @@ export const configureReservesByHelper = async (
       borrowingEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
+    if (!tokenAddresses[assetSymbol]) {
+      console.log(
+        `- Skipping init of ${assetSymbol} due token address is not set at markets config`
+      );
+      continue;
+    }
     if (baseLTVAsCollateral === '-1') continue;
 
     const assetAddressIndex = Object.keys(tokenAddresses).findIndex(

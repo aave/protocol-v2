@@ -31,8 +31,8 @@ export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = DRE.network.name;
-  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-  if (MAINNET_FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
+  const FORK = process.env.FORK;
+  if (FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
     console.log(`tx: ${contractInstance.deployTransaction.hash}`);
@@ -144,9 +144,8 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
   } = param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
-  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-  if (MAINNET_FORK) {
-    return main;
+  if (process.env.FORK) {
+    return param[process.env.FORK as eNetwork] as T;
   }
 
   switch (network) {
