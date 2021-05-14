@@ -4,7 +4,6 @@ import {
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
   deployAaveProtocolDataProvider,
-  deployWETHGateway,
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -13,18 +12,18 @@ import {
   ConfigNames,
   getReservesConfigByPool,
   getTreasuryAddress,
-  getWethAddress,
   loadPoolConfig,
 } from '../../helpers/configuration';
 
 import { tEthereumAddress, AavePools, eContractid } from '../../helpers/types';
-import { waitForTx, filterMapBy } from '../../helpers/misc-utils';
+import { waitForTx, filterMapBy, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import { configureReservesByHelper, initReservesByHelper } from '../../helpers/init-helpers';
 import { getAllTokenAddresses } from '../../helpers/mock-helpers';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
+  getWETHGateway,
 } from '../../helpers/contracts-getters';
 import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
 
@@ -92,6 +91,10 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
 
     const lendingPoolAddress = await addressesProvider.getLendingPool();
-    const gateWay = await getParamPerNetwork(WethGateway, network);
-    await authorizeWETHGateway(gateWay, lendingPoolAddress);
+
+    let gateway = getParamPerNetwork(WethGateway, network);
+    if (!notFalsyOrZeroAddress(gateway)) {
+      gateway = (await getWETHGateway()).address;
+    }
+    await authorizeWETHGateway(gateway, lendingPoolAddress);
   });

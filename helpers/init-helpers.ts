@@ -17,7 +17,7 @@ import {
   getContractAddressWithJsonFallback,
   rawInsertContractAddressInDb,
 } from './contracts-helpers';
-import { BigNumber, BigNumberish, Signer } from 'ethers';
+import { BigNumberish } from 'ethers';
 import { deployDefaultReserveInterestRateStrategy } from './contracts-deployments';
 import { ConfigNames } from './configuration';
 
@@ -76,6 +76,10 @@ export const initReservesByHelper = async (
   const reserves = Object.entries(reservesParams);
 
   for (let [symbol, params] of reserves) {
+    if (!tokenAddresses[symbol]) {
+      console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
+      continue;
+    }
     const { strategy, aTokenImpl, reserveDecimals } = params;
     const {
       optimalUtilizationRate,
@@ -207,6 +211,12 @@ export const configureReservesByHelper = async (
       borrowingEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
+    if (!tokenAddresses[assetSymbol]) {
+      console.log(
+        `- Skipping init of ${assetSymbol} due token address is not set at markets config`
+      );
+      continue;
+    }
     if (baseLTVAsCollateral === '-1') continue;
 
     const assetAddressIndex = Object.keys(tokenAddresses).findIndex(

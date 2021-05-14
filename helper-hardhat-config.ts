@@ -34,7 +34,7 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
-  [eEthereumNetwork.kovan]: 65 * GWEI,
+  [eEthereumNetwork.kovan]: 1 * GWEI,
   [eEthereumNetwork.ropsten]: 65 * GWEI,
   [eEthereumNetwork.main]: 65 * GWEI,
   [eEthereumNetwork.coverage]: 65 * GWEI,
@@ -44,4 +44,17 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [ePolygonNetwork.mumbai]: 1 * GWEI,
   [ePolygonNetwork.matic]: 1 * GWEI,
   [eXDaiNetwork.xdai]: 1 * GWEI,
+};
+
+export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
+  [eEthereumNetwork.main]: 12406069,
+  [eEthereumNetwork.kovan]: undefined,
+  [eEthereumNetwork.ropsten]: undefined,
+  [eEthereumNetwork.coverage]: undefined,
+  [eEthereumNetwork.hardhat]: undefined,
+  [eEthereumNetwork.buidlerevm]: undefined,
+  [eEthereumNetwork.tenderlyMain]: 12406069,
+  [ePolygonNetwork.mumbai]: undefined,
+  [ePolygonNetwork.matic]: undefined,
+  [eXDaiNetwork.xdai]: undefined,
 };
