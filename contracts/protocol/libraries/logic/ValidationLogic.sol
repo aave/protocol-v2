@@ -38,7 +38,7 @@ library ValidationLogic {
    * @param reserve The reserve object on which the user is depositing
    * @param amount The amount to be deposited
    */
-  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
+  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) internal view {
     (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
@@ -46,46 +46,23 @@ library ValidationLogic {
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
   }
 
+
   /**
    * @dev Validates a withdraw action
-   * @param reserveAddress The address of the reserve
+   * @param reserve The reserve object
    * @param amount The amount to be withdrawn
    * @param userBalance The balance of the user
-   * @param reservesData The reserves state
-   * @param userConfig The user configuration
-   * @param reserves The addresses of the reserves
-   * @param reservesCount The number of reserves
-   * @param oracle The price oracle
    */
   function validateWithdraw(
-    address reserveAddress,
+    DataTypes.ReserveData storage reserve,
     uint256 amount,
-    uint256 userBalance,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => address) storage reserves,
-    uint256 reservesCount,
-    address oracle
-  ) external view {
+    uint256 userBalance
+  ) internal view {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
-    (bool isActive, , , ) = reservesData[reserveAddress].configuration.getFlags();
+    (bool isActive, , , ) = reserve.configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
-
-    require(
-      GenericLogic.balanceDecreaseAllowed(
-        reserveAddress,
-        msg.sender,
-        amount,
-        reservesData,
-        userConfig,
-        reserves,
-        reservesCount,
-        oracle
-      ),
-      Errors.VL_TRANSFER_NOT_ALLOWED
-    );
   }
 
   struct ValidateBorrowLocalVars {
@@ -130,7 +107,7 @@ library ValidationLogic {
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
-  ) external view {
+  ) internal view {
     ValidateBorrowLocalVars memory vars;
 
     (vars.isActive, vars.isFrozen, vars.borrowingEnabled, vars.stableRateBorrowingEnabled) = reserve
@@ -227,7 +204,7 @@ library ValidationLogic {
     address onBehalfOf,
     uint256 stableDebt,
     uint256 variableDebt
-  ) external view {
+  ) internal view {
     bool isActive = reserve.configuration.getActive();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
@@ -335,40 +312,13 @@ library ValidationLogic {
   /**
    * @dev Validates the action of setting an asset as collateral
    * @param reserve The state of the reserve that the user is enabling or disabling as collateral
-   * @param reserveAddress The address of the reserve
-   * @param reservesData The data of all the reserves
-   * @param userConfig The state of the user for the specific reserve
-   * @param reserves The addresses of all the active reserves
-   * @param oracle The price oracle
    */
   function validateSetUseReserveAsCollateral(
-    DataTypes.ReserveData storage reserve,
-    address reserveAddress,
-    bool useAsCollateral,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => address) storage reserves,
-    uint256 reservesCount,
-    address oracle
+    DataTypes.ReserveData storage reserve
   ) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
 
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
-
-    require(
-      useAsCollateral ||
-        GenericLogic.balanceDecreaseAllowed(
-          reserveAddress,
-          msg.sender,
-          underlyingBalance,
-          reservesData,
-          userConfig,
-          reserves,
-          reservesCount,
-          oracle
-        ),
-      Errors.VL_DEPOSIT_ALREADY_IN_USE
-    );
   }
 
   /**
@@ -436,14 +386,15 @@ library ValidationLogic {
   }
 
   /**
-   * @dev Validates an aToken transfer
+   * @dev Validates the health factor of a user
    * @param from The user from which the aTokens are being transferred
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
    * @param reserves The addresses of all the active reserves
+   * @param reservesCount The number of available reserves
    * @param oracle The price oracle
    */
-  function validateTransfer(
+  function validateHealthFactor(
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -463,7 +414,7 @@ library ValidationLogic {
 
     require(
       healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
-      Errors.VL_TRANSFER_NOT_ALLOWED
+      Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
   }
 }
