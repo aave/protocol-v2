@@ -30,9 +30,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   before(async () => {
     _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
   });
-  it('Authorize a flash bororwer', async () => {
-    const { deployer, pool, weth, configurator } = testEnv;
+  it('Authorize flash borowers', async () => {
+    const { deployer, pool, weth, configurator, users } = testEnv;
     await configurator.authorizeFlashBorrower(deployer.address);
+    await configurator.authorizeFlashBorrower(users[1].address);
+    await configurator.authorizeFlashBorrower(users[2].address);
+    await configurator.authorizeFlashBorrower(users[3].address);
+    await configurator.authorizeFlashBorrower(users[4].address);
+    await configurator.authorizeFlashBorrower(users[5].address);
   });
 
   it('Deposits WETH into the reserve', async () => {
@@ -179,6 +184,8 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     await pool.connect(caller.signer).deposit(dai.address, amountToDeposit, caller.address, '0');
 
+    const borrowedAmount = await convertToCurrencyDecimals(weth.address, '0.8');
+
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
     await pool
@@ -186,7 +193,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       .flashLoan(
         _mockFlashLoanReceiver.address,
         [weth.address],
-        [ethers.utils.parseEther('0.8')],
+        [borrowedAmount],
         [2],
         caller.address,
         '0x10',
@@ -194,6 +201,19 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       );
     const { variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
       weth.address
+    );
+    ethers.utils.parseUnits('10000');
+
+    const fees = 0;
+
+    const reserveData = await helpersContract.getReserveData(weth.address);
+
+    let totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
+      .plus(reserveData.totalStableDebt.toString())
+      .plus(reserveData.totalVariableDebt.toString());
+
+    expect(totalLiquidity.toString()).to.be.equal(
+      ethers.BigNumber.from('1000000000000000000').add(fees)
     );
 
     const wethDebtToken = await getVariableDebtToken(variableDebtTokenAddress);
