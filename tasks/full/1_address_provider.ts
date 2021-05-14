@@ -9,8 +9,6 @@ import {
 } from '../../helpers/configuration';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { eNetwork } from '../../helpers/types';
-import { isZeroAddress } from 'ethereumjs-util';
-//import BigNumber from 'bignumber.js';
 
 task(
   'full:deploy-address-provider',
