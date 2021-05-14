@@ -136,7 +136,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bytes32 permitR,
     bytes32 permitS
   ) external override {
-    IERC20WithPermit(asset).permit(msg.sender, address(this), amount, deadline, permitV, permitR, permitS);
+    IERC20WithPermit(asset).permit(
+      msg.sender,
+      address(this),
+      amount,
+      deadline,
+      permitV,
+      permitR,
+      permitS
+    );
     _executeDeposit(asset, amount, onBehalfOf, referralCode);
   }
 
@@ -243,7 +251,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bytes32 permitR,
     bytes32 permitS
   ) external override returns (uint256) {
-    IERC20WithPermit(asset).permit(msg.sender, address(this), amount, deadline, permitV, permitR, permitS);
+    IERC20WithPermit(asset).permit(
+      msg.sender,
+      address(this),
+      amount,
+      deadline,
+      permitV,
+      permitR,
+      permitS
+    );
     return _executeRepay(asset, amount, rateMode, onBehalfOf);
   }
 
@@ -349,22 +365,22 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
-    ValidationLogic.validateSetUseReserveAsCollateral(
-      reserve,
-      asset,
-      useAsCollateral,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
+    ValidationLogic.validateSetUseReserveAsCollateral(reserve);
 
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
     if (useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
     } else {
+      ValidationLogic.validateHealthFactor(
+        msg.sender,
+        _reserves,
+        _usersConfig[msg.sender],
+        _reservesList,
+        _reservesCount,
+        _addressesProvider.getPriceOracle()
+      );
+
       emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
     }
   }
@@ -671,7 +687,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -704,22 +720,26 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
-    ValidationLogic.validateTransfer(
-      from,
-      _reserves,
-      _usersConfig[from],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
-
     uint256 reserveId = _reserves[asset].id;
 
     if (from != to) {
-      if (balanceFromBefore.sub(amount) == 0) {
-        DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
-        fromConfig.setUsingAsCollateral(reserveId, false);
-        emit ReserveUsedAsCollateralDisabled(asset, from);
+      DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
+
+      if (fromConfig.isUsingAsCollateral(reserveId)) {
+        if (fromConfig.isBorrowingAny()) {
+          ValidationLogic.validateHealthFactor(
+            from,
+            _reserves,
+            _usersConfig[from],
+            _reservesList,
+            _reservesCount,
+            _addressesProvider.getPriceOracle()
+          );
+        }
+        if (balanceFromBefore.sub(amount) == 0) {
+          fromConfig.setUsingAsCollateral(reserveId, false);
+          emit ReserveUsedAsCollateralDisabled(asset, from);
+        }
       }
 
       if (balanceToBefore == 0 && amount != 0) {
@@ -920,10 +940,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address to
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
 
     address aToken = reserve.aTokenAddress;
 
-    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
+    reserve.updateState();
+
+    uint256 liquidityIndex = reserve.liquidityIndex;
+
+    uint256 userBalance = IAToken(aToken).scaledBalanceOf(msg.sender).rayMul(liquidityIndex);
 
     uint256 amountToWithdraw = amount;
 
@@ -931,27 +956,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       amountToWithdraw = userBalance;
     }
 
-    ValidationLogic.validateWithdraw(
-      asset,
-      amountToWithdraw,
-      userBalance,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
-
-    reserve.updateState();
+    ValidationLogic.validateWithdraw(reserve, amountToWithdraw, userBalance);
 
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
-    if (amountToWithdraw == userBalance) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
-    }
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, liquidityIndex);
 
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+    if (userConfig.isUsingAsCollateral(reserve.id)) {
+      if (userConfig.isBorrowingAny()) {
+        ValidationLogic.validateHealthFactor(
+          msg.sender,
+          _reserves,
+          userConfig,
+          _reservesList,
+          _reservesCount,
+          _addressesProvider.getPriceOracle()
+        );
+      }
+
+      if (amountToWithdraw == userBalance) {
+        userConfig.setUsingAsCollateral(reserve.id, false);
+        emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+      }
+    }
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
 
