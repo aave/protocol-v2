@@ -725,20 +725,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (from != to) {
       DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
 
-      if (fromConfig.isUsingAsCollateral(reserveId) && fromConfig.isBorrowingAny()) {
-        ValidationLogic.validateHealthFactor(
-          from,
-          _reserves,
-          _usersConfig[from],
-          _reservesList,
-          _reservesCount,
-          _addressesProvider.getPriceOracle()
-        );
-      }
-
-      if (balanceFromBefore.sub(amount) == 0) {
-        fromConfig.setUsingAsCollateral(reserveId, false);
-        emit ReserveUsedAsCollateralDisabled(asset, from);
+      if (fromConfig.isUsingAsCollateral(reserveId)) {
+        if (fromConfig.isBorrowingAny()) {
+          ValidationLogic.validateHealthFactor(
+            from,
+            _reserves,
+            _usersConfig[from],
+            _reservesList,
+            _reservesCount,
+            _addressesProvider.getPriceOracle()
+          );
+        }
+        if (balanceFromBefore.sub(amount) == 0) {
+          fromConfig.setUsingAsCollateral(reserveId, false);
+          emit ReserveUsedAsCollateralDisabled(asset, from);
+        }
       }
 
       if (balanceToBefore == 0 && amount != 0) {
