@@ -51,6 +51,8 @@ import {
   FlashLiquidationAdapterFactory,
   RewardsTokenFactory,
   RewardsATokenMockFactory,
+  SushiAmmReserveInterestRateStrategyFactory,
+  SushiRewardsAwareATokenFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -68,6 +70,7 @@ import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins'
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
+import { MASTER_CHEF, SUSHI_TOKEN } from './constants';
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
@@ -662,6 +665,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
       return deployDelegationAwareATokenImpl;
     case eContractid.RewardsATokenMock:
       return deployRewardATokenMock;
+    case eContractid.SushiRewardsAwareAToken:
+      return deploySushiRewardAwareATokenByNetwork;
     default:
       throw Error(`Missing aToken implementation deployment script for: ${id}`);
   }
@@ -713,4 +718,44 @@ export const deployATokenImplementations = async (
   if (!notFalsyOrZeroAddress(geneticVariableDebtTokenAddress)) {
     await deployGenericVariableDebtToken(verify);
   }
+};
+
+export const deploySushiAmmReserveInterestRateStrategy = async (
+  args: [tEthereumAddress, string, string, string, string, string, string],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new SushiAmmReserveInterestRateStrategyFactory(await getFirstSigner()).deploy(...args),
+    eContractid.SushiAmmReserveInterestRateStrategy,
+    args,
+    verify
+  );
+
+export const deploySushiRewardsAwareAToken = async (
+  masterChef: tEthereumAddress,
+  sushiBar: tEthereumAddress,
+  sushiToken: tEthereumAddress,
+  verify?: boolean
+) => {
+  const args: [tEthereumAddress, tEthereumAddress, tEthereumAddress] = [
+    masterChef,
+    sushiBar,
+    sushiToken,
+  ];
+  return withSaveAndVerify(
+    await new SushiRewardsAwareATokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.SushiRewardsAwareAToken,
+    args,
+    verify
+  );
+};
+
+export const deploySushiRewardAwareATokenByNetwork = async (verify?: boolean) => {
+  const network = DRE.network.name as eEthereumNetwork;
+  return deploySushiRewardsAwareAToken(
+    MASTER_CHEF[network],
+    SUSHI_TOKEN[network],
+    SUSHI_TOKEN[network],
+    verify
+  );
 };
