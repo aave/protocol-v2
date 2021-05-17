@@ -15,7 +15,7 @@ import {
   getUniswapRepayAdapter,
   getFlashLiquidationAdapter,
 } from '../../../helpers/contracts-getters';
-import { eEthereumNetwork, tEthereumAddress } from '../../../helpers/types';
+import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
 import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
@@ -116,9 +116,9 @@ export async function initializeMakeSuite() {
 
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
 
-  if (process.env.MAINNET_FORK === 'true') {
+  if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
-      getParamPerNetwork(AmmConfig.ProviderRegistry, eEthereumNetwork.main)
+      getParamPerNetwork(AmmConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();

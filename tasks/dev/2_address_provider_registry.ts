@@ -18,6 +18,7 @@ task(
 
     const addressesProvider = await deployLendingPoolAddressesProvider(AaveConfig.MarketId, verify);
     await waitForTx(await addressesProvider.setPoolAdmin(admin));
+    await waitForTx(await addressesProvider.setEmergencyAdmin(admin));
 
     const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry(verify);
     await waitForTx(
