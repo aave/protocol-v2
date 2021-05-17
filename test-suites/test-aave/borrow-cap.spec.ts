@@ -4,6 +4,7 @@ import {
   MAX_UINT_AMOUNT,
   RAY,
   MAX_BORROW_CAP,
+  MAX_SUPPLY_CAP,
 } from '../../helpers/constants';
 import { ProtocolErrors } from '../../helpers/types';
 import { MintableERC20, WETH9, WETH9Mocked } from '../../types';
@@ -29,13 +30,16 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       helpersContract,
       users: [user1],
     } = testEnv;
-    const mintedAmount = parseEther('1000000000');
-    await dai.mint(mintedAmount);
-    await weth.mint(mintedAmount);
-    await usdc.mint(mintedAmount);
-    await dai.connect(user1.signer).mint(mintedAmount);
-    await weth.connect(user1.signer).mint(mintedAmount);
-    await usdc.connect(user1.signer).mint(mintedAmount);
+    const mintedMiliAmount = '1000000000000';
+    const daiMinted = await miliUnitToPrecision(dai, mintedMiliAmount);
+    const wethMinted = await miliUnitToPrecision(weth, mintedMiliAmount);
+    const usdcMinted = await miliUnitToPrecision(usdc, mintedMiliAmount);
+    await dai.mint(daiMinted);
+    await weth.mint(wethMinted);
+    await usdc.mint(usdcMinted);
+    await dai.connect(user1.signer).mint(daiMinted);
+    await weth.connect(user1.signer).mint(wethMinted);
+    await usdc.connect(user1.signer).mint(usdcMinted);
     await dai.approve(pool.address, MAX_UINT_AMOUNT);
     await weth.approve(pool.address, MAX_UINT_AMOUNT);
     await usdc.approve(pool.address, MAX_UINT_AMOUNT);
@@ -44,9 +48,12 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     await usdc.connect(user1.signer).approve(pool.address, MAX_UINT_AMOUNT);
     let usdcBorrowCap = (await helpersContract.getReserveCaps(usdc.address)).borrowCap;
     let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
-
     expect(usdcBorrowCap).to.be.equal(MAX_BORROW_CAP);
     expect(daiBorrowCap).to.be.equal(MAX_BORROW_CAP);
+    let wethBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
+    let wethSupplyCap = (await helpersContract.getReserveCaps(dai.address)).supplyCap;
+    expect(wethBorrowCap).to.be.equal(MAX_BORROW_CAP);
+    expect(wethSupplyCap).to.be.equal(MAX_SUPPLY_CAP);
 
     const depositedMiliAmount = (1e9).toString();
 
@@ -65,9 +72,9 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
       deployer.address,
       0
     );
-    await pool.connect(user1.signer).deposit(weth.address, mintedAmount, user1.address, 0);
-    await pool.connect(user1.signer).deposit(dai.address, mintedAmount, user1.address, 0);
-    await pool.connect(user1.signer).deposit(usdc.address, mintedAmount, user1.address, 0);
+    await pool.connect(user1.signer).deposit(weth.address, wethMinted, user1.address, 0);
+    await pool.connect(user1.signer).deposit(dai.address, daiMinted, user1.address, 0);
+    await pool.connect(user1.signer).deposit(usdc.address, usdcMinted, user1.address, 0);
   });
   it('should fail to borrow any dai or usdc, stable or variable', async () => {
     const { usdc, pool, dai, deployer, helpersContract } = testEnv;
