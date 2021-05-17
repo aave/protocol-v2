@@ -90,6 +90,7 @@ export enum eContractid {
   PermissionManager = 'PermissionManager',
   PermissionedStableDebtToken = 'PermissionedStableDebtToken',
   PermissionedVariableDebtToken = 'PermissionedVariableDebtToken',
+  PermissionedLendingPool = 'PermissionedLendingPool'
 }
 
 /*
@@ -474,6 +475,7 @@ export interface ILendingRate {
 
 export interface ICommonConfiguration {
   MarketId: string;
+  LendingPoolImpl?: eContractid;
   ATokenNamePrefix: string;
   StableDebtTokenNamePrefix: string;
   VariableDebtTokenNamePrefix: string;

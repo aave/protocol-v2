@@ -19,6 +19,7 @@ import { loadPoolConfig, ConfigNames } from '../../helpers/configuration';
 task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
+  .addParam('lendingPoolImpl')
   .setAction(async ({ verify, pool }, DRE: HardhatRuntimeEnvironment) => {
     try {
       await DRE.run('set-DRE');
@@ -32,7 +33,7 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
       let lendingPoolImplAddress = getParamPerNetwork(LendingPool, network);
       if (!notFalsyOrZeroAddress(lendingPoolImplAddress)) {
         console.log('\tDeploying new lending pool implementation & libraries...');
-        const lendingPoolImpl = await deployLendingPool(verify);
+        const lendingPoolImpl = await deployLendingPool(verify, poolConfig.LendingPoolImpl);
         lendingPoolImplAddress = lendingPoolImpl.address;
         await lendingPoolImpl.initialize(addressesProvider.address);
       }
