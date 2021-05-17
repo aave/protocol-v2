@@ -3,7 +3,6 @@ import { DRE, setDRE } from '../../helpers/misc-utils';
 import { EthereumNetworkNames } from '../../helpers/types';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { getFirstSigner } from '../../helpers/contracts-getters';
 import { formatEther } from 'ethers/lib/utils';
 import { fork } from 'child_process';
 import { env } from 'process';
@@ -26,16 +25,11 @@ task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).set
         console.log('- Creating a new Tenderly Fork');
         await _DRE.tenderlyRPC.initializeFork();
       }
-      const provider = new _DRE.ethers.providers.Web3Provider(_DRE.tenderlyRPC as any);
+      const provider = new _DRE.ethers.providers.Web3Provider(_DRE.tenderlyRPC);
       _DRE.ethers.provider = provider;
       console.log('- Initialized Tenderly fork:');
       console.log('  - Fork: ', _DRE.tenderlyRPC.getFork());
       console.log('  - Head: ', _DRE.tenderlyRPC.getHead());
-      console.log('  - First account:', await (await _DRE.ethers.getSigners())[0].getAddress());
-      console.log(
-        '  - Balance:',
-        formatEther(await (await _DRE.ethers.getSigners())[0].getBalance())
-      );
     }
 
     console.log('- Enviroment');
