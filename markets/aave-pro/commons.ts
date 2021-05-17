@@ -7,7 +7,7 @@ import { ICommonConfiguration, eEthereumNetwork } from '../../helpers/types';
 // ----------------
 
 export const CommonsConfig: ICommonConfiguration = {
-  MarketId: 'Commons',
+  MarketId: 'AavePro',
   ATokenNamePrefix: 'Aave Pro market',
   StableDebtTokenNamePrefix: 'Aave Pro stable debt ',
   VariableDebtTokenNamePrefix: 'Aave Pro variable debt ',
