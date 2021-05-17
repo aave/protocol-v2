@@ -19,17 +19,17 @@ task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).set
       console.log('- Setting up Tenderly provider');
       if (process.env.TENDERLY_FORK_ID && process.env.TENDERLY_HEAD_ID) {
         console.log('- Connecting to a Tenderly Fork');
-        _DRE.tenderlyRPC.setFork(process.env.TENDERLY_FORK_ID);
-        _DRE.tenderlyRPC.setHead(process.env.TENDERLY_HEAD_ID);
+        (_DRE as any).tenderlyRPC.setFork(process.env.TENDERLY_FORK_ID);
+        (_DRE as any).tenderlyRPC.setHead(process.env.TENDERLY_HEAD_ID);
       } else {
         console.log('- Creating a new Tenderly Fork');
-        await _DRE.tenderlyRPC.initializeFork();
+        await (_DRE as any).tenderlyRPC.initializeFork();
       }
-      const provider = new _DRE.ethers.providers.Web3Provider(_DRE.tenderlyRPC);
+      const provider = new _DRE.ethers.providers.Web3Provider((_DRE as any).tenderlyRPC);
       _DRE.ethers.provider = provider;
       console.log('- Initialized Tenderly fork:');
-      console.log('  - Fork: ', _DRE.tenderlyRPC.getFork());
-      console.log('  - Head: ', _DRE.tenderlyRPC.getHead());
+      console.log('  - Fork: ', (_DRE as any).tenderlyRPC.getFork());
+      console.log('  - Head: ', (_DRE as any).tenderlyRPC.getHead());
     }
 
     console.log('- Enviroment');
