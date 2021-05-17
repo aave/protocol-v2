@@ -12,7 +12,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   const {
     INVALID_FROM_BALANCE_AFTER_TRANSFER,
     INVALID_TO_BALANCE_AFTER_TRANSFER,
-    VL_TRANSFER_NOT_ALLOWED,
+    VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
@@ -81,8 +81,8 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 
     await expect(
       aDai.connect(users[1].signer).transfer(users[0].address, aDAItoTransfer),
-      VL_TRANSFER_NOT_ALLOWED
-    ).to.be.revertedWith(VL_TRANSFER_NOT_ALLOWED);
+      VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
+    ).to.be.revertedWith(VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD);
   });
 
   it('User 1 tries to transfer a small amount of DAI used as collateral back to user 0', async () => {

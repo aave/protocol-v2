@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20WithPermit} from '../../interfaces/IERC20WithPermit.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
@@ -107,25 +108,44 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf,
     uint16 referralCode
   ) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    _executeDeposit(asset, amount, onBehalfOf, referralCode);
+  }
 
-    ValidationLogic.validateDeposit(reserve, amount);
-
-    address aToken = reserve.aTokenAddress;
-
-    reserve.updateState();
-    reserve.updateInterestRates(asset, aToken, amount, 0);
-
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
-
-    bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
-
-    if (isFirstDeposit) {
-      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
-      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
-    }
-
-    emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
+  /**
+   * @notice Deposit with transfer approval of asset to be deposited done via permit function
+   * see: https://eips.ethereum.org/EIPS/eip-2612 and https://eips.ethereum.org/EIPS/eip-713
+   * @param asset The address of the underlying asset to deposit
+   * @param amount The amount to be deposited
+   * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
+   *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
+   *   is a different wallet
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
+   * @param deadline validity deadline of permit and so depositWithPermit signature
+   * @param permitV V parameter of ERC712 permit sig
+   * @param permitR R parameter of ERC712 permit sig
+   * @param permitS S parameter of ERC712 permit sig
+   **/
+  function depositWithPermit(
+    address asset,
+    uint256 amount,
+    address onBehalfOf,
+    uint16 referralCode,
+    uint256 deadline,
+    uint8 permitV,
+    bytes32 permitR,
+    bytes32 permitS
+  ) external override {
+    IERC20WithPermit(asset).permit(
+      msg.sender,
+      address(this),
+      amount,
+      deadline,
+      permitV,
+      permitR,
+      permitS
+    );
+    _executeDeposit(asset, amount, onBehalfOf, referralCode);
   }
 
   /**
@@ -202,6 +222,44 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
+    return _executeRepay(asset, amount, rateMode, onBehalfOf);
+  }
+
+  /**
+   * @notice Repay with transfer approval of asset to be repaid done via permit function
+   * see: https://eips.ethereum.org/EIPS/eip-2612 and https://eips.ethereum.org/EIPS/eip-713
+   * @param asset The address of the borrowed underlying asset previously borrowed
+   * @param amount The amount to repay
+   * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
+   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
+   * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
+   * user calling the function if he wants to reduce/remove his own debt, or the address of any other
+   * other borrower whose debt should be removed
+   * @param deadline validity deadline of permit and so depositWithPermit signature
+   * @param permitV V parameter of ERC712 permit sig
+   * @param permitR R parameter of ERC712 permit sig
+   * @param permitS S parameter of ERC712 permit sig
+   * @return The final amount repaid
+   **/
+  function repayWithPermit(
+    address asset,
+    uint256 amount,
+    uint256 rateMode,
+    address onBehalfOf,
+    uint256 deadline,
+    uint8 permitV,
+    bytes32 permitR,
+    bytes32 permitS
+  ) external override returns (uint256) {
+    IERC20WithPermit(asset).permit(
+      msg.sender,
+      address(this),
+      amount,
+      deadline,
+      permitV,
+      permitR,
+      permitS
+    );
     return _executeRepay(asset, amount, rateMode, onBehalfOf);
   }
 
@@ -307,22 +365,22 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
-    ValidationLogic.validateSetUseReserveAsCollateral(
-      reserve,
-      asset,
-      useAsCollateral,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
+    ValidationLogic.validateSetUseReserveAsCollateral(reserve);
 
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
     if (useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
     } else {
+      ValidationLogic.validateHealthFactor(
+        msg.sender,
+        _reserves,
+        _usersConfig[msg.sender],
+        _reservesList,
+        _reservesCount,
+        _addressesProvider.getPriceOracle()
+      );
+
       emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
     }
   }
@@ -629,7 +687,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -662,22 +720,26 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
-    ValidationLogic.validateTransfer(
-      from,
-      _reserves,
-      _usersConfig[from],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
-
     uint256 reserveId = _reserves[asset].id;
 
     if (from != to) {
-      if (balanceFromBefore.sub(amount) == 0) {
-        DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
-        fromConfig.setUsingAsCollateral(reserveId, false);
-        emit ReserveUsedAsCollateralDisabled(asset, from);
+      DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
+
+      if (fromConfig.isUsingAsCollateral(reserveId)) {
+        if (fromConfig.isBorrowingAny()) {
+          ValidationLogic.validateHealthFactor(
+            from,
+            _reserves,
+            _usersConfig[from],
+            _reservesList,
+            _reservesCount,
+            _addressesProvider.getPriceOracle()
+          );
+        }
+        if (balanceFromBefore.sub(amount) == 0) {
+          fromConfig.setUsingAsCollateral(reserveId, false);
+          emit ReserveUsedAsCollateralDisabled(asset, from);
+        }
       }
 
       if (balanceToBefore == 0 && amount != 0) {
@@ -845,16 +907,48 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
+  function _executeDeposit(
+    address asset,
+    uint256 amount,
+    address onBehalfOf,
+    uint16 referralCode
+  ) internal {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+
+    ValidationLogic.validateDeposit(reserve, amount);
+
+    address aToken = reserve.aTokenAddress;
+
+    reserve.updateState();
+    reserve.updateInterestRates(asset, aToken, amount, 0);
+
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+
+    bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+
+    if (isFirstDeposit) {
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
+      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
+    }
+
+    emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
+  }
+
   function _executeWithdraw(
     address asset,
     uint256 amount,
     address to
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
 
     address aToken = reserve.aTokenAddress;
 
-    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
+    reserve.updateState();
+
+    uint256 liquidityIndex = reserve.liquidityIndex;
+
+    uint256 userBalance = IAToken(aToken).scaledBalanceOf(msg.sender).rayMul(liquidityIndex);
 
     uint256 amountToWithdraw = amount;
 
@@ -862,27 +956,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       amountToWithdraw = userBalance;
     }
 
-    ValidationLogic.validateWithdraw(
-      asset,
-      amountToWithdraw,
-      userBalance,
-      _reserves,
-      _usersConfig[msg.sender],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
-    );
-
-    reserve.updateState();
+    ValidationLogic.validateWithdraw(reserve, amountToWithdraw, userBalance);
 
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
-    if (amountToWithdraw == userBalance) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
-    }
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, liquidityIndex);
 
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+    if (userConfig.isUsingAsCollateral(reserve.id)) {
+      if (userConfig.isBorrowingAny()) {
+        ValidationLogic.validateHealthFactor(
+          msg.sender,
+          _reserves,
+          userConfig,
+          _reservesList,
+          _reservesCount,
+          _addressesProvider.getPriceOracle()
+        );
+      }
+
+      if (amountToWithdraw == userBalance) {
+        userConfig.setUsingAsCollateral(reserve.id, false);
+        emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+      }
+    }
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
 

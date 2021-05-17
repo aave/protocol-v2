@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IScaledBalanceToken} from '../../../interfaces/IScaledBalanceToken.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
@@ -27,99 +28,13 @@ library GenericLogic {
 
   uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
 
-  struct balanceDecreaseAllowedLocalVars {
-    uint256 decimals;
-    uint256 liquidationThreshold;
-    uint256 totalCollateralInETH;
-    uint256 totalDebtInETH;
-    uint256 avgLiquidationThreshold;
-    uint256 amountToDecreaseInETH;
-    uint256 collateralBalanceAfterDecrease;
-    uint256 liquidationThresholdAfterDecrease;
-    uint256 healthFactorAfterDecrease;
-    bool reserveUsageAsCollateralEnabled;
-  }
-
-  /**
-   * @dev Checks if a specific balance decrease is allowed
-   * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
-   * @param asset The address of the underlying asset of the reserve
-   * @param user The address of the user
-   * @param amount The amount to decrease
-   * @param reservesData The data of all the reserves
-   * @param userConfig The user configuration
-   * @param reserves The list of all the active reserves
-   * @param oracle The address of the oracle contract
-   * @return true if the decrease of the balance is allowed
-   **/
-  function balanceDecreaseAllowed(
-    address asset,
-    address user,
-    uint256 amount,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserConfigurationMap calldata userConfig,
-    mapping(uint256 => address) storage reserves,
-    uint256 reservesCount,
-    address oracle
-  ) external view returns (bool) {
-    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
-      return true;
-    }
-
-    balanceDecreaseAllowedLocalVars memory vars;
-
-    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset]
-      .configuration
-      .getParams();
-
-    if (vars.liquidationThreshold == 0) {
-      return true;
-    }
-
-    (
-      vars.totalCollateralInETH,
-      vars.totalDebtInETH,
-      ,
-      vars.avgLiquidationThreshold,
-
-    ) = calculateUserAccountData(user, reservesData, userConfig, reserves, reservesCount, oracle);
-
-    if (vars.totalDebtInETH == 0) {
-      return true;
-    }
-
-    vars.amountToDecreaseInETH = IPriceOracleGetter(oracle).getAssetPrice(asset).mul(amount).div(
-      10**vars.decimals
-    );
-
-    vars.collateralBalanceAfterDecrease = vars.totalCollateralInETH.sub(vars.amountToDecreaseInETH);
-
-    //if there is a borrow, there can't be 0 collateral
-    if (vars.collateralBalanceAfterDecrease == 0) {
-      return false;
-    }
-
-    vars.liquidationThresholdAfterDecrease = vars
-      .totalCollateralInETH
-      .mul(vars.avgLiquidationThreshold)
-      .sub(vars.amountToDecreaseInETH.mul(vars.liquidationThreshold))
-      .div(vars.collateralBalanceAfterDecrease);
-
-    uint256 healthFactorAfterDecrease =
-      calculateHealthFactorFromBalances(
-        vars.collateralBalanceAfterDecrease,
-        vars.totalDebtInETH,
-        vars.liquidationThresholdAfterDecrease
-      );
-
-    return healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
-  }
-
   struct CalculateUserAccountDataVars {
-    uint256 reserveUnitPrice;
-    uint256 tokenUnit;
-    uint256 compoundedLiquidityBalance;
-    uint256 compoundedBorrowBalance;
+    uint256 assetPrice;
+    uint256 assetUnit;
+    uint256 userBalance;
+    uint256 userBalanceETH;
+    uint256 userDebt;
+    uint256 userDebtETH;
     uint256 decimals;
     uint256 ltv;
     uint256 liquidationThreshold;
@@ -130,6 +45,8 @@ library GenericLogic {
     uint256 avgLtv;
     uint256 avgLiquidationThreshold;
     uint256 reservesLength;
+    uint256 normalizedIncome;
+    uint256 normalizedDebt;
     bool healthFactorBelowThreshold;
     address currentReserveAddress;
     bool usageAsCollateralEnabled;
@@ -182,34 +99,40 @@ library GenericLogic {
         .configuration
         .getParams();
 
-      vars.tokenUnit = 10**vars.decimals;
-      vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
+      vars.assetUnit = 10**vars.decimals;
+      vars.assetPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
-        vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(user);
+        vars.userBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(user);
+        if (vars.userBalance > 0) {
+          vars.normalizedIncome = currentReserve.getNormalizedIncome();
+          vars.userBalance = vars.userBalance.rayMul(vars.normalizedIncome);
+        }
 
-        uint256 liquidityBalanceETH =
-          vars.reserveUnitPrice.mul(vars.compoundedLiquidityBalance).div(vars.tokenUnit);
+        vars.userBalanceETH = vars.assetPrice.mul(vars.userBalance).div(vars.assetUnit);
 
-        vars.totalCollateralInETH = vars.totalCollateralInETH.add(liquidityBalanceETH);
+        vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
 
-        vars.avgLtv = vars.avgLtv.add(liquidityBalanceETH.mul(vars.ltv));
+        vars.avgLtv = vars.avgLtv.add(vars.userBalanceETH.mul(vars.ltv));
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
-          liquidityBalanceETH.mul(vars.liquidationThreshold)
+          vars.userBalanceETH.mul(vars.liquidationThreshold)
         );
       }
 
       if (userConfig.isBorrowing(vars.i)) {
-        vars.compoundedBorrowBalance = IERC20(currentReserve.stableDebtTokenAddress).balanceOf(
-          user
-        );
-        vars.compoundedBorrowBalance = vars.compoundedBorrowBalance.add(
-          IERC20(currentReserve.variableDebtTokenAddress).balanceOf(user)
-        );
+        vars.userDebt = IScaledBalanceToken(currentReserve.variableDebtTokenAddress)
+          .scaledBalanceOf(user);
 
-        vars.totalDebtInETH = vars.totalDebtInETH.add(
-          vars.reserveUnitPrice.mul(vars.compoundedBorrowBalance).div(vars.tokenUnit)
+        if (vars.userDebt > 0) {
+          vars.normalizedDebt = currentReserve.getNormalizedDebt();
+          vars.userDebt = vars.userDebt.rayMul(vars.normalizedDebt);
+        }
+
+        vars.userDebt = vars.userDebt.add(
+          IERC20(currentReserve.stableDebtTokenAddress).balanceOf(user)
         );
+        vars.userDebtETH = vars.assetPrice.mul(vars.userDebt).div(vars.assetUnit);
+        vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);         
       }
     }
 

@@ -111,7 +111,6 @@ export enum ProtocolErrors {
   VL_RESERVE_FROZEN = '3', // 'Action requires an unfrozen reserve'
   VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH = '4', // 'The current liquidity is not enough'
   VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE = '5', // 'User cannot withdraw more than the available balance'
-  VL_TRANSFER_NOT_ALLOWED = '6', // 'Transfer cannot be allowed.'
   VL_BORROWING_NOT_ENABLED = '7', // 'Borrowing is not enabled'
   VL_INVALID_INTEREST_RATE_MODE_SELECTED = '8', // 'Invalid interest rate mode selected'
   VL_COLLATERAL_BALANCE_IS_0 = '9', // 'The collateral balance is 0'
@@ -301,7 +300,7 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC'
+  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC' | 'AAVE'
 >;
 
 export type iXDAIPoolAssets<T> = Pick<
@@ -496,8 +495,10 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
+  IncentivesController: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
