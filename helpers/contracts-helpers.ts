@@ -2,7 +2,7 @@ import { Contract, Signer, utils, ethers, BigNumberish } from 'ethers';
 import { signTypedData_v4 } from 'eth-sig-util';
 import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
-import { getDb, DRE, waitForTx } from './misc-utils';
+import { getDb, DRE, waitForTx, notFalsyOrZeroAddress } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -23,9 +23,12 @@ import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
-import { getIErc20Detailed } from './contracts-getters';
+import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
 import { usingPolygon, verifyAtPolygon } from './polygon-utils';
+import { ConfigNames, loadPoolConfig } from './configuration';
+import { ZERO_ADDRESS } from './constants';
+import { RewardsTokenFactory, RewardsATokenMockFactory } from '../types';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
@@ -170,6 +173,16 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
     case eXDaiNetwork.xdai:
       return xdai;
   }
+};
+
+export const getOptionalParamAddressPerNetwork = (
+  param: iParamsPerNetwork<tEthereumAddress> | undefined | null,
+  network: eNetwork
+) => {
+  if (!param) {
+    return ZERO_ADDRESS;
+  }
+  return getParamPerNetwork(param, network);
 };
 
 export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, pool: AavePools) => {
@@ -333,4 +346,24 @@ export const verifyContract = async (
     await verifyEtherscanContract(instance.address, args);
   }
   return instance;
+};
+
+export const getContractAddressWithJsonFallback = async (
+  id: string,
+  pool: ConfigNames
+): Promise<tEthereumAddress> => {
+  const poolConfig = loadPoolConfig(pool);
+  const network = <eNetwork>DRE.network.name;
+  const db = getDb();
+
+  const contractAtMarketConfig = getOptionalParamAddressPerNetwork(poolConfig[id], network);
+  if (notFalsyOrZeroAddress(contractAtMarketConfig)) {
+    return contractAtMarketConfig;
+  }
+
+  const contractAtDb = await getDb().get(`${id}.${DRE.network.name}`).value();
+  if (contractAtDb?.address) {
+    return contractAtDb.address as tEthereumAddress;
+  }
+  throw Error(`Missing contract address ${id} at Market config and JSON local db`);
 };

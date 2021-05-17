@@ -120,6 +120,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   )
     external
     view
+    virtual
     override
     returns (
       uint256,
@@ -172,6 +173,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   )
     public
     view
+    virtual
     override
     returns (
       uint256,
