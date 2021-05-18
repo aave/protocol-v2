@@ -1,6 +1,6 @@
 import { eContractid, IReserveParams } from '../../helpers/types';
 
-import { rateStrategyStable, rateStrategyWETH, rateStrategyWBTC } from './rateStrategies';
+import { rateStrategyStable, rateStrategyWETH, rateStrategyWBTC, rateStrategyAAVE } from './rateStrategies';
 
 export const strategyUSDC: IReserveParams = {
   strategy: rateStrategyStable,
@@ -16,18 +16,18 @@ export const strategyUSDC: IReserveParams = {
   reserveFactor: '1000',
 };
 
-export const strategyUSDT: IReserveParams = {
-  strategy: rateStrategyStable,
-  baseLTVAsCollateral: '8000',
-  liquidationThreshold: '8500',
-  liquidationBonus: '10500',
-  borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
-  reserveDecimals: '6',
+export const strategyAAVE: IReserveParams = {
+  strategy: rateStrategyAAVE,
+  baseLTVAsCollateral: '5000',
+  liquidationThreshold: '6500',
+  liquidationBonus: '11000',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   stableDebtTokenImpl: eContractid.PermissionedStableDebtToken,
   variableDebtTokenImpl: eContractid.PermissionedVariableDebtToken,
-  reserveFactor: '1000',
+  reserveFactor: '0'
 };
 
 export const strategyWETH: IReserveParams = {

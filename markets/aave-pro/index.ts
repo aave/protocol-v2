@@ -3,8 +3,8 @@ import { IAaveProConfiguration, eEthereumNetwork, eContractid } from '../../help
 
 import { CommonsConfig } from './commons';
 import {
+  strategyAAVE,
   strategyUSDC,
-  strategyUSDT,
   strategyWBTC,
   strategyWETH,
 } from './reservesConfigs';
@@ -20,9 +20,9 @@ export const AaveConfig: IAaveProConfiguration = {
   LendingPoolImpl: eContractid.PermissionedLendingPool,
   ReservesConfig: {
    USDC: strategyUSDC,
-    USDT: strategyUSDT,
     WBTC: strategyWBTC,
     WETH: strategyWETH,
+    AAVE: strategyAAVE
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},

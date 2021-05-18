@@ -202,6 +202,7 @@ export const deployLendingPool = async (verify?: boolean, lendingPoolImpl?: eCon
     default:
       instance = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
   }
+  await instance.deployTransaction.wait();
 
   await insertContractAddressInDb(eContractid.LendingPoolImpl, instance.address);
   return withSaveAndVerify(instance, eContractid.LendingPool, [], verify);
@@ -367,15 +368,13 @@ export const deployStableDebtTokenByType = async (type: string) => {
     return deployGenericStableDebtToken();
   }
 
-  console.log("Deploying instance of ", type);
-
   switch(type) {
     case eContractid.StableDebtToken:
       return deployGenericStableDebtToken();
     case eContractid.PermissionedStableDebtToken:
       return deployPermissionedStableDebtToken();
     default:
-      console.log("[stable]Cant find token type ", type);
+      console.log("Cant find the debt token type ", type);
       throw "Invalid debt token type";
   }
 }
@@ -415,7 +414,7 @@ export const deployPermissionedVariableDebtToken = async () =>
     false
   );
 
-  export const deployGenericStableDebtToken = async () =>
+  export const deployGenericStableDebtToken = async () => 
   withSaveAndVerify(
     await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.StableDebtToken,
