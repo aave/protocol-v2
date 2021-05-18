@@ -91,6 +91,8 @@ export const strategyMATIC: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyAAVE: IReserveParams = {
