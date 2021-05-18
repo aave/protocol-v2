@@ -24,13 +24,13 @@ export const getDefenderRelaySigner = async () => {
   const defenderAddress = await defenderSigner.getAddress();
   console.log('  - Using Defender Relay: ', defenderAddress);
 
-  // Reemplace signer if FORK=main is active
+  // Replace signer if FORK=main is active
   if (process.env.FORK === 'main') {
     console.log('  - Impersonating Defender Relay');
     await impersonateAccountsHardhat([defenderAddress]);
     defenderSigner = await (DRE as HardhatRuntimeEnvironment).ethers.getSigner(defenderAddress);
   }
-  // Reemplace signer if Tenderly network is active
+  // Replace signer if Tenderly network is active
   if (usingTenderly()) {
     console.log('  - Impersonating Defender Relay via Tenderly');
     defenderSigner = await (DRE as HardhatRuntimeEnvironment).ethers.getSigner(defenderAddress);
