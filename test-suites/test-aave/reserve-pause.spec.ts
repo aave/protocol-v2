@@ -9,7 +9,7 @@ import { getMockFlashLoanReceiver } from '../../helpers/contracts-getters';
 
 const { expect } = require('chai');
 
-makeSuite('Pausable Pool', (testEnv: TestEnv) => {
+makeSuite('Pause Reserve', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
 
   const {
