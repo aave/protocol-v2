@@ -720,6 +720,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
+    ValidationLogic.validateTransfer(_reserves[asset]);
+
     uint256 reserveId = _reserves[asset].id;
 
     if (from != to) {
@@ -728,7 +730,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       if (fromConfig.isUsingAsCollateral(reserveId)) {
         if (fromConfig.isBorrowingAny()) {
           ValidationLogic.validateHealthFactor(
-            asset,
             from,
             _reserves,
             _usersConfig[from],
