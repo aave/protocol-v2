@@ -1,11 +1,6 @@
 import { task } from 'hardhat/config';
 import { DRE, setDRE } from '../../helpers/misc-utils';
-import { EthereumNetworkNames } from '../../helpers/types';
-import { usingTenderly } from '../../helpers/tenderly-utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { formatEther } from 'ethers/lib/utils';
-import { fork } from 'child_process';
-import { env } from 'process';
 
 task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).setAction(
   async (_, _DRE) => {
@@ -17,19 +12,21 @@ task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).set
       process.env.TENDERLY === 'true'
     ) {
       console.log('- Setting up Tenderly provider');
+      const net = _DRE.tenderly.network();
+
       if (process.env.TENDERLY_FORK_ID && process.env.TENDERLY_HEAD_ID) {
         console.log('- Connecting to a Tenderly Fork');
-        (_DRE as any).tenderlyRPC.setFork(process.env.TENDERLY_FORK_ID);
-        (_DRE as any).tenderlyRPC.setHead(process.env.TENDERLY_HEAD_ID);
+        await net.setFork(process.env.TENDERLY_FORK_ID);
+        await net.setHead(process.env.TENDERLY_HEAD_ID);
       } else {
         console.log('- Creating a new Tenderly Fork');
-        await (_DRE as any).tenderlyRPC.initializeFork();
+        await net.initializeFork();
       }
-      const provider = new _DRE.ethers.providers.Web3Provider((_DRE as any).tenderlyRPC);
+      const provider = new _DRE.ethers.providers.Web3Provider(net);
       _DRE.ethers.provider = provider;
       console.log('- Initialized Tenderly fork:');
-      console.log('  - Fork: ', (_DRE as any).tenderlyRPC.getFork());
-      console.log('  - Head: ', (_DRE as any).tenderlyRPC.getHead());
+      console.log('  - Fork: ', net.getFork());
+      console.log('  - Head: ', net.getHead());
     }
 
     console.log('- Enviroment');
@@ -44,6 +41,7 @@ task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).set
       }
     }
     console.log('  - Network :', _DRE.network.name);
+
     setDRE(_DRE);
     return _DRE;
   }
