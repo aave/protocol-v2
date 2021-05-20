@@ -86,7 +86,8 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
     uint256 amount,
     PermitSignature memory permitSignature
   ) internal {
-    if (_usePermit(permitSignature)) {
+    // If deadline is set to zero, assume there is no signature for permit
+    if (permitSignature.deadline != 0) {
       IERC20WithPermit(reserveAToken).permit(
         user,
         address(this),
@@ -106,17 +107,6 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
       LENDING_POOL.withdraw(reserve, amount, address(this)) == amount,
       'UNEXPECTED_AMOUNT_WITHDRAWN'
     );
-  }
-
-  /**
-   * @dev Tells if the permit method should be called by inspecting if there is a valid signature.
-   * If signature params are set to 0, then permit won't be called.
-   * @param signature struct containing the permit signature
-   * @return whether or not permit should be called
-   */
-  function _usePermit(PermitSignature memory signature) internal pure returns (bool) {
-    return
-      !(uint256(signature.deadline) == uint256(signature.v) && uint256(signature.deadline) == 0);
   }
 
   /**
