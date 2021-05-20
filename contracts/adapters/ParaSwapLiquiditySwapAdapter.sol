@@ -7,13 +7,14 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IERC20WithPermit} from '../interfaces/IERC20WithPermit.sol';
 import {IParaSwapAugustus} from '../interfaces/IParaSwapAugustus.sol';
+import {ReentrancyGuard} from '../dependencies/openzeppelin/contracts/ReentrancyGuard.sol';
 
 /**
  * @title ParaSwapLiquiditySwapAdapter
  * @notice Adapter to swap liquidity using ParaSwap.
  * @author Jason Raymond Bell
  */
-contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
+contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuard {
   constructor(
     ILendingPoolAddressesProvider addressesProvider
   ) public BaseParaSwapSellAdapter(addressesProvider) {
@@ -42,7 +43,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
     uint256[] calldata premiums,
     address initiator,
     bytes calldata params
-  ) external override returns (bool) {
+  ) external override nonReentrant returns (bool) {
     require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
     require(
       assets.length == 1 && amounts.length == 1 && premiums.length == 1,
@@ -107,7 +108,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
     bytes calldata swapCalldata,
     IParaSwapAugustus augustus,
     PermitSignature calldata permitParams
-  ) external {
+  ) external nonReentrant {
     IERC20WithPermit aToken =
       IERC20WithPermit(_getReserveData(address(assetToSwapFrom)).aTokenAddress);
 
