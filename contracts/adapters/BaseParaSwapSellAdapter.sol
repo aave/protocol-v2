@@ -19,6 +19,7 @@ abstract contract BaseParaSwapSellAdapter is BaseParaSwapAdapter {
   constructor(
     ILendingPoolAddressesProvider addressesProvider
   ) public BaseParaSwapAdapter(addressesProvider) {
+    // This is only required to initialize BaseParaSwapAdapter
   }
 
   /**

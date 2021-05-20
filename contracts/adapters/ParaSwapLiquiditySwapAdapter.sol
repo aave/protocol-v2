@@ -14,7 +14,9 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
   constructor(
     ILendingPoolAddressesProvider addressesProvider
-  ) public BaseParaSwapSellAdapter(addressesProvider) {}
+  ) public BaseParaSwapSellAdapter(addressesProvider) {
+    // This is only required to initialize BaseParaSwapSellAdapter
+  }
 
   /**
    * @dev Swaps the received reserve amount from the flash loan into the asset specified in the params.
