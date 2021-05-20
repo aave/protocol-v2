@@ -40,7 +40,10 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
     bytes calldata params
   ) external override returns (bool) {
     require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
-    require(assets.length == 1, 'FLASHLOAN_MULTIPLE_ASSETS_NOT_SUPPORTED');
+    require(
+      assets.length == 1 && amounts.length == 1 && premiums.length == 1,
+      'FLASHLOAN_MULTIPLE_ASSETS_NOT_SUPPORTED'
+    );
 
     uint256 flashLoanAmount = amounts[0];
     uint256 premium = premiums[0];
