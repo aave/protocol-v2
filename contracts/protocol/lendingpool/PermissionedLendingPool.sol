@@ -18,25 +18,24 @@ contract PermissionedLendingPool is LendingPool {
 
   modifier onlyDepositors(address user) {
     require(
-      _isDepositorOrBorrowerOrLiquidator(msg.sender) &&
-        ((user == msg.sender) || _isInRole(user, DataTypes.Roles.DEPOSITOR)),
+      _isInRole(user, DataTypes.Roles.DEPOSITOR) &&
+        ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.DEPOSITOR)),
       Errors.DEPOSITOR_UNAUTHORIZED
     );
     _;
   }
 
   modifier onlyBorrowers(address user) {
-    require(_isInRole(user, DataTypes.Roles.BORROWER), Errors.BORROWER_UNAUTHORIZED);
+    require(
+      _isInRole(user, DataTypes.Roles.BORROWER) &&
+        ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.BORROWER)),
+      Errors.BORROWER_UNAUTHORIZED
+    );
     _;
   }
 
   modifier onlyLiquidators {
     require(_isInRole(msg.sender, DataTypes.Roles.LIQUIDATOR), Errors.LIQUIDATOR_UNAUTHORIZED);
-    _;
-  }
-
-  modifier onlyDepositorsOrBorrowersOrLiquidators {
-    require(_isDepositorOrBorrowerOrLiquidator(msg.sender), Errors.USER_UNAUTHORIZED);
     _;
   }
 
@@ -129,7 +128,7 @@ contract PermissionedLendingPool is LendingPool {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) public virtual override onlyDepositorsOrBorrowersOrLiquidators returns (uint256) {
+  ) public virtual override onlyBorrowers(onBehalfOf) returns (uint256) {
     return super.repay(asset, amount, rateMode, onBehalfOf);
   }
 
@@ -266,20 +265,6 @@ contract PermissionedLendingPool is LendingPool {
       IPermissionManager(_addressesProvider.getAddress(PERMISSION_MANAGER)).isInRole(
         user,
         uint256(role)
-      );
-  }
-
-  function _isDepositorOrBorrowerOrLiquidator(address user) internal view returns (bool) {
-    uint256[] memory roles = new uint256[](3);
-
-    roles[0] = uint256(DataTypes.Roles.DEPOSITOR);
-    roles[1] = uint256(DataTypes.Roles.BORROWER);
-    roles[2] = uint256(DataTypes.Roles.LIQUIDATOR);
-
-    return
-      IPermissionManager(_addressesProvider.getAddress(PERMISSION_MANAGER)).isInAnyRole(
-        user,
-        roles
       );
   }
 }

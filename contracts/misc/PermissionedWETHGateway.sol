@@ -37,7 +37,7 @@ contract PermissionedWETHGateway is WETHGateway {
   ) public payable override {
     ILendingPool pool = ILendingPool(lendingPool);
 
-    require(_isDepositorOrBorrowerOrLiquidator(msg.sender, pool), Errors.USER_UNAUTHORIZED);
+    require(_isInRole(msg.sender, DataTypes.Roles.DEPOSITOR, pool), Errors.USER_UNAUTHORIZED);
 
     super.depositETH(lendingPool, onBehalfOf, referralCode);
   }
@@ -57,12 +57,12 @@ contract PermissionedWETHGateway is WETHGateway {
   ) public payable override {
     ILendingPool pool = ILendingPool(lendingPool);
 
-    require(_isDepositorOrBorrowerOrLiquidator(msg.sender, pool), Errors.USER_UNAUTHORIZED);
+    require(_isInRole(msg.sender,  DataTypes.Roles.BORROWER, pool), Errors.USER_UNAUTHORIZED);
     super.repayETH(lendingPool, amount, rateMode, onBehalfOf);
   }
 
 
-  function _isDepositorOrBorrowerOrLiquidator(address user, ILendingPool pool)
+  function _isInRole(address user, DataTypes.Roles role, ILendingPool pool)
     internal
     view
     returns (bool)
@@ -72,12 +72,6 @@ contract PermissionedWETHGateway is WETHGateway {
     IPermissionManager manager =
       IPermissionManager(provider.getAddress(keccak256('PERMISSION_MANAGER')));
 
-    uint256[] memory roles = new uint256[](3);
-
-    roles[0] = uint256(DataTypes.Roles.DEPOSITOR);
-    roles[1] = uint256(DataTypes.Roles.BORROWER);
-    roles[2] = uint256(DataTypes.Roles.LIQUIDATOR);
-
-    return manager.isInAnyRole(msg.sender, roles);
+    return manager.isInRole(user, uint256(role));
   }
 }
