@@ -51,6 +51,7 @@ import {
   FlashLiquidationAdapterFactory,
   RewardsTokenFactory,
   RewardsATokenMockFactory,
+  CurveRewardsAwareATokenFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -68,6 +69,7 @@ import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins'
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
+import { CRV_TOKEN } from './constants';
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
@@ -662,6 +664,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
       return deployDelegationAwareATokenImpl;
     case eContractid.RewardsATokenMock:
       return deployRewardATokenMock;
+    case eContractid.CurveRewardsAwareAToken:
+      return deployCurveRewardsAwareATokenByNetwork;
     default:
       throw Error(`Missing aToken implementation deployment script for: ${id}`);
   }
@@ -713,4 +717,22 @@ export const deployATokenImplementations = async (
   if (!notFalsyOrZeroAddress(geneticVariableDebtTokenAddress)) {
     await deployGenericVariableDebtToken(verify);
   }
+};
+
+export const deployCurveRewardsAwareAToken = async (
+  crvToken: tEthereumAddress,
+  verify?: boolean
+) => {
+  const args: [tEthereumAddress] = [crvToken];
+  return withSaveAndVerify(
+    await new CurveRewardsAwareATokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.CurveRewardsAwareAToken,
+    args,
+    verify
+  );
+};
+
+export const deployCurveRewardsAwareATokenByNetwork = async (verify?: boolean) => {
+  const network = DRE.network.name as eEthereumNetwork;
+  return deployCurveRewardsAwareAToken(CRV_TOKEN[network], verify);
 };
