@@ -21,6 +21,8 @@ import {FlashLoanReceiverBase} from '../flashloan/base/FlashLoanReceiverBase.sol
 abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
+  using SafeERC20 for IERC20Detailed;
+  using SafeERC20 for IERC20WithPermit;
 
   struct PermitSignature {
     uint256 amount;
@@ -56,8 +58,8 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
    * @dev Get the decimals of an asset
    * @return number of decimals of the asset
    */
-  function _getDecimals(address asset) internal view returns (uint8) {
-    uint8 decimals = IERC20Detailed(asset).decimals();
+  function _getDecimals(IERC20Detailed asset) internal view returns (uint8) {
+    uint8 decimals = asset.decimals();
     // Ensure 10**decimals won't overflow a uint256
     require(decimals <= 77, 'TOO_MANY_DECIMALS_ON_TOKEN');
     return decimals;
@@ -81,14 +83,14 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
    */
   function _pullATokenAndWithdraw(
     address reserve,
-    address reserveAToken,
+    IERC20WithPermit reserveAToken,
     address user,
     uint256 amount,
     PermitSignature memory permitSignature
   ) internal {
     // If deadline is set to zero, assume there is no signature for permit
     if (permitSignature.deadline != 0) {
-      IERC20WithPermit(reserveAToken).permit(
+      reserveAToken.permit(
         user,
         address(this),
         permitSignature.amount,
@@ -100,7 +102,7 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
     }
 
     // transfer from user to adapter
-    IERC20(reserveAToken).safeTransferFrom(user, address(this), amount);
+    reserveAToken.safeTransferFrom(user, address(this), amount);
 
     // withdraw reserve
     require(

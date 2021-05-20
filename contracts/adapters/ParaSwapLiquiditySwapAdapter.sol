@@ -4,7 +4,9 @@ pragma experimental ABIEncoderV2;
 
 import {BaseParaSwapSellAdapter} from './BaseParaSwapSellAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IERC20WithPermit} from '../interfaces/IERC20WithPermit.sol';
+import {IParaSwapAugustus} from '../interfaces/IParaSwapAugustus.sol';
 
 /**
  * @title ParaSwapLiquiditySwapAdapter
@@ -50,15 +52,22 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
     uint256 flashLoanAmount = amounts[0];
     uint256 premium = premiums[0];
     address initiatorLocal = initiator;
-    address assetToSwapFrom = assets[0];
+    IERC20Detailed assetToSwapFrom = IERC20Detailed(assets[0]);
     (
-      address assetToSwapTo,
+      IERC20Detailed assetToSwapTo,
       uint256 minAmountToReceive,
       uint256 swapAllBalanceOffset,
       bytes memory swapCalldata,
-      address augustus,
+      IParaSwapAugustus augustus,
       PermitSignature memory permitParams
-    ) = abi.decode(params, (address, uint256, uint256, bytes, address, PermitSignature));
+    ) = abi.decode(params, (
+      IERC20Detailed,
+      uint256,
+      uint256,
+      bytes,
+      IParaSwapAugustus,
+      PermitSignature
+    ));
 
     _swapLiquidity(
       swapAllBalanceOffset,
@@ -90,25 +99,26 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
    * @param permitParams Struct containing the permit signatures, set to all zeroes if not used
    */
   function swapAndDeposit(
-    address assetToSwapFrom,
-    address assetToSwapTo,
+    IERC20Detailed assetToSwapFrom,
+    IERC20Detailed assetToSwapTo,
     uint256 amountToSwap,
     uint256 minAmountToReceive,
     uint256 swapAllBalanceOffset,
     bytes calldata swapCalldata,
-    address augustus,
+    IParaSwapAugustus augustus,
     PermitSignature calldata permitParams
   ) external {
-    address aToken = _getReserveData(assetToSwapFrom).aTokenAddress;
+    IERC20WithPermit aToken =
+      IERC20WithPermit(_getReserveData(address(assetToSwapFrom)).aTokenAddress);
 
     if (swapAllBalanceOffset != 0) {
-      uint256 balance = IERC20(aToken).balanceOf(msg.sender);
+      uint256 balance = aToken.balanceOf(msg.sender);
       require(balance <= amountToSwap, 'INSUFFICIENT_AMOUNT_TO_SWAP');
       amountToSwap = balance;
     }
 
     _pullATokenAndWithdraw(
-      assetToSwapFrom,
+      address(assetToSwapFrom),
       aToken,
       msg.sender,
       amountToSwap,
@@ -125,9 +135,9 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
       minAmountToReceive
     );
 
-    IERC20(assetToSwapTo).safeApprove(address(LENDING_POOL), 0);
-    IERC20(assetToSwapTo).safeApprove(address(LENDING_POOL), amountReceived);
-    LENDING_POOL.deposit(assetToSwapTo, amountReceived, msg.sender, 0);
+    assetToSwapTo.safeApprove(address(LENDING_POOL), 0);
+    assetToSwapTo.safeApprove(address(LENDING_POOL), amountReceived);
+    LENDING_POOL.deposit(address(assetToSwapTo), amountReceived, msg.sender, 0);
   }
 
   /**
@@ -146,19 +156,20 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
   function _swapLiquidity (
     uint256 swapAllBalanceOffset,
     bytes memory swapCalldata,
-    address augustus,
+    IParaSwapAugustus augustus,
     PermitSignature memory permitParams,
     uint256 flashLoanAmount,
     uint256 premium,
     address initiator,
-    address assetToSwapFrom,
-    address assetToSwapTo,
+    IERC20Detailed assetToSwapFrom,
+    IERC20Detailed assetToSwapTo,
     uint256 minAmountToReceive
   ) internal {
-    address aToken = _getReserveData(assetToSwapFrom).aTokenAddress;
+    IERC20WithPermit aToken =
+      IERC20WithPermit(_getReserveData(address(assetToSwapFrom)).aTokenAddress);
     uint256 amountToSwap = flashLoanAmount;
 
-    uint256 balance = IERC20(aToken).balanceOf(initiator);
+    uint256 balance = aToken.balanceOf(initiator);
     if (swapAllBalanceOffset != 0) {
       uint256 balanceToSwap = balance.sub(premium);
       require(balanceToSwap <= amountToSwap, 'INSUFFICIENT_AMOUNT_TO_SWAP');
@@ -177,12 +188,12 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
       minAmountToReceive
     );
 
-    IERC20(assetToSwapTo).safeApprove(address(LENDING_POOL), 0);
-    IERC20(assetToSwapTo).safeApprove(address(LENDING_POOL), amountReceived);
-    LENDING_POOL.deposit(assetToSwapTo, amountReceived, initiator, 0);
+    assetToSwapTo.safeApprove(address(LENDING_POOL), 0);
+    assetToSwapTo.safeApprove(address(LENDING_POOL), amountReceived);
+    LENDING_POOL.deposit(address(assetToSwapTo), amountReceived, initiator, 0);
 
     _pullATokenAndWithdraw(
-      assetToSwapFrom,
+      address(assetToSwapFrom),
       aToken,
       initiator,
       amountToSwap.add(premium),
@@ -190,7 +201,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
     );
 
     // Repay flash loan
-    IERC20(assetToSwapFrom).safeApprove(address(LENDING_POOL), 0);
-    IERC20(assetToSwapFrom).safeApprove(address(LENDING_POOL), flashLoanAmount.add(premium));
+    assetToSwapFrom.safeApprove(address(LENDING_POOL), 0);
+    assetToSwapFrom.safeApprove(address(LENDING_POOL), flashLoanAmount.add(premium));
   }
 }
