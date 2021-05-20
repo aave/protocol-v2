@@ -19,6 +19,7 @@ import {
   MockVariableDebtTokenFactory,
   MockUniswapV2Router02Factory,
   MockParaSwapAugustusFactory,
+  MockParaSwapAugustusRegistryFactory,
   ParaSwapLiquiditySwapAdapterFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
@@ -370,6 +371,14 @@ export const getMockParaSwapAugustus = async (address?: tEthereumAddress) =>
   await MockParaSwapAugustusFactory.connect(
     address ||
       (await getDb().get(`${eContractid.MockParaSwapAugustus}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getMockParaSwapAugustusRegistry = async (address?: tEthereumAddress) =>
+  await MockParaSwapAugustusRegistryFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.MockParaSwapAugustusRegistry}.${DRE.network.name}`).value())
         .address,
     await getFirstSigner()
   );

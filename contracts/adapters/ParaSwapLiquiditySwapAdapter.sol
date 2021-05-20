@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {BaseParaSwapSellAdapter} from './BaseParaSwapSellAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
+import {IParaSwapAugustusRegistry} from '../interfaces/IParaSwapAugustusRegistry.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IERC20WithPermit} from '../interfaces/IERC20WithPermit.sol';
 import {IParaSwapAugustus} from '../interfaces/IParaSwapAugustus.sol';
@@ -16,8 +17,9 @@ import {ReentrancyGuard} from '../dependencies/openzeppelin/contracts/Reentrancy
  */
 contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuard {
   constructor(
-    ILendingPoolAddressesProvider addressesProvider
-  ) public BaseParaSwapSellAdapter(addressesProvider) {
+    ILendingPoolAddressesProvider addressesProvider,
+    IParaSwapAugustusRegistry augustusRegistry
+  ) public BaseParaSwapSellAdapter(addressesProvider, augustusRegistry) {
     // This is only required to initialize BaseParaSwapSellAdapter
   }
 

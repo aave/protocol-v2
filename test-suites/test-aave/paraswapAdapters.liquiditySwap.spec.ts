@@ -6,9 +6,13 @@ import {
   getSignatureFromTypedData,
   buildParaSwapLiquiditySwapParams,
 } from '../../helpers/contracts-helpers';
-import { getMockParaSwapAugustus } from '../../helpers/contracts-getters';
+import {
+  getMockParaSwapAugustus,
+  getMockParaSwapAugustusRegistry,
+} from '../../helpers/contracts-getters';
 import { deployParaSwapLiquiditySwapAdapter } from '../../helpers/contracts-deployments';
 import { MockParaSwapAugustus } from '../../types/MockParaSwapAugustus';
+import { MockParaSwapAugustusRegistry } from '../../types/MockParaSwapAugustusRegistry';
 import { Zero } from '@ethersproject/constants';
 import BigNumber from 'bignumber.js';
 import { DRE, evmRevert, evmSnapshot } from '../../helpers/misc-utils';
@@ -23,10 +27,12 @@ const { expect } = require('chai');
 
 makeSuite('ParaSwap adapters', (testEnv: TestEnv) => {
   let mockAugustus: MockParaSwapAugustus;
+  let mockAugustusRegistry: MockParaSwapAugustusRegistry;
   let evmSnapshotId: string;
 
   before(async () => {
     mockAugustus = await getMockParaSwapAugustus();
+    mockAugustusRegistry = await getMockParaSwapAugustusRegistry();
   });
 
   beforeEach(async () => {
@@ -43,13 +49,25 @@ makeSuite('ParaSwap adapters', (testEnv: TestEnv) => {
         const { addressesProvider } = testEnv;
         await deployParaSwapLiquiditySwapAdapter([
           addressesProvider.address,
+          mockAugustusRegistry.address,
         ]);
       });
 
       it('should revert if not valid addresses provider', async () => {
         await expect(
           deployParaSwapLiquiditySwapAdapter([
-            mockAugustus.address,
+            mockAugustus.address, // any invalid contract can be used here
+            mockAugustusRegistry.address,
+          ])
+        ).to.be.reverted;
+      });
+
+      it('should revert if not valid augustus registry', async () => {
+        const { addressesProvider } = testEnv;
+        await expect(
+          deployParaSwapLiquiditySwapAdapter([
+            addressesProvider.address,
+            mockAugustus.address, // any invalid contract can be used here
           ])
         ).to.be.reverted;
       });
@@ -1635,6 +1653,49 @@ makeSuite('ParaSwap adapters', (testEnv: TestEnv) => {
             }
           )
         ).to.be.revertedWith('MIN_AMOUNT_EXCEEDS_MAX_SLIPPAGE');
+      });
+
+      it('should revert if wrong address used for Augustus', async () => {
+        const { users, weth, oracle, dai, aWETH, paraswapLiquiditySwapAdapter } = testEnv;
+        const user = users[0].signer;
+        const userAddress = users[0].address;
+
+        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
+
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const expectedDaiAmount = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
+        );
+
+        await mockAugustus.expectSwap(weth.address, dai.address, amountWETHtoSwap, amountWETHtoSwap, expectedDaiAmount);
+
+        // User will swap liquidity aEth to aDai
+        await aWETH.connect(user).approve(paraswapLiquiditySwapAdapter.address, amountWETHtoSwap);
+
+        const mockAugustusCalldata = mockAugustus.interface.encodeFunctionData(
+          'swap',
+          [weth.address, dai.address, amountWETHtoSwap, expectedDaiAmount]
+        );
+
+        await expect(
+          paraswapLiquiditySwapAdapter.connect(user).swapAndDeposit(
+            weth.address,
+            dai.address,
+            amountWETHtoSwap,
+            expectedDaiAmount,
+            0,
+            mockAugustusCalldata,
+            oracle.address, // using arbitrary contract instead of mock Augustus
+            {
+              amount: 0,
+              deadline: 0,
+              v: 0,
+              r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+              s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            }
+          )
+        ).to.be.revertedWith('INVALID_AUGUSTUS');
       });
 
       it('should bubble up errors from Augustus', async () => {

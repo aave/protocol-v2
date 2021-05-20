@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import {BaseParaSwapAdapter} from './BaseParaSwapAdapter.sol';
 import {PercentageMath} from '../protocol/libraries/math/PercentageMath.sol';
 import {IParaSwapAugustus} from '../interfaces/IParaSwapAugustus.sol';
+import {IParaSwapAugustusRegistry} from '../interfaces/IParaSwapAugustusRegistry.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 
@@ -16,10 +17,15 @@ import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detai
 abstract contract BaseParaSwapSellAdapter is BaseParaSwapAdapter {
   using PercentageMath for uint256;
 
+  IParaSwapAugustusRegistry public immutable AUGUSTUS_REGISTRY;
+
   constructor(
-    ILendingPoolAddressesProvider addressesProvider
+    ILendingPoolAddressesProvider addressesProvider,
+    IParaSwapAugustusRegistry augustusRegistry
   ) public BaseParaSwapAdapter(addressesProvider) {
-    // This is only required to initialize BaseParaSwapAdapter
+    // Do something on Augustus registry to check the right contract was passed
+    require(!augustusRegistry.isValidAugustus(address(0)));
+    AUGUSTUS_REGISTRY = augustusRegistry;
   }
 
   /**
@@ -42,6 +48,8 @@ abstract contract BaseParaSwapSellAdapter is BaseParaSwapAdapter {
     uint256 amountToSwap,
     uint256 minAmountToReceive
   ) internal returns (uint256 amountReceived) {
+    require(AUGUSTUS_REGISTRY.isValidAugustus(address(augustus)), 'INVALID_AUGUSTUS');
+
     {
       uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
       uint256 toAssetDecimals = _getDecimals(assetToSwapTo);

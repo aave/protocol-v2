@@ -8,7 +8,7 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {MintableERC20} from '../tokens/MintableERC20.sol';
 
 contract MockParaSwapAugustus is IParaSwapAugustus {
-  MockParaSwapTokenTransferProxy _tokenTransferProxy;
+  MockParaSwapTokenTransferProxy immutable TOKEN_TRANSFER_PROXY;
   bool _expectingSwap;
   address _expectedFromToken;
   address _expectedToToken;
@@ -17,11 +17,11 @@ contract MockParaSwapAugustus is IParaSwapAugustus {
   uint256 _receivedAmount;
 
   constructor() public {
-    _tokenTransferProxy = new MockParaSwapTokenTransferProxy();
+    TOKEN_TRANSFER_PROXY = new MockParaSwapTokenTransferProxy();
   }
 
   function getTokenTransferProxy() external view override returns (address) {
-    return address(_tokenTransferProxy);
+    return address(TOKEN_TRANSFER_PROXY);
   }
 
   function expectSwap(
@@ -50,7 +50,7 @@ contract MockParaSwapAugustus is IParaSwapAugustus {
     require(toToken == _expectedToToken, 'Unexpected to token');
     require(fromAmount >= _expectedFromAmountMin && fromAmount <= _expectedFromAmountMax, 'From amount out of range');
     require(_receivedAmount >= toAmount, 'Received amount of tokens are less than expected');
-    _tokenTransferProxy.transferFrom(fromToken, msg.sender, address(this), fromAmount);
+    TOKEN_TRANSFER_PROXY.transferFrom(fromToken, msg.sender, address(this), fromAmount);
     MintableERC20(toToken).mint(_receivedAmount);
     IERC20(toToken).transfer(msg.sender, _receivedAmount);
     _expectingSwap = false;
