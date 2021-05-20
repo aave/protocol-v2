@@ -102,7 +102,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
       amountToSwap = balance;
     }
 
-    _pullAToken(
+    _pullATokenAndWithdraw(
       assetToSwapFrom,
       aToken,
       msg.sender,
@@ -176,7 +176,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter {
     IERC20(assetToSwapTo).safeApprove(address(LENDING_POOL), amountReceived);
     LENDING_POOL.deposit(assetToSwapTo, amountReceived, initiator, 0);
 
-    _pullAToken(
+    _pullATokenAndWithdraw(
       assetToSwapFrom,
       aToken,
       initiator,

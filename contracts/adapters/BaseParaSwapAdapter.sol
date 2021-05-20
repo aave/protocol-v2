@@ -76,7 +76,7 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
    * @param amount of tokens to be transferred to the contract
    * @param permitSignature struct containing the permit signature
    */
-  function _pullAToken(
+  function _pullATokenAndWithdraw(
     address reserve,
     address reserveAToken,
     address user,
