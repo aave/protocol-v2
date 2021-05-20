@@ -187,17 +187,12 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const collateralDecimals = (await usdc.decimals()).toString();
         const principalDecimals = (await dai.decimals()).toString();
 
-        const expectedDaiAmountForUsdc = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountUSDCtoSwap.toString())
-            .times(
-              new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
-            )
-            .div(
-              new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
-            )
-            .toFixed(0)
-        );
+        const expectedDaiAmountForUsdc = new BigNumber(amountUSDCtoSwap.toString())
+          .times(
+            new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+          )
+          .div(new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals)))
+          .toFixed(0);
 
         // Make a deposit for user
         await usdc.connect(user).mint(amountUSDCtoSwap);
@@ -240,7 +235,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           ],
           [false, false]
         );
-
         await pool
           .connect(user)
           .flashLoan(
@@ -309,17 +303,12 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const collateralDecimals = (await usdc.decimals()).toString();
         const principalDecimals = (await dai.decimals()).toString();
 
-        const expectedDaiAmountForUsdc = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountUSDCtoSwap.toString())
-            .times(
-              new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
-            )
-            .div(
-              new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
-            )
-            .toFixed(0)
-        );
+        const expectedDaiAmountForUsdc = new BigNumber(amountUSDCtoSwap.toString())
+          .times(
+            new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+          )
+          .div(new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals)))
+          .toFixed(0);
 
         // Make a deposit for user
         await usdc.connect(user).mint(amountUSDCtoSwap);
@@ -862,17 +851,12 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const collateralDecimals = (await usdc.decimals()).toString();
         const principalDecimals = (await dai.decimals()).toString();
 
-        const expectedDaiAmount = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountUSDCtoSwap.toString())
-            .times(
-              new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
-            )
-            .div(
-              new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
-            )
-            .toFixed(0)
-        );
+        const expectedDaiAmount = new BigNumber(amountUSDCtoSwap.toString())
+          .times(
+            new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+          )
+          .div(new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals)))
+          .toFixed(0);
 
         await mockUniswapRouter.connect(user).setAmountToReturn(usdc.address, expectedDaiAmount);
 
@@ -1484,17 +1468,12 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const collateralDecimals = (await usdc.decimals()).toString();
         const principalDecimals = (await dai.decimals()).toString();
 
-        const expectedDaiAmountForUsdc = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountUSDCtoSwap.toString())
-            .times(
-              new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
-            )
-            .div(
-              new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
-            )
-            .toFixed(0)
-        );
+        const expectedDaiAmountForUsdc = new BigNumber(amountUSDCtoSwap.toString())
+          .times(
+            new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+          )
+          .div(new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals)))
+          .toFixed(0);
 
         // Make a deposit for user
         await usdc.connect(user).mint(amountUSDCtoSwap);
@@ -1592,17 +1571,12 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const collateralDecimals = (await usdc.decimals()).toString();
         const principalDecimals = (await dai.decimals()).toString();
 
-        const expectedDaiAmountForUsdc = await convertToCurrencyDecimals(
-          dai.address,
-          new BigNumber(amountUSDCtoSwap.toString())
-            .times(
-              new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
-            )
-            .div(
-              new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals))
-            )
-            .toFixed(0)
-        );
+        const expectedDaiAmountForUsdc = new BigNumber(amountUSDCtoSwap.toString())
+          .times(
+            new BigNumber(usdcPrice.toString()).times(new BigNumber(10).pow(principalDecimals))
+          )
+          .div(new BigNumber(daiPrice.toString()).times(new BigNumber(10).pow(collateralDecimals)))
+          .toFixed(0);
 
         // Make a deposit for user
         await usdc.connect(user).mint(amountUSDCtoSwap);
