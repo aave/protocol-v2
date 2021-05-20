@@ -56,8 +56,11 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
    * @dev Get the decimals of an asset
    * @return number of decimals of the asset
    */
-  function _getDecimals(address asset) internal view returns (uint256) {
-    return IERC20Detailed(asset).decimals();
+  function _getDecimals(address asset) internal view returns (uint8) {
+    uint8 decimals = IERC20Detailed(asset).decimals();
+    // Ensure 10**decimals won't overflow a uint256
+    require(decimals <= 77, 'TOO_MANY_DECIMALS_ON_TOKEN');
+    return decimals;
   }
 
   /**
