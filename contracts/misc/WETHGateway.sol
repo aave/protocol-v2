@@ -42,7 +42,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     address lendingPool,
     address onBehalfOf,
     uint16 referralCode
-  ) external payable override {
+  ) public payable virtual override {
     WETH.deposit{value: msg.value}();
     ILendingPool(lendingPool).deposit(address(WETH), msg.value, onBehalfOf, referralCode);
   }
@@ -57,7 +57,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     address lendingPool,
     uint256 amount,
     address to
-  ) external override {
+  ) external virtual override {
     IAToken aWETH = IAToken(ILendingPool(lendingPool).getReserveData(address(WETH)).aTokenAddress);
     uint256 userBalance = aWETH.balanceOf(msg.sender);
     uint256 amountToWithdraw = amount;
@@ -84,7 +84,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) external payable override {
+  ) public payable virtual override {
     (uint256 stableDebt, uint256 variableDebt) =
       Helpers.getUserCurrentDebtMemory(
         onBehalfOf,
@@ -119,7 +119,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     uint256 amount,
     uint256 interesRateMode,
     uint16 referralCode
-  ) external override {
+  ) external virtual override {
     ILendingPool(lendingPool).borrow(
       address(WETH),
       amount,

@@ -120,7 +120,7 @@ contract PermissionManager is IPermissionManager, Ownable {
   }
 
   ///@inheritdoc IPermissionManager
-  function isInAnyRole(address account, uint256[] calldata roles) public view override returns (bool) {
+  function isInAnyRole(address account, uint256[] calldata roles) external view override returns (bool) {
   
     for(uint256 i=0; i<roles.length; i++){
       if((_permissions[account] >> roles[i]) & 1 > 0){

@@ -107,7 +107,7 @@ library Errors {
   string public constant BORROWER_UNAUTHORIZED = '82';
   string public constant LIQUIDATOR_UNAUTHORIZED = '83';
   string public constant CALLER_NOT_STABLE_RATE_MANAGER = '84';
-  string public constant REPAYER_UNAUTHORIZED = '85';
+  string public constant USER_UNAUTHORIZED = '85';
 
   enum CollateralManagerErrors {
     NO_ERROR,
