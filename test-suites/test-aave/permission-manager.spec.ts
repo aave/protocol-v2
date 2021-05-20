@@ -78,6 +78,24 @@ makeSuite('Permission manager', (testEnv: TestEnv) => {
     expect(mappedPermissions.indexOf(LIQUIDATOR.toString())).to.be.gte(0);
   });
 
+  it('Checks isInAllRoles (positive test)', async () => {
+    const { users } = testEnv;
+
+    const result = await permissionManager.isInAllRoles(users[0].address, [DEPOSITOR, BORROWER, LIQUIDATOR])
+
+    expect(result).to.be.equal(true, "Invalid result for isInAllRoles");
+  });
+
+
+  it('Checks isInAnyRole (positive test)', async () => {
+    const { users } = testEnv;
+
+    const result = await permissionManager.isInAnyRole(users[0].address, [DEPOSITOR, BORROWER, LIQUIDATOR])
+
+    expect(result).to.be.equal(true, "Invalid result for isInAnyRole");
+  });
+
+
   it('Removes the depositor', async () => {
     const { users } = testEnv;
 
@@ -92,6 +110,15 @@ makeSuite('Permission manager', (testEnv: TestEnv) => {
     expect(isLiquidator).to.be.equal(true);
   });
 
+  it('Checks isInAllRoles (negative test)', async () => {
+    const { users } = testEnv;
+
+    const result = await permissionManager.isInAllRoles(users[0].address, [DEPOSITOR, BORROWER, LIQUIDATOR])
+
+    expect(result).to.be.equal(false, "Invalid result for isInAllRoles");
+  });
+
+
   it('Removes the borrower', async () => {
     const { users } = testEnv;
 
@@ -104,6 +131,14 @@ makeSuite('Permission manager', (testEnv: TestEnv) => {
     expect(isDepositor).to.be.equal(false);
     expect(isBorrower).to.be.equal(false);
     expect(isLiquidator).to.be.equal(true);
+  });
+
+  it('Checks isInAnyRole (negative test)', async () => {
+    const { users } = testEnv;
+
+    const result = await permissionManager.isInAnyRole(users[0].address, [DEPOSITOR, BORROWER])
+
+    expect(result).to.be.equal(false, "Invalid result for isInAnyRole");
   });
 
   it('Removes the liquidator', async () => {
