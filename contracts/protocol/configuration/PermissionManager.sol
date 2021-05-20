@@ -20,10 +20,8 @@ contract PermissionManager is IPermissionManager, Ownable {
     _;
   }
 
-  /**
-   * @dev Allows owner to add new permission admins
-   * @param users The addresses of the users to promote to permission admin
-   **/
+  ///@inheritdoc IPermissionManager
+
   function addPermissionAdmins(address[] calldata users) external override onlyOwner {
     for (uint256 i = 0; i < users.length; i++) {
       _permissionsAdmins[users[i]] = 1;
@@ -32,10 +30,8 @@ contract PermissionManager is IPermissionManager, Ownable {
     }
   }
 
-  /**
-   * @dev Allows owner to remove permission admins
-   * @param users The addresses of the users to demote as permission admin
-   **/
+  ///@inheritdoc IPermissionManager
+
   function removePermissionAdmins(address[] calldata users) external override onlyOwner {
     for (uint256 i = 0; i < users.length; i++) {
       _permissionsAdmins[users[i]] = 0;
@@ -44,11 +40,8 @@ contract PermissionManager is IPermissionManager, Ownable {
     }
   }
 
-  /**
-   * @dev Allows permission admins to whitelist a set of addresses for multiple roles
-   * @param roles The list of roles to assign to the different users
-   * @param users The addresses of the users to assign to the corresponding role
-   **/
+  ///@inheritdoc IPermissionManager
+
   function addPermissions(uint256[] calldata roles, address[] calldata users)
     external
     override
@@ -68,11 +61,8 @@ contract PermissionManager is IPermissionManager, Ownable {
     }
   }
 
-  /**
-   * @dev Allows owner to remove permissions on a set of addresses for multiple roles
-   * @param roles The list of roles
-   * @param users The addresses of the users
-   **/
+  ///@inheritdoc IPermissionManager
+
   function removePermissions(uint256[] calldata roles, address[] calldata users)
     external
     override
@@ -91,11 +81,8 @@ contract PermissionManager is IPermissionManager, Ownable {
     }
   }
 
-  /**
-   * @dev Returns the permissions configuration for a specific account
-   * @param account The address of the user
-   * @return the set of permissions states for the account
-   **/
+  ///@inheritdoc IPermissionManager
+
   function getAccountPermissions(address account)
     external
     view
@@ -116,20 +103,34 @@ contract PermissionManager is IPermissionManager, Ownable {
     return (roles, rolesCount);
   }
 
-  /**
-   * @dev Used to query if a certain account is a depositor
-   * @param account The address of the user
-   * @return True if the account is a depositor, false otherwise
-   **/
-  function isInRole(address account, uint256 role) public view override returns (bool) {
+  ///@inheritdoc IPermissionManager
+  function isInRole(address account, uint256 role) external view override returns (bool) {
     return (_permissions[account] >> role) & 1 > 0;
   }
 
-  /**
-   * @dev Used to query if a certain account is a depositor
-   * @param account The address of the user
-   * @return True if the account is a depositor, false otherwise
-   **/
+  ///@inheritdoc IPermissionManager
+  function isInAllRoles(address account, uint256[] calldata roles) external view override returns (bool) {
+  
+    for(uint256 i=0; i<roles.length; i++){
+      if((_permissions[account] >> roles[i]) & 1 == 0){
+        return false;
+      }    
+    }
+    return true;
+  }
+
+  ///@inheritdoc IPermissionManager
+  function isInAnyRole(address account, uint256[] calldata roles) public view override returns (bool) {
+  
+    for(uint256 i=0; i<roles.length; i++){
+      if((_permissions[account] >> roles[i]) & 1 > 0){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  ///@inheritdoc IPermissionManager
   function isPermissionsAdmin(address account) public view override returns (bool) {
     return _permissionsAdmins[account] > 0;
   }

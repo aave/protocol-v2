@@ -52,4 +52,19 @@ interface IPermissionManager {
    **/
   function isPermissionsAdmin(address account) external view returns (bool);
 
+
+   /**
+   * @dev Used to query if a certain account satisfies certain roles
+   * @param account The address of the user
+   * @param roles The roles to check
+   * @return True if the account has all the roles, false otherwise
+   **/
+  function isInAllRoles(address account, uint256[] calldata roles) external view returns (bool);
+ 
+   /**
+   * @dev Used to query if a certain account is in at least one of the roles specified
+   * @param account The address of the user
+   * @return True if the account has all the roles, false otherwise
+   **/
+  function isInAnyRole(address account, uint256[] calldata roles) external view returns (bool);
 }
