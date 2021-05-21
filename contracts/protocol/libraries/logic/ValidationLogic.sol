@@ -65,7 +65,7 @@ library ValidationLogic {
     DataTypes.ReserveData storage reserve,
     uint256 amount,
     uint256 userBalance
-  ) internal view {
+  ) external view {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
@@ -365,7 +365,7 @@ library ValidationLogic {
     address[] memory assets,
     uint256[] memory amounts,
     mapping(address => DataTypes.ReserveData) storage reservesData
-  ) internal view {
+  ) external view {
     for (uint256 i = 0; i < assets.length; i++) {
       require(!reservesData[assets[i]].configuration.getPaused(), Errors.VL_RESERVE_PAUSED);
     }
