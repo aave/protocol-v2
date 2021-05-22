@@ -6,6 +6,7 @@ import {BaseUniswapAdapter} from './BaseUniswapAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
@@ -18,6 +19,8 @@ import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveC
  * @author Aave
  **/
 contract FlashLiquidationAdapter is BaseUniswapAdapter {
+  using SafeERC20 for IERC20;
+
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
@@ -120,7 +123,8 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     vars.flashLoanDebt = flashBorrowedAmount.add(premium);
 
     // Approve LendingPool to use debt token for liquidation
-    IERC20(borrowedAsset).approve(address(LENDING_POOL), debtToCover);
+    IERC20(borrowedAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(borrowedAsset).safeApprove(address(LENDING_POOL), debtToCover);
 
     // Liquidate the user position and release the underlying collateral
     LENDING_POOL.liquidationCall(collateralAsset, borrowedAsset, user, debtToCover, false);
@@ -152,11 +156,12 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     }
 
     // Allow repay of flash loan
-    IERC20(borrowedAsset).approve(address(LENDING_POOL), vars.flashLoanDebt);
+    IERC20(borrowedAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(borrowedAsset).safeApprove(address(LENDING_POOL), vars.flashLoanDebt);
 
     // Transfer remaining tokens to initiator
     if (vars.remainingTokens > 0) {
-      IERC20(collateralAsset).transfer(initiator, vars.remainingTokens);
+      IERC20(collateralAsset).safeTransfer(initiator, vars.remainingTokens);
     }
   }
 
