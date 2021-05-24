@@ -176,4 +176,99 @@ interface ILendingPoolConfigurator {
     address indexed proxy,
     address indexed implementation
   );
+
+  function batchInitReserve(InitReserveInput[] calldata input) external;
+
+  function updateAToken(UpdateATokenInput calldata input) external;
+
+  function updateStableDebtToken(UpdateDebtTokenInput calldata input) external;
+
+  function updateVariableDebtToken(UpdateDebtTokenInput calldata input) external;
+
+  /**
+   * @dev Enables borrowing on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
+   **/
+  function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled) external;
+
+  /**
+   * @dev Disables borrowing on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function disableBorrowingOnReserve(address asset) external;
+
+  /**
+   * @dev Configures the reserve collateralization parameters
+   * all the values are expressed in percentages with two decimals of precision. A valid value is 10000, which means 100.00%
+   * @param asset The address of the underlying asset of the reserve
+   * @param ltv The loan to value of the asset when used as collateral
+   * @param liquidationThreshold The threshold at which loans using this asset as collateral will be considered undercollateralized
+   * @param liquidationBonus The bonus liquidators receive to liquidate this asset. The values is always above 100%. A value of 105%
+   * means the liquidator will receive a 5% bonus
+   **/
+  function configureReserveAsCollateral(
+    address asset,
+    uint256 ltv,
+    uint256 liquidationThreshold,
+    uint256 liquidationBonus
+  ) external;
+
+  /**
+   * @dev Enable stable rate borrowing on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function enableReserveStableRate(address asset) external;
+
+  /**
+   * @dev Disable stable rate borrowing on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function disableReserveStableRate(address asset) external;
+
+  /**
+   * @dev Activates a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function activateReserve(address asset) external;
+
+  /**
+   * @dev Deactivates a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function deactivateReserve(address asset) external;
+
+  /**
+   * @dev Freezes a reserve. A frozen reserve doesn't allow any new deposit, borrow or rate swap
+   *  but allows repayments, liquidations, rate rebalances and withdrawals
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function freezeReserve(address asset) external;
+
+  /**
+   * @dev Unfreezes a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function unfreezeReserve(address asset) external;
+
+  /**
+   * @dev Updates the reserve factor of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param reserveFactor The new reserve factor of the reserve
+   **/
+  function setReserveFactor(address asset, uint256 reserveFactor) external;
+
+  /**
+   * @dev Sets the interest rate strategy of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param rateStrategyAddress The new address of the interest strategy contract
+   **/
+  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
+    external;
+
+  /**
+   * @dev pauses or unpauses all the actions of the protocol, including aToken transfers
+   * @param val true if protocol needs to be paused, false otherwise
+   **/
+  function setPoolPause(bool val) external;
 }
