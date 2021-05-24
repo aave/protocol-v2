@@ -123,7 +123,7 @@ library ReserveLogic {
         lastUpdatedTimestamp
       );
 
-    _mintToTreasury(
+    _accrueToTreasury(
       reserve,
       scaledVariableDebt,
       previousVariableBorrowIndex,
@@ -271,7 +271,7 @@ library ReserveLogic {
    * @param newLiquidityIndex The new liquidity index
    * @param newVariableBorrowIndex The variable borrow index after the last accumulation of the interest
    **/
-  function _mintToTreasury(
+  function _accrueToTreasury(
     DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
