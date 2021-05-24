@@ -243,6 +243,10 @@ export interface iAssetBase<T> {
   xSUSHI: T;
   STAKE: T;
   REW: T;
+  '3Crv': T;
+  'cDAI+cUSDC': T;
+  a3CRV: T;
+  saCRV: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -297,6 +301,11 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniYFIWETH'
   | 'BptWBTCWETH'
   | 'BptBALWETH'
+>;
+
+export type iUsdLpPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'WETH' | 'WBTC' | 'DAI' | 'SUSD' | 'USDC' | 'USDT' | '3Crv' | 'cDAI+cUSDC' | 'a3CRV' | 'saCRV'
 >;
 
 export type iMaticPoolAssets<T> = Pick<
@@ -467,7 +476,7 @@ export interface ILendingRate {
   borrowRate: string;
 }
 
-export interface ICommonConfiguration {
+export interface IBaseConfiguration {
   MarketId: string;
   ATokenNamePrefix: string;
   StableDebtTokenNamePrefix: string;
@@ -475,7 +484,6 @@ export interface ICommonConfiguration {
   SymbolPrefix: string;
   ProviderId: number;
   ProtocolGlobalParams: IProtocolGlobalConfig;
-  Mocks: IMocksConfig;
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
   ProviderRegistryOwner: iParamsPerNetwork<tEthereumAddress | undefined>;
   LendingPoolCollateralManager: iParamsPerNetwork<tEthereumAddress>;
@@ -491,8 +499,6 @@ export interface ICommonConfiguration {
   PoolAdminIndex: number;
   EmergencyAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
   EmergencyAdminIndex: number;
-  ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
-  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
@@ -501,6 +507,16 @@ export interface ICommonConfiguration {
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
   StableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
   VariableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
+  ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
+}
+
+export interface ICommonConfiguration extends IBaseConfiguration {
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+  Mocks: IMocksConfig;
+}
+
+export interface IUsdMocksConfig {
+  AllAssetsInitialPrices: iUsdLpPoolAssets<string>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
@@ -509,6 +525,11 @@ export interface IAaveConfiguration extends ICommonConfiguration {
 
 export interface IAmmConfiguration extends ICommonConfiguration {
   ReservesConfig: iLpPoolAssets<IReserveParams>;
+}
+
+export interface IUsdAmmConfiguration extends IBaseConfiguration {
+  ReservesConfig: iUsdLpPoolAssets<IReserveParams>;
+  Mocks: IUsdMocksConfig;
 }
 
 export interface IMaticConfiguration extends ICommonConfiguration {

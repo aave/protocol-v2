@@ -13,6 +13,7 @@ export const RAY = new BigNumber(10).exponentiatedBy(27).toFixed();
 export const HALF_RAY = new BigNumber(RAY).multipliedBy(0.5).toFixed();
 export const WAD_RAY_RATIO = Math.pow(10, 9).toString();
 export const oneEther = new BigNumber(Math.pow(10, 18));
+export const oneUsd = new BigNumber(Math.pow(10, 8));
 export const oneRay = new BigNumber(Math.pow(10, 27));
 export const MAX_UINT_AMOUNT =
   '115792089237316195423570985008687907853269984665640564039457584007913129639935';
@@ -72,6 +73,26 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
   USD: '5848466240000000',
   REW: oneEther.multipliedBy('0.00137893825230').toFixed(),
+  '3Crv': '0',
+  'cDAI+cUSDC': '0',
+  a3CRV: '0',
+  saCRV: '0',
+};
+
+export const MOCK_CHAINLINK_AGGREGATORS_USD_CURVE_AMM_PRICES = {
+  WETH: oneUsd.multipliedBy('2700').toFixed(),
+  WBTC: oneUsd.multipliedBy('40000').toFixed(),
+  BUSD: oneUsd.toFixed(),
+  DAI: oneUsd.toFixed(),
+  SUSD: oneUsd.toFixed(),
+  TUSD: oneUsd.toFixed(),
+  USDC: oneUsd.toFixed(),
+  USDT: oneUsd.toFixed(),
+  USD: oneUsd.toFixed(),
+  '3Crv': oneUsd.multipliedBy('1.0168').toFixed(),
+  'cDAI+cUSDC': oneUsd.multipliedBy('1.0758').toFixed(),
+  a3CRV: oneUsd.multipliedBy('1.0536').toFixed(),
+  saCRV: oneUsd.multipliedBy('1.0318').toFixed(),
 };
 
 export const CRV_TOKEN = {
