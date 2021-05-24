@@ -51,7 +51,8 @@ import {
   FlashLiquidationAdapterFactory,
   PermissionedVariableDebtTokenFactory,
   PermissionedStableDebtTokenFactory,
-  PermissionedLendingPoolFactory
+  PermissionedLendingPoolFactory,
+  PermissionedWETHGatewayFactory
 } from '../types';
 import {
   withSaveAndVerify,
@@ -583,6 +584,15 @@ export const deployWETHGateway = async (args: [tEthereumAddress], verify?: boole
     args,
     verify
   );
+
+export const deployPermissionedWETHGateway = async (args: [tEthereumAddress], verify?: boolean) =>
+  withSaveAndVerify(
+    await new PermissionedWETHGatewayFactory(await getFirstSigner()).deploy(...args),
+    eContractid.PermissionedWETHGateway,
+    args,
+    verify
+  );
+
 
 export const authorizeWETHGateway = async (
   wethGateWay: tEthereumAddress,

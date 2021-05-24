@@ -90,7 +90,8 @@ export enum eContractid {
   PermissionManager = 'PermissionManager',
   PermissionedStableDebtToken = 'PermissionedStableDebtToken',
   PermissionedVariableDebtToken = 'PermissionedVariableDebtToken',
-  PermissionedLendingPool = 'PermissionedLendingPool'
+  PermissionedLendingPool = 'PermissionedLendingPool',
+  PermissionedWETHGateway = 'PermissionedWETHGateway'
 }
 
 /*
