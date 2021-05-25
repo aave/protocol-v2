@@ -177,12 +177,28 @@ interface ILendingPoolConfigurator {
     address indexed implementation
   );
 
+  /**
+   * @dev Initializes reserves in batch
+   * @param input The array of reserves initialization parameters
+   **/
   function batchInitReserve(InitReserveInput[] calldata input) external;
 
+  /**
+   * @dev Updates the aToken implementation for the reserve
+   * @param input The aToken update paramenters
+   **/
   function updateAToken(UpdateATokenInput calldata input) external;
 
+  /**
+   * @dev Updates the stable debt token implementation for the reserve
+   * @param input The stableDebtToken update parameters
+   **/
   function updateStableDebtToken(UpdateDebtTokenInput calldata input) external;
 
+  /**
+   * @dev Updates the variable debt token implementation for the asset
+   * @param input The variableDebtToken update parameters
+   **/
   function updateVariableDebtToken(UpdateDebtTokenInput calldata input) external;
 
   /**

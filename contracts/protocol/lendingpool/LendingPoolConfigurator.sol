@@ -57,9 +57,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _pool = ILendingPool(_addressesProvider.getLendingPool());
   }
 
-  /**
-   * @dev Initializes reserves in batch
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function batchInitReserve(InitReserveInput[] calldata input) external override onlyPoolAdmin {
     ILendingPool cachedPool = _pool;
     for (uint256 i = 0; i < input.length; i++) {
@@ -141,9 +139,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     );
   }
 
-  /**
-   * @dev Updates the aToken implementation for the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function updateAToken(UpdateATokenInput calldata input) external override onlyPoolAdmin {
     ILendingPool cachedPool = _pool;
 
@@ -169,9 +165,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
   }
 
-  /**
-   * @dev Updates the stable debt token implementation for the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function updateStableDebtToken(UpdateDebtTokenInput calldata input)
     external
     override
@@ -208,9 +202,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     );
   }
 
-  /**
-   * @dev Updates the variable debt token implementation for the asset
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
     external
     override
@@ -247,11 +239,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     );
   }
 
-  /**
-   * @dev Enables borrowing on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled)
     external
     override
@@ -267,10 +255,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit BorrowingEnabledOnReserve(asset, stableBorrowRateEnabled);
   }
 
-  /**
-   * @dev Disables borrowing on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function disableBorrowingOnReserve(address asset) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -280,15 +265,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit BorrowingDisabledOnReserve(asset);
   }
 
-  /**
-   * @dev Configures the reserve collateralization parameters
-   * all the values are expressed in percentages with two decimals of precision. A valid value is 10000, which means 100.00%
-   * @param asset The address of the underlying asset of the reserve
-   * @param ltv The loan to value of the asset when used as collateral
-   * @param liquidationThreshold The threshold at which loans using this asset as collateral will be considered undercollateralized
-   * @param liquidationBonus The bonus liquidators receive to liquidate this asset. The values is always above 100%. A value of 105%
-   * means the liquidator will receive a 5% bonus
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function configureReserveAsCollateral(
     address asset,
     uint256 ltv,
@@ -333,10 +310,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit CollateralConfigurationChanged(asset, ltv, liquidationThreshold, liquidationBonus);
   }
 
-  /**
-   * @dev Enable stable rate borrowing on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function enableReserveStableRate(address asset) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -347,10 +321,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit StableRateEnabledOnReserve(asset);
   }
 
-  /**
-   * @dev Disable stable rate borrowing on a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function disableReserveStableRate(address asset) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -361,10 +332,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit StableRateDisabledOnReserve(asset);
   }
 
-  /**
-   * @dev Activates a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function activateReserve(address asset) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -375,10 +343,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ReserveActivated(asset);
   }
 
-  /**
-   * @dev Deactivates a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function deactivateReserve(address asset) external override onlyPoolAdmin {
     _checkNoLiquidity(asset);
 
@@ -391,11 +356,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ReserveDeactivated(asset);
   }
 
-  /**
-   * @dev Freezes a reserve. A frozen reserve doesn't allow any new deposit, borrow or rate swap
-   *  but allows repayments, liquidations, rate rebalances and withdrawals
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function freezeReserve(address asset) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -406,10 +367,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ReserveFrozen(asset);
   }
 
-  /**
-   * @dev Unfreezes a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function unfreezeReserve(address asset) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -420,11 +378,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ReserveUnfrozen(asset);
   }
 
-  /**
-   * @dev Updates the reserve factor of a reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @param reserveFactor The new reserve factor of the reserve
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function setReserveFactor(address asset, uint256 reserveFactor) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -435,11 +389,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ReserveFactorChanged(asset, reserveFactor);
   }
 
-  /**
-   * @dev Sets the interest rate strategy of a reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @param rateStrategyAddress The new address of the interest strategy contract
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
@@ -449,10 +399,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ReserveInterestRateStrategyChanged(asset, rateStrategyAddress);
   }
 
-  /**
-   * @dev pauses or unpauses all the actions of the protocol, including aToken transfers
-   * @param val true if protocol needs to be paused, false otherwise
-   **/
+  /// @inheritdoc ILendingPoolConfigurator
   function setPoolPause(bool val) external override onlyEmergencyAdmin {
     _pool.setPause(val);
   }
