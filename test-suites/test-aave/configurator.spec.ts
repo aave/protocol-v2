@@ -173,7 +173,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Activates the ETH reserve for borrowing', async () => {
     const { configurator, weth, helpersContract } = testEnv;
-    await configurator.enableBorrowingOnReserve(weth.address, MAX_BORROW_CAP, true);
+    await configurator.enableBorrowingOnReserve(weth.address, '0', true);
     const { variableBorrowIndex } = await helpersContract.getReserveData(weth.address);
 
     const {
@@ -215,9 +215,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Check the onlyAaveAdmin on enableBorrowingOnReserve ', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(
-      configurator
-        .connect(users[2].signer)
-        .enableBorrowingOnReserve(weth.address, MAX_BORROW_CAP, true),
+      configurator.connect(users[2].signer).enableBorrowingOnReserve(weth.address, '0', true),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
