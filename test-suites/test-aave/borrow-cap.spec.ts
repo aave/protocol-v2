@@ -50,8 +50,8 @@ makeSuite('Borrow Cap', (testEnv: TestEnv) => {
     let daiBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
     expect(usdcBorrowCap).to.be.equal(MAX_BORROW_CAP);
     expect(daiBorrowCap).to.be.equal(MAX_BORROW_CAP);
-    let wethBorrowCap = (await helpersContract.getReserveCaps(dai.address)).borrowCap;
-    let wethSupplyCap = (await helpersContract.getReserveCaps(dai.address)).supplyCap;
+    let wethBorrowCap = (await helpersContract.getReserveCaps(weth.address)).borrowCap;
+    let wethSupplyCap = (await helpersContract.getReserveCaps(weth.address)).supplyCap;
     expect(wethBorrowCap).to.be.equal(MAX_BORROW_CAP);
     expect(wethSupplyCap).to.be.equal(MAX_SUPPLY_CAP);
 

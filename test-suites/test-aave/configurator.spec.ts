@@ -1,5 +1,10 @@
 import { TestEnv, makeSuite } from './helpers/make-suite';
-import { APPROVAL_AMOUNT_LENDING_POOL, MAX_UINT_AMOUNT, RAY, MAX_BORROW_CAP } from '../../helpers/constants';
+import {
+  APPROVAL_AMOUNT_LENDING_POOL,
+  MAX_UINT_AMOUNT,
+  RAY,
+  MAX_BORROW_CAP,
+} from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { ProtocolErrors } from '../../helpers/types';
 import { strategyWETH } from '../../markets/aave/reservesConfigs';
@@ -413,14 +418,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(1000);
   });
 
-  it('Fails to change to too high borrowCap', async () => {
+  it('Check that borrowCap cannot be set to value that exceeds the MAX_BORROW_CAP', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(
       configurator.setBorrowCap(weth.address, BigNumber.from(MAX_BORROW_CAP).add(1)),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(RC_INVALID_BORROW_CAP);
   });
-  it('Fails to change to too high supplyCap', async () => {
+  it('Check that supplyCap cannot be set to value that exceeds the MAX_SUPPLY_CAP', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(
       configurator.setSupplyCap(weth.address, BigNumber.from(MAX_BORROW_CAP).add(1)),
@@ -457,7 +462,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
-  it('Changes the borrow Cap of WETH', async () => {
+  it('Changes the supply Cap of WETH', async () => {
     const { configurator, helpersContract, weth } = testEnv;
     await configurator.setSupplyCap(weth.address, '3000000');
     const {

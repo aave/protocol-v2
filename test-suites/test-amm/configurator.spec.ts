@@ -180,7 +180,6 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(true /*strategyWETH.stableBorrowRateEnabled*/);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
-
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
 
