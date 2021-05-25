@@ -44,13 +44,15 @@ library ValidationLogic {
     DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
     (bool isActive, bool isFrozen, , ) = reserveConfiguration.getFlagsMemory();
     (, , , uint256 reserveDecimals, ) = reserveConfiguration.getParamsMemory();
+    uint256 supplyCap = reserveConfiguration.getSupplyCapMemory();
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
     require(
-      IERC20(reserve.aTokenAddress).totalSupply().add(amount).div(10**reserveDecimals) <
-        reserveConfiguration.getSupplyCapMemory(),
+      supplyCap == 0 ||
+        IERC20(reserve.aTokenAddress).totalSupply().add(amount).div(10**reserveDecimals) <
+        supplyCap,
       Errors.VL_SUPPLY_CAP_EXCEEDED
     );
   }
@@ -84,6 +86,7 @@ library ValidationLogic {
     uint256 totalSupplyStableDebt;
     uint256 totalSupplyVariableDebt;
     uint256 reserveDecimals;
+    uint256 borrowCap;
     bool isActive;
     bool isFrozen;
     bool borrowingEnabled;
@@ -145,13 +148,15 @@ library ValidationLogic {
     );
 
     vars.totalSupplyStableDebt = IERC20(reserve.stableDebtTokenAddress).totalSupply();
-
+    vars.borrowCap = reserveConfiguration.getBorrowCapMemory();
     vars.totalSupplyVariableDebt = IERC20(reserve.variableDebtTokenAddress).totalSupply();
 
     require(
-      vars.totalSupplyStableDebt.add(vars.totalSupplyVariableDebt).add(amount).div(
-        10**vars.reserveDecimals
-      ) < reserveConfiguration.getBorrowCapMemory(),
+      vars.borrowCap == 0 ||
+        vars.totalSupplyStableDebt.add(vars.totalSupplyVariableDebt).add(amount).div(
+          10**vars.reserveDecimals
+        ) <
+        vars.borrowCap,
       Errors.VL_BORROW_CAP_EXCEEDED
     );
 
