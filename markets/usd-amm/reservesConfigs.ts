@@ -75,12 +75,12 @@ export const strategyUSDT: IReserveParams = {
 
 export const strategyCurveLP: IReserveParams = {
   strategy: rateStrategyAmmBase,
-  baseLTVAsCollateral: '9000',
-  liquidationThreshold: '9500',
-  liquidationBonus: '11500',
+  baseLTVAsCollateral: '9250',
+  liquidationThreshold: '9350',
+  liquidationBonus: '10500',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.CurveRewardsAwareAToken,
-  reserveFactor: '1000',
+  reserveFactor: '2000',
 };
