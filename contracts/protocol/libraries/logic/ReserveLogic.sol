@@ -178,6 +178,23 @@ library ReserveLogic {
     reserve.interestRateStrategyAddress = interestRateStrategyAddress;
   }
 
+  /**
+   * @dev drop a reserve
+   * @param reserve The reserve object
+   **/
+  function dropReserve(DataTypes.ReserveData storage reserve) external {
+    require(IERC20(reserve.aTokenAddress).totalSupply() == 0, Errors.RL_ATOKEN_SUPPLY_NOT_NULL);
+    require(
+      IERC20(reserve.stableDebtTokenAddress).totalSupply() == 0,
+      Errors.RL_STABLE_DEBT_NOT_NULL
+    );
+    require(
+      IERC20(reserve.variableDebtTokenAddress).totalSupply() == 0,
+      Errors.RL_VARIABLE_DEBT_SUPPLY_NOT_NULL
+    );
+    reserve.id = type(uint8).max;
+  }
+
   struct UpdateInterestRatesLocalVars {
     address stableDebtTokenAddress;
     uint256 availableLiquidity;
@@ -320,7 +337,9 @@ library ReserveLogic {
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
     if (vars.amountToMint != 0) {
-      reserve.accruedToTreasury = reserve.accruedToTreasury.add(vars.amountToMint.rayDiv(newLiquidityIndex));
+      reserve.accruedToTreasury = reserve.accruedToTreasury.add(
+        vars.amountToMint.rayDiv(newLiquidityIndex)
+      );
     }
   }
 
