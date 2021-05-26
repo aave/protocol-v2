@@ -220,7 +220,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN);
   });
 
-  it('Freezes the ETH reserve', async () => {
+  it('Freezes the ETH reserve by pool Admin', async () => {
     const { configurator, weth, helpersContract } = testEnv;
 
     await configurator.freezeReserve(weth.address);
@@ -252,7 +252,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
-  it('Unfreezes the ETH reserve', async () => {
+  it('Unfreezes the ETH reserve by Pool admin', async () => {
     const { configurator, helpersContract, weth } = testEnv;
     await configurator.unfreezeReserve(weth.address);
 
@@ -283,21 +283,84 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
+  it('Freezes the ETH reserve by Risk Admin', async () => {
+    const { configurator, weth, helpersContract, riskAdmin } = testEnv;
 
-  it('Check the onlyAaveAdmin on freezeReserve ', async () => {
-    const { configurator, users, weth, riskAdmin } = testEnv;
-    await expect(
-      configurator.connect(riskAdmin.signer).freezeReserve(weth.address),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+    await configurator.connect(riskAdmin.signer).freezeReserve(weth.address);
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFrozen,
+    } = await helpersContract.getReserveConfigurationData(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const isPaused = await helpersContract.getPaused(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isPaused).to.be.equal(false);
+    expect(isFrozen).to.be.equal(true);
+    expect(decimals).to.be.equal(strategyWETH.reserveDecimals);
+    expect(ltv).to.be.equal(strategyWETH.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
+    expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
 
-  it('Check the onlyAaveAdmin on unfreezeReserve ', async () => {
-    const { configurator, users, weth, riskAdmin } = testEnv;
+  it('Unfreezes the ETH reserve by Risk admin', async () => {
+    const { configurator, helpersContract, weth, riskAdmin } = testEnv;
+    await configurator.connect(riskAdmin.signer).unfreezeReserve(weth.address);
+
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFrozen,
+    } = await helpersContract.getReserveConfigurationData(weth.address);
+    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const isPaused = await helpersContract.getPaused(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isPaused).to.be.equal(false);
+    expect(isFrozen).to.be.equal(false);
+    expect(decimals).to.be.equal(strategyWETH.reserveDecimals);
+    expect(ltv).to.be.equal(strategyWETH.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
+    expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+    expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
+    expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+  });
+
+  it('Check the onlyRiskOrPoolAdmins on freezeReserve ', async () => {
+    const { configurator, users, weth, emergencyAdmin } = testEnv;
     await expect(
-      configurator.connect(riskAdmin.signer).unfreezeReserve(weth.address),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+      configurator.connect(emergencyAdmin.signer).freezeReserve(weth.address),
+      LPC_CALLER_NOT_RISK_OR_POOL_ADMIN
+    ).to.be.revertedWith(LPC_CALLER_NOT_RISK_OR_POOL_ADMIN);
+  });
+
+  it('Check the onlyRiskOrPoolAdmins on unfreezeReserve ', async () => {
+    const { configurator, users, weth, emergencyAdmin } = testEnv;
+    await expect(
+      configurator.connect(emergencyAdmin.signer).unfreezeReserve(weth.address),
+      LPC_CALLER_NOT_RISK_OR_POOL_ADMIN
+    ).to.be.revertedWith(LPC_CALLER_NOT_RISK_OR_POOL_ADMIN);
   });
 
   it('Deactivates the ETH reserve for borrowing via pool admin', async () => {

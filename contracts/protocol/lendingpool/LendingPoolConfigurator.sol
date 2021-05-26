@@ -379,7 +379,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function freezeReserve(address asset) external override onlyPoolAdmin {
+  function freezeReserve(address asset) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setFrozen(true);
@@ -390,7 +390,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function unfreezeReserve(address asset) external override onlyPoolAdmin {
+  function unfreezeReserve(address asset) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setFrozen(false);
