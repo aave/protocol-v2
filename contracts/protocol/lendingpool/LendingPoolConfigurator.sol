@@ -161,6 +161,10 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     );
   }
 
+  function dropReserve(address asset) external onlyPoolAdmin {
+    pool.dropReserve(asset);
+  }
+
   /**
    * @dev Updates the aToken implementation for the reserve
    **/

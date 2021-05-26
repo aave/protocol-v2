@@ -396,6 +396,8 @@ interface ILendingPool {
     address interestRateStrategyAddress
   ) external;
 
+  function dropReserve(address reserve) external;
+
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
     external;
 
