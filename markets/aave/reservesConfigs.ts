@@ -274,5 +274,5 @@ export const strategyRAI: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1500'
+  reserveFactor: '2000'
 };
