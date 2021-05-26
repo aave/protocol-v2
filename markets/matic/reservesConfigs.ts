@@ -92,8 +92,8 @@ export const strategyMATIC: IReserveParams = {
   borrowCap: '0',
   supplyCap: '0',
   reserveFactor: '2000',
-  borrowCap: MAX_BORROW_CAP,
-  supplyCap: MAX_SUPPLY_CAP,
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyAAVE: IReserveParams = {

@@ -42,7 +42,7 @@ library ValidationLogic {
    */
   function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) internal view {
     DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
-    (bool isActive, bool isFrozen, , bool isPaused) = reserveConfiguration.getFlagsMemory();
+    (bool isActive, bool isFrozen, , , bool isPaused) = reserveConfiguration.getFlagsMemory();
     (, , , uint256 reserveDecimals, ) = reserveConfiguration.getParamsMemory();
     uint256 supplyCap = reserveConfiguration.getSupplyCapMemory();
 
@@ -124,7 +124,7 @@ library ValidationLogic {
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
-  ) internal view {
+  ) external view {
     ValidateBorrowLocalVars memory vars;
 
     DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
@@ -372,7 +372,7 @@ library ValidationLogic {
     address[] memory assets,
     uint256[] memory amounts,
     mapping(address => DataTypes.ReserveData) storage reservesData
-  ) internal view {
+  ) external view {
     for (uint256 i = 0; i < assets.length; i++) {
       require(!reservesData[assets[i]].configuration.getPaused(), Errors.VL_RESERVE_PAUSED);
     }
