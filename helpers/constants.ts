@@ -73,10 +73,8 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
   USD: '5848466240000000',
   REW: oneEther.multipliedBy('0.00137893825230').toFixed(),
-  '3Crv': '0',
-  'cDAI+cUSDC': '0',
-  a3CRV: '0',
-  saCRV: '0',
+  'a3CRV-gauge': '0',
+  'saCRV-gauge': '0',
 };
 
 export const MOCK_CHAINLINK_AGGREGATORS_USD_CURVE_AMM_PRICES = {
@@ -89,12 +87,11 @@ export const MOCK_CHAINLINK_AGGREGATORS_USD_CURVE_AMM_PRICES = {
   USDC: oneUsd.toFixed(),
   USDT: oneUsd.toFixed(),
   USD: oneUsd.toFixed(),
-  '3Crv': oneUsd.multipliedBy('1.0168').toFixed(),
-  'cDAI+cUSDC': oneUsd.multipliedBy('1.0758').toFixed(),
-  a3CRV: oneUsd.multipliedBy('1.0536').toFixed(),
-  saCRV: oneUsd.multipliedBy('1.0318').toFixed(),
+  'a3CRV-gauge': oneUsd.multipliedBy('1.0536').toFixed(),
+  'saCRV-gauge': oneUsd.multipliedBy('1.0318').toFixed(),
 };
 
 export const CRV_TOKEN = {
   [eEthereumNetwork.main]: '0xD533a949740bb3306d119CC777fa900bA034cd52',
+  [eEthereumNetwork.tenderlyMain]: '0xD533a949740bb3306d119CC777fa900bA034cd52',
 };

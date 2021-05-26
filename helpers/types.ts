@@ -38,6 +38,7 @@ export enum AavePools {
   proto = 'proto',
   matic = 'matic',
   amm = 'amm',
+  usd = 'usd',
 }
 
 export enum eContractid {
@@ -243,10 +244,8 @@ export interface iAssetBase<T> {
   xSUSHI: T;
   STAKE: T;
   REW: T;
-  '3Crv': T;
-  'cDAI+cUSDC': T;
-  a3CRV: T;
-  saCRV: T;
+  'a3CRV-gauge': T;
+  'saCRV-gauge': T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -305,7 +304,7 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iUsdLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'WETH' | 'WBTC' | 'DAI' | 'SUSD' | 'USDC' | 'USDT' | '3Crv' | 'cDAI+cUSDC' | 'a3CRV' | 'saCRV'
+  'WETH' | 'WBTC' | 'DAI' | 'SUSD' | 'USDC' | 'USDT' | 'a3CRV-gauge' | 'saCRV-gauge'
 >;
 
 export type iMaticPoolAssets<T> = Pick<
@@ -438,6 +437,7 @@ export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
   [AavePools.matic]: T;
   [AavePools.amm]: T;
+  [AavePools.usd]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -508,6 +508,7 @@ export interface IBaseConfiguration {
   StableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
   VariableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
+  OracleQuoteCurrency: string;
 }
 
 export interface ICommonConfiguration extends IBaseConfiguration {
@@ -544,4 +545,4 @@ export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration;
+export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration | IUsdAmmConfiguration;

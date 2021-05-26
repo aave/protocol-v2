@@ -29,6 +29,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       Mocks: { AllAssetsInitialPrices },
       ProtocolGlobalParams: { UsdAddress, MockUsdPriceInWei },
       LendingRateOracleRatesCommon,
+      OracleQuoteCurrency,
     } = poolConfig as ICommonConfiguration;
 
     const defaultTokenList = {
@@ -54,7 +55,8 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
 
     const [tokens, aggregators] = getPairsTokenAggregator(
       allTokenAddresses,
-      allAggregatorsAddresses
+      allAggregatorsAddresses,
+      OracleQuoteCurrency
     );
 
     await deployAaveOracle(

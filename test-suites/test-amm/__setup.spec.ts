@@ -220,7 +220,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {}
   );
 
-  const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
+  const [tokens, aggregators] = getPairsTokenAggregator(
+    allTokenAddresses,
+    allAggregatorsAddresses,
+    config.OracleQuoteCurrency
+  );
 
   await deployAaveOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));

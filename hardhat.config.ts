@@ -62,8 +62,6 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   },
 });
 
-let forkMode;
-
 const buidlerConfig: HardhatUserConfig = {
   solidity: {
     version: '0.6.12',
@@ -112,16 +110,6 @@ const buidlerConfig: HardhatUserConfig = {
         balance,
       })),
       forking: buildForkConfig(),
-    },
-    buidlerevm_docker: {
-      hardfork: 'berlin',
-      blockGasLimit: 9500000,
-      gas: 9500000,
-      gasPrice: 8000000000,
-      chainId: BUIDLEREVM_CHAINID,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
     },
     ganache: {
       url: 'http://ganache:8545',

@@ -46,7 +46,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         ...reserveAssets,
         USD: UsdAddress,
       };
-      const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
+      const [tokens, aggregators] = getPairsTokenAggregator(
+        tokensToWatch,
+        chainlinkAggregators,
+        poolConfig.OracleQuoteCurrency
+      );
 
       let aaveOracle: AaveOracle;
       let lendingRateOracle: LendingRateOracle;

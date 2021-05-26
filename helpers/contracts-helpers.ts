@@ -27,7 +27,7 @@ import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
 import { usingPolygon, verifyAtPolygon } from './polygon-utils';
 import { ConfigNames, loadPoolConfig } from './configuration';
-import { ZERO_ADDRESS } from './constants';
+import { USD_ADDRESS, ZERO_ADDRESS } from './constants';
 import { RewardsTokenFactory, RewardsATokenMockFactory } from '../types';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
@@ -185,7 +185,10 @@ export const getOptionalParamAddressPerNetwork = (
   return getParamPerNetwork(param, network);
 };
 
-export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>(
+  { proto, amm, matic, usd }: iParamsPerPool<T>,
+  pool: AavePools
+) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
@@ -193,6 +196,8 @@ export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, poo
       return amm;
     case AavePools.matic:
       return matic;
+    case AavePools.usd:
+      return usd;
     default:
       return proto;
   }
