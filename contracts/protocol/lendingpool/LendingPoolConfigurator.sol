@@ -163,6 +163,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   function dropReserve(address asset) external onlyPoolAdmin {
     pool.dropReserve(asset);
+    emit ReserveDropped(asset);
   }
 
   /**
