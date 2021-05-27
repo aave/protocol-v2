@@ -509,6 +509,7 @@ export interface IBaseConfiguration {
   VariableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   OracleQuoteCurrency: string;
+  OracleQuoteUnit: string;
 }
 
 export interface ICommonConfiguration extends IBaseConfiguration {

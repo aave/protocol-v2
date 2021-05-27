@@ -1,5 +1,6 @@
 import {
   MOCK_CHAINLINK_AGGREGATORS_USD_CURVE_AMM_PRICES,
+  oneUsd,
   ZERO_ADDRESS,
 } from '../../helpers/constants';
 import { eEthereumNetwork, IUsdAmmConfiguration } from '../../helpers/types';
@@ -26,6 +27,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
   VariableDebtTokenNamePrefix: 'Aave USD AMM Market variable debt',
   SymbolPrefix: 'usdAmm',
   OracleQuoteCurrency: 'USD',
+  OracleQuoteUnit: oneUsd.toString(),
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '10000000',

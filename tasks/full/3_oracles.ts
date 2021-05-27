@@ -10,6 +10,7 @@ import {
   getWethAddress,
   getGenesisPoolAdmin,
   getLendingRateOracles,
+  getQuoteCurrency,
 } from '../../helpers/configuration';
 import {
   getAaveOracle,
@@ -59,7 +60,13 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         aaveOracle = await await getAaveOracle(aaveOracleAddress);
       } else {
         aaveOracle = await deployAaveOracle(
-          [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
+          [
+            tokens,
+            aggregators,
+            fallbackOracleAddress,
+            await getQuoteCurrency(poolConfig),
+            poolConfig.OracleQuoteUnit,
+          ],
           verify
         );
         await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
