@@ -162,6 +162,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /// @inheritdoc ILendingPoolConfigurator
   function dropReserve(address asset) external onlyPoolAdmin {
     _pool.dropReserve(asset);
+    emit ReserveDropped(asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator

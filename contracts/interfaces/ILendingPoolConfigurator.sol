@@ -133,6 +133,12 @@ interface ILendingPoolConfigurator {
   event ReserveUnpaused(address indexed asset);
 
   /**
+   * @dev Emitted when a reserve is dropped
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event ReserveDropped(address indexed asset);
+
+  /**
    * @dev Emitted when a reserve factor is updated
    * @param asset The address of the underlying asset of the reserve
    * @param factor The new reserve factor
@@ -203,13 +209,13 @@ interface ILendingPoolConfigurator {
     address indexed implementation
   );
 
-   /**
+  /**
    * @dev Emitted when a new borrower is authorized (fees = 0)
    * @param flashBorrower The address of the authorized borrower
    **/
   event FlashBorrowerAuthorized(address indexed flashBorrower);
 
-   /**
+  /**
    * @dev Emitted when a borrower is unauthorized
    * @param flashBorrower The address of the unauthorized borrower
    **/
@@ -386,14 +392,14 @@ interface ILendingPoolConfigurator {
    * @param admin The address of the potential admin
    **/
   function isRiskAdmin(address admin) external view returns (bool);
-  
-   /**
+
+  /**
    * @dev Authorize a new borrower (fees are 0 for the authorized borrower)
    * @param flashBorrower The address of the authorized borrower
    **/
   function authorizeFlashBorrower(address flashBorrower) external;
 
-   /**
+  /**
    * @dev Unauthorize a borrower
    * @param flashBorrower The address of the unauthorized borrower
    **/
