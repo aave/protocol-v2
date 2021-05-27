@@ -19,6 +19,8 @@ library ReserveConfiguration {
   uint256 constant BORROWING_MASK =             0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant STABLE_BORROWING_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 constant BORROW_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 constant SUPPLY_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
 
   /// @dev For the LTV, the start bit is 0 (up to 15), hence no bitshifting is needed
   uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
@@ -29,12 +31,16 @@ library ReserveConfiguration {
   uint256 constant BORROWING_ENABLED_START_BIT_POSITION = 58;
   uint256 constant STABLE_BORROWING_ENABLED_START_BIT_POSITION = 59;
   uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
+  uint256 constant BORROW_CAP_START_BIT_POSITION = 80;
+  uint256 constant SUPPLY_CAP_START_BIT_POSITION = 116;
 
   uint256 constant MAX_VALID_LTV = 65535;
   uint256 constant MAX_VALID_LIQUIDATION_THRESHOLD = 65535;
   uint256 constant MAX_VALID_LIQUIDATION_BONUS = 65535;
   uint256 constant MAX_VALID_DECIMALS = 255;
   uint256 constant MAX_VALID_RESERVE_FACTOR = 65535;
+  uint256 constant MAX_VALID_BORROW_CAP = 68719476735;
+  uint256 constant MAX_VALID_SUPPLY_CAP = 68719476735;
 
   /**
    * @dev Sets the Loan to Value of the reserve
@@ -265,6 +271,60 @@ library ReserveConfiguration {
   }
 
   /**
+   * @dev Sets the borrow cap of the reserve
+   * @param self The reserve configuration
+   * @param borrowCap The borrow cap
+   **/
+  function setBorrowCap(DataTypes.ReserveConfigurationMap memory self, uint256 borrowCap)
+    internal
+    pure
+  {
+    require(borrowCap <= MAX_VALID_BORROW_CAP, Errors.RC_INVALID_BORROW_CAP);
+
+    self.data = (self.data & BORROW_CAP_MASK) | (borrowCap << BORROW_CAP_START_BIT_POSITION);
+  }
+
+  /**
+   * @dev Gets the borrow cap of the reserve
+   * @param self The reserve configuration
+   * @return The borrow cap
+   **/
+  function getBorrowCap(DataTypes.ReserveConfigurationMap storage self)
+    internal
+    view
+    returns (uint256)
+  {
+    return (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION;
+  }
+
+  /**
+   * @dev Sets the supply cap of the reserve
+   * @param self The reserve configuration
+   * @param supplyCap The supply cap
+   **/
+  function setSupplyCap(DataTypes.ReserveConfigurationMap memory self, uint256 supplyCap)
+    internal
+    pure
+  {
+    require(supplyCap <= MAX_VALID_SUPPLY_CAP, Errors.RC_INVALID_SUPPLY_CAP);
+
+    self.data = (self.data & SUPPLY_CAP_MASK) | (supplyCap << SUPPLY_CAP_START_BIT_POSITION);
+  }
+
+  /**
+   * @dev Gets the supply cap of the reserve
+   * @param self The reserve configuration
+   * @return The supply cap
+   **/
+  function getSupplyCap(DataTypes.ReserveConfigurationMap storage self)
+    internal
+    view
+    returns (uint256)
+  {
+    return (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION;
+  }
+
+  /**
    * @dev Gets the configuration flags of the reserve
    * @param self The reserve configuration
    * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
@@ -290,9 +350,9 @@ library ReserveConfiguration {
   }
 
   /**
-   * @dev Gets the configuration paramters of the reserve
+   * @dev Gets the configuration paramters of the reserve from storage
    * @param self The reserve configuration
-   * @return The state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
+   * @return The state params representing ltv, liquidation threshold, liquidation bonus, reserve decimals, reserve factor
    **/
   function getParams(DataTypes.ReserveConfigurationMap storage self)
     internal
@@ -317,9 +377,27 @@ library ReserveConfiguration {
   }
 
   /**
+   * @dev Gets the caps  paramters of the reserve from storage
+   * @param self The reserve configuration
+   * @return The state params representing  borrow cap and supply cap.
+   **/
+  function getCaps(DataTypes.ReserveConfigurationMap storage self)
+    internal
+    view
+    returns (uint256, uint256)
+  {
+    uint256 dataLocal = self.data;
+
+    return (
+      (dataLocal & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION,
+      (dataLocal & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION
+    );
+  }
+
+  /**
    * @dev Gets the configuration paramters of the reserve from a memory object
    * @param self The reserve configuration
-   * @return The state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
+   * @return The state params representing ltv, liquidation threshold, liquidation bonus, reserve decimals, reserve factor
    **/
   function getParamsMemory(DataTypes.ReserveConfigurationMap memory self)
     internal
@@ -338,6 +416,22 @@ library ReserveConfiguration {
       (self.data & ~LIQUIDATION_BONUS_MASK) >> LIQUIDATION_BONUS_START_BIT_POSITION,
       (self.data & ~DECIMALS_MASK) >> RESERVE_DECIMALS_START_BIT_POSITION,
       (self.data & ~RESERVE_FACTOR_MASK) >> RESERVE_FACTOR_START_BIT_POSITION
+    );
+  }
+
+  /**
+   * @dev Gets the caps paramters of the reserve from a memory object
+   * @param self The reserve configuration
+   * @return The state params borrow cap and supply cap
+   **/
+  function getCapsMemory(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
+    returns (uint256, uint256)
+  {
+    return (
+      (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION,
+      (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION
     );
   }
 
@@ -362,5 +456,31 @@ library ReserveConfiguration {
       (self.data & ~BORROWING_MASK) != 0,
       (self.data & ~STABLE_BORROWING_MASK) != 0
     );
+  }
+
+  /**
+   * @dev Gets the supply cap of the reserve from a memory objet
+   * @param self The reserve configuration
+   * @return The supply cap
+   **/
+  function getSupplyCapMemory(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
+    returns (uint256)
+  {
+    return (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION;
+  }
+
+  /**
+   * @dev Gets the borrow cap of the reserve from a memory object
+   * @param self The reserve configuration
+   * @return The borrow cap
+   **/
+  function getBorrowCapMemory(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
+    returns (uint256)
+  {
+    return (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION;
   }
 }

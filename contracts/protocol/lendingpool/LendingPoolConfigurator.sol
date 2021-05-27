@@ -151,7 +151,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableAToken.initialize.selector,
         cachedPool,
         input.treasury,
@@ -163,11 +164,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
         input.params
       );
 
-    _upgradeTokenImplementation(
-      reserveData.aTokenAddress,
-      input.implementation,
-      encodedCall
-    );
+    _upgradeTokenImplementation(reserveData.aTokenAddress, input.implementation, encodedCall);
 
     emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
   }
@@ -179,10 +176,11 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
-     
+
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -209,17 +207,15 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev Updates the variable debt token implementation for the asset
    **/
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
-    external
-    onlyPoolAdmin
-  {
+  function updateVariableDebtToken(UpdateDebtTokenInput calldata input) external onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -248,17 +244,20 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
-  function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled)
-    external
-    onlyPoolAdmin
-  {
+  function enableBorrowingOnReserve(
+    address asset,
+    uint256 borrowCap,
+    bool stableBorrowRateEnabled
+  ) external onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(true);
+    currentConfig.setBorrowCap(borrowCap);
     currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
 
     pool.setConfiguration(asset, currentConfig.data);
 
+    emit BorrowCapChanged(asset, borrowCap);
     emit BorrowingEnabledOnReserve(asset, stableBorrowRateEnabled);
   }
 
@@ -428,6 +427,36 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     pool.setConfiguration(asset, currentConfig.data);
 
     emit ReserveFactorChanged(asset, reserveFactor);
+  }
+
+  /**
+   * @dev Updates the borrow cap of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param borrowCap The new borrow of the reserve
+   **/
+  function setBorrowCap(address asset, uint256 borrowCap) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setBorrowCap(borrowCap);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit BorrowCapChanged(asset, borrowCap);
+  }
+
+  /**
+   * @dev Updates the supply cap of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param supplyCap The new supply of the reserve
+   **/
+  function setSupplyCap(address asset, uint256 supplyCap) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setSupplyCap(supplyCap);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit SupplyCapChanged(asset, supplyCap);
   }
 
   /**
