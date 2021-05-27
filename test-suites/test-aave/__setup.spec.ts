@@ -12,7 +12,7 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  deployAaveOracle,
+  deployAaveOracleV2,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -200,6 +200,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       STAKE: mockTokens.STAKE.address,
       xSUSHI: mockTokens.xSUSHI.address,
       REW: mockTokens.REW.address,
+      'a3CRV-gauge': ZERO_ADDRESS,
+      'saCRV-gauge': ZERO_ADDRESS,
     },
     fallbackOracle
   );
@@ -226,7 +228,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     config.OracleQuoteCurrency
   );
 
-  await deployAaveOracle([
+  await deployAaveOracleV2([
     tokens,
     aggregators,
     fallbackOracle.address,

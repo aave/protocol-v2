@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import {
   deployPriceOracle,
-  deployAaveOracle,
+  deployAaveOracleV2,
   deployLendingRateOracle,
 } from '../../helpers/contracts-deployments';
 import {
@@ -64,7 +64,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev environment')
       OracleQuoteCurrency
     );
 
-    await deployAaveOracle(
+    await deployAaveOracleV2(
       [
         tokens,
         aggregators,
