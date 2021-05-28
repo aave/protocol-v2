@@ -31,6 +31,8 @@ contract ATokensAndRatesHelper is Ownable {
     uint256 liquidationThreshold;
     uint256 liquidationBonus;
     uint256 reserveFactor;
+    uint256 borrowCap;
+    uint256 supplyCap;
     bool stableBorrowingEnabled;
     bool borrowingEnabled;
   }
@@ -77,9 +79,11 @@ contract ATokensAndRatesHelper is Ownable {
       if (inputParams[i].borrowingEnabled) {
         configurator.enableBorrowingOnReserve(
           inputParams[i].asset,
+          inputParams[i].borrowCap,
           inputParams[i].stableBorrowingEnabled
         );
       }
+      configurator.setSupplyCap(inputParams[i].asset, inputParams[i].supplyCap);
       configurator.setReserveFactor(inputParams[i].asset, inputParams[i].reserveFactor);
     }
   }

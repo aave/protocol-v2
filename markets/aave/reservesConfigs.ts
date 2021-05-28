@@ -1,6 +1,6 @@
 import { eContractid, IReserveParams } from '../../helpers/types';
 
-import { 
+import {
   rateStrategyStableOne,
   rateStrategyStableTwo,
   rateStrategyStableThree,
@@ -21,7 +21,9 @@ export const strategyBUSD: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyDAI: IReserveParams = {
@@ -33,7 +35,9 @@ export const strategyDAI: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategySUSD: IReserveParams = {
@@ -45,7 +49,9 @@ export const strategySUSD: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyTUSD: IReserveParams = {
@@ -57,7 +63,9 @@ export const strategyTUSD: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -69,7 +77,9 @@ export const strategyUSDC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyUSDT: IReserveParams = {
@@ -81,7 +91,9 @@ export const strategyUSDT: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyAAVE: IReserveParams = {
@@ -93,7 +105,9 @@ export const strategyAAVE: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '0'
+  reserveFactor: '0',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyBAT: IReserveParams = {
@@ -105,7 +119,9 @@ export const strategyBAT: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyENJ: IReserveParams = {
@@ -117,7 +133,9 @@ export const strategyENJ: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyWETH: IReserveParams = {
@@ -129,7 +147,9 @@ export const strategyWETH: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyKNC: IReserveParams = {
@@ -141,7 +161,9 @@ export const strategyKNC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyLINK: IReserveParams = {
@@ -153,7 +175,9 @@ export const strategyLINK: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyMANA: IReserveParams = {
@@ -165,7 +189,9 @@ export const strategyMANA: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '3500'
+  reserveFactor: '3500',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyMKR: IReserveParams = {
@@ -177,7 +203,9 @@ export const strategyMKR: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyREN: IReserveParams = {
@@ -189,7 +217,9 @@ export const strategyREN: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategySNX: IReserveParams = {
@@ -201,7 +231,9 @@ export const strategySNX: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '3500'
+  reserveFactor: '3500',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 // Invalid borrow rates in params currently, replaced with snx params
@@ -214,7 +246,9 @@ export const strategyUNI: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.DelegationAwareAToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -226,7 +260,9 @@ export const strategyWBTC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyYFI: IReserveParams = {
@@ -238,7 +274,9 @@ export const strategyYFI: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyZRX: IReserveParams = {
@@ -250,7 +288,9 @@ export const strategyZRX: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000'
+  reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyXSUSHI: IReserveParams = {
@@ -263,4 +303,6 @@ export const strategyXSUSHI: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '3500',
+  borrowCap: '0',
+  supplyCap: '0',
 };

@@ -128,6 +128,20 @@ interface ILendingPoolConfigurator {
   event ReserveFactorChanged(address indexed asset, uint256 factor);
 
   /**
+   * @dev Emitted when the borrow cap of a reserve is updated
+   * @param asset The address of the underlying asset of the reserve
+   * @param borrowCap The new borrow cap
+   **/
+  event BorrowCapChanged(address indexed asset, uint256 borrowCap);
+
+  /**
+   * @dev Emitted when the supply cap of a reserve is updated
+   * @param asset The address of the underlying asset of the reserve
+   * @param supplyCap The new supply cap
+   **/
+  event SupplyCapChanged(address indexed asset, uint256 supplyCap);
+
+  /**
    * @dev Emitted when the reserve decimals are updated
    * @param asset The address of the underlying asset of the reserve
    * @param decimals The new decimals
@@ -204,9 +218,10 @@ interface ILendingPoolConfigurator {
   /**
    * @dev Enables borrowing on a reserve
    * @param asset The address of the underlying asset of the reserve
+   * @param borrowCap The borrow cap for this specific asset, in absolute units of tokens
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
-  function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled) external;
+  function enableBorrowingOnReserve(address asset, uint256 borrowCap, bool stableBorrowRateEnabled) external;
 
   /**
    * @dev Disables borrowing on a reserve
@@ -287,4 +302,18 @@ interface ILendingPoolConfigurator {
    * @param val true if protocol needs to be paused, false otherwise
    **/
   function setPoolPause(bool val) external;
+
+  /**
+   * @dev Updates the borrow cap of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param borrowCap The new borrow of the reserve
+   **/
+  function setBorrowCap(address asset, uint256 borrowCap) external;
+
+  /**
+   * @dev Updates the supply cap of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param supplyCap The new supply of the reserve
+   **/
+  function setSupplyCap(address asset, uint256 supplyCap) external;
 }

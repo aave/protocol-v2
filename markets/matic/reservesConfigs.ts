@@ -20,6 +20,8 @@ export const strategyDAI: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -32,6 +34,8 @@ export const strategyUSDC: IReserveParams = {
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyUSDT: IReserveParams = {
@@ -44,6 +48,8 @@ export const strategyUSDT: IReserveParams = {
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyWETH: IReserveParams = {
@@ -56,6 +62,8 @@ export const strategyWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -68,6 +76,8 @@ export const strategyWBTC: IReserveParams = {
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
+  borrowCap: '0',
+  supplyCap: '0',
 };
 
 export const strategyMATIC: IReserveParams = {
@@ -79,6 +89,8 @@ export const strategyMATIC: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
+  borrowCap: '0',
+  supplyCap: '0',
   reserveFactor: '2000',
 };
 
@@ -91,5 +103,7 @@ export const strategyAAVE: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
+  borrowCap: '0',
+  supplyCap: '0',
   reserveFactor: '0',
 };

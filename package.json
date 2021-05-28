@@ -149,7 +149,8 @@
     "Andrey Kozlov <andrey@aave.com>",
     "David Racero <david.k@aave.com>",
     "Pol Sendra <pol@aave.com>",
-    "David Truong <david@aave.com>"
+    "David Truong <david@aave.com>",
+    "Hadrien Charlanes <hadrien@aave.com>"
   ],
   "license": "AGPLv3",
   "dependencies": {

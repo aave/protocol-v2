@@ -177,6 +177,10 @@ export enum ProtocolErrors {
   RC_INVALID_DECIMALS = '70',
   RC_INVALID_RESERVE_FACTOR = '71',
   LPAPR_INVALID_ADDRESSES_PROVIDER_ID = '72',
+  VL_BORROW_CAP_EXCEEDED = '81',
+  RC_INVALID_BORROW_CAP = '82',
+  VL_SUPPLY_CAP_EXCEEDED = '83',
+  RC_INVALID_SUPPLY_CAP = '84',
 
   // old
 
@@ -356,6 +360,7 @@ export enum TokenContractId {
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
   reserveFactor: string;
+  supplyCap: string;
   strategy: IInterestRateStrategyParams;
 }
 
@@ -379,6 +384,7 @@ export interface IReserveBorrowParams {
   borrowingEnabled: boolean;
   stableBorrowRateEnabled: boolean;
   reserveDecimals: string;
+  borrowCap: string;
 }
 
 export interface IReserveCollateralParams {

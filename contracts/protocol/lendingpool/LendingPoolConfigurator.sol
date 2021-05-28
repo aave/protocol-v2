@@ -240,18 +240,20 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled)
-    external
-    override
-    onlyPoolAdmin
-  {
+  function enableBorrowingOnReserve(
+    address asset,
+    uint256 borrowCap,
+    bool stableBorrowRateEnabled
+  ) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(true);
+    currentConfig.setBorrowCap(borrowCap);
     currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
 
     _pool.setConfiguration(asset, currentConfig.data);
 
+    emit BorrowCapChanged(asset, borrowCap);
     emit BorrowingEnabledOnReserve(asset, stableBorrowRateEnabled);
   }
 
@@ -389,7 +391,33 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     emit ReserveFactorChanged(asset, reserveFactor);
   }
 
-  /// @inheritdoc ILendingPoolConfigurator
+  ///@inheritdoc ILendingPoolConfigurator
+  function setBorrowCap(address asset, uint256 borrowCap) external override onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
+
+    currentConfig.setBorrowCap(borrowCap);
+
+    _pool.setConfiguration(asset, currentConfig.data);
+
+    emit BorrowCapChanged(asset, borrowCap);
+  }
+
+  ///@inheritdoc ILendingPoolConfigurator
+  function setSupplyCap(address asset, uint256 supplyCap) external override onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
+
+    currentConfig.setSupplyCap(supplyCap);
+
+    _pool.setConfiguration(asset, currentConfig.data);
+
+    emit SupplyCapChanged(asset, supplyCap);
+  }
+
+  /**
+   * @dev Sets the interest rate strategy of a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param rateStrategyAddress The new address of the interest strategy contract
+   **/
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override

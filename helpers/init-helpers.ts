@@ -284,6 +284,8 @@ export const configureReservesByHelper = async (
     liquidationThreshold: BigNumberish;
     liquidationBonus: BigNumberish;
     reserveFactor: BigNumberish;
+    borrowCap: BigNumberish;
+    supplyCap: BigNumberish;
     stableBorrowingEnabled: boolean;
     borrowingEnabled: boolean;
   }[] = [];
@@ -295,6 +297,8 @@ export const configureReservesByHelper = async (
       liquidationBonus,
       liquidationThreshold,
       reserveFactor,
+      borrowCap,
+      supplyCap,
       stableBorrowRateEnabled,
       borrowingEnabled,
     },
@@ -326,9 +330,11 @@ export const configureReservesByHelper = async (
     inputParams.push({
       asset: tokenAddress,
       baseLTV: baseLTVAsCollateral,
-      liquidationThreshold: liquidationThreshold,
-      liquidationBonus: liquidationBonus,
-      reserveFactor: reserveFactor,
+      liquidationThreshold,
+      liquidationBonus,
+      reserveFactor,
+      borrowCap,
+      supplyCap,
       stableBorrowingEnabled: stableBorrowRateEnabled,
       borrowingEnabled: borrowingEnabled,
     });
