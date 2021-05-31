@@ -474,16 +474,19 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _pool.setPause(val);
   }
 
+  /// @inheritdoc ILendingPoolConfigurator
   function registerRiskAdmin(address admin) external override onlyPoolAdmin {
     _riskAdmins[admin] = true;
     emit RiskAdminRegistered(admin);
   }
 
+  /// @inheritdoc ILendingPoolConfigurator
   function unregisterRiskAdmin(address admin) external override onlyPoolAdmin {
     _riskAdmins[admin] = false;
     emit RiskAdminUnregistered(admin);
   }
 
+  /// @inheritdoc ILendingPoolConfigurator
   function isRiskAdmin(address admin) external view override onlyPoolAdmin returns (bool) {
     return _riskAdmins[admin];
   }
