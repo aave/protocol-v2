@@ -21,15 +21,18 @@ import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
 import 'solidity-coverage';
-import { fork } from 'child_process';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const DEFAULT_GAS_MUL = 5;
+const DEFAULT_GAS_PRICE = 65000000000;
 const HARDFORK = 'istanbul';
+const INFURA_KEY = process.env.INFURA_KEY || '';
+const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
+const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
@@ -62,15 +65,45 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   },
 });
 
-let forkMode;
+const mainnetFork = MAINNET_FORK
+  ? {
+      blockNumber: 12541468,
+      url: ALCHEMY_KEY
+        ? `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`
+        : `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+    }
+  : undefined;
 
 const buidlerConfig: HardhatUserConfig = {
+  gasReporter: {
+    enabled: true,
+  },
   solidity: {
-    version: '0.6.12',
-    settings: {
-      optimizer: { enabled: true, runs: 200 },
-      evmVersion: 'istanbul',
-    },
+    compilers: [
+      {
+        version: '0.6.12',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+            details: {
+              yul: true,
+              yulDetails: {
+                stackAllocation: true,
+              },
+            },
+          },
+          evmVersion: 'istanbul',
+        },
+      },
+      {
+        version: '0.8.3',
+        settings: {
+          optimizer: { enabled: true, runs: 200 },
+          evmVersion: 'istanbul',
+        },
+      },
+    ],
   },
   typechain: {
     outDir: 'types',
