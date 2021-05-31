@@ -73,8 +73,8 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
   USD: '5848466240000000',
   REW: oneEther.multipliedBy('0.00137893825230').toFixed(),
-  'a3CRV-gauge': '0',
-  'saCRV-gauge': '0',
+  a3CRVGauge: '0',
+  saCRVGauge: '0',
 };
 
 export const MOCK_CHAINLINK_AGGREGATORS_USD_CURVE_AMM_PRICES = {
@@ -87,8 +87,8 @@ export const MOCK_CHAINLINK_AGGREGATORS_USD_CURVE_AMM_PRICES = {
   USDC: oneUsd.toFixed(),
   USDT: oneUsd.toFixed(),
   USD: oneUsd.toFixed(),
-  'a3CRV-gauge': oneUsd.multipliedBy('1.0536').toFixed(),
-  'saCRV-gauge': oneUsd.multipliedBy('1.0318').toFixed(),
+  a3CRVGauge: oneUsd.multipliedBy('1.0536').toFixed(),
+  saCRVGauge: oneUsd.multipliedBy('1.0318').toFixed(),
 };
 
 export const CRV_TOKEN = {

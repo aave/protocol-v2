@@ -18,7 +18,7 @@ import {
   getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
-import { AaveOracle, LendingRateOracle } from '../../types';
+import { AaveOracle, AaveOracleV2, LendingRateOracle } from '../../types';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -53,7 +53,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         poolConfig.OracleQuoteCurrency
       );
 
-      let aaveOracle: AaveOracle;
+      let aaveOracle: AaveOracle | AaveOracleV2;
       let lendingRateOracle: LendingRateOracle;
 
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {

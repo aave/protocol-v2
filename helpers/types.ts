@@ -244,8 +244,8 @@ export interface iAssetBase<T> {
   xSUSHI: T;
   STAKE: T;
   REW: T;
-  'a3CRV-gauge': T;
-  'saCRV-gauge': T;
+  a3CRVGauge: T;
+  saCRVGauge: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -304,7 +304,7 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iUsdLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'WETH' | 'WBTC' | 'DAI' | 'SUSD' | 'USDC' | 'USDT' | 'a3CRV-gauge' | 'saCRV-gauge'
+  'DAI' | 'SUSD' | 'USDC' | 'USDT' | 'a3CRVGauge' | 'saCRVGauge'
 >;
 
 export type iMaticPoolAssets<T> = Pick<
