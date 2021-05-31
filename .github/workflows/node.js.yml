@@ -4,7 +4,7 @@ on:
   push:
     branches: [master,protocol-2.5]
   pull_request:
-    branches: [*]
+    branches: [master,protocol-2.5]
 
 jobs:
   build:
