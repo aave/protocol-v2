@@ -51,6 +51,9 @@ export interface SignerWithAddress {
 }
 export interface TestEnv {
   deployer: SignerWithAddress;
+  poolAdmin: SignerWithAddress;
+  emergencyAdmin: SignerWithAddress;
+  riskAdmin: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
   configurator: LendingPoolConfigurator;
@@ -77,6 +80,9 @@ const setBuidlerevmSnapshotId = (id: string) => {
 
 const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
+  poolAdmin: {} as SignerWithAddress,
+  emergencyAdmin: {} as SignerWithAddress,
+  riskAdmin: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
   configurator: {} as LendingPoolConfigurator,
@@ -110,6 +116,9 @@ export async function initializeMakeSuite() {
     });
   }
   testEnv.deployer = deployer;
+  testEnv.poolAdmin = deployer;
+  testEnv.emergencyAdmin = testEnv.users[1];
+  testEnv.riskAdmin = testEnv.users[2];
   testEnv.pool = await getLendingPool();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();

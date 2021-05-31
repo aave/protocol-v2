@@ -183,6 +183,7 @@ export enum ProtocolErrors {
   RC_INVALID_SUPPLY_CAP = '84',
   LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN = '85',
   VL_RESERVE_PAUSED = '86',
+  LPC_CALLER_NOT_RISK_OR_POOL_ADMIN = '87',
 
   // old
 

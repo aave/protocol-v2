@@ -108,6 +108,7 @@ library Errors {
   string public constant RC_INVALID_SUPPLY_CAP = '84';
   string public constant LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN = '85';
   string public constant VL_RESERVE_PAUSED = '86';
+  string public constant LPC_CALLER_NOT_RISK_OR_POOL_ADMIN = '87';
 
   enum CollateralManagerErrors {
     NO_ERROR,
