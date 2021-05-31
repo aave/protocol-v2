@@ -222,7 +222,7 @@ interface ILendingPoolConfigurator {
   function batchInitReserve(InitReserveInput[] calldata input) external;
 
   /**
-   * @dev pauseReservev Updates the aToken implementation for the reserve
+   * @dev Updates the aToken implementation for the reserve
    * @param input The aToken update paramenters
    **/
   function updateAToken(UpdateATokenInput calldata input) external;
