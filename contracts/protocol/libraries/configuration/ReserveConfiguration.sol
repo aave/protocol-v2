@@ -18,6 +18,7 @@ library ReserveConfiguration {
   uint256 constant FROZEN_MASK =                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant BORROWING_MASK =             0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant STABLE_BORROWING_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFFFFF; // prettier-ignore
+  uint256 constant PAUSED_MASK =                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant BORROW_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant SUPPLY_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
@@ -30,6 +31,8 @@ library ReserveConfiguration {
   uint256 constant IS_FROZEN_START_BIT_POSITION = 57;
   uint256 constant BORROWING_ENABLED_START_BIT_POSITION = 58;
   uint256 constant STABLE_BORROWING_ENABLED_START_BIT_POSITION = 59;
+  uint256 constant IS_PAUSED_START_BIT_POSITION = 60;
+  // bits 61 62 63 unused yet
   uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
   uint256 constant BORROW_CAP_START_BIT_POSITION = 80;
   uint256 constant SUPPLY_CAP_START_BIT_POSITION = 116;
@@ -187,6 +190,26 @@ library ReserveConfiguration {
     return (self.data & ~FROZEN_MASK) != 0;
   }
 
+   /**
+   * @dev Sets the paused state of the reserve
+   * @param self The reserve configuration
+   * @param paused The paused state
+   **/
+  function setPaused(DataTypes.ReserveConfigurationMap memory self, bool paused) internal pure {
+    self.data =
+      (self.data & PAUSED_MASK) |
+      (uint256(paused ? 1 : 0) << IS_PAUSED_START_BIT_POSITION);
+  }
+
+  /**
+   * @dev Gets the paused state of the reserve
+   * @param self The reserve configuration
+   * @return The paused state
+   **/
+  function getPaused(DataTypes.ReserveConfigurationMap storage self) internal view returns (bool) {
+    return (self.data & ~PAUSED_MASK) != 0;
+  }
+
   /**
    * @dev Enables or disables borrowing on the reserve
    * @param self The reserve configuration
@@ -336,6 +359,7 @@ library ReserveConfiguration {
       bool,
       bool,
       bool,
+      bool,
       bool
     )
   {
@@ -345,7 +369,8 @@ library ReserveConfiguration {
       (dataLocal & ~ACTIVE_MASK) != 0,
       (dataLocal & ~FROZEN_MASK) != 0,
       (dataLocal & ~BORROWING_MASK) != 0,
-      (dataLocal & ~STABLE_BORROWING_MASK) != 0
+      (dataLocal & ~STABLE_BORROWING_MASK) != 0,
+      (dataLocal & ~PAUSED_MASK) != 0
     );
   }
 
@@ -447,6 +472,7 @@ library ReserveConfiguration {
       bool,
       bool,
       bool,
+      bool,
       bool
     )
   {
@@ -454,7 +480,8 @@ library ReserveConfiguration {
       (self.data & ~ACTIVE_MASK) != 0,
       (self.data & ~FROZEN_MASK) != 0,
       (self.data & ~BORROWING_MASK) != 0,
-      (self.data & ~STABLE_BORROWING_MASK) != 0
+      (self.data & ~STABLE_BORROWING_MASK) != 0,
+      (self.data & ~PAUSED_MASK) != 0
     );
   }
 

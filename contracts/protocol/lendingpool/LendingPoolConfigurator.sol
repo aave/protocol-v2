@@ -46,6 +46,15 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _;
   }
 
+  modifier onlyEmergencyOrPoolAdmin {
+    require(
+      _addressesProvider.getEmergencyAdmin() == msg.sender ||
+        _addressesProvider.getPoolAdmin() == msg.sender,
+      Errors.LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN
+    );
+    _;
+  }
+
   uint256 internal constant CONFIGURATOR_REVISION = 0x1;
 
   function getRevision() internal pure override returns (uint256) {
@@ -126,6 +135,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     currentConfig.setDecimals(input.underlyingAssetDecimals);
 
     currentConfig.setActive(true);
+    currentConfig.setPaused(false);
     currentConfig.setFrozen(false);
 
     pool.setConfiguration(input.underlyingAsset, currentConfig.data);
@@ -378,6 +388,28 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _pool.setConfiguration(asset, currentConfig.data);
 
     emit ReserveUnfrozen(asset);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function pauseReserve(address asset) external override onlyEmergencyOrPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
+
+    currentConfig.setPaused(true);
+
+    _pool.setConfiguration(asset, currentConfig.data);
+
+    emit ReservePaused(asset);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function unpauseReserve(address asset) external override onlyEmergencyOrPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
+
+    currentConfig.setPaused(false);
+
+    _pool.setConfiguration(asset, currentConfig.data);
+
+    emit ReserveUnpaused(asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator

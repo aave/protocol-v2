@@ -121,6 +121,18 @@ interface ILendingPoolConfigurator {
   event ReserveUnfrozen(address indexed asset);
 
   /**
+   * @dev Emitted when a reserve is paused
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event ReservePaused(address indexed asset);
+
+  /**
+   * @dev Emitted when a reserve is unpaused
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event ReserveUnpaused(address indexed asset);
+
+  /**
    * @dev Emitted when a reserve factor is updated
    * @param asset The address of the underlying asset of the reserve
    * @param factor The new reserve factor
@@ -221,7 +233,11 @@ interface ILendingPoolConfigurator {
    * @param borrowCap The borrow cap for this specific asset, in absolute units of tokens
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
-  function enableBorrowingOnReserve(address asset, uint256 borrowCap, bool stableBorrowRateEnabled) external;
+  function enableBorrowingOnReserve(
+    address asset,
+    uint256 borrowCap,
+    bool stableBorrowRateEnabled
+  ) external;
 
   /**
    * @dev Disables borrowing on a reserve
@@ -281,6 +297,18 @@ interface ILendingPoolConfigurator {
    * @param asset The address of the underlying asset of the reserve
    **/
   function unfreezeReserve(address asset) external;
+
+  /**
+   * @dev Pauses a reserve. A paused reserve allow now user moves such as deposit, borrow, repay, swap interestrate, liquidate
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function pauseReserve(address asset) external;
+
+  /**
+   * @dev Unpauses a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function unpauseReserve(address asset) external;
 
   /**
    * @dev Updates the reserve factor of a reserve

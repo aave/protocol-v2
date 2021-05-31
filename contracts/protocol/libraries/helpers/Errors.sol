@@ -106,6 +106,8 @@ library Errors {
   string public constant RC_INVALID_BORROW_CAP = '82';
   string public constant VL_SUPPLY_CAP_EXCEEDED = '83';
   string public constant RC_INVALID_SUPPLY_CAP = '84';
+  string public constant LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN = '85';
+  string public constant VL_RESERVE_PAUSED = '86';
 
   enum CollateralManagerErrors {
     NO_ERROR,
@@ -117,6 +119,7 @@ library Errors {
     NO_ACTIVE_RESERVE,
     HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
     INVALID_EQUAL_ASSETS_TO_SWAP,
-    FROZEN_RESERVE
+    FROZEN_RESERVE,
+    PAUSED_RESERVE
   }
 }

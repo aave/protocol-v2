@@ -64,7 +64,7 @@ contract AaveProtocolDataProvider {
     return aTokens;
   }
 
-  // not returning borrow and supply caps for compatibility 
+  // not returning borrow and supply caps for compatibility, nor pause flag
   function getReserveConfigurationData(address asset)
     external
     view
@@ -87,7 +87,7 @@ contract AaveProtocolDataProvider {
     (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = 
       configuration.getParamsMemory();
 
-    (isActive, isFrozen, borrowingEnabled, stableBorrowRateEnabled) =
+    (isActive, isFrozen, borrowingEnabled, stableBorrowRateEnabled, ) =
       configuration.getFlagsMemory();
 
     usageAsCollateralEnabled = liquidationThreshold > 0;
@@ -102,6 +102,13 @@ contract AaveProtocolDataProvider {
         .getConfiguration(asset)
         .getCapsMemory();
     }
+
+  function getPaused(address asset) external view returns (bool isPaused) {
+    (, , , , isPaused) = 
+      ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+        .getConfiguration(asset)
+        .getFlagsMemory();
+  }
 
   function getReserveData(address asset)
     external
