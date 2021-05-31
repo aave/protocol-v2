@@ -718,8 +718,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 balanceFromBefore,
     uint256 balanceToBefore
   ) external override whenNotPaused {
-    require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
-
     ValidationLogic.validateTransfer(_reserves[asset]);
 
     uint256 reserveId = _reserves[asset].id;

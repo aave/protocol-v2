@@ -48,8 +48,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   modifier onlyEmergencyOrPoolAdmin {
     require(
-      addressesProvider.getEmergencyAdmin() == msg.sender ||
-        addressesProvider.getPoolAdmin() == msg.sender,
+      _addressesProvider.getEmergencyAdmin() == msg.sender ||
+        _addressesProvider.getPoolAdmin() == msg.sender,
       Errors.LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN
     );
     _;
@@ -391,7 +391,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function pauseReserve(address asset) external onlyEmergencyOrPoolAdmin {
+  function pauseReserve(address asset) external override onlyEmergencyOrPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setPaused(true);
@@ -402,7 +402,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function unpauseReserve(address asset) external onlyEmergencyOrPoolAdmin {
+  function unpauseReserve(address asset) external override onlyEmergencyOrPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setPaused(false);
@@ -413,7 +413,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function setReserveFactor(address asset, uint256 reserveFactor) external onlyPoolAdmin {
+  function setReserveFactor(address asset, uint256 reserveFactor) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setReserveFactor(reserveFactor);

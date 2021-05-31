@@ -475,6 +475,7 @@ library ValidationLogic {
    * @param reserve The reserve object
    */
   function validateTransfer(DataTypes.ReserveData storage reserve) internal view {
+    require(msg.sender == reserve.aTokenAddress, Errors.VL_CALLER_MUST_BE_AN_ATOKEN);
     require(!reserve.configuration.getPaused(), Errors.VL_RESERVE_PAUSED);
   }
 }
