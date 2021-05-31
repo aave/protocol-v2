@@ -375,4 +375,3 @@ interface ILendingPoolConfigurator {
    **/
   function isRiskAdmin(address admin) external view returns (bool);
 }
-}

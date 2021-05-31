@@ -59,7 +59,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   modifier onlyRiskOrPoolAdmins {
     require(
-      _riskAdmins[msg.sender] || addressesProvider.getPoolAdmin() == msg.sender,
+      _riskAdmins[msg.sender] || _addressesProvider.getPoolAdmin() == msg.sender,
       Errors.LPC_CALLER_NOT_RISK_OR_POOL_ADMIN
     );
     _;
@@ -423,7 +423,11 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function setReserveFactor(address asset, uint256 reserveFactor) external override onlyRiskOrPoolAdmins {
+  function setReserveFactor(address asset, uint256 reserveFactor)
+    external
+    override
+    onlyRiskOrPoolAdmins
+  {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setReserveFactor(reserveFactor);

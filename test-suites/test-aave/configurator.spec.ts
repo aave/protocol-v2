@@ -135,14 +135,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
   it('Pauses the ETH reserve by emergency admin', async () => {
-    const {
-      configurator,
-      weth,
-      helpersContract,
-      addressesProvider,
-      users,
-      emergencyAdmin,
-    } = testEnv;
+    const { configurator, weth, helpersContract, addressesProvider, users, emergencyAdmin } =
+      testEnv;
     await configurator.connect(emergencyAdmin.signer).pauseReserve(weth.address);
     const {
       decimals,
@@ -462,9 +456,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Activates the ETH reserve for borrowing via risk admin', async () => {
     const { configurator, weth, helpersContract, riskAdmin } = testEnv;
-    await configurator
-      .connect(riskAdmin.signer)
-      .enableBorrowingOnReserve(weth.address, MAX_BORROW_CAP, true);
+    await configurator.connect(riskAdmin.signer).enableBorrowingOnReserve(weth.address, '0', true);
     const { variableBorrowIndex } = await helpersContract.getReserveData(weth.address);
 
     const {
