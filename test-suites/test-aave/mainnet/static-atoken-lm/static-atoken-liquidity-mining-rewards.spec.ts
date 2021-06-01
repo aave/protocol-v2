@@ -12,7 +12,7 @@ import {
   WETH9,
   AToken,
   StaticATokenLM,
-} from '../../../../types';
+} from '../../../types';
 import {
   impersonateAccountsHardhat,
   DRE,
@@ -21,17 +21,17 @@ import {
   evmSnapshot,
   timeLatest,
   advanceTimeAndBlock,
-} from '../../../../helpers/misc-utils';
+} from '../../../helpers/misc-utils';
 import { BigNumber, providers, Signer, utils } from 'ethers';
-import { MAX_UINT_AMOUNT } from '../../../../helpers/constants';
-import { tEthereumAddress } from '../../../../helpers/types';
+import { MAX_UINT_AMOUNT } from '../../../helpers/constants';
+import { tEthereumAddress } from '../../../helpers/types';
 import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
 
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 
 import { expect, use } from 'chai';
 import { stat } from 'fs';
-import { getCurrentBlock } from '../../../../helpers/contracts-helpers';
+import { getCurrentBlock } from '../../../helpers/contracts-helpers';
 
 //use(solidity);
 
