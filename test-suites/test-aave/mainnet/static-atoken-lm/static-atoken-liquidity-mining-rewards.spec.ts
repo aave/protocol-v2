@@ -194,6 +194,39 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       expect(dynamicBalance).to.be.eq(dynamicBalanceFromStatic);
     });
 
+    it('Multiple updates in one block', async () => {
+      const amountToDeposit = utils.parseEther('5');
+
+      // Just preparation
+      await waitForTx(await weth.deposit({ value: amountToDeposit.mul(2) }));
+      await waitForTx(
+        await weth.approve(staticAToken.address, amountToDeposit.mul(2), defaultTxParams)
+      );
+
+      // Depositing
+      await waitForTx(
+        await staticAToken.deposit(userSigner._address, amountToDeposit, 0, true, defaultTxParams)
+      );
+
+      await DRE.network.provider.send('evm_setAutomine', [false]);
+
+      let a = await staticAToken.updateRewards();
+      let b = await staticAToken.updateRewards();
+
+      await DRE.network.provider.send('evm_mine', []);
+
+      const aReceipt = await DRE.network.provider.send('eth_getTransactionReceipt', [a.hash]);
+      const bReceipt = await DRE.network.provider.send('eth_getTransactionReceipt', [b.hash]);
+
+      const aGas = BigNumber.from(aReceipt['gasUsed']);
+      const bGas = BigNumber.from(bReceipt['gasUsed']);
+
+      expect(aGas).to.be.gt(350000);
+      expect(bGas).to.be.lt(25000);
+
+      await DRE.network.provider.send('evm_setAutomine', [true]);
+    });
+
     it('Update and claim', async () => {
       const amountToDeposit = utils.parseEther('5');
       const amountToWithdraw = MAX_UINT_AMOUNT; // Still need to figure out why this works :eyes:
@@ -558,12 +591,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const amountToDeposit = utils.parseEther('1.1'); // 18 decimals should be the worst here //1.135359735917531199
     const users = await DRE.ethers.getSigners();
 
-    const depositCount = 50;
+    const depositCount = users.length;
 
     for (let i = 0; i < depositCount; i++) {
-      if (i % 50 == 0 && i > 0) {
-        console.log('50 deposits');
-      }
       let currentUser = users[i % users.length];
       // Preparation
       await waitForTx(await weth.connect(currentUser).deposit({ value: amountToDeposit }));
@@ -588,8 +618,44 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     for (let i = 0; i < users.length; i++) {
       const pendingReward = await staticAToken.getClaimableRewards(await users[i].getAddress());
       await waitForTx(await staticAToken.claimRewards(await users[i].getAddress()));
-      // We have a mistake here. Rounding of the pendingReward seems to be the issue
-      // console.log(`What user: ${i}, with pending reward: ${pendingReward}`);
+      expect(await stkAave.balanceOf(await users[i].getAddress())).to.be.eq(pendingReward);
+    }
+    expect(await stkAave.balanceOf(staticAToken.address)).to.be.lt(DUST);
+  });
+
+  it('Multiple deposits, withdraws and claims', async () => {
+    const amountToDeposit = utils.parseEther('1.135359735917531199'); // 18 decimals should be the worst here //1.135359735917531199
+    const users = await DRE.ethers.getSigners();
+
+    const depositCount = users.length;
+
+    for (let i = 0; i < depositCount; i++) {
+      let currentUser = users[i % users.length];
+      // Preparation
+      await waitForTx(await weth.connect(currentUser).deposit({ value: amountToDeposit }));
+      await waitForTx(
+        await weth
+          .connect(currentUser)
+          .approve(staticAToken.address, amountToDeposit, defaultTxParams)
+      );
+
+      // Deposit
+      await waitForTx(
+        await staticAToken
+          .connect(currentUser)
+          .deposit(await currentUser.getAddress(), amountToDeposit, 0, true, defaultTxParams)
+      );
+
+      await advanceTimeAndBlock(60);
+
+      await waitForTx(
+        await staticAToken
+          .connect(currentUser)
+          .withdraw(await currentUser.getAddress(), MAX_UINT_AMOUNT, true, defaultTxParams)
+      );
+
+      const pendingReward = await staticAToken.getClaimableRewards(await users[i].getAddress());
+      await waitForTx(await staticAToken.updateAndClaimRewards(await users[i].getAddress()));
       expect(await stkAave.balanceOf(await users[i].getAddress())).to.be.eq(pendingReward);
     }
     expect(await stkAave.balanceOf(staticAToken.address)).to.be.lt(DUST);

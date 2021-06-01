@@ -76,7 +76,7 @@ const mainnetFork = MAINNET_FORK
 
 const buidlerConfig: HardhatUserConfig = {
   gasReporter: {
-    enabled: true,
+    enabled: false,
   },
   solidity: {
     compilers: [
@@ -144,7 +144,10 @@ const buidlerConfig: HardhatUserConfig = {
         privateKey: secretKey,
         balance,
       })),
-      forking: buildForkConfig(),
+      forking: mainnetFork,
+      mining: {
+        auto: true,
+      },
     },
     buidlerevm_docker: {
       hardfork: 'berlin',
