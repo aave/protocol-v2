@@ -552,7 +552,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         IAToken(reserve.aTokenAddress).mintToTreasury(amountToMint, normalizedIncome);
 
         reserve.accruedToTreasury = 0;
-        emit TreasuryUpdated(reserveAddress, amountToMint);
+        emit MintedToTreasury(reserveAddress, amountToMint);
       }
     }
   }

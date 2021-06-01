@@ -172,7 +172,7 @@ interface ILendingPool {
   * @param reserve the address of the reserve
   * @param amountMinted the amount minted to the treasury
   **/
-  event TreasuryUpdated(
+  event MintedToTreasury(
     address indexed reserve,
     uint256 amountMinted
   );
