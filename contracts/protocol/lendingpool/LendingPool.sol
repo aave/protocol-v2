@@ -543,6 +543,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function mintToTreasury() public {
     for (uint256 i = 0; i < _reservesCount; i++) {
       address reserveAddress = _reservesList[i];
+
+      // if a reserve has been dropped this might happen
+      if(reserveAddress == address(0)){
+        continue;
+      }
+      
       DataTypes.ReserveData storage reserve = _reserves[reserveAddress];
       uint256 accruedToTreasury = reserve.accruedToTreasury;
 
