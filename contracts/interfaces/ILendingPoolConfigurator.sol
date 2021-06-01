@@ -204,6 +204,18 @@ interface ILendingPoolConfigurator {
   );
 
   /**
+   * @dev Emitted when a new risk admin is registered
+   * @param admin the newly registered admin
+   **/
+  event RiskAdminRegistered(address indexed admin);
+
+  /**
+   * @dev Emitted when a risk admin is unregistered
+   * @param admin the unregistered admin
+   **/
+  event RiskAdminUnregistered(address indexed admin);
+
+  /**
    * @dev Initializes reserves in batch
    * @param input The array of reserves initialization parameters
    **/
@@ -344,4 +356,22 @@ interface ILendingPoolConfigurator {
    * @param supplyCap The new supply of the reserve
    **/
   function setSupplyCap(address asset, uint256 supplyCap) external;
+
+  /**
+   * @dev Registers a new admin with rights on risk related configurations
+   * @param admin The address of the admin to register
+   **/
+  function registerRiskAdmin(address admin) external;
+
+  /**
+   * @dev Unegisters a risk admin
+   * @param admin The address of the admin to unregister
+   **/
+  function unregisterRiskAdmin(address admin) external;
+
+  /**
+   * @dev Returns wether an address in a risk admin or not
+   * @param admin The address of the potential admin
+   **/
+  function isRiskAdmin(address admin) external view returns (bool);
 }
