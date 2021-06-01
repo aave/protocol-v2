@@ -12,19 +12,16 @@ import {
   AToken,
   WETH9,
   ERC20Factory,
-} from '../../types';
+} from '../../../types';
 import {
   impersonateAccountsHardhat,
   DRE,
   waitForTx,
   advanceTimeAndBlock,
-} from '../../helpers/misc-utils';
+} from '../../../helpers/misc-utils';
 import { utils } from 'ethers';
-import { rayMul } from '../../helpers/ray-math';
-import { MAX_UINT_AMOUNT } from '../../helpers/constants';
-import { tEthereumAddress } from '../../helpers/types';
+import { MAX_UINT_AMOUNT } from '../../../helpers/constants';
 import { formatEther, parseEther } from 'ethers/lib/utils';
-import { mint } from '../helpers/actions';
 
 const { expect } = require('chai');
 
@@ -157,7 +154,7 @@ describe('Attack', () => {
     console.log(`Total supply vamToken: ${formatEther(await vamToken.totalSupply())}`);
 
     // Step 4, Alice withdraws and claims
-    console.log('Step 4. Alice Withdraws');
+    console.log('Step 4. Alice Withdraws and claim');
     const aliceBalance = await vamToken.balanceOf(userSigner._address);
     await waitForTx(await vamToken.connect(userSigner).burn(aliceBalance));
 
@@ -169,7 +166,7 @@ describe('Attack', () => {
     );
 
     // Bob also withdraws
-    console.log(`Bob also withdraws`);
+    console.log(`Step 5. Bob withdraws and claims`);
     const bobBalance = await vamToken.balanceOf(attackerSigner._address);
     await waitForTx(await vamToken.connect(attackerSigner).burn(bobBalance));
     await waitForTx(await vamToken.connect(userSigner).claimRewards(userSigner._address, STKAAVE));

@@ -14,7 +14,7 @@ import {
   AToken,
   StaticAToken,
   StaticATokenLM,
-} from '../../../types';
+} from '../../../../types';
 import {
   impersonateAccountsHardhat,
   DRE,
@@ -23,11 +23,11 @@ import {
   evmSnapshot,
   timeLatest,
   advanceTimeAndBlock,
-} from '../../../helpers/misc-utils';
+} from '../../../../helpers/misc-utils';
 import { BigNumber, providers, Signer, utils } from 'ethers';
-import { rayMul } from '../../../helpers/ray-math';
-import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../../helpers/constants';
-import { tEthereumAddress } from '../../../helpers/types';
+import { rayMul } from '../../../../helpers/ray-math';
+import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../../../helpers/constants';
+import { tEthereumAddress } from '../../../../helpers/types';
 import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
 import { stat } from 'fs';
 
@@ -37,7 +37,7 @@ import {
   buildMetaWithdrawParams,
   buildPermitParams,
   getSignatureFromTypedData,
-} from '../../../helpers/contracts-helpers';
+} from '../../../../helpers/contracts-helpers';
 import { TypedDataUtils, typedSignatureHash, TYPED_MESSAGE_SCHEMA } from 'eth-sig-util';
 import { zeroAddress } from 'ethereumjs-util';
 
@@ -398,7 +398,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       await staticAToken.deposit(userSigner._address, amountToDeposit, 0, true, defaultTxParams)
     );
 
-    const ownerPrivateKey = require('../../../test-wallets.js').accounts[0].secretKey;
+    const ownerPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
     if (!ownerPrivateKey) {
       throw new Error('INVALID_OWNER_PK');
     }
@@ -462,7 +462,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       await staticAToken.deposit(userSigner._address, amountToDeposit, 0, true, defaultTxParams)
     );
 
-    const ownerPrivateKey = require('../../../test-wallets.js').accounts[0].secretKey;
+    const ownerPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
     if (!ownerPrivateKey) {
       throw new Error('INVALID_OWNER_PK');
     }
@@ -528,7 +528,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const seperator = await staticAToken.getDomainSeparator(chainId);
     expect(seperator).to.be.eq(domainSeperator);
 
-    const userPrivateKey = require('../../../test-wallets.js').accounts[0].secretKey;
+    const userPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
     if (!userPrivateKey) {
       throw new Error('INVALID_OWNER_PK');
     }
@@ -684,7 +684,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const seperator = await staticAToken.getDomainSeparator(chainId);
     expect(seperator).to.be.eq(domainSeperator);
 
-    const userPrivateKey = require('../../../test-wallets.js').accounts[0].secretKey;
+    const userPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
     if (!userPrivateKey) {
       throw new Error('INVALID_OWNER_PK');
     }
@@ -811,7 +811,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const seperator = await staticAToken.getDomainSeparator(chainId);
     expect(seperator).to.be.eq(domainSeperator);
 
-    const userPrivateKey = require('../../../test-wallets.js').accounts[0].secretKey;
+    const userPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
     if (!userPrivateKey) {
       throw new Error('INVALID_OWNER_PK');
     }
