@@ -13,6 +13,14 @@ import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
 import {RayMathNoRounding} from '../../protocol/libraries/math/RayMathNoRounding.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 
+/**
+ * @title StaticATokenLM
+ * @dev Wrapper token that allows to deposit tokens on the Aave protocol and receive
+ * a token which balance doesn't increase automatically, but uses an ever-increasing exchange rate.
+ * The token support claiming liquidity mining rewards from the Aave system.
+ * @author Aave
+ **/
+
 contract StaticATokenLM is ERC20 {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
@@ -45,14 +53,12 @@ contract StaticATokenLM is ERC20 {
 
   mapping(address => uint256) public _nonces;
 
-  // Handling Liquidity Mining incentives. Unclear how we can handle multiple reward assets
   uint256 public accRewardstokenPerShare;
   uint256 public lastRewardBlock;
-  mapping(address => uint256) public rewardDebts; //Rays
-  mapping(address => uint256) public unclaimedRewards; //Rays
+  mapping(address => uint256) public rewardDebts; // Measured in Rays
+  mapping(address => uint256) public unclaimedRewards; // Measured in Rays
   IAaveIncentivesController internal _incentivesController;
 
-  // TODO: Implement the ability to change this. Should probably be a list of the reward tokens, [first, second, third...], where we can loop backwards to see if a user gas been there since before a change.
   address public immutable currentRewardToken;
 
   constructor(
@@ -66,7 +72,7 @@ contract StaticATokenLM is ERC20 {
 
     IERC20 underlyingAsset = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS());
     ASSET = underlyingAsset;
-    underlyingAsset.approve(address(lendingPool), type(uint256).max); // Could an attacker max this out with flashminting or so?
+    underlyingAsset.approve(address(lendingPool), type(uint256).max);
 
     _incentivesController = IAToken(aToken).getIncentivesController();
     currentRewardToken = _incentivesController.REWARD_TOKEN();
@@ -460,7 +466,7 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Update the rewards and claim rewards
+   * @dev Update the rewards and claim rewards for the user
    * @param user The address of the user to claim rewards for
    */
   function updateAndClaimRewards(address user) public {
@@ -531,7 +537,7 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Get the total claimable rewards for a user in WAD
+   * @dev Get the total claimable rewards for a user in WAD cliam
    * @param user The address of the user
    * @return The claimable amount of rewards in WAD
    */
