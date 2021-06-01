@@ -7,9 +7,9 @@
     "artifacts"
   ],
   "scripts": {
-    "test:main:lmtoken": "MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1 hardhat test test/mainnet/static-atoken-lm/*.spec.ts",
-    "coverage:lmtoken": "npm run compile && npx hardhat coverage --testfiles 'test/emptyrun.coverage.ts' && rm -rf coverage.json coverage/ && MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1  hardhat coverage --testfiles 'test/mainnet/static-atoken-lm/*.ts'",
-    "test:main:attack": "MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1 hardhat test test/mainnet/vamtoken-attack.spec.ts",
+    "test:main:lmtoken": "MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1 hardhat test test-suites/test-aave/mainnet/static-atoken-lm/*.ts",
+    "coverage:lmtoken": "npm run compile && npx hardhat coverage --testfiles 'test-suites/test-aave/emptyrun.coverage.ts' && rm -rf coverage.json coverage/ && MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1  hardhat coverage --testfiles 'test-suites/test-aave/mainnet/static-atoken-lm/*.ts'",
+    "test:main:attack": "MAINNET_FORK=true TS_NODE_TRANSPILE_ONLY=1 hardhat test test-suites/test-aave/mainnet/vamtoken-attack.spec.ts",
     "run-env": "npm i && tail -f /dev/null",
     "hardhat": "hardhat",
     "hardhat:kovan": "hardhat --network kovan",

@@ -7,12 +7,12 @@ import {
   ATokenFactory,
   ERC20,
   LendingPool,
-} from '../../types';
-import { impersonateAccountsHardhat, DRE, waitForTx } from '../../helpers/misc-utils';
+} from '../../../types';
+import { impersonateAccountsHardhat, DRE, waitForTx } from '../../../helpers/misc-utils';
 import { utils } from 'ethers';
-import { rayMul } from '../../helpers/ray-math';
-import { MAX_UINT_AMOUNT } from '../../helpers/constants';
-import { tEthereumAddress } from '../../helpers/types';
+import { rayMul } from '../../../helpers/ray-math';
+import { MAX_UINT_AMOUNT } from '../../../helpers/constants';
+import { tEthereumAddress } from '../../../helpers/types';
 
 const { expect } = require('chai');
 

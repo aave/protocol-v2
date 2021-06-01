@@ -4,30 +4,14 @@ pragma experimental ABIEncoderV2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IAToken} from '../../interfaces/IAToken.sol';
+import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+
 import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
 import {RayMathNoRounding} from '../../protocol/libraries/math/RayMathNoRounding.sol';
-
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
-
-interface IAaveIncentivesController {
-  function claimRewards(
-    address[] calldata assets,
-    uint256 amount,
-    address to
-  ) external returns (uint256);
-
-  function REWARD_TOKEN() external view returns (address);
-}
-
-interface IAToken is IERC20 {
-  function POOL() external view returns (ILendingPool);
-
-  function UNDERLYING_ASSET_ADDRESS() external view returns (address);
-
-  function getIncentivesController() external view returns (IAaveIncentivesController);
-}
 
 contract StaticATokenLM is ERC20 {
   using SafeERC20 for IERC20;
