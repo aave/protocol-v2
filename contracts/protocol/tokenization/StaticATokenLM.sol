@@ -457,7 +457,6 @@ contract StaticATokenLM is ERC20 {
    * @dev Claims rewards from the `_incentivesController` and update `accRewardstokenPerShare`
    */
   function updateRewards() public {
-    // Only need to claim rewards when once per block. Check with the _incentivesController
     if (block.number > lastRewardBlock) {
       lastRewardBlock = block.number;
       uint256 _supply = totalSupply();
@@ -496,23 +495,8 @@ contract StaticATokenLM is ERC20 {
     uint256 reward = _getClaimableRewards(user, balance); // Remember that this is converting to wad
     if (reward > 0) {
       unclaimedRewards[user] = 0;
-      _safeRewardTransfer(user, reward);
+      IERC20(currentRewardToken).safeTransfer(user, reward);
       _updateRewardDebt(user, balance);
-    }
-  }
-
-  /**
-   * @dev Safe transfer of the rewards, taking into account rounding errors to
-   * allow the last user to retrieve funds if 1 wei off etc
-   * @param to The address to receive rewards
-   * @param amount The amount of rewards to receive in WAD
-   */
-  function _safeRewardTransfer(address to, uint256 amount) internal {
-    uint256 rewardBal = IERC20(currentRewardToken).balanceOf(address(this));
-    if (amount > rewardBal) {
-      IERC20(currentRewardToken).safeTransfer(to, rewardBal);
-    } else {
-      IERC20(currentRewardToken).safeTransfer(to, amount);
     }
   }
 
