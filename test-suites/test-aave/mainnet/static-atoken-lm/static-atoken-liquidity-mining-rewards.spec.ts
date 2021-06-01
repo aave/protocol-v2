@@ -90,8 +90,6 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
   before(async () => {
     await rawDRE.run('set-DRE');
 
-    console.log(`Initial block number: ${await getCurrentBlock()}`);
-
     const [user1, user2] = await DRE.ethers.getSigners();
     userSigner = DRE.ethers.provider.getSigner(await user1.getAddress());
     user2Signer = DRE.ethers.provider.getSigner(await user2.getAddress());
@@ -123,7 +121,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
   describe('Small checks', async () => {
     it('Rewards increase at deposit, update and withdraw and set to 0 at claim', async () => {
       const amountToDeposit = utils.parseEther('5');
-      const amountToWithdraw = MAX_UINT_AMOUNT; // Still need to figure out why this works :eyes:
+      const amountToWithdraw = MAX_UINT_AMOUNT;
 
       // Just preparation
       await waitForTx(await weth.deposit({ value: amountToDeposit.mul(2) }));
@@ -169,7 +167,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     it('Check getters', async () => {
       const amountToDeposit = utils.parseEther('5');
-      const amountToWithdraw = MAX_UINT_AMOUNT; // Still need to figure out why this works :eyes:
+      const amountToWithdraw = MAX_UINT_AMOUNT;
 
       // Just preparation
       await waitForTx(await weth.deposit({ value: amountToDeposit.mul(2) }));
@@ -227,7 +225,6 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     it('Update and claim', async () => {
       const amountToDeposit = utils.parseEther('5');
-      const amountToWithdraw = MAX_UINT_AMOUNT; // Still need to figure out why this works :eyes:
 
       // Just preparation
       await waitForTx(await weth.deposit({ value: amountToDeposit.mul(2) }));
