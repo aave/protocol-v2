@@ -35,8 +35,6 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   mapping(address => bool) private _riskAdmins;
 
-  mapping(address => bool) private _riskAdmins;
-
   modifier onlyPoolAdmin {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
     _;
@@ -266,7 +264,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     uint256 borrowCap,
     bool stableBorrowRateEnabled
   ) external override onlyRiskOrPoolAdmins {
-    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);$
+    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
     currentConfig.setBorrowingEnabled(true);
     currentConfig.setBorrowCap(borrowCap);
@@ -488,31 +486,14 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function isRiskAdmin(address admin) external view override onlyPoolAdmin returns (bool) {
-    return _riskAdmins[admin];
-  }
-
-  /// @inheritdoc ILendingPoolConfigurator
-  function registerRiskAdmin(address admin) external override onlyPoolAdmin {
-    _riskAdmins[admin] = true;
-    emit RiskAdminRegistered(admin);
-  }
-
-  /// @inheritdoc ILendingPoolConfigurator
-  function unregisterRiskAdmin(address admin) external override onlyPoolAdmin {
-    _riskAdmins[admin] = false;
-    emit RiskAdminUnregistered(admin);
-  }
-
-  /// @inheritdoc ILendingPoolConfigurator
   function authorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
-    pool.authorizeFlashBorrower(flashBorrower);
+    _pool.authorizeFlashBorrower(flashBorrower);
     emit FlashBorrowerAuthorized(flashBorrower);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function unauthorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
-    pool.unauthorizeFlashBorrower(flashBorrower);
+    _pool.unauthorizeFlashBorrower(flashBorrower);
     emit FlashBorrowerUnauthorized(flashBorrower);
   }
 

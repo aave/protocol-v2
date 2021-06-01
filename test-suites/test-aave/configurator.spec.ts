@@ -134,14 +134,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
   });
   it('Pauses the ETH reserve by emergency admin', async () => {
-    const {
-      configurator,
-      weth,
-      helpersContract,
-      addressesProvider,
-      users,
-      emergencyAdmin,
-    } = testEnv;
+    const { configurator, weth, helpersContract, addressesProvider, users, emergencyAdmin } =
+      testEnv;
     await configurator.connect(emergencyAdmin.signer).pauseReserve(weth.address);
     const {
       decimals,
@@ -218,7 +212,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN);
   });
-
+  it('Pauses the ETH reserve by the pool admin', async () => {
+    const { configurator, weth, helpersContract, addressesProvider, users, emergencyAdmin } =
+      testEnv;
     await configurator.pauseReserve(weth.address);
     const {
       decimals,
