@@ -177,6 +177,13 @@ export enum ProtocolErrors {
   RC_INVALID_DECIMALS = '70',
   RC_INVALID_RESERVE_FACTOR = '71',
   LPAPR_INVALID_ADDRESSES_PROVIDER_ID = '72',
+  VL_BORROW_CAP_EXCEEDED = '81',
+  RC_INVALID_BORROW_CAP = '82',
+  VL_SUPPLY_CAP_EXCEEDED = '83',
+  RC_INVALID_SUPPLY_CAP = '84',
+  LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN = '85',
+  VL_RESERVE_PAUSED = '86',
+  LPC_CALLER_NOT_RISK_OR_POOL_ADMIN = '87',
 
   // old
 
@@ -296,7 +303,7 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC'
+  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC' | 'AAVE'
 >;
 
 export type iXDAIPoolAssets<T> = Pick<
@@ -350,12 +357,13 @@ export enum TokenContractId {
   BptBALWETH = 'BptBALWETH',
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
-  xSUSHI = 'xSUSHI'
+  xSUSHI = 'xSUSHI',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
   reserveFactor: string;
+  supplyCap: string;
   strategy: IInterestRateStrategyParams;
 }
 
@@ -379,6 +387,7 @@ export interface IReserveBorrowParams {
   borrowingEnabled: boolean;
   stableBorrowRateEnabled: boolean;
   reserveDecimals: string;
+  borrowCap: string;
 }
 
 export interface IReserveCollateralParams {
@@ -489,8 +498,10 @@ export interface ICommonConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
+  IncentivesController: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

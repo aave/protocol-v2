@@ -20,7 +20,7 @@ function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export const verifyContract = async (
+export const verifyEtherscanContract = async (
   address: string,
   constructorArguments: (string | string[])[],
   libraries?: string

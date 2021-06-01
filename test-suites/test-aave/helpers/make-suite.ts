@@ -15,7 +15,7 @@ import {
   getUniswapRepayAdapter,
   getFlashLiquidationAdapter,
 } from '../../../helpers/contracts-getters';
-import { eEthereumNetwork, tEthereumAddress } from '../../../helpers/types';
+import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
 import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
@@ -51,6 +51,9 @@ export interface SignerWithAddress {
 }
 export interface TestEnv {
   deployer: SignerWithAddress;
+  poolAdmin: SignerWithAddress;
+  emergencyAdmin: SignerWithAddress;
+  riskAdmin: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
   configurator: LendingPoolConfigurator;
@@ -77,6 +80,9 @@ const setBuidlerevmSnapshotId = (id: string) => {
 
 const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
+  poolAdmin: {} as SignerWithAddress,
+  emergencyAdmin: {} as SignerWithAddress,
+  riskAdmin: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
   configurator: {} as LendingPoolConfigurator,
@@ -110,15 +116,18 @@ export async function initializeMakeSuite() {
     });
   }
   testEnv.deployer = deployer;
+  testEnv.poolAdmin = deployer;
+  testEnv.emergencyAdmin = testEnv.users[1];
+  testEnv.riskAdmin = testEnv.users[2];
   testEnv.pool = await getLendingPool();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
 
-  if (process.env.MAINNET_FORK === 'true') {
+  if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
-      getParamPerNetwork(AaveConfig.ProviderRegistry, eEthereumNetwork.main)
+      getParamPerNetwork(AaveConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
@@ -163,7 +172,7 @@ export async function initializeMakeSuite() {
 const setSnapshot = async () => {
   const hre = DRE as HardhatRuntimeEnvironment;
   if (usingTenderly()) {
-    setBuidlerevmSnapshotId((await hre.tenderlyRPC.getHead()) || '0x1');
+    setBuidlerevmSnapshotId((await hre.tenderlyNetwork.getHead()) || '0x1');
     return;
   }
   setBuidlerevmSnapshotId(await evmSnapshot());
@@ -172,7 +181,7 @@ const setSnapshot = async () => {
 const revertHead = async () => {
   const hre = DRE as HardhatRuntimeEnvironment;
   if (usingTenderly()) {
-    await hre.tenderlyRPC.setHead(buidlerevmSnapshotId);
+    await hre.tenderlyNetwork.setHead(buidlerevmSnapshotId);
     return;
   }
   await evmRevert(buidlerevmSnapshotId);

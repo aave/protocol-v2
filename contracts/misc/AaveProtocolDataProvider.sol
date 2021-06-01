@@ -64,6 +64,7 @@ contract AaveProtocolDataProvider {
     return aTokens;
   }
 
+  // not returning borrow and supply caps for compatibility, nor pause flag
   function getReserveConfigurationData(address asset)
     external
     view
@@ -80,16 +81,33 @@ contract AaveProtocolDataProvider {
       bool isFrozen
     )
   {
-    DataTypes.ReserveConfigurationMap memory configuration =
+     DataTypes.ReserveConfigurationMap memory configuration =
       ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getConfiguration(asset);
 
-    (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = configuration
-      .getParamsMemory();
+    (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = 
+      configuration.getParamsMemory();
 
-    (isActive, isFrozen, borrowingEnabled, stableBorrowRateEnabled) = configuration
-      .getFlagsMemory();
+    (isActive, isFrozen, borrowingEnabled, stableBorrowRateEnabled, ) =
+      configuration.getFlagsMemory();
 
     usageAsCollateralEnabled = liquidationThreshold > 0;
+  }
+
+  function getReserveCaps(address asset)
+    external
+    view
+    returns (uint256 borrowCap, uint256 supplyCap) {
+
+      (borrowCap, supplyCap) = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+        .getConfiguration(asset)
+        .getCapsMemory();
+    }
+
+  function getPaused(address asset) external view returns (bool isPaused) {
+    (, , , , isPaused) = 
+      ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+        .getConfiguration(asset)
+        .getFlagsMemory();
   }
 
   function getReserveData(address asset)

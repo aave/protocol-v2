@@ -15,11 +15,14 @@ interface IUiPoolDataProvider {
     uint256 reserveLiquidationThreshold;
     uint256 reserveLiquidationBonus;
     uint256 reserveFactor;
+    uint256 borrowCap;
+    uint256 supplyCap;
     bool usageAsCollateralEnabled;
     bool borrowingEnabled;
     bool stableBorrowRateEnabled;
     bool isActive;
     bool isFrozen;
+    bool isPaused;
     // base data
     uint128 liquidityIndex;
     uint128 variableBorrowIndex;

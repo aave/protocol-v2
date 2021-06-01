@@ -14,6 +14,8 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
+import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
 /**
@@ -39,13 +41,22 @@ library ValidationLogic {
    * @param amount The amount to be deposited
    */
   function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) internal view {
-    (bool isActive, bool isFrozen, , ) = reserve.configuration.getFlags();
+    DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
+    (bool isActive, bool isFrozen, , , bool isPaused) = reserveConfiguration.getFlagsMemory();
+    (, , , uint256 reserveDecimals, ) = reserveConfiguration.getParamsMemory();
+    uint256 supplyCap = reserveConfiguration.getSupplyCapMemory();
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
+    require(
+      supplyCap == 0 ||
+        IERC20(reserve.aTokenAddress).totalSupply().add(amount).div(10**reserveDecimals) <
+        supplyCap,
+      Errors.VL_SUPPLY_CAP_EXCEEDED
+    );
   }
-
 
   /**
    * @dev Validates a withdraw action
@@ -57,12 +68,13 @@ library ValidationLogic {
     DataTypes.ReserveData storage reserve,
     uint256 amount,
     uint256 userBalance
-  ) internal view {
+  ) external view {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
-    (bool isActive, , , ) = reserve.configuration.getFlags();
+    (bool isActive, , , , bool isPaused) = reserve.configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
   }
 
   struct ValidateBorrowLocalVars {
@@ -73,8 +85,13 @@ library ValidationLogic {
     uint256 userBorrowBalanceETH;
     uint256 availableLiquidity;
     uint256 healthFactor;
+    uint256 totalSupplyStableDebt;
+    uint256 totalSupplyVariableDebt;
+    uint256 reserveDecimals;
+    uint256 borrowCap;
     bool isActive;
     bool isFrozen;
+    bool isPaused;
     bool borrowingEnabled;
     bool stableRateBorrowingEnabled;
   }
@@ -107,14 +124,22 @@ library ValidationLogic {
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
-  ) internal view {
+  ) external view {
     ValidateBorrowLocalVars memory vars;
 
-    (vars.isActive, vars.isFrozen, vars.borrowingEnabled, vars.stableRateBorrowingEnabled) = reserve
-      .configuration
-      .getFlags();
+    DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
+    (, , , vars.reserveDecimals, ) = reserveConfiguration.getParamsMemory();
+
+    (
+      vars.isActive,
+      vars.isFrozen,
+      vars.borrowingEnabled,
+      vars.stableRateBorrowingEnabled,
+      vars.isPaused
+    ) = reserveConfiguration.getFlagsMemory();
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!vars.isPaused, Errors.VL_RESERVE_PAUSED);
     require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
 
@@ -125,6 +150,19 @@ library ValidationLogic {
       uint256(DataTypes.InterestRateMode.VARIABLE) == interestRateMode ||
         uint256(DataTypes.InterestRateMode.STABLE) == interestRateMode,
       Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
+    );
+
+    vars.totalSupplyStableDebt = IERC20(reserve.stableDebtTokenAddress).totalSupply();
+    vars.borrowCap = reserveConfiguration.getBorrowCapMemory();
+    vars.totalSupplyVariableDebt = IERC20(reserve.variableDebtTokenAddress).totalSupply();
+
+    require(
+      vars.borrowCap == 0 ||
+        vars.totalSupplyStableDebt.add(vars.totalSupplyVariableDebt).add(amount).div(
+          10**vars.reserveDecimals
+        ) <
+        vars.borrowCap,
+      Errors.VL_BORROW_CAP_EXCEEDED
     );
 
     (
@@ -204,10 +242,10 @@ library ValidationLogic {
     address onBehalfOf,
     uint256 stableDebt,
     uint256 variableDebt
-  ) internal view {
-    bool isActive = reserve.configuration.getActive();
-
+  ) external view {
+    (bool isActive, , , , bool isPaused) = reserve.configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
@@ -240,9 +278,11 @@ library ValidationLogic {
     uint256 variableDebt,
     DataTypes.InterestRateMode currentRateMode
   ) external view {
-    (bool isActive, bool isFrozen, , bool stableRateEnabled) = reserve.configuration.getFlags();
+    (bool isActive, bool isFrozen, , bool stableRateEnabled, bool isPaused) =
+      reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
     if (currentRateMode == DataTypes.InterestRateMode.STABLE) {
@@ -284,9 +324,10 @@ library ValidationLogic {
     IERC20 variableDebtToken,
     address aTokenAddress
   ) external view {
-    (bool isActive, , , ) = reserve.configuration.getFlags();
+    (bool isActive, , , , bool isPaused) = reserve.configuration.getFlags();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     //if the usage ratio is below 95%, no rebalances are needed
     uint256 totalDebt =
@@ -313,10 +354,11 @@ library ValidationLogic {
    * @dev Validates the action of setting an asset as collateral
    * @param reserve The state of the reserve that the user is enabling or disabling as collateral
    */
-  function validateSetUseReserveAsCollateral(
-    DataTypes.ReserveData storage reserve
-  ) external view {
+  function validateSetUseReserveAsCollateral(DataTypes.ReserveData storage reserve) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
+    bool isPaused = reserve.configuration.getPaused();
+
+    require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
   }
@@ -326,7 +368,14 @@ library ValidationLogic {
    * @param assets The assets being flashborrowed
    * @param amounts The amounts for each asset being borrowed
    **/
-  function validateFlashloan(address[] memory assets, uint256[] memory amounts) internal pure {
+  function validateFlashloan(
+    address[] memory assets,
+    uint256[] memory amounts,
+    mapping(address => DataTypes.ReserveData) storage reservesData
+  ) external view {
+    for (uint256 i = 0; i < assets.length; i++) {
+      require(!reservesData[assets[i]].configuration.getPaused(), Errors.VL_RESERVE_PAUSED);
+    }
     require(assets.length == amounts.length, Errors.VL_INCONSISTENT_FLASHLOAN_PARAMS);
   }
 
@@ -354,6 +403,9 @@ library ValidationLogic {
         uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE),
         Errors.VL_NO_ACTIVE_RESERVE
       );
+    }
+    if (collateralReserve.configuration.getPaused() || principalReserve.configuration.getPaused()) {
+      return (uint256(Errors.CollateralManagerErrors.PAUSED_RESERVE), Errors.VL_RESERVE_PAUSED);
     }
 
     if (userHealthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
@@ -416,5 +468,13 @@ library ValidationLogic {
       healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
+  }
+
+  /**
+   * @dev Validates a transfer action
+   * @param reserve The reserve object
+   */
+  function validateTransfer(DataTypes.ReserveData storage reserve) internal view {
+    require(!reserve.configuration.getPaused(), Errors.VL_RESERVE_PAUSED);
   }
 }

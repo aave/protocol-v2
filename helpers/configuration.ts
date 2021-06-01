@@ -6,7 +6,7 @@ import {
   ICommonConfiguration,
   eNetwork,
 } from './types';
-import { getParamPerPool } from './contracts-helpers';
+import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
 import AaveConfig from '../markets/aave';
 import MaticConfig from '../markets/matic';
 import AmmConfig from '../markets/amm';
@@ -30,7 +30,7 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
     case ConfigNames.Matic:
       return MaticConfig;
     case ConfigNames.Amm:
-        return AmmConfig;
+      return AmmConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -61,14 +61,12 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
 export const getGenesisPoolAdmin = async (
   config: ICommonConfiguration
 ): Promise<tEthereumAddress> => {
-  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
   const targetAddress = getParamPerNetwork(config.PoolAdmin, <eNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
-  const addressList = await Promise.all(
-    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
-  );
+  const addressList = await getEthersSignersAddresses();
   const addressIndex = config.PoolAdminIndex;
   return addressList[addressIndex];
 };
@@ -76,14 +74,12 @@ export const getGenesisPoolAdmin = async (
 export const getEmergencyAdmin = async (
   config: ICommonConfiguration
 ): Promise<tEthereumAddress> => {
-  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
   const targetAddress = getParamPerNetwork(config.EmergencyAdmin, <eNetwork>currentNetwork);
   if (targetAddress) {
     return targetAddress;
   }
-  const addressList = await Promise.all(
-    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
-  );
+  const addressList = await getEthersSignersAddresses();
   const addressIndex = config.EmergencyAdminIndex;
   return addressList[addressIndex];
 };
@@ -91,7 +87,7 @@ export const getEmergencyAdmin = async (
 export const getTreasuryAddress = async (
   config: ICommonConfiguration
 ): Promise<tEthereumAddress> => {
-  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
   return getParamPerNetwork(config.ReserveFactorTreasuryAddress, <eNetwork>currentNetwork);
 };
 
@@ -101,8 +97,21 @@ export const getATokenDomainSeparatorPerNetwork = (
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
 
 export const getWethAddress = async (config: ICommonConfiguration) => {
-  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WETH, <eNetwork>currentNetwork);
+  if (wethAddress) {
+    return wethAddress;
+  }
+  if (currentNetwork.includes('main')) {
+    throw new Error('WETH not set at mainnet configuration.');
+  }
+  const weth = await deployWETHMocked();
+  return weth.address;
+};
+
+export const getWrappedNativeTokenAddress = async (config: ICommonConfiguration) => {
+  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const wethAddress = getParamPerNetwork(config.WrappedNativeToken, <eNetwork>currentNetwork);
   if (wethAddress) {
     return wethAddress;
   }
@@ -120,8 +129,7 @@ export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {
     ReserveAssets,
   } = poolConfig;
 
-  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-  const network = MAINNET_FORK ? 'main' : DRE.network.name;
+  const network = process.env.FORK ? process.env.FORK : DRE.network.name;
   return filterMapBy(LendingRateOracleRatesCommon, (key) =>
     Object.keys(ReserveAssets[network]).includes(key)
   );

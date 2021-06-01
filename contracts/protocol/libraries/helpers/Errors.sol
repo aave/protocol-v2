@@ -102,6 +102,13 @@ library Errors {
   string public constant LP_NOT_CONTRACT = '78';
   string public constant SDT_STABLE_DEBT_OVERFLOW = '79';
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
+  string public constant VL_BORROW_CAP_EXCEEDED = '81';
+  string public constant RC_INVALID_BORROW_CAP = '82';
+  string public constant VL_SUPPLY_CAP_EXCEEDED = '83';
+  string public constant RC_INVALID_SUPPLY_CAP = '84';
+  string public constant LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN = '85';
+  string public constant VL_RESERVE_PAUSED = '86';
+  string public constant LPC_CALLER_NOT_RISK_OR_POOL_ADMIN = '87';
 
   enum CollateralManagerErrors {
     NO_ERROR,
@@ -113,6 +120,7 @@ library Errors {
     NO_ACTIVE_RESERVE,
     HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD,
     INVALID_EQUAL_ASSETS_TO_SWAP,
-    FROZEN_RESERVE
+    FROZEN_RESERVE,
+    PAUSED_RESERVE
   }
 }

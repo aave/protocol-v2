@@ -6,7 +6,8 @@ import { usingTenderly } from '../../helpers/tenderly-utils';
 
 task('amm:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ verify }, DRE) => {
+  .addFlag('skipRegistry', 'Skip addresses provider registration at Addresses Provider Registry')
+  .setAction(async ({ verify, skipRegistry }, DRE) => {
     const POOL_NAME = ConfigNames.Amm;
     await DRE.run('set-DRE');
 
@@ -18,7 +19,7 @@ task('amm:mainnet', 'Deploy development enviroment')
     console.log('Migration started\n');
 
     console.log('1. Deploy address provider');
-    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
+    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
 
     console.log('2. Deploy lending pool');
     await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
@@ -45,8 +46,8 @@ task('amm:mainnet', 'Deploy development enviroment')
     }
 
     if (usingTenderly()) {
-      const postDeployHead = DRE.tenderlyRPC.getHead();
-      const postDeployFork = DRE.tenderlyRPC.getFork();
+      const postDeployHead = DRE.tenderlyNetwork.getHead();
+      const postDeployFork = DRE.tenderlyNetwork.getFork();
       console.log('Tenderly Info');
       console.log('- Head', postDeployHead);
       console.log('- Fork', postDeployFork);

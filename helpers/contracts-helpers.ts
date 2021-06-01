@@ -22,16 +22,18 @@ import {
 import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
-import { verifyContract } from './etherscan-verification';
-import { getIErc20Detailed } from './contracts-getters';
-import { usingTenderly } from './tenderly-utils';
+import { verifyEtherscanContract } from './etherscan-verification';
+import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
+import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
+import { usingPolygon, verifyAtPolygon } from './polygon-utils';
+import { getDefenderRelaySigner, usingDefender } from './defender-utils';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = DRE.network.name;
-  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-  if (MAINNET_FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
+  const FORK = process.env.FORK;
+  if (FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
     console.log(`*** ${contractId} ***\n`);
     console.log(`Network: ${currentNetwork}`);
     console.log(`tx: ${contractInstance.deployTransaction.hash}`);
@@ -65,11 +67,18 @@ export const rawInsertContractAddressInDb = async (id: string, address: tEthereu
     })
     .write();
 
-export const getEthersSigners = async (): Promise<Signer[]> =>
-  await Promise.all(await DRE.ethers.getSigners());
+export const getEthersSigners = async (): Promise<Signer[]> => {
+  const ethersSigners = await Promise.all(await DRE.ethers.getSigners());
+
+  if (usingDefender()) {
+    const [, ...users] = ethersSigners;
+    return [await getDefenderRelaySigner(), ...users];
+  }
+  return ethersSigners;
+};
 
 export const getEthersSignersAddresses = async (): Promise<tEthereumAddress[]> =>
-  await Promise.all((await DRE.ethers.getSigners()).map((signer) => signer.getAddress()));
+  await Promise.all((await getEthersSigners()).map((signer) => signer.getAddress()));
 
 export const getCurrentBlock = async () => {
   return DRE.ethers.provider.getBlockNumber();
@@ -82,9 +91,9 @@ export const deployContract = async <ContractType extends Contract>(
   contractName: string,
   args: any[]
 ): Promise<ContractType> => {
-  const contract = (await (await DRE.ethers.getContractFactory(contractName)).deploy(
-    ...args
-  )) as ContractType;
+  const contract = (await (await DRE.ethers.getContractFactory(contractName))
+    .connect(await getFirstSigner())
+    .deploy(...args)) as ContractType;
   await waitForTx(contract.deployTransaction);
   await registerContractInJsonDb(<eContractid>contractName, contract);
   return contract;
@@ -98,18 +107,8 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
 ): Promise<ContractType> => {
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
-  if (usingTenderly()) {
-    console.log();
-    console.log('Doing Tenderly contract verification of', id);
-    await (DRE as any).tenderlyRPC.verify({
-      name: id,
-      address: instance.address,
-    });
-    console.log(`Verified ${id} at Tenderly!`);
-    console.log();
-  }
   if (verify) {
-    await verifyContract(instance.address, args);
+    await verifyContract(id, instance, args);
   }
   return instance;
 };
@@ -153,9 +152,8 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
   } = param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
-  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-  if (MAINNET_FORK) {
-    return main;
+  if (process.env.FORK) {
+    return param[process.env.FORK as eNetwork] as T;
   }
 
   switch (network) {
@@ -327,4 +325,20 @@ export const buildFlashLiquidationAdapterParams = (
     ['address', 'address', 'address', 'uint256', 'bool'],
     [collateralAsset, debtAsset, user, debtToCover, useEthPath]
   );
+};
+
+export const verifyContract = async (
+  id: string,
+  instance: Contract,
+  args: (string | string[])[]
+) => {
+  if (usingPolygon()) {
+    await verifyAtPolygon(id, instance, args);
+  } else {
+    if (usingTenderly()) {
+      await verifyAtTenderly(id, instance);
+    }
+    await verifyEtherscanContract(instance.address, args);
+  }
+  return instance;
 };
