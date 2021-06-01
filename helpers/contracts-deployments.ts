@@ -137,7 +137,9 @@ export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolea
     linkedGenericLogicByteCode
   );
 
-  const genericLogic = await (await genericLogicFactory.deploy()).deployed();
+  const genericLogic = await (
+    await genericLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
   return withSaveAndVerify(genericLogic, eContractid.GenericLogic, [], verify);
 };
 
@@ -158,7 +160,9 @@ export const deployValidationLogic = async (
     linkedValidationLogicByteCode
   );
 
-  const validationLogic = await (await validationLogicFactory.deploy()).deployed();
+  const validationLogic = await (
+    await validationLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
 
   return withSaveAndVerify(validationLogic, eContractid.ValidationLogic, [], verify);
 };
