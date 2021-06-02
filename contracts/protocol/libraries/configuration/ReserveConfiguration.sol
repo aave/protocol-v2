@@ -22,6 +22,7 @@ library ReserveConfiguration {
   uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant BORROW_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant SUPPLY_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 constant EXPOSURE_CAP_MASK =          0xFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
 
   /// @dev For the LTV, the start bit is 0 (up to 15), hence no bitshifting is needed
   uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
@@ -36,6 +37,7 @@ library ReserveConfiguration {
   uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
   uint256 constant BORROW_CAP_START_BIT_POSITION = 80;
   uint256 constant SUPPLY_CAP_START_BIT_POSITION = 116;
+  uint256 constant EXPOSURE_CAP_START_BIT_POSITION = 152;
 
   uint256 constant MAX_VALID_LTV = 65535;
   uint256 constant MAX_VALID_LIQUIDATION_THRESHOLD = 65535;
@@ -44,6 +46,7 @@ library ReserveConfiguration {
   uint256 constant MAX_VALID_RESERVE_FACTOR = 65535;
   uint256 constant MAX_VALID_BORROW_CAP = 68719476735;
   uint256 constant MAX_VALID_SUPPLY_CAP = 68719476735;
+  uint256 constant MAX_VALID_EXPOSURE_CAP = 68719476735;
 
   /**
    * @dev Sets the Loan to Value of the reserve
@@ -190,7 +193,7 @@ library ReserveConfiguration {
     return (self.data & ~FROZEN_MASK) != 0;
   }
 
-   /**
+  /**
    * @dev Sets the paused state of the reserve
    * @param self The reserve configuration
    * @param paused The paused state
@@ -348,6 +351,33 @@ library ReserveConfiguration {
   }
 
   /**
+   * @dev Sets the exposure cap of the reserve
+   * @param self The reserve configuration
+   * @param exposureCap The exposure cap
+   **/
+  function setExposureCap(DataTypes.ReserveConfigurationMap memory self, uint256 exposureCap)
+    internal
+    pure
+  {
+    require(exposureCap <= MAX_VALID_EXPOSURE_CAP, Errors.RC_INVALID_EXPOSURE_CAP);
+
+    self.data = (self.data & EXPOSURE_CAP_MASK) | (exposureCap << EXPOSURE_CAP_START_BIT_POSITION);
+  }
+
+  /**
+   * @dev Gets the exposure cap of the reserve
+   * @param self The reserve configuration
+   * @return The exposure cap
+   **/
+  function getExposureCap(DataTypes.ReserveConfigurationMap storage self)
+    internal
+    view
+    returns (uint256)
+  {
+    return (self.data & ~EXPOSURE_CAP_MASK) >> EXPOSURE_CAP_START_BIT_POSITION;
+  }
+
+  /**
    * @dev Gets the configuration flags of the reserve
    * @param self The reserve configuration
    * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
@@ -409,13 +439,18 @@ library ReserveConfiguration {
   function getCaps(DataTypes.ReserveConfigurationMap storage self)
     internal
     view
-    returns (uint256, uint256)
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
   {
     uint256 dataLocal = self.data;
 
     return (
       (dataLocal & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION,
-      (dataLocal & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION
+      (dataLocal & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION,
+      (dataLocal & ~EXPOSURE_CAP_MASK) >> EXPOSURE_CAP_START_BIT_POSITION
     );
   }
 
@@ -452,11 +487,16 @@ library ReserveConfiguration {
   function getCapsMemory(DataTypes.ReserveConfigurationMap memory self)
     internal
     pure
-    returns (uint256, uint256)
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
   {
     return (
       (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION,
-      (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION
+      (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION,
+      (self.data & ~EXPOSURE_CAP_MASK) >> EXPOSURE_CAP_START_BIT_POSITION
     );
   }
 
@@ -509,5 +549,18 @@ library ReserveConfiguration {
     returns (uint256)
   {
     return (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION;
+  }
+
+  /**
+   * @dev Gets the exposure cap of the reserve from a memory object
+   * @param self The reserve configuration
+   * @return The exposure cap
+   **/
+  function getExposureCapMemory(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
+    returns (uint256)
+  {
+    return (self.data & ~EXPOSURE_CAP_MASK) >> EXPOSURE_CAP_START_BIT_POSITION;
   }
 }

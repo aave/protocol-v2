@@ -40,7 +40,8 @@ library DataTypes {
     //bit 61-63: reserved
     //bit 64-79: reserve factor
     //bit 80-115 borrow cap, borrowCap == 0 => disabled
-    //bit 116-152 supply cap, supplyCap == 0 => disabled
+    //bit 116-151 supply cap, supplyCap == 0 => disabled
+    //bit 152-185 exposure cap, exposureCap == 0 => disabled
     uint256 data;
   }
 

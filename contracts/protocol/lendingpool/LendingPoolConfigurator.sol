@@ -292,7 +292,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     address asset,
     uint256 ltv,
     uint256 liquidationThreshold,
-    uint256 liquidationBonus
+    uint256 liquidationBonus,
+    uint256 exposureCap
   ) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
@@ -326,6 +327,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     currentConfig.setLtv(ltv);
     currentConfig.setLiquidationThreshold(liquidationThreshold);
     currentConfig.setLiquidationBonus(liquidationBonus);
+    currentConfig.setExposureCap(exposureCap);
 
     _pool.setConfiguration(asset, currentConfig.data);
 
@@ -457,6 +459,21 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _pool.setConfiguration(asset, currentConfig.data);
 
     emit SupplyCapChanged(asset, supplyCap);
+  }
+
+  ///@inheritdoc ILendingPoolConfigurator
+  function setExposureCap(address asset, uint256 exposureCap)
+    external
+    override
+    onlyRiskOrPoolAdmins
+  {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
+
+    currentConfig.setExposureCap(exposureCap);
+
+    _pool.setConfiguration(asset, currentConfig.data);
+
+    emit ExposureCapChanged(asset, exposureCap);
   }
 
   ///@inheritdoc ILendingPoolConfigurator
