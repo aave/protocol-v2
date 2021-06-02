@@ -25,7 +25,7 @@ import {
   advanceTimeAndBlock,
 } from '../../../../helpers/misc-utils';
 import { BigNumber, providers, Signer, utils } from 'ethers';
-import { rayMul } from '../../../../helpers/ray-math';
+import { rayDiv, rayMul } from '../../../../helpers/ray-math';
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../../../helpers/constants';
 import { tEthereumAddress } from '../../../../helpers/types';
 import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
@@ -66,15 +66,17 @@ type tBalancesInvolved = {
   staticATokenATokenBalance: BigNumber;
   staticATokenStkAaveBalance: BigNumber;
   staticATokenUnderlyingBalance: BigNumber;
-  staticATokenExpectedSupply: BigNumber;
+  staticATokenScaledBalanceAToken: BigNumber;
   userStkAaveBalance: BigNumber;
   userATokenBalance: BigNumber;
+  userScaledBalanceAToken: BigNumber;
   userUnderlyingBalance: BigNumber;
   userStaticATokenBalance: BigNumber;
   userDynamicStaticATokenBalance: BigNumber;
   userPendingRewards: BigNumber;
   user2StkAaveBalance: BigNumber;
   user2ATokenBalance: BigNumber;
+  user2ScaledBalanceAToken: BigNumber;
   user2UnderlyingBalance: BigNumber;
   user2StaticATokenBalance: BigNumber;
   user2DynamicStaticATokenBalance: BigNumber;
@@ -105,15 +107,17 @@ const getContext = async ({
   staticATokenATokenBalance: await aToken.balanceOf(staticAToken.address),
   staticATokenStkAaveBalance: await stkAave.balanceOf(staticAToken.address),
   staticATokenUnderlyingBalance: await underlying.balanceOf(staticAToken.address),
-  staticATokenExpectedSupply: await aToken.scaledBalanceOf(staticAToken.address),
+  staticATokenScaledBalanceAToken: await aToken.scaledBalanceOf(staticAToken.address),
   userStaticATokenBalance: await staticAToken.balanceOf(user),
   userStkAaveBalance: await stkAave.balanceOf(user),
   userATokenBalance: await aToken.balanceOf(user),
+  userScaledBalanceAToken: await aToken.scaledBalanceOf(user),
   userUnderlyingBalance: await underlying.balanceOf(user),
   userDynamicStaticATokenBalance: await staticAToken.dynamicBalanceOf(user),
   userPendingRewards: await staticAToken.getClaimableRewards(user),
   user2StkAaveBalance: await stkAave.balanceOf(user2),
   user2ATokenBalance: await aToken.balanceOf(user2),
+  user2ScaledBalanceAToken: await aToken.scaledBalanceOf(user2),
   user2UnderlyingBalance: await underlying.balanceOf(user2),
   user2StaticATokenBalance: await staticAToken.balanceOf(user2),
   user2DynamicStaticATokenBalance: await staticAToken.dynamicBalanceOf(user2),
@@ -214,22 +218,21 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     const ctxtAfterClaim = await getContext(ctxtParams);
 
-    // Check values throughout
-    expect(ctxtInitial.staticATokenExpectedSupply).to.be.eq(ctxtInitial.staticATokenSupply);
-    expect(ctxtAfterDeposit.staticATokenExpectedSupply).to.be.eq(
+    // Check that scaledAToken balance is equal to the static aToken supply at every stage.
+    expect(ctxtInitial.staticATokenScaledBalanceAToken).to.be.eq(ctxtInitial.staticATokenSupply);
+    expect(ctxtAfterDeposit.staticATokenScaledBalanceAToken).to.be.eq(
       ctxtAfterDeposit.staticATokenSupply
     );
-    expect(ctxtAfterWithdrawal.staticATokenExpectedSupply).to.be.eq(
+    expect(ctxtAfterWithdrawal.staticATokenScaledBalanceAToken).to.be.eq(
       ctxtAfterWithdrawal.staticATokenSupply
     );
-    expect(ctxtAfterClaim.staticATokenExpectedSupply).to.be.eq(ctxtAfterClaim.staticATokenSupply);
+    expect(ctxtAfterClaim.staticATokenScaledBalanceAToken).to.be.eq(
+      ctxtAfterClaim.staticATokenSupply
+    );
 
-    // Check that aWETH balance of staticAToken contract is increased as expected
     expect(ctxtAfterDeposit.staticATokenATokenBalance).to.be.eq(
       ctxtInitial.staticATokenATokenBalance.add(amountToDeposit)
     );
-
-    // Check user WETH balance of user is decreased as expected
     expect(ctxtAfterDeposit.userUnderlyingBalance).to.be.eq(
       ctxtInitial.userUnderlyingBalance.sub(amountToDeposit)
     );
@@ -246,34 +249,12 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtAfterDeposit.userStkAaveBalance).to.be.eq(0);
     expect(ctxtAfterDeposit.staticATokenStkAaveBalance).to.be.eq(0);
 
-    expect(
-      ctxtAfterWithdrawal.staticATokenATokenBalance,
-      'INVALID_ATOKEN_BALANCE_ON_STATICATOKEN_AFTER_WITHDRAW'
-    ).to.be.eq(
-      BigNumber.from(
-        rayMul(
-          new bnjs(
-            ctxtAfterWithdrawal.staticATokenSupply
-              .add(ctxtAfterDeposit.userStaticATokenBalance)
-              .toString()
-          ),
-          new bnjs(ctxtAfterWithdrawal.currentRate.toString())
-        )
-          .minus(
-            rayMul(
-              new bnjs(ctxtAfterDeposit.userStaticATokenBalance.toString()),
-              new bnjs(ctxtAfterWithdrawal.currentRate.toString())
-            )
-          )
-          .toString()
-      )
-    );
-
     expect(ctxtAfterWithdrawal.userStaticATokenBalance).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.staticATokenATokenBalance).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenSupply).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenUnderlyingBalance).to.be.eq(0);
 
-    // Check with possible rounding error. Sometimes we have an issue with it being 0 lower as well.
+    // Check with possible rounding error.
     expect(ctxtAfterWithdrawal.staticATokenStkAaveBalance).to.be.gte(
       ctxtAfterWithdrawal.userPendingRewards
     );
@@ -324,15 +305,18 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtAfterDeposit.userStaticATokenBalance).to.be.eq(ctxtAfterDeposit.staticATokenSupply);
     expect(ctxtAfterDeposit.staticATokenATokenBalance).to.be.eq(amountToDeposit);
 
-    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.lt(
-      ctxtAfterDeposit.userDynamicStaticATokenBalance
-    );
-    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.gt(
-      ctxtAfterDeposit.userDynamicStaticATokenBalance.sub(expectedATokenWithdraw)
+    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.eq(
+      BigNumber.from(
+        rayMul(
+          new bnjs(ctxtAfterDeposit.userStaticATokenBalance.sub(amountToWithdraw).toString()),
+          new bnjs(ctxtAfterWithdrawal.currentRate.toString())
+        ).toString()
+      )
     );
     expect(ctxtAfterWithdrawal.userStaticATokenBalance).to.be.eq(
       ctxtAfterDeposit.userStaticATokenBalance.sub(amountToWithdraw)
     );
+
     expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(ctxtAfterWithdrawal.userPendingRewards);
   });
 
@@ -363,7 +347,12 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtInitial.staticATokenSupply).to.be.eq(0);
     expect(ctxtInitial.userATokenBalance).to.be.eq(0);
     expect(ctxtAfterDeposit.userDynamicStaticATokenBalance).to.be.eq(amountToDeposit);
-    expect(ctxtAfterWithdrawal.userATokenBalance).to.be.gt(amountToDeposit);
+    expect(ctxtAfterWithdrawal.userATokenBalance).to.be.eq(
+      rayMul(
+        ctxtAfterDeposit.userStaticATokenBalance.toString(),
+        ctxtAfterWithdrawal.currentRate.toString()
+      ).toString()
+    );
     expect(ctxtAfterWithdrawal.userStaticATokenBalance).to.be.eq(0);
   });
 
@@ -383,9 +372,8 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
         defaultTxParams
       )
     );
-    await waitForTx(await aweth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
-
     const ctxtInitial = await getContext(ctxtParams);
+    await waitForTx(await aweth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     // Deposit
     await waitForTx(
@@ -393,7 +381,6 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     );
 
     const ctxtAfterDeposit = await getContext(ctxtParams);
-    const expectedATokenWithdraw = await staticAToken.staticToDynamicAmount(amountToWithdraw);
 
     // Withdraw
     await waitForTx(
@@ -403,7 +390,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const ctxtAfterWithdrawal = await getContext(ctxtParams);
 
     expect(ctxtInitial.userStaticATokenBalance).to.be.eq(0);
-    expect(ctxtInitial.userATokenBalance).to.gt(amountToDeposit);
+    expect(ctxtInitial.userATokenBalance).to.eq(amountToDeposit);
     expect(ctxtInitial.staticATokenSupply).to.be.eq(0);
     expect(ctxtInitial.staticATokenUnderlyingBalance).to.be.eq(0);
 
@@ -416,13 +403,24 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtAfterWithdrawal.userStaticATokenBalance).to.be.eq(
       ctxtAfterDeposit.userStaticATokenBalance.sub(amountToWithdraw)
     );
-    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.lt(
-      ctxtAfterDeposit.userDynamicStaticATokenBalance
+
+    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.eq(
+      BigNumber.from(
+        rayMul(
+          new bnjs(ctxtAfterDeposit.userStaticATokenBalance.sub(amountToWithdraw).toString()),
+          new bnjs(ctxtAfterWithdrawal.currentRate.toString())
+        ).toString()
+      )
     );
-    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.gt(
-      ctxtAfterDeposit.userDynamicStaticATokenBalance.sub(expectedATokenWithdraw)
+
+    expect(ctxtAfterWithdrawal.userATokenBalance).to.be.eq(
+      BigNumber.from(
+        rayMul(
+          new bnjs(ctxtAfterDeposit.userScaledBalanceAToken.add(amountToWithdraw).toString()),
+          new bnjs(ctxtAfterWithdrawal.currentRate.toString())
+        ).toString()
+      )
     );
-    expect(ctxtAfterWithdrawal.userATokenBalance).to.gt(ctxtAfterDeposit.userATokenBalance);
   });
 
   it('Transfer with permit()', async () => {
@@ -569,7 +567,6 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
   });
 
   it('Deposit using metaDeposit()', async () => {
-    // What is a metadeposit
     const amountToDeposit = utils.parseEther('5');
     const chainId = DRE.network.config.chainId ? DRE.network.config.chainId : 1;
 
@@ -592,7 +589,6 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     await waitForTx(await weth.deposit({ value: amountToDeposit }));
     await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
-    // Here it begins
     const tokenName = await staticAToken.name();
     const nonce = (await staticAToken._nonces(userSigner._address)).toNumber();
     const value = amountToDeposit.toString();
@@ -600,7 +596,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const depositor = userSigner._address;
     const recipient = userSigner._address;
     const fromUnderlying = true;
-    const deadline = MAX_UINT_AMOUNT; // (await timeLatest()).plus(60 * 60).toFixed();
+    const deadline = MAX_UINT_AMOUNT;
 
     const msgParams = buildMetaDepositParams(
       chainId,
@@ -690,7 +686,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const ctxtAfterDeposit = await getContext(ctxtParams);
 
     expect(ctxtInitial.userStaticATokenBalance).to.be.eq(0);
-    expect(ctxtAfterDeposit.userStaticATokenBalance).to.be.gt(0);
+    expect(ctxtAfterDeposit.userStaticATokenBalance).to.be.eq(
+      BigNumber.from(rayDiv(value.toString(), ctxtAfterDeposit.currentRate.toString()).toString())
+    );
     expect(ctxtAfterDeposit.userDynamicStaticATokenBalance).to.be.eq(value);
   });
 
@@ -725,15 +723,23 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     await waitForTx(await staticAToken.claimRewards(userSigner._address));
     const ctxtAfterClaim = await getContext(ctxtParams);
 
-    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.gt(
-      ctxtBeforeWithdrawal.userDynamicStaticATokenBalance.sub(amountToWithdraw)
+    expect(ctxtBeforeWithdrawal.userATokenBalance).to.be.eq(0);
+    expect(ctxtBeforeWithdrawal.staticATokenATokenBalance).to.be.eq(amountToDeposit);
+    expect(ctxtAfterWithdrawal.userATokenBalance).to.be.eq(amountToWithdraw);
+    expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.eq(
+      BigNumber.from(
+        rayMul(
+          new bnjs(ctxtBeforeWithdrawal.userStaticATokenBalance.toString()),
+          new bnjs(ctxtAfterWithdrawal.currentRate.toString())
+        ).toString()
+      ).sub(amountToWithdraw)
     );
+
     expect(ctxtAfterWithdrawal.userStkAaveBalance).to.be.eq(0);
     expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(ctxtAfterWithdrawal.userPendingRewards);
   });
 
   it('Withdraw using metaWithdraw()', async () => {
-    // What is a metadeposit
     const amountToDeposit = utils.parseEther('5');
     const chainId = DRE.network.config.chainId ? DRE.network.config.chainId : 1;
 
@@ -864,7 +870,6 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
   });
 
   it('Withdraw using metaWithdraw() (expect to fail)', async () => {
-    // What is a metadeposit
     const amountToDeposit = utils.parseEther('5');
     const chainId = DRE.network.config.chainId ? DRE.network.config.chainId : 1;
 
@@ -902,7 +907,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       await await staticAToken.dynamicBalanceOf(userSigner._address)
     ).toString();
     const toUnderlying = true;
-    const deadline = MAX_UINT_AMOUNT; // (await timeLatest()).plus(60 * 60).toFixed();
+    const deadline = MAX_UINT_AMOUNT;
 
     const msgParams = buildMetaWithdrawParams(
       chainId,
