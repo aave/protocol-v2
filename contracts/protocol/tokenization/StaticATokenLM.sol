@@ -447,7 +447,7 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Claims rewards from the `_incentivesController` and update `accRewardstokenPerShare`
+   * @dev Updates virtual internal accounting of rewards.
    */
   function _updateRewards() internal {
     // Update the virtual rewards without actually claiming.
@@ -474,12 +474,13 @@ contract StaticATokenLM is ERC20 {
     }
   }
 
+  /**
+   * @dev Claims rewards from `_incentivesController` and updates internal accounting of rewards.
+   */
   function collectAndUpdateRewards() public {
     if (block.number > lastRewardBlock) {
       lastRewardBlock = block.number;
       uint256 _supply = totalSupply();
-
-      // We need to perform the check even though there is no supply, as rewards can have accrued before it was removed
 
       address[] memory assets = new address[](1);
       assets[0] = address(ATOKEN);
@@ -501,19 +502,12 @@ contract StaticATokenLM is ERC20 {
       // Unsure if we can also move this in
       lifeTimeRewardsClaimed = externalLifetimeRewards;
     }
-    /*
-  // This one could just as well do both?
-    address[] memory assets = new address[](1);
-    assets[0] = address(ATOKEN);
-    uint256 freshlyClaimed =
-      _incentivesController.claimRewards(assets, type(uint256).max, address(this));
-    lifeTimeRewardsClaimed = lifeTimeRewardsClaimed.add(freshlyClaimed);*/
   }
 
   /**
-   * @dev Claim rewards without retrieving the latest accrued rewards
-   * makes sense for small holders
+   * @dev Claim rewards for a user.
    * @param user The address of the user to claim rewards for
+   * @param forceUpdate Flag to retrieve latest rewards from `_incentiveController`
    */
   function claimRewards(address user, bool forceUpdate) public {
     if (forceUpdate) {
@@ -524,7 +518,7 @@ contract StaticATokenLM is ERC20 {
     uint256 reward = _getClaimableRewards(user, balance, false);
     uint256 totBal = IERC20(currentRewardToken).balanceOf(address(this));
     if (reward > totBal) {
-      // Throw away excess rewards
+      // Throw away excess unclaimed rewards
       reward = totBal;
     }
     if (reward > 0) {
@@ -561,6 +555,7 @@ contract StaticATokenLM is ERC20 {
    * @dev Compute the pending in RAY (rounded down). Pending is the amount to add (not yet unclaimed) rewards in RAY (rounded down).
    * @param user The user to compute for
    * @param balance The balance of the user
+   * @param fresh Flag to account for rewards not claimed by contract yet
    * @return The amound of pending rewards in RAY
    */
   function _getPendingRewards(
@@ -602,6 +597,13 @@ contract StaticATokenLM is ERC20 {
     return 0;
   }
 
+  /**
+   * @dev Compute the claimable rewards for a user
+   * @param user The address of the user
+   * @param balance The balance of the user in WAD
+   * @param fresh Flag to account for rewards not claimed by contract yet
+   * @return The total rewards that can be claimed by the user (if `fresh` flag true, after updating rewards)
+   */
   function _getClaimableRewards(
     address user,
     uint256 balance,
@@ -611,6 +613,10 @@ contract StaticATokenLM is ERC20 {
     return reward.rayToWadNoRounding();
   }
 
+  /**
+   * @dev Get the total claimable rewards of the contract.
+   * @return The current balance + pending rewards from the `_incentivesController`
+   */
   function getTotalClaimableRewards() public view returns (uint256) {
     address[] memory assets = new address[](1);
     assets[0] = address(ATOKEN);
@@ -619,7 +625,7 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Get the total claimable rewards for a user in WAD cliam
+   * @dev Get the total claimable rewards for a user in WAD
    * @param user The address of the user
    * @return The claimable amount of rewards in WAD
    */
@@ -627,6 +633,11 @@ contract StaticATokenLM is ERC20 {
     return _getClaimableRewards(user, balanceOf(user), true);
   }
 
+  /**
+   * @dev The unclaimed rewards for a user in WAD
+   * @param user The address of the user
+   * @return The unclaimed amount of rewards in WAD
+   */
   function getUnclaimedRewards(address user) public view returns (uint256) {
     return unclaimedRewards[user].rayToWadNoRounding();
   }
