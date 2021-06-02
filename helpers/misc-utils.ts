@@ -10,6 +10,7 @@ import { tEthereumAddress } from './types';
 import { isAddress } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
 import { SignerWithAddress } from '../test-suites/test-aave/helpers/make-suite';
+import { usingTenderly } from './tenderly-utils';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -118,10 +119,12 @@ export const notFalsyOrZeroAddress = (address: tEthereumAddress | null | undefin
 };
 
 export const impersonateAddress = async (address: tEthereumAddress): Promise<SignerWithAddress> => {
-  await (DRE as HardhatRuntimeEnvironment).network.provider.request({
-    method: 'hardhat_impersonateAccount',
-    params: [address],
-  });
+  if (!usingTenderly()) {
+    await (DRE as HardhatRuntimeEnvironment).network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [address],
+    });
+  }
   const signer = await DRE.ethers.provider.getSigner(address);
 
   return {
