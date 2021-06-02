@@ -54,11 +54,16 @@ contract StaticATokenLM is ERC20 {
   mapping(address => uint256) public _nonces;
 
   uint256 public accRewardstokenPerShare;
+  uint256 public lifeTimeRewardsClaimed;
+  uint256 public lifeTimeRewards;
   uint256 public lastRewardBlock;
-  mapping(address => uint256) public rewardDebts; // Measured in Rays
-  mapping(address => uint256) public unclaimedRewards; // Measured in Rays
-  IAaveIncentivesController internal _incentivesController;
 
+  // user => rewardDebt (in RAYs)
+  mapping(address => uint256) public rewardDebts;
+  // user => unclaimedRewards (in RAYs)
+  mapping(address => uint256) public unclaimedRewards;
+
+  IAaveIncentivesController internal _incentivesController;
   address public immutable currentRewardToken;
 
   constructor(
@@ -357,8 +362,7 @@ contract StaticATokenLM is ERC20 {
     bool fromUnderlying
   ) internal returns (uint256) {
     require(recipient != address(0), 'INVALID_RECIPIENT');
-    updateRewards();
-
+    _updateRewards();
     _updateUnclaimedRewards(recipient);
 
     if (fromUnderlying) {
@@ -384,8 +388,7 @@ contract StaticATokenLM is ERC20 {
   ) internal returns (uint256, uint256) {
     require(recipient != address(0), 'INVALID_RECIPIENT');
     require(staticAmount == 0 || dynamicAmount == 0, 'ONLY_ONE_AMOUNT_FORMAT_ALLOWED');
-    updateRewards();
-
+    _updateRewards();
     _updateUnclaimedRewards(owner);
 
     uint256 userBalance = balanceOf(owner);
@@ -446,32 +449,65 @@ contract StaticATokenLM is ERC20 {
   /**
    * @dev Claims rewards from the `_incentivesController` and update `accRewardstokenPerShare`
    */
-  function updateRewards() public {
+  function _updateRewards() internal {
+    // Update the virtual rewards without actually claiming.
     if (block.number > lastRewardBlock) {
       lastRewardBlock = block.number;
       uint256 _supply = totalSupply();
       if (_supply == 0) {
+        // No rewards can have accrued since last because there were no funds.
         return;
       }
 
       address[] memory assets = new address[](1);
       assets[0] = address(ATOKEN);
 
-      uint256 freshReward =
-        _incentivesController.claimRewards(assets, type(uint256).max, address(this)).wadToRay();
+      uint256 freshRewards = _incentivesController.getRewardsBalance(assets, address(this));
+      uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshRewards);
+      uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
+
       accRewardstokenPerShare = accRewardstokenPerShare.add(
-        freshReward.rayDivNoRounding(_supply.wadToRay())
+        (diff).rayDivNoRounding(_supply.wadToRay())
       );
+
+      lifeTimeRewards = externalLifetimeRewards;
     }
   }
 
-  /**
-   * @dev Update the rewards and claim rewards for the user
-   * @param user The address of the user to claim rewards for
-   */
-  function updateAndClaimRewards(address user) public {
-    updateRewards();
-    claimRewards(user);
+  function collectAndUpdateRewards() public {
+    if (block.number > lastRewardBlock) {
+      lastRewardBlock = block.number;
+      uint256 _supply = totalSupply();
+
+      // We need to perform the check even though there is no supply, as rewards can have accrued before it was removed
+
+      address[] memory assets = new address[](1);
+      assets[0] = address(ATOKEN);
+
+      uint256 freshlyClaimed =
+        _incentivesController.claimRewards(assets, type(uint256).max, address(this));
+      uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshlyClaimed);
+      uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
+
+      if (_supply > 0 && diff > 0) {
+        accRewardstokenPerShare = accRewardstokenPerShare.add(
+          (diff).rayDivNoRounding(_supply.wadToRay())
+        );
+      }
+
+      if (diff > 0) {
+        lifeTimeRewards = externalLifetimeRewards;
+      }
+      // Unsure if we can also move this in
+      lifeTimeRewardsClaimed = externalLifetimeRewards;
+    }
+    /*
+  // This one could just as well do both?
+    address[] memory assets = new address[](1);
+    assets[0] = address(ATOKEN);
+    uint256 freshlyClaimed =
+      _incentivesController.claimRewards(assets, type(uint256).max, address(this));
+    lifeTimeRewardsClaimed = lifeTimeRewardsClaimed.add(freshlyClaimed);*/
   }
 
   /**
@@ -479,10 +515,18 @@ contract StaticATokenLM is ERC20 {
    * makes sense for small holders
    * @param user The address of the user to claim rewards for
    */
-  function claimRewards(address user) public {
-    // Claim rewards without collecting the latest rewards
+  function claimRewards(address user, bool forceUpdate) public {
+    if (forceUpdate) {
+      collectAndUpdateRewards();
+    }
+
     uint256 balance = balanceOf(user);
-    uint256 reward = _getClaimableRewards(user, balance); // Remember that this is converting to wad
+    uint256 reward = _getClaimableRewards(user, balance, false);
+    uint256 totBal = IERC20(currentRewardToken).balanceOf(address(this));
+    if (reward > totBal) {
+      // Throw away excess rewards
+      reward = totBal;
+    }
     if (reward > 0) {
       unclaimedRewards[user] = 0;
       IERC20(currentRewardToken).safeTransfer(user, reward);
@@ -508,21 +552,48 @@ contract StaticATokenLM is ERC20 {
   function _updateUnclaimedRewards(address user) internal {
     uint256 balance = balanceOf(user);
     if (balance > 0) {
-      uint256 pending = _getPendingRewards(user, balance);
+      uint256 pending = _getPendingRewards(user, balance, false);
       unclaimedRewards[user] = unclaimedRewards[user].add(pending);
     }
   }
 
   /**
-   * @dev Compute the pending in RAY (rounded down). Pending is the amount to add  (not yet unclaimed) rewards in RAY (rounded down).
+   * @dev Compute the pending in RAY (rounded down). Pending is the amount to add (not yet unclaimed) rewards in RAY (rounded down).
    * @param user The user to compute for
    * @param balance The balance of the user
    * @return The amound of pending rewards in RAY
    */
-  function _getPendingRewards(address user, uint256 balance) internal view returns (uint256) {
+  function _getPendingRewards(
+    address user,
+    uint256 balance,
+    bool fresh
+  ) internal view returns (uint256) {
+    if (balance == 0) {
+      return 0;
+    }
+
+    // TODO: This could retrieve the last such that we know the most up to date stuff :eyes:
     // Compute the pending rewards in ray, rounded down.
     uint256 rayBalance = balance.wadToRay();
-    uint256 _reward = rayBalance.rayMulNoRounding(accRewardstokenPerShare);
+
+    uint256 _supply = totalSupply();
+    uint256 _accRewardstokenPerShare = accRewardstokenPerShare;
+
+    if (_supply != 0 && fresh) {
+      // Done purely virtually, this is used for retrieving up to date rewards for the ui
+      address[] memory assets = new address[](1);
+      assets[0] = address(ATOKEN);
+
+      uint256 freshReward = _incentivesController.getRewardsBalance(assets, address(this));
+      uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshReward);
+      uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
+
+      _accRewardstokenPerShare = _accRewardstokenPerShare.add(
+        (diff).rayDivNoRounding(_supply.wadToRay())
+      );
+    }
+
+    uint256 _reward = rayBalance.rayMulNoRounding(_accRewardstokenPerShare);
     uint256 _debt = rewardDebts[user];
     if (_reward > _debt) {
       // Safe because line above
@@ -531,9 +602,20 @@ contract StaticATokenLM is ERC20 {
     return 0;
   }
 
-  function _getClaimableRewards(address user, uint256 balance) internal view returns (uint256) {
-    uint256 reward = unclaimedRewards[user].add(_getPendingRewards(user, balance));
+  function _getClaimableRewards(
+    address user,
+    uint256 balance,
+    bool fresh
+  ) internal view returns (uint256) {
+    uint256 reward = unclaimedRewards[user].add(_getPendingRewards(user, balance, fresh));
     return reward.rayToWadNoRounding();
+  }
+
+  function getTotalClaimableRewards() public view returns (uint256) {
+    address[] memory assets = new address[](1);
+    assets[0] = address(ATOKEN);
+    uint256 freshRewards = _incentivesController.getRewardsBalance(assets, address(this));
+    return IERC20(currentRewardToken).balanceOf(address(this)).add(freshRewards);
   }
 
   /**
@@ -542,6 +624,10 @@ contract StaticATokenLM is ERC20 {
    * @return The claimable amount of rewards in WAD
    */
   function getClaimableRewards(address user) public view returns (uint256) {
-    return _getClaimableRewards(user, balanceOf(user));
+    return _getClaimableRewards(user, balanceOf(user), true);
+  }
+
+  function getUnclaimedRewards(address user) public view returns (uint256) {
+    return unclaimedRewards[user].rayToWadNoRounding();
   }
 }
