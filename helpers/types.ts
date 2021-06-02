@@ -394,6 +394,7 @@ export interface IReserveCollateralParams {
   baseLTVAsCollateral: string;
   liquidationThreshold: string;
   liquidationBonus: string;
+  exposureCap: string;
 }
 export interface IMarketRates {
   borrowRate: string;

@@ -22,6 +22,7 @@ export const strategyDAI: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
+  exposureCap: '0',
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -36,6 +37,7 @@ export const strategyUSDC: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
+  exposureCap: '0',
 };
 
 export const strategyUSDT: IReserveParams = {
@@ -50,6 +52,7 @@ export const strategyUSDT: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
+  exposureCap: '0',
 };
 
 export const strategyWETH: IReserveParams = {
@@ -64,6 +67,7 @@ export const strategyWETH: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
+  exposureCap: '0',
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -78,6 +82,7 @@ export const strategyWBTC: IReserveParams = {
   reserveFactor: '2000',
   borrowCap: '0',
   supplyCap: '0',
+  exposureCap: '0',
 };
 
 export const strategyMATIC: IReserveParams = {
@@ -91,6 +96,7 @@ export const strategyMATIC: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   borrowCap: '0',
   supplyCap: '0',
+  exposureCap: '0',
   reserveFactor: '2000',
 };
 
@@ -105,5 +111,6 @@ export const strategyAAVE: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   borrowCap: '0',
   supplyCap: '0',
+  exposureCap: '0',
   reserveFactor: '0',
 };
