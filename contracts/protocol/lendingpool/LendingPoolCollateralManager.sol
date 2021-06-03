@@ -18,6 +18,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {CachingHelper} from '../libraries/helpers/CachingHelper.sol';
 
 /**
  * @title LendingPoolCollateralManager contract
@@ -160,7 +161,9 @@ contract LendingPoolCollateralManager is
       }
     }
 
-    debtReserve.updateState();
+    CachingHelper.CachedData memory debtReserveCachedData = CachingHelper.fetchData(debtReserve);
+
+    debtReserve.updateState(debtReserveCachedData);
 
     if (vars.userVariableDebt >= vars.actualDebtToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
@@ -200,7 +203,9 @@ contract LendingPoolCollateralManager is
         emit ReserveUsedAsCollateralEnabled(collateralAsset, msg.sender);
       }
     } else {
-      collateralReserve.updateState();
+      CachingHelper.CachedData memory collateralReserveCachedData = CachingHelper.fetchData(collateralReserve);
+
+      collateralReserve.updateState(collateralReserveCachedData);
       collateralReserve.updateInterestRates(
         collateralAsset,
         address(vars.collateralAtoken),

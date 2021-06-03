@@ -26,6 +26,7 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {CachingHelper} from '../libraries/helpers/CachingHelper.sol';
 
 /**
  * @title LendingPool contract
@@ -270,6 +271,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    CachingHelper.CachedData memory cachedData = CachingHelper.fetchData(reserve);
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
 
@@ -283,7 +285,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       interestRateMode
     );
 
-    reserve.updateState();
+    reserve.updateState(cachedData);
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
@@ -323,6 +325,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    CachingHelper.CachedData memory cachedData = CachingHelper.fetchData(reserve);
 
     IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
     IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
@@ -338,7 +341,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       aTokenAddress
     );
 
-    reserve.updateState();
+    reserve.updateState(cachedData);
 
     IStableDebtToken(address(stableDebtToken)).burn(user, stableDebt);
     IStableDebtToken(address(stableDebtToken)).mint(
@@ -435,6 +438,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 currentPremium;
     uint256 currentAmountPlusPremium;
     address debtToken;
+    address[] aTokenAddresses;
+    uint256[] premiums;
   }
 
   /**
@@ -465,40 +470,44 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     FlashLoanLocalVars memory vars;
 
+    vars.aTokenAddresses = new address[](assets.length);
+    vars.premiums = new uint256[](assets.length);
+
     ValidationLogic.validateFlashloan(assets, amounts, _reserves);
 
-    address[] memory aTokenAddresses = new address[](assets.length);
-    uint256[] memory premiums = new uint256[](assets.length);
 
     vars.receiver = IFlashLoanReceiver(receiverAddress);
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
-      aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
+      vars.aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
 
-      premiums[vars.i] = amounts[vars.i].mul(_flashLoanPremiumTotal).div(10000);
+      vars.premiums[vars.i] = amounts[vars.i].mul(_flashLoanPremiumTotal).div(10000);
 
-      IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
+      IAToken(vars.aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
 
     require(
-      vars.receiver.executeOperation(assets, amounts, premiums, msg.sender, params),
+      vars.receiver.executeOperation(assets, amounts, vars.premiums, msg.sender, params),
       Errors.LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       vars.currentAsset = assets[vars.i];
       vars.currentAmount = amounts[vars.i];
-      vars.currentPremium = premiums[vars.i];
-      vars.currentATokenAddress = aTokenAddresses[vars.i];
+      vars.currentPremium = vars.premiums[vars.i];
+      vars.currentATokenAddress = vars.aTokenAddresses[vars.i];
       vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
 
       if (DataTypes.InterestRateMode(modes[vars.i]) == DataTypes.InterestRateMode.NONE) {
-        _reserves[vars.currentAsset].updateState();
-        _reserves[vars.currentAsset].cumulateToLiquidityIndex(
+        DataTypes.ReserveData storage reserve = _reserves[vars.currentAsset];
+        CachingHelper.CachedData memory cachedData = CachingHelper.fetchData(reserve);
+
+        reserve.updateState(cachedData);
+        reserve.cumulateToLiquidityIndex(
           IERC20(vars.currentATokenAddress).totalSupply(),
           vars.currentPremium
         );
-        _reserves[vars.currentAsset].updateInterestRates(
+        reserve.updateInterestRates(
           vars.currentAsset,
           vars.currentATokenAddress,
           vars.currentAmountPlusPremium,
@@ -863,6 +872,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
     DataTypes.ReserveData storage reserve = _reserves[vars.asset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
+    CachingHelper.CachedData memory cachedData = CachingHelper.fetchData(reserve);
 
     address oracle = _addressesProvider.getPriceOracle();
 
@@ -886,7 +896,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    reserve.updateState();
+    reserve.updateState(cachedData);
 
     uint256 currentStableRate = 0;
 
@@ -944,17 +954,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode
   ) internal {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    CachingHelper.CachedData memory cachedData = CachingHelper.fetchData(reserve);
 
     ValidationLogic.validateDeposit(reserve, amount);
 
-    address aToken = reserve.aTokenAddress;
+    reserve.updateState(cachedData);
+    reserve.updateInterestRates(asset, cachedData.aTokenAddress, amount, 0);
 
-    reserve.updateState();
-    reserve.updateInterestRates(asset, aToken, amount, 0);
+    IERC20(asset).safeTransferFrom(msg.sender, cachedData.aTokenAddress, amount);
 
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
-
-    bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+    bool isFirstDeposit = IAToken(cachedData.aTokenAddress).mint(onBehalfOf, amount, cachedData.newLiquidityIndex);
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
@@ -971,14 +980,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
+    CachingHelper.CachedData memory cachedData = CachingHelper.fetchData(reserve);
 
     address aToken = reserve.aTokenAddress;
 
-    reserve.updateState();
+    reserve.updateState(cachedData);
 
-    uint256 liquidityIndex = reserve.liquidityIndex;
-
-    uint256 userBalance = IAToken(aToken).scaledBalanceOf(msg.sender).rayMul(liquidityIndex);
+    uint256 userBalance = IAToken(aToken).scaledBalanceOf(msg.sender).rayMul(cachedData.newLiquidityIndex);
 
     uint256 amountToWithdraw = amount;
 
@@ -990,7 +998,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, liquidityIndex);
+    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, cachedData.newLiquidityIndex);
 
     if (userConfig.isUsingAsCollateral(reserve.id)) {
       if (userConfig.isBorrowingAny()) {
@@ -1022,6 +1030,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    CachingHelper.CachedData memory cachedData = CachingHelper.fetchData(reserve);
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
 
@@ -1043,7 +1052,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       paybackAmount = amount;
     }
 
-    reserve.updateState();
+    reserve.updateState(cachedData);
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);

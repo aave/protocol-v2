@@ -14,6 +14,7 @@ import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {DataTypes} from '../types/DataTypes.sol';
+import {CachingHelper} from '../helpers/CachingHelper.sol';
 
 /**
  * @title ReserveLogic library
@@ -107,29 +108,22 @@ library ReserveLogic {
    * @dev Updates the liquidity cumulative index and the variable borrow index.
    * @param reserve the reserve object
    **/
-  function updateState(DataTypes.ReserveData storage reserve) internal {
-    uint256 scaledVariableDebt =
-      IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
-    uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
-    uint256 previousLiquidityIndex = reserve.liquidityIndex;
-    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
+  function updateState(DataTypes.ReserveData storage reserve, CachingHelper.CachedData memory cachedData) internal {
 
-    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
       _updateIndexes(
         reserve,
-        scaledVariableDebt,
-        previousLiquidityIndex,
-        previousVariableBorrowIndex,
-        lastUpdatedTimestamp
+        cachedData
       );
+
+    
 
     _accrueToTreasury(
       reserve,
-      scaledVariableDebt,
-      previousVariableBorrowIndex,
-      newLiquidityIndex,
-      newVariableBorrowIndex,
-      lastUpdatedTimestamp
+      cachedData.oldScaledVariableDebt,
+      cachedData.oldVariableBorrowIndex,
+      cachedData.newLiquidityIndex,
+      cachedData.newVariableBorrowIndex,
+      cachedData.reserveLastUpdateTimestamp
     );
   }
 
@@ -209,9 +203,7 @@ library ReserveLogic {
     (vars.totalStableDebt, vars.avgStableRate) = IStableDebtToken(vars.stableDebtTokenAddress)
       .getTotalSupplyAndAvgRate();
 
-    //calculates the total variable debt locally using the scaled total supply instead
-    //of totalSupply(), as it's noticeably cheaper. Also, the index has been
-    //updated by the previous updateState() call
+
     vars.totalVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress)
       .scaledTotalSupply()
       .rayMul(reserve.variableBorrowIndex);
@@ -327,47 +319,40 @@ library ReserveLogic {
   /**
    * @dev Updates the reserve indexes and the timestamp of the update
    * @param reserve The reserve reserve to be updated
-   * @param scaledVariableDebt The scaled variable debt
-   * @param liquidityIndex The last stored liquidity index
-   * @param variableBorrowIndex The last stored variable borrow index
+   * @param cachedData The cache layer holding the cached protocol data
    **/
   function _updateIndexes(
     DataTypes.ReserveData storage reserve,
-    uint256 scaledVariableDebt,
-    uint256 liquidityIndex,
-    uint256 variableBorrowIndex,
-    uint40 timestamp
-  ) internal returns (uint256, uint256) {
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+    CachingHelper.CachedData memory cachedData
+  ) internal {
 
-    uint256 newLiquidityIndex = liquidityIndex;
-    uint256 newVariableBorrowIndex = variableBorrowIndex;
+    cachedData.newLiquidityIndex = cachedData.oldLiquidityIndex;
+    cachedData.newVariableBorrowIndex = cachedData.oldVariableBorrowIndex;
 
     //only cumulating if there is any income being produced
-    if (currentLiquidityRate > 0) {
+    if (cachedData.oldLiquidityRate > 0) {
       uint256 cumulatedLiquidityInterest =
-        MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
-      newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
-      require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+        MathUtils.calculateLinearInterest(cachedData.oldLiquidityRate, cachedData.reserveLastUpdateTimestamp);
+       cachedData.newLiquidityIndex = cumulatedLiquidityInterest.rayMul(cachedData.oldLiquidityIndex);
+      require( cachedData.newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
-      reserve.liquidityIndex = uint128(newLiquidityIndex);
+      reserve.liquidityIndex = uint128(cachedData.newLiquidityIndex);
 
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
-      if (scaledVariableDebt != 0) {
+      if (cachedData.oldScaledVariableDebt != 0) {
         uint256 cumulatedVariableBorrowInterest =
-          MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
-        newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
+          MathUtils.calculateCompoundedInterest(cachedData.oldVariableBorrowRate, cachedData.reserveLastUpdateTimestamp);
+        cachedData.newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(cachedData.oldVariableBorrowIndex);
         require(
-          newVariableBorrowIndex <= type(uint128).max,
+          cachedData.newVariableBorrowIndex <= type(uint128).max,
           Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
         );
-        reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
+        reserve.variableBorrowIndex = uint128(cachedData.newVariableBorrowIndex);
       }
     }
 
     //solium-disable-next-line
     reserve.lastUpdateTimestamp = uint40(block.timestamp);
-    return (newLiquidityIndex, newVariableBorrowIndex);
   }
 }
