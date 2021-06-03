@@ -58,10 +58,10 @@ contract StaticATokenLM is ERC20 {
   uint256 public lifeTimeRewards;
   uint256 public lastRewardBlock;
 
-  // user => rewardDebt (in RAYs)
-  mapping(address => uint256) public rewardDebts;
+  // user => userIndex (in RAYs)
+  mapping(address => uint256) private _userIndex;
   // user => unclaimedRewards (in RAYs)
-  mapping(address => uint256) public unclaimedRewards;
+  mapping(address => uint256) private _unclaimedRewards;
 
   IAaveIncentivesController internal _incentivesController;
   address public immutable currentRewardToken;
@@ -429,11 +429,11 @@ contract StaticATokenLM is ERC20 {
     // Only enter when not minting or burning.
     if (from != address(0)) {
       _updateUnclaimedRewards(from);
-      _updateRewardDebt(from, balanceOf(from).sub(amount));
+      _updateUserIndex(from);
     }
     if (to != address(0)) {
       _updateUnclaimedRewards(to);
-      _updateRewardDebt(to, balanceOf(to).add(amount));
+      _updateUserIndex(to);
     }
   }
 
@@ -508,21 +508,18 @@ contract StaticATokenLM is ERC20 {
       reward = totBal;
     }
     if (reward > 0) {
-      unclaimedRewards[user] = 0;
+      _unclaimedRewards[user] = 0;
       IERC20(currentRewardToken).safeTransfer(user, reward);
-      _updateRewardDebt(user, balance);
+      _updateUserIndex(user);
     }
   }
 
   /**
    * @dev Update the rewardDebt for a user with balance as his balance
    * @param user The user to update
-   * @param balance The balance of the user
    */
-  function _updateRewardDebt(address user, uint256 balance) internal {
-    // If we round down here, we could underestimate the debt, thereby paying out too much. Better to overestimate.
-    uint256 rayBalance = balance.wadToRay();
-    rewardDebts[user] = rayBalance.rayMul(rewardIndex);
+  function _updateUserIndex(address user) internal {
+    _userIndex[user] = rewardIndex;
   }
 
   /**
@@ -533,7 +530,7 @@ contract StaticATokenLM is ERC20 {
     uint256 balance = balanceOf(user);
     if (balance > 0) {
       uint256 pending = _getPendingRewards(user, balance, false);
-      unclaimedRewards[user] = unclaimedRewards[user].add(pending);
+      _unclaimedRewards[user] = _unclaimedRewards[user].add(pending);
     }
   }
 
@@ -571,13 +568,8 @@ contract StaticATokenLM is ERC20 {
       _rewardIndex = _rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
     }
 
-    uint256 _reward = rayBalance.rayMulNoRounding(_rewardIndex);
-    uint256 _debt = rewardDebts[user];
-    if (_reward > _debt) {
-      // Safe because line above
-      return _reward - _debt;
-    }
-    return 0;
+    uint256 _reward = rayBalance.rayMulNoRounding(_rewardIndex.sub(_userIndex[user]));
+    return _reward;
   }
 
   /**
@@ -592,7 +584,7 @@ contract StaticATokenLM is ERC20 {
     uint256 balance,
     bool fresh
   ) internal view returns (uint256) {
-    uint256 reward = unclaimedRewards[user].add(_getPendingRewards(user, balance, fresh));
+    uint256 reward = _unclaimedRewards[user].add(_getPendingRewards(user, balance, fresh));
     return reward.rayToWadNoRounding();
   }
 
@@ -622,6 +614,6 @@ contract StaticATokenLM is ERC20 {
    * @return The unclaimed amount of rewards in WAD
    */
   function getUnclaimedRewards(address user) public view returns (uint256) {
-    return unclaimedRewards[user].rayToWadNoRounding();
+    return _unclaimedRewards[user].rayToWadNoRounding();
   }
 }
