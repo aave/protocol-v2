@@ -467,8 +467,7 @@ library ValidationLogic {
       );
 
     uint256 exposureCap = reserve.configuration.getExposureCapMemory();
-    uint256 totalSupplyStableDebt = IERC20(reserve.stableDebtTokenAddress).totalSupply();
-    uint256 totalSupplyVariableDebt = IERC20(reserve.variableDebtTokenAddress).totalSupply();
+    uint256 totalSupplyAtoken = IERC20(reserve.aTokenAddress).totalSupply();
     (, , , uint256 reserveDecimals, ) = reserve.configuration.getParamsMemory();
 
     require(
@@ -477,9 +476,7 @@ library ValidationLogic {
     );
 
     require(
-      exposureCap == 0 ||
-        ltv == 0 ||
-        totalSupplyStableDebt.add(totalSupplyVariableDebt).div(10**reserveDecimals) < exposureCap,
+      exposureCap == 0 || ltv == 0 || totalSupplyAtoken.div(10**reserveDecimals) < exposureCap,
       Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED
     );
   }

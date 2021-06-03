@@ -116,10 +116,7 @@ library GenericLogic {
         vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
         vars.exposureCap = currentReserve.configuration.getExposureCap();
         vars.exposureCapped =
-          IERC20(currentReserve.stableDebtTokenAddress)
-            .totalSupply()
-            .add(IERC20(currentReserve.variableDebtTokenAddress).totalSupply())
-            .div(10**vars.decimals) >
+          IERC20(currentReserve.aTokenAddress).totalSupply().div(10**vars.decimals) >
           vars.exposureCap;
         vars.avgLtv = vars.avgLtv.add(vars.exposureCapped ? 0 : vars.userBalanceETH.mul(vars.ltv));
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
