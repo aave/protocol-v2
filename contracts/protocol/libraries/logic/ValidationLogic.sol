@@ -446,7 +446,8 @@ library ValidationLogic {
    * @param reservesCount The number of available reserves
    * @param oracle The price oracle
    */
-  function validateHealthFactor(
+  function validateWithdrawCollateral(
+    address collateral,
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -454,7 +455,8 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) internal view {
-    (, , , , uint256 healthFactor) =
+    DataTypes.ReserveData memory reserve = reservesData[collateral];
+    (, , uint256 ltv, , uint256 healthFactor) =
       GenericLogic.calculateUserAccountData(
         from,
         reservesData,
@@ -464,9 +466,21 @@ library ValidationLogic {
         oracle
       );
 
+    uint256 exposureCap = reserve.configuration.getExposureCapMemory();
+    uint256 totalSupplyStableDebt = IERC20(reserve.stableDebtTokenAddress).totalSupply();
+    uint256 totalSupplyVariableDebt = IERC20(reserve.variableDebtTokenAddress).totalSupply();
+    (, , , uint256 reserveDecimals, ) = reserve.configuration.getParamsMemory();
+
     require(
       healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
+    );
+
+    require(
+      exposureCap == 0 ||
+        ltv == 0 ||
+        totalSupplyStableDebt.add(totalSupplyVariableDebt).div(10**reserveDecimals) < exposureCap,
+      Errors.VL_SUPPLY_CAP_EXCEEDED
     );
   }
 
