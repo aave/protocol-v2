@@ -547,15 +547,12 @@ contract StaticATokenLM is ERC20 {
       return 0;
     }
 
-    // TODO: This could retrieve the last such that we know the most up to date stuff :eyes:
-    // Compute the pending rewards in ray, rounded down.
     uint256 rayBalance = balance.wadToRay();
 
     uint256 _supply = totalSupply();
     uint256 _rewardIndex = rewardIndex;
 
     if (_supply != 0 && fresh) {
-      // Done purely virtually, this is used for retrieving up to date rewards for the ui
       address[] memory assets = new address[](1);
       assets[0] = address(ATOKEN);
 

@@ -1045,11 +1045,6 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.gte(
       ctxtAfterWithdrawal.user2PendingRewards
     );
-    console.log('All the way down here');
-
-    console.log(`${formatEther(ctxtAfterClaim.staticATokenTotalClaimableRewards)}`);
-    console.log(`${formatEther(ctxtAfterClaim.user2StkAaveBalance)}`);
-    console.log(`${formatEther(ctxtAfterClaim.staticATokenStkAaveBalance)}`);
 
     expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(0);
     expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(ctxtAfterWithdrawal.user2PendingRewards);
