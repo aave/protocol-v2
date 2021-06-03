@@ -110,6 +110,7 @@ library Errors {
   string public constant VL_RESERVE_PAUSED = '86';
   string public constant LPC_CALLER_NOT_RISK_OR_POOL_ADMIN = '87';
   string public constant RC_INVALID_EXPOSURE_CAP = '88';
+  string public constant VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED = '89';
 
   enum CollateralManagerErrors {
     NO_ERROR,

@@ -480,7 +480,7 @@ library ValidationLogic {
       exposureCap == 0 ||
         ltv == 0 ||
         totalSupplyStableDebt.add(totalSupplyVariableDebt).div(10**reserveDecimals) < exposureCap,
-      Errors.VL_SUPPLY_CAP_EXCEEDED
+      Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED
     );
   }
 

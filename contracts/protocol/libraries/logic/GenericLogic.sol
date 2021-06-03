@@ -47,10 +47,12 @@ library GenericLogic {
     uint256 reservesLength;
     uint256 normalizedIncome;
     uint256 normalizedDebt;
+    uint256 exposureCap;
     bool healthFactorBelowThreshold;
     address currentReserveAddress;
     bool usageAsCollateralEnabled;
     bool userUsesReserveAsCollateral;
+    bool exposureCapped;
   }
 
   /**
@@ -112,8 +114,14 @@ library GenericLogic {
         vars.userBalanceETH = vars.assetPrice.mul(vars.userBalance).div(vars.assetUnit);
 
         vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
-
-        vars.avgLtv = vars.avgLtv.add(vars.userBalanceETH.mul(vars.ltv));
+        vars.exposureCap = currentReserve.configuration.getExposureCap();
+        vars.exposureCapped =
+          IERC20(currentReserve.stableDebtTokenAddress)
+            .totalSupply()
+            .add(IERC20(currentReserve.variableDebtTokenAddress).totalSupply())
+            .div(10**vars.decimals) >
+          vars.exposureCap;
+        vars.avgLtv = vars.avgLtv.add(vars.exposureCapped ? 0 : vars.userBalanceETH.mul(vars.ltv));
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
           vars.userBalanceETH.mul(vars.liquidationThreshold)
         );
@@ -132,7 +140,7 @@ library GenericLogic {
           IERC20(currentReserve.stableDebtTokenAddress).balanceOf(user)
         );
         vars.userDebtETH = vars.assetPrice.mul(vars.userDebt).div(vars.assetUnit);
-        vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);         
+        vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);
       }
     }
 
