@@ -86,7 +86,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -101,6 +103,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Unpauses the ETH reserve by pool admin ', async () => {
@@ -118,7 +121,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -133,6 +138,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
   it('Pauses the ETH reserve by emergency admin', async () => {
     const { configurator, weth, helpersContract, addressesProvider, users, emergencyAdmin } =
@@ -149,7 +155,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -164,6 +172,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Unpauses the ETH reserve by emergency admin ', async () => {
@@ -181,7 +190,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -196,6 +207,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Check the only admin or emergency admin can pauseReserve ', async () => {
@@ -229,7 +241,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -244,6 +258,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Unfreezes the ETH reserve by Pool admin', async () => {
@@ -261,7 +276,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -276,6 +293,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
   it('Freezes the ETH reserve by Risk Admin', async () => {
     const { configurator, weth, helpersContract, riskAdmin } = testEnv;
@@ -292,7 +310,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -307,6 +327,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Unfreezes the ETH reserve by Risk admin', async () => {
@@ -324,7 +345,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -339,6 +362,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Check the onlyRiskOrPoolAdmins on freezeReserve ', async () => {
@@ -371,7 +395,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(false);
@@ -386,6 +412,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Activates the ETH reserve for borrowing via pool admin', async () => {
@@ -404,7 +431,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -419,6 +448,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
 
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
@@ -437,7 +467,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(false);
@@ -452,6 +484,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Activates the ETH reserve for borrowing via risk admin', async () => {
@@ -470,7 +503,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -485,6 +520,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
 
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
@@ -510,7 +546,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Deactivates the ETH reserve as collateral via pool admin', async () => {
     const { configurator, helpersContract, weth } = testEnv;
-    await configurator.configureReserveAsCollateral(weth.address, 0, 0, 0);
+    await configurator.configureReserveAsCollateral(weth.address, 0, 0, 0, 0);
 
     const {
       decimals,
@@ -523,7 +559,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -538,11 +576,12 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Activates the ETH reserve as collateral via pool admin', async () => {
     const { configurator, helpersContract, weth } = testEnv;
-    await configurator.configureReserveAsCollateral(weth.address, '8000', '8250', '10500');
+    await configurator.configureReserveAsCollateral(weth.address, '8000', '8250', '10500', '0');
 
     const {
       decimals,
@@ -555,7 +594,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -570,12 +611,13 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
   it('Deactivates the ETH reserve as collateral via risk admin', async () => {
     const { configurator, helpersContract, weth, riskAdmin } = testEnv;
     await configurator
       .connect(riskAdmin.signer)
-      .configureReserveAsCollateral(weth.address, 0, 0, 0);
+      .configureReserveAsCollateral(weth.address, 0, 0, 0, 0);
 
     const {
       decimals,
@@ -588,7 +630,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -603,13 +647,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Activates the ETH reserve as collateral via risk admin', async () => {
     const { configurator, helpersContract, weth, riskAdmin } = testEnv;
     await configurator
       .connect(riskAdmin.signer)
-      .configureReserveAsCollateral(weth.address, '8000', '8250', '10500');
+      .configureReserveAsCollateral(weth.address, '8000', '8250', '10500', '0');
 
     const {
       decimals,
@@ -622,7 +667,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -637,6 +684,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Check the onlyRiskOrPoolAdmin on configureReserveAsCollateral ', async () => {
@@ -644,7 +692,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     await expect(
       configurator
         .connect(emergencyAdmin.signer)
-        .configureReserveAsCollateral(weth.address, '7500', '8000', '10500'),
+        .configureReserveAsCollateral(weth.address, '7500', '8000', '10500', '0'),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_RISK_OR_POOL_ADMIN);
   });
@@ -663,7 +711,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -678,6 +728,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Enables stable borrow rate on the ETH reserve via pool admin', async () => {
@@ -694,7 +745,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -709,6 +762,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
   it('Disable stable borrow rate on the ETH reserve risk admin', async () => {
     const { configurator, helpersContract, weth, riskAdmin } = testEnv;
@@ -724,7 +778,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -739,6 +795,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Enables stable borrow rate on the ETH reserve risk admin', async () => {
@@ -755,7 +812,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -770,6 +829,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Check the onlyRiskOrPoolAdmin on disableReserveStableRate', async () => {
@@ -810,6 +870,13 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_RISK_OR_POOL_ADMIN);
   });
+  it('Check the onlyRiskOrPoolAdmin on setExposureCap', async () => {
+    const { configurator, users, weth, emergencyAdmin } = testEnv;
+    await expect(
+      configurator.connect(emergencyAdmin.signer).setExposureCap(weth.address, '3000000000'),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(LPC_CALLER_NOT_RISK_OR_POOL_ADMIN);
+  });
 
   it('Changes the reserve factor of WETH via pool admin', async () => {
     const { configurator, helpersContract, weth } = testEnv;
@@ -825,7 +892,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -839,6 +908,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
     expect(reserveFactor).to.be.equal(1000);
   });
   it('Changes the reserve factor of WETH risk admin', async () => {
@@ -855,7 +925,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -869,6 +941,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
     expect(borrowCap).to.be.equal(strategyWETH.borrowCap);
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
     expect(reserveFactor).to.be.equal(1000);
   });
 
@@ -901,7 +974,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -916,6 +991,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(1000);
     expect(borrowCap).to.be.equal('3000000');
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
   it('Changes the borrow Cap of WETH risk admin', async () => {
     const { configurator, helpersContract, weth, riskAdmin } = testEnv;
@@ -931,7 +1007,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -946,6 +1024,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(1000);
     expect(borrowCap).to.be.equal('3000000');
     expect(supplyCap).to.be.equal(strategyWETH.supplyCap);
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
 
   it('Changes the supply Cap of WETH via pool admin', async () => {
@@ -962,7 +1041,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -977,6 +1058,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(1000);
     expect(borrowCap).to.be.equal('3000000');
     expect(supplyCap).to.be.equal('3000000');
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
   });
   it('Changes the supply Cap of WETH via risk admin', async () => {
     const { configurator, helpersContract, weth, riskAdmin } = testEnv;
@@ -992,7 +1074,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isActive,
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(weth.address);
-    const { borrowCap, supplyCap } = await helpersContract.getReserveCaps(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
     const isPaused = await helpersContract.getPaused(weth.address);
 
     expect(borrowingEnabled).to.be.equal(true);
@@ -1007,6 +1091,73 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(1000);
     expect(borrowCap).to.be.equal('3000000');
     expect(supplyCap).to.be.equal('3000000');
+    expect(exposureCap).to.be.equal(strategyWETH.exposureCap);
+  });
+  it('Changes the exposure Cap of WETH via pool admin', async () => {
+    const { configurator, helpersContract, weth } = testEnv;
+    await configurator.setExposureCap(weth.address, '3000000');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFrozen,
+    } = await helpersContract.getReserveConfigurationData(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
+    const isPaused = await helpersContract.getPaused(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isPaused).to.be.equal(false);
+    expect(isFrozen).to.be.equal(false);
+    expect(decimals).to.be.equal(strategyWETH.reserveDecimals);
+    expect(ltv).to.be.equal(strategyWETH.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
+    expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(reserveFactor).to.be.equal(1000);
+    expect(borrowCap).to.be.equal('3000000');
+    expect(supplyCap).to.be.equal('3000000');
+    expect(exposureCap).to.be.equal('3000000');
+  });
+  it('Changes the exposure Cap of WETH via risk admin', async () => {
+    const { configurator, helpersContract, weth, riskAdmin } = testEnv;
+    await configurator.connect(riskAdmin.signer).setExposureCap(weth.address, '3000000');
+    const {
+      decimals,
+      ltv,
+      liquidationBonus,
+      liquidationThreshold,
+      reserveFactor,
+      stableBorrowRateEnabled,
+      borrowingEnabled,
+      isActive,
+      isFrozen,
+    } = await helpersContract.getReserveConfigurationData(weth.address);
+    const { borrowCap, supplyCap, exposureCap } = await helpersContract.getReserveCaps(
+      weth.address
+    );
+    const isPaused = await helpersContract.getPaused(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+    expect(isActive).to.be.equal(true);
+    expect(isPaused).to.be.equal(false);
+    expect(isFrozen).to.be.equal(false);
+    expect(decimals).to.be.equal(strategyWETH.reserveDecimals);
+    expect(ltv).to.be.equal(strategyWETH.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyWETH.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
+    expect(stableBorrowRateEnabled).to.be.equal(strategyWETH.stableBorrowRateEnabled);
+    expect(reserveFactor).to.be.equal(1000);
+    expect(borrowCap).to.be.equal('3000000');
+    expect(supplyCap).to.be.equal('3000000');
+    expect(exposureCap).to.be.equal('3000000');
   });
 
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
