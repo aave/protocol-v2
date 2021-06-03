@@ -456,7 +456,7 @@ library ValidationLogic {
     address oracle
   ) internal view {
     DataTypes.ReserveData memory reserve = reservesData[collateral];
-    (, , uint256 ltv, , uint256 healthFactor) =
+    (, , uint256 ltv, uint256 liquidationThreshold, uint256 healthFactor) =
       GenericLogic.calculateUserAccountData(
         from,
         reservesData,
@@ -475,8 +475,17 @@ library ValidationLogic {
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
+    // exposureCap == 0 means no cap => can withdraw
+    // ltv > liquidationThreshold means that there is enough collateral margin => can withdraw
+    // ltv == 0 means all current collaterals have exceeded the exposure cap => can withdraw
+    // last means that for this asset the cap is not yet exceeded => can withdraw
+    // else this means the user is trying to withdraw a collateral that has exceeded the exposure cap, and that it
+    // as other collaterals available to withdraw: he must withdraw from other collateral reserves first
     require(
-      exposureCap == 0 || ltv == 0 || totalSupplyAtoken.div(10**reserveDecimals) < exposureCap,
+      exposureCap == 0 ||
+        ltv > liquidationThreshold ||
+        ltv == 0 ||
+        totalSupplyAtoken.div(10**reserveDecimals) < exposureCap,
       Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED
     );
   }

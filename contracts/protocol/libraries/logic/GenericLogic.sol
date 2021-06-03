@@ -100,6 +100,7 @@ library GenericLogic {
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
         .configuration
         .getParams();
+      vars.exposureCap = currentReserve.configuration.getExposureCap();
 
       vars.assetUnit = 10**vars.decimals;
       vars.assetPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
@@ -114,7 +115,6 @@ library GenericLogic {
         vars.userBalanceETH = vars.assetPrice.mul(vars.userBalance).div(vars.assetUnit);
 
         vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
-        vars.exposureCap = currentReserve.configuration.getExposureCap();
         vars.exposureCapped =
           vars.exposureCap != 0 &&
           IERC20(currentReserve.aTokenAddress).totalSupply().div(10**vars.decimals) >
