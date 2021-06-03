@@ -1195,7 +1195,7 @@ const calcLinearInterest = (
   return cumulatedInterest;
 };
 
-const calcCompoundedInterest = (
+export const calcCompoundedInterest = (
   rate: BigNumber,
   currentTimestamp: BigNumber,
   lastUpdateTimestamp: BigNumber

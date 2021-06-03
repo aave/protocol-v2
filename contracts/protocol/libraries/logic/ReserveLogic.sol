@@ -123,7 +123,7 @@ library ReserveLogic {
         lastUpdatedTimestamp
       );
 
-    _mintToTreasury(
+    _accrueToTreasury(
       reserve,
       scaledVariableDebt,
       previousVariableBorrowIndex,
@@ -271,7 +271,7 @@ library ReserveLogic {
    * @param newLiquidityIndex The new liquidity index
    * @param newVariableBorrowIndex The variable borrow index after the last accumulation of the interest
    **/
-  function _mintToTreasury(
+  function _accrueToTreasury(
     DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
@@ -320,7 +320,7 @@ library ReserveLogic {
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
     if (vars.amountToMint != 0) {
-      IAToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+      reserve.accruedToTreasury = reserve.accruedToTreasury.add(vars.amountToMint.rayDiv(newLiquidityIndex));
     }
   }
 
