@@ -53,7 +53,7 @@ contract StaticATokenLM is ERC20 {
 
   mapping(address => uint256) public _nonces;
 
-  uint256 public accRewardstokenPerShare;
+  uint256 public rewardIndex;
   uint256 public lifeTimeRewardsClaimed;
   uint256 public lifeTimeRewards;
   uint256 public lastRewardBlock;
@@ -363,7 +363,6 @@ contract StaticATokenLM is ERC20 {
   ) internal returns (uint256) {
     require(recipient != address(0), 'INVALID_RECIPIENT');
     _updateRewards();
-    _updateUnclaimedRewards(recipient);
 
     if (fromUnderlying) {
       ASSET.safeTransferFrom(depositor, address(this), amount);
@@ -373,8 +372,6 @@ contract StaticATokenLM is ERC20 {
     }
     uint256 amountToMint = _dynamicToStaticAmount(amount, rate());
     _mint(recipient, amountToMint);
-
-    _updateRewardDebt(recipient, balanceOf(recipient));
 
     return amountToMint;
   }
@@ -389,7 +386,6 @@ contract StaticATokenLM is ERC20 {
     require(recipient != address(0), 'INVALID_RECIPIENT');
     require(staticAmount == 0 || dynamicAmount == 0, 'ONLY_ONE_AMOUNT_FORMAT_ALLOWED');
     _updateRewards();
-    _updateUnclaimedRewards(owner);
 
     uint256 userBalance = balanceOf(owner);
 
@@ -416,7 +412,6 @@ contract StaticATokenLM is ERC20 {
       ATOKEN.safeTransfer(recipient, amountToWithdraw);
     }
 
-    _updateRewardDebt(owner, balanceOf(owner));
     return (amountToBurn, amountToWithdraw);
   }
 
@@ -432,15 +427,11 @@ contract StaticATokenLM is ERC20 {
     uint256 amount
   ) internal override {
     // Only enter when not minting or burning.
-    if (from != address(0) && to != address(0)) {
-      // The rewards not claimed to the contract yet is transferrred to the buyer as well.
-      // Often the recent rewards < gas, so only needed for whales to run updateClaim before it
-
-      // Pay out rewards (from)
+    if (from != address(0)) {
       _updateUnclaimedRewards(from);
       _updateRewardDebt(from, balanceOf(from).sub(amount));
-
-      // Pay out rewards (to)
+    }
+    if (to != address(0)) {
       _updateUnclaimedRewards(to);
       _updateRewardDebt(to, balanceOf(to).add(amount));
     }
@@ -450,7 +441,6 @@ contract StaticATokenLM is ERC20 {
    * @dev Updates virtual internal accounting of rewards.
    */
   function _updateRewards() internal {
-    // Update the virtual rewards without actually claiming.
     if (block.number > lastRewardBlock) {
       lastRewardBlock = block.number;
       uint256 _supply = totalSupply();
@@ -466,9 +456,7 @@ contract StaticATokenLM is ERC20 {
       uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshRewards);
       uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
 
-      accRewardstokenPerShare = accRewardstokenPerShare.add(
-        (diff).rayDivNoRounding(_supply.wadToRay())
-      );
+      rewardIndex = rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
 
       lifeTimeRewards = externalLifetimeRewards;
     }
@@ -491,9 +479,7 @@ contract StaticATokenLM is ERC20 {
       uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
 
       if (_supply > 0 && diff > 0) {
-        accRewardstokenPerShare = accRewardstokenPerShare.add(
-          (diff).rayDivNoRounding(_supply.wadToRay())
-        );
+        rewardIndex = rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
       }
 
       if (diff > 0) {
@@ -536,7 +522,7 @@ contract StaticATokenLM is ERC20 {
   function _updateRewardDebt(address user, uint256 balance) internal {
     // If we round down here, we could underestimate the debt, thereby paying out too much. Better to overestimate.
     uint256 rayBalance = balance.wadToRay();
-    rewardDebts[user] = rayBalance.rayMul(accRewardstokenPerShare);
+    rewardDebts[user] = rayBalance.rayMul(rewardIndex);
   }
 
   /**
@@ -572,7 +558,7 @@ contract StaticATokenLM is ERC20 {
     uint256 rayBalance = balance.wadToRay();
 
     uint256 _supply = totalSupply();
-    uint256 _accRewardstokenPerShare = accRewardstokenPerShare;
+    uint256 _rewardIndex = rewardIndex;
 
     if (_supply != 0 && fresh) {
       // Done purely virtually, this is used for retrieving up to date rewards for the ui
@@ -582,13 +568,10 @@ contract StaticATokenLM is ERC20 {
       uint256 freshReward = _incentivesController.getRewardsBalance(assets, address(this));
       uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshReward);
       uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
-
-      _accRewardstokenPerShare = _accRewardstokenPerShare.add(
-        (diff).rayDivNoRounding(_supply.wadToRay())
-      );
+      _rewardIndex = _rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
     }
 
-    uint256 _reward = rayBalance.rayMulNoRounding(_accRewardstokenPerShare);
+    uint256 _reward = rayBalance.rayMulNoRounding(_rewardIndex);
     uint256 _debt = rewardDebts[user];
     if (_reward > _debt) {
       // Safe because line above
