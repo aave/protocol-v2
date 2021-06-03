@@ -426,14 +426,11 @@ contract StaticATokenLM is ERC20 {
     address to,
     uint256 amount
   ) internal override {
-    // Only enter when not minting or burning.
     if (from != address(0)) {
-      _updateUnclaimedRewards(from);
-      _updateUserIndex(from);
+      _updateUser(from);
     }
     if (to != address(0)) {
-      _updateUnclaimedRewards(to);
-      _updateUserIndex(to);
+      _updateUser(to);
     }
   }
 
@@ -457,7 +454,6 @@ contract StaticATokenLM is ERC20 {
       uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
 
       rewardIndex = rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
-
       lifeTimeRewards = externalLifetimeRewards;
     }
   }
@@ -523,15 +519,16 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Adding the pending rewards to the unclaimed for specific user
+   * @dev Adding the pending rewards to the unclaimed for specific user and updating user index
    * @param user The address of the user to update
    */
-  function _updateUnclaimedRewards(address user) internal {
+  function _updateUser(address user) internal {
     uint256 balance = balanceOf(user);
     if (balance > 0) {
       uint256 pending = _getPendingRewards(user, balance, false);
       _unclaimedRewards[user] = _unclaimedRewards[user].add(pending);
     }
+    _updateUserIndex(user);
   }
 
   /**
@@ -568,8 +565,7 @@ contract StaticATokenLM is ERC20 {
       _rewardIndex = _rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
     }
 
-    uint256 _reward = rayBalance.rayMulNoRounding(_rewardIndex.sub(_userIndex[user]));
-    return _reward;
+    return rayBalance.rayMulNoRounding(_rewardIndex.sub(_userIndex[user]));
   }
 
   /**
