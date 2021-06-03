@@ -539,17 +539,19 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Mints the assets accrued through the reserve factor to the treasury in the form of aTokens
+   * @param reserves The list of reserves for which the minting needs to be executed
    **/
-  function mintToTreasury() public {
-    for (uint256 i = 0; i < _reservesCount; i++) {
-      address reserveAddress = _reservesList[i];
-
-      // if a reserve has been dropped this might happen
-      if(reserveAddress == address(0)){
-        continue;
-      }
+  function mintToTreasury(address[] calldata reserves) public {
+    for (uint256 i = 0; i < reserves.length; i++) {
+      address reserveAddress = reserves[i];
       
       DataTypes.ReserveData storage reserve = _reserves[reserveAddress];
+
+      // this cover both inactive reserves and invalid reserves since the flag will be 0 for both
+      if(!reserve.configuration.getActive()){
+        continue;
+      }
+
       uint256 accruedToTreasury = reserve.accruedToTreasury;
 
       if (accruedToTreasury != 0) {

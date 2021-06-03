@@ -9,7 +9,7 @@ import './helpers/utils/math';
 const { expect } = require('chai');
 
 makeSuite('Mint to treasury', (testEnv: TestEnv) => {
-  it('User 0 deposits 1000 DAI. Borrower borrows 100 DAI. Clock moved forward one year. Calculates and verifies the amount earned by the treasury', async () => {
+  it('User 0 deposits 1000 DAI. Borrower borrows 100 DAI. Clock moved forward one year. Calculates and verifies the amount accrued to the treasury', async () => {
     const { users, pool, dai, helpersContract } = testEnv;
 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
@@ -61,9 +61,30 @@ makeSuite('Mint to treasury', (testEnv: TestEnv) => {
 
     const { accruedToTreasury } = await pool.getReserveData(dai.address);
 
+    console.log("Accrued to treasury ", accruedToTreasury.toString());
+
     expect(accruedToTreasury.toString()).to.be.bignumber.almostEqual(
       expectedAccruedToTreasury,
-      'Invalid amount accrued to treasury'
+      'Invalid amount accrued to the treasury'
     );
+  });
+
+  it('Mints the accrued to the treasury', async () => {
+    const { users, pool, dai, aDai, helpersContract } = testEnv;
+
+    const treasuryAddress = await aDai.RESERVE_TREASURY_ADDRESS();
+    const { accruedToTreasury } = await pool.getReserveData(dai.address);
+
+    await waitForTx(await pool.connect(users[0].signer).mintToTreasury([dai.address]));
+    const normalizedIncome =  await pool.getReserveNormalizedIncome(dai.address);
+
+    const treasuryBalance = await aDai.balanceOf(treasuryAddress);
+
+    const expectedTreasuryBalance = new BigNumber(accruedToTreasury.toString()).rayMul(
+      new BigNumber(normalizedIncome.toString())
+    );
+    
+    expect(treasuryBalance.toString()).to.be.bignumber.almostEqual(expectedTreasuryBalance, "Invalid treasury balance after minting");
+
   });
 });
