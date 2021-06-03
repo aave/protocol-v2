@@ -259,8 +259,13 @@ makeSuite('Reward Aware AToken', (testEnv: TestEnv) => {
           `\taRew Total supply: ${formatEther(
             await aRew.totalSupply()
           )}. Rewards in contract: ${formatEther(
-            await rew.balanceOf(aRew.address)
-          )}. Summed claimable: ${formatEther(summedClaimable)}`
+            await (await rew.balanceOf(aRew.address)).sub(await aRew.totalSupply())
+          )}. Summed claimable: ${formatEther(summedClaimable)}
+          . Summed aRew REW balance + claimable REW: ${formatEther(
+            await (await rew.balanceOf(aRew.address))
+              .sub(await aRew.totalSupply())
+              .add(await rew.getClaimableRewards(aRew.address))
+          )}`
         );
       };
 
@@ -289,15 +294,25 @@ makeSuite('Reward Aware AToken', (testEnv: TestEnv) => {
 
       console.log(`Withdraws`);
       for (let i = 0; i < users.length; i++) {
+        console.log('--p');
+        await printState();
+        console.log('--p');
         await pool
           .connect(users[i].signer)
           .withdraw(rew.address, MAX_UINT_AMOUNT, users[i].address);
+        console.log('--a');
+        await printState();
+        console.log('--a');
       }
 
       // Claims and check rewards
       console.log(`Claim`);
       for (let i = 0; i < users.length; i++) {
+        console.log('--c');
+        await printState();
+        console.log('--c');
         await claim(users[i]);
+        console.log('claimed', users[i].address);
       }
 
       await printState();

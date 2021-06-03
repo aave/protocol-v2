@@ -10,7 +10,6 @@ import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IRewardsAwareAToken} from '../../interfaces/IRewardsAwareAToken.sol';
 import {IAToken} from '../../interfaces/IRewardsAwareAToken.sol';
-import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../../protocol/libraries/math/PercentageMath.sol';
 
 /**
@@ -20,7 +19,6 @@ import {PercentageMath} from '../../protocol/libraries/math/PercentageMath.sol';
  */
 abstract contract RewardsAwareAToken is AToken, IRewardsAwareAToken {
   using SafeERC20 for IERC20;
-  using WadRayMath for uint256;
   using PercentageMath for uint256;
 
   // Precision of the multiplier for calculating distribution percentages
@@ -172,7 +170,7 @@ abstract contract RewardsAwareAToken is AToken, IRewardsAwareAToken {
     _unstake(UNDERLYING_ASSET_ADDRESS(), amount);
 
     // Update distribution of rewards
-    _updateDistribution(user);
+    // _updateDistribution(user);
 
     // burns aTokens
     return super.burn(user, receiverOfUnderlying, amount, index);
@@ -195,7 +193,7 @@ abstract contract RewardsAwareAToken is AToken, IRewardsAwareAToken {
     _stake(UNDERLYING_ASSET_ADDRESS(), amount);
 
     // Update distribution of rewards
-    _updateDistribution(user);
+    // _updateDistribution(user);
 
     // mint aTokens
     return super.mint(user, amount, index);
@@ -384,6 +382,8 @@ abstract contract RewardsAwareAToken is AToken, IRewardsAwareAToken {
    * @param user The `user` address to update the rewards index and retrieve latest reward distribution
    */
   function _updateDistribution(address user) internal {
+    if (user == address(0)) return;
+
     uint256 aTokenBalance = balanceOf(user);
     if (aTokenBalance == 0) {
       return;
@@ -444,12 +444,12 @@ abstract contract RewardsAwareAToken is AToken, IRewardsAwareAToken {
         uint256 reserveRewards = unstaked.percentMul(rewardsReserveFactor);
         if (reserveRewards > 0) {
           userRewards = unstaked.sub(reserveRewards);
-          IERC20(token).transfer(_treasury, reserveRewards);
+          IERC20(token).safeTransfer(_treasury, reserveRewards);
         }
       }
 
       // Transfer rewards to user
-      IERC20(token).transfer(msg.sender, userRewards);
+      IERC20(token).safeTransfer(msg.sender, userRewards);
       emit Claim(msg.sender, token, accruedRewards, userRewards);
     }
   }
