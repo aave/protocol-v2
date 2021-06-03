@@ -1,7 +1,6 @@
 import BigNumberJs from 'bignumber.js';
-import { reverse } from 'dns';
 import { BigNumber } from 'ethers';
-import { formatEther, parseEther } from 'ethers/lib/utils';
+import { parseEther } from 'ethers/lib/utils';
 import { MAX_UINT_AMOUNT } from '../../helpers/constants';
 import { evmRevert, evmSnapshot, increaseTime } from '../../helpers/misc-utils';
 import { makeSuite, SignerWithAddress, TestEnv } from './helpers/make-suite';
@@ -229,93 +228,6 @@ makeSuite('Reward Aware AToken', (testEnv: TestEnv) => {
       await claim(user2);
       await claim(user3);
       await claim(user4);
-    });
-
-    it('Annoying case. Four users with different portions of REW via the aToken contract (withdraw before last claim)', async () => {
-      const {
-        users: [user1, user2, user3, user4],
-        rew,
-        aRew,
-        pool,
-      } = testEnv;
-      let users = [user1, user2]; //, user3, user4];
-
-      const printState = async () => {
-        let summedClaimable = BigNumber.from(0);
-        for (let i = 0; i < users.length; i++) {
-          let usr = users[i];
-          console.log(
-            `\tUser rewards: ${formatEther(
-              await rew.balanceOf(usr.address)
-            )}. User claimable rewards: ${formatEther(
-              await aRew.getClaimableRewards(rew.address, usr.address)
-            )}. User aRew balance: ${formatEther(await aRew.balanceOf(usr.address))}`
-          );
-          summedClaimable = summedClaimable.add(
-            await aRew.getClaimableRewards(rew.address, usr.address)
-          );
-        }
-        console.log(
-          `\taRew Total supply: ${formatEther(
-            await aRew.totalSupply()
-          )}. Rewards in contract: ${formatEther(
-            await (await rew.balanceOf(aRew.address)).sub(await aRew.totalSupply())
-          )}. Summed claimable: ${formatEther(summedClaimable)}
-          . Summed aRew REW balance + claimable REW: ${formatEther(
-            await (await rew.balanceOf(aRew.address))
-              .sub(await aRew.totalSupply())
-              .add(await rew.getClaimableRewards(aRew.address))
-          )}`
-        );
-      };
-
-      // Deposits
-      console.log(`Mint and deposit`);
-      await mintAndDeposit(user1, false, parseEther('1'));
-      await mintAndDeposit(user2, false, parseEther('2.5'));
-      //await mintAndDeposit(user3, false, parseEther('4.7'));
-      //await mintAndDeposit(user4, false, parseEther('0.31'));
-
-      // Pass time to generate rewards
-      console.log(`IncreaseTime by 1000`);
-      await increaseTime(1000);
-
-      await printState();
-
-      // Claims and check rewards
-      console.log(`Claim`);
-      await claim(user1);
-
-      await printState();
-
-      // Pass time to generate rewards
-      console.log(`Increase time by 2713`);
-      await increaseTime(2713);
-
-      console.log(`Withdraws`);
-      for (let i = 0; i < users.length; i++) {
-        console.log('--p');
-        await printState();
-        console.log('--p');
-        await pool
-          .connect(users[i].signer)
-          .withdraw(rew.address, MAX_UINT_AMOUNT, users[i].address);
-        console.log('--a');
-        await printState();
-        console.log('--a');
-      }
-
-      // Claims and check rewards
-      console.log(`Claim`);
-      for (let i = 0; i < users.length; i++) {
-        console.log('--c');
-        await printState();
-        console.log('--c');
-        await claim(users[i]);
-        console.log('claimed', users[i].address);
-      }
-
-      await printState();
     });
 
     it('Two users with half the portion of REW via the aToken contract, one burns and them claims', async () => {
