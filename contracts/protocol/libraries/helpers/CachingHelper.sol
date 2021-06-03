@@ -4,13 +4,14 @@ pragma experimental ABIEncoderV2;
 
 import {DataTypes} from '../types/DataTypes.sol';
 import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
+import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 
 library CachingHelper {
   struct CachedData {
     uint256 oldScaledVariableDebt;
     uint256 oldTotalVariableDebt;
-    uint256 newSscaledVariableDebt;
-    uint256 newTtotalVariableDebt;
+    uint256 newScaledVariableDebt;
+    uint256 newTotalVariableDebt;
     uint256 oldPrincipalStableDebt;
     uint256 oldAvgStableBorrowRate;
     uint256 oldTotalStableDebt;
@@ -28,6 +29,7 @@ library CachingHelper {
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
     uint40 reserveLastUpdateTimestamp;
+    uint40 stableDebtLastUpdateTimestamp;
   }
 
   function fetchData(DataTypes.ReserveData storage reserveData)
@@ -51,9 +53,23 @@ library CachingHelper {
 
     cachedData.reserveLastUpdateTimestamp = reserveData.lastUpdateTimestamp;
 
-    cachedData.oldScaledVariableDebt = IVariableDebtToken(cachedData.variableDebtTokenAddress)
+    cachedData.oldScaledVariableDebt = cachedData.newScaledVariableDebt = IVariableDebtToken(
+      cachedData
+        .variableDebtTokenAddress
+    )
       .scaledTotalSupply();
-    
+
+    (
+      cachedData.oldPrincipalStableDebt,
+      cachedData.oldTotalStableDebt,
+      cachedData.oldAvgStableBorrowRate,
+      cachedData.stableDebtLastUpdateTimestamp
+    ) = IStableDebtToken(cachedData.stableDebtTokenAddress).getSupplyData();
+
+    cachedData.newPrincipalStableDebt = cachedData.oldPrincipalStableDebt;
+    cachedData.newTotalStableDebt = cachedData.oldTotalStableDebt;
+    cachedData.newAvgStableBorrowRate = cachedData.oldAvgStableBorrowRate;
+
     return cachedData;
   }
 }

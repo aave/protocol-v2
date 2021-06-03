@@ -169,26 +169,37 @@ contract LendingPoolCollateralManager is
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate,
-        debtReserve.variableBorrowIndex
+        debtReserveCachedData.newVariableBorrowIndex
+      );
+      debtReserveCachedData.newScaledVariableDebt = debtReserveCachedData.oldScaledVariableDebt.sub(
+        vars.actualDebtToLiquidate.rayDiv(debtReserveCachedData.newVariableBorrowIndex)
       );
     } else {
       // If the user doesn't have variable debt, no need to try to burn variable debt tokens
       if (vars.userVariableDebt > 0) {
-        IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
+        IVariableDebtToken(debtReserveCachedData.variableDebtTokenAddress).burn(
           user,
           vars.userVariableDebt,
-          debtReserve.variableBorrowIndex
+          debtReserveCachedData.newVariableBorrowIndex
         );
+        debtReserveCachedData.newScaledVariableDebt = debtReserveCachedData
+          .oldScaledVariableDebt
+          .sub(vars.userVariableDebt.rayDiv(debtReserveCachedData.newVariableBorrowIndex));
       }
-      IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(
+      IStableDebtToken(debtReserveCachedData.stableDebtTokenAddress).burn(
         user,
+        vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
+      );
+
+      debtReserveCachedData.newPrincipalStableDebt = debtReserveCachedData
+        .newTotalStableDebt = debtReserveCachedData.oldTotalStableDebt.sub(
         vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
     }
 
     debtReserve.updateInterestRates(
+      debtReserveCachedData,
       debtAsset,
-      debtReserve.aTokenAddress,
       vars.actualDebtToLiquidate,
       0
     );
@@ -203,12 +214,13 @@ contract LendingPoolCollateralManager is
         emit ReserveUsedAsCollateralEnabled(collateralAsset, msg.sender);
       }
     } else {
-      CachingHelper.CachedData memory collateralReserveCachedData = CachingHelper.fetchData(collateralReserve);
+      CachingHelper.CachedData memory collateralReserveCachedData =
+        CachingHelper.fetchData(collateralReserve);
 
       collateralReserve.updateState(collateralReserveCachedData);
       collateralReserve.updateInterestRates(
+        collateralReserveCachedData,
         collateralAsset,
-        address(vars.collateralAtoken),
         0,
         vars.maxCollateralToLiquidate
       );

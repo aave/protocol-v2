@@ -108,23 +108,13 @@ library ReserveLogic {
    * @dev Updates the liquidity cumulative index and the variable borrow index.
    * @param reserve the reserve object
    **/
-  function updateState(DataTypes.ReserveData storage reserve, CachingHelper.CachedData memory cachedData) internal {
+  function updateState(
+    DataTypes.ReserveData storage reserve,
+    CachingHelper.CachedData memory cachedData
+  ) internal {
+    _updateIndexes(reserve, cachedData);
 
-      _updateIndexes(
-        reserve,
-        cachedData
-      );
-
-    
-
-    _accrueToTreasury(
-      reserve,
-      cachedData.oldScaledVariableDebt,
-      cachedData.oldVariableBorrowIndex,
-      cachedData.newLiquidityIndex,
-      cachedData.newVariableBorrowIndex,
-      cachedData.reserveLastUpdateTimestamp
-    );
+    _accrueToTreasury(reserve, cachedData);
   }
 
   /**
@@ -191,22 +181,21 @@ library ReserveLogic {
    **/
   function updateInterestRates(
     DataTypes.ReserveData storage reserve,
+    CachingHelper.CachedData memory cachedData,
     address reserveAddress,
-    address aTokenAddress,
     uint256 liquidityAdded,
     uint256 liquidityTaken
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
 
-    vars.stableDebtTokenAddress = reserve.stableDebtTokenAddress;
+    if (cachedData.oldTotalStableDebt != cachedData.newTotalStableDebt) {
+      cachedData.newAvgStableBorrowRate = IStableDebtToken(cachedData.stableDebtTokenAddress)
+        .getAverageStableRate();
+    }
 
-    (vars.totalStableDebt, vars.avgStableRate) = IStableDebtToken(vars.stableDebtTokenAddress)
-      .getTotalSupplyAndAvgRate();
-
-
-    vars.totalVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress)
-      .scaledTotalSupply()
-      .rayMul(reserve.variableBorrowIndex);
+    cachedData.newTotalVariableDebt = cachedData.newScaledVariableDebt.rayMul(
+      cachedData.newVariableBorrowIndex
+    );
 
     (
       vars.newLiquidityRate,
@@ -214,13 +203,13 @@ library ReserveLogic {
       vars.newVariableRate
     ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
       reserveAddress,
-      aTokenAddress,
+      cachedData.aTokenAddress,
       liquidityAdded,
       liquidityTaken,
-      vars.totalStableDebt,
-      vars.totalVariableDebt,
-      vars.avgStableRate,
-      reserve.configuration.getReserveFactor()
+      cachedData.newTotalStableDebt,
+      cachedData.newTotalVariableDebt,
+      cachedData.newAvgStableBorrowRate,
+      cachedData.reserveConfiguration.getReserveFactorMemory()
     );
     require(vars.newLiquidityRate <= type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
     require(vars.newStableRate <= type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
@@ -235,8 +224,8 @@ library ReserveLogic {
       vars.newLiquidityRate,
       vars.newStableRate,
       vars.newVariableRate,
-      reserve.liquidityIndex,
-      reserve.variableBorrowIndex
+      cachedData.newLiquidityIndex,
+      cachedData.newVariableBorrowIndex
     );
   }
 
@@ -258,46 +247,35 @@ library ReserveLogic {
    * @dev Mints part of the repaid interest to the reserve treasury as a function of the reserveFactor for the
    * specific asset.
    * @param reserve The reserve reserve to be updated
-   * @param scaledVariableDebt The current scaled total variable debt
-   * @param previousVariableBorrowIndex The variable borrow index before the last accumulation of the interest
-   * @param newLiquidityIndex The new liquidity index
-   * @param newVariableBorrowIndex The variable borrow index after the last accumulation of the interest
+   * @param cachedData The caching layer for the reserve data
    **/
   function _accrueToTreasury(
     DataTypes.ReserveData storage reserve,
-    uint256 scaledVariableDebt,
-    uint256 previousVariableBorrowIndex,
-    uint256 newLiquidityIndex,
-    uint256 newVariableBorrowIndex,
-    uint40 timestamp
+    CachingHelper.CachedData memory cachedData
   ) internal {
     MintToTreasuryLocalVars memory vars;
 
-    vars.reserveFactor = reserve.configuration.getReserveFactor();
+    vars.reserveFactor = cachedData.reserveConfiguration.getReserveFactorMemory();
 
     if (vars.reserveFactor == 0) {
       return;
     }
 
-    //fetching the principal, total stable debt and the avg stable rate
-    (
-      vars.principalStableDebt,
-      vars.currentStableDebt,
-      vars.avgStableRate,
-      vars.stableSupplyUpdatedTimestamp
-    ) = IStableDebtToken(reserve.stableDebtTokenAddress).getSupplyData();
-
     //calculate the last principal variable debt
-    vars.previousVariableDebt = scaledVariableDebt.rayMul(previousVariableBorrowIndex);
+    vars.previousVariableDebt = cachedData.oldScaledVariableDebt.rayMul(
+      cachedData.oldVariableBorrowIndex
+    );
 
     //calculate the new total supply after accumulation of the index
-    vars.currentVariableDebt = scaledVariableDebt.rayMul(newVariableBorrowIndex);
+    vars.currentVariableDebt = cachedData.oldScaledVariableDebt.rayMul(
+      cachedData.newVariableBorrowIndex
+    );
 
     //calculate the stable debt until the last timestamp update
     vars.cumulatedStableInterest = MathUtils.calculateCompoundedInterest(
       vars.avgStableRate,
       vars.stableSupplyUpdatedTimestamp,
-      timestamp
+      cachedData.reserveLastUpdateTimestamp
     );
 
     vars.previousStableDebt = vars.principalStableDebt.rayMul(vars.cumulatedStableInterest);
@@ -312,7 +290,9 @@ library ReserveLogic {
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
     if (vars.amountToMint != 0) {
-      reserve.accruedToTreasury = reserve.accruedToTreasury.add(vars.amountToMint.rayDiv(newLiquidityIndex));
+      reserve.accruedToTreasury = reserve.accruedToTreasury.add(
+        vars.amountToMint.rayDiv(cachedData.newLiquidityIndex)
+      );
     }
   }
 
@@ -325,16 +305,23 @@ library ReserveLogic {
     DataTypes.ReserveData storage reserve,
     CachingHelper.CachedData memory cachedData
   ) internal {
-
     cachedData.newLiquidityIndex = cachedData.oldLiquidityIndex;
     cachedData.newVariableBorrowIndex = cachedData.oldVariableBorrowIndex;
 
     //only cumulating if there is any income being produced
     if (cachedData.oldLiquidityRate > 0) {
       uint256 cumulatedLiquidityInterest =
-        MathUtils.calculateLinearInterest(cachedData.oldLiquidityRate, cachedData.reserveLastUpdateTimestamp);
-       cachedData.newLiquidityIndex = cumulatedLiquidityInterest.rayMul(cachedData.oldLiquidityIndex);
-      require( cachedData.newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+        MathUtils.calculateLinearInterest(
+          cachedData.oldLiquidityRate,
+          cachedData.reserveLastUpdateTimestamp
+        );
+      cachedData.newLiquidityIndex = cumulatedLiquidityInterest.rayMul(
+        cachedData.oldLiquidityIndex
+      );
+      require(
+        cachedData.newLiquidityIndex <= type(uint128).max,
+        Errors.RL_LIQUIDITY_INDEX_OVERFLOW
+      );
 
       reserve.liquidityIndex = uint128(cachedData.newLiquidityIndex);
 
@@ -342,8 +329,13 @@ library ReserveLogic {
       //that there is actual variable debt before accumulating
       if (cachedData.oldScaledVariableDebt != 0) {
         uint256 cumulatedVariableBorrowInterest =
-          MathUtils.calculateCompoundedInterest(cachedData.oldVariableBorrowRate, cachedData.reserveLastUpdateTimestamp);
-        cachedData.newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(cachedData.oldVariableBorrowIndex);
+          MathUtils.calculateCompoundedInterest(
+            cachedData.oldVariableBorrowRate,
+            cachedData.reserveLastUpdateTimestamp
+          );
+        cachedData.newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(
+          cachedData.oldVariableBorrowIndex
+        );
         require(
           cachedData.newVariableBorrowIndex <= type(uint128).max,
           Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
