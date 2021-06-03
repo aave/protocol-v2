@@ -242,7 +242,7 @@ export const deployAaveOracleV2 = async (
 ) =>
   withSaveAndVerify(
     await new AaveOracleV2Factory(await getFirstSigner()).deploy(...args),
-    eContractid.AaveOracle,
+    eContractid.AaveOracleV2,
     args,
     verify
   );

@@ -91,6 +91,7 @@ export enum eContractid {
   RewardsATokenMock = 'RewardsATokenMock',
   RewardsToken = 'RewardsToken',
   CurveRewardsAwareAToken = 'CurveRewardsAwareAToken',
+  AaveOracleV2 = 'AaveOracleV2',
 }
 
 /*
