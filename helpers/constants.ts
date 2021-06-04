@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { eEthereumNetwork } from './types';
 
 // ----------------
 // MATH
@@ -71,4 +72,12 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
   USD: '5848466240000000',
   REW: oneEther.multipliedBy('0.00137893825230').toFixed(),
+};
+
+export const MASTER_CHEF = {
+  [eEthereumNetwork.main]: '0xc2EdaD668740f1aA35E4D8f227fB8E17dcA888Cd',
+};
+export const SUSHI_BAR = { [eEthereumNetwork.main]: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272' };
+export const SUSHI_TOKEN = {
+  [eEthereumNetwork.main]: '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2',
 };
