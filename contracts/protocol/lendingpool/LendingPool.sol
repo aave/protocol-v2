@@ -198,7 +198,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         onBehalfOf,
         amount,
         interestRateMode,
-        reserve.aTokenAddress,
         referralCode,
         true
       )
@@ -542,7 +541,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
             onBehalfOf,
             vars.currentAmount,
             modes[vars.i],
-            vars.currentATokenAddress,
             referralCode,
             false
           )
@@ -877,7 +875,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf;
     uint256 amount;
     uint256 interestRateMode;
-    address aTokenAddress;
     uint16 referralCode;
     bool releaseUnderlying;
   }

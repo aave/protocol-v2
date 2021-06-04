@@ -273,17 +273,17 @@ library ReserveLogic {
 
     //calculate the stable debt until the last timestamp update
     vars.cumulatedStableInterest = MathUtils.calculateCompoundedInterest(
-      vars.avgStableRate,
-      vars.stableSupplyUpdatedTimestamp,
+      cachedData.oldAvgStableBorrowRate,
+      cachedData.stableDebtLastUpdateTimestamp,
       cachedData.reserveLastUpdateTimestamp
     );
 
-    vars.previousStableDebt = vars.principalStableDebt.rayMul(vars.cumulatedStableInterest);
+    vars.previousStableDebt = cachedData.oldPrincipalStableDebt.rayMul(vars.cumulatedStableInterest);
 
     //debt accrued is the sum of the current debt minus the sum of the debt at the last update
     vars.totalDebtAccrued = vars
       .currentVariableDebt
-      .add(vars.currentStableDebt)
+      .add(cachedData.oldTotalStableDebt)
       .sub(vars.previousVariableDebt)
       .sub(vars.previousStableDebt);
 

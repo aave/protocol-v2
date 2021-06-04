@@ -166,7 +166,7 @@ contract LendingPoolCollateralManager is
     debtReserve.updateState(debtReserveCachedData);
 
     if (vars.userVariableDebt >= vars.actualDebtToLiquidate) {
-      IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
+      IVariableDebtToken(debtReserveCachedData.variableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate,
         debtReserveCachedData.newVariableBorrowIndex

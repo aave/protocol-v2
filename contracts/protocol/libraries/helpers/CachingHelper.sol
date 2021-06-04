@@ -39,17 +39,15 @@ library CachingHelper {
   {
     CachedData memory cachedData;
 
+    cachedData.reserveConfiguration = reserveData.configuration;
     cachedData.oldLiquidityIndex = reserveData.liquidityIndex;
     cachedData.oldVariableBorrowIndex = reserveData.variableBorrowIndex;
+    cachedData.oldLiquidityRate = reserveData.currentLiquidityRate;
+    cachedData.oldVariableBorrowRate = reserveData.currentVariableBorrowRate;
 
     cachedData.aTokenAddress = reserveData.aTokenAddress;
     cachedData.stableDebtTokenAddress = reserveData.stableDebtTokenAddress;
     cachedData.variableDebtTokenAddress = reserveData.variableDebtTokenAddress;
-
-    cachedData.reserveConfiguration = reserveData.configuration;
-
-    cachedData.oldLiquidityRate = reserveData.currentLiquidityRate;
-    cachedData.oldVariableBorrowRate = reserveData.currentVariableBorrowRate;
 
     cachedData.reserveLastUpdateTimestamp = reserveData.lastUpdateTimestamp;
 
