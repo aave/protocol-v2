@@ -305,7 +305,7 @@ contract StaticATokenLM is ERC20 {
    * @param amount The amount to convert from
    * @return uint256 The dynamic amount
    **/
-  function staticToDynamicAmount(uint256 amount) public view returns (uint256) {
+  function staticToDynamicAmount(uint256 amount) external view returns (uint256) {
     return _staticToDynamicAmount(amount, rate());
   }
 
@@ -315,7 +315,7 @@ contract StaticATokenLM is ERC20 {
    * @param amount The amount to convert from
    * @return uint256 The static (scaled) amount
    **/
-  function dynamicToStaticAmount(uint256 amount) public view returns (uint256) {
+  function dynamicToStaticAmount(uint256 amount) external view returns (uint256) {
     return _dynamicToStaticAmount(amount, rate());
   }
 
@@ -505,8 +505,8 @@ contract StaticATokenLM is ERC20 {
     }
     if (reward > 0) {
       _unclaimedRewards[user] = 0;
-      IERC20(currentRewardToken).safeTransfer(user, reward);
       _updateUserIndex(user);
+      IERC20(currentRewardToken).safeTransfer(user, reward);
     }
   }
 
@@ -585,7 +585,7 @@ contract StaticATokenLM is ERC20 {
    * @dev Get the total claimable rewards of the contract.
    * @return The current balance + pending rewards from the `_incentivesController`
    */
-  function getTotalClaimableRewards() public view returns (uint256) {
+  function getTotalClaimableRewards() external view returns (uint256) {
     address[] memory assets = new address[](1);
     assets[0] = address(ATOKEN);
     uint256 freshRewards = _incentivesController.getRewardsBalance(assets, address(this));
@@ -597,7 +597,7 @@ contract StaticATokenLM is ERC20 {
    * @param user The address of the user
    * @return The claimable amount of rewards in WAD
    */
-  function getClaimableRewards(address user) public view returns (uint256) {
+  function getClaimableRewards(address user) external view returns (uint256) {
     return _getClaimableRewards(user, balanceOf(user), true);
   }
 
@@ -606,7 +606,7 @@ contract StaticATokenLM is ERC20 {
    * @param user The address of the user
    * @return The unclaimed amount of rewards in WAD
    */
-  function getUnclaimedRewards(address user) public view returns (uint256) {
+  function getUnclaimedRewards(address user) external view returns (uint256) {
     return _unclaimedRewards[user].rayToWadNoRounding();
   }
 }
