@@ -326,6 +326,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       ctxtAfterDeposit.staticATokenATokenBalance
     );
     expect(ctxtAfterDeposit.userStaticATokenBalance).to.be.eq(ctxtAfterDeposit.staticATokenSupply);
+    expect(ctxtAfterDeposit.staticATokenATokenBalance).to.be.eq(
+      ctxtAfterDeposit.userDynamicStaticATokenBalance
+    );
     expect(ctxtAfterDeposit.staticATokenATokenBalance).to.be.eq(amountToDeposit);
 
     expect(ctxtAfterWithdrawal.userDynamicStaticATokenBalance).to.be.eq(
@@ -389,6 +392,10 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     expect(ctxtInitial.staticATokenSupply).to.be.eq(0);
     expect(ctxtInitial.userATokenBalance).to.be.eq(0);
+    expect(ctxtAfterDeposit.staticATokenATokenBalance).to.be.eq(
+      ctxtAfterDeposit.userDynamicStaticATokenBalance
+    );
+    expect(ctxtAfterDeposit.userStaticATokenBalance).to.be.eq(ctxtAfterDeposit.staticATokenSupply);
     expect(ctxtAfterDeposit.userDynamicStaticATokenBalance).to.be.eq(amountToDeposit);
     expect(ctxtAfterWithdrawal.userATokenBalance).to.be.eq(
       rayMul(
