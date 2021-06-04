@@ -1267,14 +1267,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
-  it('Authorized a new flashborrower', async () => {
+  it('Authorized a new flash borrower', async () => {
     const { dai, pool, configurator, users, riskAdmin } = testEnv;
     await configurator.authorizeFlashBorrower(users[4].address);
 
     const isFlashBorrowerAuthorized = await pool.isFlashBorrowerAuthorized(users[4].address);
     expect(isFlashBorrowerAuthorized).to.be.true;
   });
-  it('Unauthorized flashborrower', async () => {
+  it('Unauthorized flash borrower', async () => {
     const { dai, pool, configurator, users } = testEnv;
     await configurator.unauthorizeFlashBorrower(users[4].address);
 
