@@ -30,6 +30,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   before(async () => {
     _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
   });
+
   it('Authorize flash borowers', async () => {
     const { deployer, pool, weth, configurator, users } = testEnv;
     await configurator.authorizeFlashBorrower(deployer.address);
@@ -52,7 +53,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await pool.deposit(weth.address, amountToDeposit, userAddress, '0');
   });
 
-  it('Takes WETH flashloan with mode = 0, returns the funds correctly', async () => {
+  it('Takes WETH flash loan with mode = 0, returns the funds correctly', async () => {
     const { pool, helpersContract, weth } = testEnv;
 
     await pool.flashLoan(
@@ -81,7 +82,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     expect(currentLiquidityIndex.toString()).to.be.equal('1000000000000000000000000000');
   });
 
-  it('Takes an ETH flashloan with mode = 0 as big as the available liquidity', async () => {
+  it('Takes an ETH flash loan with mode = 0 as big as the available liquidity', async () => {
     const { pool, helpersContract, weth } = testEnv;
 
     const reserveDataBefore = await helpersContract.getReserveData(weth.address);
@@ -97,7 +98,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const reserveData = await helpersContract.getReserveData(weth.address);
 
-    const currentLiqudityRate = reserveData.liquidityRate;
+    const currentLiquidityRate = reserveData.liquidityRate;
     const currentLiquidityIndex = reserveData.liquidityIndex;
 
     const totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
@@ -105,7 +106,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       .plus(reserveData.totalVariableDebt.toString());
 
     expect(totalLiquidity.toString()).to.be.equal('1000000000000000000');
-    expect(currentLiqudityRate.toString()).to.be.equal('0');
+    expect(currentLiquidityRate.toString()).to.be.equal('0');
     expect(currentLiquidityIndex.toString()).to.be.equal('1000000000000000000000000000');
   });
 
@@ -129,7 +130,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     ).to.be.revertedWith(SAFEERC20_LOWLEVEL_CALL);
   });
 
-  it('Takes WETH flashloan, simulating a receiver as EOA (revert expected)', async () => {
+  it('Takes WETH flash loan, simulating a receiver as EOA (revert expected)', async () => {
     const { pool, weth, users } = testEnv;
     const caller = users[1];
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
@@ -299,14 +300,14 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
       .add(reserveData.totalStableDebt)
       .add(reserveData.totalVariableDebt)
       .toString();
-    const currentLiqudityRate = reserveData.liquidityRate.toString();
+    const currentLiquidityRate = reserveData.liquidityRate.toString();
     const currentLiquidityIndex = reserveData.liquidityIndex.toString();
     const currentUserBalance = userData.currentATokenBalance.toString();
 
     const expectedLiquidity = await convertToCurrencyDecimals(usdc.address, '1000');
 
     expect(totalLiquidity).to.be.equal(expectedLiquidity, 'Invalid total liquidity');
-    expect(currentLiqudityRate).to.be.equal('0', 'Invalid liquidity rate');
+    expect(currentLiquidityRate).to.be.equal('0', 'Invalid liquidity rate');
     expect(currentLiquidityIndex).to.be.equal(
       new BigNumber('1.00000').multipliedBy(oneRay).toFixed(),
       'Invalid liquidity index'

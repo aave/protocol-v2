@@ -825,20 +825,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  function authorizeFlashBorrower(address flashBorrower)
+  function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized)
     external
     override
     onlyLendingPoolConfigurator
   {
-    _authorizedFlashBorrowers[flashBorrower] = true;
-  }
-
-  function unauthorizeFlashBorrower(address flashBorrower)
-    external
-    override
-    onlyLendingPoolConfigurator
-  {
-    _authorizedFlashBorrowers[flashBorrower] = false;
+    _authorizedFlashBorrowers[flashBorrower] = authorized;
   }
 
   function isFlashBorrowerAuthorized(address flashBorrower) external view override returns (bool) {
