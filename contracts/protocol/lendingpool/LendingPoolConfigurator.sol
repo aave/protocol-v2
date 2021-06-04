@@ -229,7 +229,6 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     onlyPoolAdmin
   {
     ILendingPool cachedPool = _pool;
-
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
@@ -484,6 +483,18 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   function unregisterRiskAdmin(address admin) external override onlyPoolAdmin {
     _riskAdmins[admin] = false;
     emit RiskAdminUnregistered(admin);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function authorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
+    _pool.updateFlashBorrowerAuthorization(flashBorrower, true);
+    emit FlashBorrowerAuthorized(flashBorrower);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function unauthorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
+    _pool.updateFlashBorrowerAuthorization(flashBorrower, false);
+    emit FlashBorrowerUnauthorized(flashBorrower);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
