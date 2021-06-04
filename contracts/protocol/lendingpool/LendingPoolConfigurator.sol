@@ -487,13 +487,13 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /// @inheritdoc ILendingPoolConfigurator
   function authorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
-    _pool.authorizeFlashBorrower(flashBorrower);
+    _pool.updateFlashBorrowerAuthorization(flashBorrower, true);
     emit FlashBorrowerAuthorized(flashBorrower);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function unauthorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
-    _pool.unauthorizeFlashBorrower(flashBorrower);
+    _pool.updateFlashBorrowerAuthorization(flashBorrower, false);
     emit FlashBorrowerUnauthorized(flashBorrower);
   }
 
