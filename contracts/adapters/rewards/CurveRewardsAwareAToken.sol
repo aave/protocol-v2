@@ -24,6 +24,8 @@ contract CurveRewardsAwareAToken is RewardsAwareAToken {
   // reward address => pending reward to be distributed;
   mapping(address => uint256) internal _pendingRewards;
 
+  uint256 internal _lastBlockUpdate;
+
   /**
    * @param crvToken The address of the $CRV token
    */
@@ -126,27 +128,7 @@ contract CurveRewardsAwareAToken is RewardsAwareAToken {
    * @param token the reward token to retrieve lifetime rewards and accrued since last call
    */
   function _getExternalLifetimeExtraRewards(address token) internal returns (uint256) {
-    uint256[MAX_REWARD_TOKENS] memory priorTokenBalances;
-
-    for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address rewardToken = _getRewardsTokenAddress(index);
-      if (rewardToken == address(0)) break;
-      if (rewardToken == CRV_TOKEN) continue;
-      priorTokenBalances[index] = IERC20(rewardToken).balanceOf(address(this));
-    }
-
-    ICurveGauge(_gaugeController).claim_rewards(address(this));
-
-    for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address rewardToken = _getRewardsTokenAddress(index);
-      if (rewardToken == address(0)) break;
-      if (rewardToken == CRV_TOKEN) continue;
-      uint256 balance = IERC20(rewardToken).balanceOf(address(this));
-
-      _pendingRewards[rewardToken] = _pendingRewards[rewardToken].add(
-        balance.sub(priorTokenBalances[index])
-      );
-    }
+    _updateRewards();
 
     uint256 accrued = _pendingRewards[token];
     _pendingRewards[token] = 0;
@@ -199,27 +181,33 @@ contract CurveRewardsAwareAToken is RewardsAwareAToken {
     // Mint CRV to aToken
     ICurveMinter(ICurveGaugeView(_gaugeController).minter()).mint(_gaugeController);
 
-    // Claim other Curve gauge tokens, and track the pending rewards to distribute at `_retrieveAvailableReward` call
-    uint256[MAX_REWARD_TOKENS] memory priorTokenBalances;
+    _updateRewards();
+  }
 
-    for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address rewardToken = _getRewardsTokenAddress(index);
-      if (rewardToken == address(0)) break;
-      if (rewardToken == CRV_TOKEN) continue;
-      priorTokenBalances[index] = IERC20(rewardToken).balanceOf(address(this));
-    }
-    // Mint other rewards to aToken
-    ICurveGauge(_gaugeController).claim_rewards(address(this));
+  function _updateRewards() internal {
+    if (block.number > _lastBlockUpdate) {
+      _lastBlockUpdate = block.number;
+      // Claim other Curve gauge tokens, and track the pending rewards to distribute at `_retrieveAvailableReward` call
+      uint256[MAX_REWARD_TOKENS] memory priorTokenBalances;
 
-    for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address rewardToken = _getRewardsTokenAddress(index);
-      if (rewardToken == address(0)) break;
-      if (rewardToken == CRV_TOKEN) continue;
-      uint256 balance = IERC20(rewardToken).balanceOf(address(this));
+      for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+        address rewardToken = _getRewardsTokenAddress(index);
+        if (rewardToken == address(0)) break;
+        if (rewardToken == CRV_TOKEN) continue;
+        priorTokenBalances[index] = IERC20(rewardToken).balanceOf(address(this));
+      }
+      // Mint other rewards to aToken
+      ICurveGauge(_gaugeController).claim_rewards(address(this));
 
-      _pendingRewards[rewardToken] = _pendingRewards[rewardToken].add(
-        balance.sub(priorTokenBalances[index])
-      );
+      for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+        address rewardToken = _getRewardsTokenAddress(index);
+        if (rewardToken == address(0)) break;
+        if (rewardToken == CRV_TOKEN) continue;
+        uint256 balance = IERC20(rewardToken).balanceOf(address(this));
+        _pendingRewards[rewardToken] = _pendingRewards[rewardToken].add(
+          balance.sub(priorTokenBalances[index])
+        );
+      }
     }
   }
 
