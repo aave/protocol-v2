@@ -152,7 +152,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x8fb777d67e9945e2c01936e319057f9d41d559e6', // Need to re-deploy because of onlyOwner
     [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
     [eEthereumNetwork.main]: ZERO_ADDRESS,
-    [eEthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
+    [eEthereumNetwork.tenderlyMain]: '0x3a463fFE9b69364B51113352a17839e36268e657',
   },
   FallbackOracle: {
     [eEthereumNetwork.coverage]: '',
@@ -174,16 +174,16 @@ export const AmmConfig: IUsdAmmConfiguration = {
       SUSD: '0xad35Bd71b9aFE6e4bDc266B345c198eaDEf9Ad94',
       USDC: '0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6',
       USDT: '0x3E7d1eAB13ad0104d2750B8863b489D65364e32D',
-      a3CRVGauge: '0x602df949e38335714E135ce94180255Dae79a659', // Oracle deployed at fork
-      saCRVGauge: '0x61B9302Ad4534D44D993764CB569a56A6d8dE25f', // Oracle deployed at fork
+      a3CRVGauge: '0xe19781CB322ff0Bd31ad4D8C01e91A67e', // Oracle deployed at fork
+      saCRVGauge: '0x602df949e38335714E135ce94180255Dae79a659', // Oracle deployed at fork
     },
     [eEthereumNetwork.tenderlyMain]: {
       DAI: '0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9',
       SUSD: '0xad35Bd71b9aFE6e4bDc266B345c198eaDEf9Ad94',
       USDC: '0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6',
       USDT: '0x3E7d1eAB13ad0104d2750B8863b489D65364e32D',
-      a3CRVGauge: '0x602df949e38335714E135ce94180255Dae79a659', // Oracle deployed at fork
-      saCRVGauge: '0x61B9302Ad4534D44D993764CB569a56A6d8dE25f', // Oracle deployed at fork
+      a3CRVGauge: '0xe19781CB322ff0Bd31ad4D8C01e91A67e', // Oracle deployed at fork
+      saCRVGauge: '0x602df949e38335714E135ce94180255Dae79a659', // Oracle deployed at fork
     },
   },
   ATokenDomainSeparator: {
