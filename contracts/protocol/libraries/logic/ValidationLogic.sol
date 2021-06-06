@@ -470,4 +470,20 @@ library ValidationLogic {
   function validateTransfer(DataTypes.ReserveData storage reserve) internal view {
     require(!reserve.configuration.getPaused(), Errors.VL_RESERVE_PAUSED);
   }
+
+  /**
+   * @dev Validates a drop reserve action
+   * @param reserve The reserve object
+   **/
+  function validateDropReserve(DataTypes.ReserveData storage reserve) external view {
+    require(IERC20(reserve.aTokenAddress).totalSupply() == 0, Errors.RL_ATOKEN_SUPPLY_NOT_NULL);
+    require(
+      IERC20(reserve.stableDebtTokenAddress).totalSupply() == 0,
+      Errors.RL_STABLE_DEBT_NOT_NULL
+    );
+    require(
+      IERC20(reserve.variableDebtTokenAddress).totalSupply() == 0,
+      Errors.RL_VARIABLE_DEBT_SUPPLY_NOT_NULL
+    );
+  }
 }
