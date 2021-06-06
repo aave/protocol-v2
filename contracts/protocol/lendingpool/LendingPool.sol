@@ -828,8 +828,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    **/
   function dropReserve(address asset) external override onlyLendingPoolConfigurator {
-    _reserves[asset].dropReserve();
+    ValidationLogic.validateDropReserve(_reserves[asset]);
     _removeReserveFromList(asset);
+    delete _reserves[asset];
   }
 
   /**
