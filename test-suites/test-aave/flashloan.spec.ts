@@ -276,7 +276,10 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const callerDebt = await wethDebtToken.balanceOf(caller.address);
 
-    expect(callerDebt.toString()).to.be.equal('800000000000000000', 'Invalid user debt');
+    expect(callerDebt.toString()).to.be.equal(
+      borrowedAmount.add(fees).toString(),
+      'Invalid user debt'
+    );
 
     // repays debt for later, so no interest accrue
     await weth.connect(caller.signer).mint(await convertToCurrencyDecimals(weth.address, '1000'));
@@ -475,6 +478,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await _mockFlashLoanReceiver.setFailExecutionTransfer(false);
 
     const flashloanAmount = await convertToCurrencyDecimals(usdc.address, '500');
+    const fees = flashloanAmount.mul(9).div(10000);
 
     await pool
       .connect(caller.signer)
@@ -496,7 +500,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     const callerDebt = await usdcDebtToken.balanceOf(caller.address);
 
-    expect(callerDebt.toString()).to.be.equal('500000000', 'Invalid user debt');
+    expect(callerDebt.toString()).to.be.equal(flashloanAmount.add(fees), 'Invalid user debt');
   });
 
   it('Caller deposits 1000 DAI as collateral, Takes a WETH flashloan with mode = 0, does not approve the transfer of the funds', async () => {
@@ -606,13 +610,16 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const onBehalfOf = users[4];
 
     const flashAmount = ethers.utils.parseEther('0.8');
+    const fees = flashAmount.mul(9).div(10000);
 
     const reserveData = await pool.getReserveData(weth.address);
 
     const stableDebtToken = await getStableDebtToken(reserveData.stableDebtTokenAddress);
 
     // Deposited for onBehalfOf user already, delegate borrow allowance
-    await stableDebtToken.connect(onBehalfOf.signer).approveDelegation(caller.address, flashAmount);
+    await stableDebtToken
+      .connect(onBehalfOf.signer)
+      .approveDelegation(caller.address, flashAmount.add(fees));
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(true);
 
@@ -637,7 +644,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     const onBehalfOfDebt = await wethDebtToken.balanceOf(onBehalfOf.address);
 
     expect(onBehalfOfDebt.toString()).to.be.equal(
-      '800000000000000000',
+      flashAmount.add(fees),
       'Invalid onBehalfOf user debt'
     );
   });
