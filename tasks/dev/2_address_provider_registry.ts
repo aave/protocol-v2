@@ -3,6 +3,7 @@ import {
   deployLendingPoolAddressesProvider,
   deployLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-deployments';
+import { getEthersSigners } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
 import { AaveConfig } from '../../markets/aave';
 
@@ -14,7 +15,7 @@ task(
   .setAction(async ({ verify }, localBRE) => {
     await localBRE.run('set-DRE');
 
-    const admin = await (await localBRE.ethers.getSigners())[0].getAddress();
+    const admin = await (await getEthersSigners())[0].getAddress();
 
     const addressesProvider = await deployLendingPoolAddressesProvider(AaveConfig.MarketId, verify);
     await waitForTx(await addressesProvider.setPoolAdmin(admin));
