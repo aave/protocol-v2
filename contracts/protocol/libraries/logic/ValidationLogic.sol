@@ -483,7 +483,6 @@ library ValidationLogic {
    * @param reserve The reserve object
    **/
   function validateDropReserve(DataTypes.ReserveData storage reserve) external view {
-    require(IERC20(reserve.aTokenAddress).totalSupply() == 0, Errors.RL_ATOKEN_SUPPLY_NOT_ZERO);
     require(
       IERC20(reserve.stableDebtTokenAddress).totalSupply() == 0,
       Errors.RL_STABLE_DEBT_NOT_ZERO
@@ -492,5 +491,6 @@ library ValidationLogic {
       IERC20(reserve.variableDebtTokenAddress).totalSupply() == 0,
       Errors.RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO
     );
+    require(IERC20(reserve.aTokenAddress).totalSupply() == 0, Errors.RL_ATOKEN_SUPPLY_NOT_ZERO);
   }
 }
