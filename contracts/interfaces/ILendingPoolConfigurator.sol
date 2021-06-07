@@ -404,4 +404,10 @@ interface ILendingPoolConfigurator {
    * @param flashBorrower The address of the unauthorized borrower
    **/
   function unauthorizeFlashBorrower(address flashBorrower) external;
+
+  /**
+   * @dev Drops a reserve entirely
+   * @param asset the address of the reserve to drop
+   **/
+  function dropReserve(address asset) external;
 }
