@@ -105,6 +105,18 @@ library ReserveConfiguration {
   }
 
   /**
+   * @dev Gets the liquidation threshold of the reserve
+   * @param self The reserve configuration
+   * @return The liquidation threshold
+   **/
+  function getLiquidationThresholdMemory(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    view
+    returns (uint256)
+  {
+    return (self.data & ~LIQUIDATION_THRESHOLD_MASK) >> LIQUIDATION_THRESHOLD_START_BIT_POSITION;
+  }
+  /**
    * @dev Sets the liquidation bonus of the reserve
    * @param self The reserve configuration
    * @param bonus The new liquidation bonus

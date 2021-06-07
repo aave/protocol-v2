@@ -51,4 +51,29 @@ library DataTypes {
   }
 
   enum InterestRateMode {NONE, STABLE, VARIABLE}
+
+  struct ReserveCache {
+    uint256 oldScaledVariableDebt;
+    uint256 oldTotalVariableDebt;
+    uint256 newScaledVariableDebt;
+    uint256 newTotalVariableDebt;
+    uint256 oldPrincipalStableDebt;
+    uint256 oldAvgStableBorrowRate;
+    uint256 oldTotalStableDebt;
+    uint256 newPrincipalStableDebt;
+    uint256 newAvgStableBorrowRate;
+    uint256 newTotalStableDebt;
+    uint256 oldLiquidityIndex;
+    uint256 newLiquidityIndex;
+    uint256 oldVariableBorrowIndex;
+    uint256 newVariableBorrowIndex;
+    uint256 oldLiquidityRate;
+    uint256 oldVariableBorrowRate;
+    DataTypes.ReserveConfigurationMap reserveConfiguration;
+    address aTokenAddress;
+    address stableDebtTokenAddress;
+    address variableDebtTokenAddress;
+    uint40 reserveLastUpdateTimestamp;
+    uint40 stableDebtLastUpdateTimestamp;
+  }
 }
