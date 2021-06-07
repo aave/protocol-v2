@@ -29,6 +29,7 @@ import {
   WalletBalanceProviderFactory,
   WETH9MockedFactory,
   WETHGatewayFactory,
+  PermissionedWETHGatewayFactory,
   FlashLiquidationAdapterFactory,
   PermissionManagerFactory,
 } from '../types';
@@ -271,7 +272,7 @@ export const getWETHGateway = async (address?: tEthereumAddress) =>
   );
 
 export const getPermissionedWETHGateway = async (address?: tEthereumAddress) =>
-  await WETHGatewayFactory.connect(
+  await PermissionedWETHGatewayFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.PermissionedWETHGateway}.${DRE.network.name}`).value()
