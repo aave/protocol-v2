@@ -144,28 +144,38 @@ You can deploy aave-pro with default configuration on kovan.
 
 In `markets/aave-pro/commons.ts` make following changes:
 
-- Configure `ProviderRegistryOwner`
+- Configure `ProviderRegistryOwner` and `ReserveFactorTreasuryAddress`
 
   Set owner to your deployer address with kovan funds. 
+
+  Set `ReserveFactorTreasuryAddress` to your team's wallet
 
   **Notet:** Script uses first address generated, from `MNEMONIC` provided in `.env` file, as the deployer.
 
   ```
   ProviderRegistryOwner: {
-    [eEthereumNetwork.kovan]: '0xyourDeployerAddress',
+    [eEthereumNetwork.kovan]: '0xYourDeployerAddress',
+    // Other network settings. You can leave them empty or same
+  },
+
+  ReserveFactorTreasuryAddress: {
+    [eEthereumNetwork.kovan]: '0xYourDeployerAddress,
     // Other network settings. You can leave them empty or same
   },
   ```
 
-- Configure to deploy new `ProviderRegistry` 
+- Configure to deploy new `ProviderRegistry` and `LendingPoolCollateralManager`
 
-  Set registry address to empty string to deploy new registry.
+  Set registry and collateral manager address to empty string to deploy new registry.
 
   ```
   ProviderRegistry: {
     [eEthereumNetwork.kovan]: '',
     // Other network settings. You can leave them empty or same
   },
+  LendingPoolCollateralManager: {
+    [eEthereumNetwork.kovan]: '',
+  }
   ```
 
 - Configure to deploy/initialize `PermissionedWethGateWay`
