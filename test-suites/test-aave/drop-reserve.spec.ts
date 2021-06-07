@@ -36,7 +36,6 @@ makeSuite('Pause Reserve', (testEnv: TestEnv) => {
 
     const depositedAmount = parseEther('1000');
     const borrowedAmount = parseEther('100');
-    console.log((await aDai.totalSupply()).toString());
     // setting reserve factor to 0 to ease tests, no aToken accrued in reserve
     await configurator.setReserveFactor(dai.address, 0);
 
@@ -91,14 +90,18 @@ makeSuite('Pause Reserve', (testEnv: TestEnv) => {
       aDai,
       weth,
       configurator,
+      helpersContract,
     } = testEnv;
 
     await pool.withdraw(dai.address, MAX_UINT_AMOUNT, deployer.address);
-    console.log((await aDai.totalSupply()).toString());
     await configurator.dropReserve(dai.address);
 
     const tokens = await pool.getReservesList();
 
     expect(tokens.includes(dai.address)).to.be.false;
+
+    const { isActive } = await helpersContract.getReserveConfigurationData(dai.address);
+
+    expect(isActive).to.be.false;
   });
 });
