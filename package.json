@@ -59,6 +59,7 @@
     "aave:main:full:migration": "npm run compile && npm run hardhat:main -- aave:mainnet --verify",
     "aave:main:full:initialize": "npm run compile && FORK=main full:initialize-tokens --pool Aave",
     "amm:main:full:migration": "npm run compile && npm run hardhat:main -- amm:mainnet --verify",
+    "pro:fork:kovan": "npm run compile && FORK=kovan hardhat pro:mainnet",
     "pro:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- pro:mainnet --verify",
     "prettier:check": "npx prettier -c 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
     "prettier:write": "prettier --write 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
