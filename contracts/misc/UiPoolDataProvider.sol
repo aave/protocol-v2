@@ -131,38 +131,40 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       );
 
       // incentives
-      if (address(incentivesController) != address(0)) {
-        IAaveIncentivesController.AssetData memory tokenIncentivesInfo =
-          incentivesController.assets(reserveData.aTokenAddress);
-        reserveData.aEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
-        reserveData.aIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
-        reserveData.aTokenIncentivesIndex = tokenIncentivesInfo.index;
+      if (address(0) != address(incentivesController)) {
+        (
+          reserveData.aEmissionPerSecond,
+          reserveData.aIncentivesLastUpdateTimestamp,
+          reserveData.aTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.aTokenAddress);
 
-        tokenIncentivesInfo = incentivesController.assets(reserveData.stableDebtTokenAddress);
-        reserveData.sEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
-        reserveData.sIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
-        reserveData.sTokenIncentivesIndex = tokenIncentivesInfo.index;
+        (
+          reserveData.sEmissionPerSecond,
+          reserveData.sIncentivesLastUpdateTimestamp,
+          reserveData.sTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
 
-        tokenIncentivesInfo = incentivesController.assets(reserveData.variableDebtTokenAddress);
-        reserveData.vEmissionPerSecond = tokenIncentivesInfo.emissionPerSecond;
-        reserveData.vIncentivesLastUpdateTimestamp = tokenIncentivesInfo.lastUpdateTimestamp;
-        reserveData.vTokenIncentivesIndex = tokenIncentivesInfo.index;
+        (
+          reserveData.vEmissionPerSecond,
+          reserveData.vIncentivesLastUpdateTimestamp,
+          reserveData.vTokenIncentivesIndex
+        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);
       }
+
       if (user != address(0)) {
         // incentives
-
-        if (address(incentivesController) != address(0)) {
+        if (address(0) != address(incentivesController)) {
           userReservesData[i].aTokenincentivesUserIndex = incentivesController.getUserAssetData(
             user,
             reserveData.aTokenAddress
           );
-          userReservesData[i].sTokenincentivesUserIndex = incentivesController.getUserAssetData(
-            user,
-            reserveData.stableDebtTokenAddress
-          );
           userReservesData[i].vTokenincentivesUserIndex = incentivesController.getUserAssetData(
             user,
             reserveData.variableDebtTokenAddress
+          );
+          userReservesData[i].sTokenincentivesUserIndex = incentivesController.getUserAssetData(
+            user,
+            reserveData.stableDebtTokenAddress
           );
         }
         // user reserve data
@@ -201,15 +203,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     
     IncentivesControllerData memory incentivesControllerData;
 
-    if (address(incentivesController) != address(0)) {
+    if (address(0) != address(incentivesController)) {
       incentivesControllerData.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
-      // incentivesControllerData.rewardToken = incentivesController.REWARD_TOKEN();
-      // incentivesControllerData.rewardTokenDecimals = IERC20Detailed(incentivesControllerData.rewardToken).decimals();
-      // incentivesControllerData.rewardTokenSymbol = IERC20Detailed(incentivesControllerData.rewardToken).symbol();
-      // incentivesControllerData.precision = incentivesController.PRECISION();
       incentivesControllerData.emissionEndTimestamp = incentivesController.DISTRIBUTION_END();
     }
-    
+
     return (
       reservesData,
       userReservesData,

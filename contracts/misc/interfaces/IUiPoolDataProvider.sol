@@ -43,9 +43,9 @@ interface IUiPoolDataProvider {
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
     // incentives
-    uint128 aEmissionPerSecond;
-    uint128 vEmissionPerSecond;
-    uint128 sEmissionPerSecond;
+    uint256 aEmissionPerSecond;
+    uint256 vEmissionPerSecond;
+    uint256 sEmissionPerSecond;
     uint256 aIncentivesLastUpdateTimestamp;
     uint256 vIncentivesLastUpdateTimestamp;
     uint256 sIncentivesLastUpdateTimestamp;
@@ -70,10 +70,6 @@ interface IUiPoolDataProvider {
 
   struct IncentivesControllerData {
     uint256 userUnclaimedRewards;
-    // address rewardToken;
-    // uint256 rewardTokenDecimals;
-    // string rewardTokenSymbol;
-    // uint8 precision;
     uint256 emissionEndTimestamp;
   }
 

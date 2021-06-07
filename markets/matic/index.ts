@@ -1,4 +1,3 @@
-import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
 import { IMaticConfiguration, ePolygonNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
@@ -9,6 +8,7 @@ import {
   strategyWBTC,
   strategyWETH,
   strategyMATIC,
+  strategyAAVE,
 } from './reservesConfigs';
 
 // ----------------
@@ -18,7 +18,7 @@ import {
 export const MaticConfig: IMaticConfiguration = {
   ...CommonsConfig,
   MarketId: 'Matic Market',
-  ProviderId: 3,    // Unknown?
+  ProviderId: 3, // Unknown?
   ReservesConfig: {
     DAI: strategyDAI,
     USDC: strategyUSDC,
@@ -26,6 +26,7 @@ export const MaticConfig: IMaticConfiguration = {
     WBTC: strategyWBTC,
     WETH: strategyWETH,
     WMATIC: strategyMATIC,
+    AAVE: strategyAAVE,
   },
   ReserveAssets: {
     [ePolygonNetwork.matic]: {
@@ -35,8 +36,10 @@ export const MaticConfig: IMaticConfiguration = {
       WBTC: '0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6',
       WETH: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
       WMATIC: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
+      AAVE: '0xD6DF932A45C0f255f85145f286eA0b292B21C90B',
     },
-    [ePolygonNetwork.mumbai]: { // Mock tokens with a simple "mint" external function, except wmatic
+    [ePolygonNetwork.mumbai]: {
+      // Mock tokens with a simple "mint" external function, except wmatic
       DAI: '0x13b3fda609C1eeb23b4F4b69257840760dCa6C4a',
       USDC: '0x52b63223994433FdE2F1350Ba69Dfd2779f06ABA',
       USDT: '0xB3abd1912F586fDFFa13606882c28E27913853d2',

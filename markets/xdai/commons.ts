@@ -1,5 +1,11 @@
 import BigNumber from 'bignumber.js';
-import { oneEther, oneRay, RAY, ZERO_ADDRESS, MOCK_CHAINLINK_AGGREGATORS_PRICES } from '../../helpers/constants';
+import {
+  oneEther,
+  oneRay,
+  RAY,
+  ZERO_ADDRESS,
+  MOCK_CHAINLINK_AGGREGATORS_PRICES,
+} from '../../helpers/constants';
 import { ICommonConfiguration, eXDaiNetwork } from '../../helpers/types';
 
 // ----------------
@@ -79,14 +85,14 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingRateOracle: {
     [eXDaiNetwork.xdai]: '',
-  },  
+  },
   LendingPoolCollateralManager: {
     [eXDaiNetwork.xdai]: '',
   },
   TokenDistributor: {
     [eXDaiNetwork.xdai]: '',
   },
-  WethGateway: {
+  WethGateway: {
     [eXDaiNetwork.xdai]: '',
   },
   AaveOracle: {
@@ -114,7 +120,13 @@ export const CommonsConfig: ICommonConfiguration = {
   WETH: {
     [eXDaiNetwork.xdai]: '', // DAI: xDAI is the base token, DAI is also there, We need WXDAI
   },
+  WrappedNativeToken: {
+    [eXDaiNetwork.xdai]: '', // DAI: xDAI is the base token, DAI is also there, We need WXDAI
+  },
   ReserveFactorTreasuryAddress: {
-    [eXDaiNetwork.xdai]: '',   // TEMP 
+    [eXDaiNetwork.xdai]: '', // TEMP
+  },
+  IncentivesController: {
+    [eXDaiNetwork.xdai]: ZERO_ADDRESS,
   },
 };
