@@ -204,7 +204,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     IncentivesControllerData memory incentivesControllerData;
 
     if (address(0) != address(incentivesController)) {
-      incentivesControllerData.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
+      if (user != address(0)) {
+        incentivesControllerData.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
+      }
       incentivesControllerData.emissionEndTimestamp = incentivesController.DISTRIBUTION_END();
     }
 
