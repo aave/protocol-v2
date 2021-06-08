@@ -42,7 +42,7 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
     }
 
     const oracle = addressesByNetwork[network].aaveOracle;
-    const incentivesController = addressesByNetwork[network].aaveOracle;
+    const incentivesController = addressesByNetwork[network].incentivesController;
 
     console.log(`\n- UiPoolDataProvider deployment`);
 
