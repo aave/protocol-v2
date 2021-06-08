@@ -160,6 +160,12 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
+  function dropReserve(address asset) external override onlyPoolAdmin {
+    _pool.dropReserve(asset);
+    emit ReserveDropped(asset);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
   function updateAToken(UpdateATokenInput calldata input) external override onlyPoolAdmin {
     ILendingPool cachedPool = _pool;
 

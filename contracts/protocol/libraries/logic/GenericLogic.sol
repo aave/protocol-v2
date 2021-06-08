@@ -93,6 +93,9 @@ library GenericLogic {
       }
 
       vars.currentReserveAddress = reserves[vars.i];
+
+      if (vars.currentReserveAddress == address(0)) continue;
+
       DataTypes.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
@@ -132,7 +135,7 @@ library GenericLogic {
           IERC20(currentReserve.stableDebtTokenAddress).balanceOf(user)
         );
         vars.userDebtETH = vars.assetPrice.mul(vars.userDebt).div(vars.assetUnit);
-        vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);         
+        vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);
       }
     }
 
