@@ -10,14 +10,11 @@ import { domainToUnicode } from 'url';
 
 const { expect } = require('chai');
 
-makeSuite('Pause Reserve', (testEnv: TestEnv) => {
+makeSuite('Drop Reserve', (testEnv: TestEnv) => {
   let _mockFlashLoanReceiver = {} as MockFlashLoanReceiver;
 
-  const {
-    RL_ATOKEN_SUPPLY_NOT_ZERO,
-    RL_STABLE_DEBT_NOT_ZERO,
-    RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO,
-  } = ProtocolErrors;
+  const { RL_ATOKEN_SUPPLY_NOT_ZERO, RL_STABLE_DEBT_NOT_ZERO, RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO } =
+    ProtocolErrors;
 
   before(async () => {
     _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
