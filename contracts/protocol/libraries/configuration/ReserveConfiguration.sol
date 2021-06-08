@@ -20,8 +20,8 @@ library ReserveConfiguration {
   uint256 constant STABLE_BORROWING_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant PAUSED_MASK =                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
-  uint256 constant BORROW_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFF; // prettier-ignore
-  uint256 constant SUPPLY_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 constant BORROW_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000FFFFFFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 constant SUPPLY_CAP_MASK =            0xFFFFFFFFFFFFFFFFFFFF000000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
 
   /// @dev For the LTV, the start bit is 0 (up to 15), hence no bitshifting is needed
   uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
@@ -35,15 +35,15 @@ library ReserveConfiguration {
   // bits 61 62 63 unused yet
   uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
   uint256 constant BORROW_CAP_START_BIT_POSITION = 80;
-  uint256 constant SUPPLY_CAP_START_BIT_POSITION = 116;
+  uint256 constant SUPPLY_CAP_START_BIT_POSITION = 128;
 
   uint256 constant MAX_VALID_LTV = 65535;
   uint256 constant MAX_VALID_LIQUIDATION_THRESHOLD = 65535;
   uint256 constant MAX_VALID_LIQUIDATION_BONUS = 65535;
   uint256 constant MAX_VALID_DECIMALS = 255;
   uint256 constant MAX_VALID_RESERVE_FACTOR = 65535;
-  uint256 constant MAX_VALID_BORROW_CAP = 68719476735;
-  uint256 constant MAX_VALID_SUPPLY_CAP = 68719476735;
+  uint256 constant MAX_VALID_BORROW_CAP = 281474976710655;
+  uint256 constant MAX_VALID_SUPPLY_CAP = 281474976710655;
 
   /**
    * @dev Sets the Loan to Value of the reserve
@@ -190,7 +190,7 @@ library ReserveConfiguration {
     return (self.data & ~FROZEN_MASK) != 0;
   }
 
-   /**
+  /**
    * @dev Sets the paused state of the reserve
    * @param self The reserve configuration
    * @param paused The paused state
@@ -414,8 +414,8 @@ library ReserveConfiguration {
     uint256 dataLocal = self.data;
 
     return (
-      (dataLocal & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION,
-      (dataLocal & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION
+      (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION,
+      (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION
     );
   }
 
@@ -483,31 +483,5 @@ library ReserveConfiguration {
       (self.data & ~STABLE_BORROWING_MASK) != 0,
       (self.data & ~PAUSED_MASK) != 0
     );
-  }
-
-  /**
-   * @dev Gets the supply cap of the reserve from a memory objet
-   * @param self The reserve configuration
-   * @return The supply cap
-   **/
-  function getSupplyCapMemory(DataTypes.ReserveConfigurationMap memory self)
-    internal
-    pure
-    returns (uint256)
-  {
-    return (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION;
-  }
-
-  /**
-   * @dev Gets the borrow cap of the reserve from a memory object
-   * @param self The reserve configuration
-   * @return The borrow cap
-   **/
-  function getBorrowCapMemory(DataTypes.ReserveConfigurationMap memory self)
-    internal
-    pure
-    returns (uint256)
-  {
-    return (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION;
   }
 }

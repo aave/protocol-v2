@@ -156,7 +156,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Activates the ETH reserve for borrowing', async () => {
     const { configurator, weth, helpersContract } = testEnv;
-    await configurator.enableBorrowingOnReserve(weth.address, '0', true);
+    await configurator.enableBorrowingOnReserve(weth.address, MAX_BORROW_CAP, true);
     const { variableBorrowIndex } = await helpersContract.getReserveData(weth.address);
 
     const {
@@ -180,6 +180,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(liquidationBonus).to.be.equal(strategyWETH.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(true /*strategyWETH.stableBorrowRateEnabled*/);
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
+
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
 

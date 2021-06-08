@@ -23,10 +23,9 @@ import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
-import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
+import { getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
 import { usingPolygon, verifyAtPolygon } from './polygon-utils';
-import { getDefenderRelaySigner, usingDefender } from './defender-utils';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
@@ -67,18 +66,11 @@ export const rawInsertContractAddressInDb = async (id: string, address: tEthereu
     })
     .write();
 
-export const getEthersSigners = async (): Promise<Signer[]> => {
-  const ethersSigners = await Promise.all(await DRE.ethers.getSigners());
-
-  if (usingDefender()) {
-    const [, ...users] = ethersSigners;
-    return [await getDefenderRelaySigner(), ...users];
-  }
-  return ethersSigners;
-};
+export const getEthersSigners = async (): Promise<Signer[]> =>
+  await Promise.all(await DRE.ethers.getSigners());
 
 export const getEthersSignersAddresses = async (): Promise<tEthereumAddress[]> =>
-  await Promise.all((await getEthersSigners()).map((signer) => signer.getAddress()));
+  await Promise.all((await DRE.ethers.getSigners()).map((signer) => signer.getAddress()));
 
 export const getCurrentBlock = async () => {
   return DRE.ethers.provider.getBlockNumber();
@@ -91,9 +83,9 @@ export const deployContract = async <ContractType extends Contract>(
   contractName: string,
   args: any[]
 ): Promise<ContractType> => {
-  const contract = (await (await DRE.ethers.getContractFactory(contractName))
-    .connect(await getFirstSigner())
-    .deploy(...args)) as ContractType;
+  const contract = (await (await DRE.ethers.getContractFactory(contractName)).deploy(
+    ...args
+  )) as ContractType;
   await waitForTx(contract.deployTransaction);
   await registerContractInJsonDb(<eContractid>contractName, contract);
   return contract;

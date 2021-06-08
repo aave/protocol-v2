@@ -436,6 +436,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 currentAmountPlusPremium;
     address debtToken;
     uint256 flashloanPremiumTotal;
+    bool isDebtMode;
   }
 
   /**
@@ -492,27 +493,28 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.currentPremium = premiums[vars.i];
       vars.currentATokenAddress = aTokenAddresses[vars.i];
       vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
+      vars.isDebtMode =
+        DataTypes.InterestRateMode(modes[vars.i]) != DataTypes.InterestRateMode.NONE;
 
+      _reserves[vars.currentAsset].updateState();
       _reserves[vars.currentAsset].cumulateToLiquidityIndex(
         IERC20(vars.currentATokenAddress).totalSupply(),
         vars.currentPremium
       );
+      _reserves[vars.currentAsset].updateInterestRates(
+        vars.currentAsset,
+        vars.currentATokenAddress,
+        vars.currentAmountPlusPremium,
+        0
+      );
 
-      if (DataTypes.InterestRateMode(modes[vars.i]) == DataTypes.InterestRateMode.NONE) {
-        _reserves[vars.currentAsset].updateState();
-        _reserves[vars.currentAsset].updateInterestRates(
-          vars.currentAsset,
-          vars.currentATokenAddress,
-          vars.currentAmountPlusPremium,
-          0
-        );
+      IERC20(vars.currentAsset).safeTransferFrom(
+        receiverAddress,
+        vars.currentATokenAddress,
+        vars.isDebtMode ? vars.currentPremium : vars.currentAmountPlusPremium
+      );
 
-        IERC20(vars.currentAsset).safeTransferFrom(
-          receiverAddress,
-          vars.currentATokenAddress,
-          vars.currentAmountPlusPremium
-        );
-      } else {
+      if (vars.isDebtMode) {
         // If the user chose to not return the funds, the system checks if there is enough collateral and
         // eventually opens a debt position
         _executeBorrow(
@@ -520,7 +522,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
             vars.currentAsset,
             msg.sender,
             onBehalfOf,
-            vars.currentAmountPlusPremium,
+            vars.currentAmount,
             modes[vars.i],
             vars.currentATokenAddress,
             referralCode,
@@ -848,12 +850,20 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized)
+  function authorizeFlashBorrower(address flashBorrower)
     external
     override
     onlyLendingPoolConfigurator
   {
-    _authorizedFlashBorrowers[flashBorrower] = authorized;
+    _authorizedFlashBorrowers[flashBorrower] = true;
+  }
+
+  function unauthorizeFlashBorrower(address flashBorrower)
+    external
+    override
+    onlyLendingPoolConfigurator
+  {
+    _authorizedFlashBorrowers[flashBorrower] = false;
   }
 
   function isFlashBorrowerAuthorized(address flashBorrower) external view override returns (bool) {

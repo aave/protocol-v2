@@ -461,7 +461,9 @@ interface ILendingPool {
 
   function paused() external view returns (bool);
 
-  function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized) external;
+  function authorizeFlashBorrower(address flashBorrower) external;
+
+  function unauthorizeFlashBorrower(address flashBorrower) external;
 
   function isFlashBorrowerAuthorized(address flashBorrower) external view returns (bool);
 }

@@ -6,7 +6,7 @@ import {
   ICommonConfiguration,
   eNetwork,
 } from './types';
-import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
+import { getParamPerPool } from './contracts-helpers';
 import AaveConfig from '../markets/aave';
 import MaticConfig from '../markets/matic';
 import AmmConfig from '../markets/amm';
@@ -66,7 +66,9 @@ export const getGenesisPoolAdmin = async (
   if (targetAddress) {
     return targetAddress;
   }
-  const addressList = await getEthersSignersAddresses();
+  const addressList = await Promise.all(
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
   const addressIndex = config.PoolAdminIndex;
   return addressList[addressIndex];
 };
@@ -79,7 +81,9 @@ export const getEmergencyAdmin = async (
   if (targetAddress) {
     return targetAddress;
   }
-  const addressList = await getEthersSignersAddresses();
+  const addressList = await Promise.all(
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
   const addressIndex = config.EmergencyAdminIndex;
   return addressList[addressIndex];
 };

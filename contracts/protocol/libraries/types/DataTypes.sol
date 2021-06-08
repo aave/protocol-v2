@@ -39,8 +39,8 @@ library DataTypes {
     //bit 60: asset is paused
     //bit 61-63: reserved
     //bit 64-79: reserve factor
-    //bit 80-115 borrow cap, borrowCap == 0 => disabled
-    //bit 116-152 supply cap, supplyCap == 0 => disabled
+    //bit 80-127 borrow cap
+    //bit 128-175 borrow cap
     uint256 data;
   }
 

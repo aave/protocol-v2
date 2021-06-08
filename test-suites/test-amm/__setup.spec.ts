@@ -4,7 +4,6 @@ import {
   insertContractAddressInDb,
   getEthersSigners,
   registerContractInJsonDb,
-  getEthersSignersAddresses,
 } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
@@ -102,7 +101,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
   //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
-  const addressList = await getEthersSignersAddresses();
+  const addressList = await Promise.all(
+    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
+  );
 
   await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
 

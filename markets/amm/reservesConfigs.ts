@@ -1,5 +1,11 @@
-import { eContractid, IReserveParams } from '../../helpers/types';
-import { rateStrategyAmmBase, rateStrategyStable, rateStrategyBaseOne } from './rateStrategies';
+import { MAX_BORROW_CAP, MAX_SUPPLY_CAP } from '../../helpers/constants';
+import { eContractid, IReserveParams} from '../../helpers/types';
+import {
+  rateStrategyAmmBase,
+  rateStrategyStable,
+  rateStrategyBaseOne,
+} from './rateStrategies';
+
 
 export const strategyWETH: IReserveParams = {
   strategy: rateStrategyBaseOne,
@@ -11,8 +17,8 @@ export const strategyWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -25,8 +31,8 @@ export const strategyWBTC: IReserveParams = {
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyDAI: IReserveParams = {
@@ -39,8 +45,8 @@ export const strategyDAI: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -53,8 +59,8 @@ export const strategyUSDC: IReserveParams = {
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyUSDT: IReserveParams = {
@@ -67,8 +73,8 @@ export const strategyUSDT: IReserveParams = {
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyDAIWETH: IReserveParams = {
@@ -81,8 +87,8 @@ export const strategyDAIWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyWBTCWETH: IReserveParams = {
@@ -95,8 +101,8 @@ export const strategyWBTCWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyAAVEWETH: IReserveParams = {
@@ -109,8 +115,8 @@ export const strategyAAVEWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyBATWETH: IReserveParams = {
@@ -123,8 +129,8 @@ export const strategyBATWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyDAIUSDC: IReserveParams = {
@@ -137,8 +143,8 @@ export const strategyDAIUSDC: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyCRVWETH: IReserveParams = {
@@ -151,8 +157,8 @@ export const strategyCRVWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyLINKWETH: IReserveParams = {
@@ -165,8 +171,8 @@ export const strategyLINKWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyMKRWETH: IReserveParams = {
@@ -179,8 +185,8 @@ export const strategyMKRWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyRENWETH: IReserveParams = {
@@ -193,8 +199,8 @@ export const strategyRENWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategySNXWETH: IReserveParams = {
@@ -207,8 +213,8 @@ export const strategySNXWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyUNIWETH: IReserveParams = {
@@ -221,8 +227,8 @@ export const strategyUNIWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyUSDCWETH: IReserveParams = {
@@ -235,8 +241,8 @@ export const strategyUSDCWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyWBTCUSDC: IReserveParams = {
@@ -249,8 +255,8 @@ export const strategyWBTCUSDC: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyYFIWETH: IReserveParams = {
@@ -263,8 +269,8 @@ export const strategyYFIWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
 };
 
 export const strategyBALWETH: IReserveParams = {
@@ -277,6 +283,6 @@ export const strategyBALWETH: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1500',
-  borrowCap: '0',
-  supplyCap: '0',
-};
+  borrowCap: MAX_BORROW_CAP,
+  supplyCap: MAX_SUPPLY_CAP,
+}
