@@ -171,10 +171,10 @@ contract LendingPoolCollateralManager is
       IVariableDebtToken(debtReserveCache.variableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate,
-        debtReserveCache.newVariableBorrowIndex
+        debtReserveCache.nextVariableBorrowIndex
       );
-      debtReserveCache.newScaledVariableDebt = debtReserveCache.oldScaledVariableDebt.sub(
-        vars.actualDebtToLiquidate.rayDiv(debtReserveCache.newVariableBorrowIndex)
+      debtReserveCache.nextScaledVariableDebt = debtReserveCache.currScaledVariableDebt.sub(
+        vars.actualDebtToLiquidate.rayDiv(debtReserveCache.nextVariableBorrowIndex)
       );
     } else {
       // If the user doesn't have variable debt, no need to try to burn variable debt tokens
@@ -182,19 +182,19 @@ contract LendingPoolCollateralManager is
         IVariableDebtToken(debtReserveCache.variableDebtTokenAddress).burn(
           user,
           vars.userVariableDebt,
-          debtReserveCache.newVariableBorrowIndex
+          debtReserveCache.nextVariableBorrowIndex
         );
-        debtReserveCache.newScaledVariableDebt = debtReserveCache
-          .oldScaledVariableDebt
-          .sub(vars.userVariableDebt.rayDiv(debtReserveCache.newVariableBorrowIndex));
+        debtReserveCache.nextScaledVariableDebt = debtReserveCache
+          .currScaledVariableDebt
+          .sub(vars.userVariableDebt.rayDiv(debtReserveCache.nextVariableBorrowIndex));
       }
       IStableDebtToken(debtReserveCache.stableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
 
-      debtReserveCache.newPrincipalStableDebt = debtReserveCache
-        .newTotalStableDebt = debtReserveCache.oldTotalStableDebt.sub(
+      debtReserveCache.nextPrincipalStableDebt = debtReserveCache
+        .nextTotalStableDebt = debtReserveCache.currTotalStableDebt.sub(
         vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
     }

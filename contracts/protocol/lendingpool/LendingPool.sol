@@ -289,27 +289,27 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserveCache.stableDebtTokenAddress).burn(msg.sender, stableDebt);
 
-      reserveCache.newPrincipalStableDebt = reserveCache.newTotalStableDebt = reserveCache
-        .oldTotalStableDebt
+      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
+        .currTotalStableDebt
         .sub(stableDebt);
 
       IVariableDebtToken(reserveCache.variableDebtTokenAddress).mint(
         msg.sender,
         msg.sender,
         stableDebt,
-        reserveCache.newVariableBorrowIndex
+        reserveCache.nextVariableBorrowIndex
       );
-      reserveCache.newScaledVariableDebt = reserveCache.oldScaledVariableDebt.add(
-        stableDebt.rayDiv(reserveCache.newVariableBorrowIndex)
+      reserveCache.nextScaledVariableDebt = reserveCache.currScaledVariableDebt.add(
+        stableDebt.rayDiv(reserveCache.nextVariableBorrowIndex)
       );
     } else {
       IVariableDebtToken(reserveCache.variableDebtTokenAddress).burn(
         msg.sender,
         variableDebt,
-        reserveCache.newVariableBorrowIndex
+        reserveCache.nextVariableBorrowIndex
       );
-      reserveCache.newScaledVariableDebt = reserveCache.oldScaledVariableDebt.sub(
-        variableDebt.rayDiv(reserveCache.newVariableBorrowIndex)
+      reserveCache.nextScaledVariableDebt = reserveCache.currScaledVariableDebt.sub(
+        variableDebt.rayDiv(reserveCache.nextVariableBorrowIndex)
       );
 
       IStableDebtToken(reserveCache.stableDebtTokenAddress).mint(
@@ -319,8 +319,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         reserve.currentStableBorrowRate
       );
 
-      reserveCache.newPrincipalStableDebt = reserveCache.newTotalStableDebt = reserveCache
-        .oldTotalStableDebt
+      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
+        .currTotalStableDebt
         .add(stableDebt);
     }
 
@@ -927,8 +927,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         currentStableRate
       );
 
-      reserveCache.newPrincipalStableDebt = reserveCache.newTotalStableDebt = reserveCache
-        .oldTotalStableDebt
+      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
+        .currTotalStableDebt
         .add(vars.amount);
       
     } else {
@@ -936,11 +936,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         vars.user,
         vars.onBehalfOf,
         vars.amount,
-        reserveCache.newVariableBorrowIndex
+        reserveCache.nextVariableBorrowIndex
       );
 
-      reserveCache.newScaledVariableDebt = reserveCache.newScaledVariableDebt.add(
-        vars.amount.rayDiv(reserveCache.newVariableBorrowIndex)
+      reserveCache.nextScaledVariableDebt = reserveCache.nextScaledVariableDebt.add(
+        vars.amount.rayDiv(reserveCache.nextVariableBorrowIndex)
       );
     }
 
@@ -990,7 +990,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IERC20(asset).safeTransferFrom(msg.sender, reserveCache.aTokenAddress, amount);
 
     bool isFirstDeposit =
-      IAToken(reserveCache.aTokenAddress).mint(onBehalfOf, amount, reserveCache.newLiquidityIndex);
+      IAToken(reserveCache.aTokenAddress).mint(onBehalfOf, amount, reserveCache.nextLiquidityIndex);
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
@@ -1013,7 +1013,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     uint256 userBalance =
       IAToken(reserveCache.aTokenAddress).scaledBalanceOf(msg.sender).rayMul(
-        reserveCache.newLiquidityIndex
+        reserveCache.nextLiquidityIndex
       );
 
     uint256 amountToWithdraw = amount;
@@ -1030,7 +1030,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       msg.sender,
       to,
       amountToWithdraw,
-      reserveCache.newLiquidityIndex
+      reserveCache.nextLiquidityIndex
     );
 
     if (userConfig.isUsingAsCollateral(reserve.id)) {
@@ -1090,17 +1090,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserveCache.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
-      reserveCache.newPrincipalStableDebt = reserveCache.newTotalStableDebt = reserveCache
-        .oldTotalStableDebt
+      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
+        .currTotalStableDebt
         .sub(paybackAmount);
     } else {
       IVariableDebtToken(reserveCache.variableDebtTokenAddress).burn(
         onBehalfOf,
         paybackAmount,
-        reserveCache.newVariableBorrowIndex
+        reserveCache.nextVariableBorrowIndex
       );
-      reserveCache.newScaledVariableDebt = reserveCache.oldScaledVariableDebt.sub(
-        paybackAmount.rayDiv(reserveCache.newVariableBorrowIndex)
+      reserveCache.nextScaledVariableDebt = reserveCache.currScaledVariableDebt.sub(
+        paybackAmount.rayDiv(reserveCache.nextVariableBorrowIndex)
       );
     }
 

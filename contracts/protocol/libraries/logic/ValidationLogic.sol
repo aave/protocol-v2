@@ -60,7 +60,7 @@ library ValidationLogic {
       supplyCap == 0 ||
         IAToken(reserveCache.aTokenAddress)
           .scaledTotalSupply()
-          .rayMul(reserveCache.newLiquidityIndex)
+          .rayMul(reserveCache.nextLiquidityIndex)
           .add(amount)
           .div(10**reserveDecimals) <
         supplyCap,
@@ -79,7 +79,7 @@ library ValidationLogic {
     DataTypes.ReserveCache memory reserveCache,
     uint256 amount,
     uint256 userBalance
-  ) external view {
+  ) internal view {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
@@ -162,13 +162,13 @@ library ValidationLogic {
 
     vars.borrowCap = reserveCache.reserveConfiguration.getBorrowCapMemory();
 
-    if (vars.borrowCap > 0) {
+    if (vars.borrowCap != 0) {
       {
-        vars.totalSupplyVariableDebt = reserveCache.oldScaledVariableDebt.rayMul(
-          reserveCache.newVariableBorrowIndex
+        vars.totalSupplyVariableDebt = reserveCache.currScaledVariableDebt.rayMul(
+          reserveCache.nextVariableBorrowIndex
         );
 
-        vars.totalDebt = reserveCache.oldTotalStableDebt.add(vars.totalSupplyVariableDebt).add(
+        vars.totalDebt = reserveCache.currTotalStableDebt.add(vars.totalSupplyVariableDebt).add(
           amount
         );
         require(
@@ -357,7 +357,7 @@ library ValidationLogic {
     //if the liquidity rate is below REBALANCE_UP_THRESHOLD of the max variable APR at 95% usage,
     //then we allow rebalancing of the stable rate positions.
 
-    uint256 currentLiquidityRate = reserveCache.oldLiquidityRate;
+    uint256 currentLiquidityRate = reserveCache.currLiquidityRate;
     uint256 maxVariableBorrowRate =
       IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).getMaxVariableBorrowRate();
 
