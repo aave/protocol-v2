@@ -17,7 +17,7 @@ import {
 import { deployDefaultReserveInterestRateStrategy } from '../../../helpers/contracts-deployments';
 import { IERC20Factory } from '../../../types/IERC20Factory';
 import BigNumberJs from 'bignumber.js';
-import { CurveRewardsAwareATokenFactory } from '../../../types';
+import { CurveGaugeRewardsAwareATokenFactory } from '../../../types';
 import { eContractid, eEthereumNetwork, tEthereumAddress } from '../../../helpers/types';
 import { strategyWBTC } from '../../../markets/aave/reservesConfigs';
 import { checkRewards } from '../helpers/rewards-distribution/verify';
@@ -87,7 +87,7 @@ const listGauge = async (gauge: GaugeInfo) => {
     eEthereumNetwork.main
   );
   const aTokenImpl = (
-    await new CurveRewardsAwareATokenFactory(await getFirstSigner()).deploy(CRV_TOKEN)
+    await new CurveGaugeRewardsAwareATokenFactory(await getFirstSigner()).deploy(CRV_TOKEN)
   ).address;
   const stableDebtTokenImpl = await getContractAddressWithJsonFallback(
     eContractid.StableDebtToken,

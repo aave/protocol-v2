@@ -51,7 +51,7 @@ import {
   FlashLiquidationAdapterFactory,
   RewardsTokenFactory,
   RewardsATokenMockFactory,
-  CurveRewardsAwareATokenFactory,
+  CurveGaugeRewardsAwareATokenFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -664,8 +664,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
       return deployDelegationAwareATokenImpl;
     case eContractid.RewardsATokenMock:
       return deployRewardATokenMock;
-    case eContractid.CurveRewardsAwareAToken:
-      return deployCurveRewardsAwareATokenByNetwork;
+    case eContractid.CurveGaugeRewardsAwareAToken:
+      return deployCurveGaugeRewardsAwareATokenByNetwork;
     default:
       throw Error(`Missing aToken implementation deployment script for: ${id}`);
   }
@@ -719,20 +719,20 @@ export const deployATokenImplementations = async (
   }
 };
 
-export const deployCurveRewardsAwareAToken = async (
+export const deployCurveGaugeRewardsAwareAToken = async (
   crvToken: tEthereumAddress,
   verify?: boolean
 ) => {
   const args: [tEthereumAddress] = [crvToken];
   return withSaveAndVerify(
-    await new CurveRewardsAwareATokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.CurveRewardsAwareAToken,
+    await new CurveGaugeRewardsAwareATokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.CurveGaugeRewardsAwareAToken,
     args,
     verify
   );
 };
 
-export const deployCurveRewardsAwareATokenByNetwork = async (verify?: boolean) => {
+export const deployCurveGaugeRewardsAwareATokenByNetwork = async (verify?: boolean) => {
   const network = DRE.network.name as eEthereumNetwork;
-  return deployCurveRewardsAwareAToken(CRV_TOKEN[network], verify);
+  return deployCurveGaugeRewardsAwareAToken(CRV_TOKEN[network], verify);
 };

@@ -14,7 +14,7 @@ import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesControl
  * @notice AToken aware to claim and distribute rewards from an external Curve Gauge controller.
  * @author Aave
  */
-contract CurveRewardsAwareAToken is RewardsAwareAToken {
+contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
   // CRV token address
   address internal immutable CRV_TOKEN;
 
