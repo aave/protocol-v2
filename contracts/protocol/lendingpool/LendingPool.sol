@@ -87,8 +87,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function initialize(ILendingPoolAddressesProvider provider) public initializer {
     _addressesProvider = provider;
     _maxStableRateBorrowSizePercent = 2500;
-    _flashLoanPremiumTotal = 9;
+    _flashLoanPremiumToLP = 9;
     _maxNumberOfReserves = 128;
+    _flashLoanPremiumToProtocol = 0;
   }
 
   /**
@@ -432,10 +433,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address currentAsset;
     address currentATokenAddress;
     uint256 currentAmount;
-    uint256 currentPremium;
+    uint256 currentPremiumToLP;
+    uint256 currentPremiumToProtocol;
     uint256 currentAmountPlusPremium;
+    uint256 currentAmountPlusPremiumToProtocol;
     address debtToken;
-    uint256 flashloanPremiumTotal;
+    uint256 flashloanPremiumToLP;
+    uint256 flashloanPremiumToProtocol;
   }
 
   /**
@@ -469,36 +473,45 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ValidationLogic.validateFlashloan(assets, amounts, _reserves);
 
     address[] memory aTokenAddresses = new address[](assets.length);
-    uint256[] memory premiums = new uint256[](assets.length);
+    uint256[] memory totalPremiums = new uint256[](assets.length);
     vars.receiver = IFlashLoanReceiver(receiverAddress);
-    vars.flashloanPremiumTotal = _authorizedFlashBorrowers[msg.sender] ? 0 : _flashLoanPremiumTotal;
+    (vars.flashloanPremiumToLP, vars.flashloanPremiumToProtocol) = _authorizedFlashBorrowers[
+      msg.sender
+    ]
+      ? (0, 0)
+      : (_flashLoanPremiumToLP, _flashLoanPremiumToProtocol);
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
 
-      premiums[vars.i] = amounts[vars.i].percentMul(vars.flashloanPremiumTotal);
+      vars.currentPremiumToLP = amounts[vars.i].percentMul(vars.flashloanPremiumToLP);
+      vars.currentPremiumToProtocol = amounts[vars.i].percentMul(vars.flashloanPremiumToProtocol);
+
+      totalPremiums[vars.i] = vars.currentPremiumToLP.add(vars.currentPremiumToProtocol);
 
       IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
 
     require(
-      vars.receiver.executeOperation(assets, amounts, premiums, msg.sender, params),
+      vars.receiver.executeOperation(assets, amounts, totalPremiums, msg.sender, params),
       Errors.LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN
     );
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       vars.currentAsset = assets[vars.i];
       vars.currentAmount = amounts[vars.i];
-      vars.currentPremium = premiums[vars.i];
       vars.currentATokenAddress = aTokenAddresses[vars.i];
-      vars.currentAmountPlusPremium = vars.currentAmount.add(vars.currentPremium);
+      vars.currentAmountPlusPremium = vars.currentAmount.add(totalPremiums[vars.i]);
 
       if (DataTypes.InterestRateMode(modes[vars.i]) == DataTypes.InterestRateMode.NONE) {
         _reserves[vars.currentAsset].updateState();
         _reserves[vars.currentAsset].cumulateToLiquidityIndex(
           IERC20(vars.currentATokenAddress).totalSupply(),
-          vars.currentPremium
+          vars.currentPremiumToLP
         );
+        _reserves[vars.currentAsset].accruedToTreasury = _reserves[vars.currentAsset]
+          .accruedToTreasury
+          .add(vars.currentPremiumToProtocol.rayDiv(_reserves[vars.currentAsset].liquidityIndex));
         _reserves[vars.currentAsset].updateInterestRates(
           vars.currentAsset,
           vars.currentATokenAddress,
@@ -532,7 +545,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         msg.sender,
         vars.currentAsset,
         vars.currentAmount,
-        vars.currentPremium,
+        vars.currentPremiumToLP,
         referralCode
       );
     }
@@ -733,7 +746,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
-    return _flashLoanPremiumTotal;
+    return _flashLoanPremiumToLP;
   }
 
   /**
