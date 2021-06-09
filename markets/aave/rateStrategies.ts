@@ -13,7 +13,7 @@ export const rateStrategyStableOne: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
 };
 
-// DAI TUSD
+// DAI FRAX TUSD
 export const rateStrategyStableTwo: IInterestRateStrategyParams = {
   name: "rateStrategyStableTwo",
   optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
@@ -57,7 +57,7 @@ export const rateStrategyAAVE: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
 }
 
-// BAT ENJ LINK MANA MKR REN YFI ZRX
+// BAT ENJ FXS LINK MANA MKR REN YFI ZRX
 export const rateStrategyVolatileOne: IInterestRateStrategyParams = {
   name: "rateStrategyVolatileOne",
   optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
