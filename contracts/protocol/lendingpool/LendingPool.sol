@@ -436,7 +436,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 currentPremiumToLP;
     uint256 currentPremiumToProtocol;
     uint256 currentAmountPlusPremium;
-    uint256 currentAmountPlusPremiumToProtocol;
     address debtToken;
     uint256 flashloanPremiumToLP;
     uint256 flashloanPremiumToProtocol;
