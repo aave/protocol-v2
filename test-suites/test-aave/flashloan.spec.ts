@@ -50,7 +50,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Takes WETH flash loan with mode = 0, returns the funds correctly', async () => {
-    const { pool, helpersContract, weth } = testEnv;
+    const { pool, helpersContract, weth, aWETH } = testEnv;
 
     const flashBorrowedAmount = ethers.utils.parseEther('0.8');
     const fees = new BigNumber(flashBorrowedAmount.mul(9).div(10000).toString());
@@ -117,7 +117,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
         '0'
       );
 
-    await pool.mintToTreasury([weth.address]);
+    await pool.mintToTreasury([aave.address]);
 
     ethers.utils.parseUnits('10000');
 
