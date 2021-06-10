@@ -87,9 +87,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function initialize(ILendingPoolAddressesProvider provider) public initializer {
     _addressesProvider = provider;
     _maxStableRateBorrowSizePercent = 2500;
-    _flashLoanPremiumToLP = 7;
+    _flashLoanPremiumTotal = 9;
     _maxNumberOfReserves = 128;
-    _flashLoanPremiumToProtocol = 2;
+    _flashLoanPremiumToProtocol = 0;
   }
 
   /**
@@ -437,7 +437,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 currentPremiumToProtocol;
     uint256 currentAmountPlusPremium;
     address debtToken;
-    uint256 flashloanPremiumToLP;
+    uint256 flashloanPremiumTotal;
     uint256 flashloanPremiumToProtocol;
   }
 
@@ -474,19 +474,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address[] memory aTokenAddresses = new address[](assets.length);
     uint256[] memory totalPremiums = new uint256[](assets.length);
     vars.receiver = IFlashLoanReceiver(receiverAddress);
-    (vars.flashloanPremiumToLP, vars.flashloanPremiumToProtocol) = _authorizedFlashBorrowers[
+    (vars.flashloanPremiumTotal, vars.flashloanPremiumToProtocol) = _authorizedFlashBorrowers[
       msg.sender
     ]
       ? (0, 0)
-      : (_flashLoanPremiumToLP, _flashLoanPremiumToProtocol);
+      : (_flashLoanPremiumTotal, _flashLoanPremiumToProtocol);
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
       aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
 
-      vars.currentPremiumToLP = amounts[vars.i].percentMul(vars.flashloanPremiumToLP);
+      totalPremiums[vars.i] = amounts[vars.i].percentMul(vars.flashloanPremiumTotal);
       vars.currentPremiumToProtocol = amounts[vars.i].percentMul(vars.flashloanPremiumToProtocol);
-
-      totalPremiums[vars.i] = vars.currentPremiumToLP.add(vars.currentPremiumToProtocol);
+      vars.currentPremiumToLP = totalPremiums[vars.i].sub(vars.currentPremiumToProtocol);
 
       IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
@@ -737,21 +736,28 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Returns the percentage of available liquidity that can be borrowed at once at stable rate
    */
-  function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() public view returns (uint256) {
+  function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() public view override returns (uint256) {
     return _maxStableRateBorrowSizePercent;
   }
 
   /**
-   * @dev Returns the fee on flash loans
+   * @dev Returns the total fee on flash loans
    */
-  function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
-    return _flashLoanPremiumToLP;
+  function FLASHLOAN_PREMIUM_TOTAL() public view override returns (uint256) {
+    return _flashLoanPremiumTotal;
+  }
+
+  /**
+   * @dev Returns the part of the flashloan fees sent to protocol
+   */
+  function FLASHLOAN_PREMIUM_TO_PROTOCOL() public view override returns (uint256) {
+    return _flashLoanPremiumToProtocol;
   }
 
   /**
    * @dev Returns the maximum number of reserves supported to be listed in this LendingPool
    */
-  function MAX_NUMBER_RESERVES() public view returns (uint256) {
+  function MAX_NUMBER_RESERVES() public view override returns (uint256) {
     return _maxNumberOfReserves;
   }
 
@@ -897,6 +903,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   function isFlashBorrowerAuthorized(address flashBorrower) external view override returns (bool) {
     return _authorizedFlashBorrowers[flashBorrower];
+  }
+
+  function updateFlashloanPremiums(
+    uint256 flashLoanPremiumTotal,
+    uint256 flashLoanPremiumToProtocol
+  ) external override onlyLendingPoolConfigurator {
+    _flashLoanPremiumTotal = flashLoanPremiumTotal;
+    _flashLoanPremiumToProtocol = flashLoanPremiumToProtocol;
   }
 
   struct ExecuteBorrowParams {

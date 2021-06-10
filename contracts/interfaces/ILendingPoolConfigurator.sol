@@ -234,6 +234,18 @@ interface ILendingPoolConfigurator {
   event RiskAdminUnregistered(address indexed admin);
 
   /**
+   * @dev Emitted when a the total premium on flashloans is updated
+   * @param flashloanPremiumTotal the new premium
+   **/
+  event FlashloanPremiumTotalUpdated(uint256 flashloanPremiumTotal);
+
+  /**
+   * @dev Emitted when a the part of the premium that goes to protoco lis updated
+   * @param flashloanPremiumToProtocol the new premium
+   **/
+  event FlashloanPremiumToProcolUpdated(uint256 flashloanPremiumToProtocol);
+
+  /**
    * @dev Initializes reserves in batch
    * @param input The array of reserves initialization parameters
    **/
@@ -410,4 +422,8 @@ interface ILendingPoolConfigurator {
    * @param asset the address of the reserve to drop
    **/
   function dropReserve(address asset) external;
+
+  function updateFlashloanPremiumTotal(uint256 flashloanPremiumTotal) external;
+
+  function updateFlashloanPremiumToProtocol(uint256 flashloanPremiumToProtocol) external;
 }

@@ -471,4 +471,17 @@ interface ILendingPool {
   function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized) external;
 
   function isFlashBorrowerAuthorized(address flashBorrower) external view returns (bool);
+
+  function updateFlashloanPremiums(
+    uint256 flashLoanPremiumTotal,
+    uint256 flashLoanPremiumToProtocol
+  ) external;
+
+  function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() external view returns (uint256);
+
+  function FLASHLOAN_PREMIUM_TOTAL() external view returns (uint256);
+
+  function FLASHLOAN_PREMIUM_TO_PROTOCOL() external view returns (uint256);
+
+  function MAX_NUMBER_RESERVES() external view returns (uint256);
 }

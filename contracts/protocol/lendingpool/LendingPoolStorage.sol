@@ -26,7 +26,7 @@ contract LendingPoolStorage {
 
   uint256 internal _maxStableRateBorrowSizePercent;
 
-  uint256 internal _flashLoanPremiumToLP;
+  uint256 internal _flashLoanPremiumTotal;
 
   uint256 internal _maxNumberOfReserves;
 

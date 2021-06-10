@@ -508,6 +508,26 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     return _riskAdmins[admin];
   }
 
+  /// @inheritdoc ILendingPoolConfigurator
+  function updateFlashloanPremiumTotal(uint256 flashloanPremiumTotal)
+    external
+    override
+    onlyPoolAdmin
+  {
+    _pool.updateFlashloanPremiums(flashloanPremiumTotal, _pool.FLASHLOAN_PREMIUM_TO_PROTOCOL());
+    emit FlashloanPremiumTotalUpdated(flashloanPremiumTotal);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function updateFlashloanPremiumToProtocol(uint256 flashloanPremiumToProtocol)
+    external
+    override
+    onlyPoolAdmin
+  {
+    _pool.updateFlashloanPremiums(_pool.FLASHLOAN_PREMIUM_TOTAL(), flashloanPremiumToProtocol);
+    emit FlashloanPremiumToProcolUpdated(flashloanPremiumToProtocol);
+  }
+
   function _initTokenWithProxy(address implementation, bytes memory initParams)
     internal
     returns (address)
