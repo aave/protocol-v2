@@ -700,15 +700,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the list of the initialized reserves
+   * @dev Returns the list of the initialized reserves, does not contain dropped reserves
    **/
   function getReservesList() external view override returns (address[] memory) {
-    address[] memory _activeReserves = new address[](_reservesCount);
+    uint256 reserveListCount = _reservesCount;
+    uint256 droppedReservesCount = 0;
+    address[] memory reserves = new address[](reserveListCount);
 
-    for (uint256 i = 0; i < _reservesCount; i++) {
-      _activeReserves[i] = _reservesList[i];
+    for (uint256 i = 0; i < reserveListCount; i++) {
+      if (_reservesList[i] != address(0)) {
+        reserves[i - droppedReservesCount] = _reservesList[i];
+      } else {
+        droppedReservesCount++;
+      }
     }
-    return _activeReserves;
+
+    if (droppedReservesCount == 0) return reserves;
+
+    address[] memory undroppedReserves = new address[](reserveListCount - droppedReservesCount);
+    for (uint256 i = 0; i < reserveListCount - droppedReservesCount; i++) {
+      undroppedReserves[i] = reserves[i];
+    }
+
+    return undroppedReserves;
   }
 
   /**
@@ -816,6 +830,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       interestRateStrategyAddress
     );
     _addReserveToList(asset);
+  }
+
+  /**
+   * @dev Drop a reserve
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function dropReserve(address asset) external override onlyLendingPoolConfigurator {
+    ValidationLogic.validateDropReserve(_reserves[asset]);
+    _removeReserveFromList(asset);
+    delete _reserves[asset];
   }
 
   /**
@@ -1097,7 +1122,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return paybackAmount;
   }
 
-  function _addReserveToList(address asset) internal {
+  function _addReserveToList(address asset) internal returns (uint8) {
     uint256 reservesCount = _reservesCount;
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
@@ -1105,10 +1130,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
 
     if (!reserveAlreadyAdded) {
-      _reserves[asset].id = uint8(reservesCount);
-      _reservesList[reservesCount] = asset;
-
-      _reservesCount = reservesCount + 1;
+      for (uint8 i = 0; i <= reservesCount; i++) {
+        if (_reservesList[i] == address(0)) {
+          _reserves[asset].id = i;
+          _reservesList[i] = asset;
+          _reservesCount = reservesCount + 1;
+          return i;
+        }
+      }
     }
+  }
+
+  function _removeReserveFromList(address asset) internal {
+    _reservesList[_reserves[asset].id] = address(0);
   }
 }
