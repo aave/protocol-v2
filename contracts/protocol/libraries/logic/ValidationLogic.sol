@@ -40,7 +40,7 @@ library ValidationLogic {
    * @param reserve The reserve object on which the user is depositing
    * @param amount The amount to be deposited
    */
-  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) internal view {
+  function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
     DataTypes.ReserveConfigurationMap memory reserveConfiguration = reserve.configuration;
     (bool isActive, bool isFrozen, , , bool isPaused) = reserveConfiguration.getFlagsMemory();
     (, , , uint256 reserveDecimals, ) = reserveConfiguration.getParamsMemory();
@@ -453,7 +453,7 @@ library ValidationLogic {
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
-  ) internal view {
+  ) external view {
     (, , , , uint256 healthFactor) =
       GenericLogic.calculateUserAccountData(
         from,
@@ -474,7 +474,7 @@ library ValidationLogic {
    * @dev Validates a transfer action
    * @param reserve The reserve object
    */
-  function validateTransfer(DataTypes.ReserveData storage reserve) internal view {
+  function validateTransfer(DataTypes.ReserveData storage reserve) external view {
     require(!reserve.configuration.getPaused(), Errors.VL_RESERVE_PAUSED);
   }
 
