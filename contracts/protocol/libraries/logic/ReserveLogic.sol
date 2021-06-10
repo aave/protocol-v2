@@ -186,10 +186,6 @@ library ReserveLogic {
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
 
-    if (reserveCache.currTotalStableDebt != reserveCache.nextTotalStableDebt) {
-      reserveCache.nextAvgStableBorrowRate = IStableDebtToken(reserveCache.stableDebtTokenAddress)
-        .getAverageStableRate();
-    }
 
     reserveCache.nextTotalVariableDebt = reserveCache.nextScaledVariableDebt.rayMul(
       reserveCache.nextVariableBorrowIndex
@@ -228,11 +224,9 @@ library ReserveLogic {
   }
 
   struct MintToTreasuryLocalVars {
-    uint256 currentStableDebt;
-    uint256 principalStableDebt;
-    uint256 previousStableDebt;
-    uint256 currentVariableDebt;
-    uint256 previousVariableDebt;
+    uint256 prevTotalStableDebt;
+    uint256 prevTotalVariableDebt;
+    uint256 currTotalVariableDebt;
     uint256 avgStableRate;
     uint256 cumulatedStableInterest;
     uint256 totalDebtAccrued;
@@ -260,12 +254,12 @@ library ReserveLogic {
     }
 
     //calculate the last principal variable debt
-    vars.previousVariableDebt = reserveCache.currScaledVariableDebt.rayMul(
+    vars.prevTotalVariableDebt = reserveCache.currScaledVariableDebt.rayMul(
       reserveCache.currVariableBorrowIndex
     );
 
     //calculate the new total supply after accumulation of the index
-    vars.currentVariableDebt = reserveCache.currScaledVariableDebt.rayMul(
+    vars.currTotalVariableDebt = reserveCache.currScaledVariableDebt.rayMul(
       reserveCache.nextVariableBorrowIndex
     );
 
@@ -276,16 +270,16 @@ library ReserveLogic {
       reserveCache.reserveLastUpdateTimestamp
     );
 
-    vars.previousStableDebt = reserveCache.currPrincipalStableDebt.rayMul(
+    vars.prevTotalStableDebt = reserveCache.currPrincipalStableDebt.rayMul(
       vars.cumulatedStableInterest
     );
 
     //debt accrued is the sum of the current debt minus the sum of the debt at the last update
     vars.totalDebtAccrued = vars
-      .currentVariableDebt
+      .currTotalVariableDebt
       .add(reserveCache.currTotalStableDebt)
-      .sub(vars.previousVariableDebt)
-      .sub(vars.previousStableDebt);
+      .sub(vars.prevTotalVariableDebt)
+      .sub(vars.prevTotalStableDebt);
 
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
@@ -384,5 +378,33 @@ library ReserveLogic {
     reserveCache.nextAvgStableBorrowRate = reserveCache.currAvgStableBorrowRate;
 
     return reserveCache;
+  }
+
+  function refreshDebt(
+    DataTypes.ReserveCache memory cache,
+    uint256 stableDebtMinted,
+    uint256 stableDebtBurned,
+    uint256 variableDebtMinted,
+    uint256 variableDebtBurned
+  ) internal {
+    uint256 scaledVariableDebtMinted = variableDebtMinted.rayDiv(cache.nextVariableBorrowIndex);
+    uint256 scaledVariableDebtBurned = variableDebtBurned.rayDiv(cache.nextVariableBorrowIndex);
+
+    if (cache.currTotalStableDebt.add(stableDebtMinted) > stableDebtBurned) {
+      cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache
+        .currTotalStableDebt
+        .add(stableDebtMinted)
+        .sub(stableDebtBurned);
+      if (stableDebtMinted != 0 || stableDebtBurned != 0) {
+        cache.nextAvgStableBorrowRate = IStableDebtToken(cache.stableDebtTokenAddress)
+          .getAverageStableRate();
+      }
+    } else {
+      cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache.nextAvgStableBorrowRate = 0;
+    }
+
+    cache.nextScaledVariableDebt = cache.currScaledVariableDebt.add(scaledVariableDebtMinted).sub(
+      scaledVariableDebtBurned
+    );
   }
 }

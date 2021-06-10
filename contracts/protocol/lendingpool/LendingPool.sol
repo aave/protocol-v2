@@ -49,6 +49,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
+  using ReserveLogic for DataTypes.ReserveCache;
 
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
@@ -288,40 +289,26 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserveCache.stableDebtTokenAddress).burn(msg.sender, stableDebt);
-
-      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
-        .currTotalStableDebt
-        .sub(stableDebt);
-
       IVariableDebtToken(reserveCache.variableDebtTokenAddress).mint(
         msg.sender,
         msg.sender,
         stableDebt,
         reserveCache.nextVariableBorrowIndex
       );
-      reserveCache.nextScaledVariableDebt = reserveCache.currScaledVariableDebt.add(
-        stableDebt.rayDiv(reserveCache.nextVariableBorrowIndex)
-      );
+      reserveCache.refreshDebt(0, stableDebt, stableDebt, 0);
     } else {
       IVariableDebtToken(reserveCache.variableDebtTokenAddress).burn(
         msg.sender,
         variableDebt,
         reserveCache.nextVariableBorrowIndex
       );
-      reserveCache.nextScaledVariableDebt = reserveCache.currScaledVariableDebt.sub(
-        variableDebt.rayDiv(reserveCache.nextVariableBorrowIndex)
-      );
-
       IStableDebtToken(reserveCache.stableDebtTokenAddress).mint(
         msg.sender,
         msg.sender,
         variableDebt,
         reserve.currentStableBorrowRate
       );
-
-      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
-        .currTotalStableDebt
-        .add(stableDebt);
+      reserveCache.refreshDebt(variableDebt, 0, 0, variableDebt);
     }
 
     reserve.updateInterestRates(reserveCache, asset, 0, 0);
@@ -364,6 +351,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       stableDebt,
       reserve.currentStableBorrowRate
     );
+
+    reserveCache.refreshDebt(stableDebt, stableDebt, 0, 0);
 
     reserve.updateInterestRates(reserveCache, asset, 0, 0);
 
@@ -915,8 +904,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
 
     uint256 currentStableRate = 0;
-
     bool isFirstBorrowing = false;
+
     if (DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE) {
       currentStableRate = reserve.currentStableBorrowRate;
 
@@ -926,11 +915,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         vars.amount,
         currentStableRate
       );
-
-      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
-        .currTotalStableDebt
-        .add(vars.amount);
-      
+      reserveCache.refreshDebt(vars.amount, 0, 0, 0);
     } else {
       isFirstBorrowing = IVariableDebtToken(reserveCache.variableDebtTokenAddress).mint(
         vars.user,
@@ -938,10 +923,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         vars.amount,
         reserveCache.nextVariableBorrowIndex
       );
-
-      reserveCache.nextScaledVariableDebt = reserveCache.nextScaledVariableDebt.add(
-        vars.amount.rayDiv(reserveCache.nextVariableBorrowIndex)
-      );
+      reserveCache.refreshDebt(0, 0, vars.amount, 0);
     }
 
     if (isFirstBorrowing) {
@@ -1090,18 +1072,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserveCache.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
-      reserveCache.nextPrincipalStableDebt = reserveCache.nextTotalStableDebt = reserveCache
-        .currTotalStableDebt
-        .sub(paybackAmount);
+      reserveCache.refreshDebt(0, paybackAmount, 0, 0);
     } else {
       IVariableDebtToken(reserveCache.variableDebtTokenAddress).burn(
         onBehalfOf,
         paybackAmount,
         reserveCache.nextVariableBorrowIndex
       );
-      reserveCache.nextScaledVariableDebt = reserveCache.currScaledVariableDebt.sub(
-        paybackAmount.rayDiv(reserveCache.nextVariableBorrowIndex)
-      );
+      reserveCache.refreshDebt(0, 0, 0, paybackAmount);
     }
 
     reserve.updateInterestRates(reserveCache, asset, paybackAmount, 0);

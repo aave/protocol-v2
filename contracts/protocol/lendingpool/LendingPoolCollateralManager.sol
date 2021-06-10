@@ -10,6 +10,7 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPoolCollateralManager} from '../../interfaces/ILendingPoolCollateralManager.sol';
 import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
@@ -35,6 +36,7 @@ contract LendingPoolCollateralManager is
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
+  using ReserveLogic for DataTypes.ReserveCache;
 
   uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
 
@@ -173,9 +175,8 @@ contract LendingPoolCollateralManager is
         vars.actualDebtToLiquidate,
         debtReserveCache.nextVariableBorrowIndex
       );
-      debtReserveCache.nextScaledVariableDebt = debtReserveCache.currScaledVariableDebt.sub(
-        vars.actualDebtToLiquidate.rayDiv(debtReserveCache.nextVariableBorrowIndex)
-      );
+      debtReserveCache.refreshDebt(0, 0, 0, vars.actualDebtToLiquidate);
+      debtReserve.updateInterestRates(debtReserveCache, debtAsset, vars.actualDebtToLiquidate, 0);
     } else {
       // If the user doesn't have variable debt, no need to try to burn variable debt tokens
       if (vars.userVariableDebt > 0) {
@@ -184,27 +185,20 @@ contract LendingPoolCollateralManager is
           vars.userVariableDebt,
           debtReserveCache.nextVariableBorrowIndex
         );
-        debtReserveCache.nextScaledVariableDebt = debtReserveCache
-          .currScaledVariableDebt
-          .sub(vars.userVariableDebt.rayDiv(debtReserveCache.nextVariableBorrowIndex));
       }
       IStableDebtToken(debtReserveCache.stableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
-
-      debtReserveCache.nextPrincipalStableDebt = debtReserveCache
-        .nextTotalStableDebt = debtReserveCache.currTotalStableDebt.sub(
-        vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
+      debtReserveCache.refreshDebt(
+        0,
+        vars.actualDebtToLiquidate.sub(vars.userVariableDebt),
+        0,
+        vars.userVariableDebt
       );
-    }
 
-    debtReserve.updateInterestRates(
-      debtReserveCache,
-      debtAsset,
-      vars.actualDebtToLiquidate,
-      0
-    );
+      debtReserve.updateInterestRates(debtReserveCache, debtAsset, vars.actualDebtToLiquidate, 0);
+    }
 
     if (receiveAToken) {
       vars.liquidatorPreviousATokenBalance = IERC20(vars.collateralAtoken).balanceOf(msg.sender);
@@ -216,7 +210,7 @@ contract LendingPoolCollateralManager is
         emit ReserveUsedAsCollateralEnabled(collateralAsset, msg.sender);
       }
     } else {
-       collateralReserve.updateState(collateralReserveCache);
+      collateralReserve.updateState(collateralReserveCache);
       collateralReserve.updateInterestRates(
         collateralReserveCache,
         collateralAsset,
