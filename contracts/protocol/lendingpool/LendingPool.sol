@@ -543,7 +543,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         msg.sender,
         vars.currentAsset,
         vars.currentAmount,
-        vars.currentPremiumToLP,
+        totalPremiums[vars.i],
         referralCode
       );
     }
