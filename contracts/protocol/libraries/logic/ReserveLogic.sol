@@ -341,8 +341,7 @@ library ReserveLogic {
   }
 
   /**
-  * @dev Creates a cache object to avoid repeated storage reads and external contract calls
-  * when updating state and interest rates.
+  * @dev Creates a cache object to avoid repeated storage reads and external contract calls when updating state and interest rates.
   * @param reserve The reserve object for which the cache will be filled
   * @return The cache object
   */
@@ -378,8 +377,8 @@ library ReserveLogic {
       reserveCache.stableDebtLastUpdateTimestamp
     ) = IStableDebtToken(reserveCache.stableDebtTokenAddress).getSupplyData();
 
-    // setting by default the debt data after the action with the same values as before
-    // if the action involves mint/burn of debt, the cache is updated through refreshDebt()
+    // by default the actions are considered as not affecting the debt balances.
+    // if the action involves mint/burn of debt, the cache needs to be updated through refreshDebt()
     reserveCache.nextPrincipalStableDebt = reserveCache.currPrincipalStableDebt;
     reserveCache.nextTotalStableDebt = reserveCache.currTotalStableDebt;
     reserveCache.nextAvgStableBorrowRate = reserveCache.currAvgStableBorrowRate;
@@ -388,8 +387,8 @@ library ReserveLogic {
   }
 
   /**
-  * @dev Updates the debt data in the cache object. Invoked after an interaction caused minting/burning of the debt.
-  * MUST be invoked before updateInterestRates().
+  * @dev Updates the debt data in the cache object. MUST be invoked before updateInterestRates() when a protocol interaction
+  * causes minting or burning of debt.
   * @param cache The cache object
   * @param stableDebtMinted The stable debt minted as a consequence of the interaction
   * @param stableDebtBurned The stable debt burned as a consequence of the interaction
