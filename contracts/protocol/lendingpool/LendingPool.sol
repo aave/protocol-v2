@@ -20,8 +20,8 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
+import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
@@ -190,7 +190,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode,
     address onBehalfOf
   ) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
     _executeBorrow(
       ExecuteBorrowParams(
         asset,
@@ -372,7 +371,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
 
-    ValidationLogic.validateSetUseReserveAsCollateral(reserve, reserveCache);
+    ValidationLogic.validateSetUseReserveAsCollateral(reserveCache);
 
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
@@ -619,7 +618,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       ltv,
       currentLiquidationThreshold,
       healthFactor
-    ) = GenericLogic.calculateUserAccountData(
+    ) = GenericLogic.getUserAccountData(
       user,
       _reserves,
       _usersConfig[user],
@@ -990,7 +989,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateState(reserveCache);
 
-    ValidationLogic.validateDeposit(reserve, reserveCache, amount);
+    ValidationLogic.validateDeposit(reserveCache, amount);
 
     reserve.updateInterestRates(reserveCache, asset, amount, 0);
 
@@ -1029,7 +1028,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       amountToWithdraw = userBalance;
     }
 
-    ValidationLogic.validateWithdraw(reserve, reserveCache, amountToWithdraw, userBalance);
+    ValidationLogic.validateWithdraw(reserveCache, amountToWithdraw, userBalance);
 
     reserve.updateInterestRates(reserveCache, asset, 0, amountToWithdraw);
 
@@ -1077,7 +1076,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
 
     ValidationLogic.validateRepay(
-      reserve,
       reserveCache,
       amount,
       interestRateMode,

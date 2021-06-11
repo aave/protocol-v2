@@ -186,7 +186,6 @@ library ReserveLogic {
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
 
-
     reserveCache.nextTotalVariableDebt = reserveCache.nextScaledVariableDebt.rayMul(
       reserveCache.nextVariableBorrowIndex
     );
@@ -386,25 +385,29 @@ library ReserveLogic {
     uint256 stableDebtBurned,
     uint256 variableDebtMinted,
     uint256 variableDebtBurned
-  ) internal {
-    uint256 scaledVariableDebtMinted = variableDebtMinted.rayDiv(cache.nextVariableBorrowIndex);
-    uint256 scaledVariableDebtBurned = variableDebtBurned.rayDiv(cache.nextVariableBorrowIndex);
-
-    if (cache.currTotalStableDebt.add(stableDebtMinted) > stableDebtBurned) {
-      cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache
-        .currTotalStableDebt
-        .add(stableDebtMinted)
-        .sub(stableDebtBurned);
-      if (stableDebtMinted != 0 || stableDebtBurned != 0) {
-        cache.nextAvgStableBorrowRate = IStableDebtToken(cache.stableDebtTokenAddress)
-          .getAverageStableRate();
+  ) internal view {
+    if (stableDebtMinted != 0 || stableDebtBurned != 0) {
+      if (cache.currTotalStableDebt.add(stableDebtMinted) > stableDebtBurned) {
+        cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache
+          .currTotalStableDebt
+          .add(stableDebtMinted)
+          .sub(stableDebtBurned);
+        if (stableDebtMinted != 0 || stableDebtBurned != 0) {
+          cache.nextAvgStableBorrowRate = IStableDebtToken(cache.stableDebtTokenAddress)
+            .getAverageStableRate();
+        }
+      } else {
+        cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache
+          .nextAvgStableBorrowRate = 0;
       }
-    } else {
-      cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache.nextAvgStableBorrowRate = 0;
     }
 
-    cache.nextScaledVariableDebt = cache.currScaledVariableDebt.add(scaledVariableDebtMinted).sub(
-      scaledVariableDebtBurned
-    );
+    if (variableDebtMinted != 0 || variableDebtBurned != 0) {
+      uint256 scaledVariableDebtMinted = variableDebtMinted.rayDiv(cache.nextVariableBorrowIndex);
+      uint256 scaledVariableDebtBurned = variableDebtBurned.rayDiv(cache.nextVariableBorrowIndex);
+      cache.nextScaledVariableDebt = cache.currScaledVariableDebt.add(scaledVariableDebtMinted).sub(
+        scaledVariableDebtBurned
+      );
+    }
   }
 }
