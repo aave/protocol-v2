@@ -340,6 +340,12 @@ library ReserveLogic {
     reserve.lastUpdateTimestamp = uint40(block.timestamp);
   }
 
+  /**
+  * @dev Creates a cache object to avoid repeated storage reads and external contract calls
+  * when updating state and interest rates.
+  * @param reserve The reserve object for which the cache will be filled
+  * @return The cache object
+  */
   function cache(DataTypes.ReserveData storage reserve)
     internal
     view
@@ -372,6 +378,8 @@ library ReserveLogic {
       reserveCache.stableDebtLastUpdateTimestamp
     ) = IStableDebtToken(reserveCache.stableDebtTokenAddress).getSupplyData();
 
+    // setting by default the debt data after the action with the same values as before
+    // if the action involves mint/burn of debt, the cache is updated through refreshDebt()
     reserveCache.nextPrincipalStableDebt = reserveCache.currPrincipalStableDebt;
     reserveCache.nextTotalStableDebt = reserveCache.currTotalStableDebt;
     reserveCache.nextAvgStableBorrowRate = reserveCache.currAvgStableBorrowRate;
@@ -379,6 +387,15 @@ library ReserveLogic {
     return reserveCache;
   }
 
+  /**
+  * @dev Updates the debt data in the cache object. Invoked after an interaction caused minting/burning of the debt.
+  * MUST be invoked before updateInterestRates().
+  * @param cache The cache object
+  * @param stableDebtMinted The stable debt minted as a consequence of the interaction
+  * @param stableDebtBurned The stable debt burned as a consequence of the interaction
+  * @param variableDebtMinted The variable debt minted as a consequence of the interaction
+  * @param variableDebtBurned The variable debt burned as a consequence of the interaction
+  */
   function refreshDebt(
     DataTypes.ReserveCache memory cache,
     uint256 stableDebtMinted,
