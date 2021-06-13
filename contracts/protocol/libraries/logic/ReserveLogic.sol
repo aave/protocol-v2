@@ -341,10 +341,10 @@ library ReserveLogic {
   }
 
   /**
-  * @dev Creates a cache object to avoid repeated storage reads and external contract calls when updating state and interest rates.
-  * @param reserve The reserve object for which the cache will be filled
-  * @return The cache object
-  */
+   * @dev Creates a cache object to avoid repeated storage reads and external contract calls when updating state and interest rates.
+   * @param reserve The reserve object for which the cache will be filled
+   * @return The cache object
+   */
   function cache(DataTypes.ReserveData storage reserve)
     internal
     view
@@ -387,14 +387,14 @@ library ReserveLogic {
   }
 
   /**
-  * @dev Updates the debt data in the cache object. MUST be invoked before updateInterestRates() when a protocol interaction
-  * causes minting or burning of debt.
-  * @param cache The cache object
-  * @param stableDebtMinted The stable debt minted as a consequence of the interaction
-  * @param stableDebtBurned The stable debt burned as a consequence of the interaction
-  * @param variableDebtMinted The variable debt minted as a consequence of the interaction
-  * @param variableDebtBurned The variable debt burned as a consequence of the interaction
-  */
+   * @dev Updates the debt data in the cache object. MUST be invoked before updateInterestRates() when a protocol interaction
+   * causes minting or burning of debt.
+   * @param cache The cache object
+   * @param stableDebtMinted The stable debt minted as a consequence of the interaction
+   * @param stableDebtBurned The stable debt burned as a consequence of the interaction
+   * @param variableDebtMinted The variable debt minted as a consequence of the interaction
+   * @param variableDebtBurned The variable debt burned as a consequence of the interaction
+   */
   function refreshDebt(
     DataTypes.ReserveCache memory cache,
     uint256 stableDebtMinted,
@@ -408,10 +408,8 @@ library ReserveLogic {
           .currTotalStableDebt
           .add(stableDebtMinted)
           .sub(stableDebtBurned);
-        if (stableDebtMinted != 0 || stableDebtBurned != 0) {
-          cache.nextAvgStableBorrowRate = IStableDebtToken(cache.stableDebtTokenAddress)
-            .getAverageStableRate();
-        }
+        cache.nextAvgStableBorrowRate = IStableDebtToken(cache.stableDebtTokenAddress)
+          .getAverageStableRate();
       } else {
         cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache
           .nextAvgStableBorrowRate = 0;
