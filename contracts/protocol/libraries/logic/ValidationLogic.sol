@@ -109,6 +109,7 @@ library ValidationLogic {
 
   /**
    * @dev Validates a borrow action
+   * @param reserveCache the cached data of the reserve
    * @param asset The address of the asset to borrow
    * @param userAddress The address of the user
    * @param amount The amount to be borrowed
@@ -246,6 +247,7 @@ library ValidationLogic {
    * @dev Validates a repay action
    * @param reserveCache The cached data of the reserve
    * @param amountSent The amount sent for the repayment. Can be an actual value or uint(-1)
+   * @param rateMode the interest rate mode of the debt being repaid
    * @param onBehalfOf The address of the user msg.sender is repaying for
    * @param stableDebt The borrow balance of the user
    * @param variableDebt The borrow balance of the user
@@ -281,10 +283,11 @@ library ValidationLogic {
   /**
    * @dev Validates a swap of borrow rate mode.
    * @param reserve The reserve state on which the user is swapping the rate
+   * @param reserveCache The cached data of the reserve 
    * @param userConfig The user reserves configuration
    * @param stableDebt The stable debt of the user
    * @param variableDebt The variable debt of the user
-   * @param currentRateMode The rate mode of the borrow
+   * @param currentRateMode The rate mode of the debt being swapped
    */
   function validateSwapRateMode(
     DataTypes.ReserveData storage reserve,
@@ -328,6 +331,7 @@ library ValidationLogic {
   /**
    * @dev Validates a stable borrow rate rebalance action
    * @param reserve The reserve state on which the user is getting rebalanced
+   * @param reserveCache The cached state of the reserve
    * @param reserveAddress The address of the reserve
    * @param stableDebtToken The stable debt token instance
    * @param variableDebtToken The variable debt token instance
@@ -412,8 +416,15 @@ library ValidationLogic {
   /**
    * @dev Validates the liquidation action
    * @param collateralReserve The reserve data of the collateral
+   * @param principalReserveCache The cached reserve data of the principal
    * @param userConfig The user configuration
    * @param totalDebt Total debt balance of the user
+   * @param user The address of the user being liquidated
+   * @param reservesData The mapping of the reserves data
+   * @param userConfig The user configuration mapping
+   * @param reserves The list of the reserves
+   * @param reservesCount The number of reserves in the list
+   * @param oracle The address of the price oracle
    **/
   function validateLiquidationCall(
     DataTypes.ReserveData storage collateralReserve,
