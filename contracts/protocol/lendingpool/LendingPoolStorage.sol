@@ -31,4 +31,6 @@ contract LendingPoolStorage {
   uint256 internal _maxNumberOfReserves;
 
   mapping(address => bool) _authorizedFlashBorrowers;
+
+  uint256 internal _flashLoanPremiumToProtocol;
 }
