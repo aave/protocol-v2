@@ -55,11 +55,9 @@ library DataTypes {
   struct ReserveCache {
     uint256 currScaledVariableDebt;
     uint256 nextScaledVariableDebt;
-    uint256 nextTotalVariableDebt;
     uint256 currPrincipalStableDebt;
     uint256 currAvgStableBorrowRate;
     uint256 currTotalStableDebt;
-    uint256 nextPrincipalStableDebt;
     uint256 nextAvgStableBorrowRate;
     uint256 nextTotalStableDebt;
     uint256 currLiquidityIndex;

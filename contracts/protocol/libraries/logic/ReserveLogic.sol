@@ -161,9 +161,6 @@ library ReserveLogic {
   }
 
   struct UpdateInterestRatesLocalVars {
-    address stableDebtTokenAddress;
-    uint256 availableLiquidity;
-    uint256 totalStableDebt;
     uint256 newLiquidityRate;
     uint256 newStableRate;
     uint256 newVariableRate;
@@ -186,10 +183,9 @@ library ReserveLogic {
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
 
-    reserveCache.nextTotalVariableDebt = reserveCache.nextScaledVariableDebt.rayMul(
+    vars.totalVariableDebt = reserveCache.nextScaledVariableDebt.rayMul(
       reserveCache.nextVariableBorrowIndex
     );
-
     (
       vars.newLiquidityRate,
       vars.newStableRate,
@@ -200,7 +196,7 @@ library ReserveLogic {
       liquidityAdded,
       liquidityTaken,
       reserveCache.nextTotalStableDebt,
-      reserveCache.nextTotalVariableDebt,
+      vars.totalVariableDebt,
       reserveCache.nextAvgStableBorrowRate,
       reserveCache.reserveConfiguration.getReserveFactorMemory()
     );
@@ -252,12 +248,12 @@ library ReserveLogic {
       return;
     }
 
-    //calculate the last principal variable debt
+    //calculate the total variable debt at moment of the last interaction
     vars.prevTotalVariableDebt = reserveCache.currScaledVariableDebt.rayMul(
       reserveCache.currVariableBorrowIndex
     );
 
-    //calculate the new total supply after accumulation of the index
+    //calculate the new total variable debt after accumulation of the interest on the index
     vars.currTotalVariableDebt = reserveCache.currScaledVariableDebt.rayMul(
       reserveCache.nextVariableBorrowIndex
     );
@@ -379,7 +375,6 @@ library ReserveLogic {
 
     // by default the actions are considered as not affecting the debt balances.
     // if the action involves mint/burn of debt, the cache needs to be updated through refreshDebt()
-    reserveCache.nextPrincipalStableDebt = reserveCache.currPrincipalStableDebt;
     reserveCache.nextTotalStableDebt = reserveCache.currTotalStableDebt;
     reserveCache.nextAvgStableBorrowRate = reserveCache.currAvgStableBorrowRate;
 
@@ -404,15 +399,13 @@ library ReserveLogic {
   ) internal view {
     if (stableDebtMinted != 0 || stableDebtBurned != 0) {
       if (cache.currTotalStableDebt.add(stableDebtMinted) > stableDebtBurned) {
-        cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache
-          .currTotalStableDebt
-          .add(stableDebtMinted)
-          .sub(stableDebtBurned);
+        cache.nextTotalStableDebt = cache.currTotalStableDebt.add(stableDebtMinted).sub(
+          stableDebtBurned
+        );
         cache.nextAvgStableBorrowRate = IStableDebtToken(cache.stableDebtTokenAddress)
           .getAverageStableRate();
       } else {
-        cache.nextPrincipalStableDebt = cache.nextTotalStableDebt = cache
-          .nextAvgStableBorrowRate = 0;
+        cache.nextTotalStableDebt = cache.nextAvgStableBorrowRate = 0;
       }
     }
 
