@@ -427,7 +427,7 @@ interface ILendingPoolConfigurator {
    * @dev Updates the total flash loan premium
    * flash loan premium consist in 2 parts
    * - A part is sent to aToken holders as extra balance
-   * - A part is collecte by the protocol reserves
+   * - A part is collected by the protocol reserves
    * @param flashloanPremiumTotal total premium in bps
    */
   function updateFlashloanPremiumTotal(uint256 flashloanPremiumTotal) external;

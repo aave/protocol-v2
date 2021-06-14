@@ -919,7 +919,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Updates flash loan premiums
    * flash loan premium consist in 2 parts
    * - A part is sent to aToken holders as extra balance
-   * - A part is collecte by the protocol reserves
+   * - A part is collected by the protocol reserves
    * @param flashLoanPremiumTotal total premium in bps
    * @param flashLoanPremiumToProtocol part of the premium sent to protocol
    */
