@@ -423,7 +423,18 @@ interface ILendingPoolConfigurator {
    **/
   function dropReserve(address asset) external;
 
+  /**
+   * @dev Updates the total flash loan premium
+   * flash loan premium consist in 2 parts
+   * - A part is sent to aToken holders as extra balance
+   * - A part is collecte by the protocol reserves
+   * @param flashloanPremiumTotal total premium in bps
+   */
   function updateFlashloanPremiumTotal(uint256 flashloanPremiumTotal) external;
 
+  /**
+   * @dev Updates the flash loan premium collected by protocol reserves
+   * @param flashloanPremiumToProtocol part of the premium sent to protocol
+   */
   function updateFlashloanPremiumToProtocol(uint256 flashloanPremiumToProtocol) external;
 }
