@@ -893,6 +893,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
+  /**
+   * @dev Authorizes/Unauthorizes a flash borrower. Authorized borrowers pay no flash loan premium
+   * @param flashBorrower address of the flash borrower
+   * @param authorized `true` to authorize, `false` to unauthorize
+   */
   function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized)
     external
     override
@@ -901,10 +906,23 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _authorizedFlashBorrowers[flashBorrower] = authorized;
   }
 
+  /**
+   * @dev Returns whether a flashborrower is authorized (pays no premium)
+   * @param flashBorrower address of the flash borrower
+   * @return `true` if authorized, `false` if not
+   */
   function isFlashBorrowerAuthorized(address flashBorrower) external view override returns (bool) {
     return _authorizedFlashBorrowers[flashBorrower];
   }
 
+  /**
+   * @dev Updates flash loan premiums
+   * flash loan premium consist in 2 parts
+   * - A part is sent to aToken holders as extra balance
+   * - A part is collecte by the protocol reserves
+   * @param flashLoanPremiumTotal total premium in bps
+   * @param flashLoanPremiumToProtocol part of the premium sent to protocol
+   */
   function updateFlashloanPremiums(
     uint256 flashLoanPremiumTotal,
     uint256 flashLoanPremiumToProtocol
