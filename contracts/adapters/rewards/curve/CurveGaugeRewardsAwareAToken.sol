@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {RewardsAwareAToken} from '../../protocol/tokenization/RewardsAwareAToken.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {ICurveMinter} from '../interfaces/curve/ICurveMinter.sol';
-import {ICurveGauge, ICurveGaugeView} from '../interfaces/curve/ICurveGauge.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {RewardsAwareAToken} from '../../../protocol/tokenization/RewardsAwareAToken.sol';
+import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {ICurveMinter} from '../../interfaces/curve/ICurveMinter.sol';
+import {ICurveGauge, ICurveGaugeView} from '../../interfaces/curve/ICurveGauge.sol';
+import {IAaveIncentivesController} from '../../../interfaces/IAaveIncentivesController.sol';
+import {ICurveTreasury} from '../../interfaces/curve/ICurveTreasury.sol';
 
 /**
  * @title Curve Rewards Aware AToken
@@ -17,6 +18,7 @@ import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesControl
 contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
   // CRV token address
   address internal immutable CRV_TOKEN;
+  address internal immutable CURVE_TREASURY;
 
   // Gauge contract address
   address internal _gaugeController;
@@ -29,8 +31,9 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
   /**
    * @param crvToken The address of the $CRV token
    */
-  constructor(address crvToken) public {
+  constructor(address crvToken, address crvTreasury) public {
     CRV_TOKEN = crvToken;
+    CURVE_TREASURY = crvTreasury;
   }
 
   /**
@@ -79,17 +82,20 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
     _underlyingAsset = underlyingAsset;
     _incentivesController = incentivesController;
 
+    _gaugeController = _decodeParams(params);
+
     // Initialize Curve Gauge rewards
-    _gaugeController = underlyingAsset;
     _rewardTokens[0] = CRV_TOKEN;
 
     // Start for loop with index = 1 to not rewrite first element of rewardTokens
     for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address reward = ICurveGaugeView(underlyingAsset).reward_tokens(index - 1);
+      address reward = ICurveGaugeView(_decodeParams(params)).reward_tokens(index - 1);
       if (reward == address(0)) break;
 
       _rewardTokens[index] = reward;
     }
+
+    IERC20(underlyingAsset).safeApprove(CURVE_TREASURY, type(uint256).max);
 
     emit Initialized(
       underlyingAsset,
@@ -109,14 +115,14 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
    * @dev External call to retrieve the lifetime accrued $CRV token rewards from the external Rewards Controller contract
    */
   function _getExternalLifetimeCurve() internal view returns (uint256) {
-    return ICurveGaugeView(_gaugeController).integrate_fraction(address(this));
+    return ICurveGaugeView(_gaugeController).integrate_fraction(CURVE_TREASURY);
   }
 
   /**
    * @dev External call to retrieve the current claimable extra token rewards from the external Rewards Controller contract
    */
   function _getExternalClaimableCurveExtraRewards(address token) internal view returns (uint256) {
-    return ICurveGaugeView(_gaugeController).claimable_reward(address(this), token);
+    return ICurveGaugeView(_gaugeController).claimable_reward(CURVE_TREASURY, token);
   }
 
   /** End of Curve Specific functions */
@@ -154,7 +160,7 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
   function _computeExternalLifetimeRewards(address token) internal override returns (uint256) {
     // The Curve Gauge can give exact lifetime rewards and accrued rewards for the CRV token
     if (token == CRV_TOKEN) {
-      ICurveGauge(_gaugeController).user_checkpoint(address(this));
+      ICurveGauge(_gaugeController).user_checkpoint(CURVE_TREASURY);
       return _getExternalLifetimeCurve();
     }
     // Other rewards from the Curve Gauge can not get the lifetime rewards externally, only at the moment of claim, due they are external rewards outside the Curve ecosystem.
@@ -178,9 +184,6 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
    * @dev External call to claim the lifetime accrued rewards of the aToken contract to the external Rewards Controller contract
    */
   function _claimRewardsFromController() internal override {
-    // Mint CRV to aToken
-    ICurveMinter(ICurveGaugeView(_gaugeController).minter()).mint(_gaugeController);
-
     _updateRewards();
   }
 
@@ -197,7 +200,7 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
         priorTokenBalances[index] = IERC20(rewardToken).balanceOf(address(this));
       }
       // Mint other rewards to aToken
-      ICurveGauge(_gaugeController).claim_rewards(address(this));
+      ICurveTreasury(CURVE_TREASURY).claimGaugeRewards(_gaugeController);
 
       for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
         address rewardToken = _getRewardsTokenAddress(index);
@@ -209,6 +212,37 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
         );
       }
     }
+  }
+
+  /**
+   * @dev Deposit LP tokens at the Curve Treasury and stake into the Gauge Contract from the Treasury
+   * @param token Address of the LP Curve token
+   * @param amount Amount of tokens to deposit
+   */
+  function _stake(address token, uint256 amount) internal override returns (uint256) {
+    ICurveTreasury(CURVE_TREASURY).deposit(token, amount, true);
+    return amount;
+  }
+
+  /**
+   * @dev Withdraw LP tokens at the Curve Treasury and stake into the Gauge Contract from the Treasury
+   * @param token Address of the LP Curve token
+   * @param amount Amount of tokens to withdraw
+   */
+  function _unstake(address token, uint256 amount) internal override returns (uint256) {
+    ICurveTreasury(CURVE_TREASURY).withdraw(token, amount, true);
+    return amount;
+  }
+
+  /**
+   * @dev Param decoder to get Gauge Staking address
+   * @param params Additional variadic field to include extra params. Expected parameters:
+   * @return address of gauge
+   */
+  function _decodeParams(bytes memory params) internal pure returns (address) {
+    address gauge = abi.decode(params, (address));
+
+    return gauge;
   }
 
   /** End of Rewards Aware AToken functions  */
