@@ -278,7 +278,6 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     _pool.setConfiguration(asset, currentConfig.data);
 
-    emit BorrowCapChanged(asset, borrowCap);
     emit BorrowingEnabledOnReserve(asset, stableBorrowRateEnabled);
   }
 
