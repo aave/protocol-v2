@@ -240,6 +240,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   ///@inheritdoc ILendingPool
   function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
+    
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
 
