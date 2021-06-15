@@ -337,7 +337,6 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _pool.setConfiguration(asset, currentConfig.data);
 
     emit CollateralConfigurationChanged(asset, ltv, liquidationThreshold, liquidationBonus);
-    emit ExposureCapChanged(asset, exposureCap);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
