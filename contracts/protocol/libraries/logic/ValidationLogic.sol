@@ -20,6 +20,7 @@ import {IScaledBalanceToken} from '../../../interfaces/IScaledBalanceToken.sol';
 import {IAToken} from '../../../interfaces/IAToken.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
+import {Address} from '../../../dependencies/openzeppelin/contracts/Address.sol';
 
 /**
  * @title ReserveLogic library
@@ -34,6 +35,7 @@ library ValidationLogic {
   using SafeERC20 for IERC20;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
+  using Address for address;
 
   uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
   uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
@@ -283,7 +285,7 @@ library ValidationLogic {
   /**
    * @dev Validates a swap of borrow rate mode.
    * @param reserve The reserve state on which the user is swapping the rate
-   * @param reserveCache The cached data of the reserve 
+   * @param reserveCache The cached data of the reserve
    * @param userConfig The user reserves configuration
    * @param stableDebt The stable debt of the user
    * @param variableDebt The variable debt of the user
@@ -345,6 +347,10 @@ library ValidationLogic {
     IERC20 variableDebtToken,
     address aTokenAddress
   ) external view {
+
+    // to avoid potential abuses using flashloans, the rebalance stable rate must happen through an EOA
+    require(!address(msg.sender).isContract(), Errors.LP_CALLER_NOT_EOA);
+
     (bool isActive, , , , bool isPaused) = reserveCache.reserveConfiguration.getFlagsMemory();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);

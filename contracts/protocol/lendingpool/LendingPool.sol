@@ -26,7 +26,6 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
-import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 
 /**
  * @title LendingPool contract
@@ -51,7 +50,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
   using ReserveLogic for DataTypes.ReserveCache;
-  using Address for address;
 
   uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
@@ -329,8 +327,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
     
-    require(!address(msg.sender).isContract(), Errors.LP_CALLER_NOT_EOA);
-
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
 
