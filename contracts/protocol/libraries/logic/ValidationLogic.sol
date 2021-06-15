@@ -269,6 +269,11 @@ library ValidationLogic {
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
+    require(
+      amountSent != uint256(-1) || msg.sender == onBehalfOf,
+      Errors.VL_NO_EXPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
+    );
+
     if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) {
       require(stableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
 
@@ -288,11 +293,6 @@ library ValidationLogic {
         Errors.VL_NO_DEBT_ACCRUED_BY_CONTRACT
       );
     }
-
-    require(
-      amountSent != uint256(-1) || msg.sender == onBehalfOf,
-      Errors.VL_NO_EXPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
-    );
   }
 
   /**
