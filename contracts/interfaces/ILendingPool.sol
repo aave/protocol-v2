@@ -402,7 +402,7 @@ interface ILendingPool {
    * @param asset The address of the underlying asset of the reserve
    * @param aTokenAddress The address of the aToken that will be assigned to the reserve
    * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
-   * @param aTokenAddress The address of the VariableDebtToken that will be assigned to the reserve
+   * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function initReserve(
@@ -520,7 +520,8 @@ interface ILendingPool {
   function paused() external view returns (bool);
 
   /**
-   * @dev Authorizes/Unauthorizes a flash borrower. Authorized borrowers pay no flash loan premium
+   * @dev Authorizes/Unauthorizes a flash borrower. Authorized borrowers pay no flash loan premium. 
+   * Only callable by the LendingPoolConfigurator contract
    * @param flashBorrower address of the flash borrower
    * @param authorized `true` to authorize, `false` to unauthorize
    */
@@ -538,6 +539,7 @@ interface ILendingPool {
    * flash loan premium consist in 2 parts
    * - A part is sent to aToken holders as extra balance
    * - A part is collected by the protocol reserves
+   * Only callable by the LendingPoolConfigurator contract
    * @param flashLoanPremiumTotal total premium in bps
    * @param flashLoanPremiumToProtocol part of the premium sent to protocol
    */
