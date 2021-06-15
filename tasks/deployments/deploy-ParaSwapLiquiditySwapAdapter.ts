@@ -1,8 +1,9 @@
 import { task } from 'hardhat/config';
 
 import { ParaSwapLiquiditySwapAdapterFactory } from '../../types';
-import { verifyContract } from '../../helpers/etherscan-verification';
+import { verifyContract } from '../../helpers/contracts-helpers';
 import { getFirstSigner } from '../../helpers/contracts-getters';
+import { eContractid } from '../../helpers/types';
 
 const CONTRACT_NAME = 'ParaSwapLiquiditySwapAdapter';
 
@@ -23,7 +24,13 @@ task(`deploy-${CONTRACT_NAME}`, `Deploys the ${CONTRACT_NAME} contract`)
     ).deploy(provider, augustusRegistry);
     await adapter.deployTransaction.wait();
     console.log(`${CONTRACT_NAME}.address`, adapter.address);
-    await verifyContract(adapter.address, [provider, augustusRegistry]);
+
+    if (verify) {
+      await verifyContract(eContractid.ParaSwapLiquiditySwapAdapter, adapter, [
+        provider,
+        augustusRegistry,
+      ]);
+    }
 
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);
   });

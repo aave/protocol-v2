@@ -1,9 +1,5 @@
 import { task } from 'hardhat/config';
-import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import {
-  deployLendingPoolAddressesProvider,
-  deployLendingPoolAddressesProviderRegistry,
-} from '../../helpers/contracts-deployments';
+import { deployLendingPoolAddressesProvider } from '../../helpers/contracts-deployments';
 import { notFalsyOrZeroAddress, waitForTx } from '../../helpers/misc-utils';
 import {
   ConfigNames,
@@ -11,16 +7,8 @@ import {
   getGenesisPoolAdmin,
   getEmergencyAdmin,
 } from '../../helpers/configuration';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { eNetwork } from '../../helpers/types';
-import {
-  getFirstSigner,
-  getLendingPoolAddressesProviderRegistry,
-} from '../../helpers/contracts-getters';
-import { formatEther, isAddress, parseEther } from 'ethers/lib/utils';
-import { isZeroAddress } from 'ethereumjs-util';
-import { Signer, BigNumber } from 'ethers';
-import { parse } from 'path';
-//import BigNumber from 'bignumber.js';
 
 task(
   'full:deploy-address-provider',
@@ -28,65 +16,29 @@ task(
 )
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
-  .setAction(async ({ verify, pool }, DRE) => {
+  .addFlag('skipRegistry')
+  .setAction(async ({ verify, pool, skipRegistry }, DRE) => {
     await DRE.run('set-DRE');
-    let signer: Signer;
-    const network = <eNetwork>DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ProviderId, MarketId } = poolConfig;
+    const { MarketId } = poolConfig;
 
-    const providerRegistryAddress = getParamPerNetwork(poolConfig.ProviderRegistry, network);
-    const providerRegistryOwner = getParamPerNetwork(poolConfig.ProviderRegistryOwner, network);
-
-    if (
-      !providerRegistryAddress ||
-      !isAddress(providerRegistryAddress) ||
-      isZeroAddress(providerRegistryAddress)
-    ) {
-      throw Error('config.ProviderRegistry is missing or is not an address.');
-    }
-
-    if (
-      !providerRegistryOwner ||
-      !isAddress(providerRegistryOwner) ||
-      isZeroAddress(providerRegistryOwner)
-    ) {
-      throw Error('config.ProviderRegistryOwner is missing or is not an address.');
-    }
-
-    // Checks if deployer address is registry owner
-    if (process.env.MAINNET_FORK === 'true') {
-      await DRE.network.provider.request({
-        method: 'hardhat_impersonateAccount',
-        params: [providerRegistryOwner],
-      });
-      signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
-      const firstAccount = await getFirstSigner();
-      await firstAccount.sendTransaction({ value: parseEther('10'), to: providerRegistryOwner });
-    } else {
-      signer = DRE.ethers.provider.getSigner(providerRegistryOwner);
-    }
-    // 1. Address Provider Registry instance
-    const addressesProviderRegistry = (
-      await getLendingPoolAddressesProviderRegistry(providerRegistryAddress)
-    ).connect(signer);
-
-    console.log('Registry Address', addressesProviderRegistry.address);
-
-    // 2. Deploy address provider and set genesis manager
+    // 1. Deploy address provider and set genesis manager
     const addressesProvider = await deployLendingPoolAddressesProvider(MarketId, verify);
 
-    // DISABLE SEC. 3 FOR GOVERNANCE USE!
-    // 3. Set the provider at the Registry
-    await waitForTx(
-      await addressesProviderRegistry.registerAddressesProvider(
-        addressesProvider.address,
-        ProviderId
-      )
-    );
+    // 2. Add to registry or setup a new one
+    if (!skipRegistry) {
+      const providerRegistryAddress = getParamPerNetwork(
+        poolConfig.ProviderRegistry,
+        <eNetwork>DRE.network.name
+      );
 
-    // 4. Set pool admins
-
+      await DRE.run('add-market-to-registry', {
+        pool,
+        addressesProvider: addressesProvider.address,
+        deployRegistry: !notFalsyOrZeroAddress(providerRegistryAddress),
+      });
+    }
+    // 3. Set pool admins
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
 

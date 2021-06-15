@@ -4,6 +4,7 @@ import {
   insertContractAddressInDb,
   getEthersSigners,
   registerContractInJsonDb,
+  getEthersSignersAddresses,
 } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
@@ -26,7 +27,7 @@ import {
   deployUniswapLiquiditySwapAdapter,
   deployUniswapRepayAdapter,
   deployFlashLiquidationAdapter,
-  authorizeWETHGateway
+  authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
@@ -101,9 +102,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
   //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
-  const addressList = await Promise.all(
-    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
-  );
+  const addressList = await getEthersSignersAddresses();
 
   await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
 
@@ -240,8 +239,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.log('Initialize configuration');
 
   const config = loadPoolConfig(ConfigNames.Amm);
-  
-  const { 
+
+  const {
     ATokenNamePrefix,
     StableDebtTokenNamePrefix,
     VariableDebtTokenNamePrefix,
@@ -292,9 +291,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
-  const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+  const FORK = process.env.FORK;
 
-  if (MAINNET_FORK) {
+  if (FORK) {
     await rawBRE.run('amm:mainnet');
   } else {
     console.log('-> Deploying test environment...');
