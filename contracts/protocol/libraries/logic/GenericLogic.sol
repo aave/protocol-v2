@@ -95,6 +95,9 @@ library GenericLogic {
       }
 
       vars.currentReserveAddress = reserves[vars.i];
+
+      if (vars.currentReserveAddress == address(0)) continue;
+
       DataTypes.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
@@ -200,5 +203,37 @@ library GenericLogic {
 
     availableBorrowsETH = availableBorrowsETH.sub(totalDebtInETH);
     return availableBorrowsETH;
+  }
+
+  /**
+   * @dev proxy call for calculateUserAccountData as external function. 
+   * Used in LendingPool to work around contract size limit issues
+   * @param user The address of the user
+   * @param reservesData Data of all the reserves
+   * @param userConfig The configuration of the user
+   * @param reserves The list of the available reserves
+   * @param oracle The price oracle address
+   * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold and the HF
+   **/
+  function getUserAccountData(
+    address user,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap memory userConfig,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
+    address oracle
+  )
+    external
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    return
+      calculateUserAccountData(user, reservesData, userConfig, reserves, reservesCount, oracle);
   }
 }

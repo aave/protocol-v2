@@ -68,6 +68,16 @@ library ReserveConfiguration {
     return self.data & ~LTV_MASK;
   }
 
+    /**
+   * @dev Gets the Loan to Value of the reserve
+   * @param self The reserve configuration
+   * @return The loan to value
+   **/
+  function getLtvMemory(DataTypes.ReserveConfigurationMap memory self) internal pure returns (uint256) {
+    return self.data & ~LTV_MASK;
+  }
+
+
   /**
    * @dev Sets the liquidation threshold of the reserve
    * @param self The reserve configuration
@@ -148,6 +158,19 @@ library ReserveConfiguration {
   function getDecimals(DataTypes.ReserveConfigurationMap storage self)
     internal
     view
+    returns (uint256)
+  {
+    return (self.data & ~DECIMALS_MASK) >> RESERVE_DECIMALS_START_BIT_POSITION;
+  }
+
+  /**
+   * @dev Gets the decimals of the underlying asset of the reserve
+   * @param self The reserve configuration
+   * @return The decimals of the asset
+   **/
+  function getDecimalsMemory(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
     returns (uint256)
   {
     return (self.data & ~DECIMALS_MASK) >> RESERVE_DECIMALS_START_BIT_POSITION;
@@ -291,6 +314,19 @@ library ReserveConfiguration {
   function getReserveFactor(DataTypes.ReserveConfigurationMap storage self)
     internal
     view
+    returns (uint256)
+  {
+    return (self.data & ~RESERVE_FACTOR_MASK) >> RESERVE_FACTOR_START_BIT_POSITION;
+  }
+
+  /**
+   * @dev Gets the reserve factor of the reserve
+   * @param self The reserve configuration
+   * @return The reserve factor
+   **/
+  function getReserveFactorMemory(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
     returns (uint256)
   {
     return (self.data & ~RESERVE_FACTOR_MASK) >> RESERVE_FACTOR_START_BIT_POSITION;

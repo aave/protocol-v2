@@ -109,8 +109,11 @@ library Errors {
   string public constant LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN = '85';
   string public constant VL_RESERVE_PAUSED = '86';
   string public constant LPC_CALLER_NOT_RISK_OR_POOL_ADMIN = '87';
-  string public constant RC_INVALID_EXPOSURE_CAP = '88';
-  string public constant VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED = '89';
+  string public constant RL_ATOKEN_SUPPLY_NOT_ZERO = '88';
+  string public constant RL_STABLE_DEBT_NOT_ZERO = '89';
+  string public constant RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO = '90';
+  string public constant RC_INVALID_EXPOSURE_CAP = '91';
+  string public constant VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED = '92';
 
   enum CollateralManagerErrors {
     NO_ERROR,

@@ -133,6 +133,12 @@ interface ILendingPoolConfigurator {
   event ReserveUnpaused(address indexed asset);
 
   /**
+   * @dev Emitted when a reserve is dropped
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event ReserveDropped(address indexed asset);
+
+  /**
    * @dev Emitted when a reserve factor is updated
    * @param asset The address of the underlying asset of the reserve
    * @param factor The new reserve factor
@@ -211,6 +217,18 @@ interface ILendingPoolConfigurator {
   );
 
   /**
+   * @dev Emitted when a new borrower is authorized (fees = 0)
+   * @param flashBorrower The address of the authorized borrower
+   **/
+  event FlashBorrowerAuthorized(address indexed flashBorrower);
+
+  /**
+   * @dev Emitted when a borrower is unauthorized
+   * @param flashBorrower The address of the unauthorized borrower
+   **/
+  event FlashBorrowerUnauthorized(address indexed flashBorrower);
+
+  /**
    * @dev Emitted when a new risk admin is registered
    * @param admin the newly registered admin
    **/
@@ -221,6 +239,18 @@ interface ILendingPoolConfigurator {
    * @param admin the unregistered admin
    **/
   event RiskAdminUnregistered(address indexed admin);
+
+  /**
+   * @dev Emitted when a the total premium on flashloans is updated
+   * @param flashloanPremiumTotal the new premium
+   **/
+  event FlashloanPremiumTotalUpdated(uint256 flashloanPremiumTotal);
+
+  /**
+   * @dev Emitted when a the part of the premium that goes to protoco lis updated
+   * @param flashloanPremiumToProtocol the new premium
+   **/
+  event FlashloanPremiumToProcolUpdated(uint256 flashloanPremiumToProtocol);
 
   /**
    * @dev Initializes reserves in batch
@@ -390,4 +420,37 @@ interface ILendingPoolConfigurator {
    * @param admin The address of the potential admin
    **/
   function isRiskAdmin(address admin) external view returns (bool);
+
+  /**
+   * @dev Authorize a new borrower (fees are 0 for the authorized borrower)
+   * @param flashBorrower The address of the authorized borrower
+   **/
+  function authorizeFlashBorrower(address flashBorrower) external;
+
+  /**
+   * @dev Unauthorize a borrower
+   * @param flashBorrower The address of the unauthorized borrower
+   **/
+  function unauthorizeFlashBorrower(address flashBorrower) external;
+
+  /**
+   * @dev Drops a reserve entirely
+   * @param asset the address of the reserve to drop
+   **/
+  function dropReserve(address asset) external;
+
+  /**
+   * @dev Updates the total flash loan premium
+   * flash loan premium consist in 2 parts
+   * - A part is sent to aToken holders as extra balance
+   * - A part is collected by the protocol reserves
+   * @param flashloanPremiumTotal total premium in bps
+   */
+  function updateFlashloanPremiumTotal(uint256 flashloanPremiumTotal) external;
+
+  /**
+   * @dev Updates the flash loan premium collected by protocol reserves
+   * @param flashloanPremiumToProtocol part of the premium sent to protocol
+   */
+  function updateFlashloanPremiumToProtocol(uint256 flashloanPremiumToProtocol) external;
 }

@@ -168,6 +168,13 @@ interface ILendingPool {
   );
 
   /**
+   * @dev Emitted when the protocol treasury receives minted aTokens from the accrued interest.
+   * @param reserve the address of the reserve
+   * @param amountMinted the amount minted to the treasury
+   **/
+  event MintedToTreasury(address indexed reserve, uint256 amountMinted);
+
+  /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
    * @param asset The address of the underlying asset to deposit
@@ -396,6 +403,8 @@ interface ILendingPool {
     address interestRateStrategyAddress
   ) external;
 
+  function dropReserve(address reserve) external;
+
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
     external;
 
@@ -458,4 +467,21 @@ interface ILendingPool {
   function setPause(bool val) external;
 
   function paused() external view returns (bool);
+
+  function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized) external;
+
+  function isFlashBorrowerAuthorized(address flashBorrower) external view returns (bool);
+
+  function updateFlashloanPremiums(
+    uint256 flashLoanPremiumTotal,
+    uint256 flashLoanPremiumToProtocol
+  ) external;
+
+  function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() external view returns (uint256);
+
+  function FLASHLOAN_PREMIUM_TOTAL() external view returns (uint256);
+
+  function FLASHLOAN_PREMIUM_TO_PROTOCOL() external view returns (uint256);
+
+  function MAX_NUMBER_RESERVES() external view returns (uint256);
 }

@@ -160,6 +160,12 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
+  function dropReserve(address asset) external override onlyPoolAdmin {
+    _pool.dropReserve(asset);
+    emit ReserveDropped(asset);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
   function updateAToken(UpdateATokenInput calldata input) external override onlyPoolAdmin {
     ILendingPool cachedPool = _pool;
 
@@ -229,7 +235,6 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     onlyPoolAdmin
   {
     ILendingPool cachedPool = _pool;
-
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
@@ -505,8 +510,40 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
+  function authorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
+    _pool.updateFlashBorrowerAuthorization(flashBorrower, true);
+    emit FlashBorrowerAuthorized(flashBorrower);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function unauthorizeFlashBorrower(address flashBorrower) external override onlyPoolAdmin {
+    _pool.updateFlashBorrowerAuthorization(flashBorrower, false);
+    emit FlashBorrowerUnauthorized(flashBorrower);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
   function isRiskAdmin(address admin) external view override onlyPoolAdmin returns (bool) {
     return _riskAdmins[admin];
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function updateFlashloanPremiumTotal(uint256 flashloanPremiumTotal)
+    external
+    override
+    onlyPoolAdmin
+  {
+    _pool.updateFlashloanPremiums(flashloanPremiumTotal, _pool.FLASHLOAN_PREMIUM_TO_PROTOCOL());
+    emit FlashloanPremiumTotalUpdated(flashloanPremiumTotal);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function updateFlashloanPremiumToProtocol(uint256 flashloanPremiumToProtocol)
+    external
+    override
+    onlyPoolAdmin
+  {
+    _pool.updateFlashloanPremiums(_pool.FLASHLOAN_PREMIUM_TOTAL(), flashloanPremiumToProtocol);
+    emit FlashloanPremiumToProcolUpdated(flashloanPremiumToProtocol);
   }
 
   function _initTokenWithProxy(address implementation, bytes memory initParams)
