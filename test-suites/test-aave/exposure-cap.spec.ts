@@ -83,21 +83,18 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
 
     // user 1 deposit more dai and usdc to be able to borrow
     let { ltv } = await pool.getUserAccountData(user1.address);
-    console.log(ltv.toString());
     expect(ltv.toString()).to.be.equal('0');
     await pool
       .connect(user1.signer)
       .deposit(dai.address, await unitParse(dai, precisionSuppliedAmount), user1.address, 0);
 
     ltv = (await pool.getUserAccountData(user1.address)).ltv;
-    console.log(ltv.toString());
     expect(ltv).to.be.equal(daiLTV);
     await pool
       .connect(user1.signer)
       .deposit(usdc.address, await unitParse(usdc, precisionSuppliedAmount), user1.address, 0);
 
     ltv = (await pool.getUserAccountData(user1.address)).ltv;
-    console.log(ltv.toString());
     expect(Number(ltv)).to.be.equal(
       Math.floor((daiLTV * daiPrice + usdcLTV * usdcPrice) / (daiPrice + usdcPrice))
     );
@@ -139,10 +136,7 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
       .connect(user1.signer)
       .deposit(dai.address, await unitParse(dai, precisionSuppliedAmount), user1.address, 0);
 
-    console.log((await aDai.totalSupply()).toString());
-
     let ltv = (await pool.getUserAccountData(user1.address)).ltv;
-    console.log(ltv.toString());
     expect(ltv).to.be.equal(Math.floor((usdcLTV * usdcPrice) / (usdcPrice + 2 * daiPrice)));
   });
   it('Should not be able to borrow 15 USD of weth', async () => {
@@ -200,7 +194,7 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
       aDai,
       configurator,
       helpersContract,
-      users: [user1],
+      users: [user1, , , receiver],
     } = testEnv;
 
     const newExposureCap = 10;
@@ -218,22 +212,22 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
       pool.connect(user1.signer).withdraw(dai.address, withdrawnAmount, user1.address)
     ).to.be.revertedWith(VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED);
     await expect(
-      aDai.connect(user1.signer).transfer(pool.address, withdrawnAmount)
+      aDai.connect(user1.signer).transfer(receiver.address, withdrawnAmount)
     ).to.be.revertedWith(VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED);
   });
-  it('should be able to withdraw 5 and transfer 5 aUsdc', async () => {
+  it('should be able to withdraw 5 usdc and transfer 5 aUsdc', async () => {
     const {
       usdc,
       pool,
       aUsdc,
-      users: [user1],
+      users: [user1, , , receiver],
     } = testEnv;
 
     const precisionWithdrawnAmount = (5 * 1000).toString();
     const withdrawnAmount = await unitParse(usdc, precisionWithdrawnAmount);
 
-    pool.connect(user1.signer).withdraw(usdc.address, withdrawnAmount, user1.address);
-    aUsdc.connect(user1.signer).transfer(pool.address, withdrawnAmount);
+    await pool.connect(user1.signer).withdraw(usdc.address, withdrawnAmount, user1.address);
+    await aUsdc.connect(user1.signer).transfer(receiver.address, withdrawnAmount);
   });
   it('should be able to withdraw 5 dai, transfer 5 aDai after repaying weth Debt', async () => {
     const {
@@ -244,16 +238,17 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
       aDai,
       configurator,
       helpersContract,
-      users: [user1],
+      users: [user1, , , receiver],
     } = testEnv;
 
     const precisionWithdrawnAmount = (5 * 1000).toString();
     const withdrawnAmount = await unitParse(dai, precisionWithdrawnAmount);
-
-    await pool.connect(user1.signer).repay(weth.address, MAX_UINT_AMOUNT, 1, user1.address);
+    await (
+      await pool.connect(user1.signer).repay(weth.address, MAX_UINT_AMOUNT, 1, user1.address)
+    ).wait();
 
     pool.connect(user1.signer).withdraw(dai.address, withdrawnAmount, user1.address);
-    aDai.connect(user1.signer).transfer(pool.address, withdrawnAmount);
+    aDai.connect(user1.signer).transfer(receiver.address, withdrawnAmount);
   });
   it('Should fail to set the exposure cap for usdc and DAI to max cap + 1 Units', async () => {
     const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
