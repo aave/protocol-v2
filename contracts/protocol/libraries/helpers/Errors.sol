@@ -112,6 +112,8 @@ library Errors {
   string public constant RL_ATOKEN_SUPPLY_NOT_ZERO = '88';
   string public constant RL_STABLE_DEBT_NOT_ZERO = '89';
   string public constant RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO = '90';
+  string public constant VL_SAME_BLOCK_REPAY_AS_LAST_ACTION = '91';
+  string public constant VL_NO_DEBT_ACCRUED_BY_CONTRACT = '92';
 
   enum CollateralManagerErrors {
     NO_ERROR,

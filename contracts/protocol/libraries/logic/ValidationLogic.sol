@@ -9,6 +9,7 @@ import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {Address} from '../../../dependencies/openzeppelin/contracts/Address.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
@@ -32,6 +33,7 @@ library ValidationLogic {
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
+  using Address for address;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
@@ -259,20 +261,33 @@ library ValidationLogic {
     address onBehalfOf,
     uint256 stableDebt,
     uint256 variableDebt
-  ) internal view {
+  ) external view {
     (bool isActive, , , , bool isPaused) = reserveCache.reserveConfiguration.getFlagsMemory();
+
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
-    require(
-      (stableDebt > 0 &&
-        DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) ||
-        (variableDebt > 0 &&
-          DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE),
-      Errors.VL_NO_DEBT_OF_SELECTED_TYPE
-    );
+    if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) {
+      require(stableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
+
+      require(
+        IStableDebtToken(reserveCache.stableDebtTokenAddress).getUserLastUpdated(onBehalfOf) <
+          uint40(block.timestamp),
+        Errors.VL_SAME_BLOCK_REPAY_AS_LAST_ACTION
+      );
+    } else if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE) {
+      require(variableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
+      require(
+        !onBehalfOf.isContract() ||
+          IERC20(reserveCache.variableDebtTokenAddress).balanceOf(onBehalfOf) >
+          IVariableDebtToken(reserveCache.variableDebtTokenAddress)
+            .scaledBalanceOf(onBehalfOf)
+            .rayMul(reserveCache.currVariableBorrowIndex),
+        Errors.VL_NO_DEBT_ACCRUED_BY_CONTRACT
+      );
+    }
 
     require(
       amountSent != uint256(-1) || msg.sender == onBehalfOf,
@@ -283,7 +298,7 @@ library ValidationLogic {
   /**
    * @dev Validates a swap of borrow rate mode.
    * @param reserve The reserve state on which the user is swapping the rate
-   * @param reserveCache The cached data of the reserve 
+   * @param reserveCache The cached data of the reserve
    * @param userConfig The user reserves configuration
    * @param stableDebt The stable debt of the user
    * @param variableDebt The variable debt of the user
