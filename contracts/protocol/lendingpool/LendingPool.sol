@@ -93,17 +93,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _flashLoanPremiumToProtocol = 0;
   }
 
-  /**
-   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
-   * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
-   * @param asset The address of the underlying asset to deposit
-   * @param amount The amount to be deposited
-   * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
-   *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
-   *   is a different wallet
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   **/
+  ///@inheritdoc ILendingPool
   function deposit(
     address asset,
     uint256 amount,
@@ -113,21 +103,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _executeDeposit(asset, amount, onBehalfOf, referralCode);
   }
 
-  /**
-   * @notice Deposit with transfer approval of asset to be deposited done via permit function
-   * see: https://eips.ethereum.org/EIPS/eip-2612 and https://eips.ethereum.org/EIPS/eip-713
-   * @param asset The address of the underlying asset to deposit
-   * @param amount The amount to be deposited
-   * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
-   *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
-   *   is a different wallet
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   * @param deadline validity deadline of permit and so depositWithPermit signature
-   * @param permitV V parameter of ERC712 permit sig
-   * @param permitR R parameter of ERC712 permit sig
-   * @param permitS S parameter of ERC712 permit sig
-   **/
+  ///@inheritdoc ILendingPool
   function depositWithPermit(
     address asset,
     uint256 amount,
@@ -150,17 +126,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _executeDeposit(asset, amount, onBehalfOf, referralCode);
   }
 
-  /**
-   * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
-   * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
-   * @param asset The address of the underlying asset to withdraw
-   * @param amount The underlying amount to be withdrawn
-   *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
-   * @param to Address that will receive the underlying, same as msg.sender if the user
-   *   wants to receive it on his own wallet, or a different address if the beneficiary is a
-   *   different wallet
-   * @return The final amount withdrawn
-   **/
+  ///@inheritdoc ILendingPool
   function withdraw(
     address asset,
     uint256 amount,
@@ -169,21 +135,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _executeWithdraw(asset, amount, to);
   }
 
-  /**
-   * @dev Allows users to borrow a specific `amount` of the reserve underlying asset, provided that the borrower
-   * already deposited enough collateral, or he was given enough allowance by a credit delegator on the
-   * corresponding debt token (StableDebtToken or VariableDebtToken)
-   * - E.g. User borrows 100 USDC passing as `onBehalfOf` his own address, receiving the 100 USDC in his wallet
-   *   and 100 stable/variable debt tokens, depending on the `interestRateMode`
-   * @param asset The address of the underlying asset to borrow
-   * @param amount The amount to be borrowed
-   * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   * @param onBehalfOf Address of the user who will receive the debt. Should be the address of the borrower itself
-   * calling the function if he wants to borrow against his own collateral, or the address of the credit delegator
-   * if he has been given credit delegation allowance
-   **/
+  ///@inheritdoc ILendingPool
   function borrow(
     address asset,
     uint256 amount,
@@ -204,18 +156,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
-  /**
-   * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
-   * - E.g. User repays 100 USDC, burning 100 variable/stable debt tokens of the `onBehalfOf` address
-   * @param asset The address of the borrowed underlying asset previously borrowed
-   * @param amount The amount to repay
-   * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
-   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
-   * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
-   * user calling the function if he wants to reduce/remove his own debt, or the address of any other
-   * other borrower whose debt should be removed
-   * @return The final amount repaid
-   **/
+  ///@inheritdoc ILendingPool
   function repay(
     address asset,
     uint256 amount,
@@ -225,22 +166,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _executeRepay(asset, amount, rateMode, onBehalfOf);
   }
 
-  /**
-   * @notice Repay with transfer approval of asset to be repaid done via permit function
-   * see: https://eips.ethereum.org/EIPS/eip-2612 and https://eips.ethereum.org/EIPS/eip-713
-   * @param asset The address of the borrowed underlying asset previously borrowed
-   * @param amount The amount to repay
-   * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
-   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
-   * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
-   * user calling the function if he wants to reduce/remove his own debt, or the address of any other
-   * other borrower whose debt should be removed
-   * @param deadline validity deadline of permit and so depositWithPermit signature
-   * @param permitV V parameter of ERC712 permit sig
-   * @param permitR R parameter of ERC712 permit sig
-   * @param permitS S parameter of ERC712 permit sig
-   * @return The final amount repaid
-   **/
+  ///@inheritdoc ILendingPool
   function repayWithPermit(
     address asset,
     uint256 amount,
@@ -263,11 +189,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _executeRepay(asset, amount, rateMode, onBehalfOf);
   }
 
-  /**
-   * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
-   * @param asset The address of the underlying asset borrowed
-   * @param rateMode The rate mode that the user wants to swap to
-   **/
+  ///@inheritdoc ILendingPool
   function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
@@ -316,15 +238,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     emit Swap(asset, msg.sender, rateMode);
   }
 
-  /**
-   * @dev Rebalances the stable interest rate of a user to the current stable rate defined on the reserve.
-   * - Users can be rebalanced if the following conditions are satisfied:
-   *     1. Usage ratio is above 95%
-   *     2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
-   *        borrowed at a stable rate and depositors are not earning enough
-   * @param asset The address of the underlying asset borrowed
-   * @param user The address of the user to be rebalanced
-   **/
+  ///@inheritdoc ILendingPool
   function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
@@ -359,11 +273,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     emit RebalanceStableBorrowRate(asset, user);
   }
 
-  /**
-   * @dev Allows depositors to enable/disable a specific deposited asset as collateral
-   * @param asset The address of the underlying asset deposited
-   * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
-   **/
+  ///@inheritdoc ILendingPool
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
     external
     override
@@ -392,17 +302,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  /**
-   * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
-   * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
-   *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
-   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
-   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
-   * @param user The address of the borrower getting liquidated
-   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
-   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
-   * to receive the underlying collateral asset directly
-   **/
+  ///@inheritdoc ILendingPool
   function liquidationCall(
     address collateralAsset,
     address debtAsset,
@@ -449,23 +349,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 flashloanPremiumToProtocol;
   }
 
-  /**
-   * @dev Allows smartcontracts to access the liquidity of the pool within one transaction,
-   * as long as the amount taken plus a fee is returned.
-   * IMPORTANT There are security concerns for developers of flashloan receiver contracts that must be kept into consideration.
-   * For further details please visit https://developers.aave.com
-   * @param receiverAddress The address of the contract receiving the funds, implementing the IFlashLoanReceiver interface
-   * @param assets The addresses of the assets being flash-borrowed
-   * @param amounts The amounts amounts being flash-borrowed
-   * @param modes Types of the debt to open if the flash loan is not returned:
-   *   0 -> Don't open any debt, just revert if funds can't be transferred from the receiver
-   *   1 -> Open debt at stable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
-   *   2 -> Open debt at variable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
-   * @param onBehalfOf The address  that will receive the debt in the case of using on `modes` 1 or 2
-   * @param params Variadic packed params to pass to the receiver as extra information
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   **/
+  ///@inheritdoc ILendingPool
   function flashLoan(
     address receiverAddress,
     address[] calldata assets,
@@ -558,15 +442,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  /**
-   * @dev Mints the assets accrued through the reserve factor to the treasury in the form of aTokens
-   * @param reserves The list of reserves for which the minting needs to be executed
-   **/
-  function mintToTreasury(address[] calldata reserves) public {
-    for (uint256 i = 0; i < reserves.length; i++) {
-      address reserveAddress = reserves[i];
+  ///@inheritdoc ILendingPool
+  function mintToTreasury(address[] calldata assets) external override {
+    for (uint256 i = 0; i < assets.length; i++) {
+      address assetAddress = assets[i];
 
-      DataTypes.ReserveData storage reserve = _reserves[reserveAddress];
+      DataTypes.ReserveData storage reserve = _reserves[assetAddress];
 
       // this cover both inactive reserves and invalid reserves since the flag will be 0 for both
       if (!reserve.configuration.getActive()) {
@@ -581,16 +462,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         IAToken(reserve.aTokenAddress).mintToTreasury(amountToMint, normalizedIncome);
 
         reserve.accruedToTreasury = 0;
-        emit MintedToTreasury(reserveAddress, amountToMint);
+        emit MintedToTreasury(assetAddress, amountToMint);
       }
     }
   }
 
-  /**
-   * @dev Returns the state and configuration of the reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @return The state of the reserve
-   **/
+  ///@inheritdoc ILendingPool
   function getReserveData(address asset)
     external
     view
@@ -600,16 +477,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _reserves[asset];
   }
 
-  /**
-   * @dev Returns the user account data across all the reserves
-   * @param user The address of the user
-   * @return totalCollateralETH the total collateral in ETH of the user
-   * @return totalDebtETH the total debt in ETH of the user
-   * @return availableBorrowsETH the borrowing power left of the user
-   * @return currentLiquidationThreshold the liquidation threshold of the user
-   * @return ltv the loan to value of the user
-   * @return healthFactor the current health factor of the user
-   **/
+  ///@inheritdoc ILendingPool
   function getUserAccountData(address user)
     external
     view
@@ -645,11 +513,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
-  /**
-   * @dev Returns the configuration of the reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @return The configuration of the reserve
-   **/
+  ///@inheritdoc ILendingPool
   function getConfiguration(address asset)
     external
     view
@@ -659,11 +523,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _reserves[asset].configuration;
   }
 
-  /**
-   * @dev Returns the configuration of the user across all the reserves
-   * @param user The user address
-   * @return The configuration of the user
-   **/
+  ///@inheritdoc ILendingPool
   function getUserConfiguration(address user)
     external
     view
@@ -673,11 +533,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _usersConfig[user];
   }
 
-  /**
-   * @dev Returns the normalized income per unit of asset
-   * @param asset The address of the underlying asset of the reserve
-   * @return The reserve's normalized income
-   */
+  ///@inheritdoc ILendingPool
   function getReserveNormalizedIncome(address asset)
     external
     view
@@ -688,11 +544,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _reserves[asset].getNormalizedIncome();
   }
 
-  /**
-   * @dev Returns the normalized variable debt per unit of asset
-   * @param asset The address of the underlying asset of the reserve
-   * @return The reserve normalized variable debt
-   */
+  ///@inheritdoc ILendingPool
   function getReserveNormalizedVariableDebt(address asset)
     external
     view
@@ -702,16 +554,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _reserves[asset].getNormalizedDebt();
   }
 
-  /**
-   * @dev Returns if the LendingPool is paused
-   */
+  ///@inheritdoc ILendingPool
   function paused() external view override returns (bool) {
     return _paused;
   }
 
-  /**
-   * @dev Returns the list of the initialized reserves, does not contain dropped reserves
-   **/
+  ///@inheritdoc ILendingPool
   function getReservesList() external view override returns (address[] memory) {
     uint256 reserveListCount = _reservesCount;
     uint256 droppedReservesCount = 0;
@@ -735,51 +583,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return undroppedReserves;
   }
 
-  /**
-   * @dev Returns the cached LendingPoolAddressesProvider connected to this contract
-   **/
+  ///@inheritdoc ILendingPool
   function getAddressesProvider() external view override returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
   }
 
-  /**
-   * @dev Returns the percentage of available liquidity that can be borrowed at once at stable rate
-   */
+  ///@inheritdoc ILendingPool
   function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() public view override returns (uint256) {
     return _maxStableRateBorrowSizePercent;
   }
 
-  /**
-   * @dev Returns the total fee on flash loans
-   */
+  ///@inheritdoc ILendingPool
   function FLASHLOAN_PREMIUM_TOTAL() public view override returns (uint256) {
     return _flashLoanPremiumTotal;
   }
 
-  /**
-   * @dev Returns the part of the flashloan fees sent to protocol
-   */
+  ///@inheritdoc ILendingPool
   function FLASHLOAN_PREMIUM_TO_PROTOCOL() public view override returns (uint256) {
     return _flashLoanPremiumToProtocol;
   }
 
-  /**
-   * @dev Returns the maximum number of reserves supported to be listed in this LendingPool
-   */
+  ///@inheritdoc ILendingPool
   function MAX_NUMBER_RESERVES() public view override returns (uint256) {
     return _maxNumberOfReserves;
   }
 
-  /**
-   * @dev Validates and finalizes an aToken transfer
-   * - Only callable by the overlying aToken of the `asset`
-   * @param asset The address of the underlying asset of the aToken
-   * @param from The user from which the aTokens are transferred
-   * @param to The user receiving the aTokens
-   * @param amount The amount being transferred/withdrawn
-   * @param balanceFromBefore The aToken balance of the `from` user before the transfer
-   * @param balanceToBefore The aToken balance of the `to` user before the transfer
-   */
+  ///@inheritdoc ILendingPool
   function finalizeTransfer(
     address asset,
     address from,
@@ -822,16 +651,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  /**
-   * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
-   * interest rate strategy
-   * - Only callable by the LendingPoolConfigurator contract
-   * @param asset The address of the underlying asset of the reserve
-   * @param aTokenAddress The address of the aToken that will be assigned to the reserve
-   * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
-   * @param aTokenAddress The address of the VariableDebtToken that will be assigned to the reserve
-   * @param interestRateStrategyAddress The address of the interest rate strategy contract
-   **/
+  ///@inheritdoc ILendingPool
   function initReserve(
     address asset,
     address aTokenAddress,
@@ -849,23 +669,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _addReserveToList(asset);
   }
 
-  /**
-   * @dev Drop a reserve
-   * - Only callable by the LendingPoolConfigurator contract
-   * @param asset The address of the underlying asset of the reserve
-   **/
+  ///@inheritdoc ILendingPool
   function dropReserve(address asset) external override onlyLendingPoolConfigurator {
     ValidationLogic.validateDropReserve(_reserves[asset]);
     _removeReserveFromList(asset);
     delete _reserves[asset];
   }
 
-  /**
-   * @dev Updates the address of the interest rate strategy contract
-   * - Only callable by the LendingPoolConfigurator contract
-   * @param asset The address of the underlying asset of the reserve
-   * @param rateStrategyAddress The address of the interest rate strategy contract
-   **/
+  ///@inheritdoc ILendingPool
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
     override
@@ -874,12 +685,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
-  /**
-   * @dev Sets the configuration bitmap of the reserve as a whole
-   * - Only callable by the LendingPoolConfigurator contract
-   * @param asset The address of the underlying asset of the reserve
-   * @param configuration The new configuration bitmap
-   **/
+  ///@inheritdoc ILendingPool
   function setConfiguration(address asset, uint256 configuration)
     external
     override
@@ -888,11 +694,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _reserves[asset].configuration.data = configuration;
   }
 
-  /**
-   * @dev Set the _pause state of a reserve
-   * - Only callable by the LendingPoolConfigurator contract
-   * @param val `true` to pause the reserve, `false` to un-pause it
-   */
+  ///@inheritdoc ILendingPool
   function setPause(bool val) external override onlyLendingPoolConfigurator {
     _paused = val;
     if (_paused) {
@@ -902,11 +704,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
-  /**
-   * @dev Authorizes/Unauthorizes a flash borrower. Authorized borrowers pay no flash loan premium
-   * @param flashBorrower address of the flash borrower
-   * @param authorized `true` to authorize, `false` to unauthorize
-   */
+  ///@inheritdoc ILendingPool
   function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized)
     external
     override
@@ -915,23 +713,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _authorizedFlashBorrowers[flashBorrower] = authorized;
   }
 
-  /**
-   * @dev Returns whether a flashborrower is authorized (pays no premium)
-   * @param flashBorrower address of the flash borrower
-   * @return `true` if authorized, `false` if not
-   */
+  ///@inheritdoc ILendingPool
   function isFlashBorrowerAuthorized(address flashBorrower) external view override returns (bool) {
     return _authorizedFlashBorrowers[flashBorrower];
   }
 
-  /**
-   * @dev Updates flash loan premiums
-   * flash loan premium consist in 2 parts
-   * - A part is sent to aToken holders as extra balance
-   * - A part is collected by the protocol reserves
-   * @param flashLoanPremiumTotal total premium in bps
-   * @param flashLoanPremiumToProtocol part of the premium sent to protocol
-   */
+  ///@inheritdoc ILendingPool
   function updateFlashloanPremiums(
     uint256 flashLoanPremiumTotal,
     uint256 flashLoanPremiumToProtocol

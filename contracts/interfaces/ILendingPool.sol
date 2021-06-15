@@ -395,20 +395,47 @@ interface ILendingPool {
       uint256 healthFactor
     );
 
+  /**
+   * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
+   * interest rate strategy
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param aTokenAddress The address of the aToken that will be assigned to the reserve
+   * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
+   * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
+   * @param interestRateStrategyAddress The address of the interest rate strategy contract
+   **/
   function initReserve(
-    address reserve,
+    address asset,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
   ) external;
 
-  function dropReserve(address reserve) external;
+  /**
+   * @dev Drop a reserve
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function dropReserve(address asset) external;
 
-  function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
+  /**
+   * @dev Updates the address of the interest rate strategy contract
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param rateStrategyAddress The address of the interest rate strategy contract
+   **/
+  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external;
 
-  function setConfiguration(address reserve, uint256 configuration) external;
+  /**
+   * @dev Sets the configuration bitmap of the reserve as a whole
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param configuration The new configuration bitmap
+   **/
+  function setConfiguration(address asset, uint256 configuration) external;
 
   /**
    * @dev Returns the configuration of the reserve
@@ -451,37 +478,99 @@ interface ILendingPool {
    **/
   function getReserveData(address asset) external view returns (DataTypes.ReserveData memory);
 
+  /**
+   * @dev Validates and finalizes an aToken transfer
+   * - Only callable by the overlying aToken of the `asset`
+   * @param asset The address of the underlying asset of the aToken
+   * @param from The user from which the aTokens are transferred
+   * @param to The user receiving the aTokens
+   * @param amount The amount being transferred/withdrawn
+   * @param balanceFromBefore The aToken balance of the `from` user before the transfer
+   * @param balanceToBefore The aToken balance of the `to` user before the transfer
+   */
   function finalizeTransfer(
     address asset,
     address from,
     address to,
     uint256 amount,
-    uint256 balanceFromAfter,
+    uint256 balanceFromBefore,
     uint256 balanceToBefore
   ) external;
 
+  /**
+   * @dev Returns the list of the initialized reserves, does not contain dropped reserves
+   **/
   function getReservesList() external view returns (address[] memory);
 
+  /**
+   * @dev Returns the cached LendingPoolAddressesProvider connected to this contract
+   **/
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 
+  /**
+   * @dev Set the _pause state of a reserve
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param val `true` to pause the reserve, `false` to un-pause it
+   */
   function setPause(bool val) external;
 
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
   function paused() external view returns (bool);
 
+  /**
+   * @dev Authorizes/Unauthorizes a flash borrower. Authorized borrowers pay no flash loan premium. 
+   * Only callable by the LendingPoolConfigurator contract
+   * @param flashBorrower address of the flash borrower
+   * @param authorized `true` to authorize, `false` to unauthorize
+   */
   function updateFlashBorrowerAuthorization(address flashBorrower, bool authorized) external;
 
+  /**
+   * @dev Returns whether a flashborrower is authorized (pays no premium)
+   * @param flashBorrower address of the flash borrower
+   * @return `true` if authorized, `false` if not
+   */
   function isFlashBorrowerAuthorized(address flashBorrower) external view returns (bool);
 
+  /**
+   * @dev Updates flash loan premiums
+   * flash loan premium consist in 2 parts
+   * - A part is sent to aToken holders as extra balance
+   * - A part is collected by the protocol reserves
+   * Only callable by the LendingPoolConfigurator contract
+   * @param flashLoanPremiumTotal total premium in bps
+   * @param flashLoanPremiumToProtocol part of the premium sent to protocol
+   */
   function updateFlashloanPremiums(
     uint256 flashLoanPremiumTotal,
     uint256 flashLoanPremiumToProtocol
   ) external;
 
+  /**
+   * @dev Returns the percentage of available liquidity that can be borrowed at once at stable rate
+   */
   function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() external view returns (uint256);
 
+  /**
+   * @dev Returns the total fee on flash loans
+   */
   function FLASHLOAN_PREMIUM_TOTAL() external view returns (uint256);
 
+  /**
+   * @dev Returns the part of the flashloan fees sent to protocol
+   */
   function FLASHLOAN_PREMIUM_TO_PROTOCOL() external view returns (uint256);
 
+  /**
+   * @dev Returns the maximum number of reserves supported to be listed in this LendingPool
+   */
   function MAX_NUMBER_RESERVES() external view returns (uint256);
+
+  /**
+   * @dev Mints the assets accrued through the reserve factor to the treasury in the form of aTokens
+   * @param assets The list of reserves for which the minting needs to be executed
+   **/
+  function mintToTreasury(address[] calldata assets) external;
 }
