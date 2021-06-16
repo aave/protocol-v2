@@ -203,6 +203,7 @@ export interface iAssetBase<T> {
   UNI: T;
   USD: T;
   REN: T;
+  FEI: T;
   ENJ: T;
   xSUSHI: T;
 }
@@ -232,6 +233,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'YFI'
   | 'UNI'
   | 'REN'
+  | 'FEI'
   | 'ENJ'
   | 'xSUSHI'
 >;
@@ -263,8 +265,9 @@ export enum TokenContractId {
   USD = 'USD',
   YFI = 'YFI',
   UNI = 'UNI',
+  FEI = 'FEI',
   ENJ = 'ENJ',
-  xSUSHI = 'xSUSHI'
+  xSUSHI = 'xSUSHI',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
