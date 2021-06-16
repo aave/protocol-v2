@@ -219,6 +219,7 @@ export interface iAssetBase<T> {
   UNI: T;
   USD: T;
   REN: T;
+  FEI: T;
   ENJ: T;
   UniDAIWETH: T;
   UniWBTCWETH: T;
@@ -266,6 +267,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'YFI'
   | 'UNI'
   | 'REN'
+  | 'FEI'
   | 'ENJ'
   | 'xSUSHI'
 >;
@@ -332,6 +334,7 @@ export enum TokenContractId {
   USD = 'USD',
   YFI = 'YFI',
   UNI = 'UNI',
+  FEI = 'FEI',
   ENJ = 'ENJ',
   UniDAIWETH = 'UniDAIWETH',
   UniWBTCWETH = 'UniWBTCWETH',
