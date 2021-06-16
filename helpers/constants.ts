@@ -77,3 +77,19 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 export const CRV_TOKEN = {
   [eEthereumNetwork.main]: '0xD533a949740bb3306d119CC777fa900bA034cd52',
 };
+
+export const CURVE_TREASURY = {
+  [eEthereumNetwork.main]: ZERO_ADDRESS,
+};
+
+export const CURVE_CONFIG = {
+  votingEscrow: {
+    [eEthereumNetwork.main]: ZERO_ADDRESS,
+  },
+  curveFeeDistributor: {
+    [eEthereumNetwork.main]: ZERO_ADDRESS,
+  },
+  gaugeController: {
+    [eEthereumNetwork.main]: ZERO_ADDRESS,
+  },
+};

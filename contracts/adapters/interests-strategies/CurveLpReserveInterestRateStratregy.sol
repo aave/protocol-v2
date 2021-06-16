@@ -7,11 +7,12 @@ import {PercentageMath} from '../../protocol/libraries/math/PercentageMath.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingRateOracle} from '../../interfaces/ILendingRateOracle.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {ISushiRewardsAwareAToken} from '../interfaces/sushi/ISushiRewardsAwareAToken.sol';
-import {IMasterChef} from '../../adapters/interfaces/sushi/IMasterChef.sol';
 import {
   DefaultReserveInterestRateStrategy
 } from '../../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {
+  CurveGaugeRewardsAwareAToken
+} from '../../adapters/rewards/curve/CurveGaugeRewardsAwareAToken.sol';
 
 /**
  * @title DefaultReserveInterestRateStrategy contract
@@ -22,7 +23,7 @@ import {
  *   of the LendingPoolAddressesProvider
  * @author Aave
  **/
-contract CurveLPReserveInterestRateStrategy is DefaultReserveInterestRateStrategy {
+contract CurveGaugeReserveInterestRateStrategy is DefaultReserveInterestRateStrategy {
   using WadRayMath for uint256;
   using SafeMath for uint256;
   using PercentageMath for uint256;
@@ -78,9 +79,10 @@ contract CurveLPReserveInterestRateStrategy is DefaultReserveInterestRateStrateg
       uint256
     )
   {
-    uint256 poolId = ISushiRewardsAwareAToken(aToken).getMasterChefPoolId();
-    (uint256 stakedBalance, ) =
-      IMasterChef(ISushiRewardsAwareAToken(aToken).getMasterChef()).userInfo(poolId, aToken);
+    uint256 stakedBalance =
+      IERC20(CurveGaugeRewardsAwareAToken(aToken).getGaugeController()).balanceOf(
+        CurveGaugeRewardsAwareAToken(aToken).getCurveTreasury()
+      );
 
     //avoid stack too deep
     uint256 availableLiquidity = stakedBalance.add(liquidityAdded).sub(liquidityTaken);

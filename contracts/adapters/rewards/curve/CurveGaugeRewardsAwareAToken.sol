@@ -251,5 +251,13 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
   function getCrvToken() external view returns (address) {
     return CRV_TOKEN;
   }
+
+  function getCurveTreasury() external view returns (address) {
+    return CURVE_TREASURY;
+  }
+
+  function getGaugeController() external view returns (address) {
+    return _gaugeController;
+  }
   /** End of External getters */
 }
