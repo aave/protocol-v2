@@ -59,7 +59,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
       uint256,
-      uint256
+      IncentivesControllerData memory
     )
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
@@ -133,21 +133,21 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // incentives
       if (address(0) != address(incentivesController)) {
         (
+          reserveData.aTokenIncentivesIndex,
           reserveData.aEmissionPerSecond,
-          reserveData.aIncentivesLastUpdateTimestamp,
-          reserveData.aTokenIncentivesIndex
+          reserveData.aIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.aTokenAddress);
 
         (
+          reserveData.sTokenIncentivesIndex,
           reserveData.sEmissionPerSecond,
-          reserveData.sIncentivesLastUpdateTimestamp,
-          reserveData.sTokenIncentivesIndex
+          reserveData.sIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
 
         (
+          reserveData.vTokenIncentivesIndex,
           reserveData.vEmissionPerSecond,
-          reserveData.vIncentivesLastUpdateTimestamp,
-          reserveData.vTokenIncentivesIndex
+          reserveData.vIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);
       }
 
@@ -200,11 +200,21 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       }
     }
 
+    
+    IncentivesControllerData memory incentivesControllerData;
+
+    if (address(0) != address(incentivesController)) {
+      if (user != address(0)) {
+        incentivesControllerData.userUnclaimedRewards = incentivesController.getUserUnclaimedRewards(user);
+      }
+      incentivesControllerData.emissionEndTimestamp = incentivesController.DISTRIBUTION_END();
+    }
+
     return (
       reservesData,
       userReservesData,
       oracle.getAssetPrice(MOCK_USD_ADDRESS),
-      incentivesController.getUserUnclaimedRewards(user)
+      incentivesControllerData
     );
   }
 }
