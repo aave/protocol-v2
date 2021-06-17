@@ -48,23 +48,22 @@ contract StaticATokenLM is ERC20 {
     );
 
   ILendingPool public immutable LENDING_POOL;
+  IAaveIncentivesController public immutable INCENTIVES_CONTROLLER;
   IERC20 public immutable ATOKEN;
   IERC20 public immutable ASSET;
+  IERC20 public immutable REWARD_TOKEN;
 
   mapping(address => uint256) public _nonces;
 
-  uint256 public rewardIndex;
-  uint256 public lifeTimeRewardsClaimed;
-  uint256 public lifeTimeRewards;
-  uint256 public lastRewardBlock;
+  uint256 internal _accRewardsPerToken;
+  uint256 internal _lifetimeRewardsClaimed;
+  uint256 internal _lifetimeRewards;
+  uint256 internal _lastRewardBlock;
 
-  // user => userIndex (in RAYs)
-  mapping(address => uint256) private _userIndex;
+  // user => _accRewardsPerToken at last interaction (in RAYs)
+  mapping(address => uint256) private _userSnapshotRewardsPerToken;
   // user => unclaimedRewards (in RAYs)
   mapping(address => uint256) private _unclaimedRewards;
-
-  IAaveIncentivesController internal _incentivesController;
-  address public immutable currentRewardToken;
 
   constructor(
     ILendingPool lendingPool,
@@ -79,8 +78,9 @@ contract StaticATokenLM is ERC20 {
     ASSET = underlyingAsset;
     underlyingAsset.approve(address(lendingPool), type(uint256).max);
 
-    _incentivesController = IAToken(aToken).getIncentivesController();
-    currentRewardToken = _incentivesController.REWARD_TOKEN();
+    IAaveIncentivesController incentivesController = IAToken(aToken).getIncentivesController();
+    INCENTIVES_CONTROLLER = incentivesController;
+    REWARD_TOKEN = IERC20(incentivesController.REWARD_TOKEN());
   }
 
   /**
@@ -438,10 +438,10 @@ contract StaticATokenLM is ERC20 {
    * @dev Updates virtual internal accounting of rewards.
    */
   function _updateRewards() internal {
-    if (block.number > lastRewardBlock) {
-      lastRewardBlock = block.number;
-      uint256 _supply = totalSupply();
-      if (_supply == 0) {
+    if (block.number > _lastRewardBlock) {
+      _lastRewardBlock = block.number;
+      uint256 supply = totalSupply();
+      if (supply == 0) {
         // No rewards can have accrued since last because there were no funds.
         return;
       }
@@ -449,47 +449,51 @@ contract StaticATokenLM is ERC20 {
       address[] memory assets = new address[](1);
       assets[0] = address(ATOKEN);
 
-      uint256 freshRewards = _incentivesController.getRewardsBalance(assets, address(this));
-      uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshRewards);
-      uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
+      uint256 freshRewards = INCENTIVES_CONTROLLER.getRewardsBalance(assets, address(this));
+      uint256 lifetimeRewards = _lifetimeRewardsClaimed.add(freshRewards);
+      uint256 rewardsAccrued = lifetimeRewards.sub(_lifetimeRewards).wadToRay();
 
-      rewardIndex = rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
-      lifeTimeRewards = externalLifetimeRewards;
+      _accRewardsPerToken = _accRewardsPerToken.add(
+        (rewardsAccrued).rayDivNoRounding(supply.wadToRay())
+      );
+      _lifetimeRewards = lifetimeRewards;
     }
   }
 
   /**
-   * @dev Claims rewards from `_incentivesController` and updates internal accounting of rewards.
+   * @dev Claims rewards from `INCENTIVES_CONTROLLER` and updates internal accounting of rewards.
    */
   function collectAndUpdateRewards() public {
-    if (block.number > lastRewardBlock) {
-      lastRewardBlock = block.number;
-      uint256 _supply = totalSupply();
+    if (block.number > _lastRewardBlock) {
+      _lastRewardBlock = block.number;
+      uint256 supply = totalSupply();
 
       address[] memory assets = new address[](1);
       assets[0] = address(ATOKEN);
 
       uint256 freshlyClaimed =
-        _incentivesController.claimRewards(assets, type(uint256).max, address(this));
-      uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshlyClaimed);
-      uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
+        INCENTIVES_CONTROLLER.claimRewards(assets, type(uint256).max, address(this));
+      uint256 lifetimeRewards = _lifetimeRewardsClaimed.add(freshlyClaimed);
+      uint256 rewardsAccrued = lifetimeRewards.sub(_lifetimeRewards).wadToRay();
 
-      if (_supply > 0 && diff > 0) {
-        rewardIndex = rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
+      if (supply > 0 && rewardsAccrued > 0) {
+        _accRewardsPerToken = _accRewardsPerToken.add(
+          (rewardsAccrued).rayDivNoRounding(supply.wadToRay())
+        );
       }
 
-      if (diff > 0) {
-        lifeTimeRewards = externalLifetimeRewards;
+      if (rewardsAccrued > 0) {
+        _lifetimeRewards = lifetimeRewards;
       }
       // Unsure if we can also move this in
-      lifeTimeRewardsClaimed = externalLifetimeRewards;
+      _lifetimeRewardsClaimed = lifetimeRewards;
     }
   }
 
   /**
    * @dev Claim rewards for a user.
    * @param user The address of the user to claim rewards for
-   * @param forceUpdate Flag to retrieve latest rewards from `_incentiveController`
+   * @param forceUpdate Flag to retrieve latest rewards from `INCENTIVES_CONTROLLER`
    */
   function claimRewards(address user, bool forceUpdate) public {
     if (forceUpdate) {
@@ -498,15 +502,15 @@ contract StaticATokenLM is ERC20 {
 
     uint256 balance = balanceOf(user);
     uint256 reward = _getClaimableRewards(user, balance, false);
-    uint256 totBal = IERC20(currentRewardToken).balanceOf(address(this));
+    uint256 totBal = REWARD_TOKEN.balanceOf(address(this));
     if (reward > totBal) {
       // Throw away excess unclaimed rewards
       reward = totBal;
     }
     if (reward > 0) {
       _unclaimedRewards[user] = 0;
-      _updateUserIndex(user);
-      IERC20(currentRewardToken).safeTransfer(user, reward);
+      _updateUserSnapshoRewardsPerToken(user);
+      REWARD_TOKEN.safeTransfer(user, reward);
     }
   }
 
@@ -514,8 +518,8 @@ contract StaticATokenLM is ERC20 {
    * @dev Update the rewardDebt for a user with balance as his balance
    * @param user The user to update
    */
-  function _updateUserIndex(address user) internal {
-    _userIndex[user] = rewardIndex;
+  function _updateUserSnapshoRewardsPerToken(address user) internal {
+    _userSnapshotRewardsPerToken[user] = _accRewardsPerToken;
   }
 
   /**
@@ -528,7 +532,7 @@ contract StaticATokenLM is ERC20 {
       uint256 pending = _getPendingRewards(user, balance, false);
       _unclaimedRewards[user] = _unclaimedRewards[user].add(pending);
     }
-    _updateUserIndex(user);
+    _updateUserSnapshoRewardsPerToken(user);
   }
 
   /**
@@ -549,20 +553,22 @@ contract StaticATokenLM is ERC20 {
 
     uint256 rayBalance = balance.wadToRay();
 
-    uint256 _supply = totalSupply();
-    uint256 _rewardIndex = rewardIndex;
+    uint256 supply = totalSupply();
+    uint256 accRewardsPerToken = _accRewardsPerToken;
 
-    if (_supply != 0 && fresh) {
+    if (supply != 0 && fresh) {
       address[] memory assets = new address[](1);
       assets[0] = address(ATOKEN);
 
-      uint256 freshReward = _incentivesController.getRewardsBalance(assets, address(this));
-      uint256 externalLifetimeRewards = lifeTimeRewardsClaimed.add(freshReward);
-      uint256 diff = externalLifetimeRewards.sub(lifeTimeRewards).wadToRay();
-      _rewardIndex = _rewardIndex.add((diff).rayDivNoRounding(_supply.wadToRay()));
+      uint256 freshReward = INCENTIVES_CONTROLLER.getRewardsBalance(assets, address(this));
+      uint256 lifetimeRewards = _lifetimeRewardsClaimed.add(freshReward);
+      uint256 rewardsAccrued = lifetimeRewards.sub(_lifetimeRewards).wadToRay();
+      accRewardsPerToken = accRewardsPerToken.add(
+        (rewardsAccrued).rayDivNoRounding(supply.wadToRay())
+      );
     }
 
-    return rayBalance.rayMulNoRounding(_rewardIndex.sub(_userIndex[user]));
+    return rayBalance.rayMulNoRounding(accRewardsPerToken.sub(_userSnapshotRewardsPerToken[user]));
   }
 
   /**
@@ -588,8 +594,8 @@ contract StaticATokenLM is ERC20 {
   function getTotalClaimableRewards() external view returns (uint256) {
     address[] memory assets = new address[](1);
     assets[0] = address(ATOKEN);
-    uint256 freshRewards = _incentivesController.getRewardsBalance(assets, address(this));
-    return IERC20(currentRewardToken).balanceOf(address(this)).add(freshRewards);
+    uint256 freshRewards = INCENTIVES_CONTROLLER.getRewardsBalance(assets, address(this));
+    return REWARD_TOKEN.balanceOf(address(this)).add(freshRewards);
   }
 
   /**
@@ -608,5 +614,21 @@ contract StaticATokenLM is ERC20 {
    */
   function getUnclaimedRewards(address user) external view returns (uint256) {
     return _unclaimedRewards[user].rayToWadNoRounding();
+  }
+
+  function getAccRewardsPerToken() external view returns (uint256) {
+    return _accRewardsPerToken;
+  }
+
+  function getLifetimeRewardsClaimed() external view returns (uint256) {
+    return _lifetimeRewardsClaimed;
+  }
+
+  function getLifetimeRewards() external view returns (uint256) {
+    return _lifetimeRewards;
+  }
+
+  function getLastRewardBlock() external view returns (uint256) {
+    return _lastRewardBlock;
   }
 }
