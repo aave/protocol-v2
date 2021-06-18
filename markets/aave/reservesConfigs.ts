@@ -265,7 +265,6 @@ export const strategyXSUSHI: IReserveParams = {
   reserveFactor: '3500',
 };
 
-// TODO:
 export const strategyBOND: IReserveParams = {
   strategy: rateStrategyVolatileOne,
   baseLTVAsCollateral: '4000',
