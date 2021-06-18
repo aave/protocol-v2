@@ -32,11 +32,11 @@ import {
   FlashLiquidationAdapterFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
-import { MockTokenMap } from './contracts-helpers';
+import { getEthersSigners, MockTokenMap } from './contracts-helpers';
 import { DRE, getDb, notFalsyOrZeroAddress } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
 
-export const getFirstSigner = async () => (await DRE.ethers.getSigners())[0];
+export const getFirstSigner = async () => (await getEthersSigners())[0];
 
 export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) => {
   return await LendingPoolAddressesProviderFactory.connect(
