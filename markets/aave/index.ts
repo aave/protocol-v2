@@ -23,8 +23,8 @@ import {
   strategyWETH,
   strategyYFI,
   strategyXSUSHI,
-  strategyDPI,
   strategyENJ,
+  strategyDPI,
 } from './reservesConfigs';
 
 // ----------------
