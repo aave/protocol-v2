@@ -2,6 +2,7 @@ import { ZERO_ADDRESS } from '../../../helpers/constants';
 import { makeSuite, SignerWithAddress, TestEnv } from '../helpers/make-suite';
 import {
   advanceTimeAndBlock,
+  DRE,
   evmRevert,
   evmSnapshot,
   impersonateAddress,
@@ -46,6 +47,12 @@ const USER_ADDRESS = '0x9c5083dd4838E120Dbeac44C052179692Aa5dAC5';
 const CRV_TOKEN = '0xd533a949740bb3306d119cc777fa900ba034cd52';
 const SNX_TOKEN = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
 
+const GAUGE_3POOL: GaugeInfo = {
+  address: '0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A',
+  name: 'aToken 3pool Gauge Deposit',
+  rewardTokens: [],
+};
+
 const GAUGE_AAVE3: GaugeInfo = {
   address: '0xd662908ADA2Ea1916B3318327A97eB18aD588b5d',
   name: 'aToken a3CRV Gauge Deposit',
@@ -70,7 +77,7 @@ const GAUGE_ANKR: GaugeInfo = {
   ],
 };
 
-const listGauge = async (gauge: GaugeInfo) => {
+const listCurveLPToken = async (gauge: GaugeInfo, curveTreasury: tEthereumAddress) => {
   const { symbol } = gauge;
   const poolConfig = loadPoolConfig(ConfigNames.Aave);
   const {
@@ -86,8 +93,12 @@ const listGauge = async (gauge: GaugeInfo) => {
     poolConfig.ReserveFactorTreasuryAddress,
     eEthereumNetwork.main
   );
+
   const aTokenImpl = (
-    await new CurveGaugeRewardsAwareATokenFactory(await getFirstSigner()).deploy(CRV_TOKEN)
+    await new CurveGaugeRewardsAwareATokenFactory(await getFirstSigner()).deploy(
+      CRV_TOKEN,
+      curveTreasury
+    )
   ).address;
   const stableDebtTokenImpl = await getContractAddressWithJsonFallback(
     eContractid.StableDebtToken,
@@ -240,10 +251,22 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
     expect(gaugeAave3Balance).to.be.gt('0');
     expect(gaugeAnkrBalance).to.be.gt('0');
 
+    // Deploy Curve Treasury
+    const poolConfig = loadPoolConfig(ConfigNames.Aave);
+    const collector = await getParamPerNetwork(
+      poolConfig.ReserveFactorTreasuryAddress,
+      eEthereumNetwork.main
+    );
+
+    const { proxy: curveTreasury } = await DRE.run('deploy-curve-treasury', {
+      proxyAdmin: ZERO_ADDRESS,
+      treasuryAdmin: ZERO_ADDRESS,
+      collector,
+    });
     // Gauge tokens should be listed at Aave test deployment
-    await listGauge(GAUGE_EURS);
-    await listGauge(GAUGE_AAVE3);
-    await listGauge(GAUGE_ANKR);
+    await listCurveLPToken(GAUGE_EURS, curveTreasury);
+    await listCurveLPToken(GAUGE_AAVE3, curveTreasury);
+    await listCurveLPToken(GAUGE_ANKR, curveTreasury);
 
     const allTokens = await testEnv.helpersContract.getAllATokens();
 
