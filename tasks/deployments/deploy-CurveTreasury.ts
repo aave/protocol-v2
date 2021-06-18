@@ -10,14 +10,18 @@ import { waitForTx } from '../../helpers/misc-utils';
 task(`deploy-curve-treasury`, `Deploys the CurveTreasury contract`)
   .addParam('proxyAdmin')
   .addParam('treasuryAdmin')
-  .addParam('pool')
+  .addOptionalParam('pool')
   .addFlag('verify', `Verify contract via Etherscan API.`)
   .setAction(async ({ verify, proxyAdmin, treasuryAdmin, pool }, localBRE) => {
     await localBRE.run('set-DRE');
-    const poolConfig = loadPoolConfig(pool);
 
     const net = localBRE.network.name;
     console.log(`\n- Curve Treasury deployment`);
+    let aaveCollector = ZERO_ADDRESS;
+
+    if (pool) {
+      aaveCollector = loadPoolConfig(pool).ReserveFactorTreasuryAddress[net];
+    }
 
     // Deploy implementation
     const implementation = await deployCurveTreasury(
@@ -25,7 +29,7 @@ task(`deploy-curve-treasury`, `Deploys the CurveTreasury contract`)
       CRV_TOKEN[net],
       CURVE_CONFIG.curveFeeDistributor[net],
       CURVE_CONFIG.gaugeController[net],
-      poolConfig.ReserveFactorTreasuryAddress[net],
+      aaveCollector,
       verify
     );
 
