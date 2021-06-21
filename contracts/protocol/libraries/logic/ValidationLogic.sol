@@ -270,7 +270,10 @@ library ValidationLogic {
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
-    require(lastBorrower != onBehalfOf || lastBorrowTimestamp != uint40(block.timestamp));
+    require(
+      lastBorrower != onBehalfOf || lastBorrowTimestamp != uint40(block.timestamp),
+      Errors.VL_SAME_BLOCK_BORROW
+    );
 
     require(
       (stableDebt > 0 &&

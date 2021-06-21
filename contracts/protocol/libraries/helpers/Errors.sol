@@ -113,6 +113,7 @@ library Errors {
   string public constant RL_STABLE_DEBT_NOT_ZERO = '89';
   string public constant RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO = '90';
   string public constant LP_CALLER_NOT_EOA = '91';
+  string public constant VL_SAME_BLOCK_BORROW = '94';
 
   enum CollateralManagerErrors {
     NO_ERROR,
