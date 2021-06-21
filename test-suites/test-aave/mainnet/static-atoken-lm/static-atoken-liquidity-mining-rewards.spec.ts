@@ -839,4 +839,75 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       expect(await stkAave.balanceOf(await users[i].getAddress())).to.be.eq(pendingReward);
     }
   });
+
+  it('Checks that withdraw and collect in different blocks updates _lifetimeRewardsClaimed as expected', async () => {
+    const users = await DRE.ethers.getSigners();
+    const user = users[0];
+    const depositAmount = utils.parseEther('1');
+
+    // Preparation
+    await waitForTx(await weth.connect(user).deposit({ value: depositAmount }));
+    await waitForTx(
+      await weth.connect(user).approve(staticAToken.address, depositAmount, defaultTxParams)
+    );
+
+    // Deposit
+    await waitForTx(
+      await staticAToken
+        .connect(user)
+        .deposit(await user.getAddress(), depositAmount, 0, true, defaultTxParams)
+    );
+
+    await advanceTimeAndBlock(60);
+
+    expect(await staticAToken.getLifetimeRewardsClaimed()).to.be.eq(0);
+    expect(await staticAToken.getClaimableRewards(user.address)).to.be.gt(0);
+    expect(await stkAave.balanceOf(user.address)).to.be.eq(0);
+
+    await waitForTx(await staticAToken.connect(user).withdraw(user.address, MAX_UINT_AMOUNT, true));
+    await staticAToken.collectAndUpdateRewards();
+    await staticAToken.connect(user).claimRewards(user.address, false);
+
+    expect(await staticAToken.getLifetimeRewardsClaimed()).to.be.gt(0);
+    expect(await staticAToken.getClaimableRewards(user.address)).to.be.eq(0);
+    expect(await stkAave.balanceOf(user.address)).to.be.gt(0);
+  });
+
+  it('Checks that withdraw and collect in the same block updates _lifetimeRewardsClaimed as expected', async () => {
+    const users = await DRE.ethers.getSigners();
+    const user = users[0];
+    const depositAmount = utils.parseEther('1');
+
+    // Preparation
+    await waitForTx(await weth.connect(user).deposit({ value: depositAmount }));
+    await waitForTx(
+      await weth.connect(user).approve(staticAToken.address, depositAmount, defaultTxParams)
+    );
+
+    // Deposit
+    await waitForTx(
+      await staticAToken
+        .connect(user)
+        .deposit(await user.getAddress(), depositAmount, 0, true, defaultTxParams)
+    );
+
+    await advanceTimeAndBlock(60);
+
+    expect(await staticAToken.getLifetimeRewardsClaimed()).to.be.eq(0);
+    expect(await staticAToken.getClaimableRewards(user.address)).to.be.gt(0);
+    expect(await stkAave.balanceOf(user.address)).to.be.eq(0);
+
+    await DRE.network.provider.send('evm_setAutomine', [false]);
+
+    await staticAToken.connect(user).withdraw(user.address, MAX_UINT_AMOUNT, true);
+    await staticAToken.collectAndUpdateRewards();
+    await staticAToken.connect(user).claimRewards(user.address, false);
+
+    await DRE.network.provider.send('evm_mine', []);
+    await DRE.network.provider.send('evm_setAutomine', [true]);
+
+    expect(await staticAToken.getLifetimeRewardsClaimed()).to.be.gt(0);
+    expect(await staticAToken.getClaimableRewards(user.address)).to.be.eq(0);
+    expect(await stkAave.balanceOf(user.address)).to.be.gt(0);
+  });
 });

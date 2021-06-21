@@ -464,30 +464,28 @@ contract StaticATokenLM is ERC20 {
    * @dev Claims rewards from `INCENTIVES_CONTROLLER` and updates internal accounting of rewards.
    */
   function collectAndUpdateRewards() public {
-    if (block.number > _lastRewardBlock) {
-      _lastRewardBlock = block.number;
-      uint256 supply = totalSupply();
+    _lastRewardBlock = block.number;
+    uint256 supply = totalSupply();
 
-      address[] memory assets = new address[](1);
-      assets[0] = address(ATOKEN);
+    address[] memory assets = new address[](1);
+    assets[0] = address(ATOKEN);
 
-      uint256 freshlyClaimed =
-        INCENTIVES_CONTROLLER.claimRewards(assets, type(uint256).max, address(this));
-      uint256 lifetimeRewards = _lifetimeRewardsClaimed.add(freshlyClaimed);
-      uint256 rewardsAccrued = lifetimeRewards.sub(_lifetimeRewards).wadToRay();
+    uint256 freshlyClaimed =
+      INCENTIVES_CONTROLLER.claimRewards(assets, type(uint256).max, address(this));
+    uint256 lifetimeRewards = _lifetimeRewardsClaimed.add(freshlyClaimed);
+    uint256 rewardsAccrued = lifetimeRewards.sub(_lifetimeRewards).wadToRay();
 
-      if (supply > 0 && rewardsAccrued > 0) {
-        _accRewardsPerToken = _accRewardsPerToken.add(
-          (rewardsAccrued).rayDivNoRounding(supply.wadToRay())
-        );
-      }
-
-      if (rewardsAccrued > 0) {
-        _lifetimeRewards = lifetimeRewards;
-      }
-      // Unsure if we can also move this in
-      _lifetimeRewardsClaimed = lifetimeRewards;
+    if (supply > 0 && rewardsAccrued > 0) {
+      _accRewardsPerToken = _accRewardsPerToken.add(
+        (rewardsAccrued).rayDivNoRounding(supply.wadToRay())
+      );
     }
+
+    if (rewardsAccrued > 0) {
+      _lifetimeRewards = lifetimeRewards;
+    }
+
+    _lifetimeRewardsClaimed = lifetimeRewards;
   }
 
   /**
