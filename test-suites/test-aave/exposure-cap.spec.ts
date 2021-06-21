@@ -12,7 +12,6 @@ import { parseEther } from '@ethersproject/units';
 import { BigNumber } from '@ethersproject/bignumber';
 import { strategyDAI } from '../../markets/amm/reservesConfigs';
 import { strategyUSDC } from '../../markets/amm/reservesConfigs';
-import { strategyWETH } from '../../markets/amm/reservesConfigs';
 import { ethers } from 'ethers';
 
 const { expect } = require('chai');
@@ -31,7 +30,6 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
     BigNumber.from(nb).mul(BigNumber.from('10').pow((await token.decimals()) - 3));
   it('Reserves should initially have exposure cap disabled (exposureCap = 0)', async () => {
     const {
-      configurator,
       weth,
       pool,
       dai,
@@ -68,13 +66,9 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
   });
   it('Deposit 10 Dai, 10 USDC, LTV for both should increase', async () => {
     const {
-      configurator,
-      weth,
       pool,
       dai,
       usdc,
-      deployer,
-      helpersContract,
       users: [user1],
     } = testEnv;
 
@@ -102,13 +96,9 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
   it('Sets the exposure cap for DAI to 10 Units', async () => {
     const {
       configurator,
-      weth,
-      pool,
       dai,
-      usdc,
-      deployer,
       helpersContract,
-      users: [user1],
+      users: [],
     } = testEnv;
 
     const newExposureCap = 10;
@@ -121,12 +111,8 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
   });
   it('should succeed to deposit 10 dai but dai ltv drops to 0', async () => {
     const {
-      usdc,
       pool,
       dai,
-      aDai,
-      deployer,
-      helpersContract,
       users: [user1],
     } = testEnv;
     const suppliedAmount = 10;
@@ -139,12 +125,42 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
     let ltv = (await pool.getUserAccountData(user1.address)).ltv;
     expect(ltv).to.be.equal(Math.floor((usdcLTV * usdcPrice) / (usdcPrice + 2 * daiPrice)));
   });
-  it('Should not be able to borrow 15 USD of weth', async () => {
+  it('should succeed to deposit 1 dai but avg ltv decreases', async () => {
+    const {
+      pool,
+      dai,
+      users: [user1],
+    } = testEnv;
+    const suppliedAmount = 1;
+    const precisionSuppliedAmount = (suppliedAmount * 1000).toString();
+    let ltv = (await pool.getUserAccountData(user1.address)).ltv;
+
+    await pool
+      .connect(user1.signer)
+      .deposit(dai.address, await unitParse(dai, precisionSuppliedAmount), user1.address, 0);
+
+    expect(ltv.toNumber()).to.be.gt((await pool.getUserAccountData(user1.address)).ltv.toNumber());
+  });
+  it('should succeed to deposit 1 usdc and ltv should increase', async () => {
     const {
       usdc,
       pool,
+      users: [user1],
+    } = testEnv;
+    const suppliedAmount = 1;
+    const precisionSuppliedAmount = (suppliedAmount * 1000).toString();
+    let ltv = (await pool.getUserAccountData(user1.address)).ltv;
+
+    await pool
+      .connect(user1.signer)
+      .deposit(usdc.address, await unitParse(usdc, precisionSuppliedAmount), user1.address, 0);
+
+    expect(ltv.toNumber()).to.be.lt((await pool.getUserAccountData(user1.address)).ltv.toNumber());
+  });
+  it('Should not be able to borrow 15 USD of weth', async () => {
+    const {
+      pool,
       weth,
-      helpersContract,
       users: [user1],
     } = testEnv;
     const precisionBorrowedUsdAmount = 15 * 1000;
@@ -160,7 +176,6 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
   });
   it('should be able to borrow 15 USD of weth after dai exposure cap raised to 100', async () => {
     const {
-      usdc,
       pool,
       dai,
       weth,
@@ -188,7 +203,6 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
   });
   it('should not be able to withdraw 5 dai, transfer 5 aDai after cap decrease back to 10 (capped)', async () => {
     const {
-      usdc,
       pool,
       dai,
       aDai,
@@ -231,13 +245,10 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
   });
   it('should be able to withdraw 5 dai, transfer 5 aDai after repaying weth Debt', async () => {
     const {
-      usdc,
       pool,
       dai,
       weth,
       aDai,
-      configurator,
-      helpersContract,
       users: [user1, , , receiver],
     } = testEnv;
 
@@ -251,7 +262,7 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
     aDai.connect(user1.signer).transfer(receiver.address, withdrawnAmount);
   });
   it('Should fail to set the exposure cap for usdc and DAI to max cap + 1 Units', async () => {
-    const { configurator, usdc, pool, dai, deployer, helpersContract } = testEnv;
+    const { configurator, usdc, dai } = testEnv;
     const newCap = Number(MAX_EXPOSURE_CAP) + 1;
 
     await expect(configurator.setExposureCap(usdc.address, newCap)).to.be.revertedWith(
