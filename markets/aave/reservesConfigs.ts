@@ -13,7 +13,7 @@ import {
 } from './rateStrategies';
 
 export const strategyBUSD: IReserveParams = {
-  strategy: rateStrategyStableOne,
+  strategy: rateStrategyStableOne, 
   baseLTVAsCollateral: '0',
   liquidationThreshold: '0',
   liquidationBonus: '0',
@@ -263,4 +263,16 @@ export const strategyXSUSHI: IReserveParams = {
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '3500',
+};
+
+export const strategyXSGD: IReserveParams = {
+  strategy: rateStrategyStableThree,
+  baseLTVAsCollateral: '7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10500',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: true,
+  reserveDecimals: '6',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
 };
