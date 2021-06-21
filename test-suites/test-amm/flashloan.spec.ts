@@ -47,10 +47,12 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   it('Takes WETH flashloan with mode = 0, returns the funds correctly', async () => {
     const { pool, helpersContract, weth } = testEnv;
 
+    const borrowedAmount = ethers.utils.parseEther('0.8');
+
     await pool.flashLoan(
       _mockFlashLoanReceiver.address,
       [weth.address],
-      [ethers.utils.parseEther('0.8')],
+      [borrowedAmount],
       [0],
       _mockFlashLoanReceiver.address,
       '0x10',
