@@ -13,6 +13,7 @@ import {
 } from '../../../protocol/libraries/aave-upgradeability/VersionedInitializable.sol';
 import {ICurveFeeDistributor} from '../../interfaces/curve/ICurveFeeDistributor.sol';
 import {ICurveTreasury} from '../../interfaces/curve/ICurveTreasury.sol';
+import 'hardhat/console.sol';
 
 /**
  * @title Curve Treasury that holds Curve LP and Gauge tokens
@@ -37,6 +38,7 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
 
   mapping(address => mapping(address => bool)) internal _entityTokenWhitelist;
   mapping(address => mapping(address => address)) internal _entityTokenGauge;
+  mapping(address => bool) internal _isGaugeV2Compatible;
 
   event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
@@ -66,6 +68,7 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
    * @dev Revert if caller and selected token is not a whitelisted entity
    */
   modifier onlyWhitelistedEntity(address token) {
+    console.log(msg.sender, token, _entityTokenWhitelist[msg.sender][token]);
     require(_entityTokenWhitelist[msg.sender][token] == true, 'ENTITY_NOT_WHITELISTED');
     _;
   }
@@ -79,26 +82,11 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
   }
 
   /**
-   * @dev Initializes the contract with an owner and optional entities whitelist
+   * @dev Initializes the contract with an owner that allows to whitelist new entities inside the treasury contract
    * @param owner Sets the owner of the contract
-   * @param entities Entities addresses list, optional argument
-   * @param tokens Curve LP Token addresses list, optional argument
-   * @param gauges Curve Gauge Staking tokens list, use zero address to disable staking, optional argument
    */
-  function initialize(
-    address owner,
-    address[] calldata entities,
-    address[] calldata tokens,
-    address[] calldata gauges
-  ) external virtual initializer {
+  function initialize(address owner) external virtual initializer {
     _owner = owner;
-    if (entities.length > 0) {
-      bool[] memory whitelisted = new bool[](entities.length);
-      for (uint256 x; x < whitelisted.length; x++) {
-        whitelisted[x] = true;
-      }
-      _setWhitelist(entities, tokens, gauges, whitelisted);
-    }
   }
 
   /// @inheritdoc ICurveTreasury
@@ -131,9 +119,23 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
     address[] calldata entities,
     address[] calldata tokens,
     address[] calldata gauges,
+    bool[] memory areGaugesV2,
     bool[] memory whitelisted
   ) external override onlyOwner {
-    _setWhitelist(entities, tokens, gauges, whitelisted);
+    for (uint256 e; e < entities.length; e++) {
+      _entityTokenWhitelist[entities[e]][tokens[e]] = whitelisted[e];
+      if (whitelisted[e] == true) {
+        if (gauges[e] != address(0)) {
+          _entityTokenGauge[entities[e]][tokens[e]] = gauges[e];
+          _isGaugeV2Compatible[gauges[e]] = areGaugesV2[e];
+        }
+        _approveEntityTokens(entities[e], tokens[e], gauges[e], areGaugesV2[e], type(uint256).max);
+      } else {
+        _entityTokenGauge[entities[e]][tokens[e]] = address(0);
+        _approveEntityTokens(entities[e], tokens[e], gauges[e], areGaugesV2[e], 0);
+        _isGaugeV2Compatible[gauges[e]] = false;
+      }
+    }
   }
 
   /// @inheritdoc ICurveTreasury
@@ -155,28 +157,30 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
       IERC20(CRV_TOKEN).safeTransfer(msg.sender, crvRewards);
     }
 
-    // Claim the extra rewards from Gauge Staking
-    uint256[] memory priorRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
-    uint256[] memory afterRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
+    if (_isGaugeV2Compatible[gauge] == true) {
+      // Claim the extra rewards from Gauge Staking
+      uint256[] memory priorRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
+      uint256[] memory afterRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
 
-    // Calculate balances prior claiming rewards
-    for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
-      if (rewardToken == address(0)) break;
-      priorRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
-    }
+      // Calculate balances prior claiming rewards
+      for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+        address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
+        if (rewardToken == address(0)) break;
+        priorRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
+      }
 
-    // Claim extra rewards
-    ICurveGauge(gauge).claim_rewards();
+      // Claim extra rewards
+      ICurveGauge(gauge).claim_rewards();
 
-    // Transfer extra rewards to entity
-    for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
-      if (rewardToken == address(0)) break;
-      afterRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
-      uint256 rewardsAmount = afterRewardsBalance[index].sub(priorRewardsBalance[index]);
-      if (rewardsAmount > 0) {
-        IERC20(rewardToken).safeTransfer(msg.sender, rewardsAmount);
+      // Transfer extra rewards to entity
+      for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+        address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
+        if (rewardToken == address(0)) break;
+        afterRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
+        uint256 rewardsAmount = afterRewardsBalance[index].sub(priorRewardsBalance[index]);
+        if (rewardsAmount > 0) {
+          IERC20(rewardToken).safeTransfer(msg.sender, rewardsAmount);
+        }
       }
     }
   }
@@ -247,33 +251,6 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
   }
 
   /**
-   * @dev Register entities to enable or disable deposits and withdraws from the treasury
-   * @param entities Entities addresses list
-   * @param tokens Curve LP Token addresses list
-   * @param gauges Curve Gauge Staking tokens list, use zero address to disable staking
-   * @param whitelisted Flag to determine if the entity should be enabled or disabled
-   */
-  function _setWhitelist(
-    address[] calldata entities,
-    address[] calldata tokens,
-    address[] calldata gauges,
-    bool[] memory whitelisted
-  ) internal {
-    for (uint256 e; e < entities.length; e++) {
-      _entityTokenWhitelist[entities[e]][tokens[e]] = whitelisted[e];
-      if (whitelisted[e] == true) {
-        if (gauges[e] != address(0)) {
-          _entityTokenGauge[entities[e]][tokens[e]] = gauges[e];
-        }
-        _approveEntityTokens(entities[e], tokens[e], gauges[e], type(uint256).max);
-      } else {
-        _entityTokenGauge[entities[e]][tokens[e]] = address(0);
-        _approveEntityTokens(entities[e], tokens[e], gauges[e], 0);
-      }
-    }
-  }
-
-  /**
    * @dev ERC20 approval to allow entity and gauge staking contracts to pull whitelisted tokens and rewards from the treasury
    * @param entity Entity address
    * @param token Curve LP Token contract address
@@ -284,6 +261,7 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
     address entity,
     address token,
     address gauge,
+    bool isGaugeV2,
     uint256 amount
   ) internal {
     IERC20(token).safeApprove(entity, 0);
@@ -291,11 +269,15 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
     if (gauge != address(0)) {
       IERC20(token).safeApprove(gauge, 0);
       IERC20(token).safeApprove(gauge, amount);
-      for (uint256 index = 0; index < MAX_REWARD_TOKENS; index++) {
-        address reward = ICurveGaugeView(gauge).reward_tokens(index - 1);
-        if (reward == address(0)) break;
-        IERC20(reward).safeApprove(entity, 0);
-        IERC20(reward).safeApprove(entity, amount);
+      IERC20(CRV_TOKEN).safeApprove(entity, 0);
+      IERC20(CRV_TOKEN).safeApprove(entity, amount);
+      if (isGaugeV2 == true) {
+        for (uint256 index = 0; index < MAX_REWARD_TOKENS; index++) {
+          address reward = ICurveGaugeView(gauge).reward_tokens(index);
+          if (reward == address(0)) break;
+          IERC20(reward).safeApprove(entity, 0);
+          IERC20(reward).safeApprove(entity, amount);
+        }
       }
     }
   }

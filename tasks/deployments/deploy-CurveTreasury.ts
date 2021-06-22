@@ -15,7 +15,7 @@ task(`deploy-curve-treasury`, `Deploys the CurveTreasury contract`)
   .setAction(async ({ verify, proxyAdmin, treasuryAdmin, collector }, localBRE) => {
     await localBRE.run('set-DRE');
 
-    const net = localBRE.network.name;
+    const net = process.env.FORK ? process.env.FORK : localBRE.network.name;
     console.log(`\n- Curve Treasury deployment`);
     const aaveCollector = collector || ZERO_ADDRESS;
 
@@ -30,18 +30,15 @@ task(`deploy-curve-treasury`, `Deploys the CurveTreasury contract`)
     );
 
     // Freeze implementatation
-    await waitForTx(await implementation.initialize(ZERO_ADDRESS, [], [], []));
+    await waitForTx(await implementation.initialize(ZERO_ADDRESS));
 
     // Deploy proxy
     const proxy = await deployInitializableAdminUpgradeabilityProxy(verify);
 
-    const encoded = implementation.interface.encodeFunctionData('initialize', [
-      treasuryAdmin,
-      [],
-      [],
-      [],
-    ]);
-    await waitForTx(await proxy.initialize(implementation.address, proxyAdmin, encoded));
+    const encoded = implementation.interface.encodeFunctionData('initialize', [treasuryAdmin]);
+    await waitForTx(
+      await proxy['initialize(address,address,bytes)'](implementation.address, proxyAdmin, encoded)
+    );
 
     console.log(`\tFinished CurveTreasury deployment`);
     console.log(`\tProxy:`, proxy.address);

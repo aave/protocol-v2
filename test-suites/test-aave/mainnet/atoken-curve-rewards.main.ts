@@ -15,20 +15,21 @@ import {
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
 } from '../../../helpers/contracts-getters';
-import {
-  deployCurveGaugeReserveInterestRateStrategy,
-  deployDefaultReserveInterestRateStrategy,
-} from '../../../helpers/contracts-deployments';
+import { deployCurveGaugeReserveInterestRateStrategy } from '../../../helpers/contracts-deployments';
 import { IERC20Factory } from '../../../types/IERC20Factory';
 import BigNumberJs from 'bignumber.js';
-import { CurveGaugeRewardsAwareATokenFactory } from '../../../types';
+import {
+  CurveGaugeRewardsAwareATokenFactory,
+  CurveTreasury,
+  CurveTreasuryFactory,
+} from '../../../types';
 import { eContractid, eEthereumNetwork, tEthereumAddress } from '../../../helpers/types';
 import { strategyWBTC } from '../../../markets/aave/reservesConfigs';
 import { checkRewards } from '../helpers/rewards-distribution/verify';
 import { IRewardsAwareAToken } from '../../../types/IRewardsAwareAToken';
 import { IRewardsAwareATokenFactory } from '../../../types/IRewardsAwareATokenFactory';
 import { BigNumber } from 'ethers';
-import { AbiCoder, defaultAbiCoder, parseEther } from 'ethers/lib/utils';
+import { defaultAbiCoder, formatEther, parseEther } from 'ethers/lib/utils';
 import { IERC20 } from '../../../types/IERC20';
 import {
   getContractAddressWithJsonFallback,
@@ -46,7 +47,6 @@ interface GaugeInfo {
   symbol: string;
   rewardTokens: tEthereumAddress[];
 }
-const BLOCK_HEIGHT = '';
 const USER_ADDRESS = '0x9c5083dd4838E120Dbeac44C052179692Aa5dAC5';
 
 const CRV_TOKEN = '0xd533a949740bb3306d119cc777fa900ba034cd52';
@@ -86,12 +86,18 @@ const GAUGE_ANKR: GaugeInfo = {
     '0x8290333ceF9e6D528dD5618Fb97a76f268f3EDD4',
   ],
 };
+const isGaugeV2 = (address: tEthereumAddress) =>
+  GAUGE_3POOL.address.toLowerCase() !== address.toLowerCase();
 
 const unstakeAllGauges = async (key: SignerWithAddress, gauges: tEthereumAddress[]) => {
   for (let x = 0; x < gauges.length; x++) {
-    await waitForTx(
-      await ICurveGaugeFactory.connect(gauges[x], key.signer).withdraw(MAX_UINT_AMOUNT)
-    );
+    if (isGaugeV2(gauges[x])) {
+      await waitForTx(
+        await IERC20Factory.connect(gauges[x], key.signer).approve(gauges[x], MAX_UINT_AMOUNT)
+      );
+    }
+    const balance = IERC20Factory.connect(gauges[x], key.signer).balanceOf(key.address);
+    await waitForTx(await ICurveGaugeFactory.connect(gauges[x], key.signer).withdraw(balance));
   }
 };
 
@@ -140,7 +146,10 @@ const listCurveLPToken = async (gauge: GaugeInfo, curveTreasury: tEthereumAddres
     false
   );
   const interestRateStrategyAddress = interestStrategy.address;
-  const encodedParams = defaultAbiCoder.encode(['string'], [gauge.address]);
+  const encodedParams = defaultAbiCoder.encode(
+    ['address', 'bool'],
+    [gauge.address, isGaugeV2(gauge.address)]
+  );
   const curveReserveInitParams = [
     {
       aTokenImpl,
@@ -175,7 +184,8 @@ const depositPoolToken = async (
   const pool = await getLendingPool();
   const curveReserveToken = IERC20Factory.connect(gauge.underlying, key.signer);
 
-  await curveReserveToken.connect(key.signer).approve(pool.address, amount);
+  await waitForTx(await curveReserveToken.connect(key.signer).approve(pool.address, 0));
+  await waitForTx(await curveReserveToken.connect(key.signer).approve(pool.address, amount));
 
   const txDeposit = await waitForTx(
     await pool.connect(key.signer).deposit(gauge.underlying, amount, key.address, '0')
@@ -249,6 +259,8 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
   let crvToken: IERC20;
   let snxToken: IERC20;
 
+  let curveTreasury: CurveTreasury;
+
   before('Initializing configuration', async () => {
     // Sets BigNumber for this suite, instead of globally
     BigNumberJs.config({ DECIMAL_PLACES: 0, ROUNDING_MODE: BigNumberJs.ROUND_DOWN });
@@ -272,10 +284,6 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
 
     // Depositor should have 3pool, EURS, AAVE3, and ANKR balance
     const curve3poolBalance = await curve3poolErc20.balanceOf(USER_ADDRESS);
-    const gaugeCurve3poolBalance = await IERC20Factory.connect(
-      GAUGE_3POOL.address,
-      depositor.signer
-    ).balanceOf(USER_ADDRESS);
     const curveEursBalance = await curveEursErc20.balanceOf(USER_ADDRESS);
     const curveAave3Balance = await curveAave3Erc20.balanceOf(USER_ADDRESS);
     const curveAnkrBalance = await curveAnkrErc20.balanceOf(USER_ADDRESS);
@@ -292,16 +300,17 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
       eEthereumNetwork.main
     );
 
-    const { proxy: curveTreasury } = await DRE.run('deploy-curve-treasury', {
-      proxyAdmin: ZERO_ADDRESS,
-      treasuryAdmin: ZERO_ADDRESS,
+    const { proxy: curveTreasuryAddress } = await DRE.run('deploy-curve-treasury', {
+      proxyAdmin: testEnv.users[1].address,
+      treasuryAdmin: testEnv.users[0].address,
       collector,
     });
+
     // Gauge tokens should be listed at Aave test deployment
-    await listCurveLPToken(GAUGE_3POOL, curveTreasury);
-    await listCurveLPToken(GAUGE_EURS, curveTreasury);
-    await listCurveLPToken(GAUGE_AAVE3, curveTreasury);
-    await listCurveLPToken(GAUGE_ANKR, curveTreasury);
+    await listCurveLPToken(GAUGE_3POOL, curveTreasuryAddress);
+    await listCurveLPToken(GAUGE_EURS, curveTreasuryAddress);
+    await listCurveLPToken(GAUGE_AAVE3, curveTreasuryAddress);
+    await listCurveLPToken(GAUGE_ANKR, curveTreasuryAddress);
 
     const allTokens = await testEnv.helpersContract.getAllATokens();
 
@@ -319,8 +328,25 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
     );
     aANKR = IRewardsAwareATokenFactory.connect(
       allTokens.find((aToken) => aToken.symbol.includes('ankr'))?.tokenAddress || ZERO_ADDRESS,
-
       await getFirstSigner()
+    );
+    curveTreasury = CurveTreasuryFactory.connect(curveTreasuryAddress, testEnv.users[0].signer);
+
+    // Enable atoken entities into Curve Treasury
+    console.log(a3POOL.address, aEURS.address, aAAVE3.address, aANKR.address);
+    await waitForTx(
+      await curveTreasury.setWhitelist(
+        [a3POOL.address, aEURS.address, aAAVE3.address, aANKR.address],
+        [
+          GAUGE_3POOL.underlying,
+          GAUGE_EURS.underlying,
+          GAUGE_AAVE3.underlying,
+          GAUGE_ANKR.underlying,
+        ],
+        [GAUGE_3POOL.address, GAUGE_EURS.address, GAUGE_AAVE3.address, GAUGE_ANKR.address],
+        [false, true, true, true],
+        [true, true, true, true]
+      )
     );
   });
 
@@ -390,7 +416,7 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
 
     it('Deposit and generate user reward checkpoints', async () => {
       // Deposits
-      await depositPoolToken(depositor, GAUGE_3POOL, a3POOL.address, parseEther('100000'));
+      await depositPoolToken(depositor, GAUGE_3POOL, a3POOL.address, parseEther('2000'));
       const curveATokenBalance = await crvToken.balanceOf(a3POOL.address);
       expect(curveATokenBalance).to.be.eq('0', 'CRV rewards should be zero');
     });
@@ -408,19 +434,19 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
       );
     });
 
-    it('Pass time and withdraw Staked AAVE3', async () => {
+    it('Pass time and withdraw Staked 3pool', async () => {
       // Pass time to generate rewards
       await increaseTime(ONE_DAY);
 
       // Withdraw
-      await withdrawPoolToken(depositor, GAUGE_3POOL, a3POOL.address);
+      await withdrawPoolToken(depositor, GAUGE_3POOL, a3POOL.address, true);
       const curveATokenBalance = await crvToken.balanceOf(a3POOL.address);
       expect(curveATokenBalance).to.be.eq('0', 'CRV rewards should be zero');
     });
 
-    it('Claim the remaining CRV', async () => {
+    it('Claim the remaining CRV, should not reward', async () => {
       // Claim
-      await claimFromGauge(depositor, GAUGE_AAVE3, aAAVE3.address);
+      await claimFromGauge(depositor, GAUGE_AAVE3, aAAVE3.address, false);
       const curveATokenBalance = await crvToken.balanceOf(a3POOL.address);
       expect(curveATokenBalance).to.be.eq(
         '0',

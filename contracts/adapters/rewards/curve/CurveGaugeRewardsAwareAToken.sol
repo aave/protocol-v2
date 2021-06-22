@@ -9,6 +9,7 @@ import {ICurveMinter} from '../../interfaces/curve/ICurveMinter.sol';
 import {ICurveGauge, ICurveGaugeView} from '../../interfaces/curve/ICurveGauge.sol';
 import {IAaveIncentivesController} from '../../../interfaces/IAaveIncentivesController.sol';
 import {ICurveTreasury} from '../../interfaces/curve/ICurveTreasury.sol';
+import 'hardhat/console.sol';
 
 /**
  * @title Curve Rewards Aware AToken
@@ -82,17 +83,20 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
     _underlyingAsset = underlyingAsset;
     _incentivesController = incentivesController;
 
-    _gaugeController = _decodeParams(params);
+    _gaugeController = _decodeGaugeAddress(params);
 
     // Initialize Curve Gauge rewards
     _rewardTokens[0] = CRV_TOKEN;
 
-    // Start for loop with index = 1 to not rewrite first element of rewardTokens
-    for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
-      address reward = ICurveGaugeView(_decodeParams(params)).reward_tokens(index - 1);
-      if (reward == address(0)) break;
+    // If Gauge is version V2, them discover reward tokens
+    if (_decodeGaugeVersion(params) == true) {
+      // Start for loop with index = 1 to not rewrite first element of rewardTokens
+      for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+        address reward = ICurveGaugeView(_decodeGaugeAddress(params)).reward_tokens(index - 1);
+        if (reward == address(0)) break;
 
-      _rewardTokens[index] = reward;
+        _rewardTokens[index] = reward;
+      }
     }
 
     IERC20(underlyingAsset).safeApprove(CURVE_TREASURY, type(uint256).max);
@@ -160,7 +164,6 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
   function _computeExternalLifetimeRewards(address token) internal override returns (uint256) {
     // The Curve Gauge can give exact lifetime rewards and accrued rewards for the CRV token
     if (token == CRV_TOKEN) {
-      ICurveGauge(_gaugeController).user_checkpoint(CURVE_TREASURY);
       return _getExternalLifetimeCurve();
     }
     // Other rewards from the Curve Gauge can not get the lifetime rewards externally, only at the moment of claim, due they are external rewards outside the Curve ecosystem.
@@ -200,7 +203,7 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
         priorTokenBalances[index] = IERC20(rewardToken).balanceOf(address(this));
       }
       // Mint other rewards to aToken
-      ICurveTreasury(CURVE_TREASURY).claimGaugeRewards(_gaugeController);
+      ICurveTreasury(CURVE_TREASURY).claimGaugeRewards(_underlyingAsset);
 
       for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
         address rewardToken = _getRewardsTokenAddress(index);
@@ -220,7 +223,9 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
    * @param amount Amount of tokens to deposit
    */
   function _stake(address token, uint256 amount) internal override returns (uint256) {
-    ICurveTreasury(CURVE_TREASURY).deposit(token, amount, true);
+    if (token == UNDERLYING_ASSET_ADDRESS()) {
+      ICurveTreasury(CURVE_TREASURY).deposit(token, amount, true);
+    }
     return amount;
   }
 
@@ -230,19 +235,32 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
    * @param amount Amount of tokens to withdraw
    */
   function _unstake(address token, uint256 amount) internal override returns (uint256) {
-    ICurveTreasury(CURVE_TREASURY).withdraw(token, amount, true);
+    if (token == UNDERLYING_ASSET_ADDRESS()) {
+      ICurveTreasury(CURVE_TREASURY).withdraw(token, amount, true);
+    }
     return amount;
   }
 
   /**
-   * @dev Param decoder to get Gauge Staking address
+   * @dev Param decoder to get Gauge Staking address. The decoder function is splitted due "Stack too deep" at constructor.
    * @param params Additional variadic field to include extra params. Expected parameters:
    * @return address of gauge
    */
-  function _decodeParams(bytes memory params) internal pure returns (address) {
-    address gauge = abi.decode(params, (address));
+  function _decodeGaugeAddress(bytes memory params) internal pure returns (address) {
+    (address gauge, bool _isGaugeV2) = abi.decode(params, (address, bool));
 
     return gauge;
+  }
+
+  /**
+   * @dev Param decoder to get Gauge Staking address. The decoder function is splitted due "Stack too deep" at constructor.
+   * @param params Additional variadic field to include extra params. Expected parameters:
+   * @return bool true if Gauge follows Gauge V2 interface, false otherwise
+   */
+  function _decodeGaugeVersion(bytes memory params) internal pure returns (bool) {
+    (address _gauge, bool isGaugeV2) = abi.decode(params, (address, bool));
+
+    return isGaugeV2;
   }
 
   /** End of Rewards Aware AToken functions  */

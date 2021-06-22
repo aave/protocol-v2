@@ -36,12 +36,14 @@ interface ICurveTreasury {
    * @param entities Entities addresses list
    * @param tokens Curve LP Token addresses list
    * @param gauges Curve Gauge Staking tokens list, use zero address to disable staking
+   * @param areGaugesV2 Curve version list, if true gauge is V2 compatible, false if not.
    * @param whitelisted Flag to determine if the entity should be enabled or disabled
    */
   function setWhitelist(
     address[] calldata entities,
     address[] calldata tokens,
     address[] calldata gauges,
+    bool[] memory areGaugesV2,
     bool[] memory whitelisted
   ) external;
 

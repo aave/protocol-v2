@@ -84,12 +84,12 @@ export const CURVE_TREASURY = {
 
 export const CURVE_CONFIG = {
   votingEscrow: {
-    [eEthereumNetwork.main]: ZERO_ADDRESS,
+    [eEthereumNetwork.main]: '0x5f3b5DfEb7B28CDbD7FAba78963EE202a494e2A2',
   },
   curveFeeDistributor: {
-    [eEthereumNetwork.main]: ZERO_ADDRESS,
+    [eEthereumNetwork.main]: '0xA464e6DCda8AC41e03616F95f4BC98a13b8922Dc',
   },
   gaugeController: {
-    [eEthereumNetwork.main]: ZERO_ADDRESS,
+    [eEthereumNetwork.main]: '0x2F50D538606Fa9EDD2B11E2446BEb18C9D5846bB',
   },
 };
