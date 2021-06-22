@@ -27,12 +27,24 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     LP_BORROW_ALLOWANCE_NOT_ENOUGH,
   } = ProtocolErrors;
 
+  const TOTAL_PREMIUM = 9;
+  const PREMIUM_TO_PROTOCOL = 3;
+  const PREMIUM_TO_LP = TOTAL_PREMIUM - PREMIUM_TO_PROTOCOL;
+
   before(async () => {
     _mockFlashLoanReceiver = await getMockFlashLoanReceiver();
   });
 
+  it('Configurator sets total premium = 9 bps, premium to protocol = 3 bps', async () => {
+    const { configurator, pool } = testEnv;
+    await configurator.updateFlashloanPremiumTotal(TOTAL_PREMIUM);
+    await configurator.updateFlashloanPremiumToProtocol(PREMIUM_TO_PROTOCOL);
+
+    expect(await pool.FLASHLOAN_PREMIUM_TOTAL()).to.be.equal(TOTAL_PREMIUM);
+    expect(await pool.FLASHLOAN_PREMIUM_TO_PROTOCOL()).to.be.equal(PREMIUM_TO_PROTOCOL);
+  });
   it('Deposits WETH into the reserve', async () => {
-    const { pool, weth, aave } = testEnv;
+    const { pool, weth, aave, dai } = testEnv;
     const userAddress = await pool.signer.getAddress();
     const amountToDeposit = ethers.utils.parseEther('1');
 
@@ -47,44 +59,102 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await aave.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     await pool.deposit(aave.address, amountToDeposit, userAddress, '0');
+    await dai.mint(amountToDeposit);
+
+    await dai.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    await pool.deposit(dai.address, amountToDeposit, userAddress, '0');
   });
 
-  it('Takes WETH flash loan with mode = 0, returns the funds correctly', async () => {
-    const { pool, helpersContract, weth, aWETH } = testEnv;
+  it('Takes WETH + Dai flash loan with mode = 0, returns the funds correctly', async () => {
+    const { pool, helpersContract, weth, aWETH, dai, aDai } = testEnv;
 
-    const flashBorrowedAmount = ethers.utils.parseEther('0.8');
-    const fees = new BigNumber(flashBorrowedAmount.mul(9).div(10000).toString());
+    const wethFlashBorrowedAmount = ethers.utils.parseEther('0.8');
+    const daiFlashBorrowedAmount = ethers.utils.parseEther('0.3');
+    const wethTotalFees = new BigNumber(
+      wethFlashBorrowedAmount.mul(TOTAL_PREMIUM).div(10000).toString()
+    );
+    const wethFeesToProtocol = wethFlashBorrowedAmount.mul(PREMIUM_TO_PROTOCOL).div(10000);
+    const wethFeesToLp = wethFlashBorrowedAmount.mul(PREMIUM_TO_LP).div(10000);
+    const daiTotalFees = new BigNumber(
+      daiFlashBorrowedAmount.mul(TOTAL_PREMIUM).div(10000).toString()
+    );
+    const daiFeesToProtocol = daiFlashBorrowedAmount.mul(PREMIUM_TO_PROTOCOL).div(10000);
+    const daiFeesToLp = daiFlashBorrowedAmount.mul(PREMIUM_TO_LP).div(10000);
 
-    let reserveData = await helpersContract.getReserveData(weth.address);
+    const wethLiquidityIndexAdded = wethFeesToLp
+      .mul(ethers.BigNumber.from(10).pow(27))
+      .div((await aWETH.totalSupply()).toString());
 
-    const totalLiquidityBefore = new BigNumber(reserveData.availableLiquidity.toString())
-      .plus(reserveData.totalStableDebt.toString())
-      .plus(reserveData.totalVariableDebt.toString());
+    const daiLiquidityIndexAdded = daiFeesToLp
+      .mul(ethers.BigNumber.from(10).pow(27))
+      .div((await aDai.totalSupply()).toString());
+
+    let wethReserveData = await helpersContract.getReserveData(weth.address);
+    let daiReserveData = await helpersContract.getReserveData(dai.address);
+
+    const wethLiquidityIndexBefore = wethReserveData.liquidityIndex;
+    const daiLiquidityIndexBefore = daiReserveData.liquidityIndex;
+
+    const wethTotalLiquidityBefore = new BigNumber(wethReserveData.availableLiquidity.toString())
+      .plus(wethReserveData.totalStableDebt.toString())
+      .plus(wethReserveData.totalVariableDebt.toString());
+
+    const daiTotalLiquidityBefore = new BigNumber(daiReserveData.availableLiquidity.toString())
+      .plus(daiReserveData.totalStableDebt.toString())
+      .plus(daiReserveData.totalVariableDebt.toString());
+
+    const wethReservesBefore = await aWETH.balanceOf(await aWETH.RESERVE_TREASURY_ADDRESS());
+    const daiReservesBefore = await aDai.balanceOf(await aDai.RESERVE_TREASURY_ADDRESS());
 
     await pool.flashLoan(
       _mockFlashLoanReceiver.address,
-      [weth.address],
-      [flashBorrowedAmount],
-      [0],
+      [weth.address, dai.address],
+      [wethFlashBorrowedAmount, daiFlashBorrowedAmount],
+      [0, 0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
     );
 
-    await pool.mintToTreasury([weth.address]);
+    await pool.mintToTreasury([weth.address, dai.address]);
 
-    reserveData = await helpersContract.getReserveData(weth.address);
+    wethReserveData = await helpersContract.getReserveData(weth.address);
+    daiReserveData = await helpersContract.getReserveData(dai.address);
 
-    const currentLiquidityRate = reserveData.liquidityRate;
-    const currentLiquidityIndex = reserveData.liquidityIndex;
+    const wethCurrentLiquidityRate = wethReserveData.liquidityRate;
+    const wethCurrentLiquidityIndex = wethReserveData.liquidityIndex;
+    const daiCurrentLiquidityRate = daiReserveData.liquidityRate;
+    const daiCurrentLiquidityIndex = daiReserveData.liquidityIndex;
 
-    const totalLiquidityAfter = new BigNumber(reserveData.availableLiquidity.toString())
-      .plus(reserveData.totalStableDebt.toString())
-      .plus(reserveData.totalVariableDebt.toString());
+    const wethTotalLiquidityAfter = new BigNumber(wethReserveData.availableLiquidity.toString())
+      .plus(wethReserveData.totalStableDebt.toString())
+      .plus(wethReserveData.totalVariableDebt.toString());
 
-    expect(totalLiquidityBefore.plus(fees).toString()).to.be.equal(totalLiquidityAfter.toString());
-    expect(currentLiquidityRate.toString()).to.be.equal('0');
-    expect(currentLiquidityIndex.toString()).to.be.equal('1000720000000000000000000000');
+    const daiTotalLiquidityAfter = new BigNumber(daiReserveData.availableLiquidity.toString())
+      .plus(daiReserveData.totalStableDebt.toString())
+      .plus(daiReserveData.totalVariableDebt.toString());
+
+    const wethReservesAfter = await aWETH.balanceOf(await aWETH.RESERVE_TREASURY_ADDRESS());
+    const daiReservesAfter = await aDai.balanceOf(await aDai.RESERVE_TREASURY_ADDRESS());
+
+    expect(wethTotalLiquidityBefore.plus(wethTotalFees).toString()).to.be.equal(
+      wethTotalLiquidityAfter.toString()
+    );
+    expect(wethCurrentLiquidityRate.toString()).to.be.equal('0');
+    expect(wethCurrentLiquidityIndex.toString()).to.be.equal(
+      wethLiquidityIndexBefore.add(wethLiquidityIndexAdded.toString()).toString()
+    );
+    expect(wethReservesAfter).to.be.equal(wethReservesBefore.add(wethFeesToProtocol));
+
+    expect(daiTotalLiquidityBefore.plus(daiTotalFees).toString()).to.be.equal(
+      daiTotalLiquidityAfter.toString()
+    );
+    expect(daiCurrentLiquidityRate.toString()).to.be.equal('0');
+    expect(daiCurrentLiquidityIndex.toString()).to.be.equal(
+      daiLiquidityIndexBefore.add(daiLiquidityIndexAdded.toString()).toString()
+    );
+    expect(daiReservesAfter).to.be.equal(daiReservesBefore.add(daiFeesToProtocol));
   });
   it('Takes an authorized AAVE flash loan with mode = 0, returns the funds correctly', async () => {
     const {
@@ -97,7 +167,7 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
     await configurator.authorizeFlashBorrower(authorizedUser.address);
 
     const flashBorrowedAmount = ethers.utils.parseEther('0.8');
-    const fees = new BigNumber(0);
+    const totalFees = new BigNumber(0);
 
     let reserveData = await helpersContract.getReserveData(aave.address);
 
@@ -119,33 +189,43 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     await pool.mintToTreasury([aave.address]);
 
-    ethers.utils.parseUnits('10000');
-
     reserveData = await helpersContract.getReserveData(aave.address);
 
     const totalLiquidityAfter = new BigNumber(reserveData.availableLiquidity.toString())
       .plus(reserveData.totalStableDebt.toString())
       .plus(reserveData.totalVariableDebt.toString());
 
-    expect(totalLiquidityBefore.plus(fees).toString()).to.be.equal(totalLiquidityAfter.toString());
+    expect(totalLiquidityBefore.plus(totalFees).toString()).to.be.equal(
+      totalLiquidityAfter.toString()
+    );
   });
   it('Takes an ETH flashloan with mode = 0 as big as the available liquidity', async () => {
-    const { pool, helpersContract, weth } = testEnv;
+    const { pool, helpersContract, weth, aWETH } = testEnv;
 
     let reserveData = await helpersContract.getReserveData(weth.address);
 
-    const totalLiquidityBefore = new BigNumber(reserveData.availableLiquidity.toString())
-      .plus(reserveData.totalStableDebt.toString())
-      .plus(reserveData.totalVariableDebt.toString());
+    const totalLiquidityBefore = reserveData.availableLiquidity
+      .add(reserveData.totalStableDebt)
+      .add(reserveData.totalVariableDebt);
 
-    const flashBorrowedAmount = totalLiquidityBefore.toString();
+    const flashBorrowedAmount = totalLiquidityBefore;
 
-    const fees = new BigNumber(flashBorrowedAmount).multipliedBy(9).dividedBy(10000).toString();
+    const totalFees = new BigNumber(flashBorrowedAmount.mul(TOTAL_PREMIUM).div(10000).toString());
+    const feesToProtocol = flashBorrowedAmount.mul(PREMIUM_TO_PROTOCOL).div(10000);
+    const feesToLp = flashBorrowedAmount.mul(PREMIUM_TO_LP).div(10000);
+    const liquidityIndexBefore = reserveData.liquidityIndex;
+    const liquidityIndexAdded = feesToLp
+      .mul(ethers.BigNumber.from(10).pow(27))
+      .div((await aWETH.totalSupply()).toString())
+      .mul(liquidityIndexBefore)
+      .div(ethers.BigNumber.from(10).pow(27));
+
+    const reservesBefore = await aWETH.balanceOf(await aWETH.RESERVE_TREASURY_ADDRESS());
 
     const txResult = await pool.flashLoan(
       _mockFlashLoanReceiver.address,
       [weth.address],
-      [totalLiquidityBefore.toString()],
+      [flashBorrowedAmount],
       [0],
       _mockFlashLoanReceiver.address,
       '0x10',
@@ -156,22 +236,25 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
 
     reserveData = await helpersContract.getReserveData(weth.address);
 
+    const currentLiquidityRate = reserveData.liquidityRate;
+    const currentLiquidityIndex = reserveData.liquidityIndex;
+
     const totalLiquidityAfter = new BigNumber(reserveData.availableLiquidity.toString())
       .plus(reserveData.totalStableDebt.toString())
       .plus(reserveData.totalVariableDebt.toString());
 
-    const currentLiqudityRate = reserveData.liquidityRate;
-    const currentLiquidityIndex = reserveData.liquidityIndex;
-
-    const totalLiquidity = new BigNumber(reserveData.availableLiquidity.toString())
-      .plus(reserveData.totalStableDebt.toString())
-      .plus(reserveData.totalVariableDebt.toString());
-
-    expect(totalLiquidity.toString()).to.be.equal('1001620648000000000');
-    expect(currentLiqudityRate.toString()).to.be.equal('0');
-    expect(currentLiquidityIndex.toString()).to.be.equal('1001620648000000000000000000');
+    const reservesAfter = await aWETH.balanceOf(await aWETH.RESERVE_TREASURY_ADDRESS());
+    expect(new BigNumber(totalLiquidityBefore.toString()).plus(totalFees).toString()).to.be.equal(
+      totalLiquidityAfter.toString()
+    );
+    expect(currentLiquidityRate.toString()).to.be.equal('0');
+    expect(currentLiquidityIndex.toString()).to.be.equal(
+      liquidityIndexBefore.add(liquidityIndexAdded.toString()).toString()
+    );
+    expect(
+      reservesAfter.sub(feesToProtocol).mul(liquidityIndexBefore).div(currentLiquidityIndex)
+    ).to.be.equal(reservesBefore);
   });
-
   it('Takes WETH flashloan, does not return the funds with mode = 0. (revert expected)', async () => {
     const { pool, weth, users } = testEnv;
     const caller = users[1];
@@ -337,46 +420,59 @@ makeSuite('LendingPool FlashLoan function', (testEnv: TestEnv) => {
   });
 
   it('Takes out a 500 USDC flashloan, returns the funds correctly', async () => {
-    const { usdc, pool, helpersContract, deployer: depositor } = testEnv;
+    const { usdc, aUsdc, pool, helpersContract, deployer: depositor } = testEnv;
 
     await _mockFlashLoanReceiver.setFailExecutionTransfer(false);
 
-    const reserveDataBefore = await helpersContract.getReserveData(usdc.address);
+    const flashBorrowedAmount = await convertToCurrencyDecimals(usdc.address, '500');
+    const totalFees = new BigNumber(flashBorrowedAmount.mul(TOTAL_PREMIUM).div(10000).toString());
+    const feesToProtocol = flashBorrowedAmount.mul(PREMIUM_TO_PROTOCOL).div(10000);
+    const feesToLp = flashBorrowedAmount.mul(PREMIUM_TO_LP).div(10000);
+    const liquidityIndexAdded = feesToLp
+      .mul(ethers.BigNumber.from(10).pow(27))
+      .div((await aUsdc.totalSupply()).toString());
 
-    const flashloanAmount = await convertToCurrencyDecimals(usdc.address, '500');
+    let reserveData = await helpersContract.getReserveData(usdc.address);
+
+    const liquidityIndexBefore = reserveData.liquidityIndex;
+
+    const totalLiquidityBefore = new BigNumber(reserveData.availableLiquidity.toString())
+      .plus(reserveData.totalStableDebt.toString())
+      .plus(reserveData.totalVariableDebt.toString());
+
+    const reservesBefore = await aUsdc.balanceOf(await aUsdc.RESERVE_TREASURY_ADDRESS());
 
     await pool.flashLoan(
       _mockFlashLoanReceiver.address,
       [usdc.address],
-      [flashloanAmount],
+      [flashBorrowedAmount],
       [0],
       _mockFlashLoanReceiver.address,
       '0x10',
       '0'
     );
 
-    const reserveDataAfter = helpersContract.getReserveData(usdc.address);
+    await pool.mintToTreasury([usdc.address]);
 
-    const reserveData = await helpersContract.getReserveData(usdc.address);
-    const userData = await helpersContract.getUserReserveData(usdc.address, depositor.address);
+    reserveData = await helpersContract.getReserveData(usdc.address);
 
-    const totalLiquidity = reserveData.availableLiquidity
-      .add(reserveData.totalStableDebt)
-      .add(reserveData.totalVariableDebt)
-      .toString();
-    const currentLiqudityRate = reserveData.liquidityRate.toString();
-    const currentLiquidityIndex = reserveData.liquidityIndex.toString();
-    const currentUserBalance = userData.currentATokenBalance.toString();
+    const currentLiquidityRate = reserveData.liquidityRate;
+    const currentLiquidityIndex = reserveData.liquidityIndex;
 
-    const expectedLiquidity = await convertToCurrencyDecimals(usdc.address, '1000.450');
+    const totalLiquidityAfter = new BigNumber(reserveData.availableLiquidity.toString())
+      .plus(reserveData.totalStableDebt.toString())
+      .plus(reserveData.totalVariableDebt.toString());
 
-    expect(totalLiquidity).to.be.equal(expectedLiquidity, 'Invalid total liquidity');
-    expect(currentLiqudityRate).to.be.equal('0', 'Invalid liquidity rate');
-    expect(currentLiquidityIndex).to.be.equal(
-      new BigNumber('1.00045').multipliedBy(oneRay).toFixed(),
-      'Invalid liquidity index'
+    const reservesAfter = await aUsdc.balanceOf(await aUsdc.RESERVE_TREASURY_ADDRESS());
+
+    expect(totalLiquidityBefore.plus(totalFees).toString()).to.be.equal(
+      totalLiquidityAfter.toString()
     );
-    expect(currentUserBalance.toString()).to.be.equal(expectedLiquidity, 'Invalid user balance');
+    expect(currentLiquidityRate.toString()).to.be.equal('0');
+    expect(currentLiquidityIndex.toString()).to.be.equal(
+      liquidityIndexBefore.add(liquidityIndexAdded.toString()).toString()
+    );
+    expect(reservesAfter).to.be.equal(reservesBefore.add(feesToProtocol));
   });
 
   it('Takes out a 500 USDC flashloan with mode = 0, does not return the funds. (revert expected)', async () => {
