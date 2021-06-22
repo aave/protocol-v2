@@ -3,7 +3,7 @@ import BN = require('bn.js');
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 import { WAD } from './constants';
-import { Wallet, ContractTransaction } from 'ethers';
+import { Wallet, ContractTransaction, BigNumberish } from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import { tEthereumAddress } from './types';
@@ -44,6 +44,16 @@ export const advanceBlock = async (timestamp: number) =>
 export const increaseTime = async (secondsToIncrease: number) => {
   await DRE.ethers.provider.send('evm_increaseTime', [secondsToIncrease]);
   await DRE.ethers.provider.send('evm_mine', []);
+};
+
+export const setHardhatBalance = async (addresses: string[], balances: BigNumberish[]) => {
+  for (const [index, address] of addresses.entries()) {
+    const hexBalance = DRE.ethers.BigNumber.from(balances[index]).toHexString();
+    // ethers big number .toHexString adds a 0x0 that hardhat can't remove.
+    // from 0x0Deb12312 to 0xDeb123112
+    const hexBalanceWithoutZero = hexBalance.slice(0, 2) + hexBalance.slice(3);
+    await DRE.ethers.provider.send('hardhat_setBalance', [address, hexBalanceWithoutZero]);
+  }
 };
 
 // Workaround for time travel tests bug: https://github.com/Tonyhaenn/hh-time-travel/blob/0161d993065a0b7585ec5a043af2eb4b654498b8/test/test.js#L12
