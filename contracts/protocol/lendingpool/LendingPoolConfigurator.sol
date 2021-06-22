@@ -514,6 +514,14 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     override
     onlyPoolAdmin
   {
+    require(
+      flashloanPremiumTotal < PercentageMath.PERCENTAGE_FACTOR,
+      Errors.LPC_FLASHLOAN_PREMIUM_INVALID
+    );
+    require(
+      flashloanPremiumTotal >= _pool.FLASHLOAN_PREMIUM_TO_PROTOCOL(),
+      Errors.LPC_FLASHLOAN_PREMIUMS_MISMATCH
+    );
     _pool.updateFlashloanPremiums(flashloanPremiumTotal, _pool.FLASHLOAN_PREMIUM_TO_PROTOCOL());
     emit FlashloanPremiumTotalUpdated(flashloanPremiumTotal);
   }
@@ -524,6 +532,14 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     override
     onlyPoolAdmin
   {
+    require(
+      flashloanPremiumToProtocol < PercentageMath.PERCENTAGE_FACTOR,
+      Errors.LPC_FLASHLOAN_PREMIUM_INVALID
+    );
+    require(
+      flashloanPremiumToProtocol <= _pool.FLASHLOAN_PREMIUM_TOTAL(),
+      Errors.LPC_FLASHLOAN_PREMIUMS_MISMATCH
+    );
     _pool.updateFlashloanPremiums(_pool.FLASHLOAN_PREMIUM_TOTAL(), flashloanPremiumToProtocol);
     emit FlashloanPremiumToProcolUpdated(flashloanPremiumToProtocol);
   }
