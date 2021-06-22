@@ -187,7 +187,7 @@ export enum ProtocolErrors {
   RL_ATOKEN_SUPPLY_NOT_ZERO = '88',
   RL_STABLE_DEBT_NOT_ZERO = '89',
   RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO = '90',
-
+  VL_SAME_BLOCK_BORROW_REPAY = '94',
   // old
 
   INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',

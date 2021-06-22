@@ -272,7 +272,7 @@ library ValidationLogic {
 
     require(
       lastBorrower != onBehalfOf || lastBorrowTimestamp != uint40(block.timestamp),
-      Errors.VL_SAME_BLOCK_BORROW
+      Errors.VL_SAME_BLOCK_BORROW_REPAY
     );
 
     require(
