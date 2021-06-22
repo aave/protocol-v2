@@ -255,6 +255,8 @@ library ValidationLogic {
    * @param variableDebt The borrow balance of the user
    */
   function validateRepay(
+    address lastBorrower,
+    uint40 lastBorrowTimestamp,
     DataTypes.ReserveCache memory reserveCache,
     uint256 amountSent,
     DataTypes.InterestRateMode rateMode,
@@ -267,6 +269,11 @@ library ValidationLogic {
     require(!isPaused, Errors.VL_RESERVE_PAUSED);
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
+
+    require(
+      lastBorrower != onBehalfOf || lastBorrowTimestamp != uint40(block.timestamp),
+      Errors.VL_SAME_BLOCK_BORROW_REPAY
+    );
 
     require(
       (stableDebt > 0 &&
@@ -347,7 +354,6 @@ library ValidationLogic {
     IERC20 variableDebtToken,
     address aTokenAddress
   ) external view {
-
     // to avoid potential abuses using flashloans, the rebalance stable rate must happen through an EOA
     require(!address(msg.sender).isContract(), Errors.LP_CALLER_NOT_EOA);
 
