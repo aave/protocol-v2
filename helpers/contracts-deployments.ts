@@ -53,6 +53,7 @@ import {
   RewardsATokenMockFactory,
   CurveGaugeRewardsAwareATokenFactory,
   CurveTreasuryFactory,
+  CurveGaugeReserveInterestRateStrategyFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -317,6 +318,17 @@ export const deployDefaultReserveInterestRateStrategy = async (
 ) =>
   withSaveAndVerify(
     await new DefaultReserveInterestRateStrategyFactory(await getFirstSigner()).deploy(...args),
+    eContractid.DefaultReserveInterestRateStrategy,
+    args,
+    verify
+  );
+
+export const deployCurveGaugeReserveInterestRateStrategy = async (
+  args: [tEthereumAddress, string, string, string, string, string, string],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new CurveGaugeReserveInterestRateStrategyFactory(await getFirstSigner()).deploy(...args),
     eContractid.DefaultReserveInterestRateStrategy,
     args,
     verify
