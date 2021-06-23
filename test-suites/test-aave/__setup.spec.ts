@@ -27,6 +27,9 @@ import {
   deployUniswapLiquiditySwapAdapter,
   deployUniswapRepayAdapter,
   deployFlashLiquidationAdapter,
+  deployMockParaSwapAugustus,
+  deployMockParaSwapAugustusRegistry,
+  deployParaSwapLiquiditySwapAdapter,
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
 import { eEthereumNetwork } from '../../helpers/types';
@@ -282,6 +285,12 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await deployUniswapLiquiditySwapAdapter(adapterParams);
   await deployUniswapRepayAdapter(adapterParams);
   await deployFlashLiquidationAdapter(adapterParams);
+
+  const augustus = await deployMockParaSwapAugustus();
+
+  const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
+
+  await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
 
   await deployWalletBalancerProvider();
 
