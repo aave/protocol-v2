@@ -216,11 +216,13 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const ctxtAfterWithdrawal = await getContext(ctxtParams);
 
     // Claiming the rewards
-    await waitForTx(await staticAToken.claimRewards(userSigner._address, false));
+    await waitForTx(
+      await staticAToken.connect(userSigner).claimRewards(userSigner._address, false)
+    );
 
     const ctxtAfterClaimNoForce = await getContext(ctxtParams);
 
-    await waitForTx(await staticAToken.claimRewards(userSigner._address, true));
+    await waitForTx(await staticAToken.connect(userSigner).claimRewards(userSigner._address, true));
 
     const ctxtAfterClaimForce = await getContext(ctxtParams);
 
@@ -310,13 +312,17 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const ctxtAfterWithdrawal = await getContext(ctxtParams);
 
     // Claim
-    await waitForTx(await staticAToken.claimRewards(userSigner._address, false));
+    await waitForTx(
+      await staticAToken.connect(userSigner).claimRewards(userSigner._address, false)
+    );
     const ctxtAfterClaim = await getContext(ctxtParams);
 
     await waitForTx(await staticAToken.collectAndUpdateRewards());
     const ctxtAfterUpdate = await getContext(ctxtParams);
 
-    await waitForTx(await staticAToken.claimRewards(userSigner._address, false));
+    await waitForTx(
+      await staticAToken.connect(userSigner).claimRewards(userSigner._address, false)
+    );
     const ctxtAfterClaim2 = await getContext(ctxtParams);
 
     expect(ctxtInitial.userStaticATokenBalance).to.be.eq(0);
@@ -1030,7 +1036,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const ctxtAfterWithdrawal = await getContext(ctxtParams);
 
     // Claim
-    await waitForTx(await staticAToken.claimRewards(user2Signer._address, true));
+    await waitForTx(
+      await staticAToken.connect(user2Signer).claimRewards(user2Signer._address, true)
+    );
     const ctxtAfterClaim = await getContext(ctxtParams);
 
     // Checks

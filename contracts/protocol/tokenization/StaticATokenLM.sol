@@ -489,26 +489,26 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Claim rewards for a user.
-   * @param user The address of the user to claim rewards for
+   * @dev Claim rewards for a user and send them to a receiver.
+   * @param receiver The address of the receiver of rewards
    * @param forceUpdate Flag to retrieve latest rewards from `INCENTIVES_CONTROLLER`
    */
-  function claimRewards(address user, bool forceUpdate) public {
+  function claimRewards(address receiver, bool forceUpdate) external {
     if (forceUpdate) {
       collectAndUpdateRewards();
     }
 
-    uint256 balance = balanceOf(user);
-    uint256 reward = _getClaimableRewards(user, balance, false);
+    uint256 balance = balanceOf(msg.sender);
+    uint256 reward = _getClaimableRewards(msg.sender, balance, false);
     uint256 totBal = REWARD_TOKEN.balanceOf(address(this));
     if (reward > totBal) {
       // Throw away excess unclaimed rewards
       reward = totBal;
     }
     if (reward > 0) {
-      _unclaimedRewards[user] = 0;
-      _updateUserSnapshoRewardsPerToken(user);
-      REWARD_TOKEN.safeTransfer(user, reward);
+      _unclaimedRewards[msg.sender] = 0;
+      _updateUserSnapshoRewardsPerToken(msg.sender);
+      REWARD_TOKEN.safeTransfer(receiver, reward);
     }
   }
 

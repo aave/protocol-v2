@@ -157,7 +157,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       const claimedRewards4 = await stkAave.balanceOf(userSigner._address);
       const stkAaveStatic4 = await stkAave.balanceOf(staticAToken.address);
 
-      await waitForTx(await staticAToken.claimRewards(userSigner._address, false));
+      await waitForTx(
+        await staticAToken.connect(userSigner).claimRewards(userSigner._address, false)
+      );
 
       const pendingRewards5 = await staticAToken.getClaimableRewards(userSigner._address);
       const totPendingRewards5 = await staticAToken.getTotalClaimableRewards();
@@ -313,7 +315,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
       const claimedRewards3 = await stkAave.balanceOf(userSigner._address);
 
-      await waitForTx(await staticAToken.claimRewards(userSigner._address, true));
+      await waitForTx(
+        await staticAToken.connect(userSigner).claimRewards(userSigner._address, true)
+      );
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const claimedRewards4 = await stkAave.balanceOf(userSigner._address);
@@ -390,7 +394,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       // How will my pending look now
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
 
-      await waitForTx(await staticAToken.claimRewards(userSigner._address, true));
+      await waitForTx(
+        await staticAToken.connect(userSigner).claimRewards(userSigner._address, true)
+      );
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const userBalance4 = await stkAave.balanceOf(userSigner._address);
@@ -400,6 +406,54 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       expect(pendingRewards3).to.be.gt(pendingRewards2);
       expect(pendingRewards4).to.be.eq(0);
       expect(userBalance4).to.be.eq(pendingRewards3);
+    });
+
+    it('Deposit, Wait, Withdraw, claim to other user', async () => {
+      const amountToDeposit = utils.parseEther('5');
+      const amountToWithdraw = MAX_UINT_AMOUNT;
+
+      // Just preparation
+      await waitForTx(await weth.deposit({ value: amountToDeposit.mul(2) }));
+      await waitForTx(
+        await weth.approve(staticAToken.address, amountToDeposit.mul(2), defaultTxParams)
+      );
+
+      // Depositing
+      await waitForTx(
+        await staticAToken.deposit(userSigner._address, amountToDeposit, 0, true, defaultTxParams)
+      );
+
+      const pendingRewards1 = await staticAToken.getClaimableRewards(userSigner._address);
+
+      await advanceTimeAndBlock(60 * 60);
+
+      const pendingRewards2 = await staticAToken.getClaimableRewards(userSigner._address);
+
+      // Withdrawing all.
+      await waitForTx(
+        await staticAToken.withdraw(userSigner._address, amountToWithdraw, true, defaultTxParams)
+      );
+
+      // How will my pending look now
+      const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
+
+      const userBalance3 = await stkAave.balanceOf(userSigner._address);
+      await staticAToken.connect(user2Signer).claimRewards(userSigner._address, true);
+      const userBalance4 = await stkAave.balanceOf(userSigner._address);
+
+      await waitForTx(
+        await staticAToken.connect(userSigner).claimRewards(user2Signer._address, true)
+      );
+
+      const pendingRewards5 = await staticAToken.getClaimableRewards(userSigner._address);
+      const user2Balance5 = await stkAave.balanceOf(user2Signer._address);
+
+      expect(pendingRewards1).to.be.eq(0);
+      expect(pendingRewards2).to.be.gt(pendingRewards1);
+      expect(pendingRewards3).to.be.gt(pendingRewards2);
+      expect(userBalance3).to.be.eq(userBalance4);
+      expect(pendingRewards5).to.be.eq(0);
+      expect(user2Balance5).to.be.eq(pendingRewards3);
     });
 
     it('Deposit, Wait, collectAndUpdate, Withdraw, claim?', async () => {
@@ -431,7 +485,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
 
-      await waitForTx(await staticAToken.claimRewards(userSigner._address, true));
+      await waitForTx(
+        await staticAToken.connect(userSigner).claimRewards(userSigner._address, true)
+      );
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const userBalance4 = await stkAave.balanceOf(userSigner._address);
@@ -474,7 +530,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
       const unclaimedRewards3 = await staticAToken.getUnclaimedRewards(userSigner._address);
 
-      await waitForTx(await staticAToken.claimRewards(userSigner._address, false));
+      await waitForTx(
+        await staticAToken.connect(userSigner).claimRewards(userSigner._address, false)
+      );
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const userBalance4 = await stkAave.balanceOf(userSigner._address);
@@ -548,7 +606,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     for (let i = 0; i < 5; i++) {
       // This will claim the first half of the collected tokens (those collected at `collectAndUpdateRewards`)
-      await waitForTx(await staticAToken.claimRewards(await users[i].getAddress(), false));
+      await waitForTx(
+        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), false)
+      );
     }
 
     let staticATokenTotClaimableAfterTransferAndClaim = await staticAToken.getTotalClaimableRewards();
@@ -688,7 +748,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     for (let i = 0; i < 5; i++) {
       // This will not do anything, hence there is no rewards in the current contract.
-      await waitForTx(await staticAToken.claimRewards(await users[i].getAddress(), false));
+      await waitForTx(
+        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), false)
+      );
     }
 
     let staticATokenTotClaimableAfterTransfer = await staticAToken.getTotalClaimableRewards();
@@ -762,7 +824,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(staticATokenTotClaimableFinal.sub(pendingRewardsSumFinal)).to.be.lte(DUST); // How small should we say dust is?
   });
 
-  it('Mass deposit, then mass claim', async () => {
+  it('Mass deposit, then mass claim to own account', async () => {
     const amountToDeposit = utils.parseEther('1.1'); // 18 decimals should be the worst here //1.135359735917531199
     const users = await DRE.ethers.getSigners();
 
@@ -797,8 +859,54 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       pendingRewards.push(pendingReward);
     }
     for (let i = 0; i < users.length; i++) {
-      await waitForTx(await staticAToken.claimRewards(await users[i].getAddress(), false));
+      await waitForTx(
+        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), false)
+      );
       expect(await stkAave.balanceOf(await users[i].getAddress())).to.be.eq(pendingRewards[i]);
+    }
+    expect(await stkAave.balanceOf(staticAToken.address)).to.be.lt(DUST);
+  });
+
+  it('Mass deposit, then mass claim to specified account', async () => {
+    const amountToDeposit = utils.parseEther('1.1'); // 18 decimals should be the worst here //1.135359735917531199
+    const users = await DRE.ethers.getSigners();
+
+    const depositCount = users.length;
+
+    for (let i = 0; i < depositCount; i++) {
+      let currentUser = users[i % users.length];
+      // Preparation
+      await waitForTx(await weth.connect(currentUser).deposit({ value: amountToDeposit }));
+      await waitForTx(
+        await weth
+          .connect(currentUser)
+          .approve(staticAToken.address, amountToDeposit, defaultTxParams)
+      );
+
+      // Deposit
+      await waitForTx(
+        await staticAToken
+          .connect(currentUser)
+          .deposit(await currentUser.getAddress(), amountToDeposit, 0, true, defaultTxParams)
+      );
+    }
+
+    // Advance time to accrue significant rewards.
+    await advanceTimeAndBlock(60 * 60);
+    await waitForTx(await staticAToken.collectAndUpdateRewards());
+
+    let pendingRewards: BigNumber[] = [];
+    let sum: BigNumber = BigNumber.from(0);
+    const receiverAddress = await users[0].getAddress();
+
+    for (let i = 0; i < users.length; i++) {
+      const pendingReward = await staticAToken.getClaimableRewards(await users[i].getAddress());
+      pendingRewards.push(pendingReward);
+    }
+    for (let i = 0; i < users.length; i++) {
+      await waitForTx(await staticAToken.connect(users[i]).claimRewards(receiverAddress, false));
+      sum = sum.add(pendingRewards[i]);
+      expect(await stkAave.balanceOf(await receiverAddress)).to.be.eq(sum);
     }
     expect(await stkAave.balanceOf(staticAToken.address)).to.be.lt(DUST);
   });
@@ -835,7 +943,9 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       );
 
       const pendingReward = await staticAToken.getClaimableRewards(await users[i].getAddress());
-      await waitForTx(await staticAToken.claimRewards(await users[i].getAddress(), true));
+      await waitForTx(
+        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), true)
+      );
       expect(await stkAave.balanceOf(await users[i].getAddress())).to.be.eq(pendingReward);
     }
   });
