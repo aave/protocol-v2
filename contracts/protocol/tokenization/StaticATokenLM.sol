@@ -493,7 +493,7 @@ contract StaticATokenLM is ERC20 {
    * @param receiver The address of the receiver of rewards
    * @param forceUpdate Flag to retrieve latest rewards from `INCENTIVES_CONTROLLER`
    */
-  function claimRewards(address receiver, bool forceUpdate) external {
+  function claimRewards(address receiver, bool forceUpdate) public {
     if (forceUpdate) {
       collectAndUpdateRewards();
     }
@@ -510,6 +510,10 @@ contract StaticATokenLM is ERC20 {
       _updateUserSnapshoRewardsPerToken(msg.sender);
       REWARD_TOKEN.safeTransfer(receiver, reward);
     }
+  }
+
+  function claimRewardsToSelf(bool forceUpdate) external {
+    claimRewards(msg.sender, forceUpdate);
   }
 
   /**

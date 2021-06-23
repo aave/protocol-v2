@@ -157,9 +157,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       const claimedRewards4 = await stkAave.balanceOf(userSigner._address);
       const stkAaveStatic4 = await stkAave.balanceOf(staticAToken.address);
 
-      await waitForTx(
-        await staticAToken.connect(userSigner).claimRewards(userSigner._address, false)
-      );
+      await waitForTx(await staticAToken.connect(userSigner).claimRewardsToSelf(false));
 
       const pendingRewards5 = await staticAToken.getClaimableRewards(userSigner._address);
       const totPendingRewards5 = await staticAToken.getTotalClaimableRewards();
@@ -315,9 +313,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
       const claimedRewards3 = await stkAave.balanceOf(userSigner._address);
 
-      await waitForTx(
-        await staticAToken.connect(userSigner).claimRewards(userSigner._address, true)
-      );
+      await waitForTx(await staticAToken.connect(userSigner).claimRewardsToSelf(true));
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const claimedRewards4 = await stkAave.balanceOf(userSigner._address);
@@ -394,9 +390,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       // How will my pending look now
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
 
-      await waitForTx(
-        await staticAToken.connect(userSigner).claimRewards(userSigner._address, true)
-      );
+      await waitForTx(await staticAToken.connect(userSigner).claimRewardsToSelf(true));
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const userBalance4 = await stkAave.balanceOf(userSigner._address);
@@ -485,9 +479,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
 
-      await waitForTx(
-        await staticAToken.connect(userSigner).claimRewards(userSigner._address, true)
-      );
+      await waitForTx(await staticAToken.connect(userSigner).claimRewardsToSelf(true));
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const userBalance4 = await stkAave.balanceOf(userSigner._address);
@@ -530,9 +522,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       const pendingRewards3 = await staticAToken.getClaimableRewards(userSigner._address);
       const unclaimedRewards3 = await staticAToken.getUnclaimedRewards(userSigner._address);
 
-      await waitForTx(
-        await staticAToken.connect(userSigner).claimRewards(userSigner._address, false)
-      );
+      await waitForTx(await staticAToken.connect(userSigner).claimRewardsToSelf(false));
 
       const pendingRewards4 = await staticAToken.getClaimableRewards(userSigner._address);
       const userBalance4 = await stkAave.balanceOf(userSigner._address);
@@ -606,9 +596,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     for (let i = 0; i < 5; i++) {
       // This will claim the first half of the collected tokens (those collected at `collectAndUpdateRewards`)
-      await waitForTx(
-        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), false)
-      );
+      await waitForTx(await staticAToken.connect(users[i]).claimRewardsToSelf(false));
     }
 
     let staticATokenTotClaimableAfterTransferAndClaim = await staticAToken.getTotalClaimableRewards();
@@ -748,9 +736,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     for (let i = 0; i < 5; i++) {
       // This will not do anything, hence there is no rewards in the current contract.
-      await waitForTx(
-        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), false)
-      );
+      await waitForTx(await staticAToken.connect(users[i]).claimRewardsToSelf(false));
     }
 
     let staticATokenTotClaimableAfterTransfer = await staticAToken.getTotalClaimableRewards();
@@ -859,9 +845,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       pendingRewards.push(pendingReward);
     }
     for (let i = 0; i < users.length; i++) {
-      await waitForTx(
-        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), false)
-      );
+      await waitForTx(await staticAToken.connect(users[i]).claimRewardsToSelf(false));
       expect(await stkAave.balanceOf(await users[i].getAddress())).to.be.eq(pendingRewards[i]);
     }
     expect(await stkAave.balanceOf(staticAToken.address)).to.be.lt(DUST);
@@ -943,9 +927,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       );
 
       const pendingReward = await staticAToken.getClaimableRewards(await users[i].getAddress());
-      await waitForTx(
-        await staticAToken.connect(users[i]).claimRewards(await users[i].getAddress(), true)
-      );
+      await waitForTx(await staticAToken.connect(users[i]).claimRewardsToSelf(true));
       expect(await stkAave.balanceOf(await users[i].getAddress())).to.be.eq(pendingReward);
     }
   });
@@ -976,7 +958,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     await waitForTx(await staticAToken.connect(user).withdraw(user.address, MAX_UINT_AMOUNT, true));
     await staticAToken.collectAndUpdateRewards();
-    await staticAToken.connect(user).claimRewards(user.address, false);
+    await staticAToken.connect(user).claimRewardsToSelf(false);
 
     expect(await staticAToken.getLifetimeRewardsClaimed()).to.be.gt(0);
     expect(await staticAToken.getClaimableRewards(user.address)).to.be.eq(0);
@@ -1011,7 +993,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     await staticAToken.connect(user).withdraw(user.address, MAX_UINT_AMOUNT, true);
     await staticAToken.collectAndUpdateRewards();
-    await staticAToken.connect(user).claimRewards(user.address, false);
+    await staticAToken.connect(user).claimRewardsToSelf(false);
 
     await DRE.network.provider.send('evm_mine', []);
     await DRE.network.provider.send('evm_setAutomine', [true]);
