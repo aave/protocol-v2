@@ -10,7 +10,12 @@ import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
  * @author Aave
  **/
 contract PermissionManager is IPermissionManager, Ownable {
-  mapping(address => uint256) _permissions;
+  struct UserData {
+    uint256 permissions;
+    address permissionAdmin;
+  }
+
+  mapping(address => UserData) _users;
   mapping(address => uint256) _permissionsAdmins;
 
   uint256 public constant MAX_NUM_OF_ROLES = 256;
@@ -21,27 +26,24 @@ contract PermissionManager is IPermissionManager, Ownable {
   }
 
   ///@inheritdoc IPermissionManager
+  function addPermissionAdmins(address[] calldata admins) external override onlyOwner {
+    for (uint256 i = 0; i < admins.length; i++) {
+      _permissionsAdmins[admins[i]] = 1;
 
-  function addPermissionAdmins(address[] calldata users) external override onlyOwner {
-    for (uint256 i = 0; i < users.length; i++) {
-      _permissionsAdmins[users[i]] = 1;
-
-      emit PermissionsAdminSet(users[i], true);
+      emit PermissionsAdminSet(admins[i], true);
     }
   }
 
   ///@inheritdoc IPermissionManager
+  function removePermissionAdmins(address[] calldata admins) external override onlyOwner {
+    for (uint256 i = 0; i < admins.length; i++) {
+      _permissionsAdmins[admins[i]] = 0;
 
-  function removePermissionAdmins(address[] calldata users) external override onlyOwner {
-    for (uint256 i = 0; i < users.length; i++) {
-      _permissionsAdmins[users[i]] = 0;
-
-      emit PermissionsAdminSet(users[i], false);
+      emit PermissionsAdminSet(admins[i], false);
     }
   }
 
   ///@inheritdoc IPermissionManager
-
   function addPermissions(uint256[] calldata roles, address[] calldata users)
     external
     override
@@ -51,18 +53,30 @@ contract PermissionManager is IPermissionManager, Ownable {
 
     for (uint256 i = 0; i < users.length; i++) {
       uint256 role = roles[i];
+      address user = users[i];
 
       require(role < MAX_NUM_OF_ROLES, 'INVALID_ROLE');
 
-      uint256 permissions = _permissions[users[i]];
-      _permissions[users[i]] = permissions | (1 << role);
+      uint256 permissions = _users[user].permissions;
+      address permissionAdmin = _users[user].permissionAdmin;
 
-      emit RoleSet(users[i], roles[i], true);
+      require(
+        (permissions != 0 && permissionAdmin == msg.sender) ||
+          _users[user].permissionAdmin == address(0),
+        'INVALID_PERMISSIONADMIN'
+      );
+
+      if (permissions == 0) {
+        _users[user].permissionAdmin = msg.sender;
+      }
+
+      _users[user].permissions = permissions | (1 << role);
+
+      emit RoleSet(user, role, msg.sender, true);
     }
   }
 
   ///@inheritdoc IPermissionManager
-
   function removePermissions(uint256[] calldata roles, address[] calldata users)
     external
     override
@@ -72,18 +86,32 @@ contract PermissionManager is IPermissionManager, Ownable {
 
     for (uint256 i = 0; i < users.length; i++) {
       uint256 role = roles[i];
+      address user = users[i];
 
       require(role < MAX_NUM_OF_ROLES, 'INVALID_ROLE');
 
-      uint256 permissions = _permissions[users[i]];
-      _permissions[users[i]] = permissions & ~(1 << role);
-      emit RoleSet(users[i], roles[i], false);
+      uint256 permissions = _users[user].permissions;
+      address permissionAdmin = _users[user].permissionAdmin;
+
+      require(
+        (permissions != 0 && permissionAdmin == msg.sender) ||
+          _users[user].permissionAdmin == address(0),
+        'INVALID_PERMISSIONADMIN'
+      );
+
+      _users[user].permissions = permissions & ~(1 << role);
+
+      if (_users[user].permissions == 0) {
+        //all permission have been removed
+        _users[user].permissionAdmin = address(0);
+      }
+
+      emit RoleSet(user, role, msg.sender, false);
     }
   }
 
   ///@inheritdoc IPermissionManager
-
-  function getAccountPermissions(address account)
+  function getUserPermissions(address user)
     external
     view
     override
@@ -91,10 +119,10 @@ contract PermissionManager is IPermissionManager, Ownable {
   {
     uint256[] memory roles = new uint256[](256);
     uint256 rolesCount = 0;
-    uint256 accountPermissions = _permissions[account];
+    uint256 userPermissions = _users[user].permissions;
 
     for (uint256 i = 0; i < 256; i++) {
-      if ((accountPermissions >> i) & 1 > 0) {
+      if ((userPermissions >> i) & 1 > 0) {
         roles[rolesCount] = i;
         rolesCount++;
       }
@@ -104,26 +132,34 @@ contract PermissionManager is IPermissionManager, Ownable {
   }
 
   ///@inheritdoc IPermissionManager
-  function isInRole(address account, uint256 role) external view override returns (bool) {
-    return (_permissions[account] >> role) & 1 > 0;
+  function isInRole(address user, uint256 role) external view override returns (bool) {
+    return (_users[user].permissions >> role) & 1 > 0;
   }
 
   ///@inheritdoc IPermissionManager
-  function isInAllRoles(address account, uint256[] calldata roles) external view override returns (bool) {
-  
-    for(uint256 i=0; i<roles.length; i++){
-      if((_permissions[account] >> roles[i]) & 1 == 0){
+  function isInAllRoles(address user, uint256[] calldata roles)
+    external
+    view
+    override
+    returns (bool)
+  {
+    for (uint256 i = 0; i < roles.length; i++) {
+      if ((_users[user].permissions >> roles[i]) & 1 == 0) {
         return false;
-      }    
+      }
     }
     return true;
   }
 
   ///@inheritdoc IPermissionManager
-  function isInAnyRole(address account, uint256[] calldata roles) external view override returns (bool) {
-  
-    for(uint256 i=0; i<roles.length; i++){
-      if((_permissions[account] >> roles[i]) & 1 > 0){
+  function isInAnyRole(address user, uint256[] calldata roles)
+    external
+    view
+    override
+    returns (bool)
+  {
+    for (uint256 i = 0; i < roles.length; i++) {
+      if ((_users[user].permissions >> roles[i]) & 1 > 0) {
         return true;
       }
     }
@@ -131,7 +167,12 @@ contract PermissionManager is IPermissionManager, Ownable {
   }
 
   ///@inheritdoc IPermissionManager
-  function isPermissionsAdmin(address account) public view override returns (bool) {
-    return _permissionsAdmins[account] > 0;
+  function isPermissionsAdmin(address admin) public view override returns (bool) {
+    return _permissionsAdmins[admin] > 0;
+  }
+
+  ///@inheritdoc IPermissionManager
+  function getUserPermissionAdmin(address user) external view override returns (address) {
+    return _users[user].permissionAdmin;
   }
 }
