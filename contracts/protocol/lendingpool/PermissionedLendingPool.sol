@@ -20,8 +20,13 @@ contract PermissionedLendingPool is LendingPool {
     require(
       _isInRole(user, DataTypes.Roles.DEPOSITOR) &&
         ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.DEPOSITOR)),
-      Errors.DEPOSITOR_UNAUTHORIZED
+      Errors.PLP_DEPOSITOR_UNAUTHORIZED
     );
+    _;
+  }
+
+  modifier onlyValidPermissionAdmin(address user) {
+    require(_permissionAdminValid(user), Errors.PLP_INVALID_PERMISSION_ADMIN);
     _;
   }
 
@@ -29,20 +34,20 @@ contract PermissionedLendingPool is LendingPool {
     require(
       _isInRole(user, DataTypes.Roles.BORROWER) &&
         ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.BORROWER)),
-      Errors.BORROWER_UNAUTHORIZED
+      Errors.PLP_BORROWER_UNAUTHORIZED
     );
     _;
   }
 
   modifier onlyLiquidators {
-    require(_isInRole(msg.sender, DataTypes.Roles.LIQUIDATOR), Errors.LIQUIDATOR_UNAUTHORIZED);
+    require(_isInRole(msg.sender, DataTypes.Roles.LIQUIDATOR), Errors.PLP_LIQUIDATOR_UNAUTHORIZED);
     _;
   }
 
   modifier onlyStableRateManagers {
     require(
       _isInRole(msg.sender, DataTypes.Roles.STABLE_RATE_MANAGER),
-      Errors.CALLER_NOT_STABLE_RATE_MANAGER
+      Errors.PLP_CALLER_NOT_STABLE_RATE_MANAGER
     );
     _;
   }
@@ -63,7 +68,7 @@ contract PermissionedLendingPool is LendingPool {
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
-  ) public virtual override onlyDepositors(onBehalfOf) {
+  ) public virtual override onlyDepositors(onBehalfOf) onlyValidPermissionAdmin(onBehalfOf) {
     super.deposit(asset, amount, onBehalfOf, referralCode);
   }
 
@@ -107,7 +112,7 @@ contract PermissionedLendingPool is LendingPool {
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
-  ) public virtual override onlyBorrowers(onBehalfOf) {
+  ) public virtual override onlyBorrowers(onBehalfOf) onlyValidPermissionAdmin(onBehalfOf) {
     super.borrow(asset, amount, interestRateMode, referralCode, onBehalfOf);
   }
 
@@ -142,6 +147,7 @@ contract PermissionedLendingPool is LendingPool {
     virtual
     override
     onlyBorrowers(msg.sender)
+    onlyValidPermissionAdmin(msg.sender)
   {
     super.swapBorrowRateMode(asset, rateMode);
   }
@@ -174,6 +180,7 @@ contract PermissionedLendingPool is LendingPool {
     virtual
     override
     onlyDepositors(msg.sender)
+    onlyValidPermissionAdmin(msg.sender)
   {
     super.setUserUseReserveAsCollateral(asset, useAsCollateral);
   }
@@ -195,7 +202,7 @@ contract PermissionedLendingPool is LendingPool {
     address user,
     uint256 debtToCover,
     bool receiveAToken
-  ) public virtual override onlyLiquidators {
+  ) public virtual override onlyLiquidators onlyValidPermissionAdmin(msg.sender) {
     super.liquidationCall(collateralAsset, debtAsset, user, debtToCover, receiveAToken);
   }
 
@@ -228,9 +235,11 @@ contract PermissionedLendingPool is LendingPool {
     //validating modes
     for (uint256 i = 0; i < modes.length; i++) {
       if (modes[i] == uint256(DataTypes.InterestRateMode.NONE)) {
-        require(_isInRole(msg.sender, DataTypes.Roles.BORROWER), Errors.BORROWER_UNAUTHORIZED);
+        require(_isInRole(msg.sender, DataTypes.Roles.BORROWER), Errors.PLP_BORROWER_UNAUTHORIZED);
+        require(_permissionAdminValid(msg.sender), Errors.PLP_INVALID_PERMISSION_ADMIN);
       } else {
-        require(_isInRole(onBehalfOf, DataTypes.Roles.BORROWER), Errors.BORROWER_UNAUTHORIZED);
+        require(_isInRole(onBehalfOf, DataTypes.Roles.BORROWER), Errors.PLP_BORROWER_UNAUTHORIZED);
+        require(_permissionAdminValid(onBehalfOf), Errors.PLP_INVALID_PERMISSION_ADMIN);
       }
     }
     super.flashLoan(receiverAddress, assets, amounts, modes, onBehalfOf, params, referralCode);
@@ -266,5 +275,11 @@ contract PermissionedLendingPool is LendingPool {
         user,
         uint256(role)
       );
+  }
+
+  function _permissionAdminValid(address user) internal view returns (bool) {
+    return
+      IPermissionManager(_addressesProvider.getAddress(PERMISSION_MANAGER))
+        .isUserPermissionAdminValid(user);
   }
 }

@@ -175,4 +175,9 @@ contract PermissionManager is IPermissionManager, Ownable {
   function getUserPermissionAdmin(address user) external view override returns (address) {
     return _users[user].permissionAdmin;
   }
+
+  ///@inheritdoc IPermissionManager
+  function isUserPermissionAdminValid(address user) external view override returns (bool) {
+    return _permissionsAdmins[_users[user].permissionAdmin] > 0;
+  }
 }

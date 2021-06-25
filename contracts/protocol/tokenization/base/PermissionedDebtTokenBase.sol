@@ -29,7 +29,7 @@ abstract contract PermissionedDebtTokenBase is DebtTokenBase
 
     require(
       permissionManager.isInRole(_msgSender(), uint256(DataTypes.Roles.BORROWER)),
-      Errors.BORROWER_UNAUTHORIZED
+      Errors.PLP_BORROWER_UNAUTHORIZED
     );
     _;
   }

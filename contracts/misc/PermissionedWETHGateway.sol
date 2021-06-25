@@ -37,7 +37,10 @@ contract PermissionedWETHGateway is WETHGateway {
   ) public payable override {
     ILendingPool pool = ILendingPool(lendingPool);
 
-    require(_isInRole(msg.sender, DataTypes.Roles.DEPOSITOR, pool), Errors.USER_UNAUTHORIZED);
+    require(
+      _isInRoleAndValidPermissionAdmin(msg.sender, DataTypes.Roles.DEPOSITOR, pool),
+      Errors.PLP_USER_UNAUTHORIZED
+    );
 
     super.depositETH(lendingPool, onBehalfOf, referralCode);
   }
@@ -57,21 +60,31 @@ contract PermissionedWETHGateway is WETHGateway {
   ) public payable override {
     ILendingPool pool = ILendingPool(lendingPool);
 
-    require(_isInRole(msg.sender,  DataTypes.Roles.BORROWER, pool), Errors.USER_UNAUTHORIZED);
+    require(_isInRole(msg.sender, DataTypes.Roles.BORROWER, pool), Errors.PLP_USER_UNAUTHORIZED);
     super.repayETH(lendingPool, amount, rateMode, onBehalfOf);
   }
 
-
-  function _isInRole(address user, DataTypes.Roles role, ILendingPool pool)
-    internal
-    view
-    returns (bool)
-  {
+  function _getPermissionManager(ILendingPool pool) internal view returns (IPermissionManager) {
     ILendingPoolAddressesProvider provider =
       ILendingPoolAddressesProvider(pool.getAddressesProvider());
-    IPermissionManager manager =
-      IPermissionManager(provider.getAddress(keccak256('PERMISSION_MANAGER')));
+    return IPermissionManager(provider.getAddress(keccak256('PERMISSION_MANAGER')));
+  }
 
+  function _isInRole(
+    address user,
+    DataTypes.Roles role,
+    ILendingPool pool
+  ) internal view returns (bool) {
+    IPermissionManager manager = _getPermissionManager(pool);
     return manager.isInRole(user, uint256(role));
+  }
+
+  function _isInRoleAndValidPermissionAdmin(
+    address user,
+    DataTypes.Roles role,
+    ILendingPool pool
+  ) internal view returns (bool) {
+    IPermissionManager manager = _getPermissionManager(pool);
+    return manager.isInRole(user, uint256(role)) && manager.isUserPermissionAdminValid(user);
   }
 }

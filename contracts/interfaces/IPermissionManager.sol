@@ -72,4 +72,11 @@ interface IPermissionManager {
    * @return the address of the permissionAdmin of the user
    **/
   function getUserPermissionAdmin(address user) external view returns (address);
+
+  /**
+   * @dev Used to query if the permission admin of a certain user is valid,
+   * @param user The address of the user
+   * @return true if the permission admin of a certain user is valid, false otherwise
+   **/
+  function isUserPermissionAdminValid(address user) external view returns (bool);
 }
