@@ -12,7 +12,7 @@ import {
   getWethAddress,
   getTreasuryAddress,
 } from '../../helpers/configuration';
-import { getWETHGateway } from '../../helpers/contracts-getters';
+import { getPermissionedWETHGateway, getWETHGateway } from '../../helpers/contracts-getters';
 import { eNetwork, ICommonConfiguration } from '../../helpers/types';
 import { notFalsyOrZeroAddress, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
@@ -106,7 +106,11 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       let gateWay = getParamPerNetwork(WethGateway, network);
       if (!notFalsyOrZeroAddress(gateWay)) {
-        gateWay = (await getWETHGateway()).address;
+        if (pool === ConfigNames.AavePro) {
+          gateWay = (await getPermissionedWETHGateway()).address;
+        } else {
+          gateWay = (await getWETHGateway()).address;
+        }
       }
       console.log('GATEWAY', gateWay);
       await authorizeWETHGateway(gateWay, lendingPoolAddress);
