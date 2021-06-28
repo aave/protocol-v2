@@ -48,11 +48,12 @@ library GenericLogic {
     uint256 normalizedIncome;
     uint256 normalizedDebt;
     uint256 exposureCap;
+    uint256 aTokenSupply;
     bool healthFactorBelowThreshold;
     address currentReserveAddress;
     bool usageAsCollateralEnabled;
     bool userUsesReserveAsCollateral;
-    bool exposureCapped;
+    bool exposureCapCrossed;
   }
 
   /**
@@ -109,20 +110,28 @@ library GenericLogic {
       vars.assetPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
-        vars.userBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(user);
-        if (vars.userBalance > 0) {
-          vars.normalizedIncome = currentReserve.getNormalizedIncome();
+        vars.normalizedIncome = currentReserve.getNormalizedIncome();
+
+        if (vars.exposureCap != 0) {
+          (vars.userBalance, vars.aTokenSupply) = IScaledBalanceToken(currentReserve.aTokenAddress)
+            .getScaledUserBalanceAndSupply(user);
+
           vars.userBalance = vars.userBalance.rayMul(vars.normalizedIncome);
+          vars.aTokenSupply = vars.aTokenSupply.rayMul(vars.normalizedIncome);
+        } else {
+          vars.userBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(
+            user
+          );
+          vars.aTokenSupply = 0;
         }
 
         vars.userBalanceETH = vars.assetPrice.mul(vars.userBalance).div(vars.assetUnit);
-
         vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
-        vars.exposureCapped =
+        vars.exposureCapCrossed =
           vars.exposureCap != 0 &&
-          IERC20(currentReserve.aTokenAddress).totalSupply().div(10**vars.decimals) >
-          vars.exposureCap;
-        vars.avgLtv = vars.avgLtv.add(vars.exposureCapped ? 0 : vars.userBalanceETH.mul(vars.ltv));
+          vars.aTokenSupply.div(10**vars.decimals) > vars.exposureCap;
+        
+        vars.avgLtv = vars.avgLtv.add(vars.exposureCapCrossed ? 0 : vars.userBalanceETH.mul(vars.ltv));
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
           vars.userBalanceETH.mul(vars.liquidationThreshold)
         );
@@ -206,7 +215,7 @@ library GenericLogic {
   }
 
   /**
-   * @dev proxy call for calculateUserAccountData as external function. 
+   * @dev proxy call for calculateUserAccountData as external function.
    * Used in LendingPool to work around contract size limit issues
    * @param user The address of the user
    * @param reservesData Data of all the reserves
