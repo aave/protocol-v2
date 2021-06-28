@@ -357,6 +357,30 @@ library ReserveConfiguration {
   }
 
   /**
+   * @dev Sets the borrow cap of the reserve
+   * @param self The reserve configuration
+   * @param borrowCap The borrow cap
+   **/
+  function setLiquidationProtocolFee(DataTypes.ReserveConfigurationMap memory self, uint256 borrowCap)
+    internal
+    pure
+  {
+  }
+
+  /**
+   * @dev Gets the liquidation protocol fee
+   * @param self The reserve configuration
+   * @return The liquidation protocol fee
+   **/
+  function getLiquidationProtocolFee(DataTypes.ReserveConfigurationMap storage self)
+    internal
+    view
+    returns (uint256)
+  {
+    return 0;
+  }
+
+  /**
    * @dev Sets the supply cap of the reserve
    * @param self The reserve configuration
    * @param supplyCap The supply cap

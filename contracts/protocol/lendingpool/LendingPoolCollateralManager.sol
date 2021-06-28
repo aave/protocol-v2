@@ -40,10 +40,10 @@ contract LendingPoolCollateralManager is
   using PercentageMath for uint256;
   using ReserveLogic for DataTypes.ReserveCache;
 
-  uint256 public constant STD_LIQUIDATION_CLOSE_FACTOR = 5000;
+  uint256 public constant DEFAULT_LIQUIDATION_CLOSE_FACTOR = 5000;
   uint256 public constant MAX_LIQUIDATION_CLOSE_FACTOR = 10000;
 
-  uint256 public constant CLOSE_FACTOR_HF_THRESHOLD = 0.95 * 1e18;
+  uint256 public constant CLOSE_FACTOR_HF_THRESHOLD = 0.98 * 1e18;
 
   struct LiquidationCallLocalVars {
     uint256 userCollateralBalance;
@@ -59,6 +59,7 @@ contract LendingPoolCollateralManager is
     uint256 healthFactor;
     uint256 liquidatorPreviousATokenBalance;
     uint256 closeFactor;
+    uint256 protocolFee;
     IAToken collateralAtoken;
     IPriceOracleGetter oracle;
     bool isCollateralEnabled;
@@ -130,7 +131,7 @@ contract LendingPoolCollateralManager is
     vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
     vars.closeFactor = vars.healthFactor > CLOSE_FACTOR_HF_THRESHOLD
-      ? STD_LIQUIDATION_CLOSE_FACTOR
+      ? DEFAULT_LIQUIDATION_CLOSE_FACTOR
       : MAX_LIQUIDATION_CLOSE_FACTOR;
 
     vars.maxLiquidatableDebt = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
@@ -143,7 +144,8 @@ contract LendingPoolCollateralManager is
 
     (
       vars.maxCollateralToLiquidate,
-      vars.debtAmountNeeded
+      vars.debtAmountNeeded,
+      vars.protocolFee
     ) = _calculateAvailableCollateralToLiquidate(
       collateralReserve,
       debtReserveCache,
@@ -271,6 +273,9 @@ contract LendingPoolCollateralManager is
     uint256 maxAmountCollateralToLiquidate;
     uint256 debtAssetDecimals;
     uint256 collateralDecimals;
+    uint256 collateralProtocolFee;
+    uint256 collateralAmount;
+    uint256 debtAmountNeeded;
   }
 
   /**
@@ -297,9 +302,7 @@ contract LendingPoolCollateralManager is
     uint256 userCollateralBalance,
     IPriceOracleGetter oracle
   ) internal view returns (uint256, uint256) {
-    uint256 collateralAmount = 0;
-    uint256 debtAmountNeeded = 0;
-
+ 
     AvailableCollateralToLiquidateLocalVars memory vars;
 
     vars.collateralPrice = oracle.getAssetPrice(collateralAsset);
@@ -308,7 +311,9 @@ contract LendingPoolCollateralManager is
     (, , vars.liquidationBonus, vars.collateralDecimals, ) = collateralReserve
       .configuration
       .getParams();
+    
     vars.debtAssetDecimals = debtReserveCache.reserveConfiguration.getDecimalsMemory();
+
 
     // This is the maximum possible amount of the selected collateral that can be liquidated, given the
     // max amount of liquidatable debt
@@ -320,16 +325,16 @@ contract LendingPoolCollateralManager is
       .div(vars.collateralPrice.mul(10**vars.debtAssetDecimals));
 
     if (vars.maxAmountCollateralToLiquidate > userCollateralBalance) {
-      collateralAmount = userCollateralBalance;
-      debtAmountNeeded = vars
+      vars.collateralAmount = userCollateralBalance;
+      vars.debtAmountNeeded = vars
         .collateralPrice
         .mul(collateralAmount)
         .mul(10**vars.debtAssetDecimals)
         .div(vars.debtAssetPrice.mul(10**vars.collateralDecimals))
         .percentDiv(vars.liquidationBonus);
     } else {
-      collateralAmount = vars.maxAmountCollateralToLiquidate;
-      debtAmountNeeded = debtToCover;
+      vars.collateralAmount = vars.maxAmountCollateralToLiquidate;
+      vars.debtAmountNeeded = debtToCover;
     }
     return (collateralAmount, debtAmountNeeded);
   }
