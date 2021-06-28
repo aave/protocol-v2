@@ -194,7 +194,7 @@ contract LendingPoolCollateralManager is
           debtReserveCache.nextVariableBorrowIndex
         );
       }
-    IStableDebtToken(debtReserveCache.stableDebtTokenAddress).burn(
+      IStableDebtToken(debtReserveCache.stableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
