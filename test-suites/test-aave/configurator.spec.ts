@@ -26,6 +26,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN,
     LPC_CALLER_NOT_RISK_OR_POOL_ADMIN,
     VL_RESERVE_PAUSED,
+    LPC_FLASHLOAN_PREMIUMS_MISMATCH,
+    LPC_FLASHLOAN_PREMIUM_INVALID,
   } = ProtocolErrors;
 
   it('Reverts trying to set an invalid reserve factor', async () => {
@@ -1451,6 +1453,63 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
     await expect(
       configurator.connect(emergencyAdmin.signer).unauthorizeFlashBorrower(users[3].address),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+  });
+  it('Update flash loan premiums: 10 toProtocol, 40 total', async () => {
+    const { dai, pool, configurator, users } = testEnv;
+    const newPremiumTotal = 40;
+    const newPremiumToProtocol = 10;
+
+    await configurator.updateFlashloanPremiumTotal(newPremiumTotal);
+    await configurator.updateFlashloanPremiumToProtocol(newPremiumToProtocol);
+
+    expect(await pool.FLASHLOAN_PREMIUM_TOTAL()).to.be.eq(newPremiumTotal);
+    expect(await pool.FLASHLOAN_PREMIUM_TO_PROTOCOL()).to.be.eq(newPremiumToProtocol);
+  });
+  it('Fails to update flahloan premiums with toProtocol > total', async () => {
+    const { dai, pool, configurator, users } = testEnv;
+    const newPremiumTotal = 9;
+    const newPremiumToProtocol = 41;
+
+    await expect(configurator.updateFlashloanPremiumTotal(newPremiumTotal)).to.be.revertedWith(
+      LPC_FLASHLOAN_PREMIUMS_MISMATCH
+    );
+    await expect(
+      configurator.updateFlashloanPremiumToProtocol(newPremiumToProtocol)
+    ).to.be.revertedWith(LPC_FLASHLOAN_PREMIUMS_MISMATCH);
+  });
+  it('Fails to update flahloan premiums > 100%', async () => {
+    const { dai, pool, configurator, users } = testEnv;
+    const newPremiumTotal = 10100;
+    const newPremiumToProtocol = 10100;
+
+    await expect(configurator.updateFlashloanPremiumTotal(newPremiumTotal)).to.be.revertedWith(
+      LPC_FLASHLOAN_PREMIUM_INVALID
+    );
+    await expect(
+      configurator.updateFlashloanPremiumToProtocol(newPremiumToProtocol)
+    ).to.be.revertedWith(LPC_FLASHLOAN_PREMIUM_INVALID);
+  });
+  it('Checks only pool admin can update flashloan premiums', async () => {
+    const { dai, pool, configurator, users, riskAdmin, emergencyAdmin } = testEnv;
+    await expect(
+      configurator.connect(riskAdmin.signer).updateFlashloanPremiumToProtocol(50),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+
+    await expect(
+      configurator.connect(riskAdmin.signer).updateFlashloanPremiumTotal(50),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+
+    await expect(
+      configurator.connect(emergencyAdmin.signer).updateFlashloanPremiumToProtocol(50),
+      CALLER_NOT_POOL_ADMIN
+    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+
+    await expect(
+      configurator.connect(emergencyAdmin.signer).updateFlashloanPremiumTotal(50),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });

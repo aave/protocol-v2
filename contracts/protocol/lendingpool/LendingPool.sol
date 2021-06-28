@@ -240,7 +240,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   ///@inheritdoc ILendingPool
   function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
-    
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
 
@@ -795,6 +794,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.releaseUnderlying ? vars.amount : 0
     );
 
+    _lastBorrower = vars.user;
+    _lastBorrowTimestamp = uint40(block.timestamp);
+
     if (vars.releaseUnderlying) {
       IAToken(reserveCache.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
     }
@@ -911,6 +913,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
 
     ValidationLogic.validateRepay(
+      _lastBorrower,
+      _lastBorrowTimestamp,
       reserveCache,
       amount,
       interestRateMode,
