@@ -627,12 +627,9 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
         const liquidator = users[3];
         const borrower = users[1];
-        const liquidatorWethBalanceBefore = await weth.balanceOf(liquidator.address);
-
+     
         const collateralPrice = await oracle.getAssetPrice(weth.address);
         const principalPrice = await oracle.getAssetPrice(dai.address);
-        const daiReserveDataBefore = await helpersContract.getReserveData(dai.address);
-        const ethReserveDataBefore = await helpersContract.getReserveData(weth.address);
         const userReserveDataBefore = await getUserData(
           pool,
           helpersContract,
@@ -646,7 +643,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
         const principalDecimals = (
           await helpersContract.getReserveConfigurationData(dai.address)
         ).decimals.toString();
-        const amountToLiquidate = userReserveDataBefore.currentStableDebt.div(2).toFixed(0);
+        const amountToLiquidate = userReserveDataBefore.currentStableDebt.toFixed(0);
         const extraAmount = new BigNumber(amountToLiquidate).times('1.15').toFixed(0);
 
         const expectedCollateralLiquidated = new BigNumber(principalPrice.toString())
@@ -659,10 +656,6 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
           )
           .div(100)
           .decimalPlaces(0, BigNumber.ROUND_DOWN);
-
-        const flashLoanDebt = new BigNumber(amountToLiquidate.toString())
-          .multipliedBy(1.0009)
-          .toFixed(0);
 
         // Set how much ETH will be sold and swapped for DAI at Uniswap mock
         await (

@@ -18,9 +18,10 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
+import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
-
+import "hardhat/console.sol";
 /**
  * @title LendingPoolCollateralManager contract
  * @author Aave
@@ -39,7 +40,10 @@ contract LendingPoolCollateralManager is
   using PercentageMath for uint256;
   using ReserveLogic for DataTypes.ReserveCache;
 
-  uint256 internal constant LIQUIDATION_CLOSE_FACTOR_PERCENT = 5000;
+  uint256 public constant STD_LIQUIDATION_CLOSE_FACTOR = 5000;
+  uint256 public constant MAX_LIQUIDATION_CLOSE_FACTOR = 10000;
+
+  uint256 public constant CLOSE_FACTOR_HF_THRESHOLD = 0.95 * 1e18;
 
   struct LiquidationCallLocalVars {
     uint256 userCollateralBalance;
@@ -54,6 +58,7 @@ contract LendingPoolCollateralManager is
     uint256 debtAmountNeeded;
     uint256 healthFactor;
     uint256 liquidatorPreviousATokenBalance;
+    uint256 closeFactor;
     IAToken collateralAtoken;
     IPriceOracleGetter oracle;
     bool isCollateralEnabled;
@@ -96,20 +101,24 @@ contract LendingPoolCollateralManager is
 
     LiquidationCallLocalVars memory vars;
 
-
     (vars.userStableDebt, vars.userVariableDebt) = Helpers.getUserCurrentDebt(user, debtReserve);
-    vars.oracle =  IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    vars.oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
 
-    (vars.errorCode, vars.errorMsg) = ValidationLogic.validateLiquidationCall(
-      collateralReserve,
-      debtReserveCache,
-      vars.userStableDebt.add(vars.userVariableDebt),
+    (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       user,
       _reserves,
       userConfig,
       _reservesList,
       _reservesCount,
       address(vars.oracle)
+    );
+
+    (vars.errorCode, vars.errorMsg) = ValidationLogic.validateLiquidationCall(
+      collateralReserve,
+      debtReserveCache,
+      vars.userStableDebt.add(vars.userVariableDebt),
+      userConfig,
+      vars.healthFactor
     );
 
     if (Errors.CollateralManagerErrors(vars.errorCode) != Errors.CollateralManagerErrors.NO_ERROR) {
@@ -120,13 +129,23 @@ contract LendingPoolCollateralManager is
 
     vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
+    vars.closeFactor = vars.healthFactor > CLOSE_FACTOR_HF_THRESHOLD
+      ? STD_LIQUIDATION_CLOSE_FACTOR
+      : MAX_LIQUIDATION_CLOSE_FACTOR;
+
     vars.maxLiquidatableDebt = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
-      LIQUIDATION_CLOSE_FACTOR_PERCENT
+      vars.closeFactor
     );
+
+    console.log("close factor is ", vars.closeFactor);
+    
 
     vars.actualDebtToLiquidate = debtToCover > vars.maxLiquidatableDebt
       ? vars.maxLiquidatableDebt
       : debtToCover;
+
+    console.log("actual debt to liquidate: ",  vars.actualDebtToLiquidate);
+    console.log("Debt to cover", debtToCover);
 
     (
       vars.maxCollateralToLiquidate,
@@ -163,25 +182,30 @@ contract LendingPoolCollateralManager is
     }
 
     debtReserve.updateState(debtReserveCache);
+    console.log("Updated debt reserve state");
 
     if (vars.userVariableDebt >= vars.actualDebtToLiquidate) {
+      console.log("Burning variable debt");
       IVariableDebtToken(debtReserveCache.variableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate,
         debtReserveCache.nextVariableBorrowIndex
       );
+      console.log("variable debt burned");
       debtReserveCache.refreshDebt(0, 0, 0, vars.actualDebtToLiquidate);
       debtReserve.updateInterestRates(debtReserveCache, debtAsset, vars.actualDebtToLiquidate, 0);
     } else {
       // If the user doesn't have variable debt, no need to try to burn variable debt tokens
       if (vars.userVariableDebt > 0) {
+        console.log("Burning variable debt");
         IVariableDebtToken(debtReserveCache.variableDebtTokenAddress).burn(
           user,
           vars.userVariableDebt,
           debtReserveCache.nextVariableBorrowIndex
         );
       }
-      IStableDebtToken(debtReserveCache.stableDebtTokenAddress).burn(
+     console.log("variable debt burned, burning stable");
+    IStableDebtToken(debtReserveCache.stableDebtTokenAddress).burn(
         user,
         vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
       );
@@ -191,6 +215,7 @@ contract LendingPoolCollateralManager is
         0,
         vars.userVariableDebt
       );
+      console.log("stable debt burned");
 
       debtReserve.updateInterestRates(debtReserveCache, debtAsset, vars.actualDebtToLiquidate, 0);
     }
@@ -230,6 +255,7 @@ contract LendingPoolCollateralManager is
       emit ReserveUsedAsCollateralDisabled(collateralAsset, user);
     }
 
+    console.log("transferring debt");
     // Transfers the debt asset being repaid to the aToken, where the liquidity is kept
     IERC20(debtAsset).safeTransferFrom(
       msg.sender,
@@ -237,6 +263,8 @@ contract LendingPoolCollateralManager is
       vars.actualDebtToLiquidate
     );
 
+    console.log("debt transferred");
+    
     emit LiquidationCall(
       collateralAsset,
       debtAsset,

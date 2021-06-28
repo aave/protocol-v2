@@ -417,7 +417,6 @@ library ValidationLogic {
   }
 
   struct ValidateLiquidationCallLocalVars {
-    uint256 healthFactor;
     bool collateralReserveActive;
     bool collateralReservePaused;
     bool principalReserveActive;
@@ -431,23 +430,15 @@ library ValidationLogic {
    * @param principalReserveCache The cached reserve data of the principal
    * @param userConfig The user configuration
    * @param totalDebt Total debt balance of the user
-   * @param user The address of the user being liquidated
-   * @param reservesData The mapping of the reserves data
    * @param userConfig The user configuration mapping
-   * @param reserves The list of the reserves
-   * @param reservesCount The number of reserves in the list
-   * @param oracle The address of the price oracle
+   * @param healthFactor The health factor of the loan
    **/
   function validateLiquidationCall(
     DataTypes.ReserveData storage collateralReserve,
     DataTypes.ReserveCache memory principalReserveCache,
     uint256 totalDebt,
-    address user,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
-    DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => address) storage reserves,
-    uint256 reservesCount,
-    address oracle
+    DataTypes.UserConfigurationMap memory userConfig,
+    uint256 healthFactor
   ) internal view returns (uint256, string memory) {
     ValidateLiquidationCallLocalVars memory vars;
 
@@ -468,17 +459,8 @@ library ValidationLogic {
     if (vars.collateralReservePaused || vars.principalReservePaused) {
       return (uint256(Errors.CollateralManagerErrors.PAUSED_RESERVE), Errors.VL_RESERVE_PAUSED);
     }
-
-    (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
-      user,
-      reservesData,
-      userConfig,
-      reserves,
-      reservesCount,
-      oracle
-    );
-
-    if (vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
+    
+    if (healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
       return (
         uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
         Errors.LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD
