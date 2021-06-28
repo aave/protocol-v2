@@ -201,10 +201,11 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
 
     pool.connect(user1.signer).borrow(weth.address, borrowedAmount, 1, 0, user1.address);
   });
-  it('should not be able to withdraw 5 dai, transfer 5 aDai after cap decrease back to 10 (capped)', async () => {
+  it('should not be able to withdraw 5 dai, transfer 5 aDai after cap decrease of usdc back to 10 (capped)', async () => {
     const {
       pool,
       dai,
+      usdc,
       aDai,
       configurator,
       helpersContract,
@@ -213,11 +214,11 @@ makeSuite('Exposure Cap', (testEnv: TestEnv) => {
 
     const newExposureCap = 10;
 
-    await configurator.setExposureCap(dai.address, newExposureCap);
+    await configurator.setExposureCap(usdc.address, newExposureCap);
 
-    const daiExposureCap = (await helpersContract.getReserveCaps(dai.address)).exposureCap;
+    const usdcExposureCap = (await helpersContract.getReserveCaps(usdc.address)).exposureCap;
 
-    expect(daiExposureCap).to.be.equal(newExposureCap);
+    expect(usdcExposureCap).to.be.equal(newExposureCap);
 
     const precisionWithdrawnAmount = (5 * 1000).toString();
     const withdrawnAmount = await unitParse(dai, precisionWithdrawnAmount);
