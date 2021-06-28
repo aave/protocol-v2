@@ -253,10 +253,9 @@ export const getPairsTokenAggregator = (
       const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
         (value) => value === tokenSymbol
       );
-      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
-        string,
-        tEthereumAddress
-      ][])[aggregatorAddressIndex];
+      const [, aggregatorAddress] = (
+        Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
+      )[aggregatorAddressIndex];
       return [tokenAddress, aggregatorAddress];
     }
   }) as [string, string][];
@@ -286,6 +285,7 @@ export const configureReservesByHelper = async (
     reserveFactor: BigNumberish;
     borrowCap: BigNumberish;
     supplyCap: BigNumberish;
+    exposureCap: BigNumberish;
     stableBorrowingEnabled: boolean;
     borrowingEnabled: boolean;
   }[] = [];
@@ -299,6 +299,7 @@ export const configureReservesByHelper = async (
       reserveFactor,
       borrowCap,
       supplyCap,
+      exposureCap,
       stableBorrowRateEnabled,
       borrowingEnabled,
     },
@@ -335,6 +336,7 @@ export const configureReservesByHelper = async (
       reserveFactor,
       borrowCap,
       supplyCap,
+      exposureCap,
       stableBorrowingEnabled: stableBorrowRateEnabled,
       borrowingEnabled: borrowingEnabled,
     });
