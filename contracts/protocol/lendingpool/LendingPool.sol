@@ -289,7 +289,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
     } else {
-      ValidationLogic.validateWithdrawCollateral(
+      ValidationLogic.validateHFAndExposureCap(
         asset,
         msg.sender,
         _reserves,
@@ -497,7 +497,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       totalDebtETH,
       ltv,
       currentLiquidationThreshold,
-      healthFactor
+      healthFactor,
     ) = GenericLogic.getUserAccountData(
       user,
       _reserves,
@@ -629,7 +629,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       if (fromConfig.isUsingAsCollateral(reserveId)) {
         if (fromConfig.isBorrowingAny()) {
-          ValidationLogic.validateWithdrawCollateral(
+          ValidationLogic.validateHFAndExposureCap(
             asset,
             from,
             _reserves,
@@ -877,7 +877,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (userConfig.isUsingAsCollateral(reserve.id)) {
       if (userConfig.isBorrowingAny()) {
-        ValidationLogic.validateWithdrawCollateral(
+        ValidationLogic.validateHFAndExposureCap(
           asset,
           msg.sender,
           _reserves,

@@ -185,7 +185,7 @@ library ValidationLogic {
       vars.userBorrowBalanceETH,
       vars.currentLtv,
       vars.currentLiquidationThreshold,
-      vars.healthFactor
+      vars.healthFactor,
     ) = GenericLogic.calculateUserAccountData(
       userAddress,
       reservesData,
@@ -263,7 +263,7 @@ library ValidationLogic {
     address onBehalfOf,
     uint256 stableDebt,
     uint256 variableDebt
-  ) internal view {
+  ) external view {
     (bool isActive, , , , bool isPaused) = reserveCache.reserveConfiguration.getFlagsMemory();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isPaused, Errors.VL_RESERVE_PAUSED);
@@ -469,7 +469,7 @@ library ValidationLogic {
       return (uint256(Errors.CollateralManagerErrors.PAUSED_RESERVE), Errors.VL_RESERVE_PAUSED);
     }
 
-    (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
+    (, , , , vars.healthFactor, ) = GenericLogic.calculateUserAccountData(
       user,
       reservesData,
       userConfig,
@@ -508,7 +508,7 @@ library ValidationLogic {
   }
 
   /**
-   * @dev Validates the health factor of a user
+   * @dev Validates the health factor of a user and the exposure cap for the asset being withdrawn
    * @param from The user from which the aTokens are being transferred
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
@@ -516,7 +516,7 @@ library ValidationLogic {
    * @param reservesCount The number of available reserves
    * @param oracle The price oracle
    */
-  function validateWithdrawCollateral(
+  function validateHFAndExposureCap(
     address collateral,
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
@@ -526,7 +526,7 @@ library ValidationLogic {
     address oracle
   ) external view {
     DataTypes.ReserveData memory reserve = reservesData[collateral];
-    (, , uint256 ltv, uint256 liquidationThreshold, uint256 healthFactor) =
+    (, , uint256 ltv, uint256 liquidationThreshold, uint256 healthFactor, uint256 uncappedLtv) =
       GenericLogic.calculateUserAccountData(
         from,
         reservesData,
@@ -536,28 +536,22 @@ library ValidationLogic {
         oracle
       );
 
-    uint256 exposureCap = reserve.configuration.getExposureCapMemory();
-    uint256 totalSupplyAtoken = IERC20(reserve.aTokenAddress).totalSupply();
-    (, , , uint256 reserveDecimals, ) = reserve.configuration.getParamsMemory();
 
     require(
       healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
-    // exposureCap == 0 means no cap => can withdraw
-    // ltv > liquidationThreshold means that there is enough collateral margin => can withdraw
-    // ltv == 0 means all current collaterals have exceeded the exposure cap => can withdraw
-    // last means that for this asset the cap is not yet exceeded => can withdraw
-    // else this means the user is trying to withdraw a collateral that has exceeded the exposure cap, and that it
-    // as other collaterals available to withdraw: he must withdraw from other collateral reserves first
-    require(
-      exposureCap == 0 ||
-        ltv > liquidationThreshold ||
-        ltv == 0 ||
-        totalSupplyAtoken.div(10**reserveDecimals) < exposureCap,
-      Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED
-    );
+    uint256 exposureCap = reserve.configuration.getExposureCapMemory();
+
+    if (exposureCap != 0) {
+      if (ltv < uncappedLtv) {
+        uint256 totalSupplyAtoken = IERC20(reserve.aTokenAddress).totalSupply();
+        (, , , uint256 reserveDecimals, ) = reserve.configuration.getParamsMemory();
+        bool isAssetCapped = totalSupplyAtoken.div(10**reserveDecimals) >= exposureCap;
+        require(isAssetCapped, Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED);
+      }
+    }
   }
 
   /**

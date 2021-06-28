@@ -34,6 +34,7 @@ library GenericLogic {
     uint256 userBalance;
     uint256 userBalanceETH;
     uint256 userDebt;
+    uint256 userStableDebt;
     uint256 userDebtETH;
     uint256 decimals;
     uint256 ltv;
@@ -43,6 +44,7 @@ library GenericLogic {
     uint256 totalCollateralInETH;
     uint256 totalDebtInETH;
     uint256 avgLtv;
+    uint256 avgUncappedLtv;
     uint256 avgLiquidationThreshold;
     uint256 reservesLength;
     uint256 normalizedIncome;
@@ -65,7 +67,7 @@ library GenericLogic {
    * @param userConfig The configuration of the user
    * @param reserves The list of the available reserves
    * @param oracle The price oracle address
-   * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold and the HF
+   * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold, the HF and the uncapped avg ltv (without exposure ceiling)
    **/
   function calculateUserAccountData(
     address user,
@@ -82,13 +84,14 @@ library GenericLogic {
       uint256,
       uint256,
       uint256,
+      uint256,
       uint256
     )
   {
     CalculateUserAccountDataVars memory vars;
 
     if (userConfig.isEmpty()) {
-      return (0, 0, 0, 0, uint256(-1));
+      return (0, 0, 0, 0, uint256(-1), 0);
     }
     for (vars.i = 0; vars.i < reservesCount; vars.i++) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
@@ -130,14 +133,18 @@ library GenericLogic {
         vars.exposureCapCrossed =
           vars.exposureCap != 0 &&
           vars.aTokenSupply.div(10**vars.decimals) > vars.exposureCap;
-        
-        vars.avgLtv = vars.avgLtv.add(vars.exposureCapCrossed ? 0 : vars.userBalanceETH.mul(vars.ltv));
+
+        vars.avgLtv = vars.avgLtv.add(
+          vars.exposureCapCrossed ? 0 : vars.userBalanceETH.mul(vars.ltv)
+        );
+        vars.avgUncappedLtv = vars.avgUncappedLtv.add(vars.userBalanceETH.mul(vars.ltv));
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
           vars.userBalanceETH.mul(vars.liquidationThreshold)
         );
       }
 
       if (userConfig.isBorrowing(vars.i)) {
+        vars.userStableDebt = IERC20(currentReserve.stableDebtTokenAddress).balanceOf(user);
         vars.userDebt = IScaledBalanceToken(currentReserve.variableDebtTokenAddress)
           .scaledBalanceOf(user);
 
@@ -145,16 +152,16 @@ library GenericLogic {
           vars.normalizedDebt = currentReserve.getNormalizedDebt();
           vars.userDebt = vars.userDebt.rayMul(vars.normalizedDebt);
         }
-
-        vars.userDebt = vars.userDebt.add(
-          IERC20(currentReserve.stableDebtTokenAddress).balanceOf(user)
-        );
+        vars.userDebt = vars.userDebt.add(vars.userStableDebt);
         vars.userDebtETH = vars.assetPrice.mul(vars.userDebt).div(vars.assetUnit);
         vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);
       }
     }
 
     vars.avgLtv = vars.totalCollateralInETH > 0 ? vars.avgLtv.div(vars.totalCollateralInETH) : 0;
+    vars.avgUncappedLtv = vars.totalCollateralInETH > 0
+      ? vars.avgUncappedLtv.div(vars.totalCollateralInETH)
+      : 0;
     vars.avgLiquidationThreshold = vars.totalCollateralInETH > 0
       ? vars.avgLiquidationThreshold.div(vars.totalCollateralInETH)
       : 0;
@@ -169,7 +176,8 @@ library GenericLogic {
       vars.totalDebtInETH,
       vars.avgLtv,
       vars.avgLiquidationThreshold,
-      vars.healthFactor
+      vars.healthFactor,
+      vars.avgUncappedLtv
     );
   }
 
@@ -235,6 +243,7 @@ library GenericLogic {
     external
     view
     returns (
+      uint256,
       uint256,
       uint256,
       uint256,
