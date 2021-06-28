@@ -17,6 +17,7 @@ interface IUiPoolDataProvider {
     uint256 reserveFactor;
     uint256 borrowCap;
     uint256 supplyCap;
+    uint256 exposureCap;
     bool usageAsCollateralEnabled;
     bool borrowingEnabled;
     bool stableBorrowRateEnabled;

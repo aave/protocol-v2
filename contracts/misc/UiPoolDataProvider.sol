@@ -114,10 +114,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         reserveData.decimals,
         reserveData.reserveFactor
       ) = baseData.configuration.getParamsMemory();
-      (
-        reserveData.borrowCap,
-        reserveData.supplyCap
-      ) = baseData.configuration.getCapsMemory();
+      (reserveData.borrowCap, reserveData.supplyCap, reserveData.exposureCap) = baseData
+        .configuration
+        .getCapsMemory();
       (
         reserveData.isActive,
         reserveData.isFrozen,
