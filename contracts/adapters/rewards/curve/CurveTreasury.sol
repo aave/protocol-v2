@@ -13,7 +13,6 @@ import {
 } from '../../../protocol/libraries/aave-upgradeability/VersionedInitializable.sol';
 import {ICurveFeeDistributor} from '../../interfaces/curve/ICurveFeeDistributor.sol';
 import {ICurveTreasury} from '../../interfaces/curve/ICurveTreasury.sol';
-import 'hardhat/console.sol';
 
 /**
  * @title Curve Treasury that holds Curve LP and Gauge tokens
@@ -68,6 +67,7 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
    * @dev Revert if caller and selected token is not a whitelisted entity
    */
   modifier onlyWhitelistedEntity(address token) {
+    console.log(msg.sender, token, _entityTokenWhitelist[msg.sender][token]);
     require(_entityTokenWhitelist[msg.sender][token] == true, 'ENTITY_NOT_WHITELISTED');
     _;
   }
