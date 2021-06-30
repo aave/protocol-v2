@@ -125,6 +125,7 @@ library GenericLogic {
           vars.userBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(
             user
           );
+          vars.userBalance = vars.userBalance.rayMul(vars.normalizedIncome);
           vars.aTokenSupply = 0;
         }
 
