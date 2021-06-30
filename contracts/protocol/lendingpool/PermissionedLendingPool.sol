@@ -133,7 +133,14 @@ contract PermissionedLendingPool is LendingPool {
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
-  ) public virtual override onlyBorrowers(onBehalfOf) returns (uint256) {
+  )
+    public
+    virtual
+    override
+    onlyBorrowers(onBehalfOf)
+    onlyValidPermissionAdmin(onBehalfOf)
+    returns (uint256)
+  {
     return super.repay(asset, amount, rateMode, onBehalfOf);
   }
 
