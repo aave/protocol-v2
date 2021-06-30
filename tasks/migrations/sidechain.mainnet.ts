@@ -49,8 +49,8 @@ task('sidechain:mainnet', 'Deploy market at sidechain')
     }
 
     if (usingTenderly()) {
-      const postDeployHead = DRE.tenderlyRPC.getHead();
-      const postDeployFork = DRE.tenderlyRPC.getFork();
+      const postDeployHead = DRE.tenderlyNetwork.getHead();
+      const postDeployFork = DRE.tenderlyNetwork.getFork();
       console.log('Tenderly Info');
       console.log('- Head', postDeployHead);
       console.log('- Fork', postDeployFork);

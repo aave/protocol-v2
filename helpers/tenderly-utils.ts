@@ -9,7 +9,7 @@ export const usingTenderly = () =>
 
 export const verifyAtTenderly = async (id: string, instance: Contract) => {
   console.log('\n- Doing Tenderly contract verification of', id);
-  await (DRE as any).tenderlyRPC.verify({
+  await (DRE as any).tenderlyNetwork.verify({
     name: id,
     address: instance.address,
   });
