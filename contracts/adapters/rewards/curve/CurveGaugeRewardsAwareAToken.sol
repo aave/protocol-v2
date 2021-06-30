@@ -224,7 +224,30 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
    */
   function _stake(address token, uint256 amount) internal override returns (uint256) {
     if (token == UNDERLYING_ASSET_ADDRESS()) {
-      ICurveTreasury(CURVE_TREASURY).deposit(token, amount, true);
+      if (_rewardTokens[1] != address(0)) {
+        // Track the pending rewards to distribute at `_retrieveAvailableReward` call
+        uint256[MAX_REWARD_TOKENS] memory priorTokenBalances;
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = _getRewardsTokenAddress(index);
+          if (rewardToken == address(0)) break;
+          if (rewardToken == CRV_TOKEN) continue;
+          priorTokenBalances[index] = IERC20(rewardToken).balanceOf(address(this));
+        }
+        // At deposits it sends extra rewards to aToken
+        ICurveTreasury(CURVE_TREASURY).deposit(token, amount, true);
+
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = _getRewardsTokenAddress(index);
+          if (rewardToken == address(0)) break;
+          if (rewardToken == CRV_TOKEN) continue;
+          uint256 balance = IERC20(rewardToken).balanceOf(address(this));
+          _pendingRewards[rewardToken] = _pendingRewards[rewardToken].add(
+            balance.sub(priorTokenBalances[index])
+          );
+        }
+      } else {
+        ICurveTreasury(CURVE_TREASURY).deposit(token, amount, true);
+      }
     }
     return amount;
   }
@@ -236,7 +259,30 @@ contract CurveGaugeRewardsAwareAToken is RewardsAwareAToken {
    */
   function _unstake(address token, uint256 amount) internal override returns (uint256) {
     if (token == UNDERLYING_ASSET_ADDRESS()) {
-      ICurveTreasury(CURVE_TREASURY).withdraw(token, amount, true);
+      // Claim other Curve gauge tokens, and track the pending rewards to distribute at `_retrieveAvailableReward` call
+      if (_rewardTokens[1] != address(0)) {
+        uint256[MAX_REWARD_TOKENS] memory priorTokenBalances;
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = _getRewardsTokenAddress(index);
+          if (rewardToken == address(0)) break;
+          if (rewardToken == CRV_TOKEN) continue;
+          priorTokenBalances[index] = IERC20(rewardToken).balanceOf(address(this));
+        }
+        // Mint other rewards to aToken
+        ICurveTreasury(CURVE_TREASURY).withdraw(token, amount, true);
+
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = _getRewardsTokenAddress(index);
+          if (rewardToken == address(0)) break;
+          if (rewardToken == CRV_TOKEN) continue;
+          uint256 balance = IERC20(rewardToken).balanceOf(address(this));
+          _pendingRewards[rewardToken] = _pendingRewards[rewardToken].add(
+            balance.sub(priorTokenBalances[index])
+          );
+        }
+      } else {
+        ICurveTreasury(CURVE_TREASURY).withdraw(token, amount, true);
+      }
     }
     return amount;
   }

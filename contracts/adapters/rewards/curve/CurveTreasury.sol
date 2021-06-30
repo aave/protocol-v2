@@ -68,7 +68,6 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
    * @dev Revert if caller and selected token is not a whitelisted entity
    */
   modifier onlyWhitelistedEntity(address token) {
-    console.log(msg.sender, token, _entityTokenWhitelist[msg.sender][token]);
     require(_entityTokenWhitelist[msg.sender][token] == true, 'ENTITY_NOT_WHITELISTED');
     _;
   }
@@ -98,7 +97,35 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
     IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
 
     if (useGauge && _entityTokenGauge[msg.sender][token] != address(0)) {
-      _stakeGauge(_entityTokenGauge[msg.sender][token], amount);
+      address gauge = _entityTokenGauge[msg.sender][token];
+      if (_isGaugeV2Compatible[gauge] == true) {
+        // Claim the extra rewards from Gauge Staking
+        uint256[] memory priorRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
+        uint256[] memory afterRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
+
+        // Calculate balances prior claiming rewards
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
+          if (rewardToken == address(0)) break;
+          priorRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
+        }
+
+        // Claim extra rewards
+        _stakeGauge(_entityTokenGauge[msg.sender][token], amount);
+
+        // Transfer extra rewards to entity
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
+          if (rewardToken == address(0)) break;
+          afterRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
+          uint256 rewardsAmount = afterRewardsBalance[index].sub(priorRewardsBalance[index]);
+          if (rewardsAmount > 0) {
+            IERC20(rewardToken).safeTransfer(msg.sender, rewardsAmount);
+          }
+        }
+      } else {
+        _stakeGauge(_entityTokenGauge[msg.sender][token], amount);
+      }
     }
   }
 
@@ -109,7 +136,35 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
     bool useGauge
   ) external override onlyWhitelistedEntity(token) {
     if (useGauge && _entityTokenGauge[msg.sender][token] != address(0)) {
-      _unstakeGauge(_entityTokenGauge[msg.sender][token], amount);
+      address gauge = _entityTokenGauge[msg.sender][token];
+      if (_isGaugeV2Compatible[gauge] == true) {
+        // Claim the extra rewards from Gauge Staking
+        uint256[] memory priorRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
+        uint256[] memory afterRewardsBalance = new uint256[](MAX_REWARD_TOKENS);
+
+        // Calculate balances prior claiming rewards
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
+          if (rewardToken == address(0)) break;
+          priorRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
+        }
+
+        // Claim extra rewards
+        _unstakeGauge(_entityTokenGauge[msg.sender][token], amount);
+
+        // Transfer extra rewards to entity
+        for (uint256 index = 1; index < MAX_REWARD_TOKENS; index++) {
+          address rewardToken = ICurveGaugeView(gauge).reward_tokens(index - 1);
+          if (rewardToken == address(0)) break;
+          afterRewardsBalance[index] = IERC20(rewardToken).balanceOf(address(this));
+          uint256 rewardsAmount = afterRewardsBalance[index].sub(priorRewardsBalance[index]);
+          if (rewardsAmount > 0) {
+            IERC20(rewardToken).safeTransfer(msg.sender, rewardsAmount);
+          }
+        }
+      } else {
+        _unstakeGauge(_entityTokenGauge[msg.sender][token], amount);
+      }
     }
     IERC20(token).safeTransfer(msg.sender, amount);
   }

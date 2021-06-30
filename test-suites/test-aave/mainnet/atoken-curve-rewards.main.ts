@@ -333,7 +333,6 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
     curveTreasury = CurveTreasuryFactory.connect(curveTreasuryAddress, testEnv.users[0].signer);
 
     // Enable atoken entities into Curve Treasury
-    console.log(a3POOL.address, aEURS.address, aAAVE3.address, aANKR.address);
     await waitForTx(
       await curveTreasury.setWhitelist(
         [a3POOL.address, aEURS.address, aAAVE3.address, aANKR.address],
@@ -466,9 +465,16 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
     it('Deposit and generate user reward checkpoints', async () => {
       // Deposits
 
-      await depositPoolToken(depositor, GAUGE_EURS, aEURS.address, parseEther('100000'));
+      await depositPoolToken(depositor, GAUGE_EURS, aEURS.address, parseEther('10000'), false);
       const curveATokenBalance = await crvToken.balanceOf(aEURS.address);
       expect(curveATokenBalance).to.be.eq('0', 'CRV should be zero');
+    });
+
+    it('Second deposit should add user reward checkpoints', async () => {
+      // Pass time to generate rewards
+      await advanceTimeAndBlock(ONE_DAY * 14);
+
+      await depositPoolToken(depositor, GAUGE_EURS, aEURS.address, parseEther('10000'), true);
     });
 
     it('Increase time and claim CRV and SNX', async () => {
@@ -484,7 +490,7 @@ makeSuite('Curve Rewards Aware aToken', (testEnv: TestEnv) => {
       await increaseTime(ONE_DAY);
 
       // Withdraw
-      await withdrawPoolToken(depositor, GAUGE_EURS, aEURS.address);
+      await withdrawPoolToken(depositor, GAUGE_EURS, aEURS.address, true);
     });
 
     it('Claim the remaining CRV and SNX', async () => {

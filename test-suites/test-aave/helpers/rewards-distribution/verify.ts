@@ -107,6 +107,4 @@ export const checkRewards = async (
       expect(userRewardsBefore[i]).to.be.eq(userRewardsAfter[i], 'Rewards should stay the same');
     }
   }
-
-  return;
 };
