@@ -67,7 +67,6 @@ contract CurveTreasury is ICurveTreasury, VersionedInitializable {
    * @dev Revert if caller and selected token is not a whitelisted entity
    */
   modifier onlyWhitelistedEntity(address token) {
-    console.log(msg.sender, token, _entityTokenWhitelist[msg.sender][token]);
     require(_entityTokenWhitelist[msg.sender][token] == true, 'ENTITY_NOT_WHITELISTED');
     _;
   }
