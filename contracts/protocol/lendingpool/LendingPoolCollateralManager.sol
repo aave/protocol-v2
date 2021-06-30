@@ -68,6 +68,29 @@ contract LendingPoolCollateralManager is
   }
 
   /**
+   * @dev Function to seize the collateral of a user. Only whitelisters of the user can call this function
+   * @param assets The addresses of the underlying assets to seize
+   * @param to The address that will receive the funds
+   **/
+  function seize(
+    address user,
+    address[] calldata assets,
+    address to
+  ) external override returns (uint256, string memory) {
+    for (uint256 i = 0; i < assets.length; i++) {
+      address asset = assets[i];
+      DataTypes.ReserveData storage reserve = _reserves[asset];
+      IAToken aToken = IAToken(reserve.aTokenAddress);
+      uint256 userBalance = aToken.balanceOf(user);
+
+      reserve.updateState();
+      reserve.updateInterestRates(asset, address(aToken), 0, userBalance);
+      aToken.burn(user, to, userBalance, reserve.liquidityIndex);
+      emit Seized(user, to, asset, userBalance);
+    }
+  }
+
+  /**
    * @dev Function to liquidate a position if its Health Factor drops below 1
    * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
    *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk

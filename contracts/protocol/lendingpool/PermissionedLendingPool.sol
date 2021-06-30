@@ -4,6 +4,8 @@ pragma experimental ABIEncoderV2;
 
 import {LendingPool} from './LendingPool.sol';
 import {IPermissionManager} from '../../interfaces/IPermissionManager.sol';
+import {IPermissionedLendingPool} from '../../interfaces/IPermissionedLendingPool.sol';
+import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 
@@ -12,7 +14,7 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
  * @notice This smart contracts adds a permission layer to the LendingPool contract to enable whitelisting of users interacting with it
  * @author Aave
  **/
-contract PermissionedLendingPool is LendingPool {
+contract PermissionedLendingPool is IPermissionedLendingPool, LendingPool {
   //identifier for the permission manager contract in the addresses provider
   bytes32 public constant PERMISSION_MANAGER = keccak256('PERMISSION_MANAGER');
 
@@ -22,6 +24,11 @@ contract PermissionedLendingPool is LendingPool {
         ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.DEPOSITOR)),
       Errors.PLP_DEPOSITOR_UNAUTHORIZED
     );
+    _;
+  }
+
+  modifier onlyUserPermissionAdmin(address user) {
+    require(_isPermissionAdminOf(user, msg.sender), Errors.PLP_INVALID_PERMISSION_ADMIN);
     _;
   }
 
@@ -68,7 +75,13 @@ contract PermissionedLendingPool is LendingPool {
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
-  ) public virtual override onlyDepositors(onBehalfOf) onlyValidPermissionAdmin(onBehalfOf) {
+  )
+    public
+    virtual
+    override(ILendingPool, LendingPool)
+    onlyDepositors(onBehalfOf)
+    onlyValidPermissionAdmin(onBehalfOf)
+  {
     super.deposit(asset, amount, onBehalfOf, referralCode);
   }
 
@@ -87,7 +100,13 @@ contract PermissionedLendingPool is LendingPool {
     address asset,
     uint256 amount,
     address to
-  ) public virtual override onlyDepositors(msg.sender) returns (uint256) {
+  )
+    public
+    virtual
+    override(ILendingPool, LendingPool)
+    onlyDepositors(msg.sender)
+    returns (uint256)
+  {
     return super.withdraw(asset, amount, to);
   }
 
@@ -112,7 +131,13 @@ contract PermissionedLendingPool is LendingPool {
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
-  ) public virtual override onlyBorrowers(onBehalfOf) onlyValidPermissionAdmin(onBehalfOf) {
+  )
+    public
+    virtual
+    override(ILendingPool, LendingPool)
+    onlyBorrowers(onBehalfOf)
+    onlyValidPermissionAdmin(onBehalfOf)
+  {
     super.borrow(asset, amount, interestRateMode, referralCode, onBehalfOf);
   }
 
@@ -136,7 +161,7 @@ contract PermissionedLendingPool is LendingPool {
   )
     public
     virtual
-    override
+    override(ILendingPool, LendingPool)
     onlyBorrowers(onBehalfOf)
     onlyValidPermissionAdmin(onBehalfOf)
     returns (uint256)
@@ -152,7 +177,7 @@ contract PermissionedLendingPool is LendingPool {
   function swapBorrowRateMode(address asset, uint256 rateMode)
     public
     virtual
-    override
+    override(ILendingPool, LendingPool)
     onlyBorrowers(msg.sender)
     onlyValidPermissionAdmin(msg.sender)
   {
@@ -171,7 +196,7 @@ contract PermissionedLendingPool is LendingPool {
   function rebalanceStableBorrowRate(address asset, address user)
     public
     virtual
-    override
+    override(ILendingPool, LendingPool)
     onlyStableRateManagers
   {
     super.rebalanceStableBorrowRate(asset, user);
@@ -185,7 +210,7 @@ contract PermissionedLendingPool is LendingPool {
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
     public
     virtual
-    override
+    override(ILendingPool, LendingPool)
     onlyDepositors(msg.sender)
     onlyValidPermissionAdmin(msg.sender)
   {
@@ -209,8 +234,39 @@ contract PermissionedLendingPool is LendingPool {
     address user,
     uint256 debtToCover,
     bool receiveAToken
-  ) public virtual override onlyLiquidators onlyValidPermissionAdmin(msg.sender) {
+  )
+    public
+    virtual
+    override(ILendingPool, LendingPool)
+    onlyLiquidators
+    onlyValidPermissionAdmin(msg.sender)
+  {
     super.liquidationCall(collateralAsset, debtAsset, user, debtToCover, receiveAToken);
+  }
+
+  /**
+   * @dev Function to seize the collateral of a user. Only whitelisters of the user can call this function
+   * @param assets The addresses of the underlying assets to seize
+   * @param to The address that will receive the funds
+   **/
+  function seize(
+    address user,
+    address[] calldata assets,
+    address to
+  ) public virtual override(IPermissionedLendingPool) onlyUserPermissionAdmin(user) whenNotPaused {
+    address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
+
+    //solium-disable-next-line
+    (bool success, bytes memory result) =
+      collateralManager.delegatecall(
+        abi.encodeWithSignature('seize(address,address[],address)', user, assets, to)
+      );
+
+    require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
+
+    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
+
+    require(returnCode == 0, string(abi.encodePacked(returnMessage)));
   }
 
   /**
@@ -238,7 +294,7 @@ contract PermissionedLendingPool is LendingPool {
     address onBehalfOf,
     bytes calldata params,
     uint16 referralCode
-  ) public virtual override {
+  ) public virtual override(ILendingPool, LendingPool) {
     //validating modes
     for (uint256 i = 0; i < modes.length; i++) {
       if (modes[i] == uint256(DataTypes.InterestRateMode.NONE)) {
@@ -269,11 +325,18 @@ contract PermissionedLendingPool is LendingPool {
     uint256 amount,
     uint256 balanceFromBefore,
     uint256 balanceToBefore
-  ) public override {
+  ) public override(ILendingPool, LendingPool) {
     require(_isInRole(from, DataTypes.Roles.DEPOSITOR), Errors.VL_TRANSFER_NOT_ALLOWED);
     require(_isInRole(to, DataTypes.Roles.DEPOSITOR), Errors.VL_TRANSFER_NOT_ALLOWED);
 
     super.finalizeTransfer(asset, from, to, amount, balanceFromBefore, balanceToBefore);
+  }
+
+  function _isPermissionAdminOf(address user, address caller) internal view returns (bool) {
+    return
+      IPermissionManager(_addressesProvider.getAddress(PERMISSION_MANAGER)).getUserPermissionAdmin(
+        user
+      ) == caller;
   }
 
   function _isInRole(address user, DataTypes.Roles role) internal view returns (bool) {

@@ -28,6 +28,20 @@ interface ILendingPoolCollateralManager {
   );
 
   /**
+   * @dev Emitted when the collateral of a user has been seized
+   * @param user The user whose collateral has been seized
+   * @param asset The addresse of the underlying asset to seize
+   * @param to The address that will receive the funds
+   * @param amount The amount seized
+   **/
+  event Seized(
+    address indexed user,
+    address indexed to,
+    address indexed asset,
+    uint256 amount
+  );
+
+  /**
    * @dev Emitted when a reserve is disabled as collateral for an user
    * @param reserve The address of the reserve
    * @param user The address of the user
@@ -56,5 +70,17 @@ interface ILendingPoolCollateralManager {
     address user,
     uint256 debtToCover,
     bool receiveAToken
+  ) external returns (uint256, string memory);
+
+  /**
+   * @dev Function to seize the collateral of a user. Only whitelisters of the user can call this function
+   * @param user The user whose collateral has been seized
+   * @param assets The addresses of the underlying assets to seize
+   * @param to The address that will receive the funds
+   **/
+  function seize(
+    address user,
+    address[] calldata assets,
+    address to
   ) external returns (uint256, string memory);
 }
