@@ -129,3 +129,17 @@ export const impersonateAddress = async (address: tEthereumAddress): Promise<Sig
     address,
   };
 };
+
+export const impersonateAccountsHardhat = async (accounts: string[]) => {
+  if (process.env.TENDERLY === 'true') {
+    return;
+  }
+  // eslint-disable-next-line no-restricted-syntax
+  for (const account of accounts) {
+    // eslint-disable-next-line no-await-in-loop
+    await (DRE as HardhatRuntimeEnvironment).network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [account],
+    });
+  }
+};
