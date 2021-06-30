@@ -498,6 +498,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       ltv,
       currentLiquidationThreshold,
       healthFactor,
+
     ) = GenericLogic.getUserAccountData(
       user,
       _reserves,
@@ -875,7 +876,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       reserveCache.nextLiquidityIndex
     );
 
-    if (userConfig.isUsingAsCollateral(reserve.id)) {
+    if (reserve.configuration.getLtv() > 0) {
       if (userConfig.isBorrowingAny()) {
         ValidationLogic.validateHFAndExposureCap(
           asset,
