@@ -488,7 +488,9 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     address[] memory reserves = _pool.getReservesList();
 
     for (uint256 i = 0; i < reserves.length; i++) {
-      setReservePause(reserves[i], paused);
+      if (reserves[i] != address(0)) { //might happen is a reserve was dropped
+        setReservePause(reserves[i], paused);
+      }
     }
   }
 
