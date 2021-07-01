@@ -291,6 +291,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     } else {
       ValidationLogic.validateHFAndExposureCap(
         asset,
+        IERC20(reserveCache.aTokenAddress).balanceOf(msg.sender),
         msg.sender,
         _reserves,
         _usersConfig[msg.sender],
@@ -632,6 +633,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         if (fromConfig.isBorrowingAny()) {
           ValidationLogic.validateHFAndExposureCap(
             asset,
+            0,
             from,
             _reserves,
             _usersConfig[from],
@@ -876,10 +878,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       reserveCache.nextLiquidityIndex
     );
 
-    if (reserve.configuration.getLtv() > 0) {
+    if (userConfig.isUsingAsCollateral(reserve.id)) {
       if (userConfig.isBorrowingAny()) {
         ValidationLogic.validateHFAndExposureCap(
           asset,
+          0,
           msg.sender,
           _reserves,
           userConfig,

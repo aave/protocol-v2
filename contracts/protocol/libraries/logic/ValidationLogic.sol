@@ -186,6 +186,7 @@ library ValidationLogic {
       vars.currentLtv,
       vars.currentLiquidationThreshold,
       vars.healthFactor,
+
     ) = GenericLogic.calculateUserAccountData(
       userAddress,
       reservesData,
@@ -507,6 +508,15 @@ library ValidationLogic {
     return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
   }
 
+  struct validateHFAndExposureCapLocalVars {
+    uint256 healthFactor;
+    uint256 ltv;
+    uint256 uncappedLtv;
+    uint256 exposureCap;
+    uint256 reserveDecimals;
+    uint256 totalSupplyAtoken;
+  }
+
   /**
    * @dev Validates the health factor of a user and the exposure cap for the asset being withdrawn
    * @param from The user from which the aTokens are being transferred
@@ -518,6 +528,7 @@ library ValidationLogic {
    */
   function validateHFAndExposureCap(
     address collateral,
+    uint256 collateralToBeWithdrawn,
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -525,30 +536,31 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
+    validateHFAndExposureCapLocalVars memory vars;
     DataTypes.ReserveData memory reserve = reservesData[collateral];
-    (, , uint256 ltv, uint256 liquidationThreshold, uint256 healthFactor, uint256 uncappedLtv) =
-      GenericLogic.calculateUserAccountData(
-        from,
-        reservesData,
-        userConfig,
-        reserves,
-        reservesCount,
-        oracle
-      );
-
+    (, , vars.ltv, , vars.healthFactor, vars.uncappedLtv) = GenericLogic.calculateUserAccountData(
+      from,
+      reservesData,
+      userConfig,
+      reserves,
+      reservesCount,
+      oracle
+    );
 
     require(
-      healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
+      vars.healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
-    uint256 exposureCap = reserve.configuration.getExposureCapMemory();
+    vars.exposureCap = reserve.configuration.getExposureCapMemory();
 
-    if (exposureCap != 0) {
-      if (ltv < uncappedLtv) {
-        uint256 totalSupplyAtoken = IERC20(reserve.aTokenAddress).totalSupply();
-        (, , , uint256 reserveDecimals, ) = reserve.configuration.getParamsMemory();
-        bool isAssetCapped = totalSupplyAtoken.div(10**reserveDecimals) >= exposureCap;
+    if (vars.exposureCap != 0) {
+      if (vars.ltv < vars.uncappedLtv) {
+        vars.totalSupplyAtoken = IERC20(reserve.aTokenAddress).totalSupply();
+        (, , , vars.reserveDecimals, ) = reserve.configuration.getParamsMemory();
+        bool isAssetCapped =
+          vars.totalSupplyAtoken.sub(collateralToBeWithdrawn).div(10**vars.reserveDecimals) >=
+            vars.exposureCap;
         require(isAssetCapped, Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED);
       }
     }
