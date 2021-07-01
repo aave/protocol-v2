@@ -22,6 +22,8 @@ contract LendingPoolStorage {
 
   uint256 internal _reservesCount;
 
+  // Deprecated: global LendingPool pause state, no longer used
+  // Replaced by pause states for each reserve
   bool internal _paused;
 
   uint256 internal _maxStableRateBorrowSizePercent;

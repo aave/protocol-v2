@@ -75,7 +75,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(await configurator.signer.getAddress()).to.be.equal(
       await addressesProvider.getPoolAdmin()
     );
-    await configurator.pauseReserve(weth.address);
+    await configurator.setReservePause(weth.address, true);
     const {
       decimals,
       ltv,
@@ -106,7 +106,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Unpauses the ETH reserve by pool admin ', async () => {
     const { configurator, helpersContract, weth } = testEnv;
-    await configurator.unpauseReserve(weth.address);
+    await configurator.setReservePause(weth.address, false);
 
     const {
       decimals,
@@ -138,7 +138,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Pauses the ETH reserve by emergency admin', async () => {
     const { configurator, weth, helpersContract, addressesProvider, users, emergencyAdmin } =
       testEnv;
-    await configurator.connect(emergencyAdmin.signer).pauseReserve(weth.address);
+    await configurator.connect(emergencyAdmin.signer).setReservePause(weth.address, true);
     const {
       decimals,
       ltv,
@@ -169,7 +169,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Unpauses the ETH reserve by emergency admin ', async () => {
     const { configurator, helpersContract, weth, users, emergencyAdmin } = testEnv;
-    await configurator.connect(emergencyAdmin.signer).unpauseReserve(weth.address);
+    await configurator.connect(emergencyAdmin.signer).setReservePause(weth.address, false);
 
     const {
       decimals,
@@ -202,7 +202,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Check the only admin or emergency admin can pauseReserve ', async () => {
     const { configurator, users, weth, riskAdmin } = testEnv;
     await expect(
-      configurator.connect(riskAdmin.signer).pauseReserve(weth.address),
+      configurator.connect(riskAdmin.signer).setReservePause(weth.address, true),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN);
   });
@@ -210,14 +210,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Check the only admin or emergency admin can unpauseReserve ', async () => {
     const { configurator, users, weth, riskAdmin } = testEnv;
     await expect(
-      configurator.connect(riskAdmin.signer).unpauseReserve(weth.address),
+      configurator.connect(riskAdmin.signer).setReservePause(weth.address, false),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN);
   });
   it('Pauses the ETH reserve by the pool admin', async () => {
     const { configurator, weth, helpersContract, addressesProvider, users, emergencyAdmin } =
       testEnv;
-    await configurator.pauseReserve(weth.address);
+    await configurator.setReservePause(weth.address, true);
     const {
       decimals,
       ltv,
@@ -251,7 +251,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Unpauses the ETH reserve by pool admin ', async () => {
     const { configurator, helpersContract, weth } = testEnv;
-    await configurator.unpauseReserve(weth.address);
+    await configurator.setReservePause(weth.address, false);
 
     const {
       decimals,
@@ -286,7 +286,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Pauses the ETH reserve by emergency admin', async () => {
     const { configurator, weth, helpersContract, addressesProvider, users, emergencyAdmin } =
       testEnv;
-    await configurator.connect(emergencyAdmin.signer).pauseReserve(weth.address);
+    await configurator.connect(emergencyAdmin.signer).setReservePause(weth.address, true);
     const {
       decimals,
       ltv,
@@ -320,7 +320,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Unpauses the ETH reserve by emergency admin ', async () => {
     const { configurator, helpersContract, weth, users, emergencyAdmin } = testEnv;
-    await configurator.connect(emergencyAdmin.signer).unpauseReserve(weth.address);
+    await configurator.connect(emergencyAdmin.signer).setReservePause(weth.address, false);
 
     const {
       decimals,
@@ -356,7 +356,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Check the only admin or emergency admin can pauseReserve ', async () => {
     const { configurator, users, weth, riskAdmin } = testEnv;
     await expect(
-      configurator.connect(riskAdmin.signer).pauseReserve(weth.address),
+      configurator.connect(riskAdmin.signer).setReservePause(weth.address, true),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN);
   });
@@ -364,7 +364,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Check the only admin or emergency admin can unpauseReserve ', async () => {
     const { configurator, users, weth, riskAdmin } = testEnv;
     await expect(
-      configurator.connect(riskAdmin.signer).unpauseReserve(weth.address),
+      configurator.connect(riskAdmin.signer).setReservePause(weth.address, false),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_EMERGENCY_OR_POOL_ADMIN);
   });
