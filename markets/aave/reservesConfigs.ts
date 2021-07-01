@@ -267,12 +267,12 @@ export const strategyXSUSHI: IReserveParams = {
 
 export const strategyBOND: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '4000',
-  liquidationThreshold: '5500',
+  baseLTVAsCollateral: '2500',
+  liquidationThreshold: '3500',
   liquidationBonus: '11500',
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '3500',
 };
