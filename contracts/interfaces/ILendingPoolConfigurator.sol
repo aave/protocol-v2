@@ -352,14 +352,9 @@ interface ILendingPoolConfigurator {
   /**
    * @dev Pauses a reserve. A paused reserve does not allow any interaction (deposit, borrow, repay, swap interestrate, liquidate, atoken transfers)
    * @param asset The address of the underlying asset of the reserve
+   * @param val true = pausing, false = unpausing
    **/
-  function pauseReserve(address asset) external;
-
-  /**
-   * @dev Unpauses a reserve
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  function unpauseReserve(address asset) external;
+  function setReservePause(address asset, bool val) external;
 
   /**
    * @dev Updates the reserve factor of a reserve
@@ -378,6 +373,7 @@ interface ILendingPoolConfigurator {
 
   /**
    * @dev pauses or unpauses all the actions of the protocol, including aToken transfers
+   * Effectively it pauses every reserve
    * @param val true if protocol needs to be paused, false otherwise
    **/
   function setPoolPause(bool val) external;
