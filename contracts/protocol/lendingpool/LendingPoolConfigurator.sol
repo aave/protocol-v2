@@ -407,25 +407,18 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function pauseReserve(address asset) external override onlyEmergencyOrPoolAdmin {
+  function setReservePause(address asset, bool val) public override onlyEmergencyOrPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
 
-    currentConfig.setPaused(true);
+    currentConfig.setPaused(val);
 
     _pool.setConfiguration(asset, currentConfig.data);
 
-    emit ReservePaused(asset);
-  }
-
-  /// @inheritdoc ILendingPoolConfigurator
-  function unpauseReserve(address asset) external override onlyEmergencyOrPoolAdmin {
-    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setPaused(false);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveUnpaused(asset);
+    if (val) {
+      emit ReservePaused(asset);
+    } else {
+      emit ReserveUnpaused(asset);
+    }
   }
 
   /// @inheritdoc ILendingPoolConfigurator
@@ -492,7 +485,11 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /// @inheritdoc ILendingPoolConfigurator
   function setPoolPause(bool val) external override onlyEmergencyAdmin {
-    _pool.setPause(val);
+    address[] memory reserves = _pool.getReservesList();
+
+    for (uint256 i = 0; i < reserves.length; i++) {
+      setReservePause(reserves[i], val);
+    }
   }
 
   /// @inheritdoc ILendingPoolConfigurator
