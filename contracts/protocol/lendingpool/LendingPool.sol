@@ -685,13 +685,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   ///@inheritdoc ILendingPool
-  function setPause(bool val) external override onlyLendingPoolConfigurator {
-    _paused = val;
-    if (_paused) {
-      emit Paused();
-    } else {
-      emit Unpaused();
-    }
+  function setPause(bool paused) external override onlyLendingPoolConfigurator {
+    _paused = paused;
   }
 
   ///@inheritdoc ILendingPool
