@@ -114,16 +114,6 @@ interface ILendingPool {
   );
 
   /**
-   * @dev Emitted when the pause is triggered.
-   */
-  event Paused();
-
-  /**
-   * @dev Emitted when the pause is lifted.
-   */
-  event Unpaused();
-
-  /**
    * @dev Emitted when a borrower is liquidated. This event is emitted by the LendingPool via
    * LendingPoolCollateral manager using a DELEGATECALL
    * This allows to have the events in the generated ABI for LendingPool.
@@ -508,19 +498,7 @@ interface ILendingPool {
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 
   /**
-   * @dev Set the _pause state of a reserve
-   * - Only callable by the LendingPoolConfigurator contract
-   * @param val `true` to pause the reserve, `false` to un-pause it
-   */
-  function setPause(bool val) external;
-
-  /**
-   * @dev Returns if the LendingPool is paused
-   */
-  function paused() external view returns (bool);
-
-  /**
-   * @dev Authorizes/Unauthorizes a flash borrower. Authorized borrowers pay no flash loan premium. 
+   * @dev Authorizes/Unauthorizes a flash borrower. Authorized borrowers pay no flash loan premium.
    * Only callable by the LendingPoolConfigurator contract
    * @param flashBorrower address of the flash borrower
    * @param authorized `true` to authorize, `false` to unauthorize

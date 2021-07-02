@@ -544,11 +544,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   ///@inheritdoc ILendingPool
-  function paused() external view override returns (bool) {
-    return _paused;
-  }
-
-  ///@inheritdoc ILendingPool
   function getReservesList() external view override returns (address[] memory) {
     uint256 reserveListCount = _reservesCount;
     uint256 droppedReservesCount = 0;
@@ -682,16 +677,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     onlyLendingPoolConfigurator
   {
     _reserves[asset].configuration.data = configuration;
-  }
-
-  ///@inheritdoc ILendingPool
-  function setPause(bool val) external override onlyLendingPoolConfigurator {
-    _paused = val;
-    if (_paused) {
-      emit Paused();
-    } else {
-      emit Unpaused();
-    }
   }
 
   ///@inheritdoc ILendingPool
