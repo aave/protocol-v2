@@ -246,8 +246,9 @@ export interface iAssetBase<T> {
   xSUSHI: T;
   STAKE: T;
   REW: T;
-  a3CRVGauge: T;
-  saCRVGauge: T;
+  a3CRV: T;
+  saCRV: T;
+  '3CRV': T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -306,7 +307,7 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iUsdLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'SUSD' | 'USDC' | 'USDT' | 'a3CRVGauge' | 'saCRVGauge'
+  'DAI' | 'SUSD' | 'USDC' | 'USDT' | 'a3CRV' | 'saCRV' | '3CRV'
 >;
 
 export type iMaticPoolAssets<T> = Pick<

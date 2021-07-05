@@ -81,6 +81,6 @@ export const strategyCurveLP: IReserveParams = {
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
-  aTokenImpl: eContractid.CurveRewardsAwareAToken,
+  aTokenImpl: eContractid.CurveGaugeRewardsAwareAToken,
   reserveFactor: '2000',
 };

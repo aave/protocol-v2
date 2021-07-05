@@ -9,8 +9,6 @@ import {
   strategyDAI,
   strategyUSDC,
   strategyUSDT,
-  strategyWETH,
-  strategyWBTC,
   strategySUSD,
   strategyCurveLP,
 } from './reservesConfigs';
@@ -174,16 +172,18 @@ export const AmmConfig: IUsdAmmConfiguration = {
       SUSD: '0xad35Bd71b9aFE6e4bDc266B345c198eaDEf9Ad94',
       USDC: '0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6',
       USDT: '0x3E7d1eAB13ad0104d2750B8863b489D65364e32D',
-      a3CRVGauge: '0xe19781CB322ff0Bd31ad4D8C01e91A67e', // Oracle deployed at fork
-      saCRVGauge: '0x602df949e38335714E135ce94180255Dae79a659', // Oracle deployed at fork
+      a3CRV: '0x63180F55F421fEC4DD2C778bcE565D3fde03f931', // Oracle deployed at fork
+      saCRV: '0x1eD0819bD513A0B9271Fa831f1C3dbab8d80C36c', // Oracle deployed at fork
+      '3CRV': '0x03c3614b6888842EcCAc71ADA1Ef1ad8e54f6D89', // Oracle deployed at fork
     },
     [eEthereumNetwork.tenderlyMain]: {
       DAI: '0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9',
       SUSD: '0xad35Bd71b9aFE6e4bDc266B345c198eaDEf9Ad94',
       USDC: '0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6',
       USDT: '0x3E7d1eAB13ad0104d2750B8863b489D65364e32D',
-      a3CRVGauge: '0xe19781CB322ff0Bd31ad4D8C01e91A67e', // Oracle deployed at fork
-      saCRVGauge: '0x602df949e38335714E135ce94180255Dae79a659', // Oracle deployed at fork
+      a3CRV: '0x63180F55F421fEC4DD2C778bcE565D3fde03f931', // Oracle deployed at fork
+      saCRV: '0x1eD0819bD513A0B9271Fa831f1C3dbab8d80C36c', // Oracle deployed at fork
+      '3CRV': '0x03c3614b6888842EcCAc71ADA1Ef1ad8e54f6D89', // Oracle deployed at fork
     },
   },
   ATokenDomainSeparator: {
@@ -239,8 +239,9 @@ export const AmmConfig: IUsdAmmConfiguration = {
     SUSD: strategySUSD,
     USDC: strategyUSDC,
     USDT: strategyUSDT,
-    a3CRVGauge: strategyCurveLP,
-    saCRVGauge: strategyCurveLP,
+    a3CRV: strategyCurveLP,
+    saCRV: strategyCurveLP,
+    '3CRV': strategyCurveLP,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -253,16 +254,18 @@ export const AmmConfig: IUsdAmmConfiguration = {
       SUSD: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-      a3CRVGauge: '0xd662908ADA2Ea1916B3318327A97eB18aD588b5d',
-      saCRVGauge: '0x462253b8F74B72304c145DB0e4Eebd326B22ca39',
+      a3CRV: '0xFd2a8fA60Abd58Efe3EeE34dd494cD491dC14900',
+      saCRV: '0x02d341CcB60fAaf662bC0554d13778015d1b285C',
+      '3CRV': '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490',
     },
     [eEthereumNetwork.tenderlyMain]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       SUSD: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-      a3CRVGauge: '0xd662908ADA2Ea1916B3318327A97eB18aD588b5d',
-      saCRVGauge: '0x462253b8F74B72304c145DB0e4Eebd326B22ca39',
+      a3CRV: '0xFd2a8fA60Abd58Efe3EeE34dd494cD491dC14900',
+      saCRV: '0x02d341CcB60fAaf662bC0554d13778015d1b285C',
+      '3CRV': '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490',
     },
   },
 };

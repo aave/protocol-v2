@@ -87,8 +87,9 @@ export const MOCK_CHAINLINK_AGGREGATORS_USD_CURVE_AMM_PRICES = {
   USDC: oneUsd.toFixed(),
   USDT: oneUsd.toFixed(),
   USD: oneUsd.toFixed(),
-  a3CRVGauge: oneUsd.multipliedBy('1.0536').toFixed(),
-  saCRVGauge: oneUsd.multipliedBy('1.0318').toFixed(),
+  a3CRV: oneUsd.multipliedBy('1.0536').toFixed(),
+  saCRV: oneUsd.multipliedBy('1.0318').toFixed(),
+  '3CRV': oneUsd.multipliedBy('1.0179').toFixed(),
 };
 
 export const CRV_TOKEN = {
