@@ -115,7 +115,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
-
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
@@ -713,7 +712,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;

@@ -90,8 +90,9 @@ export enum eContractid {
   FlashLiquidationAdapter = 'FlashLiquidationAdapter',
   RewardsATokenMock = 'RewardsATokenMock',
   RewardsToken = 'RewardsToken',
-  CurveRewardsAwareAToken = 'CurveRewardsAwareAToken',
   AaveOracleV2 = 'AaveOracleV2',
+  CurveGaugeRewardsAwareAToken = 'CurveGaugeRewardsAwareAToken',
+  CurveTreasury = 'CurveTreasury',
 }
 
 /*

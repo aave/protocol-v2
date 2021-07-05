@@ -8,7 +8,7 @@ import {
   IUsdAmmConfiguration,
   IBaseConfiguration,
 } from './types';
-import { getParamPerPool } from './contracts-helpers';
+import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
 import AaveConfig from '../markets/aave';
 import MaticConfig from '../markets/matic';
 import AmmConfig from '../markets/amm';
@@ -76,9 +76,7 @@ export const getGenesisPoolAdmin = async (
   if (targetAddress) {
     return targetAddress;
   }
-  const addressList = await Promise.all(
-    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
-  );
+  const addressList = await getEthersSignersAddresses();
   const addressIndex = config.PoolAdminIndex;
   return addressList[addressIndex];
 };
@@ -89,9 +87,7 @@ export const getEmergencyAdmin = async (config: IBaseConfiguration): Promise<tEt
   if (targetAddress) {
     return targetAddress;
   }
-  const addressList = await Promise.all(
-    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
-  );
+  const addressList = await getEthersSignersAddresses();
   const addressIndex = config.EmergencyAdminIndex;
   return addressList[addressIndex];
 };

@@ -51,7 +51,9 @@ import {
   FlashLiquidationAdapterFactory,
   RewardsTokenFactory,
   RewardsATokenMockFactory,
-  CurveRewardsAwareATokenFactory,
+  CurveGaugeRewardsAwareATokenFactory,
+  CurveTreasuryFactory,
+  CurveGaugeReserveInterestRateStrategyFactory,
   AaveOracleV2Factory,
 } from '../types';
 import {
@@ -70,7 +72,7 @@ import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins'
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
-import { CRV_TOKEN } from './constants';
+import { CRV_TOKEN, CURVE_TREASURY } from './constants';
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
@@ -144,7 +146,9 @@ export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolea
     linkedGenericLogicByteCode
   );
 
-  const genericLogic = await (await genericLogicFactory.deploy()).deployed();
+  const genericLogic = await (
+    await genericLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
   return withSaveAndVerify(genericLogic, eContractid.GenericLogic, [], verify);
 };
 
@@ -165,7 +169,9 @@ export const deployValidationLogic = async (
     linkedValidationLogicByteCode
   );
 
-  const validationLogic = await (await validationLogicFactory.deploy()).deployed();
+  const validationLogic = await (
+    await validationLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
 
   return withSaveAndVerify(validationLogic, eContractid.ValidationLogic, [], verify);
 };
@@ -328,6 +334,17 @@ export const deployDefaultReserveInterestRateStrategy = async (
 ) =>
   withSaveAndVerify(
     await new DefaultReserveInterestRateStrategyFactory(await getFirstSigner()).deploy(...args),
+    eContractid.DefaultReserveInterestRateStrategy,
+    args,
+    verify
+  );
+
+export const deployCurveGaugeReserveInterestRateStrategy = async (
+  args: [tEthereumAddress, string, string, string, string, string, string],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new CurveGaugeReserveInterestRateStrategyFactory(await getFirstSigner()).deploy(...args),
     eContractid.DefaultReserveInterestRateStrategy,
     args,
     verify
@@ -676,8 +693,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
       return deployDelegationAwareATokenImpl;
     case eContractid.RewardsATokenMock:
       return deployRewardATokenMock;
-    case eContractid.CurveRewardsAwareAToken:
-      return deployCurveRewardsAwareATokenByNetwork;
+    case eContractid.CurveGaugeRewardsAwareAToken:
+      return deployCurveGaugeRewardsAwareATokenByNetwork;
     default:
       throw Error(`Missing aToken implementation deployment script for: ${id}`);
   }
@@ -731,20 +748,44 @@ export const deployATokenImplementations = async (
   }
 };
 
-export const deployCurveRewardsAwareAToken = async (
+export const deployCurveGaugeRewardsAwareAToken = async (
   crvToken: tEthereumAddress,
+  curveTreasury: tEthereumAddress,
   verify?: boolean
 ) => {
-  const args: [tEthereumAddress] = [crvToken];
+  const args: [tEthereumAddress, tEthereumAddress] = [crvToken, curveTreasury];
   return withSaveAndVerify(
-    await new CurveRewardsAwareATokenFactory(await getFirstSigner()).deploy(...args),
-    eContractid.CurveRewardsAwareAToken,
+    await new CurveGaugeRewardsAwareATokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.CurveGaugeRewardsAwareAToken,
     args,
     verify
   );
 };
 
-export const deployCurveRewardsAwareATokenByNetwork = async (verify?: boolean) => {
+export const deployCurveGaugeRewardsAwareATokenByNetwork = async (verify?: boolean) => {
   const network = DRE.network.name as eEthereumNetwork;
-  return deployCurveRewardsAwareAToken(CRV_TOKEN[network], verify);
+  return deployCurveGaugeRewardsAwareAToken(CRV_TOKEN[network], CURVE_TREASURY[network], verify);
+};
+
+export const deployCurveTreasury = async (
+  votingEscrow: tEthereumAddress,
+  crvToken: tEthereumAddress,
+  curveFeeDistributor: tEthereumAddress,
+  gaugeController: tEthereumAddress,
+  aaveCollector: tEthereumAddress,
+  verify?: boolean
+) => {
+  const args: [
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress
+  ] = [votingEscrow, crvToken, curveFeeDistributor, gaugeController, aaveCollector];
+  return withSaveAndVerify(
+    await new CurveTreasuryFactory(await getFirstSigner()).deploy(...args),
+    eContractid.CurveTreasury,
+    args,
+    verify
+  );
 };

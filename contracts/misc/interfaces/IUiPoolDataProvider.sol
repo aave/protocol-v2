@@ -68,6 +68,11 @@ interface IUiPoolDataProvider {
     uint256 sTokenincentivesUserIndex;
   }
 
+  struct IncentivesControllerData {
+    uint256 userUnclaimedRewards;
+    uint256 emissionEndTimestamp;
+  }
+
   function getReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
@@ -75,6 +80,6 @@ interface IUiPoolDataProvider {
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
       uint256,
-      uint256
+      IncentivesControllerData memory
     );
 }

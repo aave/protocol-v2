@@ -125,4 +125,9 @@ interface IAaveIncentivesController {
    * @dev for backward compatibility with previous implementation of the Incentives controller
    */
   function PRECISION() external view returns (uint8);
+
+  /**
+   * @dev Gets the distribution end timestamp of the emissions
+   */
+  function DISTRIBUTION_END() external view returns (uint256);
 }
