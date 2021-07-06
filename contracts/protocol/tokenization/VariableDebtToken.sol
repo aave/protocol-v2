@@ -25,7 +25,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       'PermitDelegation(address delegator,address delegatee,uint256 value,uint256 nonce,uint256 deadline)'
     );
 
-  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  uint256 public constant DEBT_TOKEN_REVISION = 0x2;
 
   ILendingPool internal _pool;
   address internal _underlyingAsset;
