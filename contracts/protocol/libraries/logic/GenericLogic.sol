@@ -113,7 +113,7 @@ library GenericLogic {
         vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
 
         vars.avgLtv = vars.avgLtv.add(vars.userBalanceETH.mul(vars.ltv));
-        vars.hasZeroLtvCollateral = vars.ltv == 0;
+        vars.hasZeroLtvCollateral = vars.hasZeroLtvCollateral || vars.ltv == 0;
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
           vars.userBalanceETH.mul(vars.liquidationThreshold)
         );

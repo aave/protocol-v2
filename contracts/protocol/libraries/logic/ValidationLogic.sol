@@ -21,7 +21,7 @@ import {IAToken} from '../../../interfaces/IAToken.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {Address} from '../../../dependencies/openzeppelin/contracts/Address.sol';
-
+import "hardhat/console.sol";
 /**
  * @title ReserveLogic library
  * @author Aave
@@ -551,6 +551,9 @@ library ValidationLogic {
     );
 
     vars.assetLtv = reserve.configuration.getLtvMemory();
+
+    console.log("asset ltv is ", vars.assetLtv);
+    console.log("has 0 ltv collateral ", vars.hasZeroLtvCollateral);
 
     require(vars.assetLtv == 0 || !vars.hasZeroLtvCollateral, Errors.VL_LTV_VALIDATION_FAILED);
   }
