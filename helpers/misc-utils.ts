@@ -9,6 +9,7 @@ import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import { tEthereumAddress } from './types';
 import { isAddress } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
+import { SignerWithAddress } from '../test-suites/test-aave/helpers/make-suite';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -114,6 +115,19 @@ export const notFalsyOrZeroAddress = (address: tEthereumAddress | null | undefin
     return false;
   }
   return isAddress(address) && !isZeroAddress(address);
+};
+
+export const impersonateAddress = async (address: tEthereumAddress): Promise<SignerWithAddress> => {
+  await (DRE as HardhatRuntimeEnvironment).network.provider.request({
+    method: 'hardhat_impersonateAccount',
+    params: [address],
+  });
+  const signer = await DRE.ethers.provider.getSigner(address);
+
+  return {
+    signer,
+    address,
+  };
 };
 
 export const impersonateAccountsHardhat = async (accounts: string[]) => {

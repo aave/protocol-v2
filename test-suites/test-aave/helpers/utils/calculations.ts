@@ -1,14 +1,9 @@
 import BigNumber from 'bignumber.js';
+import { BigNumber as BigNumberEthers } from 'ethers';
 import { ONE_YEAR, RAY, MAX_UINT_AMOUNT, PERCENTAGE_FACTOR } from '../../../../helpers/constants';
-import {
-  IReserveParams,
-  iAavePoolAssets,
-  RateMode,
-  tEthereumAddress,
-} from '../../../../helpers/types';
+import { IReserveParams, iAavePoolAssets, RateMode } from '../../../../helpers/types';
 import './math';
 import { ReserveData, UserReserveData } from './interfaces';
-import { expect } from 'chai';
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
@@ -1244,7 +1239,9 @@ export const calcExpectedInterestRates = (
   ];
 
   let stableBorrowRate: BigNumber = marketStableRate;
-  let variableBorrowRate: BigNumber = new BigNumber(reserveConfiguration.strategy.baseVariableBorrowRate);
+  let variableBorrowRate: BigNumber = new BigNumber(
+    reserveConfiguration.strategy.baseVariableBorrowRate
+  );
 
   const optimalRate = new BigNumber(reserveConfiguration.strategy.optimalUtilizationRate);
   const excessRate = new BigNumber(RAY).minus(optimalRate);
@@ -1256,13 +1253,17 @@ export const calcExpectedInterestRates = (
     stableBorrowRate = stableBorrowRate
       .plus(reserveConfiguration.strategy.stableRateSlope1)
       .plus(
-        new BigNumber(reserveConfiguration.strategy.stableRateSlope2).rayMul(excessUtilizationRateRatio)
+        new BigNumber(reserveConfiguration.strategy.stableRateSlope2).rayMul(
+          excessUtilizationRateRatio
+        )
       );
 
     variableBorrowRate = variableBorrowRate
       .plus(reserveConfiguration.strategy.variableRateSlope1)
       .plus(
-        new BigNumber(reserveConfiguration.strategy.variableRateSlope2).rayMul(excessUtilizationRateRatio)
+        new BigNumber(reserveConfiguration.strategy.variableRateSlope2).rayMul(
+          excessUtilizationRateRatio
+        )
       );
   } else {
     stableBorrowRate = stableBorrowRate.plus(
@@ -1433,3 +1434,14 @@ const calcExpectedTotalVariableDebt = (
 ) => {
   return reserveData.scaledVariableDebt.rayMul(expectedVariableDebtIndex);
 };
+
+export function calcExpectedRewards(
+  balance: BigNumberEthers,
+  userIndexAfter: BigNumberEthers,
+  userIndexBefore: BigNumberEthers,
+  precision: number = 24
+): BigNumberEthers {
+  return balance
+    .mul(userIndexAfter.sub(userIndexBefore))
+    .div(BigNumberEthers.from(10).pow(precision));
+}

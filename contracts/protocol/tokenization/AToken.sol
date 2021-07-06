@@ -70,7 +70,7 @@ contract AToken is
     string calldata aTokenName,
     string calldata aTokenSymbol,
     bytes calldata params
-  ) external override initializer {
+  ) external virtual override initializer {
     uint256 chainId;
 
     //solium-disable-next-line
@@ -122,7 +122,7 @@ contract AToken is
     address receiverOfUnderlying,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
+  ) public virtual override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
@@ -145,7 +145,7 @@ contract AToken is
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool returns (bool) {
+  ) public virtual override onlyLendingPool returns (bool) {
     uint256 previousBalance = super.balanceOf(user);
 
     uint256 amountScaled = amount.rayDiv(index);
@@ -273,7 +273,7 @@ contract AToken is
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
    **/
-  function UNDERLYING_ASSET_ADDRESS() public override view returns (address) {
+  function UNDERLYING_ASSET_ADDRESS() public view override returns (address) {
     return _underlyingAsset;
   }
 
@@ -307,6 +307,7 @@ contract AToken is
    **/
   function transferUnderlyingTo(address target, uint256 amount)
     external
+    virtual
     override
     onlyLendingPool
     returns (uint256)
@@ -320,7 +321,12 @@ contract AToken is
    * @param user The user executing the repayment
    * @param amount The amount getting repaid
    **/
-  function handleRepayment(address user, uint256 amount) external override onlyLendingPool {}
+  function handleRepayment(address user, uint256 amount)
+    external
+    virtual
+    override
+    onlyLendingPool
+  {}
 
   /**
    * @dev implements the permit function as for

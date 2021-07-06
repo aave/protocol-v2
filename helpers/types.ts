@@ -87,6 +87,10 @@ export enum eContractid {
   UniswapLiquiditySwapAdapter = 'UniswapLiquiditySwapAdapter',
   UniswapRepayAdapter = 'UniswapRepayAdapter',
   FlashLiquidationAdapter = 'FlashLiquidationAdapter',
+  RewardsATokenMock = 'RewardsATokenMock',
+  RewardsToken = 'RewardsToken',
+  CurveGaugeRewardsAwareAToken = 'CurveGaugeRewardsAwareAToken',
+  CurveTreasury = 'CurveTreasury',
 }
 
 /*
@@ -237,8 +241,9 @@ export interface iAssetBase<T> {
   BptWBTCWETH: T;
   BptBALWETH: T;
   WMATIC: T;
-  STAKE: T;
   xSUSHI: T;
+  STAKE: T;
+  REW: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -352,6 +357,7 @@ export enum TokenContractId {
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
   xSUSHI = 'xSUSHI',
+  REW = 'REW',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -494,6 +500,8 @@ export interface ICommonConfiguration {
   WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
+  StableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
+  VariableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {

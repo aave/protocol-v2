@@ -24,6 +24,7 @@
     "test-scenarios": "npm run compile && npx hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/scenario.spec.ts",
     "test-subgraph:scenarios": "npm run compile && hardhat --network hardhatevm_docker test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/subgraph-scenarios.spec.ts",
     "test:main:check-list": "npm run compile && FORK=main TS_NODE_TRANSPILE_ONLY=1 hardhat test  test-suites/test-aave/__setup.spec.ts test-suites/test-aave/mainnet/check-list.spec.ts",
+    "test:main:crv-rewards": "FORK_BLOCK_NUMBER=11859516 FORK=main TS_NODE_TRANSPILE_ONLY=1 hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/mainnet/atoken-curve-rewards.main.ts",
     "dev:coverage": "buidler compile --force && buidler coverage --network coverage",
     "aave:evm:dev:migration": "npm run compile && hardhat aave:dev",
     "aave:docker:full:migration": "npm run compile && npm run hardhat:docker -- aave:mainnet --skip-registry",

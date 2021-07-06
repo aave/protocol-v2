@@ -30,6 +30,8 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  RewardsATokenMockFactory,
+  RewardsTokenFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
@@ -364,3 +366,20 @@ export const getFlashLiquidationAdapter = async (address?: tEthereumAddress) =>
         .address,
     await getFirstSigner()
   );
+
+export const getRewardsToken = async (address?: tEthereumAddress) =>
+  await RewardsTokenFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.RewardsToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getRewardsATokenMock = async (address?: tEthereumAddress) =>
+  await RewardsATokenMockFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.RewardsATokenMock}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getRewardsAToken = async (address: tEthereumAddress) =>
+  await RewardsATokenMockFactory.connect(address, await getFirstSigner());
