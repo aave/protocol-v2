@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { oneEther } from './constants';
 
 export interface SymbolMap<T> {
   [symbol: string]: T;
@@ -204,6 +205,7 @@ export interface iAssetBase<T> {
   TUSD: T;
   USDC: T;
   USDT: T;
+  PAX: T;
   SUSD: T;
   AAVE: T;
   BAT: T;
@@ -251,6 +253,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'TUSD'
   | 'USDC'
   | 'USDT'
+  | 'PAX'
   | 'SUSD'
   | 'AAVE'
   | 'BAT'
@@ -319,6 +322,7 @@ export enum TokenContractId {
   WETH = 'WETH',
   USDC = 'USDC',
   USDT = 'USDT',
+  PAX = 'PAX',
   SUSD = 'SUSD',
   ZRX = 'ZRX',
   MKR = 'MKR',
