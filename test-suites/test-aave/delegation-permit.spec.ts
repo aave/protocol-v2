@@ -114,7 +114,7 @@ makeSuite('Permit Delegation', (testEnv: TestEnv) => {
       (await variableDebtDai.borrowAllowance(user2.address, user3.address)).toString()
     ).to.be.equal('0');
   });
-  it('User 3 borrows variable interest dai on behalf of user 2 via permit', async () => {
+  it('User 3 borrows stable interest dai on behalf of user 2 via permit', async () => {
     const {
       pool,
       variableDebtDai,
