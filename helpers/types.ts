@@ -13,7 +13,7 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
-  tenderlyMain = 'tenderlyMain',
+  tenderly = 'tenderly',
 }
 
 export enum ePolygonNetwork {
@@ -424,7 +424,7 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
-  [eEthereumNetwork.tenderlyMain]: T;
+  [eEthereumNetwork.tenderly]: T;
 }
 
 export interface iPolygonParamsPerNetwork<T> {

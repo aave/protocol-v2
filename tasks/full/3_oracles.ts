@@ -95,7 +95,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       if (DRE.network.name.includes('tenderly')) {
         const transactionLink = `https://dashboard.tenderly.co/${DRE.config.tenderly.username}/${
           DRE.config.tenderly.project
-        }/fork/${DRE.tenderlyNetwork.getFork()}/simulation/${DRE.tenderlyNetwork.getHead()}`;
+        }/fork/${DRE.tenderly.network().getFork()}/simulation/${DRE.tenderly.network().getHead()}`;
         console.error('Check tx error:', transactionLink);
       }
       throw error;

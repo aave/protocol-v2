@@ -34,6 +34,7 @@ import {
   RewardsTokenFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
+import { CURVE_TREASURY } from './external/curve/constants';
 import { MockTokenMap, getEthersSigners } from './contracts-helpers';
 import { DRE, getDb, notFalsyOrZeroAddress, omit } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
@@ -440,3 +441,7 @@ export const getRewardsATokenMock = async (address?: tEthereumAddress) =>
 
 export const getRewardsAToken = async (address: tEthereumAddress) =>
   await RewardsATokenMockFactory.connect(address, await getFirstSigner());
+
+export const getCurveTreasuryAddress = async () =>
+  (await getDb().get(`${eContractid.CurveTreasury}.${DRE.network.name}`).value()).address ||
+  CURVE_TREASURY[DRE.network.name];

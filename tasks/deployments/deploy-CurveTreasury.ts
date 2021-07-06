@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
-import { loadPoolConfig } from '../../helpers/configuration';
-import { CRV_TOKEN, CURVE_CONFIG, ZERO_ADDRESS } from '../../helpers/constants';
+import { CRV_TOKEN, CURVE_CONFIG } from '../../helpers/external/curve/constants';
+import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   deployCurveTreasury,
   deployInitializableAdminUpgradeabilityProxy,

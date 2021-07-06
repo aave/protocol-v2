@@ -37,66 +37,30 @@ import {
 } from '../../../helpers/contracts-helpers';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { ICurveGaugeFactory } from '../../../types/ICurveGaugeFactory';
+import {
+  GaugeInfo,
+  GAUGE_3POOL,
+  GAUGE_AAVE3,
+  GAUGE_ANKR,
+  GAUGE_EURS,
+  isCurveGaugeV2,
+} from '../../../helpers/external/curve/constants';
 const ONE_DAY = 86400;
 const { expect } = require('chai');
 
-interface GaugeInfo {
-  underlying: tEthereumAddress;
-  address: tEthereumAddress;
-  name: string;
-  symbol: string;
-  rewardTokens: tEthereumAddress[];
-}
 const USER_ADDRESS = '0x9c5083dd4838E120Dbeac44C052179692Aa5dAC5';
 
 const CRV_TOKEN = '0xd533a949740bb3306d119cc777fa900ba034cd52';
 const SNX_TOKEN = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
 
-const GAUGE_3POOL: GaugeInfo = {
-  underlying: '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490',
-  address: '0xbFcF63294aD7105dEa65aA58F8AE5BE2D9d0952A',
-  name: 'aToken 3pool Gauge Deposit',
-  symbol: 'a-3poolCRV-gauge',
-  rewardTokens: [],
-};
-
-const GAUGE_AAVE3: GaugeInfo = {
-  underlying: '0xFd2a8fA60Abd58Efe3EeE34dd494cD491dC14900',
-  address: '0xd662908ADA2Ea1916B3318327A97eB18aD588b5d',
-  name: 'aToken a3CRV Gauge Deposit',
-  symbol: 'a-a3CRV-gauge',
-  rewardTokens: [],
-};
-
-const GAUGE_EURS: GaugeInfo = {
-  underlying: '0x194eBd173F6cDacE046C53eACcE9B953F28411d1',
-  address: '0x90Bb609649E0451E5aD952683D64BD2d1f245840',
-  name: 'aToken eursCRV Gauge Deposit',
-  symbol: 'a-eursCRV-gauge',
-  rewardTokens: ['0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F'],
-};
-
-const GAUGE_ANKR: GaugeInfo = {
-  underlying: '0xaA17A236F2bAdc98DDc0Cf999AbB47D47Fc0A6Cf',
-  address: '0x6d10ed2cf043e6fcf51a0e7b4c2af3fa06695707',
-  name: 'aToken ankrCRV Gauge Deposit',
-  symbol: 'a-ankrCRV-gauge',
-  rewardTokens: [
-    '0xE0aD1806Fd3E7edF6FF52Fdb822432e847411033',
-    '0x8290333ceF9e6D528dD5618Fb97a76f268f3EDD4',
-  ],
-};
-const isGaugeV2 = (address: tEthereumAddress) =>
-  GAUGE_3POOL.address.toLowerCase() !== address.toLowerCase();
-
 const unstakeAllGauges = async (key: SignerWithAddress, gauges: tEthereumAddress[]) => {
   for (let x = 0; x < gauges.length; x++) {
-    if (isGaugeV2(gauges[x])) {
+    if (isCurveGaugeV2(gauges[x])) {
       await waitForTx(
         await IERC20Factory.connect(gauges[x], key.signer).approve(gauges[x], MAX_UINT_AMOUNT)
       );
     }
-    const balance = IERC20Factory.connect(gauges[x], key.signer).balanceOf(key.address);
+    const balance = await IERC20Factory.connect(gauges[x], key.signer).balanceOf(key.address);
     await waitForTx(await ICurveGaugeFactory.connect(gauges[x], key.signer).withdraw(balance));
   }
 };
@@ -148,7 +112,7 @@ const listCurveLPToken = async (gauge: GaugeInfo, curveTreasury: tEthereumAddres
   const interestRateStrategyAddress = interestStrategy.address;
   const encodedParams = defaultAbiCoder.encode(
     ['address', 'bool'],
-    [gauge.address, isGaugeV2(gauge.address)]
+    [gauge.address, isCurveGaugeV2(gauge.address)]
   );
   const curveReserveInitParams = [
     {

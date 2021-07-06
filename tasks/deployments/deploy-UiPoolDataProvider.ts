@@ -33,7 +33,7 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
         incentivesController: '0xd41aE58e803Edf4304334acCE4DC4Ec34a63C644',
         aaveOracle: '0xC365C653f7229894F93994CD0b30947Ab69Ff1D5',
       },
-      [eEthereumNetwork.tenderlyMain]: {
+      [eEthereumNetwork.tenderly]: {
         incentivesController: '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
         aaveOracle: '0x3a463fFE9b69364B51113352a17839e36268e657',
       },
@@ -62,8 +62,8 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
     console.log('UiPoolDataProvider deployed at:', uiPoolDataProvider.address);
     console.log(`\tFinished UiPoolDataProvider deployment`);
     if (usingTenderly()) {
-      const postDeployHead = localBRE.tenderlyRPC.getHead();
-      const postDeployFork = localBRE.tenderlyRPC.getFork();
+      const postDeployHead = localBRE.tenderly.network().getHead();
+      const postDeployFork = localBRE.tenderly.network().getFork();
       console.log('Tenderly Info');
       console.log('- Head', postDeployHead);
       console.log('- Fork', postDeployFork);

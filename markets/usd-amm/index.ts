@@ -58,7 +58,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: undefined,
     [eEthereumNetwork.ropsten]: undefined,
     [eEthereumNetwork.main]: undefined,
-    [eEthereumNetwork.tenderlyMain]: undefined,
+    [eEthereumNetwork.tenderly]: undefined,
   },
   PoolAdminIndex: 0,
   EmergencyAdmin: {
@@ -68,7 +68,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: undefined,
     [eEthereumNetwork.ropsten]: undefined,
     [eEthereumNetwork.main]: undefined,
-    [eEthereumNetwork.tenderlyMain]: undefined,
+    [eEthereumNetwork.tenderly]: undefined,
   },
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
@@ -78,7 +78,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.tenderlyMain]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
+    [eEthereumNetwork.tenderly]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
   },
   ProviderRegistryOwner: {
     [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
@@ -87,7 +87,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.tenderlyMain]: '0xB9062896ec3A615a4e4444DF183F0531a77218AE',
+    [eEthereumNetwork.tenderly]: '0xB9062896ec3A615a4e4444DF183F0531a77218AE',
   },
   LendingRateOracle: {
     [eEthereumNetwork.coverage]: '',
@@ -96,7 +96,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0xd00Bd28FAdDa9d5658D1D4e0c151973146C7A533', //'0xE48F95873855bfd97BF89572DDf5cBC44D9c545b'
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
     [eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',  // Need to re-deploy because of onlyOwner
-    [eEthereumNetwork.tenderlyMain]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
+    [eEthereumNetwork.tenderly]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
   },
   LendingPoolCollateralManager: {
     [eEthereumNetwork.coverage]: '',
@@ -105,7 +105,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x9269b6453d0d75370c4c85e5a42977a53efdb72a',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
-    [eEthereumNetwork.tenderlyMain]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
+    [eEthereumNetwork.tenderly]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
   },
   LendingPoolConfigurator: {
     [eEthereumNetwork.coverage]: '',
@@ -114,7 +114,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x36eB31800aa67a9c50df1d56EE01981A6E14Cce5',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderlyMain]: '',
+    [eEthereumNetwork.tenderly]: '',
   },
   LendingPool: {
     [eEthereumNetwork.coverage]: '',
@@ -123,7 +123,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x78142De7a1930412E9e50dEB3b80dB284c2dFa3A',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderlyMain]: '',
+    [eEthereumNetwork.tenderly]: '',
   },
   WethGateway: {
     [eEthereumNetwork.coverage]: '',
@@ -132,7 +132,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x1c4A1cC35A477aa1cF35DF671d93ACc04d8131E0',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderlyMain]: '',
+    [eEthereumNetwork.tenderly]: '',
   },
   TokenDistributor: {
     [eEthereumNetwork.coverage]: '',
@@ -141,7 +141,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x971efe90088f21dc6a36f610ffed77fc19710708',
     [eEthereumNetwork.ropsten]: '0xeba2ea67942b8250d870b12750b594696d02fc9c',
     [eEthereumNetwork.main]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
-    [eEthereumNetwork.tenderlyMain]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
+    [eEthereumNetwork.tenderly]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
   },
   AaveOracle: {
     [eEthereumNetwork.coverage]: '',
@@ -150,7 +150,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x8fb777d67e9945e2c01936e319057f9d41d559e6', // Need to re-deploy because of onlyOwner
     [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
     [eEthereumNetwork.main]: ZERO_ADDRESS,
-    [eEthereumNetwork.tenderlyMain]: '0x3a463fFE9b69364B51113352a17839e36268e657',
+    [eEthereumNetwork.tenderly]: '0x3a463fFE9b69364B51113352a17839e36268e657',
   },
   FallbackOracle: {
     [eEthereumNetwork.coverage]: '',
@@ -159,7 +159,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x50913E8E1c650E790F8a1E741FF9B1B1bB251dfe',
     [eEthereumNetwork.ropsten]: '0xAD1a978cdbb8175b2eaeC47B01404f8AEC5f4F0d',
     [eEthereumNetwork.main]: ZERO_ADDRESS,
-    [eEthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
+    [eEthereumNetwork.tenderly]: ZERO_ADDRESS,
   },
   ChainlinkAggregator: {
     [eEthereumNetwork.coverage]: {},
@@ -176,7 +176,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
       saCRV: '0x1eD0819bD513A0B9271Fa831f1C3dbab8d80C36c', // Oracle deployed at fork
       '3CRV': '0x03c3614b6888842EcCAc71ADA1Ef1ad8e54f6D89', // Oracle deployed at fork
     },
-    [eEthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderly]: {
       DAI: '0xAed0c38402a5d19df6E4c03F4E2DceD6e29c1ee9',
       SUSD: '0xad35Bd71b9aFE6e4bDc266B345c198eaDEf9Ad94',
       USDC: '0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6',
@@ -196,7 +196,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderlyMain]: '',
+    [eEthereumNetwork.tenderly]: '',
   },
   WETH: {
     [eEthereumNetwork.coverage]: '', // deployed in local evm
@@ -205,7 +205,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
     [eEthereumNetwork.ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.tenderlyMain]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   },
   WrappedNativeToken: {
     [eEthereumNetwork.coverage]: '', // deployed in local evm
@@ -214,7 +214,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
     [eEthereumNetwork.ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.tenderlyMain]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   },
   ReserveFactorTreasuryAddress: {
     [eEthereumNetwork.coverage]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
@@ -223,7 +223,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
     [eEthereumNetwork.ropsten]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
     [eEthereumNetwork.main]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.tenderlyMain]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
+    [eEthereumNetwork.tenderly]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
   },
   IncentivesController: {
     [eEthereumNetwork.coverage]: ZERO_ADDRESS,
@@ -232,7 +232,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
     [eEthereumNetwork.kovan]: ZERO_ADDRESS,
     [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
     [eEthereumNetwork.main]: '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
-    [eEthereumNetwork.tenderlyMain]: '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
+    [eEthereumNetwork.tenderly]: '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
   },
   ReservesConfig: {
     DAI: strategyDAI,
@@ -258,7 +258,7 @@ export const AmmConfig: IUsdAmmConfiguration = {
       saCRV: '0x02d341CcB60fAaf662bC0554d13778015d1b285C',
       '3CRV': '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490',
     },
-    [eEthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       SUSD: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',

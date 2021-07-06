@@ -27,7 +27,7 @@ task('usd:mainnet', 'Deploy development environment')
     await DRE.run('deploy-curve-treasury', {
       treasuryAdmin: await getGenesisPoolAdmin(poolConfig), // TBD
       proxyAdmin: await getEmergencyAdmin(poolConfig), // TBD, address provider?
-      collector: poolConfig.ReserveFactorTreasuryAddress,
+      collector: poolConfig.ReserveFactorTreasuryAddress['main'],
     });
 
     console.log('1. Deploy address provider');
@@ -58,8 +58,8 @@ task('usd:mainnet', 'Deploy development environment')
     }
 
     if (usingTenderly()) {
-      const postDeployHead = DRE.tenderlyNetwork.getHead();
-      const postDeployFork = DRE.tenderlyNetwork.getFork();
+      const postDeployHead = DRE.tenderly.network().getHead();
+      const postDeployFork = DRE.tenderly.network().getFork();
       console.log('Tenderly Info');
       console.log('- Head', postDeployHead);
       console.log('- Fork', postDeployFork);

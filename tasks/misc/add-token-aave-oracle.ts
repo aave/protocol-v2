@@ -21,8 +21,8 @@ task('dev:set-price-providers-to-aave-oracle', 'Set price providers ')
     });
 
     if (usingTenderly()) {
-      const postDeployHead = localBRE.tenderlyRPC.getHead();
-      const postDeployFork = localBRE.tenderlyRPC.getFork();
+      const postDeployHead = localBRE.tenderly.network().getHead();
+      const postDeployFork = localBRE.tenderly.network().getFork();
       console.log('Tenderly Info');
       console.log('- Head', postDeployHead);
       console.log('- Fork', postDeployFork);

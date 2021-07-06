@@ -30,8 +30,8 @@ task('dev:impersonate-transfer', 'Send ERC20 from an impersonated address')
     console.log('- Address:', to);
     console.log('- Balance:', formatUnits(await erc20.balanceOf(to), decimals), symbol);
     if (usingTenderly()) {
-      const postDeployHead = localBRE.tenderlyRPC.getHead();
-      const postDeployFork = localBRE.tenderlyRPC.getFork();
+      const postDeployHead = localBRE.tenderly.network().getHead();
+      const postDeployFork = localBRE.tenderly.network().getFork();
       console.log('Tenderly Info');
       console.log('- Head', postDeployHead);
       console.log('- Fork', postDeployFork);

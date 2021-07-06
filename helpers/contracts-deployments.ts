@@ -15,7 +15,7 @@ import {
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
 import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
-import { getFirstSigner } from './contracts-getters';
+import { getCurveTreasuryAddress, getFirstSigner } from './contracts-getters';
 import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
@@ -72,7 +72,7 @@ import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins'
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
-import { CRV_TOKEN, CURVE_TREASURY } from './constants';
+import { CRV_TOKEN } from './external/curve/constants';
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
@@ -764,7 +764,12 @@ export const deployCurveGaugeRewardsAwareAToken = async (
 
 export const deployCurveGaugeRewardsAwareATokenByNetwork = async (verify?: boolean) => {
   const network = DRE.network.name as eEthereumNetwork;
-  return deployCurveGaugeRewardsAwareAToken(CRV_TOKEN[network], CURVE_TREASURY[network], verify);
+  console.log(CRV_TOKEN[network], await getCurveTreasuryAddress());
+  return deployCurveGaugeRewardsAwareAToken(
+    CRV_TOKEN[network],
+    await getCurveTreasuryAddress(),
+    verify
+  );
 };
 
 export const deployCurveTreasury = async (
