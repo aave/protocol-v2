@@ -100,6 +100,3 @@ export const rateStrategyVolatileFour: IInterestRateStrategyParams = {
   stableRateSlope1: '0',
   stableRateSlope2: '0',
 }
-
-
-
