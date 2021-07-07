@@ -24,6 +24,7 @@ import {
   strategyYFI,
   strategyXSUSHI,
   strategyENJ,
+  strategyRAI,
 } from './reservesConfigs';
 
 // ----------------
@@ -44,6 +45,7 @@ export const AaveConfig: IAaveConfiguration = {
     LINK: strategyLINK,
     MANA: strategyMANA,
     MKR: strategyMKR,
+    RAI: strategyRAI,
     REN: strategyREN,
     SNX: strategySNX,
     SUSD: strategySUSD,
@@ -71,6 +73,7 @@ export const AaveConfig: IAaveConfiguration = {
       LINK: '0xAD5ce863aE3E4E9394Ab43d4ba0D80f419F61789',
       MANA: '0x738Dc6380157429e957d223e6333Dc385c85Fec7',
       MKR: '0x61e4CAE3DA7FD189e52a4879C7B8067D7C2Cc0FA',
+      RAI: '0x76b06a2f6df6f0514e7bec52a9afb3f603b477cd',
       REN: '0x5eebf65A6746eed38042353Ba84c8e37eD58Ac6f',
       SNX: '0x7FDb81B0b8a010dd4FFc57C3fecbf145BA8Bd947',
       SUSD: '0x99b267b9D96616f906D53c26dECf3C5672401282',
@@ -93,6 +96,7 @@ export const AaveConfig: IAaveConfiguration = {
       LINK: '0x1a906E71FF9e28d8E01460639EB8CF0a6f0e2486',
       MANA: '0x78b1F763857C8645E46eAdD9540882905ff32Db7',
       MKR: '0x2eA9df3bABe04451c9C3B06a2c844587c59d9C37',
+      RAI: ZERO_ADDRESS,
       REN: ZERO_ADDRESS,
       SNX: '0xF80Aa7e2Fda4DA065C55B8061767F729dA1476c7',
       SUSD: '0xc374eB17f665914c714Ac4cdC8AF3a3474228cc5',
@@ -115,6 +119,7 @@ export const AaveConfig: IAaveConfiguration = {
       LINK: '0x514910771AF9Ca656af840dff83E8264EcF986CA',
       MANA: '0x0F5D2fB29fb7d3CFeE444a200298f468908cC942',
       MKR: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2',
+      RAI: '0x03ab458634910aad20ef5f1c8ee96f1d6ac54919',
       REN: '0x408e41876cCCDC0F92210600ef50372656052a38',
       SNX: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F',
       SUSD: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
@@ -138,6 +143,7 @@ export const AaveConfig: IAaveConfiguration = {
       LINK: '0x514910771AF9Ca656af840dff83E8264EcF986CA',
       MANA: '0x0F5D2fB29fb7d3CFeE444a200298f468908cC942',
       MKR: '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2',
+      RAI: '0x03ab458634910aad20ef5f1c8ee96f1d6ac54919',
       REN: '0x408e41876cCCDC0F92210600ef50372656052a38',
       SNX: '0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F',
       SUSD: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',

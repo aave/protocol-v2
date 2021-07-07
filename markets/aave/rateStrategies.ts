@@ -13,7 +13,7 @@ export const rateStrategyStableOne: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
 };
 
-// DAI TUSD
+// DAI TUSD RAI
 export const rateStrategyStableTwo: IInterestRateStrategyParams = {
   name: "rateStrategyStableTwo",
   optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
@@ -100,6 +100,3 @@ export const rateStrategyVolatileFour: IInterestRateStrategyParams = {
   stableRateSlope1: '0',
   stableRateSlope2: '0',
 }
-
-
-
