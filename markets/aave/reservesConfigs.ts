@@ -86,11 +86,11 @@ export const strategyUSDT: IReserveParams = {
 
 export const strategyPAX: IReserveParams = {
   strategy: rateStrategyStableThree,
-  baseLTVAsCollateral: '8000',
-  liquidationThreshold: '8500',
-  liquidationBonus: '10500',
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
