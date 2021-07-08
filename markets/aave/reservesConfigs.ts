@@ -1,6 +1,6 @@
 import { eContractid, IReserveParams } from '../../helpers/types';
 
-import { 
+import {
   rateStrategyStableOne,
   rateStrategyStableTwo,
   rateStrategyStableThree,
@@ -260,6 +260,18 @@ export const strategyXSUSHI: IReserveParams = {
   liquidationBonus: '11500',
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '3500',
+};
+
+export const strategyBOND: IReserveParams = {
+  strategy: rateStrategyVolatileOne,
+  baseLTVAsCollateral: '2500',
+  liquidationThreshold: '3500',
+  liquidationBonus: '11500',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '3500',
