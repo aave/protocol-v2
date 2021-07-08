@@ -1,6 +1,6 @@
 import { eContractid, IReserveParams } from '../../helpers/types';
 
-import { 
+import {
   rateStrategyStableOne,
   rateStrategyStableTwo,
   rateStrategyStableThree,
@@ -80,6 +80,18 @@ export const strategyUSDT: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000'
+};
+
+export const strategyPAX: IReserveParams = {
+  strategy: rateStrategyStableThree,
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000'
 };
