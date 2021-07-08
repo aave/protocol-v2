@@ -157,6 +157,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       MKR: mockTokens.MKR.address,
       LINK: mockTokens.LINK.address,
       KNC: mockTokens.KNC.address,
+      BZRX: mockTokens.BZRX.address,
       WBTC: mockTokens.WBTC.address,
       MANA: mockTokens.MANA.address,
       ZRX: mockTokens.ZRX.address,
@@ -242,12 +243,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const config = loadPoolConfig(ConfigNames.Aave);
 
-  const {
-    ATokenNamePrefix,
-    StableDebtTokenNamePrefix,
-    VariableDebtTokenNamePrefix,
-    SymbolPrefix,
-  } = config;
+  const { ATokenNamePrefix, StableDebtTokenNamePrefix, VariableDebtTokenNamePrefix, SymbolPrefix } =
+    config;
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(

@@ -210,6 +210,7 @@ export interface iAssetBase<T> {
   MKR: T;
   LINK: T;
   KNC: T;
+  BZRX: T;
   WBTC: T;
   MANA: T;
   ZRX: T;
@@ -257,6 +258,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'MKR'
   | 'LINK'
   | 'KNC'
+  | 'BZRX'
   | 'WBTC'
   | 'MANA'
   | 'ZRX'
@@ -325,6 +327,7 @@ export enum TokenContractId {
   WBTC = 'WBTC',
   LINK = 'LINK',
   KNC = 'KNC',
+  BZRX = 'BZRX',
   MANA = 'MANA',
   REN = 'REN',
   SNX = 'SNX',
