@@ -160,6 +160,13 @@ interface ILendingPoolConfigurator {
   event SupplyCapChanged(address indexed asset, uint256 supplyCap);
 
   /**
+   * @dev Emitted when the protocol fee on liquidation is updated
+   * @param asset The address of the underlying asset of the reserve
+   * @param fee The new fee
+   **/
+  event LiquidationProtocolFeeChanged(address indexed asset, uint256 fee);
+
+  /**
    * @dev Emitted when the exposure cap of a reserve is updated
    * @param asset The address of the underlying asset of the reserve
    * @param exposureCap The new exposure cap
@@ -391,6 +398,13 @@ interface ILendingPoolConfigurator {
    * @param supplyCap The new supply of the reserve
    **/
   function setSupplyCap(address asset, uint256 supplyCap) external;
+
+  /**
+   * @dev Sets the protocol fee on liquidation
+   * @param asset The address of the underlying asset of the reserve
+   * @param fee The fee on liquidaton bonus
+   **/
+  function setReserveLiquidationProtocolFee(address asset, uint256 fee) external;
 
   /**
    * @dev Updates the exposure cap of a reserve
