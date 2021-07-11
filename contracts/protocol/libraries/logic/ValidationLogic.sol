@@ -21,7 +21,7 @@ import {IAToken} from '../../../interfaces/IAToken.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {Address} from '../../../dependencies/openzeppelin/contracts/Address.sol';
-import "hardhat/console.sol";
+
 /**
  * @title ReserveLogic library
  * @author Aave
@@ -517,7 +517,7 @@ library ValidationLogic {
 
   /**
    * @dev Validates the health factor of a user and the ltv of the asset being withdrawn
-   * @param asset The asset for which the exposure cap will be validated
+   * @param asset The asset for which the ltv will be validated
    * @param from The user from which the aTokens are being transferred
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
@@ -551,9 +551,6 @@ library ValidationLogic {
     );
 
     vars.assetLtv = reserve.configuration.getLtvMemory();
-
-    console.log("asset ltv is ", vars.assetLtv);
-    console.log("has 0 ltv collateral ", vars.hasZeroLtvCollateral);
 
     require(vars.assetLtv == 0 || !vars.hasZeroLtvCollateral, Errors.VL_LTV_VALIDATION_FAILED);
   }

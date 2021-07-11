@@ -60,7 +60,7 @@ library GenericLogic {
    * @param userConfig The configuration of the user
    * @param reserves The list of the available reserves
    * @param oracle The price oracle address
-   * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold, the HF and the uncapped avg ltv (without exposure ceiling)
+   * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold, the HF and the uncapped avg ltv
    **/
   function calculateUserAccountData(
     address user,

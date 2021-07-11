@@ -1,32 +1,15 @@
 import { TestEnv, makeSuite } from './helpers/make-suite';
 import {
-  APPROVAL_AMOUNT_LENDING_POOL,
   MAX_UINT_AMOUNT,
-  RAY,
-  MAX_EXPOSURE_CAP,
-  MOCK_CHAINLINK_AGGREGATORS_PRICES,
-  oneEther,
 } from '../../helpers/constants';
 import { ProtocolErrors } from '../../helpers/types';
-import { MintableERC20, WETH9, WETH9Mocked } from '../../types';
-import { parseEther } from '@ethersproject/units';
-import { BigNumber } from '@ethersproject/bignumber';
-import { strategyDAI } from '../../markets/amm/reservesConfigs';
-import { strategyUSDC } from '../../markets/amm/reservesConfigs';
-import { ethers } from 'ethers';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 
 const { expect } = require('chai');
 makeSuite('LTV validation tests', (testEnv: TestEnv) => {
   const {
     VL_LTV_VALIDATION_FAILED,
-    RC_INVALID_EXPOSURE_CAP,
-    VL_COLLATERAL_CANNOT_COVER_NEW_BORROW,
   } = ProtocolErrors;
-  const daiPrice = Number(MOCK_CHAINLINK_AGGREGATORS_PRICES.DAI);
-  const usdcPrice = Number(MOCK_CHAINLINK_AGGREGATORS_PRICES.USDC);
-  const daiLTV = Number(strategyDAI.baseLTVAsCollateral);
-  const usdcLTV = Number(strategyUSDC.baseLTVAsCollateral);
 
   it('User 1 deposits 10 Dai, 10 USDC, user 2 deposits 1 WETH', async () => {
     const {
@@ -86,7 +69,7 @@ makeSuite('LTV validation tests', (testEnv: TestEnv) => {
     const {
       pool,
       usdc,
-      users: [user1, , , receiver],
+      users: [user1],
     } = testEnv;
 
     const withdrawnAmount = await convertToCurrencyDecimals(usdc.address, "1");
@@ -95,4 +78,25 @@ makeSuite('LTV validation tests', (testEnv: TestEnv) => {
       pool.connect(user1.signer).withdraw(usdc.address, withdrawnAmount, user1.address)
     ).to.be.revertedWith(VL_LTV_VALIDATION_FAILED); 
   });
+
+  it('Withdraws DAI', async () => {
+    const {
+      pool,
+      dai,
+      aDai,
+      users: [user1],
+    } = testEnv;
+
+    const aDaiBalanceBefore = await aDai.balanceOf(user1.address);
+
+    const withdrawnAmount = await convertToCurrencyDecimals(dai.address, "1");
+
+    await pool.connect(user1.signer).withdraw(dai.address, withdrawnAmount, user1.address);
+
+    const aDaiBalanceAfter = await aDai.balanceOf(user1.address);
+
+    expect(aDaiBalanceAfter.toString()).to.be.bignumber.equal(aDaiBalanceBefore.sub(withdrawnAmount));
+    
+  });
+
 });

@@ -677,7 +677,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Deactivates the ETH reserve as collateral via pool admin', async () => {
     const { configurator, helpersContract, weth } = testEnv;
-    await configurator.configureReserveAsCollateral(weth.address, 0, 0, 0, 0);
+    await configurator.configureReserveAsCollateral(weth.address, 0, 0, 0);
 
     const {
       decimals,
@@ -711,7 +711,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Activates the ETH reserve as collateral via pool admin', async () => {
     const { configurator, helpersContract, weth } = testEnv;
-    await configurator.configureReserveAsCollateral(weth.address, '8000', '8250', '10500', '0');
+    await configurator.configureReserveAsCollateral(weth.address, '8000', '8250', '10500');
 
     const {
       decimals,
@@ -747,7 +747,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const { configurator, helpersContract, weth, riskAdmin } = testEnv;
     await configurator
       .connect(riskAdmin.signer)
-      .configureReserveAsCollateral(weth.address, 0, 0, 0, 0);
+      .configureReserveAsCollateral(weth.address, 0, 0, 0);
 
     const {
       decimals,
@@ -783,7 +783,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const { configurator, helpersContract, weth, riskAdmin } = testEnv;
     await configurator
       .connect(riskAdmin.signer)
-      .configureReserveAsCollateral(weth.address, '8000', '8250', '10500', '0');
+      .configureReserveAsCollateral(weth.address, '8000', '8250', '10500');
 
     const {
       decimals,
@@ -820,7 +820,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     await expect(
       configurator
         .connect(emergencyAdmin.signer)
-        .configureReserveAsCollateral(weth.address, '7500', '8000', '10500', '0'),
+        .configureReserveAsCollateral(weth.address, '7500', '8000', '10500'),
       CALLER_NOT_POOL_ADMIN
     ).to.be.revertedWith(LPC_CALLER_NOT_RISK_OR_POOL_ADMIN);
   });
