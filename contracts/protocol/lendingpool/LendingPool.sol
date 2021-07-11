@@ -269,7 +269,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
 
-    ValidationLogic.validateSetUseReserveAsCollateral(reserveCache);
+    uint256 userBalance = IERC20(reserveCache.aTokenAddress).balanceOf(msg.sender);
+
+    ValidationLogic.validateSetUseReserveAsCollateral(reserveCache, userBalance);
 
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
@@ -278,6 +280,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     } else {
       ValidationLogic.validateHFAndExposureCap(
         asset,
+        userBalance,
         msg.sender,
         _reserves,
         _usersConfig[msg.sender],
@@ -614,6 +617,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         if (fromConfig.isBorrowingAny()) {
           ValidationLogic.validateHFAndExposureCap(
             asset,
+            amount,
             from,
             _reserves,
             _usersConfig[from],
@@ -852,6 +856,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       if (userConfig.isBorrowingAny()) {
         ValidationLogic.validateHFAndExposureCap(
           asset,
+          0,
           msg.sender,
           _reserves,
           userConfig,

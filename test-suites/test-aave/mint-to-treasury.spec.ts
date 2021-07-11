@@ -61,8 +61,6 @@ makeSuite('Mint to treasury', (testEnv: TestEnv) => {
 
     const { accruedToTreasury } = await pool.getReserveData(dai.address);
 
-    console.log("Accrued to treasury ", accruedToTreasury.toString());
-
     expect(accruedToTreasury.toString()).to.be.bignumber.almostEqual(
       expectedAccruedToTreasury,
       'Invalid amount accrued to the treasury'

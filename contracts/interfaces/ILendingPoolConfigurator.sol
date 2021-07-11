@@ -350,7 +350,7 @@ interface ILendingPoolConfigurator {
   function unfreezeReserve(address asset) external;
 
   /**
-   * @dev Pauses/Unpauses a reserve. A paused reserve allow now user moves such as deposit, borrow, repay, swap interestrate, liquidate
+   * @dev Pauses a reserve. A paused reserve does not allow any interaction (deposit, borrow, repay, swap interestrate, liquidate, atoken transfers)
    * @param asset The address of the underlying asset of the reserve
    * @param val true = pausing, false = unpausing
    **/
