@@ -355,9 +355,6 @@ library ValidationLogic {
     IERC20 variableDebtToken,
     address aTokenAddress
   ) external view {
-    // to avoid potential abuses using flashloans, the rebalance stable rate must happen through an EOA
-    require(!address(msg.sender).isContract(), Errors.LP_CALLER_NOT_EOA);
-
     (bool isActive, , , , bool isPaused) = reserveCache.reserveConfiguration.getFlagsMemory();
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
