@@ -34,6 +34,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
   DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  FEI: oneEther.multipliedBy('0.00040560').toFixed(),
   ENJ: oneEther.multipliedBy('0.00029560').toFixed(),
   KNC: oneEther.multipliedBy('0.001072').toFixed(),
   LINK: oneEther.multipliedBy('0.009955').toFixed(),
