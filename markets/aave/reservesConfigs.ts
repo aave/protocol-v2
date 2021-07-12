@@ -117,7 +117,7 @@ export const strategyFEI: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000'
+  reserveFactor: '2000'
 };
 
 export const strategyENJ: IReserveParams = {
