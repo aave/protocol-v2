@@ -44,8 +44,8 @@ jobs:
         run: npm run aave:fork:kovan
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
-      # - name: Coverage
-      #   run: npm run coverage
-      # - uses: codecov/codecov-action@v1
-      #   with:
-      #     fail_ci_if_error: true
+      - name: Coverage
+        run: npm run coverage
+      - uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
