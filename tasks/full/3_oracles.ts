@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
+import { deployAaveOracleV2, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
 import { ICommonConfiguration, eNetwork, SymbolMap } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
@@ -10,6 +10,7 @@ import {
   getWethAddress,
   getGenesisPoolAdmin,
   getLendingRateOracles,
+  getQuoteCurrency,
 } from '../../helpers/configuration';
 import {
   getAaveOracle,
@@ -17,7 +18,8 @@ import {
   getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
-import { AaveOracle, LendingRateOracle } from '../../types';
+import { AaveOracle, AaveOracleV2, LendingRateOracle } from '../../types';
+import { isAddress } from 'ethers/lib/utils';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -46,16 +48,27 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         ...reserveAssets,
         USD: UsdAddress,
       };
-      const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
+      const [tokens, aggregators] = getPairsTokenAggregator(
+        tokensToWatch,
+        chainlinkAggregators,
+        poolConfig.OracleQuoteCurrency
+      );
 
-      let aaveOracle: AaveOracle;
+      let aaveOracle: AaveOracle | AaveOracleV2;
       let lendingRateOracle: LendingRateOracle;
 
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
         aaveOracle = await await getAaveOracle(aaveOracleAddress);
+        await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
       } else {
-        aaveOracle = await deployAaveOracle(
-          [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
+        aaveOracle = await deployAaveOracleV2(
+          [
+            tokens,
+            aggregators,
+            fallbackOracleAddress,
+            await getQuoteCurrency(poolConfig),
+            poolConfig.OracleQuoteUnit,
+          ],
           verify
         );
         await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
@@ -74,7 +87,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         );
       }
 
-      console.log('Aave Oracle: %s', lendingRateOracle.address);
+      console.log('Aave Oracle: %s', aaveOracle.address);
       console.log('Lending Rate Oracle: %s', lendingRateOracle.address);
 
       // Register the proxy price provider on the addressesProvider
@@ -84,7 +97,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       if (DRE.network.name.includes('tenderly')) {
         const transactionLink = `https://dashboard.tenderly.co/${DRE.config.tenderly.username}/${
           DRE.config.tenderly.project
-        }/fork/${DRE.tenderlyNetwork.getFork()}/simulation/${DRE.tenderlyNetwork.getHead()}`;
+        }/fork/${DRE.tenderly.network().getFork()}/simulation/${DRE.tenderly.network().getHead()}`;
         console.error('Check tx error:', transactionLink);
       }
       throw error;
