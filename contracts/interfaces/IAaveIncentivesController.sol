@@ -65,7 +65,7 @@ interface IAaveIncentivesController {
   ) external;
 
   /**
-   * @dev Returns the total of rewards of an user, already accrued + not yet accrued
+   * @dev Returns the total accrued rewards of an user
    * @param user The address of the user
    * @return The rewards
    **/
