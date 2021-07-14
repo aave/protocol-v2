@@ -13,7 +13,7 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
-  tenderlyMain = 'tenderlyMain',
+  tenderly = 'tenderly',
 }
 
 export enum ePolygonNetwork {
@@ -38,6 +38,7 @@ export enum AavePools {
   proto = 'proto',
   matic = 'matic',
   amm = 'amm',
+  usd = 'usd',
 }
 
 export enum eContractid {
@@ -89,7 +90,10 @@ export enum eContractid {
   FlashLiquidationAdapter = 'FlashLiquidationAdapter',
   RewardsATokenMock = 'RewardsATokenMock',
   RewardsToken = 'RewardsToken',
-  CurveRewardsAwareAToken = 'CurveRewardsAwareAToken',
+  AaveOracleV2 = 'AaveOracleV2',
+  CurveGaugeRewardsAwareAToken = 'CurveGaugeRewardsAwareAToken',
+  CurveTreasury = 'CurveTreasury',
+  CurveGaugeReserveInterestRateStrategy = 'CurveGaugeReserveInterestRateStrategy',
 }
 
 /*
@@ -243,6 +247,9 @@ export interface iAssetBase<T> {
   xSUSHI: T;
   STAKE: T;
   REW: T;
+  a3CRV: T;
+  saCRV: T;
+  '3CRV': T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -297,6 +304,11 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniYFIWETH'
   | 'BptWBTCWETH'
   | 'BptBALWETH'
+>;
+
+export type iUsdLpPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'DAI' | 'SUSD' | 'USDC' | 'USDT' | 'a3CRV' | 'saCRV' | '3CRV'
 >;
 
 export type iMaticPoolAssets<T> = Pick<
@@ -413,7 +425,7 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
-  [eEthereumNetwork.tenderlyMain]: T;
+  [eEthereumNetwork.tenderly]: T;
 }
 
 export interface iPolygonParamsPerNetwork<T> {
@@ -429,6 +441,7 @@ export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
   [AavePools.matic]: T;
   [AavePools.amm]: T;
+  [AavePools.usd]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -467,7 +480,7 @@ export interface ILendingRate {
   borrowRate: string;
 }
 
-export interface ICommonConfiguration {
+export interface IBaseConfiguration {
   MarketId: string;
   ATokenNamePrefix: string;
   StableDebtTokenNamePrefix: string;
@@ -475,7 +488,6 @@ export interface ICommonConfiguration {
   SymbolPrefix: string;
   ProviderId: number;
   ProtocolGlobalParams: IProtocolGlobalConfig;
-  Mocks: IMocksConfig;
   ProviderRegistry: iParamsPerNetwork<tEthereumAddress | undefined>;
   ProviderRegistryOwner: iParamsPerNetwork<tEthereumAddress | undefined>;
   LendingPoolCollateralManager: iParamsPerNetwork<tEthereumAddress>;
@@ -491,8 +503,6 @@ export interface ICommonConfiguration {
   PoolAdminIndex: number;
   EmergencyAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
   EmergencyAdminIndex: number;
-  ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
-  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
@@ -501,6 +511,18 @@ export interface ICommonConfiguration {
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
   StableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
   VariableDebtTokenImplementation?: iParamsPerNetwork<tEthereumAddress>;
+  ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
+  OracleQuoteCurrency: string;
+  OracleQuoteUnit: string;
+}
+
+export interface ICommonConfiguration extends IBaseConfiguration {
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+  Mocks: IMocksConfig;
+}
+
+export interface IUsdMocksConfig {
+  AllAssetsInitialPrices: iUsdLpPoolAssets<string>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
@@ -509,6 +531,11 @@ export interface IAaveConfiguration extends ICommonConfiguration {
 
 export interface IAmmConfiguration extends ICommonConfiguration {
   ReservesConfig: iLpPoolAssets<IReserveParams>;
+}
+
+export interface IUsdAmmConfiguration extends IBaseConfiguration {
+  ReservesConfig: iUsdLpPoolAssets<IReserveParams>;
+  Mocks: IUsdMocksConfig;
 }
 
 export interface IMaticConfiguration extends ICommonConfiguration {
@@ -523,4 +550,4 @@ export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration;
+export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration | IUsdAmmConfiguration;

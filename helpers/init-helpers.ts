@@ -18,8 +18,23 @@ import {
   rawInsertContractAddressInDb,
 } from './contracts-helpers';
 import { BigNumberish } from 'ethers';
-import { deployDefaultReserveInterestRateStrategy } from './contracts-deployments';
+import { deployRateStrategy } from './contracts-deployments';
 import { ConfigNames } from './configuration';
+import { defaultAbiCoder } from 'ethers/lib/utils';
+import { isCurveGaugeV2, poolToGauge } from './external/curve/constants';
+
+export const getATokenExtraParams = async (aTokenName: string, tokenAddress: tEthereumAddress) => {
+  console.log(aTokenName);
+  switch (aTokenName) {
+    case 'CurveGaugeRewardsAwareAToken':
+      return defaultAbiCoder.encode(
+        ['address', 'bool'],
+        [poolToGauge[tokenAddress], isCurveGaugeV2(poolToGauge[tokenAddress])]
+      );
+    default:
+      return '0x10';
+  }
+};
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -37,7 +52,7 @@ export const initReservesByHelper = async (
   const addressProvider = await getLendingPoolAddressesProvider();
 
   // CHUNK CONFIGURATION
-  const initChunks = 4;
+  const initChunks = 1;
 
   // Initialize variables for future reserves initialization
   let reserveSymbols: string[] = [];
@@ -100,9 +115,12 @@ export const initReservesByHelper = async (
         stableRateSlope1,
         stableRateSlope2,
       ];
-      strategyAddresses[strategy.name] = (
-        await deployDefaultReserveInterestRateStrategy(rateStrategies[strategy.name], verify)
-      ).address;
+      strategyAddresses[strategy.name] = await deployRateStrategy(
+        strategy.name,
+        rateStrategies[strategy.name],
+        verify
+      );
+
       // This causes the last strategy to be printed twice, once under "DefaultReserveInterestRateStrategy"
       // and once under the actual `strategyASSET` key.
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
@@ -131,7 +149,7 @@ export const initReservesByHelper = async (
       variableDebtTokenSymbol: `variableDebt${symbolPrefix}${symbol}`,
       stableDebtTokenName: `${stableDebtTokenNamePrefix} ${symbol}`,
       stableDebtTokenSymbol: `stableDebt${symbolPrefix}${symbol}`,
-      params: '0x10',
+      params: await getATokenExtraParams(aTokenImpl, tokenAddresses[symbol]),
     });
   }
 
@@ -165,10 +183,9 @@ export const getPairsTokenAggregator = (
       const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
         (value) => value === tokenSymbol
       );
-      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
-        string,
-        tEthereumAddress
-      ][])[aggregatorAddressIndex];
+      const [, aggregatorAddress] = (
+        Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
+      )[aggregatorAddressIndex];
       return [tokenAddress, aggregatorAddress];
     }
   }) as [string, string][];

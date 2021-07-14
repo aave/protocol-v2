@@ -4,6 +4,7 @@ import {
   insertContractAddressInDb,
   getEthersSigners,
   registerContractInJsonDb,
+  getEthersSignersAddresses,
 } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
@@ -12,7 +13,7 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  deployAaveOracle,
+  deployAaveOracleV2,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -48,7 +49,7 @@ import {
 import { DRE, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
 import AmmConfig from '../../markets/amm';
-import { ZERO_ADDRESS } from '../../helpers/constants';
+import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getLendingPool,
   getLendingPoolConfiguratorProxy,
@@ -110,9 +111,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(await addressesProvider.setPoolAdmin(aaveAdmin));
 
   //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
-  const addressList = await Promise.all(
-    (await DRE.ethers.getSigners()).map((signer) => signer.getAddress())
-  );
+  const addressList = await getEthersSignersAddresses();
 
   await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
 
@@ -199,6 +198,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       WMATIC: mockTokens.WMATIC.address,
       USD: USD_ADDRESS,
       STAKE: mockTokens.STAKE.address,
+      'a3CRV-gauge': ZERO_ADDRESS,
+      'saCRV-gauge': ZERO_ADDRESS,
+      xSUSHI: ZERO_ADDRESS,
+      REW: ZERO_ADDRESS,
     },
     fallbackOracle
   );
@@ -220,9 +223,19 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {}
   );
 
-  const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
+  const [tokens, aggregators] = getPairsTokenAggregator(
+    allTokenAddresses,
+    allAggregatorsAddresses,
+    config.OracleQuoteCurrency
+  );
 
-  await deployAaveOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address]);
+  await deployAaveOracleV2([
+    tokens,
+    aggregators,
+    fallbackOracle.address,
+    mockTokens.WETH.address,
+    oneEther.toString(),
+  ]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
   const lendingRateOracle = await deployLendingRateOracle();

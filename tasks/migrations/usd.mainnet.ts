@@ -1,22 +1,34 @@
 import { task } from 'hardhat/config';
 import { checkVerification } from '../../helpers/etherscan-verification';
-import { ConfigNames } from '../../helpers/configuration';
+import {
+  ConfigNames,
+  getEmergencyAdmin,
+  getGenesisPoolAdmin,
+  loadPoolConfig,
+} from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('amm:mainnet', 'Deploy development enviroment')
+task('usd:mainnet', 'Deploy development environment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addFlag('skipRegistry', 'Skip addresses provider registration at Addresses Provider Registry')
   .setAction(async ({ verify, skipRegistry }, DRE) => {
-    const POOL_NAME = ConfigNames.Amm;
+    const POOL_NAME = ConfigNames.Usd;
     await DRE.run('set-DRE');
-
+    const poolConfig = loadPoolConfig(POOL_NAME);
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {
       checkVerification();
     }
 
     console.log('Migration started\n');
+
+    console.log('0. Deploy Aave Curve Treasury');
+    await DRE.run('deploy-curve-treasury', {
+      treasuryAdmin: await getGenesisPoolAdmin(poolConfig), // TBD
+      proxyAdmin: await getEmergencyAdmin(poolConfig), // TBD, address provider?
+      collector: poolConfig.ReserveFactorTreasuryAddress['main'],
+    });
 
     console.log('1. Deploy address provider');
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME, skipRegistry });

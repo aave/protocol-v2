@@ -62,8 +62,6 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   },
 });
 
-let forkMode;
-
 const buidlerConfig: HardhatUserConfig = {
   solidity: {
     version: '0.6.12',
@@ -95,7 +93,8 @@ const buidlerConfig: HardhatUserConfig = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
-    tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
+    tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderly, 3030),
+    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 3030),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
@@ -112,16 +111,6 @@ const buidlerConfig: HardhatUserConfig = {
         balance,
       })),
       forking: buildForkConfig(),
-    },
-    buidlerevm_docker: {
-      hardfork: 'berlin',
-      blockGasLimit: 9500000,
-      gas: 9500000,
-      gasPrice: 8000000000,
-      chainId: BUIDLEREVM_CHAINID,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
     },
     ganache: {
       url: 'http://ganache:8545',

@@ -2,6 +2,8 @@ import { task } from 'hardhat/config';
 import { eContractid, eEthereumNetwork, eNetwork, ePolygonNetwork } from '../../helpers/types';
 import { deployUiPoolDataProvider } from '../../helpers/contracts-deployments';
 import { exit } from 'process';
+import { usingTenderly } from '../../helpers/tenderly-utils';
+import { ZERO_ADDRESS } from '../../helpers/constants';
 
 task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider contract`)
   .addFlag('verify', 'Verify UiPoolDataProvider contract via Etherscan API.')
@@ -25,11 +27,15 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
       },
       [ePolygonNetwork.matic]: {
         incentivesController: '0x357D51124f59836DeD84c8a1730D72B749d8BC23',
-        aaveOracle: '0x21451bD7b528896B4AB2b9764b521D6ed641708d',
+        aaveOracle: '0x0229F777B0fAb107F9591a41d5F02E4e98dB6f2d',
       },
       [ePolygonNetwork.mumbai]: {
         incentivesController: '0xd41aE58e803Edf4304334acCE4DC4Ec34a63C644',
         aaveOracle: '0xC365C653f7229894F93994CD0b30947Ab69Ff1D5',
+      },
+      [eEthereumNetwork.tenderly]: {
+        incentivesController: '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
+        aaveOracle: '0x90D5588357Ff9eB573Fa0693Cb77A14c1f5b89B1',
       },
     };
     const supportedNetworks = Object.keys(addressesByNetwork);
@@ -42,10 +48,12 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
     }
 
     const oracle = addressesByNetwork[network].aaveOracle;
-    const incentivesController = addressesByNetwork[network].aaveOracle;
+    const incentivesController = addressesByNetwork[network].incentivesController;
 
     console.log(`\n- UiPoolDataProvider deployment`);
-
+    console.log('- Params');
+    console.log('-  IncentivesController', incentivesController);
+    console.log('-  AaveOracle', oracle);
     const uiPoolDataProvider = await deployUiPoolDataProvider(
       [incentivesController, oracle],
       verify
@@ -53,4 +61,11 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
 
     console.log('UiPoolDataProvider deployed at:', uiPoolDataProvider.address);
     console.log(`\tFinished UiPoolDataProvider deployment`);
+    if (usingTenderly()) {
+      const postDeployHead = localBRE.tenderly.network().getHead();
+      const postDeployFork = localBRE.tenderly.network().getFork();
+      console.log('Tenderly Info');
+      console.log('- Head', postDeployHead);
+      console.log('- Fork', postDeployFork);
+    }
   });
