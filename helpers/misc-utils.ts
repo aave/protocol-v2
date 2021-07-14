@@ -9,6 +9,8 @@ import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import { tEthereumAddress } from './types';
 import { isAddress } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
+import { SignerWithAddress } from '../test-suites/test-aave/helpers/make-suite';
+import { usingTenderly } from './tenderly-utils';
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 
@@ -115,6 +117,27 @@ export const notFalsyOrZeroAddress = (address: tEthereumAddress | null | undefin
   }
   return isAddress(address) && !isZeroAddress(address);
 };
+
+export const impersonateAddress = async (address: tEthereumAddress): Promise<SignerWithAddress> => {
+  if (!usingTenderly()) {
+    await (DRE as HardhatRuntimeEnvironment).network.provider.request({
+      method: 'hardhat_impersonateAccount',
+      params: [address],
+    });
+  }
+  const signer = await DRE.ethers.provider.getSigner(address);
+
+  return {
+    signer,
+    address,
+  };
+};
+
+export const omit = <T, U extends keyof T>(obj: T, keys: U[]): Omit<T, U> =>
+  (Object.keys(obj) as U[]).reduce(
+    (acc, curr) => (keys.includes(curr) ? acc : { ...acc, [curr]: obj[curr] }),
+    {} as Omit<T, U>
+  );
 
 export const impersonateAccountsHardhat = async (accounts: string[]) => {
   if (process.env.TENDERLY === 'true') {

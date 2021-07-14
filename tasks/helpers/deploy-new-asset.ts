@@ -3,9 +3,9 @@ import { eEthereumNetwork } from '../../helpers/types';
 import { getTreasuryAddress } from '../../helpers/configuration';
 import * as marketConfigs from '../../markets/aave';
 import * as reserveConfigs from '../../markets/aave/reservesConfigs';
-import { chooseATokenDeployment } from '../../helpers/init-helpers';
 import { getLendingPoolAddressesProvider } from './../../helpers/contracts-getters';
 import {
+  chooseATokenDeployment,
   deployDefaultReserveInterestRateStrategy,
   deployStableDebtToken,
   deployVariableDebtToken,
@@ -47,18 +47,7 @@ WRONG RESERVE ASSET SETUP:
       LENDING_POOL_ADDRESS_PROVIDER[network]
     );
     const poolAddress = await addressProvider.getLendingPool();
-    const treasuryAddress = await getTreasuryAddress(marketConfigs.AaveConfig);
-    const aToken = await deployCustomAToken(
-      [
-        poolAddress,
-        reserveAssetAddress,
-        treasuryAddress,
-        ZERO_ADDRESS, // Incentives Controller
-        `Aave interest bearing ${symbol}`,
-        `a${symbol}`,
-      ],
-      verify
-    );
+    const aToken = await deployCustomAToken(verify);
     const stableDebt = await deployStableDebtToken(
       [
         poolAddress,

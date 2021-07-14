@@ -2,7 +2,7 @@ import { Contract, Signer, utils, ethers, BigNumberish } from 'ethers';
 import { signTypedData_v4 } from 'eth-sig-util';
 import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
-import { getDb, DRE, waitForTx } from './misc-utils';
+import { getDb, DRE, waitForTx, notFalsyOrZeroAddress } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -14,7 +14,6 @@ import {
   ePolygonNetwork,
   eXDaiNetwork,
   eNetwork,
-  iParamsPerNetworkAll,
   iEthereumParamsPerNetwork,
   iPolygonParamsPerNetwork,
   iXDaiParamsPerNetwork,
@@ -28,6 +27,8 @@ import { verifyEtherscanContract } from './etherscan-verification';
 import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
 import { usingPolygon, verifyAtPolygon } from './polygon-utils';
+import { ConfigNames, loadPoolConfig } from './configuration';
+import { ZERO_ADDRESS } from './constants';
 import { getDefenderRelaySigner, usingDefender } from './defender-utils';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
@@ -144,7 +145,7 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const { main, ropsten, kovan, coverage, buidlerevm, tenderlyMain } =
+  const { main, ropsten, kovan, coverage, buidlerevm, tenderly } =
     param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
@@ -166,8 +167,8 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return ropsten;
     case eEthereumNetwork.main:
       return main;
-    case eEthereumNetwork.tenderlyMain:
-      return tenderlyMain;
+    case eEthereumNetwork.tenderly:
+      return tenderly;
     case ePolygonNetwork.matic:
       return matic;
     case ePolygonNetwork.mumbai:
@@ -181,7 +182,17 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
   }
 };
 
-export const getParamPerPool = <T>({ proto, amm, matic, avalanche }: iParamsPerPool<T>, pool: AavePools) => {
+export const getOptionalParamAddressPerNetwork = (
+  param: iParamsPerNetwork<tEthereumAddress> | undefined | null,
+  network: eNetwork
+) => {
+  if (!param) {
+    return ZERO_ADDRESS;
+  }
+  return getParamPerNetwork(param, network);
+};
+
+export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, pool: AavePools) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
@@ -344,4 +355,24 @@ export const verifyContract = async (
     await verifyEtherscanContract(instance.address, args);
   }
   return instance;
+};
+
+export const getContractAddressWithJsonFallback = async (
+  id: string,
+  pool: ConfigNames
+): Promise<tEthereumAddress> => {
+  const poolConfig = loadPoolConfig(pool);
+  const network = <eNetwork>DRE.network.name;
+  const db = getDb();
+
+  const contractAtMarketConfig = getOptionalParamAddressPerNetwork(poolConfig[id], network);
+  if (notFalsyOrZeroAddress(contractAtMarketConfig)) {
+    return contractAtMarketConfig;
+  }
+
+  const contractAtDb = await getDb().get(`${id}.${DRE.network.name}`).value();
+  if (contractAtDb?.address) {
+    return contractAtDb.address as tEthereumAddress;
+  }
+  throw Error(`Missing contract address ${id} at Market config and JSON local db`);
 };
