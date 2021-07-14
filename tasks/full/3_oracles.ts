@@ -19,6 +19,7 @@ import {
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
 import { AaveOracle, AaveOracleV2, LendingRateOracle } from '../../types';
+import { isAddress } from 'ethers/lib/utils';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -38,6 +39,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       const addressesProvider = await getLendingPoolAddressesProvider();
       const admin = await getGenesisPoolAdmin(poolConfig);
       const aaveOracleAddress = getParamPerNetwork(poolConfig.AaveOracle, network);
+      console.log('ORACLE ADRR', aaveOracleAddress);
       const lendingRateOracleAddress = getParamPerNetwork(poolConfig.LendingRateOracle, network);
       const fallbackOracleAddress = await getParamPerNetwork(FallbackOracle, network);
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
@@ -58,6 +60,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
 
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
         aaveOracle = await await getAaveOracle(aaveOracleAddress);
+        await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
       } else {
         aaveOracle = await deployAaveOracleV2(
           [

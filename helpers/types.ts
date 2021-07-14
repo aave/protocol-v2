@@ -93,6 +93,7 @@ export enum eContractid {
   AaveOracleV2 = 'AaveOracleV2',
   CurveGaugeRewardsAwareAToken = 'CurveGaugeRewardsAwareAToken',
   CurveTreasury = 'CurveTreasury',
+  CurveGaugeReserveInterestRateStrategy = 'CurveGaugeReserveInterestRateStrategy',
 }
 
 /*

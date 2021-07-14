@@ -35,7 +35,7 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
       },
       [eEthereumNetwork.tenderly]: {
         incentivesController: '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
-        aaveOracle: '0x3a463fFE9b69364B51113352a17839e36268e657',
+        aaveOracle: '0x90D5588357Ff9eB573Fa0693Cb77A14c1f5b89B1',
       },
     };
     const supportedNetworks = Object.keys(addressesByNetwork);

@@ -6,6 +6,8 @@ import {
   deployInitializableAdminUpgradeabilityProxy,
 } from '../../helpers/contracts-deployments';
 import { waitForTx } from '../../helpers/misc-utils';
+import { registerContractInJsonDb } from '../../helpers/contracts-helpers';
+import { eContractid } from '../../helpers/types';
 
 task(`deploy-curve-treasury`, `Deploys the CurveTreasury contract`)
   .addParam('proxyAdmin')
@@ -39,6 +41,9 @@ task(`deploy-curve-treasury`, `Deploys the CurveTreasury contract`)
     await waitForTx(
       await proxy['initialize(address,address,bytes)'](implementation.address, proxyAdmin, encoded)
     );
+
+    await registerContractInJsonDb(eContractid.CurveTreasury, proxy);
+    await registerContractInJsonDb(`${eContractid.CurveTreasury}Impl`, implementation);
 
     console.log(`\tFinished CurveTreasury deployment`);
     console.log(`\tProxy:`, proxy.address);

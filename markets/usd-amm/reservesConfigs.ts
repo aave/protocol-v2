@@ -1,5 +1,5 @@
 import { eContractid, IReserveParams } from '../../helpers/types';
-import { rateStrategyAmmBase, rateStrategyStable, rateStrategyBaseOne } from './rateStrategies';
+import { rateStrategyStable, rateStrategyBaseOne, rateStrategyCurveBase } from './rateStrategies';
 
 export const strategyWETH: IReserveParams = {
   strategy: rateStrategyBaseOne,
@@ -74,7 +74,7 @@ export const strategyUSDT: IReserveParams = {
 };
 
 export const strategyCurveLP: IReserveParams = {
-  strategy: rateStrategyAmmBase,
+  strategy: rateStrategyCurveBase,
   baseLTVAsCollateral: '9250',
   liquidationThreshold: '9350',
   liquidationBonus: '10500',

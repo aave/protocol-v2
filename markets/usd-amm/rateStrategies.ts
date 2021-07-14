@@ -12,6 +12,16 @@ export const rateStrategyAmmBase: IInterestRateStrategyParams = {
   stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
 };
 
+export const rateStrategyCurveBase: IInterestRateStrategyParams = {
+  name: 'rateStrategyCurveBase',
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: new BigNumber(0.03).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(3.0).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+};
+
 // WETH WBTC
 export const rateStrategyBaseOne: IInterestRateStrategyParams = {
   name: 'rateStrategyBaseOne',

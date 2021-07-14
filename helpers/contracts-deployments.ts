@@ -345,10 +345,27 @@ export const deployCurveGaugeReserveInterestRateStrategy = async (
 ) =>
   withSaveAndVerify(
     await new CurveGaugeReserveInterestRateStrategyFactory(await getFirstSigner()).deploy(...args),
-    eContractid.DefaultReserveInterestRateStrategy,
+    eContractid.CurveGaugeReserveInterestRateStrategy,
     args,
     verify
   );
+
+export const deployRateStrategy = async (
+  strategyName: string,
+  args: [tEthereumAddress, string, string, string, string, string, string],
+  verify: boolean
+): Promise<tEthereumAddress> => {
+  switch (strategyName) {
+    case 'rateStrategyCurveBase':
+      return await (
+        await deployCurveGaugeReserveInterestRateStrategy(args, verify)
+      ).address;
+    default:
+      return await (
+        await deployDefaultReserveInterestRateStrategy(args, verify)
+      ).address;
+  }
+};
 
 export const deployStableDebtToken = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],

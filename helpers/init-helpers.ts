@@ -18,7 +18,7 @@ import {
   rawInsertContractAddressInDb,
 } from './contracts-helpers';
 import { BigNumberish } from 'ethers';
-import { deployDefaultReserveInterestRateStrategy } from './contracts-deployments';
+import { deployRateStrategy } from './contracts-deployments';
 import { ConfigNames } from './configuration';
 import { defaultAbiCoder } from 'ethers/lib/utils';
 import { isCurveGaugeV2, poolToGauge } from './external/curve/constants';
@@ -115,9 +115,12 @@ export const initReservesByHelper = async (
         stableRateSlope1,
         stableRateSlope2,
       ];
-      strategyAddresses[strategy.name] = (
-        await deployDefaultReserveInterestRateStrategy(rateStrategies[strategy.name], verify)
-      ).address;
+      strategyAddresses[strategy.name] = await deployRateStrategy(
+        strategy.name,
+        rateStrategies[strategy.name],
+        verify
+      );
+
       // This causes the last strategy to be printed twice, once under "DefaultReserveInterestRateStrategy"
       // and once under the actual `strategyASSET` key.
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
