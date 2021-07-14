@@ -39,7 +39,11 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
-      throw new Error(`Unsupported pool configuration: ${Object.values(ConfigNames)}`);
+      throw new Error(
+        `Unsupported pool configuration: ${configName} is not one of the supported configs ${Object.values(
+          ConfigNames
+        )}`
+      );
   }
 };
 
