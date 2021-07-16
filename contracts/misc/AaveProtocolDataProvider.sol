@@ -98,11 +98,10 @@ contract AaveProtocolDataProvider {
     view
     returns (
       uint256 borrowCap,
-      uint256 supplyCap,
-      uint256 exposureCap
+      uint256 supplyCap
     )
   {
-    (borrowCap, supplyCap, exposureCap) = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+    (borrowCap, supplyCap) = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
       .getConfiguration(asset)
       .getCapsMemory();
   }

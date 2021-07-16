@@ -160,13 +160,6 @@ interface ILendingPoolConfigurator {
   event SupplyCapChanged(address indexed asset, uint256 supplyCap);
 
   /**
-   * @dev Emitted when the exposure cap of a reserve is updated
-   * @param asset The address of the underlying asset of the reserve
-   * @param exposureCap The new exposure cap
-   **/
-  event ExposureCapChanged(address indexed asset, uint256 exposureCap);
-
-  /**
    * @dev Emitted when the reserve decimals are updated
    * @param asset The address of the underlying asset of the reserve
    * @param decimals The new decimals
@@ -301,15 +294,13 @@ interface ILendingPoolConfigurator {
    * @param ltv The loan to value of the asset when used as collateral
    * @param liquidationThreshold The threshold at which loans using this asset as collateral will be considered undercollateralized
    * @param liquidationBonus The bonus liquidators receive to liquidate this asset. The values is always above 100%. A value of 105%
-   * @param exposureCap The exposure cap for the collateral reserve. If cap is reached, effective LTV = 0
    * means the liquidator will receive a 5% bonus
    **/
   function configureReserveAsCollateral(
     address asset,
     uint256 ltv,
     uint256 liquidationThreshold,
-    uint256 liquidationBonus,
-    uint256 exposureCap
+    uint256 liquidationBonus
   ) external;
 
   /**
@@ -391,13 +382,6 @@ interface ILendingPoolConfigurator {
    * @param supplyCap The new supply of the reserve
    **/
   function setSupplyCap(address asset, uint256 supplyCap) external;
-
-  /**
-   * @dev Updates the exposure cap of a reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @param exposureCap The new exposure of the reserve
-   **/
-  function setExposureCap(address asset, uint256 exposureCap) external;
 
   /**
    * @dev Registers a new admin with rights on risk related configurations
