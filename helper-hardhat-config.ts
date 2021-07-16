@@ -1,6 +1,7 @@
 // @ts-ignore
 import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
 import {
+  eAvalancheNetwork,
   eEthereumNetwork,
   ePolygonNetwork,
   eXDaiNetwork,
@@ -49,6 +50,8 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [ePolygonNetwork.mumbai]: 'https://rpc-mumbai.maticvigil.com',
   [ePolygonNetwork.matic]: 'https://rpc-mainnet.matic.network',
   [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
+  [eAvalancheNetwork.avalanche]: 'https://cchain.explorer.avax.network/',
+  [eAvalancheNetwork.fuji]: 'https://api.avax-test.network/ext/bc/C/rpc'
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
@@ -62,6 +65,8 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [ePolygonNetwork.mumbai]: 1 * GWEI,
   [ePolygonNetwork.matic]: 1 * GWEI,
   [eXDaiNetwork.xdai]: 1 * GWEI,
+  [eAvalancheNetwork.avalanche]: 255 * GWEI,
+  [eAvalancheNetwork.fuji]: 255 * GWEI
 };
 
 export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
@@ -75,4 +80,6 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [ePolygonNetwork.mumbai]: undefined,
   [ePolygonNetwork.matic]: undefined,
   [eXDaiNetwork.xdai]: undefined,
+  [eAvalancheNetwork.avalanche]: undefined,
+  [eAvalancheNetwork.fuji]: undefined
 };
