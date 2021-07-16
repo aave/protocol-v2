@@ -100,9 +100,9 @@ contract LendingPoolHarnessForVariableDebtToken is ILendingPool {
     view
     override
     returns (
-      uint256 totalCollateralETH,
-      uint256 totalDebtETH,
-      uint256 availableBorrowsETH,
+      uint256 totalCollateralBase,
+      uint256 totalDebtBase,
+      uint256 availableBorrowsBase,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
       uint256 healthFactor

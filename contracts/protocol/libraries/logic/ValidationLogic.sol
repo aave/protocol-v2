@@ -92,16 +92,16 @@ library ValidationLogic {
   struct ValidateBorrowLocalVars {
     uint256 currentLtv;
     uint256 currentLiquidationThreshold;
-    uint256 amountOfCollateralNeededETH;
-    uint256 userCollateralBalanceETH;
-    uint256 userBorrowBalanceETH;
+    uint256 collateralNeededInBaseCurrency;
+    uint256 userCollateralInBaseCurrency;
+    uint256 userDebtInBaseCurrency;
     uint256 availableLiquidity;
     uint256 healthFactor;
     uint256 totalDebt;
     uint256 totalSupplyVariableDebt;
     uint256 reserveDecimals;
     uint256 borrowCap;
-    uint256 amountInETH;
+    uint256 amountInBaseCurrency;
     bool isActive;
     bool isFrozen;
     bool isPaused;
@@ -181,8 +181,8 @@ library ValidationLogic {
     }
 
     (
-      vars.userCollateralBalanceETH,
-      vars.userBorrowBalanceETH,
+      vars.userCollateralInBaseCurrency,
+      vars.userDebtInBaseCurrency,
       vars.currentLtv,
       vars.currentLiquidationThreshold,
       vars.healthFactor,
@@ -196,23 +196,23 @@ library ValidationLogic {
       oracle
     );
 
-    require(vars.userCollateralBalanceETH > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
+    require(vars.userCollateralInBaseCurrency > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
 
     require(
       vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
-    vars.amountInETH = IPriceOracleGetter(oracle).getAssetPrice(asset);
-    vars.amountInETH = vars.amountInETH.mul(amount).div(10**vars.reserveDecimals);
+    vars.amountInBaseCurrency = IPriceOracleGetter(oracle).getAssetPrice(asset);
+    vars.amountInBaseCurrency = vars.amountInBaseCurrency.mul(amount).div(10**vars.reserveDecimals);
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(vars.amountInETH).percentDiv(
+    vars.collateralNeededInBaseCurrency = vars.userDebtInBaseCurrency.add(vars.amountInBaseCurrency).percentDiv(
       vars.currentLtv
     ); //LTV is calculated in percentage
 
     require(
-      vars.amountOfCollateralNeededETH <= vars.userCollateralBalanceETH,
+      vars.collateralNeededInBaseCurrency <= vars.userCollateralInBaseCurrency,
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
 
