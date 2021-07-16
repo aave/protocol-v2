@@ -249,21 +249,23 @@ library ValidationLogic {
   /**
    * @dev Validates a repay action
    * @param reserveCache The cached data of the reserve
+   * @param asset The asset address
    * @param amountSent The amount sent for the repayment. Can be an actual value or uint(-1)
    * @param rateMode the interest rate mode of the debt being repaid
    * @param onBehalfOf The address of the user msg.sender is repaying for
    * @param stableDebt The borrow balance of the user
    * @param variableDebt The borrow balance of the user
+   * @param lastUsersBorrowTimestamp The data structure that keeps track of all the latest borrowings from the users
    */
   function validateRepay(
-    address lastBorrower,
-    uint40 lastBorrowTimestamp,
     DataTypes.ReserveCache memory reserveCache,
+    address asset,
     uint256 amountSent,
     DataTypes.InterestRateMode rateMode,
     address onBehalfOf,
     uint256 stableDebt,
-    uint256 variableDebt
+    uint256 variableDebt,
+    mapping(address => mapping(address => uint256)) storage lastUsersBorrowTimestamp
   ) external view {
     (bool isActive, , , , bool isPaused) = reserveCache.reserveConfiguration.getFlagsMemory();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
@@ -272,7 +274,7 @@ library ValidationLogic {
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
     require(
-      lastBorrower != onBehalfOf || lastBorrowTimestamp != uint40(block.timestamp),
+      lastUsersBorrowTimestamp[asset][onBehalfOf] != uint40(block.timestamp),
       Errors.VL_SAME_BLOCK_BORROW_REPAY
     );
 

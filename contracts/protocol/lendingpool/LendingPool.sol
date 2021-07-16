@@ -779,8 +779,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.releaseUnderlying ? vars.amount : 0
     );
 
-    _lastBorrower = vars.user;
-    _lastBorrowTimestamp = uint40(block.timestamp);
+    _usersLastBorrowTimestamp[vars.asset][vars.user] = block.timestamp;
 
     if (vars.releaseUnderlying) {
       IAToken(reserveCache.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
@@ -898,14 +897,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
 
     ValidationLogic.validateRepay(
-      _lastBorrower,
-      _lastBorrowTimestamp,
       reserveCache,
+      asset,
       amount,
       interestRateMode,
       onBehalfOf,
       stableDebt,
-      variableDebt
+      variableDebt,
+      _usersLastBorrowTimestamp
     );
 
     uint256 paybackAmount =
