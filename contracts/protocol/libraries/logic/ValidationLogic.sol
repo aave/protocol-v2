@@ -507,19 +507,17 @@ library ValidationLogic {
     return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
   }
 
-  struct validateHFAndExposureCapLocalVars {
+  struct validateHFAndLtvLocalVars {
     uint256 healthFactor;
-    uint256 ltv;
-    uint256 uncappedLtv;
-    uint256 exposureCap;
+    uint256 assetLtv;
     uint256 reserveDecimals;
     uint256 totalSupplyAtoken;
+    bool hasZeroLtvCollateral;
   }
 
   /**
-   * @dev Validates the health factor of a user and the exposure cap for the asset being withdrawn
-   * @param asset The asset for which the exposure cap will be validated
-   * @param expCapOffset The offset to consider on the total atoken supply of asset when validating the exposure cap
+   * @dev Validates the health factor of a user and the ltv of the asset being withdrawn
+   * @param asset The asset for which the ltv will be validated
    * @param from The user from which the aTokens are being transferred
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
@@ -527,9 +525,8 @@ library ValidationLogic {
    * @param reservesCount The number of available reserves
    * @param oracle The price oracle
    */
-  function validateHFAndExposureCap(
+  function validateHFAndLtv(
     address asset,
-    uint256 expCapOffset,
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -537,9 +534,9 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
-    validateHFAndExposureCapLocalVars memory vars;
+    validateHFAndLtvLocalVars memory vars;
     DataTypes.ReserveData memory reserve = reservesData[asset];
-    (, , vars.ltv, , vars.healthFactor, vars.uncappedLtv) = GenericLogic.calculateUserAccountData(
+    (, , , , vars.healthFactor, vars.hasZeroLtvCollateral) = GenericLogic.calculateUserAccountData(
       from,
       reservesData,
       userConfig,
@@ -553,18 +550,9 @@ library ValidationLogic {
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
-    vars.exposureCap = reserve.configuration.getExposureCapMemory();
+    vars.assetLtv = reserve.configuration.getLtvMemory();
 
-    if (vars.exposureCap != 0) {
-      if (vars.ltv < vars.uncappedLtv) {
-        vars.totalSupplyAtoken = IERC20(reserve.aTokenAddress).totalSupply();
-        (, , , vars.reserveDecimals, ) = reserve.configuration.getParamsMemory();
-        bool isAssetCapped =
-          vars.totalSupplyAtoken.sub(expCapOffset).div(10**vars.reserveDecimals) >=
-            vars.exposureCap;
-        require(isAssetCapped, Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED);
-      }
-    }
+    require(vars.assetLtv == 0 || !vars.hasZeroLtvCollateral, Errors.VL_LTV_VALIDATION_FAILED);
   }
 
   /**

@@ -278,9 +278,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
     } else {
-      ValidationLogic.validateHFAndExposureCap(
+      ValidationLogic.validateHFAndLtv(
         asset,
-        userBalance,
         msg.sender,
         _reserves,
         _usersConfig[msg.sender],
@@ -620,9 +619,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       if (fromConfig.isUsingAsCollateral(reserveId)) {
         if (fromConfig.isBorrowingAny()) {
-          ValidationLogic.validateHFAndExposureCap(
+          ValidationLogic.validateHFAndLtv(
             asset,
-            amount,
             from,
             _reserves,
             _usersConfig[from],
@@ -864,9 +862,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (userConfig.isUsingAsCollateral(reserve.id)) {
       if (userConfig.isBorrowingAny()) {
-        ValidationLogic.validateHFAndExposureCap(
+        ValidationLogic.validateHFAndLtv(
           asset,
-          0,
           msg.sender,
           _reserves,
           userConfig,

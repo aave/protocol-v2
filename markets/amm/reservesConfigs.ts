@@ -13,7 +13,7 @@ export const strategyWETH: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -28,7 +28,7 @@ export const strategyWBTC: IReserveParams = {
   reserveFactor: '2000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyDAI: IReserveParams = {
@@ -43,7 +43,7 @@ export const strategyDAI: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -58,7 +58,7 @@ export const strategyUSDC: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyUSDT: IReserveParams = {
@@ -73,7 +73,7 @@ export const strategyUSDT: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyDAIWETH: IReserveParams = {
@@ -88,7 +88,7 @@ export const strategyDAIWETH: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyWBTCWETH: IReserveParams = {
@@ -103,7 +103,7 @@ export const strategyWBTCWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyAAVEWETH: IReserveParams = {
@@ -118,7 +118,7 @@ export const strategyAAVEWETH: IReserveParams = {
   reserveFactor: '500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyBATWETH: IReserveParams = {
@@ -133,7 +133,7 @@ export const strategyBATWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyDAIUSDC: IReserveParams = {
@@ -148,7 +148,7 @@ export const strategyDAIUSDC: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyCRVWETH: IReserveParams = {
@@ -163,7 +163,7 @@ export const strategyCRVWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyLINKWETH: IReserveParams = {
@@ -178,7 +178,7 @@ export const strategyLINKWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyMKRWETH: IReserveParams = {
@@ -193,7 +193,7 @@ export const strategyMKRWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyRENWETH: IReserveParams = {
@@ -208,7 +208,7 @@ export const strategyRENWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategySNXWETH: IReserveParams = {
@@ -223,7 +223,7 @@ export const strategySNXWETH: IReserveParams = {
   reserveFactor: '2000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyUNIWETH: IReserveParams = {
@@ -238,7 +238,7 @@ export const strategyUNIWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyUSDCWETH: IReserveParams = {
@@ -253,7 +253,7 @@ export const strategyUSDCWETH: IReserveParams = {
   reserveFactor: '1000',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyWBTCUSDC: IReserveParams = {
@@ -268,7 +268,7 @@ export const strategyWBTCUSDC: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyYFIWETH: IReserveParams = {
@@ -283,7 +283,7 @@ export const strategyYFIWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };
 
 export const strategyBALWETH: IReserveParams = {
@@ -298,5 +298,5 @@ export const strategyBALWETH: IReserveParams = {
   reserveFactor: '1500',
   borrowCap: '0',
   supplyCap: '0',
-  exposureCap: '0',
+
 };

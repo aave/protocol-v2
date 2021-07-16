@@ -285,7 +285,6 @@ export const configureReservesByHelper = async (
     reserveFactor: BigNumberish;
     borrowCap: BigNumberish;
     supplyCap: BigNumberish;
-    exposureCap: BigNumberish;
     stableBorrowingEnabled: boolean;
     borrowingEnabled: boolean;
   }[] = [];
@@ -299,7 +298,6 @@ export const configureReservesByHelper = async (
       reserveFactor,
       borrowCap,
       supplyCap,
-      exposureCap,
       stableBorrowRateEnabled,
       borrowingEnabled,
     },
@@ -336,7 +334,6 @@ export const configureReservesByHelper = async (
       reserveFactor,
       borrowCap,
       supplyCap,
-      exposureCap,
       stableBorrowingEnabled: stableBorrowRateEnabled,
       borrowingEnabled: borrowingEnabled,
     });
