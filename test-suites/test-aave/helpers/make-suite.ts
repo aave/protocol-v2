@@ -14,6 +14,8 @@ import {
   getUniswapLiquiditySwapAdapter,
   getUniswapRepayAdapter,
   getFlashLiquidationAdapter,
+  getVariableDebtToken,
+  getStableDebtToken,
 } from '../../../helpers/contracts-getters';
 import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -37,7 +39,7 @@ import { WETH9Mocked } from '../../../types/WETH9Mocked';
 import { WETHGateway } from '../../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../../markets/aave';
-import { FlashLiquidationAdapter } from '../../../types';
+import { FlashLiquidationAdapter, StableDebtToken, VariableDebtToken } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 
@@ -63,6 +65,8 @@ export interface TestEnv {
   aWETH: AToken;
   dai: MintableERC20;
   aDai: AToken;
+  variableDebtDai: VariableDebtToken;
+  stableDebtDai: StableDebtToken;
   aUsdc: AToken;
   usdc: MintableERC20;
   aave: MintableERC20;
@@ -93,6 +97,8 @@ const testEnv: TestEnv = {
   aWETH: {} as AToken,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
+  variableDebtDai: {} as VariableDebtToken,
+  stableDebtDai: {} as StableDebtToken,
   aUsdc: {} as AToken,
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
@@ -147,6 +153,10 @@ export async function initializeMakeSuite() {
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
+  const {
+    variableDebtTokenAddress: variableDebtDaiAddress,
+    stableDebtTokenAddress: stableDebtDaiAddress,
+  } = await testEnv.helpersContract.getReserveTokensAddresses(daiAddress || '');
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
@@ -159,6 +169,8 @@ export async function initializeMakeSuite() {
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
+  testEnv.variableDebtDai = await getVariableDebtToken(variableDebtDaiAddress);
+  testEnv.stableDebtDai = await getStableDebtToken(stableDebtDaiAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
 
