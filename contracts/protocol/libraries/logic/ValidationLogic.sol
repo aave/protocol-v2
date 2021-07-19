@@ -92,16 +92,16 @@ library ValidationLogic {
   struct ValidateBorrowLocalVars {
     uint256 currentLtv;
     uint256 currentLiquidationThreshold;
-    uint256 amountOfCollateralNeededETH;
-    uint256 userCollateralBalanceETH;
-    uint256 userBorrowBalanceETH;
+    uint256 collateralNeededInBaseCurrency;
+    uint256 userCollateralInBaseCurrency;
+    uint256 userDebtInBaseCurrency;
     uint256 availableLiquidity;
     uint256 healthFactor;
     uint256 totalDebt;
     uint256 totalSupplyVariableDebt;
     uint256 reserveDecimals;
     uint256 borrowCap;
-    uint256 amountInETH;
+    uint256 amountInBaseCurrency;
     bool isActive;
     bool isFrozen;
     bool isPaused;
@@ -181,8 +181,8 @@ library ValidationLogic {
     }
 
     (
-      vars.userCollateralBalanceETH,
-      vars.userBorrowBalanceETH,
+      vars.userCollateralInBaseCurrency,
+      vars.userDebtInBaseCurrency,
       vars.currentLtv,
       vars.currentLiquidationThreshold,
       vars.healthFactor,
@@ -196,23 +196,23 @@ library ValidationLogic {
       oracle
     );
 
-    require(vars.userCollateralBalanceETH > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
+    require(vars.userCollateralInBaseCurrency > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
 
     require(
       vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
-    vars.amountInETH = IPriceOracleGetter(oracle).getAssetPrice(asset);
-    vars.amountInETH = vars.amountInETH.mul(amount).div(10**vars.reserveDecimals);
+    vars.amountInBaseCurrency = IPriceOracleGetter(oracle).getAssetPrice(asset);
+    vars.amountInBaseCurrency = vars.amountInBaseCurrency.mul(amount).div(10**vars.reserveDecimals);
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(vars.amountInETH).percentDiv(
+    vars.collateralNeededInBaseCurrency = vars.userDebtInBaseCurrency.add(vars.amountInBaseCurrency).percentDiv(
       vars.currentLtv
     ); //LTV is calculated in percentage
 
     require(
-      vars.amountOfCollateralNeededETH <= vars.userCollateralBalanceETH,
+      vars.collateralNeededInBaseCurrency <= vars.userCollateralInBaseCurrency,
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
 
@@ -504,19 +504,17 @@ library ValidationLogic {
     return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
   }
 
-  struct validateHFAndExposureCapLocalVars {
+  struct validateHFAndLtvLocalVars {
     uint256 healthFactor;
-    uint256 ltv;
-    uint256 uncappedLtv;
-    uint256 exposureCap;
+    uint256 assetLtv;
     uint256 reserveDecimals;
     uint256 totalSupplyAtoken;
+    bool hasZeroLtvCollateral;
   }
 
   /**
-   * @dev Validates the health factor of a user and the exposure cap for the asset being withdrawn
-   * @param asset The asset for which the exposure cap will be validated
-   * @param expCapOffset The offset to consider on the total atoken supply of asset when validating the exposure cap
+   * @dev Validates the health factor of a user and the ltv of the asset being withdrawn
+   * @param asset The asset for which the ltv will be validated
    * @param from The user from which the aTokens are being transferred
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
@@ -524,9 +522,8 @@ library ValidationLogic {
    * @param reservesCount The number of available reserves
    * @param oracle The price oracle
    */
-  function validateHFAndExposureCap(
+  function validateHFAndLtv(
     address asset,
-    uint256 expCapOffset,
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -534,9 +531,9 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
-    validateHFAndExposureCapLocalVars memory vars;
+    validateHFAndLtvLocalVars memory vars;
     DataTypes.ReserveData memory reserve = reservesData[asset];
-    (, , vars.ltv, , vars.healthFactor, vars.uncappedLtv) = GenericLogic.calculateUserAccountData(
+    (, , , , vars.healthFactor, vars.hasZeroLtvCollateral) = GenericLogic.calculateUserAccountData(
       from,
       reservesData,
       userConfig,
@@ -550,18 +547,9 @@ library ValidationLogic {
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
-    vars.exposureCap = reserve.configuration.getExposureCapMemory();
+    vars.assetLtv = reserve.configuration.getLtvMemory();
 
-    if (vars.exposureCap != 0) {
-      if (vars.ltv < vars.uncappedLtv) {
-        vars.totalSupplyAtoken = IERC20(reserve.aTokenAddress).totalSupply();
-        (, , , vars.reserveDecimals, ) = reserve.configuration.getParamsMemory();
-        bool isAssetCapped =
-          vars.totalSupplyAtoken.sub(expCapOffset).div(10**vars.reserveDecimals) >=
-            vars.exposureCap;
-        require(isAssetCapped, Errors.VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED);
-      }
-    }
+    require(vars.assetLtv == 0 || !vars.hasZeroLtvCollateral, Errors.VL_LTV_VALIDATION_FAILED);
   }
 
   /**
