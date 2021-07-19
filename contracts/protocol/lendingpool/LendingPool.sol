@@ -473,17 +473,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     view
     override
     returns (
-      uint256 totalCollateralETH,
-      uint256 totalDebtETH,
-      uint256 availableBorrowsETH,
+      uint256 totalCollateralBase,
+      uint256 totalDebtBase,
+      uint256 availableBorrowsBase,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
       uint256 healthFactor
     )
   {
     (
-      totalCollateralETH,
-      totalDebtETH,
+      totalCollateralBase,
+      totalDebtBase,
       ltv,
       currentLiquidationThreshold,
       healthFactor,
@@ -497,9 +497,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
-    availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
-      totalCollateralETH,
-      totalDebtETH,
+    availableBorrowsBase = GenericLogic.calculateAvailableBorrows(
+      totalCollateralBase,
+      totalDebtBase,
       ltv
     );
   }

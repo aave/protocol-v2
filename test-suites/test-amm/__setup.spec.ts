@@ -29,7 +29,7 @@ import {
   deployFlashLiquidationAdapter,
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
-import { Signer } from 'ethers';
+import { ethers, Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
 import {
@@ -212,7 +212,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
 
-  await deployAaveOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address]);
+  await deployAaveOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address, ethers.constants.WeiPerEther.toString()]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
   const lendingRateOracle = await deployLendingRateOracle();

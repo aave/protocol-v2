@@ -224,7 +224,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
 
     const amountUSDCToBorrow = await convertToCurrencyDecimals(
       usdc.address,
-      new BigNumber(userGlobalData.availableBorrowsETH.toString())
+      new BigNumber(userGlobalData.availableBorrowsBase.toString())
         .div(usdcPrice.toString())
         .multipliedBy(0.9502)
         .toFixed(0)
