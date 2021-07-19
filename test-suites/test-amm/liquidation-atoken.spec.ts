@@ -55,7 +55,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const amountDAIToBorrow = await convertToCurrencyDecimals(
       dai.address,
-      new BigNumber(userGlobalData.availableBorrowsETH.toString())
+      new BigNumber(userGlobalData.availableBorrowsBase.toString())
         .div(daiPrice.toString())
         .multipliedBy(0.95)
         .toFixed(0)
@@ -269,7 +269,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const amountUSDCToBorrow = await convertToCurrencyDecimals(
       usdc.address,
-      new BigNumber(userGlobalData.availableBorrowsETH.toString())
+      new BigNumber(userGlobalData.availableBorrowsBase.toString())
         .div(usdcPrice.toString())
         .multipliedBy(0.9502)
         .toFixed(0)

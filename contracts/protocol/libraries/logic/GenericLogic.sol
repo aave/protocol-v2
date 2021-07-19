@@ -32,17 +32,17 @@ library GenericLogic {
     uint256 assetPrice;
     uint256 assetUnit;
     uint256 userBalance;
-    uint256 userBalanceETH;
+    uint256 userBalanceInBaseCurrency;
     uint256 userDebt;
     uint256 userStableDebt;
-    uint256 userDebtETH;
+    uint256 userDebtInBaseCurrency;
     uint256 decimals;
     uint256 ltv;
     uint256 liquidationThreshold;
     uint256 i;
     uint256 healthFactor;
-    uint256 totalCollateralInETH;
-    uint256 totalDebtInETH;
+    uint256 totalCollateralInBaseCurrency;
+    uint256 totalDebtInBaseCurrency;
     uint256 avgLtv;
     uint256 avgLiquidationThreshold;
     uint256 normalizedIncome;
@@ -53,14 +53,15 @@ library GenericLogic {
 
   /**
    * @dev Calculates the user data across the reserves.
-   * this includes the total liquidity/collateral/borrow balances in ETH,
+   * this includes the total liquidity/collateral/borrow balances in the base currency used by the price feed,
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
    * @param user The address of the user
    * @param reservesData Data of all the reserves
    * @param userConfig The configuration of the user
    * @param reserves The list of the available reserves
    * @param oracle The price oracle address
-   * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold, the HF and the uncapped avg ltv
+   * @return The total collateral and total debt of the user in the base currency used by the price feed,
+   *         the avg ltv, liquidation threshold, the HF and the uncapped avg ltv
    **/
   function calculateUserAccountData(
     address user,
@@ -109,13 +110,16 @@ library GenericLogic {
         vars.userBalance = IScaledBalanceToken(currentReserve.aTokenAddress).scaledBalanceOf(user);
         vars.userBalance = vars.userBalance.rayMul(vars.normalizedIncome);
 
-        vars.userBalanceETH = vars.assetPrice.mul(vars.userBalance).div(vars.assetUnit);
-        vars.totalCollateralInETH = vars.totalCollateralInETH.add(vars.userBalanceETH);
+        vars.userBalanceInBaseCurrency = vars.assetPrice.mul(vars.userBalance).div(vars.assetUnit);
+        vars.totalCollateralInBaseCurrency = vars.totalCollateralInBaseCurrency.add(
+          vars.userBalanceInBaseCurrency
+        );
 
-        vars.avgLtv = vars.avgLtv.add(vars.userBalanceETH.mul(vars.ltv));
+        vars.avgLtv = vars.avgLtv.add(vars.userBalanceInBaseCurrency.mul(vars.ltv));
         vars.hasZeroLtvCollateral = vars.hasZeroLtvCollateral || vars.ltv == 0;
+
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold.add(
-          vars.userBalanceETH.mul(vars.liquidationThreshold)
+          vars.userBalanceInBaseCurrency.mul(vars.liquidationThreshold)
         );
       }
 
@@ -129,24 +133,28 @@ library GenericLogic {
           vars.userDebt = vars.userDebt.rayMul(vars.normalizedDebt);
         }
         vars.userDebt = vars.userDebt.add(vars.userStableDebt);
-        vars.userDebtETH = vars.assetPrice.mul(vars.userDebt).div(vars.assetUnit);
-        vars.totalDebtInETH = vars.totalDebtInETH.add(vars.userDebtETH);
+        vars.userDebtInBaseCurrency = vars.assetPrice.mul(vars.userDebt).div(vars.assetUnit);
+        vars.totalDebtInBaseCurrency = vars.totalDebtInBaseCurrency.add(
+          vars.userDebtInBaseCurrency
+        );
       }
     }
 
-    vars.avgLtv = vars.totalCollateralInETH > 0 ? vars.avgLtv.div(vars.totalCollateralInETH) : 0;
-    vars.avgLiquidationThreshold = vars.totalCollateralInETH > 0
-      ? vars.avgLiquidationThreshold.div(vars.totalCollateralInETH)
+    vars.avgLtv = vars.totalCollateralInBaseCurrency > 0
+      ? vars.avgLtv.div(vars.totalCollateralInBaseCurrency)
+      : 0;
+    vars.avgLiquidationThreshold = vars.totalCollateralInBaseCurrency > 0
+      ? vars.avgLiquidationThreshold.div(vars.totalCollateralInBaseCurrency)
       : 0;
 
     vars.healthFactor = calculateHealthFactorFromBalances(
-      vars.totalCollateralInETH,
-      vars.totalDebtInETH,
+      vars.totalCollateralInBaseCurrency,
+      vars.totalDebtInBaseCurrency,
       vars.avgLiquidationThreshold
     );
     return (
-      vars.totalCollateralInETH,
-      vars.totalDebtInETH,
+      vars.totalCollateralInBaseCurrency,
+      vars.totalDebtInBaseCurrency,
       vars.avgLtv,
       vars.avgLiquidationThreshold,
       vars.healthFactor,
@@ -156,43 +164,46 @@ library GenericLogic {
 
   /**
    * @dev Calculates the health factor from the corresponding balances
-   * @param totalCollateralInETH The total collateral in ETH
-   * @param totalDebtInETH The total debt in ETH
+   * @param totalCollateralInBaseCurrency The total collateral in the base currency used by the price feed
+   * @param totalDebtInBaseCurrency The total debt in the base currency used by the price feed
    * @param liquidationThreshold The avg liquidation threshold
    * @return The health factor calculated from the balances provided
    **/
   function calculateHealthFactorFromBalances(
-    uint256 totalCollateralInETH,
-    uint256 totalDebtInETH,
+    uint256 totalCollateralInBaseCurrency,
+    uint256 totalDebtInBaseCurrency,
     uint256 liquidationThreshold
   ) internal pure returns (uint256) {
-    if (totalDebtInETH == 0) return uint256(-1);
+    if (totalDebtInBaseCurrency == 0) return uint256(-1);
 
-    return (totalCollateralInETH.percentMul(liquidationThreshold)).wadDiv(totalDebtInETH);
+    return
+      (totalCollateralInBaseCurrency.percentMul(liquidationThreshold)).wadDiv(
+        totalDebtInBaseCurrency
+      );
   }
 
   /**
-   * @dev Calculates the equivalent amount in ETH that an user can borrow, depending on the available collateral and the
+   * @dev Calculates the maximum amount that can be borrowed depending on the available collateral, the total debt and the
    * average Loan To Value
-   * @param totalCollateralInETH The total collateral in ETH
-   * @param totalDebtInETH The total borrow balance
+   * @param totalCollateralInBaseCurrency The total collateral in the base currency used by the price feed
+   * @param totalDebtInBaseCurrency The total borrow balance in the base currency used by the price feed
    * @param ltv The average loan to value
-   * @return the amount available to borrow in ETH for the user
+   * @return the amount available to borrow in the base currency of the used by the price feed
    **/
 
-  function calculateAvailableBorrowsETH(
-    uint256 totalCollateralInETH,
-    uint256 totalDebtInETH,
+  function calculateAvailableBorrows(
+    uint256 totalCollateralInBaseCurrency,
+    uint256 totalDebtInBaseCurrency,
     uint256 ltv
   ) internal pure returns (uint256) {
-    uint256 availableBorrowsETH = totalCollateralInETH.percentMul(ltv);
+    uint256 availableBorrowsInBaseCurrency = totalCollateralInBaseCurrency.percentMul(ltv);
 
-    if (availableBorrowsETH < totalDebtInETH) {
+    if (availableBorrowsInBaseCurrency < totalDebtInBaseCurrency) {
       return 0;
     }
 
-    availableBorrowsETH = availableBorrowsETH.sub(totalDebtInETH);
-    return availableBorrowsETH;
+    availableBorrowsInBaseCurrency = availableBorrowsInBaseCurrency.sub(totalDebtInBaseCurrency);
+    return availableBorrowsInBaseCurrency;
   }
 
   /**
