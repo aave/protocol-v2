@@ -218,7 +218,7 @@ library ReserveLogic {
     );
   }
 
-  struct MintToTreasuryLocalVars {
+  struct AccrueToTreasuryLocalVars {
     uint256 prevTotalStableDebt;
     uint256 prevTotalVariableDebt;
     uint256 currTotalVariableDebt;
@@ -240,7 +240,7 @@ library ReserveLogic {
     DataTypes.ReserveData storage reserve,
     DataTypes.ReserveCache memory reserveCache
   ) internal {
-    MintToTreasuryLocalVars memory vars;
+    AccrueToTreasuryLocalVars memory vars;
 
     vars.reserveFactor = reserveCache.reserveConfiguration.getReserveFactorMemory();
 
