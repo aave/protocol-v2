@@ -40,6 +40,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       VariableDebtTokenNamePrefix,
       SymbolPrefix,
       WethGateway,
+      ReservesConfig,
     } = poolConfig;
     const mockTokens = await getAllMockedTokens();
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
@@ -52,14 +53,12 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
 
-    const reservesParams = getReservesConfigByPool(AavePools.proto);
-
     const admin = await addressesProvider.getPoolAdmin();
 
     const treasuryAddress = await getTreasuryAddress(poolConfig);
 
     await initReservesByHelper(
-      reservesParams,
+      ReservesConfig,
       protoPoolReservesAddresses,
       ATokenNamePrefix,
       StableDebtTokenNamePrefix,
@@ -68,9 +67,10 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       admin,
       treasuryAddress,
       ZERO_ADDRESS,
+      pool,
       verify
     );
-    await configureReservesByHelper(reservesParams, protoPoolReservesAddresses, testHelpers, admin);
+    await configureReservesByHelper(ReservesConfig, protoPoolReservesAddresses, testHelpers, admin);
 
     const collateralManager = await deployLendingPoolCollateralManager(verify);
     await waitForTx(
