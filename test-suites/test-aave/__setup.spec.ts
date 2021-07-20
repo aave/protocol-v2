@@ -13,7 +13,7 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  deployAaveOracleV2,
+  deployAaveOracle,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -220,7 +220,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     config.OracleQuoteCurrency
   );
 
-  await deployAaveOracleV2([
+  await deployAaveOracle([
     tokens,
     aggregators,
     fallbackOracle.address,
