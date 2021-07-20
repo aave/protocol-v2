@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import {
   deployPriceOracle,
-  deployAaveOracleV2,
+  deployAaveOracle,
   deployLendingRateOracle,
 } from '../../helpers/contracts-deployments';
 import {
@@ -12,12 +12,7 @@ import {
 import { ICommonConfiguration, iAssetBase, TokenContractId } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
 import { getAllAggregatorsAddresses, getAllTokenAddresses } from '../../helpers/mock-helpers';
-import {
-  ConfigNames,
-  loadPoolConfig,
-  getWethAddress,
-  getQuoteCurrency,
-} from '../../helpers/configuration';
+import { ConfigNames, loadPoolConfig, getQuoteCurrency } from '../../helpers/configuration';
 import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
@@ -35,6 +30,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev environment')
       ProtocolGlobalParams: { UsdAddress, MockUsdPriceInWei },
       LendingRateOracleRatesCommon,
       OracleQuoteCurrency,
+      OracleQuoteUnit,
     } = poolConfig as ICommonConfiguration;
 
     const defaultTokenList = {
@@ -64,13 +60,13 @@ task('dev:deploy-oracles', 'Deploy oracles for dev environment')
       OracleQuoteCurrency
     );
 
-    await deployAaveOracleV2(
+    await deployAaveOracle(
       [
         tokens,
         aggregators,
         fallbackOracle.address,
         await getQuoteCurrency(poolConfig),
-        pool.OracleQuoteUnit,
+        OracleQuoteUnit,
       ],
       verify
     );

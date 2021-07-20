@@ -1,13 +1,12 @@
 import { task } from 'hardhat/config';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { deployAaveOracleV2, deployLendingRateOracle } from '../../helpers/contracts-deployments';
+import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import { setInitialMarketRatesInRatesOracleByHelper } from '../../helpers/oracles-helpers';
 import { ICommonConfiguration, eNetwork, SymbolMap } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
   ConfigNames,
   loadPoolConfig,
-  getWethAddress,
   getGenesisPoolAdmin,
   getLendingRateOracles,
   getQuoteCurrency,
@@ -18,8 +17,7 @@ import {
   getLendingRateOracle,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
-import { AaveOracle, AaveOracleV2, LendingRateOracle } from '../../types';
-import { isAddress } from 'ethers/lib/utils';
+import { AaveOracle, LendingRateOracle } from '../../types';
 
 task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -54,14 +52,14 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         poolConfig.OracleQuoteCurrency
       );
 
-      let aaveOracle: AaveOracle | AaveOracleV2;
+      let aaveOracle: AaveOracle;
       let lendingRateOracle: LendingRateOracle;
 
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
         aaveOracle = await await getAaveOracle(aaveOracleAddress);
         await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
       } else {
-        aaveOracle = await deployAaveOracleV2(
+        aaveOracle = await deployAaveOracle(
           [
             tokens,
             aggregators,
