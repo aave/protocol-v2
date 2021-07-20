@@ -48,7 +48,6 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
-  AaveOracleV2Factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -225,23 +224,12 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
   );
 
 export const deployAaveOracle = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress, string],
   verify?: boolean
 ) =>
   withSaveAndVerify(
     await new AaveOracleFactory(await getFirstSigner()).deploy(...args),
     eContractid.AaveOracle,
-    args,
-    verify
-  );
-
-export const deployAaveOracleV2 = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress, string],
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new AaveOracleV2Factory(await getFirstSigner()).deploy(...args),
-    eContractid.AaveOracleV2,
     args,
     verify
   );
