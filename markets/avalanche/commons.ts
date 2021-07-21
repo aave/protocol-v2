@@ -5,6 +5,7 @@ import {
   RAY,
   ZERO_ADDRESS,
   MOCK_CHAINLINK_AGGREGATORS_PRICES,
+  oneUsd,
 } from '../../helpers/constants';
 import { ICommonConfiguration, eAvalancheNetwork } from '../../helpers/types';
 
@@ -19,6 +20,8 @@ export const CommonsConfig: ICommonConfiguration = {
   VariableDebtTokenNamePrefix: 'Aave Avalanche Market variable debt',
   SymbolPrefix: '', // TODO: add a symbol?
   ProviderId: 0, // Overriden in index.ts
+  OracleQuoteCurrency: 'USD',
+  OracleQuoteUnit: oneUsd.toString(),
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '5848466240000000',
