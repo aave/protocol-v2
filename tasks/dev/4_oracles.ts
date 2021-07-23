@@ -12,14 +12,14 @@ import {
 import { ICommonConfiguration, iAssetBase, TokenContractId } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
 import { getAllAggregatorsAddresses, getAllTokenAddresses } from '../../helpers/mock-helpers';
-import { ConfigNames, loadPoolConfig, getWethAddress } from '../../helpers/configuration';
+import { ConfigNames, loadPoolConfig, getQuoteCurrency } from '../../helpers/configuration';
 import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
 
-task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
+task('dev:deploy-oracles', 'Deploy oracles for dev environment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, pool }, localBRE) => {
@@ -29,6 +29,8 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       Mocks: { AllAssetsInitialPrices },
       ProtocolGlobalParams: { UsdAddress, MockUsdPriceInWei },
       LendingRateOracleRatesCommon,
+      OracleQuoteCurrency,
+      OracleQuoteUnit,
     } = poolConfig as ICommonConfiguration;
 
     const defaultTokenList = {
@@ -54,11 +56,18 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
 
     const [tokens, aggregators] = getPairsTokenAggregator(
       allTokenAddresses,
-      allAggregatorsAddresses
+      allAggregatorsAddresses,
+      OracleQuoteCurrency
     );
 
     await deployAaveOracle(
-      [tokens, aggregators, fallbackOracle.address, await getWethAddress(poolConfig)],
+      [
+        tokens,
+        aggregators,
+        fallbackOracle.address,
+        await getQuoteCurrency(poolConfig),
+        OracleQuoteUnit,
+      ],
       verify
     );
     await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
