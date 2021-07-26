@@ -4,7 +4,12 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
+export type eNetwork =
+  | eEthereumNetwork
+  | ePolygonNetwork
+  | eXDaiNetwork
+  | eAvalancheNetwork
+  | eArbitrumNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -19,6 +24,14 @@ export enum eEthereumNetwork {
 export enum ePolygonNetwork {
   matic = 'matic',
   mumbai = 'mumbai',
+}
+
+export enum eAvalancheNetwork {
+  fuji = 'fuji',
+}
+
+export enum eArbitrumNetwork {
+  arbitrum_rinkeby = 'arbitrum_rinkeby',
 }
 
 export enum eXDaiNetwork {

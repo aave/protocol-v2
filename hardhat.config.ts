@@ -3,7 +3,14 @@ import fs from 'fs';
 import { HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
-import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
+import {
+  eArbitrumNetwork,
+  eAvalancheNetwork,
+  eEthereumNetwork,
+  eNetwork,
+  ePolygonNetwork,
+  eXDaiNetwork,
+} from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 import {
   NETWORKS_RPC_URL,
@@ -98,6 +105,8 @@ const buidlerConfig: HardhatUserConfig = {
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
+    fuji: getCommonNetworkConfig(eAvalancheNetwork.fuji, 43113),
+    arbitrum_rinkeby: getCommonNetworkConfig(eArbitrumNetwork.arbitrum_rinkeby, 421611),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
     hardhat: {
       hardfork: 'berlin',
