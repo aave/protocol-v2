@@ -78,6 +78,8 @@ interface IUiPoolDataProvider {
     view
     returns (address[] memory);
 
+  function incentivesController() external view returns (IAaveIncentivesController);
+
   function getSimpleReservesData(ILendingPoolAddressesProvider provider)
     external
     view

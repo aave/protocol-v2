@@ -25,7 +25,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
-  IAaveIncentivesController public immutable incentivesController;
+  IAaveIncentivesController public immutable override incentivesController;
   IPriceOracleGetter public immutable oracle;
 
   constructor(IAaveIncentivesController _incentivesController, IPriceOracleGetter _oracle) public {
@@ -138,23 +138,23 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // incentives
       if (address(0) != address(incentivesController)) {
         (
-          reserveData.aTokenIncentivesIndex,
           reserveData.aEmissionPerSecond,
-          reserveData.aIncentivesLastUpdateTimestamp
+          reserveData.aIncentivesLastUpdateTimestamp,
+          reserveData.aTokenIncentivesIndex
           //        ) = incentivesController.getAssetData(reserveData.aTokenAddress);  TODO: temp fix
         ) = incentivesController.assets(reserveData.aTokenAddress);
 
         (
-          reserveData.sTokenIncentivesIndex,
           reserveData.sEmissionPerSecond,
-          reserveData.sIncentivesLastUpdateTimestamp
+          reserveData.sIncentivesLastUpdateTimestamp,
+          reserveData.sTokenIncentivesIndex
           //        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);  TODO: temp fix
         ) = incentivesController.assets(reserveData.stableDebtTokenAddress);
 
         (
-          reserveData.vTokenIncentivesIndex,
           reserveData.vEmissionPerSecond,
-          reserveData.vIncentivesLastUpdateTimestamp
+          reserveData.vIncentivesLastUpdateTimestamp,
+          reserveData.vTokenIncentivesIndex
           //        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);  TODO: temp fix
         ) = incentivesController.assets(reserveData.variableDebtTokenAddress);
       }

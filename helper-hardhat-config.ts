@@ -47,7 +47,10 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eEthereumNetwork.buidlerevm]: 'http://localhost:8545',
   [eEthereumNetwork.tenderlyMain]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
   [ePolygonNetwork.mumbai]: 'https://rpc-mumbai.maticvigil.com',
-  [ePolygonNetwork.matic]: 'https://rpc-mainnet.matic.network',
+  [ePolygonNetwork.matic]:
+    // 'https://rpc-mainnet.maticvigil.com/v1/e616b9ddc7598ffae92629f8145614d55094c722',
+    'https://polygon-mainnet.g.alchemy.com/v2/6NUmfWDZw6lC3RPAphj0p_2vm7ElOn2U',
+  // [ePolygonNetwork.matic]: 'https://rpc-mainnet.matic.network',
   [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
 };
 
