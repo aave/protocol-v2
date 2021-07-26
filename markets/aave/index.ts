@@ -24,7 +24,6 @@ import {
   strategyYFI,
   strategyXSUSHI,
   strategyFEI,
-  strategyENJ,
 } from './reservesConfigs';
 
 // ----------------
@@ -40,7 +39,7 @@ export const AaveConfig: IAaveConfiguration = {
     BAT: strategyBAT,
     BUSD: strategyBUSD,
     DAI: strategyDAI,
-    ENJ: strategyENJ,
+    ENJ: strategyREN,
     FEI: strategyFEI,
     KNC: strategyKNC,
     LINK: strategyLINK,
