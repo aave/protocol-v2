@@ -894,6 +894,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
 
+    reserve.updateState(reserveCache);
     ValidationLogic.validateRepay(
       reserveCache,
       asset,
@@ -910,8 +911,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (amount < paybackAmount) {
       paybackAmount = amount;
     }
-
-    reserve.updateState(reserveCache);
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserveCache.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);

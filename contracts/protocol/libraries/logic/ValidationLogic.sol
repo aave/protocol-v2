@@ -207,9 +207,10 @@ library ValidationLogic {
     vars.amountInBaseCurrency = vars.amountInBaseCurrency.mul(amount).div(10**vars.reserveDecimals);
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.collateralNeededInBaseCurrency = vars.userDebtInBaseCurrency.add(vars.amountInBaseCurrency).percentDiv(
-      vars.currentLtv
-    ); //LTV is calculated in percentage
+    vars.collateralNeededInBaseCurrency = vars
+      .userDebtInBaseCurrency
+      .add(vars.amountInBaseCurrency)
+      .percentDiv(vars.currentLtv); //LTV is calculated in percentage
 
     require(
       vars.collateralNeededInBaseCurrency <= vars.userCollateralInBaseCurrency,
@@ -280,7 +281,7 @@ library ValidationLogic {
     } else if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE) {
       require(
         IVariableDebtToken(reserveCache.variableDebtTokenAddress).lastUserIndex(onBehalfOf) !=
-          reserveCache.currVariableBorrowIndex,
+          reserveCache.nextVariableBorrowIndex,
         Errors.VL_SAME_BLOCK_BORROW_REPAY
       );
       require(variableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
