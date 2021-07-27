@@ -781,8 +781,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       vars.releaseUnderlying ? vars.amount : 0
     );
 
-    _usersLastBorrowTimestamp[vars.asset][vars.user] = block.timestamp;
-
     if (vars.releaseUnderlying) {
       IAToken(reserveCache.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
     }
@@ -906,8 +904,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       interestRateMode,
       onBehalfOf,
       stableDebt,
-      variableDebt,
-      _usersLastBorrowTimestamp
+      variableDebt
     );
 
     uint256 paybackAmount =

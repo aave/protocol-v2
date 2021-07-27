@@ -255,7 +255,6 @@ library ValidationLogic {
    * @param onBehalfOf The address of the user msg.sender is repaying for
    * @param stableDebt The borrow balance of the user
    * @param variableDebt The borrow balance of the user
-   * @param lastUsersBorrowTimestamp The data structure that keeps track of all the latest borrowings from the users
    */
   function validateRepay(
     DataTypes.ReserveCache memory reserveCache,
@@ -264,8 +263,7 @@ library ValidationLogic {
     DataTypes.InterestRateMode rateMode,
     address onBehalfOf,
     uint256 stableDebt,
-    uint256 variableDebt,
-    mapping(address => mapping(address => uint256)) storage lastUsersBorrowTimestamp
+    uint256 variableDebt
   ) external view {
     (bool isActive, , , , bool isPaused) = reserveCache.reserveConfiguration.getFlagsMemory();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
@@ -273,18 +271,22 @@ library ValidationLogic {
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
-    require(
-      lastUsersBorrowTimestamp[asset][onBehalfOf] != uint40(block.timestamp),
-      Errors.VL_SAME_BLOCK_BORROW_REPAY
-    );
-
-    require(
-      (stableDebt > 0 &&
-        DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) ||
-        (variableDebt > 0 &&
-          DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE),
-      Errors.VL_NO_DEBT_OF_SELECTED_TYPE
-    );
+    if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) {
+      require(
+        reserveCache.stableDebtLastUpdateTimestamp != block.timestamp,
+        Errors.VL_SAME_BLOCK_BORROW_REPAY
+      );
+      require(stableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
+    } else if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE) {
+      require(
+        IVariableDebtToken(reserveCache.variableDebtTokenAddress).lastUserIndex(onBehalfOf) !=
+          reserveCache.currVariableBorrowIndex,
+        Errors.VL_SAME_BLOCK_BORROW_REPAY
+      );
+      require(variableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
+    } else {
+      revert(Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED);
+    }
 
     require(
       amountSent != uint256(-1) || msg.sender == onBehalfOf,

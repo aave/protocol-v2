@@ -23,4 +23,11 @@ interface IScaledBalanceToken {
    * @return The scaled total supply
    **/
   function scaledTotalSupply() external view returns (uint256);
+
+  /**
+   * @dev Returns the index at the moment of the last action (mint/burn/transfer)
+   * @param user The address of the user
+   * @return The last user index
+   **/
+  function lastUserIndex(address user) external view returns (uint256);
 }
