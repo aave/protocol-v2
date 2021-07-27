@@ -33,7 +33,6 @@ contract ATokensAndRatesHelper is Ownable {
     uint256 reserveFactor;
     uint256 borrowCap;
     uint256 supplyCap;
-    uint256 exposureCap;
     bool stableBorrowingEnabled;
     bool borrowingEnabled;
   }
@@ -74,8 +73,7 @@ contract ATokensAndRatesHelper is Ownable {
         inputParams[i].asset,
         inputParams[i].baseLTV,
         inputParams[i].liquidationThreshold,
-        inputParams[i].liquidationBonus,
-        inputParams[i].exposureCap
+        inputParams[i].liquidationBonus
       );
 
       if (inputParams[i].borrowingEnabled) {

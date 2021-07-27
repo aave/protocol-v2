@@ -278,9 +278,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (useAsCollateral) {
       emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
     } else {
-      ValidationLogic.validateHFAndExposureCap(
+      ValidationLogic.validateHFAndLtv(
         asset,
-        userBalance,
         msg.sender,
         _reserves,
         _usersConfig[msg.sender],
@@ -474,17 +473,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     view
     override
     returns (
-      uint256 totalCollateralETH,
-      uint256 totalDebtETH,
-      uint256 availableBorrowsETH,
+      uint256 totalCollateralBase,
+      uint256 totalDebtBase,
+      uint256 availableBorrowsBase,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
       uint256 healthFactor
     )
   {
     (
-      totalCollateralETH,
-      totalDebtETH,
+      totalCollateralBase,
+      totalDebtBase,
       ltv,
       currentLiquidationThreshold,
       healthFactor,
@@ -498,9 +497,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
-    availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
-      totalCollateralETH,
-      totalDebtETH,
+    availableBorrowsBase = GenericLogic.calculateAvailableBorrows(
+      totalCollateralBase,
+      totalDebtBase,
       ltv
     );
   }
@@ -620,9 +619,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       if (fromConfig.isUsingAsCollateral(reserveId)) {
         if (fromConfig.isBorrowingAny()) {
-          ValidationLogic.validateHFAndExposureCap(
+          ValidationLogic.validateHFAndLtv(
             asset,
-            amount,
             from,
             _reserves,
             _usersConfig[from],
@@ -861,9 +859,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (userConfig.isUsingAsCollateral(reserve.id)) {
       if (userConfig.isBorrowingAny()) {
-        ValidationLogic.validateHFAndExposureCap(
+        ValidationLogic.validateHFAndLtv(
           asset,
-          0,
           msg.sender,
           _reserves,
           userConfig,

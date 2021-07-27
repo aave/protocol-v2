@@ -142,14 +142,8 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const {
-    main,
-    ropsten,
-    kovan,
-    coverage,
-    buidlerevm,
-    tenderlyMain,
-  } = param as iEthereumParamsPerNetwork<T>;
+  const { main, ropsten, kovan, coverage, buidlerevm, tenderlyMain } =
+    param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
   if (process.env.FORK) {
@@ -326,6 +320,48 @@ export const buildFlashLiquidationAdapterParams = (
     [collateralAsset, debtAsset, user, debtToCover, useEthPath]
   );
 };
+
+export const buildPermitDelegationParams = (
+  chainId: number,
+  token: tEthereumAddress,
+  revision: string,
+  tokenName: string,
+  delegator: tEthereumAddress,
+  delegatee: tEthereumAddress,
+  nonce: number,
+  deadline: string,
+  value: tStringTokenSmallUnits
+) => ({
+  types: {
+    EIP712Domain: [
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+      { name: 'verifyingContract', type: 'address' },
+    ],
+    PermitDelegation: [
+      { name: 'delegator', type: 'address' },
+      { name: 'delegatee', type: 'address' },
+      { name: 'value', type: 'uint256' },
+      { name: 'nonce', type: 'uint256' },
+      { name: 'deadline', type: 'uint256' },
+    ],
+  },
+  primaryType: 'PermitDelegation' as const,
+  domain: {
+    name: tokenName,
+    version: revision,
+    chainId: chainId,
+    verifyingContract: token,
+  },
+  message: {
+    delegator,
+    delegatee,
+    value,
+    nonce,
+    deadline,
+  },
+});
 
 export const verifyContract = async (
   id: string,

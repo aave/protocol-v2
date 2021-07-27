@@ -18,29 +18,34 @@ import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 contract AaveOracle is IPriceOracleGetter, Ownable {
   using SafeERC20 for IERC20;
 
-  event WethSet(address indexed weth);
+  event BaseCurrencySet(address indexed baseCurrency, uint256 baseCurrencyUnit);
   event AssetSourceUpdated(address indexed asset, address indexed source);
   event FallbackOracleUpdated(address indexed fallbackOracle);
 
   mapping(address => IChainlinkAggregator) private assetsSources;
   IPriceOracleGetter private _fallbackOracle;
-  address public immutable WETH;
+  address public immutable BASE_CURRENCY;
+  uint256 public immutable BASE_CURRENCY_UNIT;
 
   /// @notice Constructor
   /// @param assets The addresses of the assets
   /// @param sources The address of the source of each asset
   /// @param fallbackOracle The address of the fallback oracle to use if the data of an
   ///        aggregator is not consistent
+  /// @param baseCurrency the base currency used for the price quotes. If USD is used, base currency is 0x0
+  /// @param baseCurrencyUnit the unit of the base currency
   constructor(
     address[] memory assets,
     address[] memory sources,
     address fallbackOracle,
-    address weth
+    address baseCurrency,
+    uint256 baseCurrencyUnit
   ) public {
     _setFallbackOracle(fallbackOracle);
     _setAssetsSources(assets, sources);
-    WETH = weth;
-    emit WethSet(weth);
+    BASE_CURRENCY = baseCurrency;
+    BASE_CURRENCY_UNIT = baseCurrencyUnit;
+    emit BaseCurrencySet(baseCurrency, baseCurrencyUnit);
   }
 
   /// @notice External function called by the Aave governance to set or replace sources of assets
@@ -83,8 +88,8 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
   function getAssetPrice(address asset) public view override returns (uint256) {
     IChainlinkAggregator source = assetsSources[asset];
 
-    if (asset == WETH) {
-      return 1 ether;
+    if (asset == BASE_CURRENCY) {
+      return BASE_CURRENCY_UNIT;
     } else if (address(source) == address(0)) {
       return _fallbackOracle.getAssetPrice(asset);
     } else {

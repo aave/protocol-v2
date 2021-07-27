@@ -187,9 +187,7 @@ export enum ProtocolErrors {
   RL_ATOKEN_SUPPLY_NOT_ZERO = '88',
   RL_STABLE_DEBT_NOT_ZERO = '89',
   RL_VARIABLE_DEBT_SUPPLY_NOT_ZERO = '90',
-  LP_CALLER_NOT_EOA = '91',
-  RC_INVALID_EXPOSURE_CAP = '92',
-  VL_COLLATERAL_EXPOSURE_CAP_EXCEEDED = '93',
+  VL_LTV_VALIDATION_FAILED = '93',
   VL_SAME_BLOCK_BORROW_REPAY = '94',
   LPC_FLASHLOAN_PREMIUMS_MISMATCH = '95',
   LPC_FLASHLOAN_PREMIUM_INVALID = '96',
@@ -403,7 +401,6 @@ export interface IReserveCollateralParams {
   baseLTVAsCollateral: string;
   liquidationThreshold: string;
   liquidationBonus: string;
-  exposureCap: string;
 }
 export interface IMarketRates {
   borrowRate: string;
