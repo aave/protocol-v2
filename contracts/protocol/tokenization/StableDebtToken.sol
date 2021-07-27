@@ -18,7 +18,15 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   using WadRayMath for uint256;
 
-  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  bytes public constant EIP712_REVISION = bytes('1');
+  bytes32 internal constant EIP712_DOMAIN =
+    keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
+  bytes32 public constant PERMIT_DELEGATION_TYPEHASH =
+    keccak256(
+      'PermitDelegation(address delegator,address delegatee,uint256 value,uint256 nonce,uint256 deadline)'
+    );
+
+  uint256 public constant DEBT_TOKEN_REVISION = 0x2;
 
   uint256 internal _avgStableRate;
   mapping(address => uint40) internal _timestamps;
@@ -28,6 +36,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   ILendingPool internal _pool;
   address internal _underlyingAsset;
   IAaveIncentivesController internal _incentivesController;
+
+  mapping(address => uint256) public _nonces;
+  bytes32 public DOMAIN_SEPARATOR;
 
   /**
    * @dev Initializes the debt token.
@@ -47,6 +58,13 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     string memory debtTokenSymbol,
     bytes calldata params
   ) public override initializer {
+    uint256 chainId;
+
+    //solium-disable-next-line
+    assembly {
+      chainId := chainid()
+    }
+
     _setName(debtTokenName);
     _setSymbol(debtTokenSymbol);
     _setDecimals(debtTokenDecimals);
@@ -54,6 +72,16 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _pool = pool;
     _underlyingAsset = underlyingAsset;
     _incentivesController = incentivesController;
+
+    DOMAIN_SEPARATOR = keccak256(
+      abi.encode(
+        EIP712_DOMAIN,
+        keccak256(bytes(debtTokenName)),
+        keccak256(EIP712_REVISION),
+        chainId,
+        address(this)
+      )
+    );
 
     emit Initialized(
       underlyingAsset,
@@ -254,6 +282,51 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     }
 
     emit Transfer(user, address(0), amount);
+  }
+
+  /**
+   * @dev implements the credit delegation with ERC712 signature
+   * @param delegator The delegator of the credit
+   * @param delegatee The delegatee that can use the credit
+   * @param value The amount to be delegated
+   * @param deadline The deadline timestamp, type(uint256).max for max deadline
+   * @param v Signature param
+   * @param s Signature param
+   * @param r Signature param
+   */
+  function permitDelegation(
+    address delegator,
+    address delegatee,
+    uint256 value,
+    uint256 deadline,
+    uint8 v,
+    bytes32 r,
+    bytes32 s
+  ) external override {
+    require(delegator != address(0), 'INVALID_DELEGATOR');
+    //solium-disable-next-line
+    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    uint256 currentValidNonce = _nonces[delegator];
+    bytes32 digest =
+      keccak256(
+        abi.encodePacked(
+          '\x19\x01',
+          DOMAIN_SEPARATOR,
+          keccak256(
+            abi.encode(
+              PERMIT_DELEGATION_TYPEHASH,
+              delegator,
+              delegatee,
+              value,
+              currentValidNonce,
+              deadline
+            )
+          )
+        )
+      );
+    require(delegator == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+    _nonces[delegator] = currentValidNonce.add(1);
+    _approveDelegation(delegator, delegatee, value);
   }
 
   /**

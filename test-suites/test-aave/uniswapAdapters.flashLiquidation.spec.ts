@@ -61,7 +61,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
     const amountDAIToBorrow = await convertToCurrencyDecimals(
       dai.address,
-      new BigNumber(userGlobalDataBefore.availableBorrowsETH.toString())
+      new BigNumber(userGlobalDataBefore.availableBorrowsBase.toString())
         .div(daiPrice.toString())
         .multipliedBy(0.95)
         .toFixed(0)
@@ -128,7 +128,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
     const amountDAIToBorrow = await convertToCurrencyDecimals(
       dai.address,
-      new BigNumber(userGlobalDataBefore.availableBorrowsETH.toString())
+      new BigNumber(userGlobalDataBefore.availableBorrowsBase.toString())
         .div(daiPrice.toString())
         .multipliedBy(0.8)
         .toFixed(0)
@@ -141,7 +141,7 @@ makeSuite('Uniswap adapters', (testEnv: TestEnv) => {
 
     const userGlobalDataBefore2 = await pool.getUserAccountData(borrower.address);
 
-    const amountWETHToBorrow = new BigNumber(userGlobalDataBefore2.availableBorrowsETH.toString())
+    const amountWETHToBorrow = new BigNumber(userGlobalDataBefore2.availableBorrowsBase.toString())
       .multipliedBy(0.8)
       .toFixed(0);
 

@@ -18,6 +18,7 @@ import {
   getLendingPoolAddressesProvider,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
+import { ethers } from 'ethers';
 
 task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -58,7 +59,13 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
     );
 
     await deployAaveOracle(
-      [tokens, aggregators, fallbackOracle.address, await getWethAddress(poolConfig)],
+      [
+        tokens,
+        aggregators,
+        fallbackOracle.address,
+        await getWethAddress(poolConfig),
+        ethers.constants.WeiPerEther.toString(),
+      ],
       verify
     );
     await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
