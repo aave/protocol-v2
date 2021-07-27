@@ -134,7 +134,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
 
-    _mint(onBehalfOf, amountScaled);
+    _mint(onBehalfOf, amountScaled, index);
 
     emit Transfer(address(0), onBehalfOf, amount);
     emit Mint(user, onBehalfOf, amount, index);
@@ -157,7 +157,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
 
-    _burn(user, amountScaled);
+    _burn(user, amountScaled, index);
 
     emit Transfer(user, address(0), amount);
     emit Burn(user, amount, index);
@@ -230,6 +230,15 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    **/
   function scaledTotalSupply() public view virtual override returns (uint256) {
     return super.totalSupply();
+  }
+
+  /**
+   * @dev Returns the index at the moment of the last action (mint/burn/transfer)
+   * @param user The address of the user
+   * @return The last user index
+   **/
+  function lastUserIndex(address user) external view virtual override returns (uint256) {
+    return _usersData[user].data;
   }
 
   /**

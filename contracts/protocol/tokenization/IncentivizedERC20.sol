@@ -15,7 +15,12 @@ import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesControl
 abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   using SafeMath for uint256;
 
-  mapping(address => uint256) internal _balances;
+  struct BalanceInfo {
+    uint128 balance;
+    uint128 data;
+  }
+
+  mapping(address => BalanceInfo) internal _usersData;
 
   mapping(address => mapping(address => uint256)) private _allowances;
   uint256 internal _totalSupply;
@@ -65,7 +70,7 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
    * @return The balance of the token
    **/
   function balanceOf(address account) public view virtual override returns (uint256) {
-    return _balances[account];
+    return _usersData[account].balance;
   }
 
   /**
@@ -177,11 +182,12 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
 
     _beforeTokenTransfer(sender, recipient, amount);
 
-    uint256 oldSenderBalance = _balances[sender];
-    _balances[sender] = oldSenderBalance.sub(amount, 'ERC20: transfer amount exceeds balance');
-    uint256 oldRecipientBalance = _balances[recipient];
-    _balances[recipient] = _balances[recipient].add(amount);
+    uint256 oldSenderBalance = _usersData[sender].balance;
+    _usersData[sender].balance = uint128(oldSenderBalance.sub(amount, 'ERC20: transfer amount exceeds balance'));
 
+    uint256 oldRecipientBalance = _usersData[recipient].balance;
+    require((_usersData[recipient].balance = uint128(oldRecipientBalance.add(amount))) >= oldRecipientBalance, 'ERC20: Balance overflow');
+    
     if (address(_getIncentivesController()) != address(0)) {
       uint256 currentTotalSupply = _totalSupply;
       _getIncentivesController().handleAction(sender, currentTotalSupply, oldSenderBalance);
@@ -191,7 +197,7 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     }
   }
 
-  function _mint(address account, uint256 amount) internal virtual {
+  function _mint(address account, uint256 amount, uint256 data) internal virtual {
     require(account != address(0), 'ERC20: mint to the zero address');
 
     _beforeTokenTransfer(address(0), account, amount);
@@ -199,15 +205,16 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldTotalSupply = _totalSupply;
     _totalSupply = oldTotalSupply.add(amount);
 
-    uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.add(amount);
+    uint256 oldAccountBalance = _usersData[account].balance;
+    require((_usersData[account].balance = uint128(oldAccountBalance.add(amount))) >= oldAccountBalance, 'ERC20: Balance overflow');
+    require((_usersData[account].data = uint128(data)) == data, 'ERC20: Data field overflow');
 
     if (address(_getIncentivesController()) != address(0)) {
       _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
     }
   }
 
-  function _burn(address account, uint256 amount) internal virtual {
+  function _burn(address account, uint256 amount, uint256 data) internal virtual {
     require(account != address(0), 'ERC20: burn from the zero address');
 
     _beforeTokenTransfer(account, address(0), amount);
@@ -215,8 +222,9 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     uint256 oldTotalSupply = _totalSupply;
     _totalSupply = oldTotalSupply.sub(amount);
 
-    uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance');
+    uint256 oldAccountBalance = _usersData[account].balance;
+    _usersData[account].balance = uint128(oldAccountBalance.sub(amount, 'ERC20: burn amount exceeds balance'));
+    require((_usersData[account].data = uint128(data)) == data, 'ERC20: Data field overflow');
 
     if (address(_getIncentivesController()) != address(0)) {
       _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);

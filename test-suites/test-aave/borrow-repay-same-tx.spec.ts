@@ -43,7 +43,7 @@ makeSuite('Borrow/repay in the same tx', (testEnv: TestEnv) => {
     );
   });
 
-  it('Executes a test borrow/repay in the same transaction at stabke (revert expected)', async () => {
+  it('Executes a test borrow/repay in the same transaction at stable (revert expected)', async () => {
     await expect(testContract.executeBorrowRepayStable()).to.be.revertedWith(
       VL_SAME_BLOCK_BORROW_REPAY,
       'Borrow/repay in the same transaction did not revert as expected'

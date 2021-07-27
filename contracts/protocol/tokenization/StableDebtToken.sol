@@ -30,7 +30,6 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   uint256 internal _avgStableRate;
   mapping(address => uint40) internal _timestamps;
-  mapping(address => uint256) internal _usersStableRate;
   uint40 internal _totalSupplyTimestamp;
 
   ILendingPool internal _pool;
@@ -124,7 +123,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return The stable rate of user
    **/
   function getUserStableRate(address user) external view virtual override returns (uint256) {
-    return _usersStableRate[user];
+    return _usersData[user].data;
   }
 
   /**
@@ -133,7 +132,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    **/
   function balanceOf(address account) public view virtual override returns (uint256) {
     uint256 accountBalance = super.balanceOf(account);
-    uint256 stableRate = _usersStableRate[account];
+    uint256 stableRate = _usersData[account].data;
     if (accountBalance == 0) {
       return 0;
     }
@@ -148,6 +147,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 amountInRay;
     uint256 newStableRate;
     uint256 currentAvgStableRate;
+    uint256 currentStableRate;
   }
 
   /**
@@ -178,16 +178,18 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     vars.previousSupply = totalSupply();
     vars.currentAvgStableRate = _avgStableRate;
     vars.nextSupply = _totalSupply = vars.previousSupply.add(amount);
-
     vars.amountInRay = amount.wadToRay();
+    vars.currentStableRate = _usersData[onBehalfOf].data;
 
-    vars.newStableRate = _usersStableRate[onBehalfOf]
+    
+    if(vars.currentStableRate == 0){
+      vars.newStableRate = rate;
+    }else {
+      vars.newStableRate = vars.currentStableRate
       .rayMul(currentBalance.wadToRay())
       .add(vars.amountInRay.rayMul(rate))
       .rayDiv(currentBalance.add(amount).wadToRay());
-
-    require(vars.newStableRate <= type(uint128).max, Errors.SDT_STABLE_DEBT_OVERFLOW);
-    _usersStableRate[onBehalfOf] = vars.newStableRate;
+    }
 
     //solium-disable-next-line
     _totalSupplyTimestamp = _timestamps[onBehalfOf] = uint40(block.timestamp);
@@ -199,7 +201,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       .add(rate.rayMul(vars.amountInRay))
       .rayDiv(vars.nextSupply.wadToRay());
 
-    _mint(onBehalfOf, amount.add(balanceIncrease), vars.previousSupply);
+    _mint(onBehalfOf, amount.add(balanceIncrease), vars.previousSupply, vars.newStableRate);
 
     emit Transfer(address(0), onBehalfOf, amount);
 
@@ -228,7 +230,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 previousSupply = totalSupply();
     uint256 newAvgStableRate = 0;
     uint256 nextSupply = 0;
-    uint256 userStableRate = _usersStableRate[user];
+    uint256 userStableRate = _usersData[user].data;
 
     // Since the total supply and each single user debt accrue separately,
     // there might be accumulation errors so that the last borrower repaying
@@ -253,7 +255,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     }
 
     if (amount == currentBalance) {
-      _usersStableRate[user] = 0;
+      _usersData[user].data = 0;
       _timestamps[user] = 0;
     } else {
       //solium-disable-next-line
@@ -264,7 +266,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     if (balanceIncrease > amount) {
       uint256 amountToMint = balanceIncrease.sub(amount);
-      _mint(user, amountToMint, previousSupply);
+      _mint(user, amountToMint, previousSupply, userStableRate);
       emit Mint(
         user,
         user,
@@ -277,7 +279,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       );
     } else {
       uint256 amountToBurn = amount.sub(balanceIncrease);
-      _burn(user, amountToBurn, previousSupply);
+      _burn(user, amountToBurn, previousSupply, userStableRate);
       emit Burn(user, amountToBurn, currentBalance, balanceIncrease, newAvgStableRate, nextSupply);
     }
 
@@ -477,11 +479,15 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   function _mint(
     address account,
     uint256 amount,
-    uint256 oldTotalSupply
+    uint256 oldTotalSupply,
+    uint256 data
   ) internal {
-    uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.add(amount);
-
+    uint256 oldAccountBalance = _usersData[account].balance;
+    require(
+      (_usersData[account].balance = uint128(oldAccountBalance.add(amount))) >= oldAccountBalance,
+      'ERC20: Balance overflow'
+    );
+    _usersData[account].data = uint128(data);
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }
@@ -496,11 +502,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   function _burn(
     address account,
     uint256 amount,
-    uint256 oldTotalSupply
+    uint256 oldTotalSupply,
+    uint256 data
   ) internal {
-    uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.sub(amount, Errors.SDT_BURN_EXCEEDS_BALANCE);
-
+    uint256 oldAccountBalance = _usersData[account].balance;
+    _usersData[account].balance = uint128(
+      oldAccountBalance.sub(amount, Errors.SDT_BURN_EXCEEDS_BALANCE)
+    );
+    _usersData[account].data = uint128(data);
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
     }

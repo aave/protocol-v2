@@ -125,7 +125,7 @@ contract AToken is
   ) external override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
-    _burn(user, amountScaled);
+    _burn(user, amountScaled, index);
 
     IERC20(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
 
@@ -150,7 +150,7 @@ contract AToken is
 
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
-    _mint(user, amountScaled);
+    _mint(user, amountScaled, index);
 
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
@@ -175,7 +175,7 @@ contract AToken is
     // The amount to mint can easily be very small since it is a fraction of the interest ccrued.
     // In that case, the treasury will experience a (very small) loss, but it
     // wont cause potentially valid transactions to fail.
-    _mint(treasury, amount.rayDiv(index));
+    _mint(treasury, amount.rayDiv(index), uint128(index));
 
     emit Transfer(address(0), treasury, amount);
     emit Mint(treasury, amount, index);
@@ -261,6 +261,15 @@ contract AToken is
    **/
   function scaledTotalSupply() public view virtual override returns (uint256) {
     return super.totalSupply();
+  }
+
+  /**
+   * @dev Returns the index at the moment of the last action (mint/burn/transfer)
+   * @param user The address of the user 
+   * @return The last user index
+   **/
+  function lastUserIndex(address user) external view virtual override returns (uint256) {
+    return _usersData[user].data;
   }
 
   /**
@@ -382,6 +391,9 @@ contract AToken is
     uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
 
     super._transfer(from, to, amount.rayDiv(index));
+    
+    _usersData[from].data = uint128(index);
+    _usersData[to].data = uint128(index);
 
     if (validate) {
       pool.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);

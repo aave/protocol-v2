@@ -207,9 +207,10 @@ library ValidationLogic {
     vars.amountInBaseCurrency = vars.amountInBaseCurrency.mul(amount).div(10**vars.reserveDecimals);
 
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.collateralNeededInBaseCurrency = vars.userDebtInBaseCurrency.add(vars.amountInBaseCurrency).percentDiv(
-      vars.currentLtv
-    ); //LTV is calculated in percentage
+    vars.collateralNeededInBaseCurrency = vars
+      .userDebtInBaseCurrency
+      .add(vars.amountInBaseCurrency)
+      .percentDiv(vars.currentLtv); //LTV is calculated in percentage
 
     require(
       vars.collateralNeededInBaseCurrency <= vars.userCollateralInBaseCurrency,
@@ -249,6 +250,7 @@ library ValidationLogic {
   /**
    * @dev Validates a repay action
    * @param reserveCache The cached data of the reserve
+   * @param asset The asset address
    * @param amountSent The amount sent for the repayment. Can be an actual value or uint(-1)
    * @param rateMode the interest rate mode of the debt being repaid
    * @param onBehalfOf The address of the user msg.sender is repaying for
@@ -256,9 +258,8 @@ library ValidationLogic {
    * @param variableDebt The borrow balance of the user
    */
   function validateRepay(
-    address lastBorrower,
-    uint40 lastBorrowTimestamp,
     DataTypes.ReserveCache memory reserveCache,
+    address asset,
     uint256 amountSent,
     DataTypes.InterestRateMode rateMode,
     address onBehalfOf,
@@ -271,18 +272,22 @@ library ValidationLogic {
 
     require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
 
-    require(
-      lastBorrower != onBehalfOf || lastBorrowTimestamp != uint40(block.timestamp),
-      Errors.VL_SAME_BLOCK_BORROW_REPAY
-    );
-
-    require(
-      (stableDebt > 0 &&
-        DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) ||
-        (variableDebt > 0 &&
-          DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE),
-      Errors.VL_NO_DEBT_OF_SELECTED_TYPE
-    );
+    if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) {
+      require(
+        reserveCache.stableDebtLastUpdateTimestamp != block.timestamp,
+        Errors.VL_SAME_BLOCK_BORROW_REPAY
+      );
+      require(stableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
+    } else if (DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE) {
+      require(
+        IVariableDebtToken(reserveCache.variableDebtTokenAddress).lastUserIndex(onBehalfOf) !=
+          reserveCache.nextVariableBorrowIndex,
+        Errors.VL_SAME_BLOCK_BORROW_REPAY
+      );
+      require(variableDebt > 0, Errors.VL_NO_DEBT_OF_SELECTED_TYPE);
+    } else {
+      revert(Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED);
+    }
 
     require(
       amountSent != uint256(-1) || msg.sender == onBehalfOf,
