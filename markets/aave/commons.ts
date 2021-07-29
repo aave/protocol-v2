@@ -89,6 +89,9 @@ export const CommonsConfig: ICommonConfiguration = {
     },
     REN: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },    
+    RENBTC: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     UNI: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
@@ -231,6 +234,7 @@ export const CommonsConfig: ICommonConfiguration = {
       MANA: '0x1b93D8E109cfeDcBb3Cc74eD761DE286d5771511',
       MKR: '0x0B156192e04bAD92B6C1C13cf8739d14D78D5701',
       REN: '0xF1939BECE7708382b5fb5e559f630CB8B39a10ee',
+      RENBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
       SNX: '0xF9A76ae7a1075Fe7d646b06fF05Bd48b9FA5582e',
       SUSD: '0xb343e7a1aF578FA35632435243D814e7497622f7',
       TUSD: '0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660',
@@ -253,6 +257,7 @@ export const CommonsConfig: ICommonConfiguration = {
       MANA: '0xDab909dedB72573c626481fC98CEE1152b81DEC2',
       MKR: '0x811B1f727F8F4aE899774B568d2e72916D91F392',
       REN: ZERO_ADDRESS,
+      RENBTC: ZERO_ADDRESS,
       SNX: '0xA95674a8Ed9aa9D2E445eb0024a9aa05ab44f6bf',
       SUSD: '0xe054b4aee7ac7645642dd52f1c892ff0128c98f0',
       TUSD: '0x523ac85618df56e940534443125ef16daf785620',
@@ -275,6 +280,7 @@ export const CommonsConfig: ICommonConfiguration = {
       MANA: '0x82A44D92D6c329826dc557c5E1Be6ebeC5D5FeB9',
       MKR: '0x24551a8Fb2A7211A25a17B1481f043A8a8adC7f2',
       REN: '0x3147D7203354Dc06D9fd350c7a2437bcA92387a4',
+      RENBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
@@ -298,6 +304,7 @@ export const CommonsConfig: ICommonConfiguration = {
       MANA: '0x82A44D92D6c329826dc557c5E1Be6ebeC5D5FeB9',
       MKR: '0x24551a8Fb2A7211A25a17B1481f043A8a8adC7f2',
       REN: '0x3147D7203354Dc06D9fd350c7a2437bcA92387a4',
+      RENBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',

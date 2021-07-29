@@ -193,12 +193,7 @@ export const strategyREN: IReserveParams = {
 };
 
 export const strategyRENBTC: IReserveParams = {
-  optimalUtilizationRate: new BigNumber(0.65).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: '0',
-  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
-  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+  strategy: rateStrategyVolatileTwo,
   baseLTVAsCollateral: '0',
   liquidationThreshold: '0',
   liquidationBonus: '0',

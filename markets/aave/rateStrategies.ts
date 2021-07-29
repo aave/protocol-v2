@@ -68,7 +68,7 @@ export const rateStrategyVolatileOne: IInterestRateStrategyParams = {
   stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
 }
 
-// KNC WBTC
+// KNC WBTC RENBTC
 export const rateStrategyVolatileTwo: IInterestRateStrategyParams = {
   name: "rateStrategyVolatileTwo",
   optimalUtilizationRate: new BigNumber(0.65).multipliedBy(oneRay).toFixed(),

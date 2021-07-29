@@ -219,6 +219,7 @@ export interface iAssetBase<T> {
   UNI: T;
   USD: T;
   REN: T;
+  RENBTC: T;
   ENJ: T;
   UniDAIWETH: T;
   UniWBTCWETH: T;
@@ -266,6 +267,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'YFI'
   | 'UNI'
   | 'REN'
+  | 'RENBTC'
   | 'ENJ'
   | 'xSUSHI'
 >;
@@ -327,6 +329,7 @@ export enum TokenContractId {
   KNC = 'KNC',
   MANA = 'MANA',
   REN = 'REN',
+  RENBTC = 'RENBTC',
   SNX = 'SNX',
   BUSD = 'BUSD',
   USD = 'USD',

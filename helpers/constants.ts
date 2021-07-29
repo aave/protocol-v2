@@ -40,6 +40,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   MANA: oneEther.multipliedBy('0.000158').toFixed(),
   MKR: oneEther.multipliedBy('2.508581').toFixed(),
   REN: oneEther.multipliedBy('0.00065133').toFixed(),
+  RENBTC: oneEther.multipliedBy('47.332685').toFixed(),
   SNX: oneEther.multipliedBy('0.00442616').toFixed(),
   SUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),
   TUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),

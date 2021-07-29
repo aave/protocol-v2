@@ -17,6 +17,7 @@ import {
   strategyMANA,
   strategyMKR,
   strategyREN,
+  strategyRENBTC,
   strategySNX,
   strategyUNI,
   strategyWBTC,
@@ -24,7 +25,6 @@ import {
   strategyYFI,
   strategyXSUSHI,
   strategyENJ,
-  strategyRENBTC,
 } from './reservesConfigs';
 
 // ----------------
