@@ -192,6 +192,23 @@ export const strategyREN: IReserveParams = {
   reserveFactor: '2000'
 };
 
+export const strategyRENBTC: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.65).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '8',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '2000'
+};
+
 export const strategySNX: IReserveParams = {
   strategy: rateStrategyVolatileThree,
   baseLTVAsCollateral: '1500',
