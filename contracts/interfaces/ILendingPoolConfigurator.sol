@@ -2,44 +2,9 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
+import {ConfiguratorInputTypes} from '../protocol/libraries/types/ConfiguratorInputTypes.sol';
+
 interface ILendingPoolConfigurator {
-  struct InitReserveInput {
-    address aTokenImpl;
-    address stableDebtTokenImpl;
-    address variableDebtTokenImpl;
-    uint8 underlyingAssetDecimals;
-    address interestRateStrategyAddress;
-    address underlyingAsset;
-    address treasury;
-    address incentivesController;
-    string underlyingAssetName;
-    string aTokenName;
-    string aTokenSymbol;
-    string variableDebtTokenName;
-    string variableDebtTokenSymbol;
-    string stableDebtTokenName;
-    string stableDebtTokenSymbol;
-    bytes params;
-  }
-
-  struct UpdateATokenInput {
-    address asset;
-    address treasury;
-    address incentivesController;
-    string name;
-    string symbol;
-    address implementation;
-    bytes params;
-  }
-
-  struct UpdateDebtTokenInput {
-    address asset;
-    address incentivesController;
-    string name;
-    string symbol;
-    address implementation;
-    bytes params;
-  }
 
   /**
    * @dev Emitted when a reserve is initialized.
@@ -131,12 +96,6 @@ interface ILendingPoolConfigurator {
    * @param asset The address of the underlying asset of the reserve
    **/
   event ReserveUnpaused(address indexed asset);
-
-  /**
-   * @dev Emitted when a reserve is dropped
-   * @param asset The address of the underlying asset of the reserve
-   **/
-  event ReserveDropped(address indexed asset);
 
   /**
    * @dev Emitted when a reserve factor is updated
@@ -249,25 +208,25 @@ interface ILendingPoolConfigurator {
    * @dev Initializes reserves in batch
    * @param input The array of reserves initialization parameters
    **/
-  function batchInitReserve(InitReserveInput[] calldata input) external;
+  function batchInitReserve(ConfiguratorInputTypes.InitReserveInput[] calldata input) external;
 
   /**
    * @dev Updates the aToken implementation for the reserve
    * @param input The aToken update paramenters
    **/
-  function updateAToken(UpdateATokenInput calldata input) external;
+  function updateAToken(ConfiguratorInputTypes.UpdateATokenInput calldata input) external;
 
   /**
    * @dev Updates the stable debt token implementation for the reserve
    * @param input The stableDebtToken update parameters
    **/
-  function updateStableDebtToken(UpdateDebtTokenInput calldata input) external;
+  function updateStableDebtToken(ConfiguratorInputTypes.UpdateDebtTokenInput calldata input) external;
 
   /**
    * @dev Updates the variable debt token implementation for the asset
    * @param input The variableDebtToken update parameters
    **/
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata input) external;
+  function updateVariableDebtToken(ConfiguratorInputTypes.UpdateDebtTokenInput calldata input) external;
 
   /**
    * @dev Enables borrowing on a reserve

@@ -4,9 +4,6 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
-import {
-  InitializableImmutableAdminUpgradeabilityProxy
-} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
@@ -14,10 +11,9 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
-import {IInitializableDebtToken} from '../../interfaces/IInitializableDebtToken.sol';
-import {IInitializableAToken} from '../../interfaces/IInitializableAToken.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ConfiguratorInputTypes} from '../libraries/types/ConfiguratorInputTypes.sol';
 import {ILendingPoolConfigurator} from '../../interfaces/ILendingPoolConfigurator.sol';
+import {ConfiguratorLogic} from '../libraries/logic/ConfiguratorLogic.sol';
 
 /**
  * @title LendingPoolConfigurator contract
@@ -29,6 +25,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   using SafeMath for uint256;
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using ConfiguratorLogic for DataTypes.ReserveConfigurationMap;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
   ILendingPool internal _pool;
@@ -77,191 +74,47 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function batchInitReserve(InitReserveInput[] calldata input) external override onlyPoolAdmin {
+  function batchInitReserve(ConfiguratorInputTypes.InitReserveInput[] calldata input)
+    external
+    override
+    onlyPoolAdmin
+  {
     ILendingPool cachedPool = _pool;
     for (uint256 i = 0; i < input.length; i++) {
-      _initReserve(cachedPool, input[i]);
+      ConfiguratorLogic._initReserve(cachedPool, input[i]);
     }
-  }
-
-  function _initReserve(ILendingPool pool, InitReserveInput calldata input) internal {
-    address aTokenProxyAddress =
-      _initTokenWithProxy(
-        input.aTokenImpl,
-        abi.encodeWithSelector(
-          IInitializableAToken.initialize.selector,
-          pool,
-          input.treasury,
-          input.underlyingAsset,
-          IAaveIncentivesController(input.incentivesController),
-          input.underlyingAssetDecimals,
-          input.aTokenName,
-          input.aTokenSymbol,
-          input.params
-        )
-      );
-
-    address stableDebtTokenProxyAddress =
-      _initTokenWithProxy(
-        input.stableDebtTokenImpl,
-        abi.encodeWithSelector(
-          IInitializableDebtToken.initialize.selector,
-          pool,
-          input.underlyingAsset,
-          IAaveIncentivesController(input.incentivesController),
-          input.underlyingAssetDecimals,
-          input.stableDebtTokenName,
-          input.stableDebtTokenSymbol,
-          input.params
-        )
-      );
-
-    address variableDebtTokenProxyAddress =
-      _initTokenWithProxy(
-        input.variableDebtTokenImpl,
-        abi.encodeWithSelector(
-          IInitializableDebtToken.initialize.selector,
-          pool,
-          input.underlyingAsset,
-          IAaveIncentivesController(input.incentivesController),
-          input.underlyingAssetDecimals,
-          input.variableDebtTokenName,
-          input.variableDebtTokenSymbol,
-          input.params
-        )
-      );
-
-    pool.initReserve(
-      input.underlyingAsset,
-      aTokenProxyAddress,
-      stableDebtTokenProxyAddress,
-      variableDebtTokenProxyAddress,
-      input.interestRateStrategyAddress
-    );
-
-    DataTypes.ReserveConfigurationMap memory currentConfig =
-      pool.getConfiguration(input.underlyingAsset);
-
-    currentConfig.setDecimals(input.underlyingAssetDecimals);
-
-    currentConfig.setActive(true);
-    currentConfig.setPaused(false);
-    currentConfig.setFrozen(false);
-
-    pool.setConfiguration(input.underlyingAsset, currentConfig.data);
-
-    emit ReserveInitialized(
-      input.underlyingAsset,
-      aTokenProxyAddress,
-      stableDebtTokenProxyAddress,
-      variableDebtTokenProxyAddress,
-      input.interestRateStrategyAddress
-    );
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function dropReserve(address asset) external override onlyPoolAdmin {
-    _pool.dropReserve(asset);
-    emit ReserveDropped(asset);
+    ConfiguratorLogic.dropReserve(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function updateAToken(UpdateATokenInput calldata input) external override onlyPoolAdmin {
-    ILendingPool cachedPool = _pool;
-
-    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
-
-    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
-
-    bytes memory encodedCall =
-      abi.encodeWithSelector(
-        IInitializableAToken.initialize.selector,
-        cachedPool,
-        input.treasury,
-        input.asset,
-        input.incentivesController,
-        decimals,
-        input.name,
-        input.symbol,
-        input.params
-      );
-
-    _upgradeTokenImplementation(reserveData.aTokenAddress, input.implementation, encodedCall);
-
-    emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
-  }
-
-  /// @inheritdoc ILendingPoolConfigurator
-  function updateStableDebtToken(UpdateDebtTokenInput calldata input)
+  function updateAToken(ConfiguratorInputTypes.UpdateATokenInput calldata input)
     external
     override
     onlyPoolAdmin
   {
-    ILendingPool cachedPool = _pool;
-
-    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
-
-    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
-
-    bytes memory encodedCall =
-      abi.encodeWithSelector(
-        IInitializableDebtToken.initialize.selector,
-        cachedPool,
-        input.asset,
-        input.incentivesController,
-        decimals,
-        input.name,
-        input.symbol,
-        input.params
-      );
-
-    _upgradeTokenImplementation(
-      reserveData.stableDebtTokenAddress,
-      input.implementation,
-      encodedCall
-    );
-
-    emit StableDebtTokenUpgraded(
-      input.asset,
-      reserveData.stableDebtTokenAddress,
-      input.implementation
-    );
+    ConfiguratorLogic.updateAToken(_pool, input);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
+  function updateStableDebtToken(ConfiguratorInputTypes.UpdateDebtTokenInput calldata input)
     external
     override
     onlyPoolAdmin
   {
-    ILendingPool cachedPool = _pool;
-    DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
+    ConfiguratorLogic.updateStableDebtToken(_pool, input);
+  }
 
-    (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
-
-    bytes memory encodedCall =
-      abi.encodeWithSelector(
-        IInitializableDebtToken.initialize.selector,
-        cachedPool,
-        input.asset,
-        input.incentivesController,
-        decimals,
-        input.name,
-        input.symbol,
-        input.params
-      );
-
-    _upgradeTokenImplementation(
-      reserveData.variableDebtTokenAddress,
-      input.implementation,
-      encodedCall
-    );
-
-    emit VariableDebtTokenUpgraded(
-      input.asset,
-      reserveData.variableDebtTokenAddress,
-      input.implementation
-    );
+  /// @inheritdoc ILendingPoolConfigurator
+  function updateVariableDebtToken(ConfiguratorInputTypes.UpdateDebtTokenInput calldata input)
+    external
+    override
+    onlyPoolAdmin
+  {
+    ConfiguratorLogic.updateStableDebtToken(_pool, input);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
@@ -271,24 +124,13 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     bool stableBorrowRateEnabled
   ) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setBorrowingEnabled(true);
-    currentConfig.setBorrowCap(borrowCap);
-    currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit BorrowingEnabledOnReserve(asset, stableBorrowRateEnabled);
+    currentConfig.enableBorrowingOnReserve(_pool, asset, borrowCap, stableBorrowRateEnabled);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function disableBorrowingOnReserve(address asset) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setBorrowingEnabled(false);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-    emit BorrowingDisabledOnReserve(asset);
+    currentConfig.disableBorrowingOnReserve(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
@@ -327,46 +169,25 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       _checkNoLiquidity(asset);
     }
 
-    currentConfig.setLtv(ltv);
-    currentConfig.setLiquidationThreshold(liquidationThreshold);
-    currentConfig.setLiquidationBonus(liquidationBonus);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit CollateralConfigurationChanged(asset, ltv, liquidationThreshold, liquidationBonus);
+    currentConfig.configureReserveAsCollateral(_pool, asset, ltv, liquidationThreshold, liquidationBonus);  
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function enableReserveStableRate(address asset) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setStableRateBorrowingEnabled(true);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit StableRateEnabledOnReserve(asset);
+    currentConfig.enableReserveStableRate(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function disableReserveStableRate(address asset) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setStableRateBorrowingEnabled(false);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit StableRateDisabledOnReserve(asset);
+    currentConfig.disableReserveStableRate(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function activateReserve(address asset) external override onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setActive(true);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveActivated(asset);
+    currentConfig.activateReserve(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
@@ -374,49 +195,25 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     _checkNoLiquidity(asset);
 
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setActive(false);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveDeactivated(asset);
+    currentConfig.deactivateReserve(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function freezeReserve(address asset) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setFrozen(true);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveFrozen(asset);
+    currentConfig.freezeReserve(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function unfreezeReserve(address asset) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setFrozen(false);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveUnfrozen(asset);
+    currentConfig.unfreezeReserve(_pool, asset);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
   function setReservePause(address asset, bool paused) public override onlyEmergencyOrPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setPaused(paused);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    if (paused) {
-      emit ReservePaused(asset);
-    } else {
-      emit ReserveUnpaused(asset);
-    }
+    currentConfig.setReservePause(_pool, asset, paused);
   }
 
   /// @inheritdoc ILendingPoolConfigurator
@@ -426,34 +223,19 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     onlyRiskOrPoolAdmins
   {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setReserveFactor(reserveFactor);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit ReserveFactorChanged(asset, reserveFactor);
+    currentConfig.setReserveFactor(_pool, asset, reserveFactor);
   }
 
   ///@inheritdoc ILendingPoolConfigurator
   function setBorrowCap(address asset, uint256 borrowCap) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setBorrowCap(borrowCap);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit BorrowCapChanged(asset, borrowCap);
+    currentConfig.setBorrowCap(_pool, asset, borrowCap);
   }
 
   ///@inheritdoc ILendingPoolConfigurator
   function setSupplyCap(address asset, uint256 supplyCap) external override onlyRiskOrPoolAdmins {
     DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(asset);
-
-    currentConfig.setSupplyCap(supplyCap);
-
-    _pool.setConfiguration(asset, currentConfig.data);
-
-    emit SupplyCapChanged(asset, supplyCap);
+    currentConfig.setSupplyCap(_pool, asset, supplyCap);
   }
 
   ///@inheritdoc ILendingPoolConfigurator
@@ -471,7 +253,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     address[] memory reserves = _pool.getReservesList();
 
     for (uint256 i = 0; i < reserves.length; i++) {
-      if (reserves[i] != address(0)) { //might happen is a reserve was dropped
+      if (reserves[i] != address(0)) {
+        //might happen is a reserve was dropped
         setReservePause(reserves[i], paused);
       }
     }
@@ -540,29 +323,6 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     );
     _pool.updateFlashloanPremiums(_pool.FLASHLOAN_PREMIUM_TOTAL(), flashloanPremiumToProtocol);
     emit FlashloanPremiumToProcolUpdated(flashloanPremiumToProtocol);
-  }
-
-  function _initTokenWithProxy(address implementation, bytes memory initParams)
-    internal
-    returns (address)
-  {
-    InitializableImmutableAdminUpgradeabilityProxy proxy =
-      new InitializableImmutableAdminUpgradeabilityProxy(address(this));
-
-    proxy.initialize(implementation, initParams);
-
-    return address(proxy);
-  }
-
-  function _upgradeTokenImplementation(
-    address proxyAddress,
-    address implementation,
-    bytes memory initParams
-  ) internal {
-    InitializableImmutableAdminUpgradeabilityProxy proxy =
-      InitializableImmutableAdminUpgradeabilityProxy(payable(proxyAddress));
-
-    proxy.upgradeToAndCall(implementation, initParams);
   }
 
   function _checkNoLiquidity(address asset) internal view {

@@ -27,6 +27,9 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
+import {LendingPoolBaseLogic} from '../libraries/logic/LendingPoolBaseLogic.sol';
+import {LendingPoolOtherLogic} from '../libraries/logic/LendingPoolOtherLogic.sol';
+
 /**
  * @title LendingPool contract
  * @dev Main point of interaction with an Aave protocol's market
@@ -135,7 +138,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf
   ) external override {
     _executeBorrow(
-      ExecuteBorrowParams(
+      DataTypes.ExecuteBorrowParams(
         asset,
         msg.sender,
         onBehalfOf,
@@ -183,90 +186,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ///@inheritdoc ILendingPool
   function swapBorrowRateMode(address asset, uint256 rateMode) external override {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    DataTypes.ReserveCache memory reserveCache = reserve.cache();
-
-    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
-
-    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
-
-    ValidationLogic.validateSwapRateMode(
-      reserve,
-      reserveCache,
-      _usersConfig[msg.sender],
-      stableDebt,
-      variableDebt,
-      interestRateMode
-    );
-
-    reserve.updateState(reserveCache);
-
-    if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
-      IStableDebtToken(reserveCache.stableDebtTokenAddress).burn(msg.sender, stableDebt);
-      IVariableDebtToken(reserveCache.variableDebtTokenAddress).mint(
-        msg.sender,
-        msg.sender,
-        stableDebt,
-        reserveCache.nextVariableBorrowIndex
-      );
-      reserveCache.refreshDebt(0, stableDebt, stableDebt, 0);
-    } else {
-      IVariableDebtToken(reserveCache.variableDebtTokenAddress).burn(
-        msg.sender,
-        variableDebt,
-        reserveCache.nextVariableBorrowIndex
-      );
-      IStableDebtToken(reserveCache.stableDebtTokenAddress).mint(
-        msg.sender,
-        msg.sender,
-        variableDebt,
-        reserve.currentStableBorrowRate
-      );
-      reserveCache.refreshDebt(variableDebt, 0, 0, variableDebt);
-    }
-
-    reserve.updateInterestRates(reserveCache, asset, 0, 0);
-
-    emit Swap(asset, msg.sender, rateMode);
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
+    LendingPoolOtherLogic.swapBorrowRateMode(reserve, userConfig, asset, rateMode);
   }
 
   ///@inheritdoc ILendingPool
   function rebalanceStableBorrowRate(address asset, address user) external override {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    DataTypes.ReserveCache memory reserveCache = reserve.cache();
-
-    IERC20 stableDebtToken = IERC20(reserveCache.stableDebtTokenAddress);
-    IERC20 variableDebtToken = IERC20(reserveCache.variableDebtTokenAddress);
-    uint256 stableDebt = IERC20(stableDebtToken).balanceOf(user);
-
-    ValidationLogic.validateRebalanceStableBorrowRate(
-      reserve,
-      reserveCache,
-      asset,
-      stableDebtToken,
-      variableDebtToken,
-      reserveCache.aTokenAddress
-    );
-
-    reserve.updateState(reserveCache);
-
-    IStableDebtToken(address(stableDebtToken)).burn(user, stableDebt);
-    IStableDebtToken(address(stableDebtToken)).mint(
-      user,
-      user,
-      stableDebt,
-      reserve.currentStableBorrowRate
-    );
-
-    reserveCache.refreshDebt(stableDebt, stableDebt, 0, 0);
-
-    reserve.updateInterestRates(reserveCache, asset, 0, 0);
-
-    emit RebalanceStableBorrowRate(asset, user);
+    LendingPoolOtherLogic.rebalanceStableBorrowRate(reserve, asset, user);
   }
 
   ///@inheritdoc ILendingPool
   function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external override {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
+    LendingPoolOtherLogic.setUserUseReserveAsCollateral(
+      _reserves,
+      userConfig,
+      asset,
+      useAsCollateral,
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+    /*    DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
 
     uint256 userBalance = IERC20(reserveCache.aTokenAddress).balanceOf(msg.sender);
@@ -289,7 +231,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       );
 
       emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
-    }
+    }*/
   }
 
   ///@inheritdoc ILendingPool
@@ -303,17 +245,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) =
-      collateralManager.delegatecall(
-        abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateralAsset,
-          debtAsset,
-          user,
-          debtToCover,
-          receiveAToken
-        )
-      );
+    (bool success, bytes memory result) = collateralManager.delegatecall(
+      abi.encodeWithSignature(
+        'liquidationCall(address,address,address,uint256,bool)',
+        collateralAsset,
+        debtAsset,
+        user,
+        debtToCover,
+        receiveAToken
+      )
+    );
 
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
@@ -410,7 +351,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         // If the user chose to not return the funds, the system checks if there is enough collateral and
         // eventually opens a debt position
         _executeBorrow(
-          ExecuteBorrowParams(
+          DataTypes.ExecuteBorrowParams(
             vars.currentAsset,
             msg.sender,
             onBehalfOf,
@@ -714,23 +655,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _flashLoanPremiumToProtocol = flashLoanPremiumToProtocol;
   }
 
-  struct ExecuteBorrowParams {
-    address asset;
-    address user;
-    address onBehalfOf;
-    uint256 amount;
-    uint256 interestRateMode;
-    uint16 referralCode;
-    bool releaseUnderlying;
+  function _executeDeposit(
+    address asset,
+    uint256 amount,
+    address onBehalfOf,
+    uint16 referralCode
+  ) internal {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    LendingPoolBaseLogic._executeDeposit(
+      reserve,
+      _usersConfig[onBehalfOf],
+      asset,
+      amount,
+      onBehalfOf,
+      referralCode
+    );
   }
 
-  function _executeBorrow(ExecuteBorrowParams memory vars) internal {
+  function _executeBorrow(DataTypes.ExecuteBorrowParams memory vars) internal {
     DataTypes.ReserveData storage reserve = _reserves[vars.asset];
-    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
     DataTypes.ReserveCache memory reserveCache = reserve.cache();
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
     reserve.updateState(reserveCache);
-
     ValidationLogic.validateBorrow(
       reserveCache,
       vars.asset,
@@ -745,86 +692,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
-    uint256 currentStableRate = 0;
-    bool isFirstBorrowing = false;
-
-    if (DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE) {
-      currentStableRate = reserve.currentStableBorrowRate;
-
-      isFirstBorrowing = IStableDebtToken(reserveCache.stableDebtTokenAddress).mint(
-        vars.user,
-        vars.onBehalfOf,
-        vars.amount,
-        currentStableRate
-      );
-      reserveCache.refreshDebt(vars.amount, 0, 0, 0);
-    } else {
-      isFirstBorrowing = IVariableDebtToken(reserveCache.variableDebtTokenAddress).mint(
-        vars.user,
-        vars.onBehalfOf,
-        vars.amount,
-        reserveCache.nextVariableBorrowIndex
-      );
-      reserveCache.refreshDebt(0, 0, vars.amount, 0);
-    }
-
-    if (isFirstBorrowing) {
-      userConfig.setBorrowing(reserve.id, true);
-    }
-
-    reserve.updateInterestRates(
-      reserveCache,
-      vars.asset,
-      0,
-      vars.releaseUnderlying ? vars.amount : 0
-    );
+    LendingPoolBaseLogic._executeBorrow(_reserves, reserveCache, userConfig, vars);
 
     _lastBorrower = vars.user;
     _lastBorrowTimestamp = uint40(block.timestamp);
-
-    if (vars.releaseUnderlying) {
-      IAToken(reserveCache.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
-    }
-
-    emit Borrow(
-      vars.asset,
-      vars.user,
-      vars.onBehalfOf,
-      vars.amount,
-      vars.interestRateMode,
-      DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE
-        ? currentStableRate
-        : reserve.currentVariableBorrowRate,
-      vars.referralCode
-    );
-  }
-
-  function _executeDeposit(
-    address asset,
-    uint256 amount,
-    address onBehalfOf,
-    uint16 referralCode
-  ) internal {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
-    DataTypes.ReserveCache memory reserveCache = reserve.cache();
-
-    reserve.updateState(reserveCache);
-
-    ValidationLogic.validateDeposit(reserveCache, amount);
-
-    reserve.updateInterestRates(reserveCache, asset, amount, 0);
-
-    IERC20(asset).safeTransferFrom(msg.sender, reserveCache.aTokenAddress, amount);
-
-    bool isFirstDeposit =
-      IAToken(reserveCache.aTokenAddress).mint(onBehalfOf, amount, reserveCache.nextLiquidityIndex);
-
-    if (isFirstDeposit) {
-      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
-      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
-    }
-
-    emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
 
   function _executeWithdraw(
@@ -832,56 +703,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address to
   ) internal returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
-    DataTypes.ReserveCache memory reserveCache = reserve.cache();
-
-    reserve.updateState(reserveCache);
-
-    uint256 userBalance =
-      IAToken(reserveCache.aTokenAddress).scaledBalanceOf(msg.sender).rayMul(
-        reserveCache.nextLiquidityIndex
+    return
+      LendingPoolBaseLogic._executeWithdraw(
+        _reserves,
+        userConfig,
+        asset,
+        amount,
+        to,
+        _reservesList,
+        _reservesCount,
+        _addressesProvider.getPriceOracle()
       );
-
-    uint256 amountToWithdraw = amount;
-
-    if (amount == type(uint256).max) {
-      amountToWithdraw = userBalance;
-    }
-
-    ValidationLogic.validateWithdraw(reserveCache, amountToWithdraw, userBalance);
-
-    reserve.updateInterestRates(reserveCache, asset, 0, amountToWithdraw);
-
-    IAToken(reserveCache.aTokenAddress).burn(
-      msg.sender,
-      to,
-      amountToWithdraw,
-      reserveCache.nextLiquidityIndex
-    );
-
-    if (userConfig.isUsingAsCollateral(reserve.id)) {
-      if (userConfig.isBorrowingAny()) {
-        ValidationLogic.validateHFAndLtv(
-          asset,
-          msg.sender,
-          _reserves,
-          userConfig,
-          _reservesList,
-          _reservesCount,
-          _addressesProvider.getPriceOracle()
-        );
-      }
-
-      if (amountToWithdraw == userBalance) {
-        userConfig.setUsingAsCollateral(reserve.id, false);
-        emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
-      }
-    }
-
-    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
-
-    return amountToWithdraw;
   }
 
   function _executeRepay(
@@ -891,57 +724,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    DataTypes.ReserveCache memory reserveCache = reserve.cache();
-
-    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
-
-    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
-
-    ValidationLogic.validateRepay(
-      _lastBorrower,
-      _lastBorrowTimestamp,
-      reserveCache,
-      amount,
-      interestRateMode,
-      onBehalfOf,
-      stableDebt,
-      variableDebt
-    );
-
-    uint256 paybackAmount =
-      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
-
-    if (amount < paybackAmount) {
-      paybackAmount = amount;
-    }
-
-    reserve.updateState(reserveCache);
-
-    if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
-      IStableDebtToken(reserveCache.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
-      reserveCache.refreshDebt(0, paybackAmount, 0, 0);
-    } else {
-      IVariableDebtToken(reserveCache.variableDebtTokenAddress).burn(
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[msg.sender];
+    return
+      LendingPoolBaseLogic._executeRepay(
+        reserve,
+        userConfig,
+        asset,
+        amount,
+        rateMode,
         onBehalfOf,
-        paybackAmount,
-        reserveCache.nextVariableBorrowIndex
+        _lastBorrower,
+        _lastBorrowTimestamp
       );
-      reserveCache.refreshDebt(0, 0, 0, paybackAmount);
-    }
-
-    reserve.updateInterestRates(reserveCache, asset, paybackAmount, 0);
-
-    if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
-      _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
-    }
-
-    IERC20(asset).safeTransferFrom(msg.sender, reserveCache.aTokenAddress, paybackAmount);
-
-    IAToken(reserveCache.aTokenAddress).handleRepayment(msg.sender, paybackAmount);
-
-    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
-
-    return paybackAmount;
   }
 
   function _addReserveToList(address asset) internal returns (uint8) {
