@@ -15,6 +15,8 @@
 
 pragma solidity >=0.4.22 <=0.6.12;
 
+import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+
 contract WETH9 {
   string public name = 'Wrapped Ether';
   string public symbol = 'WETH';
@@ -45,7 +47,8 @@ contract WETH9 {
   }
 
   function totalSupply() public view returns (uint256) {
-    return address(this).balance;
+    // return address(this).balance;
+      return IERC20(0x4200000000000000000000000000000000000006).balanceOf(address(this));
   }
 
   function approve(address guy, uint256 wad) public returns (bool) {

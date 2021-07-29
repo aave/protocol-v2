@@ -43,7 +43,8 @@ contract WalletBalanceProvider {
     **/
   function balanceOf(address user, address token) public view returns (uint256) {
     if (token == MOCK_ETH_ADDRESS) {
-      return user.balance; // ETH balance
+      // return user.balance; // ETH balance
+      return IERC20(0x4200000000000000000000000000000000000006).balanceOf(user);
       // check if token is actually a contract
     } else if (token.isContract()) {
       return IERC20(token).balanceOf(user);
