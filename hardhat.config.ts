@@ -21,6 +21,9 @@ import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
 import 'solidity-coverage';
+import 'hardhat-contract-sizer';
+import "@eth-optimism/plugins/hardhat/compiler";
+
 import { fork } from 'child_process';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
@@ -132,7 +135,51 @@ const buidlerConfig: HardhatUserConfig = {
         count: 20,
       },
     },
+    optimism_main: { // main
+      url: 'https://mainnet.optimism.io',
+      gasPrice: 0,
+      chainId: 10,
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: MNEMONIC_PATH,
+        initialIndex: 0,
+        count: 20,
+      },
+      ovm: true,
+    },
+    optimismKovan: { // kovan
+      url: 'https://kovan.optimism.io',
+      gasPrice: 15000000,
+      chainId: 69,
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: MNEMONIC_PATH,
+        initialIndex: 0,
+        count: 20,
+      },
+      ovm: true,
+    },
+    optimism: { // docker
+      url: 'http://localhost:8545',
+      gasPrice: 0,
+      chainId: 420,
+      accounts: {
+        mnemonic: MNEMONIC,
+        path: MNEMONIC_PATH,
+        initialIndex: 0,
+        count: 20,
+      },
+      ovm: true,
+    }
   },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: true,
+    disambiguatePaths: false,
+  },
+  ovm: {
+      solcVersion: '0.6.12'
+  }
 };
 
 export default buidlerConfig;

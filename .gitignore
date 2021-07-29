@@ -1,7 +1,9 @@
 .env
 #Buidler files
 cache
+cache-ovm
 artifacts
+artifacts-ovm
 node_modules
 dist/
 build/
