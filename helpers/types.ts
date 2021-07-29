@@ -4,7 +4,7 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
+export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eOptimismNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -25,6 +25,11 @@ export enum eXDaiNetwork {
   xdai = 'xdai',
 }
 
+export enum eOptimismNetwork {
+  optimismKovan = 'optimismKovan',
+  optimism = 'optimism'
+}
+
 export enum EthereumNetworkNames {
   kovan = 'kovan',
   ropsten = 'ropsten',
@@ -32,12 +37,15 @@ export enum EthereumNetworkNames {
   matic = 'matic',
   mumbai = 'mumbai',
   xdai = 'xdai',
+  optimism = 'optimism',
+  optimismKovan = 'optimismKovan'
 }
 
 export enum AavePools {
   proto = 'proto',
   matic = 'matic',
   amm = 'amm',
+  optimism = 'optimism'
 }
 
 export enum eContractid {
@@ -87,6 +95,9 @@ export enum eContractid {
   UniswapLiquiditySwapAdapter = 'UniswapLiquiditySwapAdapter',
   UniswapRepayAdapter = 'UniswapRepayAdapter',
   FlashLiquidationAdapter = 'FlashLiquidationAdapter',
+  LendingPoolBaseLogic = 'LendingPoolBaseLogic',
+  LendingPoolOtherLogic = 'LendingPoolOtherLogic',
+  ConfiguratorLogic = 'ConfiguratorLogic'
 }
 
 /*
@@ -319,6 +330,11 @@ export type iXDAIPoolAssets<T> = Pick<
   'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'STAKE'
 >;
 
+export type iOptimismPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'LINK' | 'AAVE'
+>;
+
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
@@ -410,12 +426,15 @@ export interface IMarketRates {
 export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
-  | iXDaiParamsPerNetwork<T>;
+  | iXDaiParamsPerNetwork<T>
+  | iOptimismParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T>
   extends iEthereumParamsPerNetwork<T>,
     iPolygonParamsPerNetwork<T>,
-    iXDaiParamsPerNetwork<T> {}
+    iXDaiParamsPerNetwork<T>,
+    iOptimismParamsPerNetwork<T> {}
+    
 
 export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.coverage]: T;
@@ -436,10 +455,16 @@ export interface iXDaiParamsPerNetwork<T> {
   [eXDaiNetwork.xdai]: T;
 }
 
+export interface iOptimismParamsPerNetwork<T> {
+  [eOptimismNetwork.optimismKovan]: T;
+  [eOptimismNetwork.optimism]: T;
+}
+
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
   [AavePools.matic]: T;
   [AavePools.amm]: T;
+  [AavePools.optimism]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -533,6 +558,10 @@ export interface IMaticConfiguration extends ICommonConfiguration {
 
 export interface IXDAIConfiguration extends ICommonConfiguration {
   ReservesConfig: iXDAIPoolAssets<IReserveParams>;
+}
+
+export interface IOptimismConfiguration extends ICommonConfiguration {
+  ReservesConfig: iOptimismPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {

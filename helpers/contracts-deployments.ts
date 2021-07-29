@@ -48,6 +48,9 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  LendingPoolBaseLogic,
+  ConfiguratorLogic,
+  ConfiguratorLogicFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -103,7 +106,14 @@ export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolea
   );
 
 export const deployLendingPoolConfigurator = async (verify?: boolean) => {
+  const configuratorLogic = await withSaveAndVerify(
+    await new ConfiguratorLogicFactory(await getFirstSigner()).deploy(),
+    eContractid.ConfiguratorLogic,
+    [],
+    verify
+  );
   const lendingPoolConfiguratorImpl = await new LendingPoolConfiguratorFactory(
+    {['__$3ddc574512022f331a6a4c7e4bbb5c67b6$__']: configuratorLogic.address},
     await getFirstSigner()
   ).deploy();
   await insertContractAddressInDb(
@@ -168,12 +178,70 @@ export const deployValidationLogic = async (
   return withSaveAndVerify(validationLogic, eContractid.ValidationLogic, [], verify);
 };
 
+export const deployLendingPoolBaseLogic = async (
+  reserveLogic: Contract,
+  validationLogic: Contract,
+  verify?: boolean
+) => {
+  const lendingPoolBaseLogicArtifact = await readArtifact(eContractid.LendingPoolBaseLogic);
+
+  const linkedLendingPoolLogicByteCode = linkBytecode(lendingPoolBaseLogicArtifact, {
+    [eContractid.ReserveLogic]: reserveLogic.address,
+    [eContractid.ValidationLogic]: validationLogic.address,
+  });
+
+  const lendingPoolBaseLogicFactory = await DRE.ethers.getContractFactory(
+    lendingPoolBaseLogicArtifact.abi,
+    linkedLendingPoolLogicByteCode
+  );
+
+  const lendingPoolBaseLogic = await (
+    await lendingPoolBaseLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(lendingPoolBaseLogic, eContractid.LendingPoolBaseLogic, [], verify);
+};
+
+export const deployLendingPoolOtherLogic = async (
+  reserveLogic: Contract,
+  validationLogic: Contract,
+  verify?: boolean
+) => {
+  const lendingPoolOtherLogicArtifact = await readArtifact(eContractid.LendingPoolOtherLogic);
+
+  const linkedLendingPoolLogicByteCode = linkBytecode(lendingPoolOtherLogicArtifact, {
+    [eContractid.ReserveLogic]: reserveLogic.address,
+    [eContractid.ValidationLogic]: validationLogic.address,
+  });
+
+  const lendingPoolOtherLogicFactory = await DRE.ethers.getContractFactory(
+    lendingPoolOtherLogicArtifact.abi,
+    linkedLendingPoolLogicByteCode
+  );
+
+  const lendingPoolOtherLogic = await (
+    await lendingPoolOtherLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(lendingPoolOtherLogic, eContractid.LendingPoolOtherLogic, [], verify);
+};
+
 export const deployAaveLibraries = async (
   verify?: boolean
 ): Promise<LendingPoolLibraryAddresses> => {
   const reserveLogic = await deployReserveLogicLibrary(verify);
   const genericLogic = await deployGenericLogic(reserveLogic, verify);
   const validationLogic = await deployValidationLogic(reserveLogic, genericLogic, verify);
+  const lendingPoolBaseLogic = await deployLendingPoolBaseLogic(
+    reserveLogic,
+    validationLogic,
+    verify
+  );
+  const lendingPoolOtherLogic = await deployLendingPoolOtherLogic(
+    reserveLogic,
+    validationLogic,
+    verify
+  );
 
   // Hardcoded solidity placeholders, if any library changes path this will fail.
   // The '__$PLACEHOLDER$__ can be calculated via solidity keccak, but the LendingPoolLibraryAddresses Type seems to
@@ -189,8 +257,10 @@ export const deployAaveLibraries = async (
   return {
     ['__$de8c0cf1a7d7c36c802af9a64fb9d86036$__']: validationLogic.address,
     ['__$22cd43a9dda9ce44e9b92ba393b88fb9ac$__']: reserveLogic.address,
-    ["__$52a8a86ab43135662ff256bbc95497e8e3$__"]: genericLogic.address,
-  }
+    ['__$52a8a86ab43135662ff256bbc95497e8e3$__']: genericLogic.address,
+    ['__$3eebaf3cae995fc60fc10192f4df8139e2$__']: lendingPoolOtherLogic.address,
+    ['__$a51786c2269c2ea419cdc7fd27f45f7870$__']: lendingPoolBaseLogic.address,
+  };
 };
 
 export const deployLendingPool = async (verify?: boolean) => {
