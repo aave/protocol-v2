@@ -128,7 +128,7 @@ export const AaveConfig: IAaveConfiguration = {
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
       xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272',
     },
-    [eEthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderly]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',

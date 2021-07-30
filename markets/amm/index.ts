@@ -83,8 +83,7 @@ export const AmmConfig: IAmmConfiguration = {
       BptWBTCWETH: '0x110569E3261bC0934dA637b019f6f1b6F50ec574',
       BptBALWETH: '0xad01D8e0Fa9EAA8Fe76dA30CFb1BCe12707aE6c5',
     },
-    [eEthereumNetwork.ropsten]: {
-    },
+    [eEthereumNetwork.ropsten]: {},
     [eEthereumNetwork.main]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
@@ -108,7 +107,7 @@ export const AmmConfig: IAmmConfiguration = {
       BptWBTCWETH: '0x1efF8aF5D577060BA4ac8A29A13525bb0Ee2A3D5',
       BptBALWETH: '0x59A19D8c652FA0284f44113D0ff9aBa70bd46fB4',
     },
-    [eEthereumNetwork.tenderlyMain]: {
+    [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
