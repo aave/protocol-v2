@@ -64,7 +64,12 @@ task('arbitrum:deposit:wbtc', 'Deposit WBTC into the arbitrum market').setAction
     // WBTC
     const wbtc = tokens['WBTC'];
     const depositAmount = parseUnits('5', 8);
-    await wbtc.connect(signer).mint(depositAmount);
+
+    const expectedGas = await wbtc.connect(signer).estimateGas.mint(depositAmount);
+    console.log(`Expected gas: ${expectedGas}, ${localBRE.network.config.gas}`);
+    const mintTx = await wbtc.connect(signer).mint(depositAmount);
+
+    console.log(`Minted tokens: ${mintTx.hash}`);
     await wbtc.connect(signer).approve(lendingPool.address, depositAmount);
     const depositTx = await lendingPool
       .connect(signer)

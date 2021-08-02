@@ -50,7 +50,7 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [ePolygonNetwork.mumbai]: 'https://rpc-mumbai.maticvigil.com',
   [ePolygonNetwork.matic]: 'https://rpc-mainnet.matic.network',
   [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
-  [eArbitrumNetwork.rinkeby]: `https://arb-rinkeby.g.alchemy.com/v2/${ALCHEMY_KEY}`,
+  [eArbitrumNetwork.rinkeby]: `https://rinkeby.arbitrum.io/rpc`,
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
