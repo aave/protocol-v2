@@ -1,6 +1,7 @@
 // @ts-ignore
 import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
 import {
+  eArbitrumNetwork,
   eEthereumNetwork,
   ePolygonNetwork,
   eXDaiNetwork,
@@ -49,6 +50,7 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [ePolygonNetwork.mumbai]: 'https://rpc-mumbai.maticvigil.com',
   [ePolygonNetwork.matic]: 'https://rpc-mainnet.matic.network',
   [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
+  [eArbitrumNetwork.rinkeby]: `https://arb-rinkeby.g.alchemy.com/v2/${ALCHEMY_KEY}`,
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {

@@ -10,6 +10,7 @@ import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers'
 import AaveConfig from '../markets/aave';
 import MaticConfig from '../markets/matic';
 import AmmConfig from '../markets/amm';
+import ArbitrumConfig from '../markets/arbitrum';
 
 import { CommonsConfig } from '../markets/aave/commons';
 import { DRE, filterMapBy } from './misc-utils';
@@ -22,6 +23,7 @@ export enum ConfigNames {
   Aave = 'Aave',
   Matic = 'Matic',
   Amm = 'Amm',
+  Arbitrum = 'Arbitrum',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -34,6 +36,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return AmmConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
+    case ConfigNames.Arbitrum:
+      return ArbitrumConfig;
     default:
       throw new Error(
         `Unsupported pool configuration: ${configName} is not one of the supported configs ${Object.values(
@@ -58,6 +62,9 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.matic]: {
         ...MaticConfig.ReservesConfig,
+      },
+      [AavePools.arbitrum]: {
+        ...ArbitrumConfig.ReservesConfig,
       },
     },
     pool

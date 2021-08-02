@@ -7,6 +7,14 @@
     "artifacts"
   ],
   "scripts": {
+    "hardhat:arbitrum:dev": "hardhat --network arbitrum_rinkeby",
+    "arbitrum:dev:full:migration": "npm run compile && npm run hardhat:arbitrum:dev -- arbitrum:dev",
+    "arbitrum:dev:lurker": "npm run hardhat:arbitrum:dev -- arbitrum:lurker",
+    "arbitrum:dev:deploy-mocks": "npm run hardhat:arbitrum:dev -- arbitrum:deploy-mock-tokens",
+    "arbitrum:dev:deposit:wbtc": "npm run hardhat:arbitrum:dev -- arbitrum:deposit:wbtc",
+    "arbitrum:dev:deposit:eth": "npm run hardhat:arbitrum:dev -- arbitrum:deposit:eth",
+    "arbitrum:dev:borrow:wbtc": "npm run hardhat:arbitrum:dev -- arbitrum:borrow:wbtc",
+    "arbitrum:dev:deploy:chainlink-reg": "npm run hardhat:arbitrum:dev -- arbitrum:deploy:chainlink-sources-registry",
     "run-env": "npm i && tail -f /dev/null",
     "hardhat": "hardhat",
     "hardhat:kovan": "hardhat --network kovan",
@@ -150,7 +158,8 @@
     "Andrey Kozlov <andrey@aave.com>",
     "David Racero <david.k@aave.com>",
     "Pol Sendra <pol@aave.com>",
-    "David Truong <david@aave.com>"
+    "David Truong <david@aave.com>",
+    "Lasse Herskind <lasse@aave.com>"
   ],
   "license": "AGPLv3",
   "dependencies": {

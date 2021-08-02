@@ -1,9 +1,15 @@
 import { task } from 'hardhat/config';
-import { eContractid, eEthereumNetwork, eNetwork, ePolygonNetwork } from '../../helpers/types';
+import {
+  eArbitrumNetwork,
+  eContractid,
+  eEthereumNetwork,
+  eNetwork,
+  ePolygonNetwork,
+} from '../../helpers/types';
 import { deployUiPoolDataProvider } from '../../helpers/contracts-deployments';
 import { exit } from 'process';
 
-task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider contract`)
+task(`deploy-UiPoolDataProvider`, `Deploys the UiPoolDataProvider contract`)
   .addFlag('verify', 'Verify UiPoolDataProvider contract via Etherscan API.')
   .setAction(async ({ verify }, localBRE) => {
     await localBRE.run('set-DRE');
@@ -30,6 +36,10 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
       [ePolygonNetwork.mumbai]: {
         incentivesController: '0xd41aE58e803Edf4304334acCE4DC4Ec34a63C644',
         aaveOracle: '0xC365C653f7229894F93994CD0b30947Ab69Ff1D5',
+      },
+      [eArbitrumNetwork.rinkeby]: {
+        incentivesController: '0x0000000000000000000000000000000000000000',
+        aaveOracle: '0xbdf16840DDA7DadB502D5008943202F747a1136F',
       },
     };
     const supportedNetworks = Object.keys(addressesByNetwork);

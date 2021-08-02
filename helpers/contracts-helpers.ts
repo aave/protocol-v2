@@ -17,6 +17,9 @@ import {
   iEthereumParamsPerNetwork,
   iPolygonParamsPerNetwork,
   iXDaiParamsPerNetwork,
+  eArbitrumNetwork,
+  IArbitrumConfiguration,
+  iArbitrumParamsPerNetwork,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
@@ -106,6 +109,8 @@ export const withSaveAndVerify = async <ContractType extends Contract>(
   args: (string | string[])[],
   verify?: boolean
 ): Promise<ContractType> => {
+  const delay = (ms: number) => new Promise((res) => setTimeout(res, ms));
+  await delay(2500);
   await waitForTx(instance.deployTransaction);
   await registerContractInJsonDb(id, instance);
   if (verify) {
@@ -147,6 +152,7 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
     param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
+  const { arbitrum_rinkeby } = param as iArbitrumParamsPerNetwork<T>;
   if (process.env.FORK) {
     return param[process.env.FORK as eNetwork] as T;
   }
@@ -172,6 +178,8 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return mumbai;
     case eXDaiNetwork.xdai:
       return xdai;
+    case eArbitrumNetwork.rinkeby:
+      return arbitrum_rinkeby;
   }
 };
 
@@ -185,7 +193,10 @@ export const getOptionalParamAddressPerNetwork = (
   return getParamPerNetwork(param, network);
 };
 
-export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>(
+  { proto, amm, matic, arbitrum }: iParamsPerPool<T>,
+  pool: AavePools
+) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
@@ -193,6 +204,8 @@ export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, poo
       return amm;
     case AavePools.matic:
       return matic;
+    case AavePools.arbitrum:
+      return arbitrum;
     default:
       return proto;
   }

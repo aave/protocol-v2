@@ -4,7 +4,7 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
+export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eArbitrumNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -14,6 +14,10 @@ export enum eEthereumNetwork {
   coverage = 'coverage',
   hardhat = 'hardhat',
   tenderly = 'tenderly',
+}
+
+export enum eArbitrumNetwork {
+  rinkeby = 'arbitrum_rinkeby',
 }
 
 export enum ePolygonNetwork {
@@ -38,6 +42,7 @@ export enum AavePools {
   proto = 'proto',
   matic = 'matic',
   amm = 'amm',
+  arbitrum = 'arbitrum',
 }
 
 export enum eContractid {
@@ -198,6 +203,7 @@ export type tBigNumberTokenSmallUnits = BigNumber;
 export interface iAssetCommon<T> {
   [key: string]: T;
 }
+
 export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
@@ -268,6 +274,11 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+>;
+
+export type iArbitrumAavePoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'USDT' | 'LINK' | 'WBTC' | 'WETH'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -394,12 +405,14 @@ export interface IMarketRates {
 export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
-  | iXDaiParamsPerNetwork<T>;
+  | iXDaiParamsPerNetwork<T>
+  | iArbitrumParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T>
   extends iEthereumParamsPerNetwork<T>,
     iPolygonParamsPerNetwork<T>,
-    iXDaiParamsPerNetwork<T> {}
+    iXDaiParamsPerNetwork<T>,
+    iArbitrumParamsPerNetwork<T> {}
 
 export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.coverage]: T;
@@ -409,6 +422,10 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
   [eEthereumNetwork.tenderly]: T;
+}
+
+export interface iArbitrumParamsPerNetwork<T> {
+  [eArbitrumNetwork.rinkeby]: T;
 }
 
 export interface iPolygonParamsPerNetwork<T> {
@@ -424,6 +441,7 @@ export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
   [AavePools.matic]: T;
   [AavePools.amm]: T;
+  [AavePools.arbitrum]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -505,6 +523,10 @@ export interface ICommonConfiguration extends IBaseConfiguration {
 
 export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
+}
+
+export interface IArbitrumConfiguration extends ICommonConfiguration {
+  ReservesConfig: iArbitrumAavePoolAssets<IReserveParams>;
 }
 
 export interface IAmmConfiguration extends ICommonConfiguration {

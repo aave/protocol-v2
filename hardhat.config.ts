@@ -3,7 +3,13 @@ import fs from 'fs';
 import { HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
-import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
+import {
+  eArbitrumNetwork,
+  eEthereumNetwork,
+  eNetwork,
+  ePolygonNetwork,
+  eXDaiNetwork,
+} from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 import {
   NETWORKS_RPC_URL,
@@ -34,16 +40,23 @@ const UNLIMITED_BYTECODE_SIZE = process.env.UNLIMITED_BYTECODE_SIZE === 'true';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full', 'verifications', 'deployments', 'helpers'].forEach(
-    (folder) => {
-      const tasksPath = path.join(__dirname, 'tasks', folder);
-      fs.readdirSync(tasksPath)
-        .filter((pth) => pth.includes('.ts'))
-        .forEach((task) => {
-          require(`${tasksPath}/${task}`);
-        });
-    }
-  );
+  [
+    'misc',
+    'migrations',
+    'dev',
+    'full',
+    'verifications',
+    'deployments',
+    'helpers',
+    'arbitrum',
+  ].forEach((folder) => {
+    const tasksPath = path.join(__dirname, 'tasks', folder);
+    fs.readdirSync(tasksPath)
+      .filter((pth) => pth.includes('.ts'))
+      .forEach((task) => {
+        require(`${tasksPath}/${task}`);
+      });
+  });
 }
 
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
@@ -114,6 +127,14 @@ const buidlerConfig: HardhatUserConfig = {
         balance,
       })),
       forking: buildForkConfig(),
+    },
+    arbitrum_rinkeby: {
+      gasPrice: 0,
+      url: NETWORKS_RPC_URL[eArbitrumNetwork.rinkeby],
+      accounts: accounts.map(
+        ({ secretKey, balance }: { secretKey: string; balance: string }) => secretKey
+      ),
+      chainId: 421611,
     },
     buidlerevm_docker: {
       hardfork: 'berlin',
