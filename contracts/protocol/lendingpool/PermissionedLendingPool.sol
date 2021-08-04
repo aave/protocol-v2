@@ -19,11 +19,7 @@ contract PermissionedLendingPool is IPermissionedLendingPool, LendingPool {
   bytes32 public constant PERMISSION_MANAGER = keccak256('PERMISSION_MANAGER');
 
   modifier onlyDepositors(address user) {
-    require(
-      _isInRole(user, DataTypes.Roles.DEPOSITOR) &&
-        ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.DEPOSITOR)),
-      Errors.PLP_DEPOSITOR_UNAUTHORIZED
-    );
+    _onlyDepositors(user);
     _;
   }
 
@@ -33,16 +29,12 @@ contract PermissionedLendingPool is IPermissionedLendingPool, LendingPool {
   }
 
   modifier onlyValidPermissionAdmin(address user) {
-    require(_permissionAdminValid(user), Errors.PLP_INVALID_PERMISSION_ADMIN);
+    _onlyValidPermissionAdmin(user);
     _;
   }
 
   modifier onlyBorrowers(address user) {
-    require(
-      _isInRole(user, DataTypes.Roles.BORROWER) &&
-        ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.BORROWER)),
-      Errors.PLP_BORROWER_UNAUTHORIZED
-    );
+    _onlyBorrowers(user);
     _;
   }
 
@@ -351,5 +343,25 @@ contract PermissionedLendingPool is IPermissionedLendingPool, LendingPool {
     return
       IPermissionManager(_addressesProvider.getAddress(PERMISSION_MANAGER))
         .isUserPermissionAdminValid(user);
+  }
+
+  function _onlyDepositors(address user) internal view {
+    require(
+      _isInRole(user, DataTypes.Roles.DEPOSITOR) &&
+        ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.DEPOSITOR)),
+      Errors.PLP_DEPOSITOR_UNAUTHORIZED
+    );
+  }
+
+  function _onlyBorrowers(address user) internal view {
+    require(
+      _isInRole(user, DataTypes.Roles.BORROWER) &&
+        ((user == msg.sender) || _isInRole(msg.sender, DataTypes.Roles.BORROWER)),
+      Errors.PLP_BORROWER_UNAUTHORIZED
+    );
+  }
+
+  function _onlyValidPermissionAdmin(address user) internal view {
+    require(_permissionAdminValid(user), Errors.PLP_INVALID_PERMISSION_ADMIN);
   }
 }
