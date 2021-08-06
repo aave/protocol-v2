@@ -1,5 +1,5 @@
 import { ZERO_ADDRESS } from '../../helpers/constants';
-import { IAaveProConfiguration, eEthereumNetwork, eContractid } from '../../helpers/types';
+import { IAaveArcConfiguration, eEthereumNetwork, eContractid } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -13,9 +13,9 @@ import {
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-export const AaveConfig: IAaveProConfiguration = {
+export const AaveArcConfig: IAaveArcConfiguration = {
   ...CommonsConfig,
-  MarketId: 'Aave Pro market',
+  MarketId: 'Aave Arc market',
   ProviderId: 1,
   LendingPoolImpl: eContractid.PermissionedLendingPool,
   ReservesConfig: {
@@ -55,4 +55,4 @@ export const AaveConfig: IAaveProConfiguration = {
   }
 };
 
-export default AaveConfig;
+export default AaveArcConfig;

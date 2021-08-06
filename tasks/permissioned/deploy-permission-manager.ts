@@ -4,7 +4,7 @@ import { PermissionManagerFactory } from '../../types';
 import { verifyContract } from '../../helpers/contracts-helpers';
 import { eContractid } from '../../helpers/types';
 import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
-import { getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
+import { getFirstSigner, getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
 import { waitForTx } from '../../helpers/misc-utils';
 import { ethers } from 'ethers';
 
@@ -21,7 +21,7 @@ task(`deploy-permission-manager`, `Deploys the PermissionManager contract`)
 
     console.log(`\tDeploying PermissionManager implementation ...`);
     const permissionManagerInstance = await new PermissionManagerFactory(
-      await localBRE.ethers.provider.getSigner()
+      await getFirstSigner()
     ).deploy();
 
     await permissionManagerInstance.deployTransaction.wait();

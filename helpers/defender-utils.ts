@@ -18,7 +18,7 @@ export const getDefenderRelaySigner = async () => {
   const credentials = { apiKey: DEFENDER_API_KEY, apiSecret: DEFENDER_SECRET_KEY };
 
   defenderSigner = new DefenderRelaySigner(credentials, new DefenderRelayProvider(credentials), {
-    speed: 'fast',
+    speed: 'fastest',
   });
 
   const defenderAddress = await defenderSigner.getAddress();

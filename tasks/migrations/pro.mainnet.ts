@@ -7,7 +7,7 @@ import { usingTenderly } from '../../helpers/tenderly-utils';
 task('pro:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify }, DRE) => {
-    const POOL_NAME = ConfigNames.AavePro;
+    const POOL_NAME = ConfigNames.Arc;
     await DRE.run('set-DRE');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
@@ -17,13 +17,12 @@ task('pro:mainnet', 'Deploy development enviroment')
 
     console.log('Migration started\n');
 
-
     console.log('1. Deploy address provider');
-    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME });
+    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME, skipRegistry: true });
 
     console.log('2. Deploy permissions manager');
     await DRE.run('deploy-permission-manager', { pool: POOL_NAME });
-    
+
     console.log('3. Deploy lending pool');
     await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
 
