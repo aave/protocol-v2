@@ -70,7 +70,7 @@ interface ILendingPool {
    * @dev Emitted on swapBorrowRateMode()
    * @param reserve The address of the underlying asset of the reserve
    * @param user The address of the user swapping his rate mode
-   * @param rateMode The rate mode that the user wants to swap to
+   * @param rateMode The rate mode that the user wants to swap from
    **/
   event Swap(address indexed reserve, address indexed user, uint256 rateMode);
 
@@ -247,7 +247,7 @@ interface ILendingPool {
   /**
    * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
    * @param asset The address of the underlying asset borrowed
-   * @param rateMode The rate mode that the user wants to swap to
+   * @param rateMode The rate mode that the user wants to swap from
    **/
   function swapBorrowRateMode(address asset, uint256 rateMode) external;
 
