@@ -81,31 +81,31 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   ProviderRegistry: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x2e4c88B23A52Af210619E9FFA4371708E3Bfc286'
+    [eAvalancheNetwork.fuji]: '0xEDb9d071dA6c292656C4BC1ADCb70e13f0CdC3b1'
   },
   ProviderRegistryOwner: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0xA68E2f643e0fa7062A78DFB6C629577aE21ad829'
+    [eAvalancheNetwork.fuji]: '0x1128d177BdaA74Ae68EB06e693f4CbA6BF427a5e'
   },
   LendingRateOracle: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x0BA6fa6D6800dc900dB82d58D135fD0e0DA1a77A'
+    [eAvalancheNetwork.fuji]: '0xa10cA0221BC857413eD0c792d1AFfCFB12381e22'
   },
   LendingPoolCollateralManager: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x102035669D37a48689859A9F1cf03F294c8b7f56'
+    [eAvalancheNetwork.fuji]: '0x7a9f468bF0a9B781BB1fdB7D3B9D479aD4aFEA13'
   },
   LendingPoolConfigurator: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x4de9ee3d1F33676e505CA3747993929c29802293'
+    [eAvalancheNetwork.fuji]: '0x257B5C93d0736be3abA7D297Aa4A62CB5a932352'
   },
   LendingPool: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: ''
+    [eAvalancheNetwork.fuji]: '0xaFb8283e2B34eD6C2E383337Fd92c3A47D00f2b4'
   },
   WethGateway: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c'
+    [eAvalancheNetwork.fuji]: '0x4Dc3A7c0Aba87280a3dBdD947cda4D2C55b2c539'
   },
   TokenDistributor: {
     [eAvalancheNetwork.avalanche]: '',
@@ -113,7 +113,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   AaveOracle: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x7cb1a6663D864eBD5cB0cDA6063FBf5e3A9285eC'
+    [eAvalancheNetwork.fuji]: '0xf18C4eFEE87dBa5776F218De3f1e4672C6E07D70'
   },
   FallbackOracle: {
     [eAvalancheNetwork.avalanche]: ZERO_ADDRESS,
@@ -158,8 +158,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eAvalancheNetwork.fuji]: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c' // Official WAVAX
   },
   ReserveFactorTreasuryAddress: {
-    [eAvalancheNetwork.avalanche]: '0x652e2Ac6b072Ba8bF7BEF2B11B092447dBc40bde', // TODO: Deploy Treasury
-    [eAvalancheNetwork.fuji]: '0x652e2Ac6b072Ba8bF7BEF2B11B092447dBc40bde'
+    [eAvalancheNetwork.avalanche]: '',
+    [eAvalancheNetwork.fuji]: '0xB45F5C501A22288dfdb897e5f73E189597e09288' // Self-controlled EOA
   },
   IncentivesController: {
     [eAvalancheNetwork.avalanche]: ZERO_ADDRESS,
