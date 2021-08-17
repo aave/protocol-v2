@@ -117,7 +117,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   FallbackOracle: {
     [eAvalancheNetwork.avalanche]: ZERO_ADDRESS,
-    [eAvalancheNetwork.fuji]: ZERO_ADDRESS // TODO: Deploy?
+    [eAvalancheNetwork.fuji]: ZERO_ADDRESS 
   },
   ChainlinkAggregator: {
     [eAvalancheNetwork.avalanche]: {
@@ -150,8 +150,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eAvalancheNetwork.fuji]: ''
   },
   WETH: {
-    [eAvalancheNetwork.avalanche]: '0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15', // TODO: ETH Address
-    [eAvalancheNetwork.fuji]: '0x3b8b3fc85ccA720809Af2dA4B58cF4ce84bcbdd0' // TODO: Mock ETH
+    [eAvalancheNetwork.avalanche]: '0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15', // WETH Address
+    [eAvalancheNetwork.fuji]: '0x3b8b3fc85ccA720809Af2dA4B58cF4ce84bcbdd0' // MintableERC20 WETH
   },
   WrappedNativeToken: {
     [eAvalancheNetwork.avalanche]: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', // Official WAVAX 

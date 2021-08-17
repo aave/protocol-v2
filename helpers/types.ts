@@ -38,15 +38,14 @@ export enum EthereumNetworkNames {
   mumbai = 'mumbai',
   xdai = 'xdai',
   avalanche = 'avalanche',
-  fuji = 'fuji'
-
+  fuji = 'fuji',
 }
 
 export enum AavePools {
   proto = 'proto',
   matic = 'matic',
   amm = 'amm',
-  avalanche = 'avalanche'
+  avalanche = 'avalanche',
 }
 
 export enum eContractid {
@@ -367,7 +366,7 @@ export enum TokenContractId {
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
   xSUSHI = 'xSUSHI',
-  AVAX = 'AVAX'
+  AVAX = 'AVAX',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {

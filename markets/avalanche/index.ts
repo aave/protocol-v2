@@ -39,7 +39,7 @@ export const AvalancheConfig: IAvalancheConfiguration = {
       WBTC: '0x408D4cD0ADb7ceBd1F1A1C33A0Ba2098E1295bAB',
       // AVAX: '' // TODO: Use WAVAX?
     },
-    [eAvalancheNetwork.fuji]: { // TODO: Deploy Mock tokens
+    [eAvalancheNetwork.fuji]: { // MintableERC20 tokens
       WETH: '0x3b8b3fc85ccA720809Af2dA4B58cF4ce84bcbdd0',
       // DAI: '0x51BC2DfB9D12d9dB50C855A5330fBA0faF761D15',
       // USDC: '0x7804D7f48f6E5749AF5c8Fa87b20702C34a7f5c2',

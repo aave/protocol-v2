@@ -13,7 +13,6 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  deployAaveOracleV2,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -29,6 +28,7 @@ import {
   deployFlashLiquidationAdapter,
   authorizeWETHGateway,
   deployATokenImplementations,
+  deployAaveOracle,
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
@@ -226,7 +226,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     config.OracleQuoteCurrency
   );
 
-  await deployAaveOracleV2([
+  await deployAaveOracle([
     tokens,
     aggregators,
     fallbackOracle.address,

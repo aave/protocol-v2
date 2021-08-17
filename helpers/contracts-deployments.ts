@@ -666,8 +666,6 @@ export const deployATokenImplementations = async (
     }, new Set<eContractid>()),
   ];
 
-  console.log(aTokenImplementations);
-
   for (let x = 0; x < aTokenImplementations.length; x++) {
     const aTokenAddress = getOptionalParamAddressPerNetwork(
       poolConfig[aTokenImplementations[x].toString()],
