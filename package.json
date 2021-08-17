@@ -66,8 +66,9 @@
     "main:fork:initialize-tokens": "npm run compile && MAINNET_FORK=true hardhat full:initialize-tokens --pool Aave",
     "main:initialize-tokens": "npm run compile && hardhat --network main full:initialize-tokens --pool Aave",
     "kovan:initialize-tokens": "npm run compile && hardhat --network kovan full:initialize-tokens --pool Aave",
-    "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --verify",
-    "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify",
+    "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --incentives 'ZERO_ADDRESS' --verify",
+    "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --incentives 'ZERO_ADDRESS' --verify",
+    "external:deploy-assets-main:incentives": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --incentives ${INCENTIVES} --verify",
     "prepublishOnly": "npm run compile"
   },
   "devDependencies": {

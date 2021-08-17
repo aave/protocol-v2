@@ -25,8 +25,9 @@ const isSymbolValid = (symbol: string, network: EthereumNetwork) =>
 
 task('external:deploy-new-asset', 'Deploy A token, Debt Tokens, Risk Parameters')
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
+  .addParam('incentives', `Incentives Controller address, if empty uses ZERO_ADDRESS`)
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ verify, symbol }, localBRE) => {
+  .setAction(async ({ verify, symbol, incentives }, localBRE) => {
     const network = localBRE.network.name;
     if (!isSymbolValid(symbol, network as EthereumNetwork)) {
       throw new Error(
@@ -38,6 +39,9 @@ WRONG RESERVE ASSET SETUP:
         `
       );
     }
+
+    const incentivesAddress = incentives === 'ZERO_ADDRESS' ? ZERO_ADDRESS : incentives;
+
     setDRE(localBRE);
     const strategyParams = reserveConfigs['strategy' + symbol];
     const reserveAssetAddress =
@@ -55,7 +59,7 @@ WRONG RESERVE ASSET SETUP:
         treasuryAddress,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
-        ZERO_ADDRESS,
+        incentivesAddress,
       ],
       verify
     );
@@ -65,7 +69,7 @@ WRONG RESERVE ASSET SETUP:
         reserveAssetAddress,
         `Aave stable debt bearing ${symbol}`,
         `stableDebt${symbol}`,
-        ZERO_ADDRESS,
+        incentivesAddress,
       ],
       verify
     );
@@ -75,7 +79,7 @@ WRONG RESERVE ASSET SETUP:
         reserveAssetAddress,
         `Aave variable debt bearing ${symbol}`,
         `variableDebt${symbol}`,
-        ZERO_ADDRESS,
+        incentivesAddress,
       ],
       verify
     );
