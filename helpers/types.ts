@@ -203,8 +203,8 @@ export interface iAssetBase<T> {
   UNI: T;
   USD: T;
   REN: T;
-  FEI: T;
   ENJ: T;
+  FEI: T;
   xSUSHI: T;
 }
 
