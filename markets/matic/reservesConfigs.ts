@@ -93,3 +93,15 @@ export const strategyAAVE: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '0',
 };
+
+export const strategyGHST: IReserveParams = {
+  strategy: rateStrategyVolatileOne,
+  baseLTVAsCollateral: '2500',
+  liquidationThreshold: '4500',
+  liquidationBonus: '12500',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '2000',
+};

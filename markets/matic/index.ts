@@ -9,6 +9,7 @@ import {
   strategyWETH,
   strategyMATIC,
   strategyAAVE,
+  strategyGHST,
 } from './reservesConfigs';
 
 // ----------------
@@ -27,6 +28,7 @@ export const MaticConfig: IMaticConfiguration = {
     WETH: strategyWETH,
     WMATIC: strategyMATIC,
     AAVE: strategyAAVE,
+    GHST: strategyGHST,
   },
   ReserveAssets: {
     [ePolygonNetwork.matic]: {
@@ -37,6 +39,7 @@ export const MaticConfig: IMaticConfiguration = {
       WETH: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
       WMATIC: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
       AAVE: '0xD6DF932A45C0f255f85145f286eA0b292B21C90B',
+      GHST: '0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7',
     },
     [ePolygonNetwork.mumbai]: {
       // Mock tokens with a simple "mint" external function, except wmatic
@@ -46,6 +49,7 @@ export const MaticConfig: IMaticConfiguration = {
       WBTC: '0x393E3512d45a956A628124665672312ea86930Ba',
       WETH: '0x53CDb16B8C031B779e996406546614E5F05BC4Bf',
       WMATIC: '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889',
+      GHST: '0x20d0A1ce31f8e8A77b291f25c5fbED007Adde932',
     },
   },
 };

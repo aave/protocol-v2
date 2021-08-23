@@ -50,6 +50,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   WBTC: oneEther.multipliedBy('47.332685').toFixed(),
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
+  GHST: oneEther.multipliedBy('0.00064008').toFixed(),
   UniDAIWETH: oneEther.multipliedBy('22.407436').toFixed(),
   UniWBTCWETH: oneEther.multipliedBy('22.407436').toFixed(),
   UniAAVEWETH: oneEther.multipliedBy('0.003620948469').toFixed(),
