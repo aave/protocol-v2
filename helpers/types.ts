@@ -269,7 +269,6 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
-  | 'GHST'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -299,7 +298,7 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC' | 'AAVE' | 'GHST' 
+  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC' | 'AAVE' | 'GHST'
 >;
 
 export type iXDAIPoolAssets<T> = Pick<
