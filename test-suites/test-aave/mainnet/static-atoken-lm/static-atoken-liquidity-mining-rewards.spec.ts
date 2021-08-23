@@ -209,7 +209,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       expect(dynamicBalance).to.be.eq(dynamicBalanceFromStatic);
     });
 
-    it.skip('Multiple deposits in one block (Breaks if GasReport enabled)', async () => {
+    it('Multiple deposits in one block (Breaks if GasReport enabled)', async () => {
       const amountToDeposit = utils.parseEther('5');
 
       // Just preparation
@@ -252,7 +252,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       await DRE.network.provider.send('evm_setAutomine', [true]);
     });
 
-    it.skip('Multiple collectAndUpdate in one block (Breaks if GasReport enabled)', async () => {
+    it('Multiple collectAndUpdate in one block (Breaks if GasReport enabled)', async () => {
       const amountToDeposit = utils.parseEther('5');
 
       // Just preparation
@@ -965,7 +965,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(await stkAave.balanceOf(user.address)).to.be.gt(0);
   });
 
-  it.skip('Checks that withdraw and collect in the same block updates _lifetimeRewardsClaimed as expected (Breaks if GasReport is enabled)', async () => {
+  it('Checks that withdraw and collect in the same block updates _lifetimeRewardsClaimed as expected (Breaks if GasReport is enabled)', async () => {
     const users = await DRE.ethers.getSigners();
     const user = users[0];
     const depositAmount = utils.parseEther('1');
