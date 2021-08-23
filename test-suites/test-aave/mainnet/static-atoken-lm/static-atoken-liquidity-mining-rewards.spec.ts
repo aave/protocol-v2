@@ -280,7 +280,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       const bGas = BigNumber.from(bReceipt['gasUsed']);
 
       expect(aGas).to.be.gt(350000);
-      expect(bGas).to.be.lt(25000);
+      expect(bGas).to.be.lt(100000);
 
       await DRE.network.provider.send('evm_setAutomine', [true]);
     });

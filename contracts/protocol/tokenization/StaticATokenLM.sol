@@ -395,9 +395,7 @@ contract StaticATokenLM is ERC20 {
     uint256 currentRate = rate();
     if (staticAmount > 0) {
       amountToBurn = (staticAmount > userBalance) ? userBalance : staticAmount;
-      amountToWithdraw = (staticAmount > userBalance)
-        ? _staticToDynamicAmount(userBalance, currentRate)
-        : _staticToDynamicAmount(staticAmount, currentRate);
+      amountToWithdraw = _staticToDynamicAmount(amountToBurn, currentRate);
     } else {
       uint256 dynamicUserBalance = _staticToDynamicAmount(userBalance, currentRate);
       amountToWithdraw = (dynamicAmount > dynamicUserBalance) ? dynamicUserBalance : dynamicAmount;
