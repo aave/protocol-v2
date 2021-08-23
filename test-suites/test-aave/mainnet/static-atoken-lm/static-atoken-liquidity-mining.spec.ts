@@ -62,6 +62,15 @@ const TEST_USERS = [
   '0x8BffC896D42F07776561A5814D6E4240950d6D3a',
 ];
 
+const LM_ERRORS = {
+  INVALID_OWNER: '1',
+  INVALID_EXPIRATION: '2',
+  INVALID_SIGNATURE: '3',
+  INVALID_DEPOSITOR: '4',
+  INVALID_RECIPIENT: '5',
+  ONLY_ONE_AMOUNT_FORMAT_ALLOWED: '6',
+};
+
 type tBalancesInvolved = {
   staticATokenATokenBalance: BigNumber;
   staticATokenStkAaveBalance: BigNumber;
@@ -195,7 +204,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     await expect(
       staticAToken.deposit(ZERO_ADDRESS, amountToDeposit, 0, true, defaultTxParams)
-    ).to.be.revertedWith('INVALID_RECIPIENT');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_RECIPIENT);
 
     // Depositing
     await waitForTx(
@@ -206,7 +215,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     await expect(
       staticAToken.withdraw(ZERO_ADDRESS, amountToWithdraw, true, defaultTxParams)
-    ).to.be.revertedWith('INVALID_RECIPIENT');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_RECIPIENT);
 
     // Withdrawing all
     await waitForTx(
@@ -530,7 +539,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       staticAToken
         .connect(spender)
         .permit(spender._address, spender._address, permitAmount, expiration, v, r, s, chainId)
-    ).to.be.revertedWith('INVALID_SIGNATURE');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_SIGNATURE);
 
     await waitForTx(
       await staticAToken
@@ -608,13 +617,13 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       staticAToken
         .connect(spender)
         .permit(ZERO_ADDRESS, spender._address, permitAmount, expiration, v, r, s, chainId)
-    ).to.be.revertedWith('INVALID_OWNER');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_OWNER);
 
     await expect(
       staticAToken
         .connect(spender)
         .permit(owner._address, spender._address, permitAmount, expiration, v, r, s, chainId)
-    ).to.be.revertedWith('INVALID_EXPIRATION');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_EXPIRATION);
 
     expect((await staticAToken.allowance(owner._address, spender._address)).toString()).to.be.equal(
       '0',
@@ -691,7 +700,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           sigParams,
           chainId
         )
-    ).to.be.revertedWith('INVALID_DEPOSITOR');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_DEPOSITOR);
 
     await expect(
       staticAToken
@@ -706,7 +715,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           sigParams,
           chainId
         )
-    ).to.be.revertedWith('INVALID_EXPIRATION');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_EXPIRATION);
 
     await expect(
       staticAToken
@@ -721,7 +730,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           sigParams,
           chainId
         )
-    ).to.be.revertedWith('INVALID_SIGNATURE');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_SIGNATURE);
 
     // Deposit
     await waitForTx(
@@ -865,7 +874,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           sigParams,
           chainId
         )
-    ).to.be.revertedWith('INVALID_OWNER');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_OWNER);
 
     await expect(
       staticAToken
@@ -880,7 +889,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           sigParams,
           chainId
         )
-    ).to.be.revertedWith('INVALID_EXPIRATION');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_EXPIRATION);
 
     await expect(
       staticAToken
@@ -895,7 +904,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           sigParams,
           chainId
         )
-    ).to.be.revertedWith('INVALID_SIGNATURE');
+    ).to.be.revertedWith(LM_ERRORS.INVALID_SIGNATURE);
 
     // Deposit
     await waitForTx(
@@ -997,7 +1006,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           sigParams,
           chainId
         )
-    ).to.be.revertedWith('ONLY_ONE_AMOUNT_FORMAT_ALLOWED');
+    ).to.be.revertedWith(LM_ERRORS.ONLY_ONE_AMOUNT_FORMAT_ALLOWED);
 
     const ctxtAfterDeposit = await getContext(ctxtParams);
     expect(ctxtInitial.userStaticATokenBalance).to.be.eq(ctxtAfterDeposit.userStaticATokenBalance);

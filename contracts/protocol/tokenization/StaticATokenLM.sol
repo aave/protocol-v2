@@ -7,6 +7,8 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 
+import {StaticATokenErrors} from '../libraries/helpers/StaticATokenErrors.sol';
+
 import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
@@ -161,9 +163,9 @@ contract StaticATokenLM is ERC20 {
     bytes32 s,
     uint256 chainId
   ) external {
-    require(owner != address(0), 'INVALID_OWNER');
+    require(owner != address(0), StaticATokenErrors.INVALID_OWNER);
     //solium-disable-next-line
-    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    require(block.timestamp <= deadline, StaticATokenErrors.INVALID_EXPIRATION);
     uint256 currentValidNonce = _nonces[owner];
     bytes32 digest =
       keccak256(
@@ -173,7 +175,7 @@ contract StaticATokenLM is ERC20 {
           keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
         )
       );
-    require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+    require(owner == ecrecover(digest, v, r, s), StaticATokenErrors.INVALID_SIGNATURE);
     _nonces[owner] = currentValidNonce.add(1);
     _approve(owner, spender, value);
   }
@@ -204,9 +206,9 @@ contract StaticATokenLM is ERC20 {
     SignatureParams calldata sigParams,
     uint256 chainId
   ) external returns (uint256) {
-    require(depositor != address(0), 'INVALID_DEPOSITOR');
+    require(depositor != address(0), StaticATokenErrors.INVALID_DEPOSITOR);
     //solium-disable-next-line
-    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    require(block.timestamp <= deadline, StaticATokenErrors.INVALID_EXPIRATION);
     uint256 currentValidNonce = _nonces[depositor];
     bytes32 digest =
       keccak256(
@@ -229,7 +231,7 @@ contract StaticATokenLM is ERC20 {
       );
     require(
       depositor == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s),
-      'INVALID_SIGNATURE'
+      StaticATokenErrors.INVALID_SIGNATURE
     );
     _nonces[depositor] = currentValidNonce.add(1);
     _deposit(depositor, recipient, value, referralCode, fromUnderlying);
@@ -261,9 +263,9 @@ contract StaticATokenLM is ERC20 {
     SignatureParams calldata sigParams,
     uint256 chainId
   ) external returns (uint256, uint256) {
-    require(owner != address(0), 'INVALID_OWNER');
+    require(owner != address(0), StaticATokenErrors.INVALID_OWNER);
     //solium-disable-next-line
-    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    require(block.timestamp <= deadline, StaticATokenErrors.INVALID_EXPIRATION);
     uint256 currentValidNonce = _nonces[owner];
     bytes32 digest =
       keccak256(
@@ -285,7 +287,10 @@ contract StaticATokenLM is ERC20 {
         )
       );
 
-    require(owner == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s), 'INVALID_SIGNATURE');
+    require(
+      owner == ecrecover(digest, sigParams.v, sigParams.r, sigParams.s),
+      StaticATokenErrors.INVALID_SIGNATURE
+    );
     _nonces[owner] = currentValidNonce.add(1);
     return _withdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying);
   }
@@ -361,7 +366,7 @@ contract StaticATokenLM is ERC20 {
     uint16 referralCode,
     bool fromUnderlying
   ) internal returns (uint256) {
-    require(recipient != address(0), 'INVALID_RECIPIENT');
+    require(recipient != address(0), StaticATokenErrors.INVALID_RECIPIENT);
     _updateRewards();
 
     if (fromUnderlying) {
@@ -383,8 +388,11 @@ contract StaticATokenLM is ERC20 {
     uint256 dynamicAmount,
     bool toUnderlying
   ) internal returns (uint256, uint256) {
-    require(recipient != address(0), 'INVALID_RECIPIENT');
-    require(staticAmount == 0 || dynamicAmount == 0, 'ONLY_ONE_AMOUNT_FORMAT_ALLOWED');
+    require(recipient != address(0), StaticATokenErrors.INVALID_RECIPIENT);
+    require(
+      staticAmount == 0 || dynamicAmount == 0,
+      StaticATokenErrors.ONLY_ONE_AMOUNT_FORMAT_ALLOWED
+    );
     _updateRewards();
 
     uint256 userBalance = balanceOf(owner);
