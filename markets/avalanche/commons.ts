@@ -163,6 +163,6 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   IncentivesController: {
     [eAvalancheNetwork.avalanche]: ZERO_ADDRESS,
-    [eAvalancheNetwork.fuji]: ZERO_ADDRESS
+    [eAvalancheNetwork.fuji]: '0xa1EF206fb9a8D8186157FC817fCddcC47727ED55' // AVAX Incentives Controller
   },
 };
