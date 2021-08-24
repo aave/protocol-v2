@@ -1,5 +1,11 @@
 import { task } from 'hardhat/config';
-import { eAvalancheNetwork, eContractid, eEthereumNetwork, eNetwork, ePolygonNetwork } from '../../helpers/types';
+import {
+  eAvalancheNetwork,
+  eContractid,
+  eEthereumNetwork,
+  eNetwork,
+  ePolygonNetwork,
+} from '../../helpers/types';
 import { deployUiPoolDataProvider } from '../../helpers/contracts-deployments';
 import { exit } from 'process';
 
@@ -32,8 +38,8 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
         aaveOracle: '0xC365C653f7229894F93994CD0b30947Ab69Ff1D5',
       },
       [eAvalancheNetwork.fuji]: {
-        incentivesController: '0x0000000000000000000000000000000000000000',
-        aaveOracle: '0xF8a88cE4bd99dcae4634D1b11bBf4554b1B9EaCf',
+        incentivesController: '0xa1EF206fb9a8D8186157FC817fCddcC47727ED55',
+        aaveOracle: '0xD217DdD9f0Af84644dEFe84a0b634621D4617a29',
       },
     };
     const supportedNetworks = Object.keys(addressesByNetwork);
