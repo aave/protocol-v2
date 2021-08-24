@@ -18,7 +18,7 @@ export const CommonsConfig: ICommonConfiguration = {
   ATokenNamePrefix: 'Aave Avalanche Market',
   StableDebtTokenNamePrefix: 'Aave Avalanche Market stable debt',
   VariableDebtTokenNamePrefix: 'Aave Avalanche Market variable debt',
-  SymbolPrefix: '', // TODO: add a symbol?
+  SymbolPrefix: 'ava',
   ProviderId: 0, // Overriden in index.ts
   OracleQuoteCurrency: 'USD',
   OracleQuoteUnit: oneUsd.toString(),

@@ -19,7 +19,7 @@ import {
 export const AvalancheConfig: IAvalancheConfiguration = {
   ...CommonsConfig,
   MarketId: 'Avalanche market',
-  ProviderId: 5, // TODO: What is this? 
+  ProviderId: 4,
   ReservesConfig: {
     WETH: strategyWETH,
     DAI: strategyDAI,
