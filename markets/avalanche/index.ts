@@ -9,7 +9,7 @@ import {
   strategyUSDT,
   strategyAAVE,
   strategyWBTC,
-  strategyAVAX
+  strategyAVAX,
 } from './reservesConfigs';
 
 // ----------------
@@ -39,14 +39,14 @@ export const AvalancheConfig: IAvalancheConfiguration = {
       WBTC: '0x408D4cD0ADb7ceBd1F1A1C33A0Ba2098E1295bAB',
       // AVAX: '' // TODO: Use WAVAX?
     },
-    [eAvalancheNetwork.fuji]: { // MintableERC20 tokens
-      WETH: '0x3b8b3fc85ccA720809Af2dA4B58cF4ce84bcbdd0',
+    [eAvalancheNetwork.fuji]: {
+      WETH: '0x9668f5f55f2712Dd2dfa316256609b516292D554', // MintableERC20 token
       // DAI: '0x51BC2DfB9D12d9dB50C855A5330fBA0faF761D15',
       // USDC: '0x7804D7f48f6E5749AF5c8Fa87b20702C34a7f5c2',
-      USDT: '0x533AE347203DD2aa2bc710E93cafE7650E1bC4e2',
+      USDT: '0x02823f9B469960Bb3b1de0B3746D4b95B7E35543', // MintableERC20 token
       // AAVE: '0x47183584aCbc1C45608d7B61cce1C562Ee180E7e',
-      WBTC: '0xDc880858bFE85F41deadBbB1CA1e6fFCe25f5B66',
-      // AVAX: '0x28575C264f7bf17e8C91f80585765D92d4B9d113'
+      WBTC: '0x9C1DCacB57ADa1E9e2D3a8280B7cfC7EB936186F', // MintableERC20 token
+      AVAX: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c'  // Official WAVAX
     },
   },
 };
