@@ -18,7 +18,7 @@ export const CommonsConfig: ICommonConfiguration = {
   ATokenNamePrefix: 'Aave Avalanche Market',
   StableDebtTokenNamePrefix: 'Aave Avalanche Market stable debt',
   VariableDebtTokenNamePrefix: 'Aave Avalanche Market variable debt',
-  SymbolPrefix: '', // TODO: add a symbol?
+  SymbolPrefix: 'ava',
   ProviderId: 0, // Overriden in index.ts
   OracleQuoteCurrency: 'USD',
   OracleQuoteUnit: oneUsd.toString(),
@@ -81,31 +81,31 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   ProviderRegistry: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x2e4c88B23A52Af210619E9FFA4371708E3Bfc286'
+    [eAvalancheNetwork.fuji]: '0x06eC0BDC3997EE32Cb5B66a1B9C11d92e2C27Aab'
   },
   ProviderRegistryOwner: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0xA68E2f643e0fa7062A78DFB6C629577aE21ad829'
+    [eAvalancheNetwork.fuji]: '0x1128d177BdaA74Ae68EB06e693f4CbA6BF427a5e'
   },
   LendingRateOracle: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x0BA6fa6D6800dc900dB82d58D135fD0e0DA1a77A'
+    [eAvalancheNetwork.fuji]: '0xEbBD998B7Dc2a8E675F0859d907c8Fa6027aBc7b'
   },
   LendingPoolCollateralManager: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x102035669D37a48689859A9F1cf03F294c8b7f56'
+    [eAvalancheNetwork.fuji]: '0x6242bE2fB5591FA1e81a99e6DD55Ff667fa82a71'
   },
   LendingPoolConfigurator: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x4de9ee3d1F33676e505CA3747993929c29802293'
+    [eAvalancheNetwork.fuji]: ''
   },
   LendingPool: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: ''
+    [eAvalancheNetwork.fuji]: '0x5f3968A2E41C95A95329333d44AB989de6c43f8E'
   },
   WethGateway: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c'
+    [eAvalancheNetwork.fuji]: '0x62AF6258d26838f33BADFbb33cf1De8FaB8EB19f'
   },
   TokenDistributor: {
     [eAvalancheNetwork.avalanche]: '',
@@ -113,7 +113,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   AaveOracle: {
     [eAvalancheNetwork.avalanche]: '',
-    [eAvalancheNetwork.fuji]: '0x7cb1a6663D864eBD5cB0cDA6063FBf5e3A9285eC'
+    [eAvalancheNetwork.fuji]: '0xD217DdD9f0Af84644dEFe84a0b634621D4617a29'
   },
   FallbackOracle: {
     [eAvalancheNetwork.avalanche]: ZERO_ADDRESS,
@@ -136,7 +136,7 @@ export const CommonsConfig: ICommonConfiguration = {
       USDT: '0x7898AcCC83587C3C55116c5230C17a6Cd9C71bad',
       // AAVE: '',
       WBTC: '0x31CF013A08c6Ac228C94551d535d5BAfE19c602a',
-      // AVAX: '0x5498BB86BC934c8D34FDA08E81D444153d0D06aD',
+      AVAX: '0x5498BB86BC934c8D34FDA08E81D444153d0D06aD',
       USD: '0x86d67c3D38D2bCeE722E601025C25a575021c6EA'
     },
   },
@@ -158,11 +158,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [eAvalancheNetwork.fuji]: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c' // Official WAVAX
   },
   ReserveFactorTreasuryAddress: {
-    [eAvalancheNetwork.avalanche]: '0x652e2Ac6b072Ba8bF7BEF2B11B092447dBc40bde', // TODO: Deploy Treasury
-    [eAvalancheNetwork.fuji]: '0x652e2Ac6b072Ba8bF7BEF2B11B092447dBc40bde'
+    [eAvalancheNetwork.avalanche]: '',
+    [eAvalancheNetwork.fuji]: '0xB45F5C501A22288dfdb897e5f73E189597e09288' // Self-controlled EOA
   },
   IncentivesController: {
     [eAvalancheNetwork.avalanche]: ZERO_ADDRESS,
-    [eAvalancheNetwork.fuji]: ZERO_ADDRESS
+    [eAvalancheNetwork.fuji]: '0xa1EF206fb9a8D8186157FC817fCddcC47727ED55' // AVAX Incentives Controller
   },
 };

@@ -32,7 +32,7 @@
     "aave:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- aave:mainnet --skip-registry",
     "matic:mumbai:full:migration": "npm run compile && npm run hardhat:mumbai sidechain:mainnet -- --pool Matic --skip-registry",
     "matic:matic:full:migration": "npm run compile && npm run hardhat:matic sidechain:mainnet -- --pool Matic --skip-registry",
-    "avalanche:fuji:full:migration": "npm run compile && npm run hardhat:fuji avalanche:mainnet -- --pool Avalanche --skip-registry",
+    "avalanche:fuji:full:migration": "npm run compile && npm run hardhat:fuji avalanche:mainnet -- --pool Avalanche",
     "amm:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- amm:mainnet --skip-registry",
     "aave:docker:full:migration:add-registry": "npm run compile && npm run hardhat:docker -- aave:mainnet",
     "aave:kovan:full:migration:add-registry": "npm run compile && npm run hardhat:kovan -- aave:mainnet",
