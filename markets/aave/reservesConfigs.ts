@@ -122,9 +122,9 @@ export const strategyENJ: IReserveParams = {
 
 export const strategyFRAX: IReserveParams = {
   strategy: rateStrategyStableTwo,
-  baseLTVAsCollateral: '0', // formerly 6500
-  liquidationThreshold: '7000',
-  liquidationBonus: '10500',
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
