@@ -53,8 +53,8 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
     'https://polygon-mainnet.g.alchemy.com/v2/6NUmfWDZw6lC3RPAphj0p_2vm7ElOn2U',
   // [ePolygonNetwork.matic]: 'https://rpc-mainnet.matic.network',
   [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
-  [eAvalancheNetwork.avalanche]: 'https://cchain.explorer.avax.network/',
-  [eAvalancheNetwork.fuji]: 'https://api.avax-test.network/ext/bc/C/rpc'
+  [eAvalancheNetwork.avalanche]: 'https://api.avax.network/ext/bc/C/rpc',
+  [eAvalancheNetwork.fuji]: 'https://api.avax-test.network/ext/bc/C/rpc',
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
@@ -68,8 +68,8 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [ePolygonNetwork.mumbai]: 1 * GWEI,
   [ePolygonNetwork.matic]: 1 * GWEI,
   [eXDaiNetwork.xdai]: 1 * GWEI,
-  [eAvalancheNetwork.avalanche]: 255 * GWEI,
-  [eAvalancheNetwork.fuji]: 255 * GWEI
+  [eAvalancheNetwork.avalanche]: 85 * GWEI,
+  [eAvalancheNetwork.fuji]: 85 * GWEI,
 };
 
 export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
@@ -84,5 +84,5 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [ePolygonNetwork.matic]: undefined,
   [eXDaiNetwork.xdai]: undefined,
   [eAvalancheNetwork.avalanche]: undefined,
-  [eAvalancheNetwork.fuji]: undefined
+  [eAvalancheNetwork.fuji]: undefined,
 };
