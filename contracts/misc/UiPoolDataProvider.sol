@@ -24,11 +24,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
-  IPriceOracleGetter public immutable oracle;
 
-  constructor(IPriceOracleGetter _oracle) public {
-    oracle = _oracle;
-  }
+  constructor() public {}
 
   function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
     internal
@@ -64,6 +61,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     override
     returns (AggregatedReserveData[] memory, uint256)
   {
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
     AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
@@ -188,6 +186,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       uint256
     )
   {
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
     DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
