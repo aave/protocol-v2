@@ -63,17 +63,22 @@ import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
-import { UiPoolDataProvider } from '../types';
+import { UiPoolDataProvider, UiIncentiveDataProvider } from '../types';
 
-export const deployUiPoolDataProvider = async (
-  [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) => {
+export const deployUiPoolDataProvider = async (verify?: boolean) => {
   const id = eContractid.UiPoolDataProvider;
-  const args: string[] = [incentivesController, aaveOracle];
-  const instance = await deployContract<UiPoolDataProvider>(id, args);
+  const instance = await deployContract<UiPoolDataProvider>(id, []);
   if (verify) {
-    await verifyContract(id, instance, args);
+    await verifyContract(id, instance, []);
+  }
+  return instance;
+};
+
+export const deployUiIncentiveDataProvider = async (verify?: boolean) => {
+  const id = eContractid.UiIncentiveDataProvider;
+  const instance = await deployContract<UiIncentiveDataProvider>(id, []);
+  if (verify) {
+    await verifyContract(id, instance, []);
   }
   return instance;
 };
