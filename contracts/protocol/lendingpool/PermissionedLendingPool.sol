@@ -325,10 +325,11 @@ contract PermissionedLendingPool is IPermissionedLendingPool, LendingPool {
   }
 
   function _isPermissionAdminOf(address user, address caller) internal view returns (bool) {
+    IPermissionManager permissionManager =
+      IPermissionManager(_addressesProvider.getAddress(PERMISSION_MANAGER));
     return
-      IPermissionManager(_addressesProvider.getAddress(PERMISSION_MANAGER)).getUserPermissionAdmin(
-        user
-      ) == caller;
+      permissionManager.getUserPermissionAdmin(user) == caller &&
+      permissionManager.isUserPermissionAdminValid(user);
   }
 
   function _isInRole(address user, DataTypes.Roles role) internal view returns (bool) {
