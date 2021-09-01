@@ -139,7 +139,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         IAToken(baseData.aTokenAddress).getIncentivesController();
 
       IUiIncentiveDataProvider.UserIncentiveData memory aUserIncentiveData;
-      aUserIncentiveData.tokenIncentivesUserData = aTokenIncentiveController.getUserAssetData(
+      aUserIncentiveData.tokenincentivesUserIndex = aTokenIncentiveController.getUserAssetData(
         user,
         baseData.aTokenAddress
       );
@@ -154,7 +154,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
       IAaveIncentivesController vTokenIncentiveController =
         IVariableDebtToken(baseData.variableDebtTokenAddress).getIncentivesController();
       UserIncentiveData memory vUserIncentiveData;
-      vUserIncentiveData.tokenIncentivesUserData = vTokenIncentiveController.getUserAssetData(
+      vUserIncentiveData.tokenincentivesUserIndex = vTokenIncentiveController.getUserAssetData(
         user,
         baseData.variableDebtTokenAddress
       );
@@ -169,7 +169,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
       IAaveIncentivesController sTokenIncentiveController =
         IStableDebtToken(baseData.stableDebtTokenAddress).getIncentivesController();
       UserIncentiveData memory sUserIncentiveData;
-      sUserIncentiveData.tokenIncentivesUserData = sTokenIncentiveController.getUserAssetData(
+      sUserIncentiveData.tokenincentivesUserIndex = sTokenIncentiveController.getUserAssetData(
         user,
         baseData.stableDebtTokenAddress
       );

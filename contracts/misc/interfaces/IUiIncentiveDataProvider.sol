@@ -29,7 +29,7 @@ interface IUiIncentiveDataProvider {
   }
 
   struct UserIncentiveData {
-    uint256 tokenIncentivesUserData;
+    uint256 tokenincentivesUserIndex;
     uint256 userUnclaimedRewards;
     address tokenAddress;
     address rewardTokenAddress;
