@@ -88,6 +88,7 @@ contract LendingPoolCollateralManager is
       aToken.burn(user, to, userBalance, reserve.liquidityIndex);
       emit Seized(user, to, asset, userBalance);
     }
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
   }
 
   /**
