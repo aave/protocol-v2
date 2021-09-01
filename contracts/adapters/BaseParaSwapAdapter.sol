@@ -37,11 +37,23 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
 
   IPriceOracleGetter public immutable ORACLE;
 
-  event Swapped(address indexed fromAsset, address indexed toAsset, uint256 fromAmount, uint256 receivedAmount);
+  event Swapped(
+    address indexed fromAsset,
+    address indexed toAsset,
+    uint256 fromAmount,
+    uint256 receivedAmount
+  );
+  event Bought(
+    address indexed fromAsset,
+    address indexed toAsset,
+    uint256 amountSold,
+    uint256 receivedAmount
+  );
 
-  constructor(
-    ILendingPoolAddressesProvider addressesProvider
-  ) public FlashLoanReceiverBase(addressesProvider) {
+  constructor(ILendingPoolAddressesProvider addressesProvider)
+    public
+    FlashLoanReceiverBase(addressesProvider)
+  {
     ORACLE = IPriceOracleGetter(addressesProvider.getPriceOracle());
   }
 
