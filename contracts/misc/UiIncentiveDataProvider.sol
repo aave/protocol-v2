@@ -23,12 +23,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
     override
     returns (AggregatedReserveIncentiveData[] memory, UserReserveIncentiveData[] memory)
   {
-    AggregatedReserveIncentiveData[] memory reservesIncentivesData =
-      _getReservesIncentivesData(provider);
-    UserReserveIncentiveData[] memory userReservesIncentivesData =
-      _getUserReservesIncentivesData(provider, user);
-
-    return (reservesIncentivesData, userReservesIncentivesData);
+    return (_getReservesIncentivesData(provider), _getUserReservesIncentivesData(provider, user));
   }
 
   function getReservesIncentivesData(ILendingPoolAddressesProvider provider)
