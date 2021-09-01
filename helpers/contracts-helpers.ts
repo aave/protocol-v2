@@ -327,6 +327,38 @@ export const buildFlashLiquidationAdapterParams = (
   );
 };
 
+export const buildParaSwapLiquiditySwapParams = (
+  assetToSwapTo: tEthereumAddress,
+  minAmountToReceive: BigNumberish,
+  swapAllBalanceOffset: BigNumberish,
+  swapCalldata: string | Buffer,
+  augustus: tEthereumAddress,
+  permitAmount: BigNumberish,
+  deadline: BigNumberish,
+  v: BigNumberish,
+  r: string | Buffer,
+  s: string | Buffer
+) => {
+  return ethers.utils.defaultAbiCoder.encode(
+    [
+      'address',
+      'uint256',
+      'uint256',
+      'bytes',
+      'address',
+      'tuple(uint256,uint256,uint8,bytes32,bytes32)',
+    ],
+    [
+      assetToSwapTo,
+      minAmountToReceive,
+      swapAllBalanceOffset,
+      swapCalldata,
+      augustus,
+      [permitAmount, deadline, v, r, s],
+    ]
+  );
+};
+
 export const verifyContract = async (
   id: string,
   instance: Contract,
