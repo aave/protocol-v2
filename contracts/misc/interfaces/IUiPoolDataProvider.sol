@@ -42,16 +42,6 @@ interface IUiPoolDataProvider {
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
-    // incentives
-    uint256 aEmissionPerSecond;
-    uint256 vEmissionPerSecond;
-    uint256 sEmissionPerSecond;
-    uint256 aIncentivesLastUpdateTimestamp;
-    uint256 vIncentivesLastUpdateTimestamp;
-    uint256 sIncentivesLastUpdateTimestamp;
-    uint256 aTokenIncentivesIndex;
-    uint256 vTokenIncentivesIndex;
-    uint256 sTokenIncentivesIndex;
   }
 
   struct UserReserveData {
@@ -62,10 +52,6 @@ interface IUiPoolDataProvider {
     uint256 scaledVariableDebt;
     uint256 principalStableDebt;
     uint256 stableBorrowLastUpdateTimestamp;
-    // incentives
-    uint256 aTokenincentivesUserIndex;
-    uint256 vTokenincentivesUserIndex;
-    uint256 sTokenincentivesUserIndex;
   }
 
   struct IncentivesControllerData {
@@ -78,24 +64,18 @@ interface IUiPoolDataProvider {
     view
     returns (address[] memory);
 
-  function incentivesController() external view returns (IAaveIncentivesController);
-
   function getSimpleReservesData(ILendingPoolAddressesProvider provider)
     external
     view
     returns (
       AggregatedReserveData[] memory,
-      uint256, // usd price eth
-      uint256 // emission end timestamp
+      uint256 // usd price eth
     );
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
-    returns (
-      UserReserveData[] memory,
-      uint256 // user unclaimed rewards
-    );
+    returns (UserReserveData[] memory);
 
   // generic method with full data
   function getReservesData(ILendingPoolAddressesProvider provider, address user)
@@ -104,7 +84,6 @@ interface IUiPoolDataProvider {
     returns (
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
-      uint256,
-      IncentivesControllerData memory
+      uint256
     );
 }
