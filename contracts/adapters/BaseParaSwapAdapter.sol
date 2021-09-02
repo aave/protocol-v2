@@ -85,6 +85,17 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
     return LENDING_POOL.getReserveData(asset);
   }
 
+  function _pullATokenAndWithdraw(
+    address reserve,
+    address user,
+    uint256 amount,
+    PermitSignature memory permitSignature
+  ) internal {
+    IERC20WithPermit reserveAToken =
+      IERC20WithPermit(_getReserveData(address(reserve)).aTokenAddress);
+    _pullATokenAndWithdraw(reserve, reserveAToken, user, amount, permitSignature);
+  }
+
   /**
    * @dev Pull the ATokens from the user
    * @param reserve address of the asset

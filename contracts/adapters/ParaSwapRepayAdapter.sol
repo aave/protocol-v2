@@ -40,18 +40,19 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
    * and repay the flash loan.
    * Supports only one asset on the flash loan.
    * @param assets Address of debt asset
-   * @param amounts Amount of the debt to be repaid
+   * @param amounts Amount of the debt to be repaid, or maximum amount when repaying entire debt
    * @param premiums Fee of the flash loan
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
-   *   address collateralAsset Address of the reserve to be swapped
-   *   uint256 collateralAmount Amount of reserve to be swapped
+   *   IERC20Detailed collateralAsset Address of the reserve to be swapped
+   *   uint256 collateralAmount max Amount of the collateral to be swapped
    *   uint256 rateMode Rate modes of the debt to be repaid
-   *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
-   *   uint8 v V param for the permit signature
-   *   bytes32 r R param for the permit signature
-   *   bytes32 s S param for the permit signature
+   *   uint256 debtRateMode Rate mode of the debt to be repaid
+   *   bytes paraswapData Paraswap Data
+   *                    * bytes buyCallData Call data for augustus
+   *                    * IParaSwapAugustus augustus Address of Augustus Swapper
+   *   PermitSignature permitParams Struct containing the permit signatures, set to all zeroes if not used
    */
   function executeOperation(
     address[] calldata assets,
@@ -59,22 +60,40 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     uint256[] calldata premiums,
     address initiator,
     bytes calldata params
-  ) external override returns (bool) {
+  ) external override nonReentrant returns (bool) {
     require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
 
-    RepayParams memory decodedParams = _decodeParams(params);
+    require(
+      assets.length == 1 && amounts.length == 1 && premiums.length == 1,
+      'FLASHLOAN_MULTIPLE_ASSETS_NOT_SUPPORTED'
+    );
 
-    /**_swapAndRepay(
-      decodedParams.collateralAsset,
-      assets[0],
-      amounts[0],
-      decodedParams.collateralAmount,
-      decodedParams.rateMode,
-      initiator,
-      premiums[0],
-      decodedParams.permitSignature,
-      decodedParams.useEthPath
-    );*/
+    uint256 debtRepayAmount = amounts[0];
+    uint256 premium = premiums[0];
+    address initiatorLocal = initiator;
+
+    IERC20Detailed debtAsset = IERC20Detailed(assets[0]);
+    (
+      IERC20Detailed collateralAsset,
+      uint256 collateralAmount,
+      uint256 buyAllBalanceOffset,
+      uint256 debtRateMode,
+      bytes memory paraswapData,
+      PermitSignature memory permitParams
+    ) = abi.decode(params, (IERC20Detailed, uint256, uint256, uint256, bytes, PermitSignature));
+
+    _swapAndRepay(
+      buyAllBalanceOffset,
+      paraswapData,
+      permitParams,
+      debtRepayAmount,
+      premium,
+      initiatorLocal,
+      collateralAsset,
+      debtAsset,
+      collateralAmount,
+      debtRateMode
+    );
 
     return true;
   }
@@ -104,9 +123,6 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     bytes calldata paraswapData,
     PermitSignature calldata permitSignature
   ) external nonReentrant {
-    IERC20WithPermit aToken =
-      IERC20WithPermit(_getReserveData(address(collateralAsset)).aTokenAddress);
-
     DataTypes.ReserveData memory debtReserveData = _getReserveData(address(debtAsset));
 
     address debtToken =
@@ -114,20 +130,17 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
         ? debtReserveData.stableDebtTokenAddress
         : debtReserveData.variableDebtTokenAddress;
 
+    uint256 currentDebt = IERC20(debtToken).balanceOf(msg.sender);
+
     if (buyAllBalanceOffset != 0) {
-      uint256 currentDebt = IERC20(debtToken).balanceOf(msg.sender);
       require(currentDebt <= debtRepayAmount, 'INSUFFICIENT_AMOUNT_TO_REPAY');
       debtRepayAmount = currentDebt;
+    } else {
+      require(debtRepayAmount <= currentDebt, 'INVALID_DEBT_REPAY_AMOUNT');
     }
 
     // Pull aTokens from user
-    _pullATokenAndWithdraw(
-      address(collateralAsset),
-      aToken,
-      msg.sender,
-      collateralAmount,
-      permitSignature
-    );
+    _pullATokenAndWithdraw(address(collateralAsset), msg.sender, collateralAmount, permitSignature);
     //buy debt asset using collateral asset
     uint256 amountSold =
       _buyOnParaSwap(
@@ -154,118 +167,65 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
 
   /**
    * @dev Perform the repay of the debt, pulls the initiator collateral and swaps to repay the flash loan
-   *
+   * @param buyAllBalanceOffset Set to offset of fromAmount in Augustus calldata if wanting to swap all balance, otherwise 0
+   * @param paraswapData Paraswap data
+   * @param permitSignature struct containing the permit signature
+   * @param debtRepayAmount Amount of the debt to be repaid, or maximum amount when repaying entire debt(flash loan amount
+   * @param premium Fee of the flash loan
+   * @param initiator Address of the user
    * @param collateralAsset Address of token to be swapped
    * @param debtAsset Address of debt token to be received from the swap
-   * @param amount Amount of the debt to be repaid
    * @param collateralAmount Amount of the reserve to be swapped
    * @param rateMode Rate mode of the debt to be repaid
-   * @param initiator Address of the user
-   * @param premium Fee of the flash loan
-   * @param permitSignature struct containing the permit signature
    */
-  /**function _swapAndRepay(
-    address collateralAsset,
-    address debtAsset,
-    uint256 amount,
-    uint256 collateralAmount,
-    uint256 rateMode,
-    address initiator,
-    uint256 premium,
-    PermitSignature memory permitSignature,
-    bool useEthPath
-  ) internal {
-    DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
 
+  function _swapAndRepay(
+    uint256 buyAllBalanceOffset,
+    bytes memory paraswapData,
+    PermitSignature memory permitSignature,
+    uint256 debtRepayAmount,
+    uint256 premium,
+    address initiator,
+    IERC20Detailed collateralAsset,
+    IERC20Detailed debtAsset,
+    uint256 collateralAmount,
+    uint256 rateMode
+  ) internal {
     // Repay debt. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
     IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
-    IERC20(debtAsset).safeApprove(address(LENDING_POOL), amount);
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), debtRepayAmount);
     uint256 repaidAmount = IERC20(debtAsset).balanceOf(address(this));
-    LENDING_POOL.repay(debtAsset, amount, rateMode, initiator);
+    LENDING_POOL.repay(address(debtAsset), debtRepayAmount, rateMode, initiator);
     repaidAmount = repaidAmount.sub(IERC20(debtAsset).balanceOf(address(this)));
 
-    if (collateralAsset != debtAsset) {
-      uint256 maxCollateralToSwap = collateralAmount;
-      if (repaidAmount < amount) {
-        maxCollateralToSwap = maxCollateralToSwap.mul(repaidAmount).div(amount);
-      }
+    uint256 neededForFlashLoanDebt = repaidAmount.add(premium);
 
-      uint256 neededForFlashLoanDebt = repaidAmount.add(premium);
-      uint256[] memory amounts =
-        _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt, useEthPath);
-      require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
+    if (repaidAmount < debtRepayAmount) {
+      collateralAmount = collateralAmount.mul(repaidAmount).div(debtRepayAmount);
+    }
 
-      // Pull aTokens from user
-      _pullAToken(
-        collateralAsset,
-        collateralReserveData.aTokenAddress,
-        initiator,
-        amounts[0],
-        permitSignature
-      );
+    // Pull aTokens from user
+    _pullATokenAndWithdraw(address(collateralAsset), initiator, collateralAmount, permitSignature);
 
-      // Swap collateral asset to the debt asset
-      _swapTokensForExactTokens(
+    uint256 amountSold =
+      _buyOnParaSwap(
+        buyAllBalanceOffset,
+        paraswapData,
         collateralAsset,
         debtAsset,
-        amounts[0],
-        neededForFlashLoanDebt,
-        useEthPath
+        collateralAmount,
+        neededForFlashLoanDebt
       );
-    } else {
-      // Pull aTokens from user
-      _pullAToken(
-        collateralAsset,
-        collateralReserveData.aTokenAddress,
-        initiator,
-        repaidAmount.add(premium),
-        permitSignature
-      );
+
+    uint256 collateralBalanceLeft = collateralAmount - amountSold;
+
+    //deposit collateral back in the pool, if left after the swap(buy)
+    if (collateralBalanceLeft > 0) {
+      LENDING_POOL.deposit(address(collateralAsset), collateralBalanceLeft, initiator, 0);
     }
 
     // Repay flashloan. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
     IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
-    IERC20(debtAsset).safeApprove(address(LENDING_POOL), amount.add(premium));
-  }*/
-
-  /**
-   * @dev Decodes debt information encoded in the flash loan params
-   * @param params Additional variadic field to include extra params. Expected parameters:
-   *   address collateralAsset Address of the reserve to be swapped
-   *   uint256 collateralAmount Amount of reserve to be swapped
-   *   uint256 rateMode Rate modes of the debt to be repaid
-   *   uint256 permitAmount Amount for the permit signature
-   *   uint256 deadline Deadline for the permit signature
-   *   uint8 v V param for the permit signature
-   *   bytes32 r R param for the permit signature
-   *   bytes32 s S param for the permit signature
-   *   bool useEthPath use WETH path route
-   * @return RepayParams struct containing decoded params
-   */
-  function _decodeParams(bytes memory params) internal pure returns (RepayParams memory) {
-    (
-      address collateralAsset,
-      uint256 collateralAmount,
-      uint256 rateMode,
-      uint256 permitAmount,
-      uint256 deadline,
-      uint8 v,
-      bytes32 r,
-      bytes32 s,
-      bool useEthPath
-    ) =
-      abi.decode(
-        params,
-        (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32, bool)
-      );
-
-    return
-      RepayParams(
-        collateralAsset,
-        collateralAmount,
-        rateMode,
-        PermitSignature(permitAmount, deadline, v, r, s),
-        useEthPath
-      );
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), debtRepayAmount.add(premium));
   }
 }
