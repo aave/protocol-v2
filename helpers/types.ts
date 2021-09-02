@@ -242,6 +242,7 @@ export interface iAssetBase<T> {
   WMATIC: T;
   STAKE: T;
   xSUSHI: T;
+  DPI: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -271,6 +272,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+  | 'DPI'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -355,6 +357,7 @@ export enum TokenContractId {
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
   xSUSHI = 'xSUSHI',
+  DPI = 'DPI',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
