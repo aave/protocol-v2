@@ -170,12 +170,12 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
    * @param buyAllBalanceOffset Set to offset of fromAmount in Augustus calldata if wanting to swap all balance, otherwise 0
    * @param paraswapData Paraswap data
    * @param permitSignature struct containing the permit signature
-   * @param debtRepayAmount Amount of the debt to be repaid, or maximum amount when repaying entire debt(flash loan amount
+   * @param debtRepayAmount Amount of the debt to be repaid, or maximum amount when repaying entire debt
    * @param premium Fee of the flash loan
    * @param initiator Address of the user
    * @param collateralAsset Address of token to be swapped
    * @param debtAsset Address of debt token to be received from the swap
-   * @param collateralAmount Amount of the reserve to be swapped
+   * @param collateralAmount Amount of the reserve to be swapped(flash loan amount)
    * @param rateMode Rate mode of the debt to be repaid
    */
 
@@ -190,22 +190,14 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     IERC20Detailed debtAsset,
     uint256 collateralAmount,
     uint256 rateMode
-  ) internal {
-    // Repay debt. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
-    IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
-    IERC20(debtAsset).safeApprove(address(LENDING_POOL), debtRepayAmount);
-    uint256 repaidAmount = IERC20(debtAsset).balanceOf(address(this));
-    LENDING_POOL.repay(address(debtAsset), debtRepayAmount, rateMode, initiator);
-    repaidAmount = repaidAmount.sub(IERC20(debtAsset).balanceOf(address(this)));
-
-    uint256 neededForFlashLoanDebt = repaidAmount.add(premium);
-
-    if (repaidAmount < debtRepayAmount) {
-      collateralAmount = collateralAmount.mul(repaidAmount).div(debtRepayAmount);
-    }
-
-    // Pull aTokens from user
-    _pullATokenAndWithdraw(address(collateralAsset), initiator, collateralAmount, permitSignature);
+  ) private {
+    debtRepayAmount = getDebtRepayAmount(
+      debtAsset,
+      rateMode,
+      buyAllBalanceOffset,
+      debtRepayAmount,
+      initiator
+    );
 
     uint256 amountSold =
       _buyOnParaSwap(
@@ -214,18 +206,52 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
         collateralAsset,
         debtAsset,
         collateralAmount,
-        neededForFlashLoanDebt
+        debtRepayAmount
       );
 
-    uint256 collateralBalanceLeft = collateralAmount - amountSold;
+    // Repay debt. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(debtAsset).safeApprove(address(LENDING_POOL), debtRepayAmount);
+    LENDING_POOL.repay(address(debtAsset), debtRepayAmount, rateMode, initiator);
 
-    //deposit collateral back in the pool, if left after the swap(buy)
-    if (collateralBalanceLeft > 0) {
-      LENDING_POOL.deposit(address(collateralAsset), collateralBalanceLeft, initiator, 0);
-    }
+    uint256 neededForFlashLoanRepay = amountSold.add(premium);
+
+    // Pull aTokens from user
+    _pullATokenAndWithdraw(
+      address(collateralAsset),
+      initiator,
+      neededForFlashLoanRepay,
+      permitSignature
+    );
 
     // Repay flashloan. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
-    IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
-    IERC20(debtAsset).safeApprove(address(LENDING_POOL), debtRepayAmount.add(premium));
+    IERC20(collateralAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(collateralAsset).safeApprove(address(LENDING_POOL), collateralAmount.add(premium));
+  }
+
+  function getDebtRepayAmount(
+    IERC20Detailed debtAsset,
+    uint256 rateMode,
+    uint256 buyAllBalanceOffset,
+    uint256 debtRepayAmount,
+    address initiator
+  ) private returns (uint256) {
+    DataTypes.ReserveData memory debtReserveData = _getReserveData(address(debtAsset));
+
+    address debtToken =
+      DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE
+        ? debtReserveData.stableDebtTokenAddress
+        : debtReserveData.variableDebtTokenAddress;
+
+    uint256 currentDebt = IERC20(debtToken).balanceOf(initiator);
+
+    if (buyAllBalanceOffset != 0) {
+      require(currentDebt <= debtRepayAmount, 'INSUFFICIENT_AMOUNT_TO_REPAY');
+      debtRepayAmount = currentDebt;
+    } else {
+      require(debtRepayAmount <= currentDebt, 'INVALID_DEBT_REPAY_AMOUNT');
+    }
+
+    return debtRepayAmount;
   }
 }
