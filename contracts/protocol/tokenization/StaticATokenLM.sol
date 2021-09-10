@@ -528,7 +528,7 @@ contract StaticATokenLM is ERC20 {
     }
     if (reward > 0) {
       _unclaimedRewards[behalf] = 0;
-      _updateUserSnapshoRewardsPerToken(behalf);
+      _updateUserSnapshotRewardsPerToken(behalf);
       REWARD_TOKEN.safeTransfer(receiver, reward);
     }
   }
@@ -537,7 +537,7 @@ contract StaticATokenLM is ERC20 {
    * @dev Update the rewardDebt for a user with balance as his balance
    * @param user The user to update
    */
-  function _updateUserSnapshoRewardsPerToken(address user) internal {
+  function _updateUserSnapshotRewardsPerToken(address user) internal {
     _userSnapshotRewardsPerToken[user] = _accRewardsPerToken;
   }
 
@@ -551,7 +551,7 @@ contract StaticATokenLM is ERC20 {
       uint256 pending = _getPendingRewards(user, balance, false);
       _unclaimedRewards[user] = _unclaimedRewards[user].add(pending);
     }
-    _updateUserSnapshoRewardsPerToken(user);
+    _updateUserSnapshotRewardsPerToken(user);
   }
 
   /**
