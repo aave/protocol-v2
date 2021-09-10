@@ -500,26 +500,37 @@ contract StaticATokenLM is ERC20 {
    * @param forceUpdate Flag to retrieve latest rewards from `INCENTIVES_CONTROLLER`
    */
   function claimRewards(address receiver, bool forceUpdate) public {
+    claimRewardsOnBehalf(msg.sender, receiver, forceUpdate);
+  }
+
+  function claimRewardsToSelf(bool forceUpdate) external {
+    claimRewardsOnBehalf(msg.sender, msg.sender, forceUpdate);
+  }
+
+  /**
+   * @dev Claim rewards for a user and send them to a receiver.
+   * @param behalf The address for which rewards are being claimed
+   * @param receiver The address of the receiver of rewards
+   * @param forceUpdate Flag to retrieve latest rewards from `INCENTIVES_CONTROLLER`
+   */
+  function claimRewardsOnBehalf(address behalf, address receiver, bool forceUpdate) public {
+    require(msg.sender == behalf || msg.sender == INCENTIVES_CONTROLLER.getClaimer(behalf), StaticATokenErrors.INVALID_CLAIMER);
     if (forceUpdate) {
       collectAndUpdateRewards();
     }
 
-    uint256 balance = balanceOf(msg.sender);
-    uint256 reward = _getClaimableRewards(msg.sender, balance, false);
+    uint256 balance = balanceOf(behalf);
+    uint256 reward = _getClaimableRewards(behalf, balance, false);
     uint256 totBal = REWARD_TOKEN.balanceOf(address(this));
     if (reward > totBal) {
       // Throw away excess unclaimed rewards
       reward = totBal;
     }
     if (reward > 0) {
-      _unclaimedRewards[msg.sender] = 0;
-      _updateUserSnapshoRewardsPerToken(msg.sender);
+      _unclaimedRewards[behalf] = 0;
+      _updateUserSnapshoRewardsPerToken(behalf);
       REWARD_TOKEN.safeTransfer(receiver, reward);
     }
-  }
-
-  function claimRewardsToSelf(bool forceUpdate) external {
-    claimRewards(msg.sender, forceUpdate);
   }
 
   /**
