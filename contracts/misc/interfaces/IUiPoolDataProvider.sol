@@ -54,11 +54,6 @@ interface IUiPoolDataProvider {
     uint256 stableBorrowLastUpdateTimestamp;
   }
 
-  struct IncentivesControllerData {
-    uint256 userUnclaimedRewards;
-    uint256 emissionEndTimestamp;
-  }
-
   function getReservesList(ILendingPoolAddressesProvider provider)
     external
     view
