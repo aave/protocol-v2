@@ -53,57 +53,62 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
 
       IAaveIncentivesController aTokenIncentiveController =
         IAToken(baseData.aTokenAddress).getIncentivesController();
+      if (address(aTokenIncentiveController) != address(0)) {
+        (
+          uint256 aTokenIncentivesIndex,
+          uint256 aEmissionPerSecond,
+          uint256 aIncentivesLastUpdateTimestamp
+        ) = aTokenIncentiveController.getAssetData(baseData.aTokenAddress);
 
-      (
-        uint256 aTokenIncentivesIndex,
-        uint256 aEmissionPerSecond,
-        uint256 aIncentivesLastUpdateTimestamp
-      ) = aTokenIncentiveController.getAssetData(baseData.aTokenAddress);
-
-      reserveIncentiveData.aIncentiveData = IncentiveData(
-        aEmissionPerSecond,
-        aIncentivesLastUpdateTimestamp,
-        aTokenIncentivesIndex,
-        aTokenIncentiveController.DISTRIBUTION_END(),
-        baseData.aTokenAddress,
-        aTokenIncentiveController.REWARD_TOKEN()
-      );
+        reserveIncentiveData.aIncentiveData = IncentiveData(
+          aEmissionPerSecond,
+          aIncentivesLastUpdateTimestamp,
+          aTokenIncentivesIndex,
+          aTokenIncentiveController.DISTRIBUTION_END(),
+          baseData.aTokenAddress,
+          aTokenIncentiveController.REWARD_TOKEN()
+        );
+      }
 
       IAaveIncentivesController sTokenIncentiveController =
         IStableDebtToken(baseData.stableDebtTokenAddress).getIncentivesController();
 
-      (
-        uint256 sTokenIncentivesIndex,
-        uint256 sEmissionPerSecond,
-        uint256 sIncentivesLastUpdateTimestamp
-      ) = sTokenIncentiveController.getAssetData(baseData.stableDebtTokenAddress);
+      if (address(sTokenIncentiveController) != address(0)) {
+        (
+          uint256 sTokenIncentivesIndex,
+          uint256 sEmissionPerSecond,
+          uint256 sIncentivesLastUpdateTimestamp
+        ) = sTokenIncentiveController.getAssetData(baseData.stableDebtTokenAddress);
 
-      reserveIncentiveData.sIncentiveData = IncentiveData(
-        sEmissionPerSecond,
-        sIncentivesLastUpdateTimestamp,
-        sTokenIncentivesIndex,
-        sTokenIncentiveController.DISTRIBUTION_END(),
-        baseData.stableDebtTokenAddress,
-        sTokenIncentiveController.REWARD_TOKEN()
-      );
+        reserveIncentiveData.sIncentiveData = IncentiveData(
+          sEmissionPerSecond,
+          sIncentivesLastUpdateTimestamp,
+          sTokenIncentivesIndex,
+          sTokenIncentiveController.DISTRIBUTION_END(),
+          baseData.stableDebtTokenAddress,
+          sTokenIncentiveController.REWARD_TOKEN()
+        );
+      }
 
       IAaveIncentivesController vTokenIncentiveController =
         IVariableDebtToken(baseData.variableDebtTokenAddress).getIncentivesController();
 
-      (
-        uint256 vTokenIncentivesIndex,
-        uint256 vEmissionPerSecond,
-        uint256 vIncentivesLastUpdateTimestamp
-      ) = vTokenIncentiveController.getAssetData(baseData.variableDebtTokenAddress);
+      if (address(vTokenIncentiveController) != address(0)) {
+        (
+          uint256 vTokenIncentivesIndex,
+          uint256 vEmissionPerSecond,
+          uint256 vIncentivesLastUpdateTimestamp
+        ) = vTokenIncentiveController.getAssetData(baseData.variableDebtTokenAddress);
 
-      reserveIncentiveData.vIncentiveData = IncentiveData(
-        vEmissionPerSecond,
-        vIncentivesLastUpdateTimestamp,
-        vTokenIncentivesIndex,
-        vTokenIncentiveController.DISTRIBUTION_END(),
-        baseData.variableDebtTokenAddress,
-        vTokenIncentiveController.REWARD_TOKEN()
-      );
+        reserveIncentiveData.vIncentiveData = IncentiveData(
+          vEmissionPerSecond,
+          vIncentivesLastUpdateTimestamp,
+          vTokenIncentivesIndex,
+          vTokenIncentiveController.DISTRIBUTION_END(),
+          baseData.variableDebtTokenAddress,
+          vTokenIncentiveController.REWARD_TOKEN()
+        );
+      }
     }
 
     return (reservesIncentiveData);
