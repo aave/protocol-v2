@@ -150,7 +150,6 @@ contract StaticATokenLM is ERC20 {
    * @param v Signature param
    * @param s Signature param
    * @param r Signature param
-   * @param chainId Passing the chainId in order to be fork-compatible
    */
   function permit(
     address owner,
@@ -159,8 +158,7 @@ contract StaticATokenLM is ERC20 {
     uint256 deadline,
     uint8 v,
     bytes32 r,
-    bytes32 s,
-    uint256 chainId
+    bytes32 s
   ) external {
     require(owner != address(0), StaticATokenErrors.INVALID_OWNER);
     //solium-disable-next-line
@@ -170,7 +168,7 @@ contract StaticATokenLM is ERC20 {
       keccak256(
         abi.encodePacked(
           '\x19\x01',
-          getDomainSeparator(chainId),
+          getDomainSeparator(),
           keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
         )
       );
@@ -192,7 +190,6 @@ contract StaticATokenLM is ERC20 {
    * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
    * @param deadline The deadline timestamp, type(uint256).max for max deadline
    * @param sigParams Signature params: v,r,s
-   * @param chainId Passing the chainId in order to be fork-compatible
    * @return uint256 The amount of StaticAToken minted, static balance
    */
   function metaDeposit(
@@ -202,8 +199,7 @@ contract StaticATokenLM is ERC20 {
     uint16 referralCode,
     bool fromUnderlying,
     uint256 deadline,
-    SignatureParams calldata sigParams,
-    uint256 chainId
+    SignatureParams calldata sigParams
   ) external returns (uint256) {
     require(depositor != address(0), StaticATokenErrors.INVALID_DEPOSITOR);
     //solium-disable-next-line
@@ -213,7 +209,7 @@ contract StaticATokenLM is ERC20 {
       keccak256(
         abi.encodePacked(
           '\x19\x01',
-          getDomainSeparator(chainId),
+          getDomainSeparator(),
           keccak256(
             abi.encode(
               METADEPOSIT_TYPEHASH,
@@ -248,7 +244,6 @@ contract StaticATokenLM is ERC20 {
    * - `false` for the recipient to get aTokens (e.g. aUSDC)
    * @param deadline The deadline timestamp, type(uint256).max for max deadline
    * @param sigParams Signature params: v,r,s
-   * @param chainId Passing the chainId in order to be fork-compatible
    * @return amountToBurn: StaticATokens burnt, static balance
    * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
    */
@@ -259,8 +254,7 @@ contract StaticATokenLM is ERC20 {
     uint256 dynamicAmount,
     bool toUnderlying,
     uint256 deadline,
-    SignatureParams calldata sigParams,
-    uint256 chainId
+    SignatureParams calldata sigParams
   ) external returns (uint256, uint256) {
     require(owner != address(0), StaticATokenErrors.INVALID_OWNER);
     //solium-disable-next-line
@@ -270,7 +264,7 @@ contract StaticATokenLM is ERC20 {
       keccak256(
         abi.encodePacked(
           '\x19\x01',
-          getDomainSeparator(chainId),
+          getDomainSeparator(),
           keccak256(
             abi.encode(
               METAWITHDRAWAL_TYPEHASH,
@@ -334,10 +328,13 @@ contract StaticATokenLM is ERC20 {
 
   /**
    * @dev Function to return a dynamic domain separator, in order to be compatible with forks changing chainId
-   * @param chainId The chain id
    * @return bytes32 The domain separator
    **/
-  function getDomainSeparator(uint256 chainId) public view returns (bytes32) {
+  function getDomainSeparator() public view returns (bytes32) {
+    uint256 chainId;
+    assembly {
+      chainId := chainid()
+    }
     return
       keccak256(
         abi.encode(
