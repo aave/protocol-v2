@@ -234,7 +234,7 @@ contract StaticATokenLM is ERC20 {
       StaticATokenErrors.INVALID_SIGNATURE
     );
     _nonces[depositor] = currentValidNonce.add(1);
-    _deposit(depositor, recipient, value, referralCode, fromUnderlying);
+    return _deposit(depositor, recipient, value, referralCode, fromUnderlying);
   }
 
   /**
