@@ -539,13 +539,13 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     await expect(
       staticAToken
         .connect(spender)
-        .permit(spender._address, spender._address, permitAmount, expiration, v, r, s, chainId)
+        .permit(spender._address, spender._address, permitAmount, expiration, v, r, s)
     ).to.be.revertedWith(LM_ERRORS.INVALID_SIGNATURE);
 
     await waitForTx(
       await staticAToken
         .connect(spender)
-        .permit(owner._address, spender._address, permitAmount, expiration, v, r, s, chainId)
+        .permit(owner._address, spender._address, permitAmount, expiration, v, r, s)
     );
 
     expect((await staticAToken.allowance(owner._address, spender._address)).toString()).to.be.equal(
@@ -617,13 +617,13 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     await expect(
       staticAToken
         .connect(spender)
-        .permit(ZERO_ADDRESS, spender._address, permitAmount, expiration, v, r, s, chainId)
+        .permit(ZERO_ADDRESS, spender._address, permitAmount, expiration, v, r, s)
     ).to.be.revertedWith(LM_ERRORS.INVALID_OWNER);
 
     await expect(
       staticAToken
         .connect(spender)
-        .permit(owner._address, spender._address, permitAmount, expiration, v, r, s, chainId)
+        .permit(owner._address, spender._address, permitAmount, expiration, v, r, s)
     ).to.be.revertedWith(LM_ERRORS.INVALID_EXPIRATION);
 
     expect((await staticAToken.allowance(owner._address, spender._address)).toString()).to.be.equal(
@@ -643,7 +643,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       verifyingContract: staticAToken.address,
     };
     const domainSeperator = _TypedDataEncoder.hashDomain(domain);
-    const seperator = await staticAToken.getDomainSeparator(chainId);
+    const seperator = await staticAToken.getDomainSeparator();
     expect(seperator).to.be.eq(domainSeperator);
 
     const userPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
@@ -698,24 +698,14 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           referralCode,
           fromUnderlying,
           deadline,
-          sigParams,
-          chainId
+          sigParams
         )
     ).to.be.revertedWith(LM_ERRORS.INVALID_DEPOSITOR);
 
     await expect(
       staticAToken
         .connect(user2Signer)
-        .metaDeposit(
-          depositor,
-          recipient,
-          value,
-          referralCode,
-          fromUnderlying,
-          0,
-          sigParams,
-          chainId
-        )
+        .metaDeposit(depositor, recipient, value, referralCode, fromUnderlying, 0, sigParams)
     ).to.be.revertedWith(LM_ERRORS.INVALID_EXPIRATION);
 
     await expect(
@@ -728,8 +718,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           referralCode,
           fromUnderlying,
           deadline,
-          sigParams,
-          chainId
+          sigParams
         )
     ).to.be.revertedWith(LM_ERRORS.INVALID_SIGNATURE);
 
@@ -737,16 +726,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     await waitForTx(
       await staticAToken
         .connect(user2Signer)
-        .metaDeposit(
-          depositor,
-          recipient,
-          value,
-          referralCode,
-          fromUnderlying,
-          deadline,
-          sigParams,
-          chainId
-        )
+        .metaDeposit(depositor, recipient, value, referralCode, fromUnderlying, deadline, sigParams)
     );
 
     const ctxtAfterDeposit = await getContext(ctxtParams);
@@ -811,7 +791,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       verifyingContract: staticAToken.address,
     };
     const domainSeperator = _TypedDataEncoder.hashDomain(domain);
-    const seperator = await staticAToken.getDomainSeparator(chainId);
+    const seperator = await staticAToken.getDomainSeparator();
     expect(seperator).to.be.eq(domainSeperator);
 
     const userPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
@@ -872,24 +852,14 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           dynamicAmount,
           toUnderlying,
           deadline,
-          sigParams,
-          chainId
+          sigParams
         )
     ).to.be.revertedWith(LM_ERRORS.INVALID_OWNER);
 
     await expect(
       staticAToken
         .connect(user2Signer)
-        .metaWithdraw(
-          owner,
-          recipient,
-          staticAmount,
-          dynamicAmount,
-          toUnderlying,
-          0,
-          sigParams,
-          chainId
-        )
+        .metaWithdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying, 0, sigParams)
     ).to.be.revertedWith(LM_ERRORS.INVALID_EXPIRATION);
 
     await expect(
@@ -902,8 +872,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           dynamicAmount,
           toUnderlying,
           deadline,
-          sigParams,
-          chainId
+          sigParams
         )
     ).to.be.revertedWith(LM_ERRORS.INVALID_SIGNATURE);
 
@@ -918,8 +887,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           dynamicAmount,
           toUnderlying,
           deadline,
-          sigParams,
-          chainId
+          sigParams
         )
     );
 
@@ -941,7 +909,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       verifyingContract: staticAToken.address,
     };
     const domainSeperator = _TypedDataEncoder.hashDomain(domain);
-    const seperator = await staticAToken.getDomainSeparator(chainId);
+    const seperator = await staticAToken.getDomainSeparator();
     expect(seperator).to.be.eq(domainSeperator);
 
     const userPrivateKey = require('../../../../test-wallets.js').accounts[0].secretKey;
@@ -1004,8 +972,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
           dynamicAmount,
           toUnderlying,
           deadline,
-          sigParams,
-          chainId
+          sigParams
         )
     ).to.be.revertedWith(LM_ERRORS.ONLY_ONE_AMOUNT_FORMAT_ALLOWED);
 
