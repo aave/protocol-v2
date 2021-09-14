@@ -76,12 +76,11 @@ contract StaticATokenLM is ERC20 {
     LENDING_POOL = lendingPool;
     ATOKEN = IERC20(aToken);
 
-    IERC20 underlyingAsset = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS());
-    ASSET = underlyingAsset;
+    IERC20 underlyingAsset = ASSET = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS());
     underlyingAsset.safeApprove(address(lendingPool), type(uint256).max);
 
-    IAaveIncentivesController incentivesController = IAToken(aToken).getIncentivesController();
-    INCENTIVES_CONTROLLER = incentivesController;
+    IAaveIncentivesController incentivesController =
+      INCENTIVES_CONTROLLER = IAToken(aToken).getIncentivesController();
     REWARD_TOKEN = IERC20(incentivesController.REWARD_TOKEN());
   }
 
