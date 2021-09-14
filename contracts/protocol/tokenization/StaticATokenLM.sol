@@ -422,7 +422,7 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Updates rewards for senders and receiver in a transfer (no mint or burn)
+   * @dev Updates rewards for senders and receiver in a transfer (not updating rewards for address(0))
    * @param from The address of the sender of tokens
    * @param to The address of the receiver of tokens
    * @param amount The amount of tokens to transfer in WAD
