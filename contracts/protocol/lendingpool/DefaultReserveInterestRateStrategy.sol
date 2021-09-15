@@ -100,6 +100,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   /**
    * @dev Calculates the interest rates depending on the reserve's state and configurations
    * @param reserve The address of the reserve
+   * @param aToken The address of the associated aToken contract
    * @param liquidityAdded The liquidity added during the operation
    * @param liquidityTaken The liquidity taken during the operation
    * @param totalStableDebt The total borrowed from the reserve a stable rate
