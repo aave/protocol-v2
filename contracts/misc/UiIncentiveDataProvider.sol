@@ -11,6 +11,7 @@ import {IVariableDebtToken} from '../interfaces/IVariableDebtToken.sol';
 import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 
 contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
@@ -60,13 +61,16 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           uint256 aIncentivesLastUpdateTimestamp
         ) = aTokenIncentiveController.getAssetData(baseData.aTokenAddress);
 
+        address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
+        
         reserveIncentiveData.aIncentiveData = IncentiveData(
           aEmissionPerSecond,
           aIncentivesLastUpdateTimestamp,
           aTokenIncentivesIndex,
           aTokenIncentiveController.DISTRIBUTION_END(),
           baseData.aTokenAddress,
-          aTokenIncentiveController.REWARD_TOKEN()
+          aRewardToken,
+          IERC20Detailed(aRewardToken).decimals()
         );
       }
 
@@ -80,13 +84,16 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           uint256 sIncentivesLastUpdateTimestamp
         ) = sTokenIncentiveController.getAssetData(baseData.stableDebtTokenAddress);
 
+        address sRewardToken = sTokenIncentiveController.REWARD_TOKEN();
+
         reserveIncentiveData.sIncentiveData = IncentiveData(
           sEmissionPerSecond,
           sIncentivesLastUpdateTimestamp,
           sTokenIncentivesIndex,
           sTokenIncentiveController.DISTRIBUTION_END(),
           baseData.stableDebtTokenAddress,
-          sTokenIncentiveController.REWARD_TOKEN()
+          sRewardToken,
+          IERC20Detailed(sRewardToken).decimals()
         );
       }
 
@@ -100,13 +107,16 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           uint256 vIncentivesLastUpdateTimestamp
         ) = vTokenIncentiveController.getAssetData(baseData.variableDebtTokenAddress);
 
+        address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
+
         reserveIncentiveData.vIncentiveData = IncentiveData(
           vEmissionPerSecond,
           vIncentivesLastUpdateTimestamp,
           vTokenIncentivesIndex,
           vTokenIncentiveController.DISTRIBUTION_END(),
           baseData.variableDebtTokenAddress,
-          vTokenIncentiveController.REWARD_TOKEN()
+          vRewardToken,
+          IERC20Detailed(vRewardToken).decimals()
         );
       }
     }
@@ -145,6 +155,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         IAToken(baseData.aTokenAddress).getIncentivesController();
 
       if (address(aTokenIncentiveController) != address(0)) {
+        address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
         aUserIncentiveData.tokenincentivesUserIndex = aTokenIncentiveController.getUserAssetData(
           user,
           baseData.aTokenAddress
@@ -153,7 +164,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           user
         );
         aUserIncentiveData.tokenAddress = baseData.aTokenAddress;
-        aUserIncentiveData.rewardTokenAddress = aTokenIncentiveController.REWARD_TOKEN();
+        aUserIncentiveData.rewardTokenAddress = aRewardToken;
+        aUserIncentiveData.rewardTokenDecimals = IERC20Detailed(aRewardToken).decimals();
       }
 
       userReservesIncentivesData[i].aTokenIncentivesUserData = aUserIncentiveData;
@@ -163,6 +175,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         IVariableDebtToken(baseData.variableDebtTokenAddress).getIncentivesController();
 
       if (address(vTokenIncentiveController) != address(0)) {
+        address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
         vUserIncentiveData.tokenincentivesUserIndex = vTokenIncentiveController.getUserAssetData(
           user,
           baseData.variableDebtTokenAddress
@@ -171,7 +184,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           user
         );
         vUserIncentiveData.tokenAddress = baseData.variableDebtTokenAddress;
-        vUserIncentiveData.rewardTokenAddress = vTokenIncentiveController.REWARD_TOKEN();
+        vUserIncentiveData.rewardTokenAddress = vRewardToken;
+        vUserIncentiveData.rewardTokenDecimals = IERC20Detailed(vRewardToken).decimals();
       }
 
       userReservesIncentivesData[i].vTokenIncentivesUserData = vUserIncentiveData;
@@ -181,6 +195,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         IStableDebtToken(baseData.stableDebtTokenAddress).getIncentivesController();
 
       if (address(sTokenIncentiveController) != address(0)) {
+        address sRewardToken = sTokenIncentiveController.REWARD_TOKEN();
         sUserIncentiveData.tokenincentivesUserIndex = sTokenIncentiveController.getUserAssetData(
           user,
           baseData.stableDebtTokenAddress
@@ -189,7 +204,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           user
         );
         sUserIncentiveData.tokenAddress = baseData.stableDebtTokenAddress;
-        sUserIncentiveData.rewardTokenAddress = sTokenIncentiveController.REWARD_TOKEN();
+        sUserIncentiveData.rewardTokenAddress = sRewardToken;
+        sUserIncentiveData.rewardTokenDecimals = IERC20Detailed(sRewardToken).decimals();
       }
 
       userReservesIncentivesData[i].sTokenIncentivesUserData = sUserIncentiveData;

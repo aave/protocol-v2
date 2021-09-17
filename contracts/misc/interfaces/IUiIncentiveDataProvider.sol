@@ -19,6 +19,7 @@ interface IUiIncentiveDataProvider {
     uint256 emissionEndTimestamp;
     address tokenAddress;
     address rewardTokenAddress;
+    uint8 rewardTokenDecimals;
   }
 
   struct UserReserveIncentiveData {
@@ -33,6 +34,7 @@ interface IUiIncentiveDataProvider {
     uint256 userUnclaimedRewards;
     address tokenAddress;
     address rewardTokenAddress;
+    uint8 rewardTokenDecimals;
   }
 
   function getReservesIncentivesData(ILendingPoolAddressesProvider provider)
