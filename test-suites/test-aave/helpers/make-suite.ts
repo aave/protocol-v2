@@ -14,6 +14,7 @@ import {
   getUniswapLiquiditySwapAdapter,
   getUniswapRepayAdapter,
   getFlashLiquidationAdapter,
+  getParaSwapLiquiditySwapAdapter,
 } from '../../../helpers/contracts-getters';
 import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -32,6 +33,7 @@ import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPool
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { UniswapLiquiditySwapAdapter } from '../../../types/UniswapLiquiditySwapAdapter';
 import { UniswapRepayAdapter } from '../../../types/UniswapRepayAdapter';
+import { ParaSwapLiquiditySwapAdapter } from '../../../types/ParaSwapLiquiditySwapAdapter';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { WETH9Mocked } from '../../../types/WETH9Mocked';
 import { WETHGateway } from '../../../types/WETHGateway';
@@ -68,6 +70,7 @@ export interface TestEnv {
   registry: LendingPoolAddressesProviderRegistry;
   wethGateway: WETHGateway;
   flashLiquidationAdapter: FlashLiquidationAdapter;
+  paraswapLiquiditySwapAdapter: ParaSwapLiquiditySwapAdapter;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -92,6 +95,7 @@ const testEnv: TestEnv = {
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
   uniswapRepayAdapter: {} as UniswapRepayAdapter,
   flashLiquidationAdapter: {} as FlashLiquidationAdapter,
+  paraswapLiquiditySwapAdapter: {} as ParaSwapLiquiditySwapAdapter,
   registry: {} as LendingPoolAddressesProviderRegistry,
   wethGateway: {} as WETHGateway,
 } as TestEnv;
@@ -158,6 +162,8 @@ export async function initializeMakeSuite() {
   testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();
   testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter();
   testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter();
+
+  testEnv.paraswapLiquiditySwapAdapter = await getParaSwapLiquiditySwapAdapter();
 }
 
 const setSnapshot = async () => {
