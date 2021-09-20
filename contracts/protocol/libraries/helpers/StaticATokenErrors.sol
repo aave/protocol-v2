@@ -7,5 +7,6 @@ library StaticATokenErrors {
   string public constant INVALID_SIGNATURE = '3';
   string public constant INVALID_DEPOSITOR = '4';
   string public constant INVALID_RECIPIENT = '5';
-  string public constant ONLY_ONE_AMOUNT_FORMAT_ALLOWED = '6';
+  string public constant INVALID_CLAIMER = '6';
+  string public constant ONLY_ONE_AMOUNT_FORMAT_ALLOWED = '7';
 }

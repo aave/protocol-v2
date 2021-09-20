@@ -491,31 +491,51 @@ contract StaticATokenLM is ERC20 {
   }
 
   /**
-   * @dev Claim rewards for a user and send them to a receiver.
-   * @param receiver The address of the receiver of rewards
+   * @dev Claim rewards on behalf of a user and send them to a receiver
+   * @param onBehalfOf The address to claim on behalf of
+   * @param receiver The address to receive the rewards
    * @param forceUpdate Flag to retrieve latest rewards from `INCENTIVES_CONTROLLER`
    */
-  function claimRewards(address receiver, bool forceUpdate) public {
+  function _claimRewardsOnBehalf(
+    address onBehalfOf,
+    address receiver,
+    bool forceUpdate
+  ) internal {
     if (forceUpdate) {
       collectAndUpdateRewards();
     }
 
-    uint256 balance = balanceOf(msg.sender);
-    uint256 reward = _getClaimableRewards(msg.sender, balance, false);
+    uint256 balance = balanceOf(onBehalfOf);
+    uint256 reward = _getClaimableRewards(onBehalfOf, balance, false);
     uint256 totBal = REWARD_TOKEN.balanceOf(address(this));
     if (reward > totBal) {
-      // Throw away excess unclaimed rewards
       reward = totBal;
     }
     if (reward > 0) {
-      _unclaimedRewards[msg.sender] = 0;
-      _updateUserSnapshotRewardsPerToken(msg.sender);
+      _unclaimedRewards[onBehalfOf] = 0;
+      _updateUserSnapshotRewardsPerToken(onBehalfOf);
       REWARD_TOKEN.safeTransfer(receiver, reward);
     }
   }
 
+  function claimRewardsOnBehalf(
+    address onBehalfOf,
+    address receiver,
+    bool forceUpdate
+  ) external {
+    require(
+      msg.sender == onBehalfOf || msg.sender == INCENTIVES_CONTROLLER.getClaimer(onBehalfOf),
+      StaticATokenErrors.INVALID_CLAIMER
+    );
+    _claimRewardsOnBehalf(onBehalfOf, receiver, forceUpdate);
+  }
+
+  function claimRewards(address receiver, bool forceUpdate) external {
+    _claimRewardsOnBehalf(msg.sender, receiver, forceUpdate);
+  }
+
   function claimRewardsToSelf(bool forceUpdate) external {
-    claimRewards(msg.sender, forceUpdate);
+    _claimRewardsOnBehalf(msg.sender, msg.sender, forceUpdate);
   }
 
   /**

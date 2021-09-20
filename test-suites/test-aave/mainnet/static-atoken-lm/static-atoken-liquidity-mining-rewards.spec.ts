@@ -895,7 +895,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(await stkAave.balanceOf(staticAToken.address)).to.be.lt(DUST);
   });
 
-  it('mass deposits, mass withdraws and mass claims', async () => {
+  it('Mass deposits, mass withdraws and mass claims', async () => {
     const amountToDeposit = utils.parseEther('1.135359735917531199'); // 18 decimals should be the worst here //1.135359735917531199
     const users = await DRE.ethers.getSigners();
 
