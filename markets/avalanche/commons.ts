@@ -155,7 +155,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eAvalancheNetwork.fuji]: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c', // Official WAVAX
   },
   ReserveFactorTreasuryAddress: {
-    [eAvalancheNetwork.avalanche]: '', // TO BE DEPLOYED
+    [eAvalancheNetwork.avalanche]: '0x467b92aF281d14cB6809913AD016a607b5ba8A36',
     [eAvalancheNetwork.fuji]: '0xB45F5C501A22288dfdb897e5f73E189597e09288', // Self-controlled EOA for testing
   },
   IncentivesController: {
