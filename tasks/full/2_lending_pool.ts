@@ -70,6 +70,10 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
         eContractid.LendingPoolConfigurator,
         lendingPoolConfiguratorProxy.address
       );
+
+      // Pause market during deployment
+      await waitForTx(await lendingPoolConfiguratorProxy.setPoolPause(true));
+
       // Deploy deployment helpers
       await deployStableAndVariableTokensHelper(
         [lendingPoolProxy.address, addressesProvider.address],
