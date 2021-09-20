@@ -78,17 +78,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     REWARD_TOKEN = IERC20(incentivesController.REWARD_TOKEN());
   }
 
-  /**
-   * @dev Deposits `ASSET` in the Aave protocol and mints static aTokens to msg.sender
-   * @param recipient The address that will receive the static aTokens
-   * @param amount The amount of underlying `ASSET` to deposit (e.g. deposit of 100 USDC)
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   * @param fromUnderlying bool
-   * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
-   * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
-   * @return uint256 The amount of StaticAToken minted, static balance
-   **/
+  ///@inheritdoc IStaticATokenLM
   function deposit(
     address recipient,
     uint256 amount,
@@ -98,16 +88,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     return _deposit(msg.sender, recipient, amount, referralCode, fromUnderlying);
   }
 
-  /**
-   * @dev Burns `amount` of static aToken, with recipient receiving the corresponding amount of `ASSET`
-   * @param recipient The address that will receive the amount of `ASSET` withdrawn from the Aave protocol
-   * @param amount The amount to withdraw, in static balance of StaticAToken
-   * @param toUnderlying bool
-   * - `true` for the recipient to get underlying tokens (e.g. USDC)
-   * - `false` for the recipient to get aTokens (e.g. aUSDC)
-   * @return amountToBurn: StaticATokens burnt, static balance
-   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
-   **/
+  ///@inheritdoc IStaticATokenLM
   function withdraw(
     address recipient,
     uint256 amount,
@@ -116,16 +97,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     return _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
   }
 
-  /**
-   * @dev Burns `amount` of static aToken, with recipient receiving the corresponding amount of `ASSET`
-   * @param recipient The address that will receive the amount of `ASSET` withdrawn from the Aave protocol
-   * @param amount The amount to withdraw, in dynamic balance of aToken/underlying asset
-   * @param toUnderlying bool
-   * - `true` for the recipient to get underlying tokens (e.g. USDC)
-   * - `false` for the recipient to get aTokens (e.g. aUSDC)
-   * @return amountToBurn: StaticATokens burnt, static balance
-   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
-   **/
+  ///@inheritdoc IStaticATokenLM
   function withdrawDynamicAmount(
     address recipient,
     uint256 amount,
@@ -134,17 +106,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     return _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
   }
 
-  /**
-   * @dev Implements the permit function as for
-   * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
-   * @param owner The owner of the funds
-   * @param spender The spender
-   * @param value The amount
-   * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param v Signature param
-   * @param s Signature param
-   * @param r Signature param
-   */
+  ///@inheritdoc IStaticATokenLM
   function permit(
     address owner,
     address spender,
@@ -171,21 +133,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     _approve(owner, spender, value);
   }
 
-  /**
-   * @dev Allows to deposit on Aave via meta-transaction
-   * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
-   * @param depositor Address from which the funds to deposit are going to be pulled
-   * @param recipient Address that will receive the staticATokens, in the average case, same as the `depositor`
-   * @param value The amount to deposit
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   * @param fromUnderlying bool
-   * - `true` if the msg.sender comes with underlying tokens (e.g. USDC)
-   * - `false` if the msg.sender comes already with aTokens (e.g. aUSDC)
-   * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param sigParams Signature params: v,r,s
-   * @return uint256 The amount of StaticAToken minted, static balance
-   */
+  ///@inheritdoc IStaticATokenLM
   function metaDeposit(
     address depositor,
     address recipient,
@@ -226,21 +174,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     return _deposit(depositor, recipient, value, referralCode, fromUnderlying);
   }
 
-  /**
-   * @dev Allows to withdraw from Aave via meta-transaction
-   * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
-   * @param owner Address owning the staticATokens
-   * @param recipient Address that will receive the underlying withdrawn from Aave
-   * @param staticAmount The amount of staticAToken to withdraw. If > 0, `dynamicAmount` needs to be 0
-   * @param dynamicAmount The amount of underlying/aToken to withdraw. If > 0, `staticAmount` needs to be 0
-   * @param toUnderlying bool
-   * - `true` for the recipient to get underlying tokens (e.g. USDC)
-   * - `false` for the recipient to get aTokens (e.g. aUSDC)
-   * @param deadline The deadline timestamp, type(uint256).max for max deadline
-   * @param sigParams Signature params: v,r,s
-   * @return amountToBurn: StaticATokens burnt, static balance
-   * @return amountToWithdraw: underlying/aToken send to `recipient`, dynamic balance
-   */
+  ///@inheritdoc IStaticATokenLM
   function metaWithdraw(
     address owner,
     address recipient,
@@ -282,48 +216,27 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     return _withdraw(owner, recipient, staticAmount, dynamicAmount, toUnderlying);
   }
 
-  /**
-   * @dev Utility method to get the current aToken balance of an user, from his staticAToken balance
-   * @param account The address of the user
-   * @return uint256 The aToken balance
-   **/
+  ///@inheritdoc IStaticATokenLM
   function dynamicBalanceOf(address account) external view override returns (uint256) {
     return _staticToDynamicAmount(balanceOf(account), rate());
   }
 
-  /**
-   * @dev Converts a static amount (scaled balance on aToken) to the aToken/underlying value,
-   * using the current liquidity index on Aave
-   * @param amount The amount to convert from
-   * @return uint256 The dynamic amount
-   **/
+  ///@inheritdoc IStaticATokenLM
   function staticToDynamicAmount(uint256 amount) external view override returns (uint256) {
     return _staticToDynamicAmount(amount, rate());
   }
 
-  /**
-   * @dev Converts an aToken or underlying amount to the what it is denominated on the aToken as
-   * scaled balance, function of the principal and the liquidity index
-   * @param amount The amount to convert from
-   * @return uint256 The static (scaled) amount
-   **/
+  ///@inheritdoc IStaticATokenLM
   function dynamicToStaticAmount(uint256 amount) external view override returns (uint256) {
     return _dynamicToStaticAmount(amount, rate());
   }
 
-  /**
-   * @dev Returns the Aave liquidity index of the underlying aToken, denominated rate here
-   * as it can be considered as an ever-increasing exchange rate
-   * @return bytes32 The domain separator
-   **/
+  ///@inheritdoc IStaticATokenLM
   function rate() public view override returns (uint256) {
     return LENDING_POOL.getReserveNormalizedIncome(address(ASSET));
   }
 
-  /**
-   * @dev Function to return a dynamic domain separator, in order to be compatible with forks changing chainId
-   * @return bytes32 The domain separator
-   **/
+  ///@inheritdoc IStaticATokenLM
   function getDomainSeparator() public view override returns (bytes32) {
     uint256 chainId;
     assembly {
@@ -412,7 +325,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   }
 
   /**
-   * @dev Updates rewards for senders and receiver in a transfer (not updating rewards for address(0))
+   * @notice Updates rewards for senders and receiver in a transfer (not updating rewards for address(0))
    * @param from The address of the sender of tokens
    * @param to The address of the receiver of tokens
    * @param amount The amount of tokens to transfer in WAD
@@ -431,7 +344,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   }
 
   /**
-   * @dev Updates virtual internal accounting of rewards.
+   * @notice Updates virtual internal accounting of rewards.
    */
   function _updateRewards() internal {
     if (block.number > _lastRewardBlock) {
@@ -456,9 +369,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     }
   }
 
-  /**
-   * @dev Claims rewards from `INCENTIVES_CONTROLLER` and updates internal accounting of rewards.
-   */
+  ///@inheritdoc IStaticATokenLM
   function collectAndUpdateRewards() public override {
     _lastRewardBlock = block.number;
     uint256 supply = totalSupply();
@@ -485,7 +396,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   }
 
   /**
-   * @dev Claim rewards on behalf of a user and send them to a receiver
+   * @notice Claim rewards on behalf of a user and send them to a receiver
    * @param onBehalfOf The address to claim on behalf of
    * @param receiver The address to receive the rewards
    * @param forceUpdate Flag to retrieve latest rewards from `INCENTIVES_CONTROLLER`
@@ -533,7 +444,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   }
 
   /**
-   * @dev Update the rewardDebt for a user with balance as his balance
+   * @notice Update the rewardDebt for a user with balance as his balance
    * @param user The user to update
    */
   function _updateUserSnapshotRewardsPerToken(address user) internal {
@@ -541,7 +452,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   }
 
   /**
-   * @dev Adding the pending rewards to the unclaimed for specific user and updating user index
+   * @notice Adding the pending rewards to the unclaimed for specific user and updating user index
    * @param user The address of the user to update
    */
   function _updateUser(address user) internal {
@@ -554,7 +465,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   }
 
   /**
-   * @dev Compute the pending in RAY (rounded down). Pending is the amount to add (not yet unclaimed) rewards in RAY (rounded down).
+   * @notice Compute the pending in RAY (rounded down). Pending is the amount to add (not yet unclaimed) rewards in RAY (rounded down).
    * @param user The user to compute for
    * @param balance The balance of the user
    * @param fresh Flag to account for rewards not claimed by contract yet
@@ -590,7 +501,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   }
 
   /**
-   * @dev Compute the claimable rewards for a user
+   * @notice Compute the claimable rewards for a user
    * @param user The address of the user
    * @param balance The balance of the user in WAD
    * @param fresh Flag to account for rewards not claimed by contract yet
@@ -605,10 +516,7 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     return reward.rayToWadNoRounding();
   }
 
-  /**
-   * @dev Get the total claimable rewards of the contract.
-   * @return The current balance + pending rewards from the `_incentivesController`
-   */
+  ///@inheritdoc IStaticATokenLM
   function getTotalClaimableRewards() external view override returns (uint256) {
     address[] memory assets = new address[](1);
     assets[0] = address(ATOKEN);
@@ -616,20 +524,12 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
     return REWARD_TOKEN.balanceOf(address(this)).add(freshRewards);
   }
 
-  /**
-   * @dev Get the total claimable rewards for a user in WAD
-   * @param user The address of the user
-   * @return The claimable amount of rewards in WAD
-   */
+  ///@inheritdoc IStaticATokenLM
   function getClaimableRewards(address user) external view override returns (uint256) {
     return _getClaimableRewards(user, balanceOf(user), true);
   }
 
-  /**
-   * @dev The unclaimed rewards for a user in WAD
-   * @param user The address of the user
-   * @return The unclaimed amount of rewards in WAD
-   */
+  ///@inheritdoc IStaticATokenLM
   function getUnclaimedRewards(address user) external view override returns (uint256) {
     return _unclaimedRewards[user].rayToWadNoRounding();
   }
