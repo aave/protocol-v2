@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
+import {IStaticATokenLM} from '../../interfaces/IStaticATokenLM.sol';
 import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 
 import {StaticATokenErrors} from '../libraries/helpers/StaticATokenErrors.sol';
@@ -17,23 +18,16 @@ import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 
 /**
  * @title StaticATokenLM
- * @dev Wrapper token that allows to deposit tokens on the Aave protocol and receive
+ * @notice Wrapper token that allows to deposit tokens on the Aave protocol and receive
  * a token which balance doesn't increase automatically, but uses an ever-increasing exchange rate.
  * The token support claiming liquidity mining rewards from the Aave system.
  * @author Aave
  **/
-
-contract StaticATokenLM is ERC20 {
+contract StaticATokenLM is IStaticATokenLM, ERC20 {
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
   using RayMathNoRounding for uint256;
-
-  struct SignatureParams {
-    uint8 v;
-    bytes32 r;
-    bytes32 s;
-  }
 
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =
@@ -100,7 +94,7 @@ contract StaticATokenLM is ERC20 {
     uint256 amount,
     uint16 referralCode,
     bool fromUnderlying
-  ) external returns (uint256) {
+  ) external override returns (uint256) {
     return _deposit(msg.sender, recipient, amount, referralCode, fromUnderlying);
   }
 
@@ -118,7 +112,7 @@ contract StaticATokenLM is ERC20 {
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external returns (uint256, uint256) {
+  ) external override returns (uint256, uint256) {
     return _withdraw(msg.sender, recipient, amount, 0, toUnderlying);
   }
 
@@ -136,7 +130,7 @@ contract StaticATokenLM is ERC20 {
     address recipient,
     uint256 amount,
     bool toUnderlying
-  ) external returns (uint256, uint256) {
+  ) external override returns (uint256, uint256) {
     return _withdraw(msg.sender, recipient, 0, amount, toUnderlying);
   }
 
@@ -159,7 +153,7 @@ contract StaticATokenLM is ERC20 {
     uint8 v,
     bytes32 r,
     bytes32 s
-  ) external {
+  ) external override {
     require(owner != address(0), StaticATokenErrors.INVALID_OWNER);
     //solium-disable-next-line
     require(block.timestamp <= deadline, StaticATokenErrors.INVALID_EXPIRATION);
@@ -200,7 +194,7 @@ contract StaticATokenLM is ERC20 {
     bool fromUnderlying,
     uint256 deadline,
     SignatureParams calldata sigParams
-  ) external returns (uint256) {
+  ) external override returns (uint256) {
     require(depositor != address(0), StaticATokenErrors.INVALID_DEPOSITOR);
     //solium-disable-next-line
     require(block.timestamp <= deadline, StaticATokenErrors.INVALID_EXPIRATION);
@@ -255,7 +249,7 @@ contract StaticATokenLM is ERC20 {
     bool toUnderlying,
     uint256 deadline,
     SignatureParams calldata sigParams
-  ) external returns (uint256, uint256) {
+  ) external override returns (uint256, uint256) {
     require(owner != address(0), StaticATokenErrors.INVALID_OWNER);
     //solium-disable-next-line
     require(block.timestamp <= deadline, StaticATokenErrors.INVALID_EXPIRATION);
@@ -293,7 +287,7 @@ contract StaticATokenLM is ERC20 {
    * @param account The address of the user
    * @return uint256 The aToken balance
    **/
-  function dynamicBalanceOf(address account) external view returns (uint256) {
+  function dynamicBalanceOf(address account) external view override returns (uint256) {
     return _staticToDynamicAmount(balanceOf(account), rate());
   }
 
@@ -303,7 +297,7 @@ contract StaticATokenLM is ERC20 {
    * @param amount The amount to convert from
    * @return uint256 The dynamic amount
    **/
-  function staticToDynamicAmount(uint256 amount) external view returns (uint256) {
+  function staticToDynamicAmount(uint256 amount) external view override returns (uint256) {
     return _staticToDynamicAmount(amount, rate());
   }
 
@@ -313,7 +307,7 @@ contract StaticATokenLM is ERC20 {
    * @param amount The amount to convert from
    * @return uint256 The static (scaled) amount
    **/
-  function dynamicToStaticAmount(uint256 amount) external view returns (uint256) {
+  function dynamicToStaticAmount(uint256 amount) external view override returns (uint256) {
     return _dynamicToStaticAmount(amount, rate());
   }
 
@@ -322,7 +316,7 @@ contract StaticATokenLM is ERC20 {
    * as it can be considered as an ever-increasing exchange rate
    * @return bytes32 The domain separator
    **/
-  function rate() public view returns (uint256) {
+  function rate() public view override returns (uint256) {
     return LENDING_POOL.getReserveNormalizedIncome(address(ASSET));
   }
 
@@ -330,7 +324,7 @@ contract StaticATokenLM is ERC20 {
    * @dev Function to return a dynamic domain separator, in order to be compatible with forks changing chainId
    * @return bytes32 The domain separator
    **/
-  function getDomainSeparator() public view returns (bytes32) {
+  function getDomainSeparator() public view override returns (bytes32) {
     uint256 chainId;
     assembly {
       chainId := chainid()
@@ -465,7 +459,7 @@ contract StaticATokenLM is ERC20 {
   /**
    * @dev Claims rewards from `INCENTIVES_CONTROLLER` and updates internal accounting of rewards.
    */
-  function collectAndUpdateRewards() public {
+  function collectAndUpdateRewards() public override {
     _lastRewardBlock = block.number;
     uint256 supply = totalSupply();
 
@@ -522,7 +516,7 @@ contract StaticATokenLM is ERC20 {
     address onBehalfOf,
     address receiver,
     bool forceUpdate
-  ) external {
+  ) external override {
     require(
       msg.sender == onBehalfOf || msg.sender == INCENTIVES_CONTROLLER.getClaimer(onBehalfOf),
       StaticATokenErrors.INVALID_CLAIMER
@@ -530,11 +524,11 @@ contract StaticATokenLM is ERC20 {
     _claimRewardsOnBehalf(onBehalfOf, receiver, forceUpdate);
   }
 
-  function claimRewards(address receiver, bool forceUpdate) external {
+  function claimRewards(address receiver, bool forceUpdate) external override {
     _claimRewardsOnBehalf(msg.sender, receiver, forceUpdate);
   }
 
-  function claimRewardsToSelf(bool forceUpdate) external {
+  function claimRewardsToSelf(bool forceUpdate) external override {
     _claimRewardsOnBehalf(msg.sender, msg.sender, forceUpdate);
   }
 
@@ -615,7 +609,7 @@ contract StaticATokenLM is ERC20 {
    * @dev Get the total claimable rewards of the contract.
    * @return The current balance + pending rewards from the `_incentivesController`
    */
-  function getTotalClaimableRewards() external view returns (uint256) {
+  function getTotalClaimableRewards() external view override returns (uint256) {
     address[] memory assets = new address[](1);
     assets[0] = address(ATOKEN);
     uint256 freshRewards = INCENTIVES_CONTROLLER.getRewardsBalance(assets, address(this));
@@ -627,7 +621,7 @@ contract StaticATokenLM is ERC20 {
    * @param user The address of the user
    * @return The claimable amount of rewards in WAD
    */
-  function getClaimableRewards(address user) external view returns (uint256) {
+  function getClaimableRewards(address user) external view override returns (uint256) {
     return _getClaimableRewards(user, balanceOf(user), true);
   }
 
@@ -636,23 +630,23 @@ contract StaticATokenLM is ERC20 {
    * @param user The address of the user
    * @return The unclaimed amount of rewards in WAD
    */
-  function getUnclaimedRewards(address user) external view returns (uint256) {
+  function getUnclaimedRewards(address user) external view override returns (uint256) {
     return _unclaimedRewards[user].rayToWadNoRounding();
   }
 
-  function getAccRewardsPerToken() external view returns (uint256) {
+  function getAccRewardsPerToken() external view override returns (uint256) {
     return _accRewardsPerToken;
   }
 
-  function getLifetimeRewardsClaimed() external view returns (uint256) {
+  function getLifetimeRewardsClaimed() external view override returns (uint256) {
     return _lifetimeRewardsClaimed;
   }
 
-  function getLifetimeRewards() external view returns (uint256) {
+  function getLifetimeRewards() external view override returns (uint256) {
     return _lifetimeRewards;
   }
 
-  function getLastRewardBlock() external view returns (uint256) {
+  function getLastRewardBlock() external view override returns (uint256) {
     return _lastRewardBlock;
   }
 }
