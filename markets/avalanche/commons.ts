@@ -147,19 +147,19 @@ export const CommonsConfig: ICommonConfiguration = {
     [eAvalancheNetwork.fuji]: '',
   },
   WETH: {
-    [eAvalancheNetwork.avalanche]: '0xf20d962a6c8f70c731bd838a3a388D7d48fA6e15', // WETH Address
-    [eAvalancheNetwork.fuji]: '0x3b8b3fc85ccA720809Af2dA4B58cF4ce84bcbdd0', // MintableERC20 WETH
+    [eAvalancheNetwork.avalanche]: '',
+    [eAvalancheNetwork.fuji]: '',
   },
   WrappedNativeToken: {
     [eAvalancheNetwork.avalanche]: '0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7', // Official WAVAX
     [eAvalancheNetwork.fuji]: '0xd00ae08403B9bbb9124bB305C09058E32C39A48c', // Official WAVAX
   },
   ReserveFactorTreasuryAddress: {
-    [eAvalancheNetwork.avalanche]: '0xBDEE917d2BDE529eDEc5b20e0B770F56EDFE8e74', // Not Final, only for test purposes
-    [eAvalancheNetwork.fuji]: '0xB45F5C501A22288dfdb897e5f73E189597e09288', // Self-controlled EOA
+    [eAvalancheNetwork.avalanche]: '', // TO BE DEPLOYED
+    [eAvalancheNetwork.fuji]: '0xB45F5C501A22288dfdb897e5f73E189597e09288', // Self-controlled EOA for testing
   },
   IncentivesController: {
-    [eAvalancheNetwork.avalanche]: ZERO_ADDRESS, // Not final, no incentives proxy for test purposes
-    [eAvalancheNetwork.fuji]: '0xa1EF206fb9a8D8186157FC817fCddcC47727ED55', // WAVAX Incentives Controller
+    [eAvalancheNetwork.avalanche]: '0x01D83Fe6A10D2f2B7AF17034343746188272cAc9',
+    [eAvalancheNetwork.fuji]: '0xa1EF206fb9a8D8186157FC817fCddcC47727ED55',
   },
 };

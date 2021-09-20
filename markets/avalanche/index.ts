@@ -1,10 +1,4 @@
-import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import {
-  IAaveConfiguration,
-  eEthereumNetwork,
-  eAvalancheNetwork,
-  IAvalancheConfiguration,
-} from '../../helpers/types';
+import { eAvalancheNetwork, IAvalancheConfiguration } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
