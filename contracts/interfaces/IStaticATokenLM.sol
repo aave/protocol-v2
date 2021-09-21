@@ -3,8 +3,11 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {ILendingPool} from './ILendingPool.sol';
+import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
+import {IInitializableStaticATokenLM} from './IInitializableStaticATokenLM.sol';
 
-interface IStaticATokenLM is IERC20 {
+interface IStaticATokenLM is IERC20, IInitializableStaticATokenLM {
   struct SignatureParams {
     uint8 v;
     bytes32 r;
@@ -226,4 +229,14 @@ interface IStaticATokenLM is IERC20 {
   function getLifetimeRewards() external view returns (uint256);
 
   function getLastRewardBlock() external view returns (uint256);
+
+  function LENDING_POOL() external returns (ILendingPool);
+
+  function INCENTIVES_CONTROLLER() external returns (IAaveIncentivesController);
+
+  function ATOKEN() external returns (IERC20);
+
+  function ASSET() external returns (IERC20);
+
+  function REWARD_TOKEN() external returns (IERC20);
 }

@@ -30,6 +30,7 @@ import { _TypedDataEncoder } from 'ethers/lib/utils';
 
 import { expect, use } from 'chai';
 import { getCurrentBlock } from '../../../../helpers/contracts-helpers';
+import { stat } from 'fs';
 
 //use(solidity);
 
@@ -99,12 +100,17 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     aweth = ATokenFactory.connect(AWETH, userSigner);
     stkAave = ERC20Factory.connect(STKAAVE, userSigner);
 
-    staticAToken = await new StaticATokenLMFactory(userSigner).deploy(
+    staticAToken = await new StaticATokenLMFactory(userSigner).deploy();
+    await staticAToken.initialize(
       LENDING_POOL,
       AWETH,
       'Static Aave Interest Bearing WETH',
       'stataAAVE'
     );
+
+    expect(await staticAToken.decimals()).to.be.eq(18);
+    expect(await staticAToken.name()).to.be.eq('Static Aave Interest Bearing WETH');
+    expect(await staticAToken.symbol()).to.be.eq('stataAAVE');
 
     snap = await evmSnapshot();
   });
@@ -188,6 +194,11 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     it('Check getters', async () => {
       const amountToDeposit = utils.parseEther('5');
 
+      const accRewardsPerTokenPre = await staticAToken.getAccRewardsPerToken();
+      const lifetimeRewardsClaimedPre = await staticAToken.getLifetimeRewardsClaimed();
+      const lifetimeRewards = await staticAToken.getLifetimeRewards();
+      const lastRewardBlock = await staticAToken.getLastRewardBlock();
+
       // Just preparation
       await waitForTx(await weth.deposit({ value: amountToDeposit.mul(2) }));
       await waitForTx(
@@ -207,6 +218,13 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
       expect(staticBalance).to.be.eq(staticBalanceFromDynamic);
       expect(dynamicBalance).to.be.eq(dynamicBalanceFromStatic);
+
+      await staticAToken.collectAndUpdateRewards();
+
+      expect(await staticAToken.getAccRewardsPerToken()).to.be.gt(accRewardsPerTokenPre);
+      expect(await staticAToken.getLifetimeRewardsClaimed()).to.be.gt(lifetimeRewardsClaimedPre);
+      expect(await staticAToken.getLifetimeRewards()).to.be.gt(lifetimeRewards);
+      expect(await staticAToken.getLastRewardBlock()).to.be.gt(lastRewardBlock);
     });
 
     it('Multiple deposits in one block (Breaks if GasReport enabled)', async () => {

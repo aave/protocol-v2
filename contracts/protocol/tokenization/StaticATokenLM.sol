@@ -4,9 +4,12 @@ pragma experimental ABIEncoderV2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IStaticATokenLM} from '../../interfaces/IStaticATokenLM.sol';
 import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {IInitializableStaticATokenLM} from '../../interfaces/IInitializableStaticATokenLM.sol';
+import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
 
 import {StaticATokenErrors} from '../libraries/helpers/StaticATokenErrors.sol';
 
@@ -23,7 +26,11 @@ import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
  * The token support claiming liquidity mining rewards from the Aave system.
  * @author Aave
  **/
-contract StaticATokenLM is IStaticATokenLM, ERC20 {
+contract StaticATokenLM is
+  VersionedInitializable,
+  ERC20('STATIC_ATOKEN_IMPL', 'STATIC_ATOKEN_IMPL'),
+  IStaticATokenLM
+{
   using SafeERC20 for IERC20;
   using SafeMath for uint256;
   using WadRayMath for uint256;
@@ -43,11 +50,13 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
       'Withdraw(address owner,address recipient,uint256 staticAmount,uint256 dynamicAmount,bool toUnderlying,uint256 nonce,uint256 deadline)'
     );
 
-  ILendingPool public immutable LENDING_POOL;
-  IAaveIncentivesController public immutable INCENTIVES_CONTROLLER;
-  IERC20 public immutable ATOKEN;
-  IERC20 public immutable ASSET;
-  IERC20 public immutable REWARD_TOKEN;
+  uint256 public constant STATIC_ATOKEN_LM_REVISION = 0x1;
+
+  ILendingPool public override LENDING_POOL;
+  IAaveIncentivesController public override INCENTIVES_CONTROLLER;
+  IERC20 public override ATOKEN;
+  IERC20 public override ASSET;
+  IERC20 public override REWARD_TOKEN;
 
   mapping(address => uint256) public _nonces;
 
@@ -61,21 +70,32 @@ contract StaticATokenLM is IStaticATokenLM, ERC20 {
   // user => unclaimedRewards (in RAYs)
   mapping(address => uint256) private _unclaimedRewards;
 
-  constructor(
-    ILendingPool lendingPool,
+  ///@inheritdoc VersionedInitializable
+  function getRevision() internal pure virtual override returns (uint256) {
+    return STATIC_ATOKEN_LM_REVISION;
+  }
+
+  ///@inheritdoc IInitializableStaticATokenLM
+  function initialize(
+    ILendingPool pool,
     address aToken,
-    string memory wrappedTokenName,
-    string memory wrappedTokenSymbol
-  ) public ERC20(wrappedTokenName, wrappedTokenSymbol) {
-    LENDING_POOL = lendingPool;
+    string calldata staticATokenName,
+    string calldata staticATokenSymbol
+  ) external override initializer {
+    LENDING_POOL = pool;
     ATOKEN = IERC20(aToken);
 
-    IERC20 underlyingAsset = ASSET = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS());
-    underlyingAsset.safeApprove(address(lendingPool), type(uint256).max);
+    _name = staticATokenName;
+    _symbol = staticATokenSymbol;
+    _setupDecimals(IERC20Detailed(aToken).decimals());
 
-    IAaveIncentivesController incentivesController =
-      INCENTIVES_CONTROLLER = IAToken(aToken).getIncentivesController();
-    REWARD_TOKEN = IERC20(incentivesController.REWARD_TOKEN());
+    ASSET = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS());
+    ASSET.safeApprove(address(pool), type(uint256).max);
+
+    INCENTIVES_CONTROLLER = IAToken(aToken).getIncentivesController();
+    REWARD_TOKEN = IERC20(INCENTIVES_CONTROLLER.REWARD_TOKEN());
+
+    emit Initialized(address(pool), aToken, staticATokenName, staticATokenSymbol);
   }
 
   ///@inheritdoc IStaticATokenLM

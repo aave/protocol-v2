@@ -162,7 +162,8 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     aweth = ATokenFactory.connect(AWETH, userSigner);
     stkAave = ERC20Factory.connect(STKAAVE, userSigner);
 
-    staticAToken = await new StaticATokenLMFactory(userSigner).deploy(
+    staticAToken = await new StaticATokenLMFactory(userSigner).deploy();
+    await staticAToken.initialize(
       LENDING_POOL,
       AWETH,
       'Static Aave Interest Bearing WETH',
