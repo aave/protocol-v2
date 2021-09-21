@@ -12,8 +12,8 @@ import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
 interface IInitializableStaticATokenLM {
   /**
    * @dev Emitted when a StaticATokenLM is initialized
-   * @param pool The address of the lending pool where this aToken will be used
-   * @param aToken The address of the underlying asset of this aToken (aWETH)
+   * @param pool The address of the lending pool where the underlying aToken is used
+   * @param aToken The address of the underlying aToken (aWETH)
    * @param staticATokenName The name of the Static aToken
    * @param staticATokenSymbol The symbol of the Static aToken
    **/
@@ -26,9 +26,9 @@ interface IInitializableStaticATokenLM {
 
   /**
    * @dev Initializes the StaticATokenLM
-   * @param pool The address of the lending pool where this aToken will be used
+   * @param pool The address of the lending pool where the underlying aToken is used
    * @param aToken The address of the underlying aToken (aWETH)
-   * @param staticATokenName The name of the stat Static aToken
+   * @param staticATokenName The name of the Static aToken
    * @param staticATokenSymbol The symbol of the Static aToken
    */
   function initialize(
