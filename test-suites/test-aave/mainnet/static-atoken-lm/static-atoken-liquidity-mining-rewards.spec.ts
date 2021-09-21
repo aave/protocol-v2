@@ -1,6 +1,4 @@
 import rawDRE, { ethers } from 'hardhat';
-import bnjs from 'bignumber.js';
-import { solidity } from 'ethereum-waffle';
 import {
   LendingPoolFactory,
   WETH9Factory,
@@ -29,8 +27,6 @@ import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 
 import { expect, use } from 'chai';
-import { getCurrentBlock } from '../../../../helpers/contracts-helpers';
-import { stat } from 'fs';
 
 //use(solidity);
 
@@ -44,6 +40,7 @@ const LENDING_POOL = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9';
 const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 const STKAAVE = '0x4da27a545c0c5B758a6BA100e3a049001de870f5';
 const AWETH = '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e';
+const AUSDC = '0xBcca60bB61934080951369a648Fb03DF4F96263C';
 
 const getUserData = async (_users: Signer[], _debug = false, { staticAToken, stkAave }) => {
   let usersData: {
@@ -105,12 +102,26 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       LENDING_POOL,
       AWETH,
       'Static Aave Interest Bearing WETH',
-      'stataAAVE'
+      'stataWETH'
     );
 
     expect(await staticAToken.decimals()).to.be.eq(18);
     expect(await staticAToken.name()).to.be.eq('Static Aave Interest Bearing WETH');
-    expect(await staticAToken.symbol()).to.be.eq('stataAAVE');
+    expect(await staticAToken.symbol()).to.be.eq('stataWETH');
+    expect(await staticAToken.ATOKEN()).to.be.eq(AWETH);
+
+    const staticUSDC = await new StaticATokenLMFactory(userSigner).deploy();
+    await staticUSDC.initialize(
+      LENDING_POOL,
+      AUSDC,
+      'Static Aave Interest Bearing USDC',
+      'stataUSDC'
+    );
+
+    expect(await staticUSDC.decimals()).to.be.eq(6);
+    expect(await staticUSDC.name()).to.be.eq('Static Aave Interest Bearing USDC');
+    expect(await staticUSDC.symbol()).to.be.eq('stataUSDC');
+    expect(await staticUSDC.ATOKEN()).to.be.eq(AUSDC);
 
     snap = await evmSnapshot();
   });
