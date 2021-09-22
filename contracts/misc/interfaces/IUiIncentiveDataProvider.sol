@@ -19,6 +19,7 @@ interface IUiIncentiveDataProvider {
     uint256 emissionEndTimestamp;
     address tokenAddress;
     address rewardTokenAddress;
+    address incentiveControllerAddress;
     uint8 rewardTokenDecimals;
   }
 
@@ -34,6 +35,7 @@ interface IUiIncentiveDataProvider {
     uint256 userUnclaimedRewards;
     address tokenAddress;
     address rewardTokenAddress;
+    address incentiveControllerAddress;
     uint8 rewardTokenDecimals;
   }
 

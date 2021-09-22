@@ -70,6 +70,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           aTokenIncentiveController.DISTRIBUTION_END(),
           baseData.aTokenAddress,
           aRewardToken,
+          address(aTokenIncentiveController),
           IERC20Detailed(aRewardToken).decimals()
         );
       }
@@ -93,6 +94,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           sTokenIncentiveController.DISTRIBUTION_END(),
           baseData.stableDebtTokenAddress,
           sRewardToken,
+          address(sTokenIncentiveController),
           IERC20Detailed(sRewardToken).decimals()
         );
       }
@@ -116,6 +118,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           vTokenIncentiveController.DISTRIBUTION_END(),
           baseData.variableDebtTokenAddress,
           vRewardToken,
+          address(vTokenIncentiveController),
           IERC20Detailed(vRewardToken).decimals()
         );
       }
@@ -165,6 +168,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         );
         aUserIncentiveData.tokenAddress = baseData.aTokenAddress;
         aUserIncentiveData.rewardTokenAddress = aRewardToken;
+        aUserIncentiveData.incentiveControllerAddress = address(aTokenIncentiveController);
         aUserIncentiveData.rewardTokenDecimals = IERC20Detailed(aRewardToken).decimals();
       }
 
@@ -185,6 +189,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         );
         vUserIncentiveData.tokenAddress = baseData.variableDebtTokenAddress;
         vUserIncentiveData.rewardTokenAddress = vRewardToken;
+        vUserIncentiveData.incentiveControllerAddress = address(vTokenIncentiveController);
         vUserIncentiveData.rewardTokenDecimals = IERC20Detailed(vRewardToken).decimals();
       }
 
@@ -205,6 +210,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         );
         sUserIncentiveData.tokenAddress = baseData.stableDebtTokenAddress;
         sUserIncentiveData.rewardTokenAddress = sRewardToken;
+        sUserIncentiveData.incentiveControllerAddress = address(sTokenIncentiveController);
         sUserIncentiveData.rewardTokenDecimals = IERC20Detailed(sRewardToken).decimals();
       }
 
