@@ -76,7 +76,6 @@ task('publish-sourcify', 'Publish contracts metadata from hardhat-deploy to Sour
   async ({}, hre) => {
     const contractNames = [
       'LendingPoolImpl',
-      /*
       'LendingPoolConfiguratorImpl',
       'LendingPoolCollateralManagerImpl',
       'DefaultReserveInterestRateStrategy',
@@ -90,7 +89,6 @@ task('publish-sourcify', 'Publish contracts metadata from hardhat-deploy to Sour
       'LendingPoolAddressesProviderRegistry',
       'AaveOracle',
       'UiPoolDataProvider',
-      */
     ];
 
     for (let x = 0; x < contractNames.length; x++) {
