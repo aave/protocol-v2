@@ -71,7 +71,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           baseData.aTokenAddress,
           aRewardToken,
           address(aTokenIncentiveController),
-          IERC20Detailed(aRewardToken).decimals()
+          IERC20Detailed(aRewardToken).decimals(),
+          aTokenIncentiveController.PRECISION()
         );
       }
 
@@ -95,7 +96,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           baseData.stableDebtTokenAddress,
           sRewardToken,
           address(sTokenIncentiveController),
-          IERC20Detailed(sRewardToken).decimals()
+          IERC20Detailed(sRewardToken).decimals(),
+          sTokenIncentiveController.PRECISION()
         );
       }
 
@@ -119,7 +121,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           baseData.variableDebtTokenAddress,
           vRewardToken,
           address(vTokenIncentiveController),
-          IERC20Detailed(vRewardToken).decimals()
+          IERC20Detailed(vRewardToken).decimals(),
+          vTokenIncentiveController.PRECISION()
         );
       }
     }

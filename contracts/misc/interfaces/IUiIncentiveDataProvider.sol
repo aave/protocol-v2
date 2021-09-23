@@ -21,6 +21,7 @@ interface IUiIncentiveDataProvider {
     address rewardTokenAddress;
     address incentiveControllerAddress;
     uint8 rewardTokenDecimals;
+    uint8 precision;
   }
 
   struct UserReserveIncentiveData {
