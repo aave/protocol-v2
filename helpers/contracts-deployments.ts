@@ -49,6 +49,7 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  UiIncentiveDataProviderFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -74,14 +75,13 @@ export const deployUiPoolDataProvider = async (verify?: boolean) => {
   return instance;
 };
 
-export const deployUiIncentiveDataProvider = async (verify?: boolean) => {
-  const id = eContractid.UiIncentiveDataProvider;
-  const instance = await deployContract<UiIncentiveDataProvider>(id, []);
-  if (verify) {
-    await verifyContract(id, instance, []);
-  }
-  return instance;
-};
+export const deployUiIncentiveDataProvider = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new UiIncentiveDataProviderFactory(await getFirstSigner()).deploy(),
+    eContractid.UiIncentiveDataProvider,
+    [],
+    verify
+  );
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
