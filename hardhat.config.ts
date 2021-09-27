@@ -96,6 +96,7 @@ const buidlerConfig: HardhatUserConfig = {
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
+    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
