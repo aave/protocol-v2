@@ -39,13 +39,13 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset, swap it
    * and repay the flash loan.
    * Supports only one asset on the flash loan.
-   * @param assets Address of debt asset
-   * @param amounts Amount of the debt to be repaid, or maximum amount when repaying entire debt
+   * @param assets Address of collateral asset(Flash loan asset)
+   * @param amounts Amount of flash loan taken
    * @param premiums Fee of the flash loan
    * @param initiator Address of the user
    * @param params Additional variadic field to include extra params. Expected parameters:
-   *   IERC20Detailed collateralAsset Address of the reserve to be swapped
-   *   uint256 collateralAmount max Amount of the collateral to be swapped
+   *   IERC20Detailed debtAsset Address of the debt asset
+   *   uint256 debtAmount Amount of debt to be repaid
    *   uint256 rateMode Rate modes of the debt to be repaid
    *   uint256 deadline Deadline for the permit signature
    *   uint256 debtRateMode Rate mode of the debt to be repaid
@@ -68,31 +68,20 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
       'FLASHLOAN_MULTIPLE_ASSETS_NOT_SUPPORTED'
     );
 
-    uint256 debtRepayAmount = amounts[0];
+    uint256 collateralAmount = amounts[0];
     uint256 premium = premiums[0];
     address initiatorLocal = initiator;
+    
 
-    IERC20Detailed debtAsset = IERC20Detailed(assets[0]);
-    (
-      IERC20Detailed collateralAsset,
-      uint256 collateralAmount,
-      uint256 buyAllBalanceOffset,
-      uint256 debtRateMode,
-      bytes memory paraswapData,
-      PermitSignature memory permitParams
-    ) = abi.decode(params, (IERC20Detailed, uint256, uint256, uint256, bytes, PermitSignature));
+    IERC20Detailed collateralAsset = IERC20Detailed(assets[0]);
+    
 
     _swapAndRepay(
-      buyAllBalanceOffset,
-      paraswapData,
-      permitParams,
-      debtRepayAmount,
+      params,
       premium,
       initiatorLocal,
       collateralAsset,
-      debtAsset,
-      collateralAmount,
-      debtRateMode
+      collateralAmount
     );
 
     return true;
@@ -167,30 +156,29 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
 
   /**
    * @dev Perform the repay of the debt, pulls the initiator collateral and swaps to repay the flash loan
-   * @param buyAllBalanceOffset Set to offset of fromAmount in Augustus calldata if wanting to swap all balance, otherwise 0
-   * @param paraswapData Paraswap data
-   * @param permitSignature struct containing the permit signature
-   * @param debtRepayAmount Amount of the debt to be repaid, or maximum amount when repaying entire debt
    * @param premium Fee of the flash loan
    * @param initiator Address of the user
    * @param collateralAsset Address of token to be swapped
-   * @param debtAsset Address of debt token to be received from the swap
    * @param collateralAmount Amount of the reserve to be swapped(flash loan amount)
-   * @param rateMode Rate mode of the debt to be repaid
    */
 
   function _swapAndRepay(
-    uint256 buyAllBalanceOffset,
-    bytes memory paraswapData,
-    PermitSignature memory permitSignature,
-    uint256 debtRepayAmount,
+    bytes calldata params,
     uint256 premium,
     address initiator,
     IERC20Detailed collateralAsset,
-    IERC20Detailed debtAsset,
-    uint256 collateralAmount,
-    uint256 rateMode
+    uint256 collateralAmount
   ) private {
+
+    (
+      IERC20Detailed debtAsset,
+      uint256 debtRepayAmount,
+      uint256 buyAllBalanceOffset,
+      uint256 rateMode,
+      bytes memory paraswapData,
+      PermitSignature memory permitSignature
+    ) = abi.decode(params, (IERC20Detailed, uint256, uint256, uint256, bytes, PermitSignature));
+
     debtRepayAmount = getDebtRepayAmount(
       debtAsset,
       rateMode,

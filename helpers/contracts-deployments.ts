@@ -52,6 +52,7 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  ParaSwapRepayAdapterFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -670,3 +671,14 @@ export const deployParaSwapLiquiditySwapAdapter = async (
     args,
     verify
   );
+
+  export const deployParaSwapRepayAdapter = async (
+    args: [tEthereumAddress, tEthereumAddress],
+    verify?: boolean
+  ) =>
+    withSaveAndVerify(
+      await new ParaSwapRepayAdapterFactory(await getFirstSigner()).deploy(...args),
+      eContractid.ParaSwapRepayAdapter,
+      args,
+      verify
+    );

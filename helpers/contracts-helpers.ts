@@ -359,6 +359,57 @@ export const buildParaSwapLiquiditySwapParams = (
   );
 };
 
+export const buildParaswapBuyParams = (
+  buyCalldata: string | Buffer,
+  augustus: tEthereumAddress,
+)=> {
+  return ethers.utils.defaultAbiCoder.encode(
+    [
+      'bytes',
+      'address'
+    ],
+    [
+      buyCalldata,
+      augustus
+    ]
+
+  );
+}
+export const buildParaSwapRepayParams = (
+  collateralAsset: tEthereumAddress,
+  collateralAmount: BigNumberish,
+  buyAllBalanceOffset: BigNumberish,
+  debtRateMode: BigNumberish,
+  buyCalldata: string | Buffer,
+  augustus: tEthereumAddress,
+  permitAmount: BigNumberish,
+  deadline: BigNumberish,
+  v: BigNumberish,
+  r: string | Buffer,
+  s: string | Buffer
+
+) => {
+  const paraswapData = buildParaswapBuyParams(buyCalldata, augustus)
+  return ethers.utils.defaultAbiCoder.encode(
+    [
+      'address',
+      'uint256',
+      'uint256',
+      'uint256',
+      'bytes',
+      'tuple(uint256,uint256,uint8,bytes32,bytes32)',
+    ],
+    [
+      collateralAsset,
+      collateralAmount,
+      buyAllBalanceOffset,
+      debtRateMode,
+      paraswapData,
+      [permitAmount, deadline, v, r, s],
+    ]
+  );
+};
+
 export const verifyContract = async (
   id: string,
   instance: Contract,

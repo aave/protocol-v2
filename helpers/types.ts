@@ -40,6 +40,7 @@ export enum AavePools {
   amm = 'amm',
 }
 
+
 export enum eContractid {
   Example = 'Example',
   LendingPoolAddressesProvider = 'LendingPoolAddressesProvider',
@@ -90,6 +91,7 @@ export enum eContractid {
   MockParaSwapAugustus = 'MockParaSwapAugustus',
   MockParaSwapAugustusRegistry = 'MockParaSwapAugustusRegistry',
   ParaSwapLiquiditySwapAdapter = 'ParaSwapLiquiditySwapAdapter',
+  ParaSwapRepayAdapter = "ParaSwapRepayAdapter"
 }
 
 /*
