@@ -11,7 +11,7 @@ export const strategyWAVAX: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '1500',
 };
 
 export const strategyWETH: IReserveParams = {
@@ -28,21 +28,21 @@ export const strategyWETH: IReserveParams = {
 
 export const strategyWBTC: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '0',
-  liquidationThreshold: '0',
-  liquidationBonus: '0',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10500',
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '1000',
 };
 
 export const strategyAAVE: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '5000',
+  baseLTVAsCollateral: '4000',
   liquidationThreshold: '6500',
-  liquidationBonus: '10800',
+  liquidationBonus: '11000',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
