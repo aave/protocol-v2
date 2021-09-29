@@ -77,27 +77,27 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: undefined,
   },
   LendingPool: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0x9198F13B08E299d85E096929fA9781A1E3d5d827',
     [ePolygonNetwork.matic]: '',
   },
   LendingPoolConfigurator: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0xc3c37E2aA3dc66464fa3C29ce2a6EC85beFC45e1',
     [ePolygonNetwork.matic]: '',
   },
   ProviderRegistry: {
-    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.mumbai]: '0xE6ef11C967898F9525D550014FDEdCFAB63536B5',
     [ePolygonNetwork.matic]: '0x3ac4e9aa29940770aeC38fe853a4bbabb2dA9C19',
   },
   ProviderRegistryOwner: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0x943E44157dC0302a5CEb172374d1749018a00994',
     [ePolygonNetwork.matic]: '0xD7D86236d6c463521920fCC50A9CB56f8C8Bf008',
   },
   LendingRateOracle: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0xC661e1445F9a8E5FD3C3dbCa0A0A2e8CBc79725D',
     [ePolygonNetwork.matic]: '0x17F73aEaD876CC4059089ff815EDA37052960dFB',
   },
   LendingPoolCollateralManager: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0x2A7004B21c49253ca8DF923406Fed9a02AA86Ba0',
     [ePolygonNetwork.matic]: '',
   },
   TokenDistributor: {
@@ -105,11 +105,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '',
   },
   WethGateway: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0xee9eE614Ad26963bEc1Bec0D2c92879ae1F209fA',
     [ePolygonNetwork.matic]: '',
   },
   AaveOracle: {
-    [ePolygonNetwork.mumbai]: '',
+    [ePolygonNetwork.mumbai]: '0xC365C653f7229894F93994CD0b30947Ab69Ff1D5',
     [ePolygonNetwork.matic]: '0x0229F777B0fAb107F9591a41d5F02E4e98dB6f2d',
   },
   FallbackOracle: {
@@ -157,7 +157,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '0x7734280A4337F37Fbf4651073Db7c28C80B339e9',
   },
   IncentivesController: {
-    [ePolygonNetwork.mumbai]: ZERO_ADDRESS,
+    [ePolygonNetwork.mumbai]: '0xd41aE58e803Edf4304334acCE4DC4Ec34a63C644',
     [ePolygonNetwork.matic]: '0x357D51124f59836DeD84c8a1730D72B749d8BC23',
   },
 };
