@@ -132,6 +132,7 @@ export const CommonsConfig: ICommonConfiguration = {
       USDT: ZERO_ADDRESS,
       WBTC: ZERO_ADDRESS,
       WMATIC: ZERO_ADDRESS,
+      USD: ZERO_ADDRESS,
     },
   },
   ReserveAssets: {
