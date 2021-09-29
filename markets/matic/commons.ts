@@ -78,11 +78,11 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingPool: {
     [ePolygonNetwork.mumbai]: '0x9198F13B08E299d85E096929fA9781A1E3d5d827',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf',
   },
   LendingPoolConfigurator: {
     [ePolygonNetwork.mumbai]: '0xc3c37E2aA3dc66464fa3C29ce2a6EC85beFC45e1',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0x26db2B833021583566323E3b8985999981b9F1F3',
   },
   ProviderRegistry: {
     [ePolygonNetwork.mumbai]: '0xE6ef11C967898F9525D550014FDEdCFAB63536B5',
@@ -98,7 +98,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingPoolCollateralManager: {
     [ePolygonNetwork.mumbai]: '0x2A7004B21c49253ca8DF923406Fed9a02AA86Ba0',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0xA39599424642D9fD35e475EF802EddF798dc555B',
   },
   TokenDistributor: {
     [ePolygonNetwork.mumbai]: '',
@@ -106,7 +106,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   WethGateway: {
     [ePolygonNetwork.mumbai]: '0xee9eE614Ad26963bEc1Bec0D2c92879ae1F209fA',
-    [ePolygonNetwork.matic]: '',
+    [ePolygonNetwork.matic]: '0xbEadf48d62aCC944a06EEaE0A9054A90E5A7dc97',
   },
   AaveOracle: {
     [ePolygonNetwork.mumbai]: '0xC365C653f7229894F93994CD0b30947Ab69Ff1D5',
