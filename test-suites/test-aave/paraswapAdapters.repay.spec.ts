@@ -670,19 +670,18 @@ makeSuite('Paraswap adapters', (testEnv: TestEnv) => {
         const amountToRepay = new BigNumber(expectedDaiAmount.toString())
         .multipliedBy(1.1)
         .toFixed(0);
+        const liquidityToSwap = await convertToCurrencyDecimals(weth.address, '10.8');
+        await mockAugustus.expectBuy(weth.address, dai.address, liquidityToSwap, expectedDaiAmount, amountToRepay);
+        
+        const mockAugustusCalldata = mockAugustus.interface.encodeFunctionData(
+          'buy',
+          [weth.address, dai.address, flashLoanAmount, expectedDaiAmount]
+        );
 
-          await mockAugustus.expectBuy(weth.address, dai.address, flashLoanAmount, expectedDaiAmount, amountToRepay);
-          const liquidityToSwap = await convertToCurrencyDecimals(weth.address, '10.8');
-
-          const mockAugustusCalldata = mockAugustus.interface.encodeFunctionData(
-            'buy',
-            [weth.address, dai.address, liquidityToSwap, expectedDaiAmount]
-          );
-  
-          const flashloanPremium = flashLoanAmount.mul(9).div(10000);
-          const flashloanTotal = flashLoanAmount.add(flashloanPremium);
-          await aWETH.connect(user).approve(paraswapRepayAdapter.address, flashloanTotal);
-          const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
+        const flashloanPremium = flashLoanAmount.mul(9).div(10000);
+        const flashloanTotal = flashLoanAmount.add(flashloanPremium);
+        await aWETH.connect(user).approve(paraswapRepayAdapter.address, flashloanTotal);
+        const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
           
 
         // Add a % to repay on top of the debt
@@ -772,10 +771,10 @@ makeSuite('Paraswap adapters', (testEnv: TestEnv) => {
         .multipliedBy(1.1)
         .toFixed(0);
 
-        await mockAugustus.expectBuy(weth.address, dai.address, flashLoanAmount, expectedDaiAmount, amountToRepay);
+        await mockAugustus.expectBuy(weth.address, dai.address, liquidityToSwap, expectedDaiAmount, amountToRepay);
         const mockAugustusCalldata = mockAugustus.interface.encodeFunctionData(
           'buy',
-          [weth.address, dai.address, liquidityToSwap, expectedDaiAmount]
+          [weth.address, dai.address, flashLoanAmount, expectedDaiAmount]
         );
 
         const flashloanPremium = flashLoanAmount.mul(9).div(10000);

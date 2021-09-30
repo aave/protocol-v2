@@ -87,8 +87,8 @@ contract MockParaSwapAugustus is IParaSwapAugustus {
     require(fromToken == _expectedFromToken, 'Unexpected from token');
     require(toToken == _expectedToToken, 'Unexpected to token');
     require(toAmount >= _expectedToAmountMin && toAmount <= _expectedToAmountMax, 'To amount out of range');
-    require(_fromAmount >= fromAmount, 'From amount of tokens are higher than expected');
-    TOKEN_TRANSFER_PROXY.transferFrom(fromToken, msg.sender, address(this), fromAmount);
+    require(_fromAmount <= fromAmount, 'From amount of tokens are higher than expected');
+    TOKEN_TRANSFER_PROXY.transferFrom(fromToken, msg.sender, address(this), _fromAmount);
     MintableERC20(toToken).mint(toAmount);
     IERC20(toToken).transfer(msg.sender, toAmount);
     _expectingSwap = false;
