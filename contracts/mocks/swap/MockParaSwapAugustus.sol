@@ -12,9 +12,14 @@ contract MockParaSwapAugustus is IParaSwapAugustus {
   bool _expectingSwap;
   address _expectedFromToken;
   address _expectedToToken;
+  
   uint256 _expectedFromAmountMin;
   uint256 _expectedFromAmountMax;
   uint256 _receivedAmount;
+
+  uint256 _fromAmount;
+  uint256 _expectedToAmountMax;
+  uint256 _expectedToAmountMin;
 
   constructor() public {
     TOKEN_TRANSFER_PROXY = new MockParaSwapTokenTransferProxy();
@@ -37,6 +42,21 @@ contract MockParaSwapAugustus is IParaSwapAugustus {
     _expectedFromAmountMin = fromAmountMin;
     _expectedFromAmountMax = fromAmountMax;
     _receivedAmount = receivedAmount;
+  }
+
+  function expectBuy(
+    address fromToken,
+    address toToken,
+    uint256 fromAmount,
+    uint256 toAmountMin,
+    uint256 toAmountMax
+  ) external {
+    _expectingSwap = true;
+    _expectedFromToken = fromToken;
+    _expectedToToken = toToken;
+    _fromAmount = fromAmount;
+    _expectedToAmountMin = toAmountMin;
+    _expectedToAmountMax = toAmountMax;
   }
 
   function swap(
@@ -66,8 +86,8 @@ contract MockParaSwapAugustus is IParaSwapAugustus {
     require(_expectingSwap, 'Not expecting swap');
     require(fromToken == _expectedFromToken, 'Unexpected from token');
     require(toToken == _expectedToToken, 'Unexpected to token');
-    require(fromAmount >= _expectedFromAmountMin && fromAmount <= _expectedFromAmountMax, 'From amount out of range');
-    require(_receivedAmount >= toAmount, 'Received amount of tokens are less than expected');
+    require(toAmount >= _expectedToAmountMin && toAmount <= _expectedToAmountMax, 'To amount out of range');
+    require(_fromAmount >= fromAmount, 'From amount of tokens are higher than expected');
     TOKEN_TRANSFER_PROXY.transferFrom(fromToken, msg.sender, address(this), fromAmount);
     MintableERC20(toToken).mint(toAmount);
     IERC20(toToken).transfer(msg.sender, toAmount);
