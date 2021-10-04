@@ -138,25 +138,22 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // incentives
       if (address(0) != address(incentivesController)) {
         (
-          reserveData.aEmissionPerSecond,
           reserveData.aTokenIncentivesIndex,
+          reserveData.aEmissionPerSecond,
           reserveData.aIncentivesLastUpdateTimestamp
-          //        ) = incentivesController.getAssetData(reserveData.aTokenAddress);  TODO: temp fix
-        ) = incentivesController.assets(reserveData.aTokenAddress);
+        ) = incentivesController.getAssetData(reserveData.aTokenAddress);
 
         (
-          reserveData.sEmissionPerSecond,
           reserveData.sTokenIncentivesIndex,
+          reserveData.sEmissionPerSecond,
           reserveData.sIncentivesLastUpdateTimestamp
-          //        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);  TODO: temp fix
-        ) = incentivesController.assets(reserveData.stableDebtTokenAddress);
+        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
 
         (
-          reserveData.vEmissionPerSecond,
           reserveData.vTokenIncentivesIndex,
+          reserveData.vEmissionPerSecond,
           reserveData.vIncentivesLastUpdateTimestamp
-          //        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);  TODO: temp fix
-        ) = incentivesController.assets(reserveData.variableDebtTokenAddress);
+        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);
       }
     }
 
@@ -315,25 +312,22 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // incentives
       if (address(0) != address(incentivesController)) {
         (
-          reserveData.aEmissionPerSecond,
           reserveData.aTokenIncentivesIndex,
+          reserveData.aEmissionPerSecond,
           reserveData.aIncentivesLastUpdateTimestamp
-          //        ) = incentivesController.getAssetData(reserveData.aTokenAddress); TODO: temp fix
-        ) = incentivesController.assets(reserveData.aTokenAddress);
+        ) = incentivesController.getAssetData(reserveData.aTokenAddress);
 
         (
-          reserveData.sEmissionPerSecond,
           reserveData.sTokenIncentivesIndex,
+          reserveData.sEmissionPerSecond,
           reserveData.sIncentivesLastUpdateTimestamp
-          //        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress); TODO: temp fix
-        ) = incentivesController.assets(reserveData.stableDebtTokenAddress);
+        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
 
         (
-          reserveData.vEmissionPerSecond,
           reserveData.vTokenIncentivesIndex,
+          reserveData.vEmissionPerSecond,
           reserveData.vIncentivesLastUpdateTimestamp
-          //        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress); TODO: temp fix
-        ) = incentivesController.assets(reserveData.variableDebtTokenAddress);
+        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);
       }
 
       if (user != address(0)) {
