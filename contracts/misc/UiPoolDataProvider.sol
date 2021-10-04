@@ -109,7 +109,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // reserve configuration
 
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
-      reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
+      reserveData.symbol = IERC20Detailed(reserveData.aTokenAddress).symbol();
       reserveData.name = '';
 
       (
@@ -139,22 +139,22 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       if (address(0) != address(incentivesController)) {
         (
           reserveData.aEmissionPerSecond,
-          reserveData.aIncentivesLastUpdateTimestamp,
           reserveData.aTokenIncentivesIndex
+          reserveData.aIncentivesLastUpdateTimestamp,
           //        ) = incentivesController.getAssetData(reserveData.aTokenAddress);  TODO: temp fix
         ) = incentivesController.assets(reserveData.aTokenAddress);
 
         (
           reserveData.sEmissionPerSecond,
-          reserveData.sIncentivesLastUpdateTimestamp,
           reserveData.sTokenIncentivesIndex
+          reserveData.sIncentivesLastUpdateTimestamp,
           //        ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);  TODO: temp fix
         ) = incentivesController.assets(reserveData.stableDebtTokenAddress);
 
         (
           reserveData.vEmissionPerSecond,
-          reserveData.vIncentivesLastUpdateTimestamp,
           reserveData.vTokenIncentivesIndex
+          reserveData.vIncentivesLastUpdateTimestamp,
           //        ) = incentivesController.getAssetData(reserveData.variableDebtTokenAddress);  TODO: temp fix
         ) = incentivesController.assets(reserveData.variableDebtTokenAddress);
       }
@@ -286,7 +286,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // reserve configuration
 
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
-      reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
+      reserveData.symbol = IERC20Detailed(reserveData.aTokenAddress).symbol();
       reserveData.name = '';
 
       (
