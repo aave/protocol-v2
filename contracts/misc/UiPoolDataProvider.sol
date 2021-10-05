@@ -109,7 +109,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // reserve configuration
 
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
-      reserveData.symbol = IERC20Detailed(reserveData.aTokenAddress).symbol();
+      reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
       reserveData.name = '';
 
       (
@@ -142,13 +142,13 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           reserveData.aEmissionPerSecond,
           reserveData.aIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.aTokenAddress);
-
+     
         (
           reserveData.sTokenIncentivesIndex,
           reserveData.sEmissionPerSecond,
           reserveData.sIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
-
+     
         (
           reserveData.vTokenIncentivesIndex,
           reserveData.vEmissionPerSecond,
@@ -283,7 +283,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // reserve configuration
 
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
-      reserveData.symbol = IERC20Detailed(reserveData.aTokenAddress).symbol();
+      reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
       reserveData.name = '';
 
       (
@@ -315,14 +315,14 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           reserveData.aTokenIncentivesIndex,
           reserveData.aEmissionPerSecond,
           reserveData.aIncentivesLastUpdateTimestamp
-        ) = incentivesController.getAssetData(reserveData.aTokenAddress);
-
+        ) = incentivesController.getAssetData(reserveData.aTokenAddress); 
+     
         (
           reserveData.sTokenIncentivesIndex,
           reserveData.sEmissionPerSecond,
           reserveData.sIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
-
+     
         (
           reserveData.vTokenIncentivesIndex,
           reserveData.vEmissionPerSecond,
