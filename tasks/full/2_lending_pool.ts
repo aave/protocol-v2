@@ -15,7 +15,12 @@ import {
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { loadPoolConfig, ConfigNames } from '../../helpers/configuration';
+import {
+  loadPoolConfig,
+  ConfigNames,
+  getGenesisPoolAdmin,
+  getEmergencyAdmin,
+} from '../../helpers/configuration';
 
 task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -70,9 +75,9 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
         eContractid.LendingPoolConfigurator,
         lendingPoolConfiguratorProxy.address
       );
-
+      const admin = await DRE.ethers.getSigner(await getEmergencyAdmin(poolConfig));
       // Pause market during deployment
-      await waitForTx(await lendingPoolConfiguratorProxy.setPoolPause(true));
+      await waitForTx(await lendingPoolConfiguratorProxy.connect(admin).setPoolPause(true));
 
       // Deploy deployment helpers
       await deployStableAndVariableTokensHelper(
