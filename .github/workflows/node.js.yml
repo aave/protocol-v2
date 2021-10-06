@@ -40,10 +40,6 @@ jobs:
         run: npm run amm:fork:main
         env:
           ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
-      - name: Aave deployment at Kovan fork
-        run: npm run aave:fork:kovan
-        env:
-          ALCHEMY_KEY: ${{ secrets.ALCHEMY_KEY }}
       # - name: Coverage
       #   run: npm run coverage
       # - uses: codecov/codecov-action@v1
