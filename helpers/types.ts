@@ -4,7 +4,12 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eAvalancheNetwork;
+export type eNetwork =
+  | eEthereumNetwork
+  | ePolygonNetwork
+  | eXDaiNetwork
+  | eAvalancheNetwork
+  | eHarmonyNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -28,6 +33,11 @@ export enum eXDaiNetwork {
 export enum eAvalancheNetwork {
   avalanche = 'avalanche',
   fuji = 'fuji',
+}
+
+export enum eHarmonyNetwork {
+  harmony = 'harmony',
+  testnet = 'harmony-testnet',
 }
 
 export enum EthereumNetworkNames {
@@ -251,6 +261,12 @@ export interface iAssetBase<T> {
   STAKE: T;
   xSUSHI: T;
   WAVAX: T;
+  '1ETH': T;
+  '1WBTC': T;
+  '1USDT': T;
+  '1USDC': T;
+  '1DAI': T;
+  WONE: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -280,6 +296,12 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+  | '1ETH'
+  | '1WBTC'
+  | '1USDT'
+  | '1USDC'
+  | '1DAI'
+  | 'WONE'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -413,7 +435,8 @@ export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
   | iXDaiParamsPerNetwork<T>
-  | iAvalancheParamsPerNetwork<T>;
+  | iAvalancheParamsPerNetwork<T>
+  | iHarmonyParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T>
   extends iEthereumParamsPerNetwork<T>,
@@ -442,6 +465,11 @@ export interface iXDaiParamsPerNetwork<T> {
 export interface iAvalancheParamsPerNetwork<T> {
   [eAvalancheNetwork.avalanche]: T;
   [eAvalancheNetwork.fuji]: T;
+}
+
+export interface iHarmonyParamsPerNetwork<T> {
+  [eHarmonyNetwork.harmony]: T;
+  [eHarmonyNetwork.testnet]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -553,3 +581,12 @@ export interface ITokenAddress {
 }
 
 export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration;
+
+export interface IHarmonyConfiguration extends ICommonConfiguration {
+  ReservesConfig: iHarmonyPoolAssets<IReserveParams>;
+}
+
+export type iHarmonyPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  '1ETH' | '1DAI' | '1USDT' | '1WBTC' | 'WONE' | '1USDC'
+>;
