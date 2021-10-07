@@ -3,7 +3,6 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 
 interface IUiPoolDataProvider {
   struct AggregatedReserveData {
@@ -42,16 +41,6 @@ interface IUiPoolDataProvider {
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
-    // incentives
-    uint256 aEmissionPerSecond;
-    uint256 vEmissionPerSecond;
-    uint256 sEmissionPerSecond;
-    uint256 aIncentivesLastUpdateTimestamp;
-    uint256 vIncentivesLastUpdateTimestamp;
-    uint256 sIncentivesLastUpdateTimestamp;
-    uint256 aTokenIncentivesIndex;
-    uint256 vTokenIncentivesIndex;
-    uint256 sTokenIncentivesIndex;
   }
 
   struct UserReserveData {
@@ -62,23 +51,12 @@ interface IUiPoolDataProvider {
     uint256 scaledVariableDebt;
     uint256 principalStableDebt;
     uint256 stableBorrowLastUpdateTimestamp;
-    // incentives
-    uint256 aTokenincentivesUserIndex;
-    uint256 vTokenincentivesUserIndex;
-    uint256 sTokenincentivesUserIndex;
-  }
-
-  struct IncentivesControllerData {
-    uint256 userUnclaimedRewards;
-    uint256 emissionEndTimestamp;
   }
 
   function getReservesList(ILendingPoolAddressesProvider provider)
     external
     view
     returns (address[] memory);
-
-  function incentivesController() external view returns (IAaveIncentivesController);
 
   function getSimpleReservesData(ILendingPoolAddressesProvider provider)
     external
@@ -104,7 +82,6 @@ interface IUiPoolDataProvider {
     returns (
       AggregatedReserveData[] memory,
       UserReserveData[] memory,
-      uint256,
-      IncentivesControllerData memory
+      uint256
     );
 }
