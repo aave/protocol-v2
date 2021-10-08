@@ -63,25 +63,23 @@ interface IUiPoolDataProvider {
     view
     returns (
       AggregatedReserveData[] memory,
-      uint256, // usd price eth
-      uint256 // emission end timestamp
+      uint256 // usd price eth
     );
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
     returns (
-      UserReserveData[] memory,
-      uint256 // user unclaimed rewards
+      UserReserveData[] memory
     );
 
   // generic method with full data
-  function getReservesData(ILendingPoolAddressesProvider provider, address user)
-    external
-    view
-    returns (
-      AggregatedReserveData[] memory,
-      UserReserveData[] memory,
-      uint256
-    );
+  // function getReservesData(ILendingPoolAddressesProvider provider, address user)
+  //   external
+  //   view
+  //   returns (
+  //     AggregatedReserveData[] memory,
+  //     UserReserveData[] memory,
+  //     uint256
+  //   );
 }
