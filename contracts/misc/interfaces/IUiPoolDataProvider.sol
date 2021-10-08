@@ -63,7 +63,7 @@ interface IUiPoolDataProvider {
     view
     returns (address[] memory);
 
-  function getSimpleReservesData(ILendingPoolAddressesProvider provider)
+  function getReservesData(ILendingPoolAddressesProvider provider)
     external
     view
     returns (
@@ -76,15 +76,5 @@ interface IUiPoolDataProvider {
     view
     returns (
       UserReserveData[] memory
-    );
-
-  // generic method with full data
-  function getReservesData(ILendingPoolAddressesProvider provider, address user)
-    external
-    view
-    returns (
-      AggregatedReserveData[] memory,
-      UserReserveData[] memory,
-      BaseCurrencyInfo memory
     );
 }
