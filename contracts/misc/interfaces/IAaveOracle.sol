@@ -7,8 +7,8 @@ pragma solidity 0.6.12;
  **/
 
 interface IAaveOracle {
-  function BASE_CURRENCY() external view returns (address);
-  function BASE_CURRENCY_UNIT() external view returns (address);
+  function BASE_CURRENCY() external view returns (address); // if usd returns 0x0, if eth returns weth address
+  function BASE_CURRENCY_UNIT() external view returns (uint256); // if usd 8 
   function WETH() external view returns (address);
 
   /***********

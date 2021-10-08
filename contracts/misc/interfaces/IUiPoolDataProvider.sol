@@ -53,6 +53,11 @@ interface IUiPoolDataProvider {
     uint256 stableBorrowLastUpdateTimestamp;
   }
 
+  struct BaseCurrencyInfo {
+    uint256 baseCurrencyDecimals;
+    uint256 baseCurrencyPriceInUsd;
+  }
+
   function getReservesList(ILendingPoolAddressesProvider provider)
     external
     view
@@ -63,7 +68,7 @@ interface IUiPoolDataProvider {
     view
     returns (
       AggregatedReserveData[] memory,
-      uint256 // usd price eth
+      BaseCurrencyInfo memory
     );
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
@@ -74,12 +79,12 @@ interface IUiPoolDataProvider {
     );
 
   // generic method with full data
-  // function getReservesData(ILendingPoolAddressesProvider provider, address user)
-  //   external
-  //   view
-  //   returns (
-  //     AggregatedReserveData[] memory,
-  //     UserReserveData[] memory,
-  //     uint256
-  //   );
+  function getReservesData(ILendingPoolAddressesProvider provider, address user)
+    external
+    view
+    returns (
+      AggregatedReserveData[] memory,
+      UserReserveData[] memory,
+      BaseCurrencyInfo memory
+    );
 }

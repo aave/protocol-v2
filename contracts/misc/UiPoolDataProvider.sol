@@ -24,6 +24,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
+  uint256 public constant USD_PRICE = 100000000;
+  uint256 public constant ETH_CURRENCY_DECIMALS = 18;
 
   constructor() public {
   }
@@ -62,7 +64,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     override
     returns (
       AggregatedReserveData[] memory,
-      uint256
+      BaseCurrencyInfo memory
     )
   {
     IAaveOracle oracle = IAaveOracle(provider.getPriceOracle());
@@ -102,8 +104,6 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.totalScaledVariableDebt = IVariableDebtToken(reserveData.variableDebtTokenAddress)
         .scaledTotalSupply();
 
-      // reserve configuration
-
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
       reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
       reserveData.name = '';
@@ -132,7 +132,20 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       );
     }
 
-    return (reservesData, oracle.getAssetPrice(MOCK_USD_ADDRESS));
+    BaseCurrencyInfo memory baseCurrencyInfo;
+    try oracle.BASE_CURRENCY_UNIT() returns (uint256 baseCurrencyUnit) {        
+      baseCurrencyInfo.baseCurrencyDecimals = baseCurrencyUnit;
+      if (address(0) == oracle.BASE_CURRENCY()) {
+        baseCurrencyInfo.baseCurrencyPriceInUsd = USD_PRICE;
+      } else {
+        baseCurrencyInfo.baseCurrencyPriceInUsd = oracle.getAssetPrice(MOCK_USD_ADDRESS);
+      }
+    } catch (bytes memory /*lowLevelData*/) {  
+      baseCurrencyInfo.baseCurrencyDecimals = ETH_CURRENCY_DECIMALS;
+      baseCurrencyInfo.baseCurrencyPriceInUsd = oracle.getAssetPrice(MOCK_USD_ADDRESS);
+    }
+
+    return (reservesData, baseCurrencyInfo);
   }
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
@@ -181,123 +194,135 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     return (userReservesData);
   }
 
-  // function getReservesData(ILendingPoolAddressesProvider provider, address user)
-  //   external
-  //   view
-  //   override
-  //   returns (
-  //     AggregatedReserveData[] memory,
-  //     UserReserveData[] memory,
-  //     uint256
-  //   )
-  // {
-  //   IAaveOracle oracle = IAaveOracle(provider.getPriceOracle());
-  //   ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
-  //   address[] memory reserves = lendingPool.getReservesList();
-  //   DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
+  function getReservesData(ILendingPoolAddressesProvider provider, address user)
+    external
+    view
+    override
+    returns (
+      AggregatedReserveData[] memory,
+      UserReserveData[] memory,
+      BaseCurrencyInfo memory
+    )
+  {
+    IAaveOracle oracle = IAaveOracle(provider.getPriceOracle());
+    ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
+    address[] memory reserves = lendingPool.getReservesList();
+    DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
-  //   AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
-  //   UserReserveData[] memory userReservesData =
-  //     new UserReserveData[](user != address(0) ? reserves.length : 0);
+    AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
+    UserReserveData[] memory userReservesData =
+      new UserReserveData[](user != address(0) ? reserves.length : 0);
 
-  //   for (uint256 i = 0; i < reserves.length; i++) {
-  //     AggregatedReserveData memory reserveData = reservesData[i];
-  //     reserveData.underlyingAsset = reserves[i];
+    for (uint256 i = 0; i < reserves.length; i++) {
+      AggregatedReserveData memory reserveData = reservesData[i];
+      reserveData.underlyingAsset = reserves[i];
 
-  //     // reserve current state
-  //     DataTypes.ReserveData memory baseData =
-  //       lendingPool.getReserveData(reserveData.underlyingAsset);
-  //     reserveData.liquidityIndex = baseData.liquidityIndex;
-  //     reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
-  //     reserveData.liquidityRate = baseData.currentLiquidityRate;
-  //     reserveData.variableBorrowRate = baseData.currentVariableBorrowRate;
-  //     reserveData.stableBorrowRate = baseData.currentStableBorrowRate;
-  //     reserveData.lastUpdateTimestamp = baseData.lastUpdateTimestamp;
-  //     reserveData.aTokenAddress = baseData.aTokenAddress;
-  //     reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
-  //     reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
-  //     reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
-  //     reserveData.priceInEth = oracle.getAssetPrice(reserveData.underlyingAsset);
+      // reserve current state
+      DataTypes.ReserveData memory baseData =
+        lendingPool.getReserveData(reserveData.underlyingAsset);
+      reserveData.liquidityIndex = baseData.liquidityIndex;
+      reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
+      reserveData.liquidityRate = baseData.currentLiquidityRate;
+      reserveData.variableBorrowRate = baseData.currentVariableBorrowRate;
+      reserveData.stableBorrowRate = baseData.currentStableBorrowRate;
+      reserveData.lastUpdateTimestamp = baseData.lastUpdateTimestamp;
+      reserveData.aTokenAddress = baseData.aTokenAddress;
+      reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
+      reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
+      reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
+      reserveData.priceInEth = oracle.getAssetPrice(reserveData.underlyingAsset);
 
-  //     reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
-  //       reserveData.aTokenAddress
-  //     );
-  //     (
-  //       reserveData.totalPrincipalStableDebt,
-  //       ,
-  //       reserveData.averageStableRate,
-  //       reserveData.stableDebtLastUpdateTimestamp
-  //     ) = IStableDebtToken(reserveData.stableDebtTokenAddress).getSupplyData();
-  //     reserveData.totalScaledVariableDebt = IVariableDebtToken(reserveData.variableDebtTokenAddress)
-  //       .scaledTotalSupply();
+      reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
+        reserveData.aTokenAddress
+      );
+      (
+        reserveData.totalPrincipalStableDebt,
+        ,
+        reserveData.averageStableRate,
+        reserveData.stableDebtLastUpdateTimestamp
+      ) = IStableDebtToken(reserveData.stableDebtTokenAddress).getSupplyData();
+      reserveData.totalScaledVariableDebt = IVariableDebtToken(reserveData.variableDebtTokenAddress)
+        .scaledTotalSupply();
 
-  //     // reserve configuration
+      // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
+      reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
+      reserveData.name = '';
 
-  //     // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
-  //     reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
-  //     reserveData.name = '';
+      (
+        reserveData.baseLTVasCollateral,
+        reserveData.reserveLiquidationThreshold,
+        reserveData.reserveLiquidationBonus,
+        reserveData.decimals,
+        reserveData.reserveFactor
+      ) = baseData.configuration.getParamsMemory();
+      (
+        reserveData.isActive,
+        reserveData.isFrozen,
+        reserveData.borrowingEnabled,
+        reserveData.stableBorrowRateEnabled
+      ) = baseData.configuration.getFlagsMemory();
+      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
+      (
+        reserveData.variableRateSlope1,
+        reserveData.variableRateSlope2,
+        reserveData.stableRateSlope1,
+        reserveData.stableRateSlope2
+      ) = getInterestRateStrategySlopes(
+        DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
+      );
 
-  //     (
-  //       reserveData.baseLTVasCollateral,
-  //       reserveData.reserveLiquidationThreshold,
-  //       reserveData.reserveLiquidationBonus,
-  //       reserveData.decimals,
-  //       reserveData.reserveFactor
-  //     ) = baseData.configuration.getParamsMemory();
-  //     (
-  //       reserveData.isActive,
-  //       reserveData.isFrozen,
-  //       reserveData.borrowingEnabled,
-  //       reserveData.stableBorrowRateEnabled
-  //     ) = baseData.configuration.getFlagsMemory();
-  //     reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
-  //     (
-  //       reserveData.variableRateSlope1,
-  //       reserveData.variableRateSlope2,
-  //       reserveData.stableRateSlope1,
-  //       reserveData.stableRateSlope2
-  //     ) = getInterestRateStrategySlopes(
-  //       DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
-  //     );
+      if (user != address(0)) {
+        // user reserve data
+        userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
+        userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
+          .scaledBalanceOf(user);
+        userReservesData[i].usageAsCollateralEnabledOnUser = userConfig.isUsingAsCollateral(i);
 
-  //     if (user != address(0)) {
-  //       // user reserve data
-  //       userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
-  //       userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
-  //         .scaledBalanceOf(user);
-  //       userReservesData[i].usageAsCollateralEnabledOnUser = userConfig.isUsingAsCollateral(i);
+        if (userConfig.isBorrowing(i)) {
+          userReservesData[i].scaledVariableDebt = IVariableDebtToken(
+            reserveData
+              .variableDebtTokenAddress
+          )
+            .scaledBalanceOf(user);
+          userReservesData[i].principalStableDebt = IStableDebtToken(
+            reserveData
+              .stableDebtTokenAddress
+          )
+            .principalBalanceOf(user);
+          if (userReservesData[i].principalStableDebt != 0) {
+            userReservesData[i].stableBorrowRate = IStableDebtToken(
+              reserveData
+                .stableDebtTokenAddress
+            )
+              .getUserStableRate(user);
+            userReservesData[i].stableBorrowLastUpdateTimestamp = IStableDebtToken(
+              reserveData
+                .stableDebtTokenAddress
+            )
+              .getUserLastUpdated(user);
+          }
+        }
+      }
+    }
 
-  //       if (userConfig.isBorrowing(i)) {
-  //         userReservesData[i].scaledVariableDebt = IVariableDebtToken(
-  //           reserveData
-  //             .variableDebtTokenAddress
-  //         )
-  //           .scaledBalanceOf(user);
-  //         userReservesData[i].principalStableDebt = IStableDebtToken(
-  //           reserveData
-  //             .stableDebtTokenAddress
-  //         )
-  //           .principalBalanceOf(user);
-  //         if (userReservesData[i].principalStableDebt != 0) {
-  //           userReservesData[i].stableBorrowRate = IStableDebtToken(
-  //             reserveData
-  //               .stableDebtTokenAddress
-  //           )
-  //             .getUserStableRate(user);
-  //           userReservesData[i].stableBorrowLastUpdateTimestamp = IStableDebtToken(
-  //             reserveData
-  //               .stableDebtTokenAddress
-  //           )
-  //             .getUserLastUpdated(user);
-  //         }
-  //       }
-  //     }
-  //   }
+    BaseCurrencyInfo memory baseCurrencyInfo;
+    try oracle.BASE_CURRENCY_UNIT() returns (uint256 baseCurrencyUnit) {        
+      baseCurrencyInfo.baseCurrencyDecimals = baseCurrencyUnit;
+      if (address(0) == oracle.BASE_CURRENCY()) {
+        baseCurrencyInfo.baseCurrencyPriceInUsd = USD_PRICE;
+      } else {
+        baseCurrencyInfo.baseCurrencyPriceInUsd = oracle.getAssetPrice(MOCK_USD_ADDRESS);
+      }
+    } catch (bytes memory /*lowLevelData*/) {  
+      baseCurrencyInfo.baseCurrencyDecimals = ETH_CURRENCY_DECIMALS;
+      baseCurrencyInfo.baseCurrencyPriceInUsd = oracle.getAssetPrice(MOCK_USD_ADDRESS);
+    }
 
-  //   return (
-  //     reservesData,
-  //     userReservesData,
-  //     oracle.getAssetPrice(MOCK_USD_ADDRESS),
-  //   );
-  // }
+    return (
+      reservesData,
+      userReservesData,
+      baseCurrencyInfo
+    );
+  }
+
 }
