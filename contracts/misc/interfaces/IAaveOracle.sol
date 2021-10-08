@@ -7,9 +7,9 @@ pragma solidity 0.6.12;
  **/
 
 interface IAaveOracle {
-  address public immutable BASE_CURRENCY;
-  uint256 public immutable BASE_CURRENCY_UNIT;
-  address public immutable WETH;
+  function BASE_CURRENCY() external view returns (address);
+  function BASE_CURRENCY_UNIT() external view returns (address);
+  function WETH() external view returns (address);
 
   /***********
     @dev returns the asset price in ETH
