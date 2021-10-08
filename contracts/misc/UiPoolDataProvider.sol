@@ -89,8 +89,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
       reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
       reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
-      // TODO: change naming to base something
-      reserveData.priceInEth = oracle.getAssetPrice(reserveData.underlyingAsset);
+      reserveData.priceInMarketReferenceCurrency = oracle.getAssetPrice(reserveData.underlyingAsset);
 
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
@@ -230,7 +229,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
       reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
       reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
-      reserveData.priceInEth = oracle.getAssetPrice(reserveData.underlyingAsset);
+      reserveData.priceInMarketReferenceCurrency = oracle.getAssetPrice(reserveData.underlyingAsset);
 
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
