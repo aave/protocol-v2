@@ -87,6 +87,9 @@ export enum eContractid {
   UniswapLiquiditySwapAdapter = 'UniswapLiquiditySwapAdapter',
   UniswapRepayAdapter = 'UniswapRepayAdapter',
   FlashLiquidationAdapter = 'FlashLiquidationAdapter',
+  StaticAToken = 'StaticAToken',
+  StaticATokenLM = 'StaticATokenLM',
+  StaticATokenLMProxy = 'StaticATokenLMProxy',
 }
 
 /*

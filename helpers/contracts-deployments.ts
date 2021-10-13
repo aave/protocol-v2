@@ -1,5 +1,5 @@
 import { Contract } from 'ethers';
-import { DRE } from './misc-utils';
+import { DRE, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -49,6 +49,8 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  StaticATokenFactory,
+  StaticATokenLMFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -637,3 +639,58 @@ export const deployFlashLiquidationAdapter = async (
     args,
     verify
   );
+
+export const deployStaticAToken = async (
+  [pool, aTokenAddress, symbol]: [tEthereumAddress, tEthereumAddress, string],
+  verify?: boolean
+) => {
+  const args: [string, string, string, string] = [pool, aTokenAddress, `Wrapped ${symbol}`, symbol];
+
+  withSaveAndVerify(
+    await new StaticATokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.StaticAToken,
+    args,
+    verify
+  );
+};
+
+export const deployStaticATokenLM = async (
+  [pool, aTokenAddress, symbol, proxyAdmin]: [
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    tEthereumAddress
+  ],
+  verify?: boolean
+) => {
+  const args: [string, string, string, string] = [pool, aTokenAddress, `Wrapped ${symbol}`, symbol];
+
+  const staticATokenImplementation = await withSaveAndVerify(
+    await new StaticATokenLMFactory(await getFirstSigner()).deploy(),
+    eContractid.StaticATokenLM,
+    args,
+    verify
+  );
+
+  const proxy = await deployInitializableAdminUpgradeabilityProxy(verify);
+
+  await registerContractInJsonDb(eContractid.StaticATokenLMProxy, proxy);
+  const encodedInitializedParams = staticATokenImplementation.interface.encodeFunctionData(
+    'initialize',
+    [...args]
+  );
+
+  // Initialize implementation to prevent others to do it
+  await staticATokenImplementation.initialize(...args);
+
+  // Initialize proxy
+  await waitForTx(
+    await proxy['initialize(address,address,bytes)'](
+      staticATokenImplementation.address,
+      proxyAdmin,
+      encodedInitializedParams
+    )
+  );
+
+  return { proxy: proxy.address, implementation: staticATokenImplementation.address };
+};
