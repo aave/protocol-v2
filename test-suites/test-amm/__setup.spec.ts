@@ -13,7 +13,6 @@ import {
   deployLendingPoolConfigurator,
   deployLendingPool,
   deployPriceOracle,
-  deployAaveOracle,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
   deployWalletBalancerProvider,
@@ -28,6 +27,8 @@ import {
   deployUniswapRepayAdapter,
   deployFlashLiquidationAdapter,
   authorizeWETHGateway,
+  deployATokenImplementations,
+  deployAaveOracle,
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
@@ -48,7 +49,7 @@ import {
 import { DRE, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
 import AmmConfig from '../../markets/amm';
-import { ZERO_ADDRESS } from '../../helpers/constants';
+import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getLendingPool,
   getLendingPoolConfiguratorProxy,
@@ -95,6 +96,14 @@ const deployAllMockTokens = async (deployer: Signer) => {
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');
   const aaveAdmin = await deployer.getAddress();
+  const config = loadPoolConfig(ConfigNames.Amm);
+  const {
+    ATokenNamePrefix,
+    StableDebtTokenNamePrefix,
+    VariableDebtTokenNamePrefix,
+    SymbolPrefix,
+    ReservesConfig,
+  } = config;
 
   const mockTokens = await deployAllMockTokens(deployer);
 
@@ -189,6 +198,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       WMATIC: mockTokens.WMATIC.address,
       USD: USD_ADDRESS,
       STAKE: mockTokens.STAKE.address,
+      xSUSHI: ZERO_ADDRESS,
     },
     fallbackOracle
   );
@@ -210,9 +220,19 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {}
   );
 
-  const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
+  const [tokens, aggregators] = getPairsTokenAggregator(
+    allTokenAddresses,
+    allAggregatorsAddresses,
+    config.OracleQuoteCurrency
+  );
 
-  await deployAaveOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address]);
+  await deployAaveOracle([
+    tokens,
+    aggregators,
+    fallbackOracle.address,
+    mockTokens.WETH.address,
+    oneEther.toString(),
+  ]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
   const lendingRateOracle = await deployLendingRateOracle();
@@ -228,8 +248,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     lendingRateOracle,
     aaveAdmin
   );
-
-  const reservesParams = getReservesConfigByPool(AavePools.amm);
+  await deployATokenImplementations(ConfigNames.Amm, ReservesConfig);
 
   const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address);
 
@@ -238,18 +257,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   console.log('Initialize configuration');
 
-  const config = loadPoolConfig(ConfigNames.Amm);
-
-  const {
-    ATokenNamePrefix,
-    StableDebtTokenNamePrefix,
-    VariableDebtTokenNamePrefix,
-    SymbolPrefix,
-  } = config;
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(
-    reservesParams,
+    ReservesConfig,
     allReservesAddresses,
     ATokenNamePrefix,
     StableDebtTokenNamePrefix,
@@ -258,9 +269,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     admin,
     treasuryAddress,
     ZERO_ADDRESS,
+    ConfigNames.Amm,
     false
   );
-  await configureReservesByHelper(reservesParams, allReservesAddresses, testHelpers, admin);
+  await configureReservesByHelper(ReservesConfig, allReservesAddresses, testHelpers, admin);
 
   const collateralManager = await deployLendingPoolCollateralManager();
   await waitForTx(
@@ -294,7 +306,7 @@ before(async () => {
   const FORK = process.env.FORK;
 
   if (FORK) {
-    await rawBRE.run('amm:mainnet');
+    await rawBRE.run('amm:mainnet', { skipRegistry: true });
   } else {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);

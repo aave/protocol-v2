@@ -19,6 +19,7 @@ export const CommonsConfig: ICommonConfiguration = {
   VariableDebtTokenNamePrefix: 'Aave XDAI Market variable debt',
   SymbolPrefix: 'm',
   ProviderId: 0, // Overriden in index.ts
+  OracleQuoteCurrency: 'ETH',
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '5848466240000000',
