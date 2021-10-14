@@ -14,6 +14,7 @@ import {
   AToken,
   StaticAToken,
   StaticATokenLM,
+  InitializableAdminUpgradeabilityProxyFactory,
 } from '../../../../types';
 import { IAaveIncentivesControllerFactory } from '../../../../types/IAaveIncentivesControllerFactory';
 import {
@@ -68,6 +69,7 @@ const LM_ERRORS = {
   INVALID_RECIPIENT: '5',
   INVALID_CLAIMER: '6',
   ONLY_ONE_AMOUNT_FORMAT_ALLOWED: '7',
+  ONLY_PROXY_MAY_CALL: '8',
 };
 
 type tBalancesInvolved = {
@@ -147,6 +149,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity m
 
   let enjWhale: providers.JsonRpcSigner;
 
+  let staticATokenImplementation: StaticATokenLM;
   let staticAToken: StaticATokenLM;
 
   let snap: string;
@@ -167,8 +170,25 @@ describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity m
     aenj = ATokenFactory.connect(AENJ, userSigner);
     stkAave = ERC20Factory.connect(STKAAVE, userSigner);
 
-    staticAToken = await new StaticATokenLMFactory(userSigner).deploy();
-    await staticAToken.initialize(LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj');
+    staticATokenImplementation = await new StaticATokenLMFactory(userSigner).deploy();
+    await staticATokenImplementation.initialize(LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj');
+
+    const proxy = await new InitializableAdminUpgradeabilityProxyFactory(userSigner).deploy();
+    const encodedInitializedParams = staticATokenImplementation.interface.encodeFunctionData(
+      'initialize',
+      [LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj']
+    );
+
+    await proxy['initialize(address,address,bytes)'](
+      staticATokenImplementation.address,
+      zeroAddress(),
+      encodedInitializedParams
+    );
+
+    staticAToken = StaticATokenLMFactory.connect(proxy.address, userSigner);
+
+    expect(await staticATokenImplementation.isImplementation()).to.be.eq(true);
+    expect(await staticAToken.isImplementation()).to.be.eq(false);
 
     expect(await staticAToken.getIncentivesController()).to.be.eq(zeroAddress());
     expect(await staticAToken.ASSET()).to.be.eq(await staticAToken.UNDERLYING_ASSET_ADDRESS());
@@ -197,6 +217,27 @@ describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity m
 
   after(async () => {
     await evmRevert(snap);
+  });
+
+  it('Deposit ENJ directly to implementation (expect revert)', async () => {
+    const amountToDeposit = utils.parseEther('5');
+    const amountToWithdraw = MAX_UINT_AMOUNT;
+
+    // Just preparation
+    await waitForTx(
+      await enj.approve(staticATokenImplementation.address, amountToDeposit, defaultTxParams)
+    );
+
+    // Depositing
+    await expect(
+      staticATokenImplementation.deposit(
+        userSigner._address,
+        amountToDeposit,
+        0,
+        true,
+        defaultTxParams
+      )
+    ).to.be.revertedWith(LM_ERRORS.ONLY_PROXY_MAY_CALL);
   });
 
   it('Deposit ENJ on waaenj, then withdraw of the whole balance in underlying', async () => {

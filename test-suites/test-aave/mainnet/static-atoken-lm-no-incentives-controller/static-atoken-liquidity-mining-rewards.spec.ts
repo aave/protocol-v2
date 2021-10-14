@@ -10,6 +10,8 @@ import {
   WETH9,
   AToken,
   StaticATokenLM,
+  InitializableAdminUpgradeabilityProxyFactory,
+  StaticAToken,
 } from '../../../../types';
 import {
   impersonateAccountsHardhat,
@@ -27,6 +29,7 @@ import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 
 import { expect, use } from 'chai';
+import { zeroAddress } from 'hardhat/node_modules/ethereumjs-util';
 
 //use(solidity);
 
@@ -80,6 +83,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity m
   let enj: ERC20;
   let aenj: AToken;
 
+  let staticATokenImplementation: StaticATokenLM;
   let staticAToken: StaticATokenLM;
 
   let snap: string;
@@ -99,8 +103,25 @@ describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity m
     aenj = ATokenFactory.connect(AENJ, userSigner);
     stkAave = ERC20Factory.connect(STKAAVE, userSigner);
 
-    staticAToken = await new StaticATokenLMFactory(userSigner).deploy();
-    await staticAToken.initialize(LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj');
+    staticATokenImplementation = await new StaticATokenLMFactory(userSigner).deploy();
+    await staticATokenImplementation.initialize(LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj');
+
+    const proxy = await new InitializableAdminUpgradeabilityProxyFactory(userSigner).deploy();
+    const encodedInitializedParams = staticATokenImplementation.interface.encodeFunctionData(
+      'initialize',
+      [LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj']
+    );
+
+    await proxy['initialize(address,address,bytes)'](
+      staticATokenImplementation.address,
+      zeroAddress(),
+      encodedInitializedParams
+    );
+
+    staticAToken = StaticATokenLMFactory.connect(proxy.address, userSigner);
+
+    expect(await staticATokenImplementation.isImplementation()).to.be.eq(true);
+    expect(await staticAToken.isImplementation()).to.be.eq(false);
 
     expect(await staticAToken.decimals()).to.be.eq(18);
     expect(await staticAToken.name()).to.be.eq('Wrapped aENJ');
@@ -264,7 +285,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity m
       const bGas = BigNumber.from(bReceipt['gasUsed']);
 
       expect(aGas).to.be.gt(250000);
-      expect(bGas).to.be.lt(200000);
+      expect(bGas).to.be.lt(210000);
 
       await DRE.network.provider.send('evm_setAutomine', [true]);
       await DRE.network.provider.send('evm_mine', []);
@@ -296,8 +317,8 @@ describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity m
       const aGas = BigNumber.from(aReceipt['gasUsed']);
       const bGas = BigNumber.from(bReceipt['gasUsed']);
 
-      expect(aGas).to.be.lt(25000);
-      expect(bGas).to.be.lt(25000);
+      expect(aGas).to.be.lt(35000);
+      expect(bGas).to.be.lt(35000);
 
       await DRE.network.provider.send('evm_setAutomine', [true]);
     });

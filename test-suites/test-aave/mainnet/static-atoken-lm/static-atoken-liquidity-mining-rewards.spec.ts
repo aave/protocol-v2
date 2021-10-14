@@ -10,6 +10,7 @@ import {
   WETH9,
   AToken,
   StaticATokenLM,
+  InitializableAdminUpgradeabilityProxyFactory,
 } from '../../../../types';
 import {
   impersonateAccountsHardhat,
@@ -27,6 +28,7 @@ import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 
 import { expect, use } from 'chai';
+import { zeroAddress } from 'ethereumjs-util';
 
 //use(solidity);
 
@@ -81,6 +83,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
   let aweth: AToken;
   let stkAave: ERC20;
 
+  let staticATokenImplementation: StaticATokenLM;
   let staticAToken: StaticATokenLM;
 
   let snap: string;
@@ -97,13 +100,30 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     aweth = ATokenFactory.connect(AWETH, userSigner);
     stkAave = ERC20Factory.connect(STKAAVE, userSigner);
 
-    staticAToken = await new StaticATokenLMFactory(userSigner).deploy();
-    await staticAToken.initialize(
+    staticATokenImplementation = await new StaticATokenLMFactory(userSigner).deploy();
+    await staticATokenImplementation.initialize(
       LENDING_POOL,
       AWETH,
       'Static Aave Interest Bearing WETH',
       'stataWETH'
     );
+
+    const proxy = await new InitializableAdminUpgradeabilityProxyFactory(userSigner).deploy();
+    const encodedInitializedParams = staticATokenImplementation.interface.encodeFunctionData(
+      'initialize',
+      [LENDING_POOL, AWETH, 'Static Aave Interest Bearing WETH', 'stataWETH']
+    );
+
+    await proxy['initialize(address,address,bytes)'](
+      staticATokenImplementation.address,
+      zeroAddress(),
+      encodedInitializedParams
+    );
+
+    staticAToken = StaticATokenLMFactory.connect(proxy.address, userSigner);
+
+    expect(await staticATokenImplementation.isImplementation()).to.be.eq(true);
+    expect(await staticAToken.isImplementation()).to.be.eq(false);
 
     expect(await staticAToken.decimals()).to.be.eq(18);
     expect(await staticAToken.name()).to.be.eq('Static Aave Interest Bearing WETH');

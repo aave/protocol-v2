@@ -70,6 +70,17 @@ contract StaticATokenLM is
   // user => unclaimedRewards (in RAYs)
   mapping(address => uint256) private _unclaimedRewards;
 
+  bool public isImplementation;
+
+  modifier onlyProxy() {
+    require(isImplementation == false, StaticATokenErrors.ONLY_PROXY_MAY_CALL);
+    _;
+  }
+
+  constructor() public {
+    isImplementation = true;
+  }
+
   ///@inheritdoc VersionedInitializable
   function getRevision() internal pure virtual override returns (uint256) {
     return STATIC_ATOKEN_LM_REVISION;
@@ -294,7 +305,7 @@ contract StaticATokenLM is
     uint256 amount,
     uint16 referralCode,
     bool fromUnderlying
-  ) internal returns (uint256) {
+  ) internal onlyProxy returns (uint256) {
     require(recipient != address(0), StaticATokenErrors.INVALID_RECIPIENT);
     _updateRewards();
 
