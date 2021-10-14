@@ -90,10 +90,12 @@ export const verifyAtPolygon = async (
     console.log(
       `[Polygon Verify] Verifying ${id} with address ${instance.address} at Matic ${net} network`
     );
+
     const response = await axios.post(
-      `https://explorer-${net}.maticvigil.com/api`,
+      `https://api.polygonscan.com/api`,
       {
         addressHash: instance.address,
+        apikey: process.env.POLYGON_APIKEY,
         name: id,
         compilerVersion: 'v0.6.12+commit.27d51765',
         optimization: 'true',
@@ -120,7 +122,7 @@ export const verifyAtPolygon = async (
     }
 
     throw Error(JSON.stringify(response.data, null, 2));
-  } catch (error) {
+  } catch (error: any) {
     if (error?.message.includes('Smart-contract already verified.')) {
       console.log(
         `[Polygon Verify] Already verified. Check it at: https://explorer-${net}.maticvigil.com/address/${instance.address}/contracts) \n`

@@ -88,6 +88,7 @@
     "print-config:kovan": "hardhat --network kovan print-config --pool Aave --data-provider 0xA1901785c29cBd48bfA74e46b67C736b26054fa4",
     "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --verify",
     "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify",
+    "external:deploy-assets-matic": "npm run compile && hardhat --network matic external:deploy-matic-asset --symbol ${SYMBOL} --verify",
     "prepublishOnly": "npm run compile"
   },
   "devDependencies": {
@@ -120,7 +121,7 @@
     "ethereumjs-util": "7.0.2",
     "ethers": "^5.0.19",
     "globby": "^11.0.1",
-    "hardhat": "^2.2.0",
+    "hardhat": "^2.6.5",
     "hardhat-gas-reporter": "^1.0.0",
     "hardhat-typechain": "^0.3.3",
     "husky": "^4.2.5",
