@@ -3,16 +3,12 @@ import bnjs from 'bignumber.js';
 import { solidity } from 'ethereum-waffle';
 import {
   LendingPoolFactory,
-  WETH9Factory,
-  StaticATokenFactory,
   ATokenFactory,
   ERC20,
   LendingPool,
   StaticATokenLMFactory,
   ERC20Factory,
-  WETH9,
   AToken,
-  StaticAToken,
   StaticATokenLM,
   InitializableAdminUpgradeabilityProxyFactory,
 } from '../../../../types';
@@ -23,10 +19,8 @@ import {
   waitForTx,
   evmRevert,
   evmSnapshot,
-  timeLatest,
-  advanceTimeAndBlock,
 } from '../../../../helpers/misc-utils';
-import { BigNumber, providers, Signer, utils } from 'ethers';
+import { BigNumber, providers, utils } from 'ethers';
 import { rayDiv, rayMul } from '../../../../helpers/ray-math';
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../../../helpers/constants';
 import { tEthereumAddress } from '../../../../helpers/types';

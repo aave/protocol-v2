@@ -1,17 +1,14 @@
-import rawDRE, { ethers } from 'hardhat';
+import rawDRE from 'hardhat';
 import {
   LendingPoolFactory,
-  WETH9Factory,
   ATokenFactory,
   ERC20,
   LendingPool,
   StaticATokenLMFactory,
   ERC20Factory,
-  WETH9,
   AToken,
   StaticATokenLM,
   InitializableAdminUpgradeabilityProxyFactory,
-  StaticAToken,
 } from '../../../../types';
 import {
   impersonateAccountsHardhat,
@@ -19,16 +16,15 @@ import {
   waitForTx,
   evmRevert,
   evmSnapshot,
-  timeLatest,
   advanceTimeAndBlock,
 } from '../../../../helpers/misc-utils';
 import { BigNumber, providers, Signer, utils } from 'ethers';
-import { MAX_UINT_AMOUNT, USD_ADDRESS } from '../../../../helpers/constants';
-import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
+import { MAX_UINT_AMOUNT } from '../../../../helpers/constants';
+import { formatEther } from 'ethers/lib/utils';
 
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 
-import { expect, use } from 'chai';
+import { expect } from 'chai';
 import { zeroAddress } from 'hardhat/node_modules/ethereumjs-util';
 
 //use(solidity);

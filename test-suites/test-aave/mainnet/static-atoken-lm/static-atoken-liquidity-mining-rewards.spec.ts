@@ -1,4 +1,4 @@
-import rawDRE, { ethers } from 'hardhat';
+import rawDRE from 'hardhat';
 import {
   LendingPoolFactory,
   WETH9Factory,
@@ -13,24 +13,20 @@ import {
   InitializableAdminUpgradeabilityProxyFactory,
 } from '../../../../types';
 import {
-  impersonateAccountsHardhat,
   DRE,
   waitForTx,
   evmRevert,
   evmSnapshot,
-  timeLatest,
   advanceTimeAndBlock,
 } from '../../../../helpers/misc-utils';
 import { BigNumber, providers, Signer, utils } from 'ethers';
-import { MAX_UINT_AMOUNT, USD_ADDRESS } from '../../../../helpers/constants';
-import { AbiCoder, formatEther, verifyTypedData } from 'ethers/lib/utils';
+import { MAX_UINT_AMOUNT } from '../../../../helpers/constants';
+import { formatEther } from 'ethers/lib/utils';
 
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 
-import { expect, use } from 'chai';
+import { expect } from 'chai';
 import { zeroAddress } from 'ethereumjs-util';
-
-//use(solidity);
 
 const DEFAULT_GAS_LIMIT = 10000000;
 const DEFAULT_GAS_PRICE = utils.parseUnits('100', 'gwei');
