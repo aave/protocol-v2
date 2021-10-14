@@ -79,11 +79,14 @@ export const deployUiIncentiveDataProvider = async (verify?: boolean) =>
     verify
   );
 
-export const deployUiPoolDataProvider = async (verify?: boolean) =>
+export const deployUiPoolDataProvider = async (
+  chainlinkAggregatorProxy: string,
+  verify?: boolean
+) =>
   withSaveAndVerify(
-    await new UiPoolDataProviderFactory(await getFirstSigner()).deploy(),
+    await new UiPoolDataProviderFactory(await getFirstSigner()).deploy(chainlinkAggregatorProxy),
     eContractid.UiPoolDataProvider,
-    [],
+    [chainlinkAggregatorProxy],
     verify
   );
 

@@ -14,6 +14,7 @@ import {WadRayMath} from '../protocol/libraries/math/WadRayMath.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
 import {
   DefaultReserveInterestRateStrategy
 } from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
@@ -24,10 +25,13 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
   address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
+  IChainlinkAggregator public _networkBaseTokenPriceInUsdProxyAggregator;
   uint256 public constant USD_PRICE = 100000000;
   uint256 public constant ETH_CURRENCY_DECIMALS = 18;
 
-  constructor() public {
+
+  constructor(IChainlinkAggregator networkBaseTokenPriceInUsdProxyAggregator) public {
+    _networkBaseTokenPriceInUsdProxyAggregator = networkBaseTokenPriceInUsdProxyAggregator;
   }
 
   function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
@@ -132,6 +136,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     }
 
     BaseCurrencyInfo memory baseCurrencyInfo;
+    baseCurrencyInfo.networkBaseTokenPriceInUsd = _networkBaseTokenPriceInUsdProxyAggregator.latestAnswer();
+    baseCurrencyInfo.networkBaseTokenDecimals = _networkBaseTokenPriceInUsdProxyAggregator.decimals();
+
     try oracle.BASE_CURRENCY_UNIT() returns (uint256 baseCurrencyUnit) {        
       baseCurrencyInfo.baseCurrencyDecimals = baseCurrencyUnit;
       if (address(0) == oracle.BASE_CURRENCY()) {

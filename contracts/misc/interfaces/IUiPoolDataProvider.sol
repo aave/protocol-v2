@@ -56,6 +56,8 @@ interface IUiPoolDataProvider {
   struct BaseCurrencyInfo {
     uint256 baseCurrencyDecimals;
     uint256 baseCurrencyPriceInUsd;
+    int256 networkBaseTokenPriceInUsd;
+    uint8 networkBaseTokenDecimals;
   }
 
   function getReservesList(ILendingPoolAddressesProvider provider)
