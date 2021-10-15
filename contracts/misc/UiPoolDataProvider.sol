@@ -24,14 +24,17 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
-  IChainlinkAggregator public _networkBaseTokenPriceInUsdProxyAggregator;
-  uint256 public constant USD_PRICE = 100000000;
-  uint256 public constant ETH_CURRENCY_DECIMALS = 18;
+  IChainlinkAggregator public networkBaseTokenPriceInUsdProxyAggregator;
+  IChainlinkAggregator public marketReferenceCurrencyPriceInUsdProxyAggregator;
+  uint256 public constant ETH_CURRENCY_UNIT = 1 ether;
 
 
-  constructor(IChainlinkAggregator networkBaseTokenPriceInUsdProxyAggregator) public {
-    _networkBaseTokenPriceInUsdProxyAggregator = networkBaseTokenPriceInUsdProxyAggregator;
+  constructor(
+    IChainlinkAggregator _networkBaseTokenPriceInUsdProxyAggregator, 
+    IChainlinkAggregator _marketReferenceCurrencyPriceInUsdProxyAggregator
+  ) public {
+    networkBaseTokenPriceInUsdProxyAggregator = _networkBaseTokenPriceInUsdProxyAggregator;
+    marketReferenceCurrencyPriceInUsdProxyAggregator = _marketReferenceCurrencyPriceInUsdProxyAggregator;
   }
 
   function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
@@ -136,19 +139,15 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     }
 
     BaseCurrencyInfo memory baseCurrencyInfo;
-    baseCurrencyInfo.networkBaseTokenPriceInUsd = _networkBaseTokenPriceInUsdProxyAggregator.latestAnswer();
-    baseCurrencyInfo.networkBaseTokenDecimals = _networkBaseTokenPriceInUsdProxyAggregator.decimals();
+    baseCurrencyInfo.networkBaseTokenPriceInUsd = networkBaseTokenPriceInUsdProxyAggregator.latestAnswer();
+    baseCurrencyInfo.networkBaseTokenPriceDecimals = networkBaseTokenPriceInUsdProxyAggregator.decimals();
 
-    try oracle.BASE_CURRENCY_UNIT() returns (uint256 baseCurrencyUnit) {        
-      baseCurrencyInfo.baseCurrencyDecimals = baseCurrencyUnit;
-      if (address(0) == oracle.BASE_CURRENCY()) {
-        baseCurrencyInfo.baseCurrencyPriceInUsd = USD_PRICE;
-      } else {
-        baseCurrencyInfo.baseCurrencyPriceInUsd = oracle.getAssetPrice(MOCK_USD_ADDRESS);
-      }
+    try oracle.BASE_CURRENCY_UNIT() returns (uint256 baseCurrencyUnit) {
+      baseCurrencyInfo.marketReferenceCurrencyUnit = baseCurrencyUnit;
+      baseCurrencyInfo.marketReferenceCurrencyPriceInUsd = int256(baseCurrencyUnit);
     } catch (bytes memory /*lowLevelData*/) {  
-      baseCurrencyInfo.baseCurrencyDecimals = ETH_CURRENCY_DECIMALS;
-      baseCurrencyInfo.baseCurrencyPriceInUsd = oracle.getAssetPrice(MOCK_USD_ADDRESS);
+      baseCurrencyInfo.marketReferenceCurrencyUnit = ETH_CURRENCY_UNIT;
+      baseCurrencyInfo.marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator.latestAnswer();
     }
 
     return (reservesData, baseCurrencyInfo);

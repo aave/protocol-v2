@@ -16,7 +16,11 @@ import {
   getAaveProtocolDataProvider,
   getLendingPoolAddressesProvider,
 } from '../../helpers/contracts-getters';
-import { ZERO_ADDRESS } from '../../helpers/constants';
+import {
+  chainlinkAggregatorProxy,
+  chainlinkEthUsdAggregatorProxy,
+  ZERO_ADDRESS,
+} from '../../helpers/constants';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -100,7 +104,11 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       await deployWalletBalancerProvider(verify);
 
-      const uiPoolDataProvider = await deployUiPoolDataProvider(verify);
+      const uiPoolDataProvider = await deployUiPoolDataProvider(
+        chainlinkAggregatorProxy[localBRE.network.name],
+        chainlinkEthUsdAggregatorProxy[localBRE.network.name],
+        verify
+      );
       console.log('UiPoolDataProvider deployed at:', uiPoolDataProvider.address);
 
       const lendingPoolAddress = await addressesProvider.getLendingPool();
