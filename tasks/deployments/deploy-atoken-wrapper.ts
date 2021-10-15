@@ -35,6 +35,7 @@ task(
         await getFirstSigner()
       ).symbol();
 
+      console.log('- Deploying Static Wrapper for', symbol);
       const { proxy, implementation } = await deployStaticATokenLM(
         [pool, aTokenAddress, symbol, proxyAdmin],
         verify
