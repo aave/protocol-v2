@@ -24,8 +24,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  IChainlinkAggregator public networkBaseTokenPriceInUsdProxyAggregator;
-  IChainlinkAggregator public marketReferenceCurrencyPriceInUsdProxyAggregator;
+  IChainlinkAggregator public immutable networkBaseTokenPriceInUsdProxyAggregator;
+  IChainlinkAggregator public immutable marketReferenceCurrencyPriceInUsdProxyAggregator;
   uint256 public constant ETH_CURRENCY_UNIT = 1 ether;
 
 
