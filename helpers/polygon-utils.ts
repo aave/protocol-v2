@@ -76,6 +76,14 @@ export const verifyAtPolygon = async (
   */
   const network = (DRE as HardhatRuntimeEnvironment).network.name;
   const net = network === EthereumNetworkNames.matic ? 'mainnet' : network;
+  const apiUrl =
+    network == EthereumNetworkNames.mumbai
+      ? `https://api-testnet.polygonscan.com/api`
+      : `https://api.polygonscan.com/api`;
+  const explorerUrl =
+    network == EthereumNetworkNames.mumbai
+      ? `https://mumbai.polygonscan.com`
+      : `https://polygonscan.com`;
   const filePath = await findPath(id);
   const encodedConstructorParams = encodeDeployParams(instance, args);
   const flattenSourceCode = await hardhatFlattener(filePath);
@@ -92,10 +100,10 @@ export const verifyAtPolygon = async (
     );
 
     const response = await axios.post(
-      `https://api.polygonscan.com/api`,
+      apiUrl,
       {
         addressHash: instance.address,
-        apikey: process.env.POLYGON_APIKEY,
+        apikey: process.env.POLYGONSCAN_KEY,
         name: id,
         compilerVersion: 'v0.6.12+commit.27d51765',
         optimization: 'true',
@@ -116,7 +124,7 @@ export const verifyAtPolygon = async (
     if (response.status === 200 && response.data.message === 'OK') {
       console.log(`[Polygon Verify] Verified contract at Matic ${net} network.`);
       console.log(
-        `[Polygon Verify] Check at: https://explorer-${net}.maticvigil.com/address/${instance.address}/contracts) \n`
+        `[Polygon Verify] Check at: ${explorerUrl}/address/${instance.address}/contracts) \n`
       );
       return;
     }
@@ -125,7 +133,7 @@ export const verifyAtPolygon = async (
   } catch (error: any) {
     if (error?.message.includes('Smart-contract already verified.')) {
       console.log(
-        `[Polygon Verify] Already verified. Check it at: https://explorer-${net}.maticvigil.com/address/${instance.address}/contracts) \n`
+        `[Polygon Verify] Already verified. Check it at: ${explorerUrl}/address/${instance.address}/contracts) \n`
       );
       return;
     }
@@ -134,7 +142,7 @@ export const verifyAtPolygon = async (
       `[Polygon Verify] Skipping verification for ${id} with ${instance.address} due an unknown error.`
     );
     console.log(
-      `Please proceed with manual verification at https://explorer-${net}.maticvigil.com/address/${instance.address}/contracts`
+      `Please proceed with manual verification at ${explorerUrl}/address/${instance.address}/contracts`
     );
     console.log(`- Use the following as encoded constructor params`);
     console.log(encodedConstructorParams);

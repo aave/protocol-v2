@@ -88,7 +88,8 @@
     "print-config:kovan": "hardhat --network kovan print-config --pool Aave --data-provider 0xA1901785c29cBd48bfA74e46b67C736b26054fa4",
     "external:deploy-assets-kovan": "npm run compile && hardhat --network kovan external:deploy-new-asset --symbol ${SYMBOL} --verify",
     "external:deploy-assets-main": "npm run compile && hardhat --network main external:deploy-new-asset --symbol ${SYMBOL} --verify",
-    "external:deploy-assets-matic": "npm run compile && hardhat --network matic external:deploy-matic-asset --symbol ${SYMBOL} --verify",
+    "external:deploy-assets-mumbai": "npm run compile && hardhat --network mumbai external:deploy-new-asset-matic --symbol ${SYMBOL} --verify",
+    "external:deploy-assets-matic": "npm run compile && hardhat --network matic external:deploy-new-asset-matic --symbol ${SYMBOL} --verify",
     "prepublishOnly": "npm run compile"
   },
   "devDependencies": {
