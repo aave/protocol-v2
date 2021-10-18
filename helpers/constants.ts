@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { eEthereumNetwork } from './types';
 
 // ----------------
 // MATH
@@ -12,6 +13,7 @@ export const RAY = new BigNumber(10).exponentiatedBy(27).toFixed();
 export const HALF_RAY = new BigNumber(RAY).multipliedBy(0.5).toFixed();
 export const WAD_RAY_RATIO = Math.pow(10, 9).toString();
 export const oneEther = new BigNumber(Math.pow(10, 18));
+export const oneUsd = new BigNumber(Math.pow(10, 8));
 export const oneRay = new BigNumber(Math.pow(10, 27));
 export const MAX_UINT_AMOUNT =
   '115792089237316195423570985008687907853269984665640564039457584007913129639935';
@@ -30,6 +32,7 @@ export const USD_ADDRESS = '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96';
 export const AAVE_REFERRAL = '0';
 
 export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
+  // Update to USD-based price feeds
   AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),
   BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
@@ -69,5 +72,6 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   WMATIC: oneEther.multipliedBy('0.003620948469').toFixed(),
   STAKE: oneEther.multipliedBy('0.003620948469').toFixed(),
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
+  WAVAX: oneEther.multipliedBy('0.006051936629').toFixed(),
   USD: '5848466240000000',
 };

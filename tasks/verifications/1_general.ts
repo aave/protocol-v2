@@ -1,11 +1,9 @@
-import { error } from 'console';
-import { zeroAddress } from 'ethereumjs-util';
 import { task } from 'hardhat/config';
 import {
   loadPoolConfig,
   ConfigNames,
-  getWethAddress,
   getTreasuryAddress,
+  getWrappedNativeTokenAddress,
 } from '../../helpers/configuration';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
@@ -22,6 +20,7 @@ import {
   getProxy,
   getWalletProvider,
   getWETHGateway,
+  getPermissionedWETHGateway,
 } from '../../helpers/contracts-getters';
 import { verifyContract, getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { notFalsyOrZeroAddress } from '../../helpers/misc-utils';
@@ -53,7 +52,8 @@ task('verify:general', 'Verify contracts at Etherscan')
       : await getLendingPoolAddressesProviderRegistry();
     const lendingPoolAddress = await addressesProvider.getLendingPool();
     const lendingPoolConfiguratorAddress = await addressesProvider.getLendingPoolConfigurator(); //getLendingPoolConfiguratorProxy();
-    const lendingPoolCollateralManagerAddress = await addressesProvider.getLendingPoolCollateralManager();
+    const lendingPoolCollateralManagerAddress =
+      await addressesProvider.getLendingPoolCollateralManager();
 
     const lendingPoolProxy = await getProxy(lendingPoolAddress);
     const lendingPoolConfiguratorProxy = await getProxy(lendingPoolConfiguratorAddress);
@@ -87,10 +87,13 @@ task('verify:general', 'Verify contracts at Etherscan')
       const walletProvider = await getWalletProvider();
 
       const wethGatewayAddress = getParamPerNetwork(WethGateway, network);
+    
       const wethGateway = notFalsyOrZeroAddress(wethGatewayAddress)
         ? await getWETHGateway(wethGatewayAddress)
         : await getWETHGateway();
-
+/*
+      const permissionedWethGateway = await getPermissionedWETHGateway();
+*/
       // Address Provider
       console.log('\n- Verifying address provider...\n');
       await verifyContract(eContractid.LendingPoolAddressesProvider, addressesProvider, [MarketId]);
@@ -132,7 +135,7 @@ task('verify:general', 'Verify contracts at Etherscan')
       // WETHGateway
       console.log('\n- Verifying  WETHGateway...\n');
       await verifyContract(eContractid.WETHGateway, wethGateway, [
-        await getWethAddress(poolConfig),
+        await getWrappedNativeTokenAddress(poolConfig),
       ]);
     }
     // Lending Pool proxy

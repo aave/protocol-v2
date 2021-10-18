@@ -40,7 +40,7 @@ task('add-market-to-registry', 'Adds address provider to registry')
     ) {
       console.log('- Deploying a new Address Providers Registry:');
 
-      await DRE.run('full:deploy-address-provider-registry', { pool, verify });
+      await DRE.run('full:deploy-address-provider-registry', { verify, pool });
 
       providerRegistryAddress = (await getLendingPoolAddressesProviderRegistry()).address;
       providerRegistryOwner = await (await getFirstSigner()).getAddress();

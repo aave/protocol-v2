@@ -1,6 +1,7 @@
 import { task } from 'hardhat/config';
 import { getParamPerNetwork, insertContractAddressInDb } from '../../helpers/contracts-helpers';
 import {
+  deployATokenImplementations,
   deployATokensAndRatesHelper,
   deployLendingPool,
   deployLendingPoolConfigurator,
@@ -14,7 +15,12 @@ import {
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { loadPoolConfig, ConfigNames } from '../../helpers/configuration';
+import {
+  loadPoolConfig,
+  ConfigNames,
+  getGenesisPoolAdmin,
+  getEmergencyAdmin,
+} from '../../helpers/configuration';
 
 task('full:deploy-lending-pool', 'Deploy lending pool for dev environment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -69,6 +75,10 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev environment')
         eContractid.LendingPoolConfigurator,
         lendingPoolConfiguratorProxy.address
       );
+      const admin = await DRE.ethers.getSigner(await getEmergencyAdmin(poolConfig));
+      // Pause market during deployment
+      await waitForTx(await lendingPoolConfiguratorProxy.connect(admin).setPoolPause(true));
+
       // Deploy deployment helpers
       await deployStableAndVariableTokensHelper(
         [lendingPoolProxy.address, addressesProvider.address],
@@ -78,11 +88,12 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev environment')
         [lendingPoolProxy.address, addressesProvider.address, lendingPoolConfiguratorProxy.address],
         verify
       );
+      await deployATokenImplementations(pool, poolConfig.ReservesConfig, verify);
     } catch (error) {
       if (DRE.network.name.includes('tenderly')) {
         const transactionLink = `https://dashboard.tenderly.co/${DRE.config.tenderly.username}/${
           DRE.config.tenderly.project
-        }/fork/${DRE.tenderlyNetwork.getFork()}/simulation/${DRE.tenderlyNetwork.getHead()}`;
+        }/fork/${DRE.tenderly.network().getFork()}/simulation/${DRE.tenderly.network().getHead()}`;
         console.error('Check tx error:', transactionLink);
       }
       throw error;
