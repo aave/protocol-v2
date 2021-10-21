@@ -48,13 +48,31 @@ export const CommonsConfig: ICommonConfiguration = {
     'REALTOKEN-S-13895-SARATOGA-ST-DETROIT-MI': {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    USDC: {
-      borrowRate: oneRay.multipliedBy(0.039).toFixed(),
+    'REALTOKEN-S-4380-BEACONSFIELD-ST-DETROIT-MI': {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    USDT: {
-      borrowRate: oneRay.multipliedBy(0.035).toFixed(),
+    'REALTOKEN-S-17813-BRADFORD-ST-DETROIT-M': {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    WBTC: {
+    'REALTOKEN-S-15796-HARTWELL-ST-DETROIT-MI': {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    "REALTOKEN-S-9717-EVERTS-ST-DETROIT-MI": {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    "REALTOKEN-S-19201-WESTPHALIA-ST-DETROIT-MI": {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    "REALTOKEN-S-19163-MITCHELL-ST-DETROIT-MI": {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    "REALTOKEN-S-4061-GRAND-ST-DETROIT-M": {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    "REALTOKEN-S-4680-BUCKINGHAM-AVE-DETROIT-MI": {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    "REALTOKEN-S-19311-KEYSTONE-ST-DETROIT-MI": {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
   },
@@ -179,26 +197,16 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.kovan]: {
-      AAVE: '0xd04647B7CB523bb9f26730E9B6dE1174db7591Ad',
-      BAT: '0x0e4fcEC26c9f85c3D714370c98f43C4E02Fc35Ae',
-      BUSD: '0xbF7A18ea5DE0501f7559144e702b29c55b055CcB',
-      DAI: '0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541',
-      ENJ: '0xfaDbe2ee798889F02d1d39eDaD98Eff4c7fe95D4',
-      KNC: '0xb8E8130d244CFd13a75D6B9Aee029B1C33c808A7',
-      LINK: '0x3Af8C569ab77af5230596Acf0E8c2F9351d24C38',
-      MANA: '0x1b93D8E109cfeDcBb3Cc74eD761DE286d5771511',
-      MKR: '0x0B156192e04bAD92B6C1C13cf8739d14D78D5701',
-      REN: '0xF1939BECE7708382b5fb5e559f630CB8B39a10ee',
-      SNX: '0xF9A76ae7a1075Fe7d646b06fF05Bd48b9FA5582e',
-      SUSD: '0xb343e7a1aF578FA35632435243D814e7497622f7',
-      TUSD: '0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660',
-      UNI: '0x17756515f112429471F86f98D5052aCB6C47f6ee',
-      USDC: '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838',
-      USDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
-      WBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
-      YFI: '0xC5d1B1DEb2992738C0273408ac43e1e906086B6C',
-      ZRX: '0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883',
-      USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
+      "REALTOKEN-S-13895-SARATOGA-ST-DETROIT-MI": '',
+      "REALTOKEN-S-4380-BEACONSFIELD-ST-DETROIT-MI": '',
+      "REALTOKEN-S-17813-BRADFORD-ST-DETROIT-M": '',
+      "REALTOKEN-S-15796-HARTWELL-ST-DETROIT-MI": '',
+      "REALTOKEN-S-9717-EVERTS-ST-DETROIT-MI": '',
+      "REALTOKEN-S-19201-WESTPHALIA-ST-DETROIT-MI": '',
+      "REALTOKEN-S-19163-MITCHELL-ST-DETROIT-MI": '',
+      "REALTOKEN-S-4061-GRAND-ST-DETROIT-M": '',
+      "REALTOKEN-S-4680-BUCKINGHAM-AVE-DETROIT-MI": '',
+      "REALTOKEN-S-19311-KEYSTONE-ST-DETROIT-MI": '',
     },
     [eEthereumNetwork.ropsten]: {
     },
