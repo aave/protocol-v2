@@ -47,6 +47,7 @@ export enum AavePools {
   amm = 'amm',
   arc = 'arc',
   avalanche = 'avalanche',
+  realT = 'realT',
 }
 
 export enum eContractid {
@@ -473,6 +474,7 @@ export interface iParamsPerPool<T> {
   [AavePools.amm]: T;
   [AavePools.arc]: T;
   [AavePools.avalanche]: T;
+  [AavePools.realT]: T;
 }
 
 export interface iBasicDistributionParams {
