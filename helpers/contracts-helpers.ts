@@ -26,7 +26,6 @@ import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
 import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
-import { usingPolygon, verifyAtPolygon } from './polygon-utils';
 import { ConfigNames, loadPoolConfig } from './configuration';
 import { ZERO_ADDRESS } from './constants';
 import { getDefenderRelaySigner, usingDefender } from './defender-utils';
@@ -192,7 +191,10 @@ export const getOptionalParamAddressPerNetwork = (
   return getParamPerNetwork(param, network);
 };
 
-export const getParamPerPool = <T>({ proto, amm, matic, avalanche }: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>(
+  { proto, amm, matic, avalanche }: iParamsPerPool<T>,
+  pool: AavePools
+) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
@@ -378,14 +380,10 @@ export const verifyContract = async (
   instance: Contract,
   args: (string | string[])[]
 ) => {
-  if (usingPolygon()) {
-    await verifyAtPolygon(id, instance, args);
-  } else {
-    if (usingTenderly()) {
-      await verifyAtTenderly(id, instance);
-    }
-    await verifyEtherscanContract(instance.address, args);
+  if (usingTenderly()) {
+    await verifyAtTenderly(id, instance);
   }
+  await verifyEtherscanContract(instance.address, args);
   return instance;
 };
 
