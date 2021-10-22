@@ -303,6 +303,11 @@ export type iAaveArcPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'USDC' | 'WBTC' |
 
 export type iAaveRealTPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
+  | 'DAI'
+  | 'USDC'
+  | 'USDT'
+  | 'WBTC'
+  | 'WETH'
   | 'REALTOKEN-S-13895-SARATOGA-ST-DETROIT-MI'
   | 'REALTOKEN-S-4380-BEACONSFIELD-ST-DETROIT-MI'
   | 'REALTOKEN-S-17813-BRADFORD-ST-DETROIT-M'

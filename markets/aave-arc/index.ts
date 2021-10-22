@@ -19,7 +19,7 @@ export const AaveArcConfig: IAaveArcConfiguration = {
   ProviderId: 1,
   LendingPoolImpl: eContractid.PermissionedLendingPool,
   ReservesConfig: {
-   USDC: strategyUSDC,
+    USDC: strategyUSDC,
     WBTC: strategyWBTC,
     WETH: strategyWETH,
     AAVE: strategyAAVE
