@@ -44,8 +44,8 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
 
       const tokensToWatch: SymbolMap<string> = {
         ...reserveAssets,
+        USD: UsdAddress,
       };
-      console.log('reserve');
       const [tokens, aggregators] = getPairsTokenAggregator(
         tokensToWatch,
         chainlinkAggregators,
@@ -55,7 +55,6 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
       let aaveOracle: AaveOracle;
       let lendingRateOracle: LendingRateOracle;
 
-      console.log('X', fallbackOracleAddress);
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
         aaveOracle = await await getAaveOracle(aaveOracleAddress);
         await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
@@ -77,10 +76,10 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         lendingRateOracle = await getLendingRateOracle(lendingRateOracleAddress);
       } else {
         lendingRateOracle = await deployLendingRateOracle(verify);
-
+        const { USD, ...tokensAddressesWithoutUsd } = tokensToWatch;
         await setInitialMarketRatesInRatesOracleByHelper(
           lendingRateOracles,
-          tokensToWatch,
+          tokensAddressesWithoutUsd,
           lendingRateOracle,
           admin
         );
