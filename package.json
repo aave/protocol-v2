@@ -67,6 +67,7 @@
     "pro:fork:kovan": "npm run compile && FORK=kovan hardhat pro:mainnet",
     "pro:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- pro:mainnet --verify",
     "pro:main:full:migration": "npm run compile && npm run hardhat:main -- pro:mainnet --verify",
+    "pro:main:fork:test": "npm run compile && FORK=main FORK_BLOCK_NUMBER=13431750 npm run hardhat test ./test-suites/test-aave/mainnet/pro-test.spec.ts",
     "prettier:check": "npx prettier -c 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
     "prettier:write": "prettier --write 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
     "ci:test": "npm run compile && npm run test",
