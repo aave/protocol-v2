@@ -50,6 +50,11 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  StETHMocked,
+  StETHMockedFactory,
+  VariableDebtStETHFactory,
+  StableDebtStETHFactory,
+  AStETHFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -310,12 +315,34 @@ export const deployStableDebtToken = async (
     verify
   );
 
+export const deployStETHStableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new StableDebtStETHFactory(await getFirstSigner()).deploy(...args),
+    eContractid.StableDebtToken,
+    args,
+    verify
+  );
+
 export const deployVariableDebtToken = async (
   args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
   verify: boolean
 ) =>
   withSaveAndVerify(
     await new VariableDebtTokenFactory(await getFirstSigner()).deploy(...args),
+    eContractid.VariableDebtToken,
+    args,
+    verify
+  );
+
+export const deployStETHVariableDebtToken = async (
+  args: [tEthereumAddress, tEthereumAddress, string, string, tEthereumAddress],
+  verify: boolean
+) =>
+  withSaveAndVerify(
+    await new VariableDebtStETHFactory(await getFirstSigner()).deploy(...args),
     eContractid.VariableDebtToken,
     args,
     verify
@@ -371,6 +398,33 @@ export const deployDelegationAwareAToken = async (
   return withSaveAndVerify(
     await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(...args),
     eContractid.DelegationAwareAToken,
+    args,
+    verify
+  );
+};
+
+export const deployAStETH = async (
+  [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController]: [
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    tEthereumAddress
+  ],
+  verify: boolean
+) => {
+  const args: [
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    tEthereumAddress,
+    tEthereumAddress
+  ] = [poolAddress, underlyingAssetAddress, treasuryAddress, name, symbol, incentivesController];
+  return withSaveAndVerify(
+    await new AStETHFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AStETH,
     args,
     verify
   );
@@ -534,6 +588,17 @@ export const deployFlashLiquidationAdapter = async (
   withSaveAndVerify(
     await new FlashLiquidationAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.FlashLiquidationAdapter,
+    args,
+    verify
+  );
+
+export const deployMockStETH = async (
+  args: [string, string, string],
+  verify?: boolean
+): Promise<StETHMocked> =>
+  withSaveAndVerify(
+    await new StETHMockedFactory(await getFirstSigner()).deploy(),
+    eContractid.StETHMocked,
     args,
     verify
   );

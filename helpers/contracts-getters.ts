@@ -30,6 +30,9 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  StETHMockedFactory,
+  AStETHFactory,
+  VariableDebtStETHFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { MockTokenMap } from './contracts-helpers';
@@ -360,6 +363,27 @@ export const getFlashLiquidationAdapter = async (address?: tEthereumAddress) =>
   await FlashLiquidationAdapterFactory.connect(
     address ||
       (await getDb().get(`${eContractid.FlashLiquidationAdapter}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );
+
+export const getMockStETH = async (address?: tEthereumAddress) =>
+  await StETHMockedFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.StETHMocked}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getAStETH = async (address?: tEthereumAddress) =>
+  await AStETHFactory.connect(
+    address || (await getDb().get(`${eContractid.AStETH}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getVariableDebtStETH = async (address?: tEthereumAddress) =>
+  await VariableDebtStETHFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.VariableDebtStETHToken}.${DRE.network.name}`).value())
         .address,
     await getFirstSigner()
   );
