@@ -9,4 +9,5 @@ library StaticATokenErrors {
   string public constant INVALID_RECIPIENT = '5';
   string public constant INVALID_CLAIMER = '6';
   string public constant ONLY_ONE_AMOUNT_FORMAT_ALLOWED = '7';
+  string public constant ONLY_PROXY_MAY_CALL = '8';
 }

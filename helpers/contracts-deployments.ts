@@ -681,7 +681,7 @@ export const deployStaticATokenLM = async (
   );
 
   // Initialize implementation to prevent others to do it
-  await staticATokenImplementation.initialize(...args);
+  await waitForTx(await staticATokenImplementation.initialize(...args));
 
   // Initialize proxy
   await waitForTx(

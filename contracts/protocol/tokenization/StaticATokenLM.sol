@@ -70,6 +70,17 @@ contract StaticATokenLM is
   // user => unclaimedRewards (in RAYs)
   mapping(address => uint256) private _unclaimedRewards;
 
+  bool public isImplementation;
+
+  modifier onlyProxy() {
+    require(isImplementation == false, StaticATokenErrors.ONLY_PROXY_MAY_CALL);
+    _;
+  }
+
+  constructor() public {
+    isImplementation = true;
+  }
+
   ///@inheritdoc VersionedInitializable
   function getRevision() internal pure virtual override returns (uint256) {
     return STATIC_ATOKEN_LM_REVISION;
@@ -92,8 +103,14 @@ contract StaticATokenLM is
     ASSET = IERC20(IAToken(aToken).UNDERLYING_ASSET_ADDRESS());
     ASSET.safeApprove(address(pool), type(uint256).max);
 
-    INCENTIVES_CONTROLLER = IAToken(aToken).getIncentivesController();
-    REWARD_TOKEN = IERC20(INCENTIVES_CONTROLLER.REWARD_TOKEN());
+    try IAToken(aToken).getIncentivesController() returns (
+      IAaveIncentivesController incentivesController
+    ) {
+      if (address(incentivesController) != address(0)) {
+        INCENTIVES_CONTROLLER = incentivesController;
+        REWARD_TOKEN = IERC20(INCENTIVES_CONTROLLER.REWARD_TOKEN());
+      }
+    } catch {}
 
     emit Initialized(address(pool), aToken, staticATokenName, staticATokenSymbol);
   }
@@ -288,7 +305,7 @@ contract StaticATokenLM is
     uint256 amount,
     uint16 referralCode,
     bool fromUnderlying
-  ) internal returns (uint256) {
+  ) internal onlyProxy returns (uint256) {
     require(recipient != address(0), StaticATokenErrors.INVALID_RECIPIENT);
     _updateRewards();
 
@@ -355,6 +372,9 @@ contract StaticATokenLM is
     address to,
     uint256 amount
   ) internal override {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return;
+    }
     if (from != address(0)) {
       _updateUser(from);
     }
@@ -367,6 +387,9 @@ contract StaticATokenLM is
    * @notice Updates virtual internal accounting of rewards.
    */
   function _updateRewards() internal {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return;
+    }
     if (block.number > _lastRewardBlock) {
       _lastRewardBlock = block.number;
       uint256 supply = totalSupply();
@@ -391,6 +414,10 @@ contract StaticATokenLM is
 
   ///@inheritdoc IStaticATokenLM
   function collectAndUpdateRewards() public override {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return;
+    }
+
     _lastRewardBlock = block.number;
     uint256 supply = totalSupply();
 
@@ -448,6 +475,10 @@ contract StaticATokenLM is
     address receiver,
     bool forceUpdate
   ) external override {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return;
+    }
+
     require(
       msg.sender == onBehalfOf || msg.sender == INCENTIVES_CONTROLLER.getClaimer(onBehalfOf),
       StaticATokenErrors.INVALID_CLAIMER
@@ -456,10 +487,16 @@ contract StaticATokenLM is
   }
 
   function claimRewards(address receiver, bool forceUpdate) external override {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return;
+    }
     _claimRewardsOnBehalf(msg.sender, receiver, forceUpdate);
   }
 
   function claimRewardsToSelf(bool forceUpdate) external override {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return;
+    }
     _claimRewardsOnBehalf(msg.sender, msg.sender, forceUpdate);
   }
 
@@ -496,6 +533,10 @@ contract StaticATokenLM is
     uint256 balance,
     bool fresh
   ) internal view returns (uint256) {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return 0;
+    }
+
     if (balance == 0) {
       return 0;
     }
@@ -538,6 +579,10 @@ contract StaticATokenLM is
 
   ///@inheritdoc IStaticATokenLM
   function getTotalClaimableRewards() external view override returns (uint256) {
+    if (address(INCENTIVES_CONTROLLER) == address(0)) {
+      return 0;
+    }
+
     address[] memory assets = new address[](1);
     assets[0] = address(ATOKEN);
     uint256 freshRewards = INCENTIVES_CONTROLLER.getRewardsBalance(assets, address(this));
@@ -568,5 +613,13 @@ contract StaticATokenLM is
 
   function getLastRewardBlock() external view override returns (uint256) {
     return _lastRewardBlock;
+  }
+
+  function getIncentivesController() external view override returns (IAaveIncentivesController) {
+    return INCENTIVES_CONTROLLER;
+  }
+
+  function UNDERLYING_ASSET_ADDRESS() external view override returns (address) {
+    return address(ASSET);
   }
 }

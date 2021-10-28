@@ -3,13 +3,11 @@ import bnjs from 'bignumber.js';
 import { solidity } from 'ethereum-waffle';
 import {
   LendingPoolFactory,
-  WETH9Factory,
   ATokenFactory,
   ERC20,
   LendingPool,
   StaticATokenLMFactory,
   ERC20Factory,
-  WETH9,
   AToken,
   StaticATokenLM,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -47,12 +45,13 @@ const DEFAULT_GAS_PRICE = utils.parseUnits('100', 'gwei');
 
 const defaultTxParams = { gasLimit: DEFAULT_GAS_LIMIT, gasPrice: DEFAULT_GAS_PRICE };
 
-const ETHER_BANK = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 const LENDING_POOL = '0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9';
 
-const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 const STKAAVE = '0x4da27a545c0c5B758a6BA100e3a049001de870f5';
-const AWETH = '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e';
+const AENJ = '0xaC6Df26a590F08dcC95D5a4705ae8abbc88509Ef';
+const ENJ = '0xF629cBd94d3791C9250152BD8dfBDF380E2a3B9c';
+const ENJ_WHALE = '0xBE0eB53F46cd790Cd13851d5EFf43D12404d33E8';
+
 const INCENTIVES_CONTROLLER = '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5';
 const EMISSION_MANAGER = '0xEE56e2B3D491590B5b31738cC34d5232F378a8D5';
 
@@ -129,18 +128,20 @@ const getContext = async ({
   user2StaticATokenBalance: await staticAToken.balanceOf(user2),
   user2DynamicStaticATokenBalance: await staticAToken.dynamicBalanceOf(user2),
   user2PendingRewards: await staticAToken.getClaimableRewards(user2),
-  currentRate: await lendingPool.getReserveNormalizedIncome(WETH),
+  currentRate: await lendingPool.getReserveNormalizedIncome(underlying.address),
   staticATokenSupply: await staticAToken.totalSupply(),
 });
 
-describe('StaticATokenLM: aToken wrapper with static balances and liquidity mining', () => {
+describe('StaticATokenLM: aToken wrapper with static balances and NO liquidity mining', () => {
   let userSigner: providers.JsonRpcSigner;
   let user2Signer: providers.JsonRpcSigner;
   let lendingPool: LendingPool;
   let incentives: IAaveIncentivesController;
-  let weth: WETH9;
-  let aweth: AToken;
+  let enj: ERC20;
+  let aenj: AToken;
   let stkAave: ERC20;
+
+  let enjWhale: providers.JsonRpcSigner;
 
   let staticATokenImplementation: StaticATokenLM;
   let staticAToken: StaticATokenLM;
@@ -155,25 +156,21 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const [user1, user2] = await DRE.ethers.getSigners();
     userSigner = DRE.ethers.provider.getSigner(await user1.getAddress());
     user2Signer = DRE.ethers.provider.getSigner(await user2.getAddress());
+    enjWhale = DRE.ethers.provider.getSigner(ENJ_WHALE);
     lendingPool = LendingPoolFactory.connect(LENDING_POOL, userSigner);
     incentives = IAaveIncentivesControllerFactory.connect(INCENTIVES_CONTROLLER, userSigner);
 
-    weth = WETH9Factory.connect(WETH, userSigner);
-    aweth = ATokenFactory.connect(AWETH, userSigner);
+    enj = ERC20Factory.connect(ENJ, userSigner);
+    aenj = ATokenFactory.connect(AENJ, userSigner);
     stkAave = ERC20Factory.connect(STKAAVE, userSigner);
 
     staticATokenImplementation = await new StaticATokenLMFactory(userSigner).deploy();
-    await staticATokenImplementation.initialize(
-      LENDING_POOL,
-      AWETH,
-      'Static Aave Interest Bearing WETH',
-      'stataWETH'
-    );
+    await staticATokenImplementation.initialize(LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj');
 
     const proxy = await new InitializableAdminUpgradeabilityProxyFactory(userSigner).deploy();
     const encodedInitializedParams = staticATokenImplementation.interface.encodeFunctionData(
       'initialize',
-      [LENDING_POOL, AWETH, 'Static Aave Interest Bearing WETH', 'stataWETH']
+      [LENDING_POOL, AENJ, 'Wrapped aENJ', 'waaenj']
     );
 
     await proxy['initialize(address,address,bytes)'](
@@ -184,19 +181,25 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
 
     staticAToken = StaticATokenLMFactory.connect(proxy.address, userSigner);
 
-    expect(await staticAToken.getIncentivesController()).to.be.eq(INCENTIVES_CONTROLLER);
     expect(await staticATokenImplementation.isImplementation()).to.be.eq(true);
     expect(await staticAToken.isImplementation()).to.be.eq(false);
 
+    expect(await staticAToken.getIncentivesController()).to.be.eq(zeroAddress());
+    expect(await staticAToken.ASSET()).to.be.eq(await staticAToken.UNDERLYING_ASSET_ADDRESS());
+
     ctxtParams = {
       staticAToken: <StaticATokenLM>staticAToken,
-      underlying: <ERC20>(<unknown>weth),
-      aToken: <ERC20>aweth,
+      underlying: <ERC20>(<unknown>enj),
+      aToken: <ERC20>aenj,
       stkAave: <ERC20>stkAave,
       user: userSigner._address,
       user2: user2Signer._address,
       lendingPool,
     };
+
+    await impersonateAccountsHardhat([ENJ_WHALE]);
+    const balanceWhale = await enj.balanceOf(ENJ_WHALE);
+    await waitForTx(await enj.connect(enjWhale).transfer(userSigner._address, balanceWhale));
 
     snap = await evmSnapshot();
   });
@@ -210,14 +213,13 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     await evmRevert(snap);
   });
 
-  it('Deposit WETH directly to implementation (expect revert)', async () => {
+  it('Deposit ENJ directly to implementation (expect revert)', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
     // Just preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
     await waitForTx(
-      await weth.approve(staticATokenImplementation.address, amountToDeposit, defaultTxParams)
+      await enj.approve(staticATokenImplementation.address, amountToDeposit, defaultTxParams)
     );
 
     // Depositing
@@ -232,13 +234,12 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     ).to.be.revertedWith(LM_ERRORS.ONLY_PROXY_MAY_CALL);
   });
 
-  it('Deposit WETH on stataWETH, then withdraw of the whole balance in underlying', async () => {
+  it('Deposit ENJ on waaenj, then withdraw of the whole balance in underlying', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
     // Just preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const ctxtInitial = await getContext(ctxtParams);
 
@@ -312,36 +313,26 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtAfterWithdrawal.staticATokenUnderlyingBalance).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenStkAaveBalance).to.be.eq(0);
 
-    // Check with possible rounding error. Ahhh, it is because we have not claimed the shit after withdraw
-    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterWithdrawal.userPendingRewards
-    );
-
-    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.lte(
-      ctxtAfterWithdrawal.userPendingRewards.add(1)
-    );
+    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.userPendingRewards).to.be.eq(0);
     expect(ctxtAfterWithdrawal.userStkAaveBalance).to.be.eq(0);
 
     expect(ctxtAfterClaimNoForce.userStkAaveBalance).to.be.eq(0);
     expect(ctxtAfterClaimNoForce.staticATokenStkAaveBalance).to.be.eq(0);
 
-    expect(ctxtAfterClaimForce.userStkAaveBalance).to.be.eq(
-      ctxtAfterClaimNoForce.userPendingRewards
-    );
-    expect(ctxtAfterClaimForce.staticATokenStkAaveBalance).to.be.eq(
-      ctxtAfterClaimNoForce.staticATokenTotalClaimableRewards.sub(
-        ctxtAfterClaimNoForce.userPendingRewards
-      )
-    );
+    expect(ctxtAfterClaimForce.userStkAaveBalance).to.be.eq(0);
+    expect(ctxtAfterClaimNoForce.userPendingRewards).to.be.eq(0);
+
+    expect(ctxtAfterClaimForce.staticATokenStkAaveBalance).to.be.eq(0);
+    expect(ctxtAfterClaimNoForce.staticATokenTotalClaimableRewards).to.be.eq(0);
   });
 
-  it('Deposit WETH on stataWETH and then withdraw some balance in underlying', async () => {
+  it('Deposit ENJ on waaenj and then withdraw some balance in underlying', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = utils.parseEther('2.5');
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const ctxtInitial = await getContext(ctxtParams);
 
@@ -399,35 +390,33 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     );
 
     expect(ctxtAfterUpdate.userStkAaveBalance).to.be.eq(0);
-    expect(ctxtAfterClaim2.userStkAaveBalance).to.be.eq(ctxtAfterUpdate.userPendingRewards);
-    expect(ctxtAfterClaim2.userPendingRewards).to.be.gt(0);
+    expect(ctxtAfterUpdate.userPendingRewards).to.be.eq(0);
+    expect(ctxtAfterClaim2.userStkAaveBalance).to.be.eq(0);
+    expect(ctxtAfterClaim2.userPendingRewards).to.be.eq(0);
 
     // Check that rewards are always covered
-    expect(ctxtInitial.staticATokenTotalClaimableRewards).to.be.gte(ctxtInitial.userPendingRewards);
-    expect(ctxtAfterDeposit.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterDeposit.userPendingRewards
-    );
-    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterWithdrawal.userPendingRewards
-    );
-    expect(ctxtAfterClaim.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterClaim.userPendingRewards
-    );
-    expect(ctxtAfterUpdate.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterUpdate.userPendingRewards
-    );
-    expect(ctxtAfterClaim2.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterClaim2.userPendingRewards
-    );
+    expect(ctxtInitial.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtInitial.userPendingRewards).to.be.eq(0);
+    expect(ctxtAfterDeposit.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterDeposit.userPendingRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.userPendingRewards).to.be.eq(0);
+    expect(ctxtAfterClaim.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterClaim.userPendingRewards).to.be.eq(0);
+    expect(ctxtAfterUpdate.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterUpdate.userPendingRewards).to.be.eq(0);
+
+    expect(ctxtAfterClaim2.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterClaim2.userPendingRewards).to.be.eq(0);
+    // TODO: Look back
   });
 
-  it('Deposit WETH on stataWETH and then withdraw all the balance in aToken', async () => {
+  it('Deposit ENJ on waaenj and then withdraw all the balance in aToken', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const ctxtInitial = await getContext(ctxtParams);
 
@@ -461,16 +450,15 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtAfterWithdrawal.userStaticATokenBalance).to.be.eq(0);
   });
 
-  it('Deposit aWETH on stataWETH and then withdraw some balance in aToken', async () => {
+  it('Deposit aENJ on waaenj and then withdraw some balance in aToken', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = utils.parseEther('2.5');
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(lendingPool.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(lendingPool.address, amountToDeposit, defaultTxParams));
     await waitForTx(
       await lendingPool.deposit(
-        weth.address,
+        enj.address,
         amountToDeposit,
         userSigner._address,
         0,
@@ -478,7 +466,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       )
     );
     const ctxtInitial = await getContext(ctxtParams);
-    await waitForTx(await aweth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await aenj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     // Deposit
     await waitForTx(
@@ -532,8 +520,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const amountToDeposit = utils.parseEther('5');
 
     // Just preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     // Depositing
     await waitForTx(
@@ -612,8 +599,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const amountToDeposit = utils.parseEther('5');
 
     // Just preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     // Depositing
     await waitForTx(
@@ -691,8 +677,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     }
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const tokenName = await staticAToken.name();
     const nonce = (await staticAToken._nonces(userSigner._address)).toNumber();
@@ -782,8 +767,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     const amountToWithdraw = utils.parseEther('1');
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     // Deposit
     await waitForTx(
@@ -840,8 +824,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     }
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     // Deposit
     await waitForTx(
@@ -958,8 +941,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     }
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     // Deposit
     await waitForTx(
@@ -1020,13 +1002,12 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     expect(ctxtInitial.userStaticATokenBalance).to.be.eq(ctxtAfterDeposit.userStaticATokenBalance);
   });
 
-  it('Deposit WETH on stataWETH, then transfer and withdraw of the whole balance in underlying, finally claim', async () => {
+  it('Deposit ENJ on waaenj, then transfer and withdraw of the whole balance in underlying, finally claim', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const ctxtInitial = await getContext(ctxtParams);
 
@@ -1070,32 +1051,26 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     );
     expect(ctxtAfterTransfer.userStaticATokenBalance).to.be.eq(0);
     expect(ctxtAfterTransfer.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterTransfer.user2PendingRewards).to.be.gt(0);
+    expect(ctxtAfterTransfer.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenSupply).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenATokenBalance).to.be.eq(0);
     expect(ctxtAfterWithdrawal.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterWithdrawal.user2PendingRewards
-    );
-
+    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(0);
-    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(ctxtAfterWithdrawal.user2PendingRewards);
+    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(0);
     expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(
-      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards.sub(
-        ctxtAfterWithdrawal.user2PendingRewards
-      )
+      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards
     );
-    // Expect dust to be left in the contract
-    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.lt(5);
+    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(0);
   });
 
-  it('Deposit WETH on stataWETH, then transfer and withdraw of the whole balance in underlying, finally claimToSelf', async () => {
+  it('Deposit ENJ on waaenj, then transfer and withdraw of the whole balance in underlying, finally claimToSelf', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const ctxtInitial = await getContext(ctxtParams);
 
@@ -1137,26 +1112,23 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     );
     expect(ctxtAfterTransfer.userStaticATokenBalance).to.be.eq(0);
     expect(ctxtAfterTransfer.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterTransfer.user2PendingRewards).to.be.gt(0);
+    expect(ctxtAfterTransfer.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenSupply).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenATokenBalance).to.be.eq(0);
     expect(ctxtAfterWithdrawal.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterWithdrawal.user2PendingRewards
-    );
+    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
 
     expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(0);
-    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(ctxtAfterWithdrawal.user2PendingRewards);
+    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(
-      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards.sub(
-        ctxtAfterWithdrawal.user2PendingRewards
-      )
+      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards
     );
-    // Expect dust to be left in the contract
-    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.lt(5);
+    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(0);
   });
 
-  it('Deposit WETH on stataWETH, then transfer and withdraw of the whole balance in underlying, finally someone claims on behalf', async () => {
+  it('Deposit ENJ on waaenj, then transfer and withdraw of the whole balance in underlying, finally someone claims on behalf', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
@@ -1174,8 +1146,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       .destroyAndTransfer(emissionManager._address, { value: parseEther('1') });
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const ctxtInitial = await getContext(ctxtParams);
 
@@ -1214,6 +1185,7 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
         .connect(claimerSigner)
         .claimRewardsOnBehalf(user2Signer._address, user2Signer._address, true)
     );
+
     const ctxtAfterClaim = await getContext(ctxtParams);
 
     // Checks
@@ -1228,35 +1200,43 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     );
     expect(ctxtAfterTransfer.userStaticATokenBalance).to.be.eq(0);
     expect(ctxtAfterTransfer.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterTransfer.user2PendingRewards).to.be.gt(0);
+    expect(ctxtAfterTransfer.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenSupply).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenATokenBalance).to.be.eq(0);
     expect(ctxtAfterWithdrawal.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterWithdrawal.user2PendingRewards
-    );
+    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
 
     expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(0);
-    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(ctxtAfterWithdrawal.user2PendingRewards);
+    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(
-      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards.sub(
-        ctxtAfterWithdrawal.user2PendingRewards
-      )
+      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards
     );
-    // Expect dust to be left in the contract
-    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.lt(5);
+    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(0);
   });
 
-  it('Deposit WETH on stataWETH, then transfer and withdraw of the whole balance in underlying, finally someone NOT set as claimer claims on behalf (reverts)', async () => {
+  it('Deposit ENJ on waaenj, then transfer and withdraw of the whole balance in underlying, finally someone NOT set as claimer claims on behalf', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
     const [, , claimer] = await DRE.ethers.getSigners();
     const claimerSigner = DRE.ethers.provider.getSigner(await claimer.getAddress());
 
+    await impersonateAccountsHardhat([EMISSION_MANAGER]);
+    const emissionManager = DRE.ethers.provider.getSigner(EMISSION_MANAGER);
+
+    // Fund emissionManager
+    const selfdestructContract = await deploySelfdestructTransferMock();
+    // Selfdestruct the mock, pointing to WETHGateway address
+    await selfdestructContract
+      .connect(user2Signer)
+      .destroyAndTransfer(emissionManager._address, { value: parseEther('1') });
+
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+
+    const ctxtInitial = await getContext(ctxtParams);
 
     // Deposit
     await waitForTx(
@@ -1269,6 +1249,8 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
       await staticAToken.transfer(user2Signer._address, ctxtAfterDeposit.userStaticATokenBalance)
     );
 
+    const ctxtAfterTransfer = await getContext(ctxtParams);
+
     // Withdraw
     await waitForTx(
       await staticAToken
@@ -1276,21 +1258,51 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
         .withdraw(user2Signer._address, amountToWithdraw, true, defaultTxParams)
     );
 
+    const ctxtAfterWithdrawal = await getContext(ctxtParams);
+
     // Claim
-    await expect(
-      staticAToken
+    await waitForTx(
+      await staticAToken
         .connect(claimerSigner)
         .claimRewardsOnBehalf(user2Signer._address, user2Signer._address, true)
-    ).to.be.revertedWith(LM_ERRORS.INVALID_CLAIMER);
+    );
+
+    const ctxtAfterClaim = await getContext(ctxtParams);
+
+    // Checks
+    expect(ctxtAfterDeposit.staticATokenATokenBalance).to.be.eq(
+      ctxtInitial.staticATokenATokenBalance.add(amountToDeposit)
+    );
+    expect(ctxtAfterDeposit.userUnderlyingBalance).to.be.eq(
+      ctxtInitial.userUnderlyingBalance.sub(amountToDeposit)
+    );
+    expect(ctxtAfterTransfer.user2StaticATokenBalance).to.be.eq(
+      ctxtAfterDeposit.userStaticATokenBalance
+    );
+    expect(ctxtAfterTransfer.userStaticATokenBalance).to.be.eq(0);
+    expect(ctxtAfterTransfer.userPendingRewards).to.be.eq(0);
+    expect(ctxtAfterTransfer.user2PendingRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.staticATokenSupply).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.staticATokenATokenBalance).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.userPendingRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
+
+    expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(0);
+    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
+    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(
+      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards
+    );
+    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(0);
   });
 
-  it('Deposit WETH on stataWETH, then transfer and withdraw of the whole balance in underlying, finally claims on behalf of self', async () => {
+  it('Deposit ENJ on waaenj, then transfer and withdraw of the whole balance in underlying, finally claims on behalf of self', async () => {
     const amountToDeposit = utils.parseEther('5');
     const amountToWithdraw = MAX_UINT_AMOUNT;
 
     // Preparation
-    await waitForTx(await weth.deposit({ value: amountToDeposit }));
-    await waitForTx(await weth.approve(staticAToken.address, amountToDeposit, defaultTxParams));
+    await waitForTx(await enj.approve(staticAToken.address, amountToDeposit, defaultTxParams));
 
     const ctxtInitial = await getContext(ctxtParams);
 
@@ -1336,22 +1348,17 @@ describe('StaticATokenLM: aToken wrapper with static balances and liquidity mini
     );
     expect(ctxtAfterTransfer.userStaticATokenBalance).to.be.eq(0);
     expect(ctxtAfterTransfer.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterTransfer.user2PendingRewards).to.be.gt(0);
+    expect(ctxtAfterTransfer.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenSupply).to.be.eq(0);
     expect(ctxtAfterWithdrawal.staticATokenATokenBalance).to.be.eq(0);
     expect(ctxtAfterWithdrawal.userPendingRewards).to.be.eq(0);
-    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.gte(
-      ctxtAfterWithdrawal.user2PendingRewards
-    );
-
+    expect(ctxtAfterWithdrawal.staticATokenTotalClaimableRewards).to.be.eq(0);
+    expect(ctxtAfterWithdrawal.user2PendingRewards).to.be.eq(0);
     expect(ctxtAfterClaim.userStkAaveBalance).to.be.eq(0);
-    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(ctxtAfterWithdrawal.user2PendingRewards);
+    expect(ctxtAfterClaim.user2StkAaveBalance).to.be.eq(0);
     expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(
-      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards.sub(
-        ctxtAfterWithdrawal.user2PendingRewards
-      )
+      ctxtAfterWithdrawal.staticATokenTotalClaimableRewards
     );
-    // Expect dust to be left in the contract
-    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.lt(5);
+    expect(ctxtAfterClaim.staticATokenStkAaveBalance).to.be.eq(0);
   });
 });

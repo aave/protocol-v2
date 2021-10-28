@@ -230,13 +230,17 @@ interface IStaticATokenLM is IERC20, IInitializableStaticATokenLM {
 
   function getLastRewardBlock() external view returns (uint256);
 
-  function LENDING_POOL() external returns (ILendingPool);
+  function LENDING_POOL() external view returns (ILendingPool);
 
-  function INCENTIVES_CONTROLLER() external returns (IAaveIncentivesController);
+  function INCENTIVES_CONTROLLER() external view returns (IAaveIncentivesController);
 
-  function ATOKEN() external returns (IERC20);
+  function ATOKEN() external view returns (IERC20);
 
-  function ASSET() external returns (IERC20);
+  function ASSET() external view returns (IERC20);
 
-  function REWARD_TOKEN() external returns (IERC20);
+  function REWARD_TOKEN() external view returns (IERC20);
+
+  function UNDERLYING_ASSET_ADDRESS() external view returns (address);
+
+  function getIncentivesController() external view returns (IAaveIncentivesController);
 }
