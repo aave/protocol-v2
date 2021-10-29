@@ -18,6 +18,7 @@ import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
 import {
   DefaultReserveInterestRateStrategy
 } from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {IERC20DetailedBytes} from './interfaces/IERC20DetailedBytes.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
@@ -111,7 +112,13 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         .scaledTotalSupply();
 
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
-      reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
+      try IERC20Detailed(reserveData.underlyingAsset).symbol() returns (string memory symbol) {
+        reserveData.symbol = symbol;
+      } catch (bytes memory /*lowLevelData*/) {
+        bytes32 symbol = IERC20DetailedBytes(reserveData.underlyingAsset).symbol();
+        reserveData.symbol = string(abi.encodePacked(symbol));
+      } 
+      // reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
       reserveData.name = '';
 
       (
