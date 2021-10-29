@@ -34,6 +34,7 @@ const PERMISSIONS = {
   DEPOSITOR: 0,
   BORROWER: 1,
   LIQUIDATOR: 2,
+  STABLE_RATE_MANAGER: 3,
 };
 
 const config = {
@@ -104,6 +105,7 @@ describe('Aave ARC fork test', () => {
   let wethGateway: PermissionedWETHGateway;
 
   const {
+    LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET,
     PLP_DEPOSITOR_UNAUTHORIZED,
     PLP_BORROWER_UNAUTHORIZED,
     PLP_LIQUIDATOR_UNAUTHORIZED,
@@ -191,7 +193,7 @@ describe('Aave ARC fork test', () => {
     permissionManagerAdmin = ethers.provider.getSigner(permissionManagerAdminAddress);
   });
 
-  it('Add user1 as PermissionAdmin and user2', async () => {
+  it('Add user1 as PermissionAdmin and user2 as Depositor', async () => {
     await permissionManager
       .connect(permissionManagerAdmin)
       .addPermissionAdmins([await users[1].getAddress()]);
@@ -209,8 +211,7 @@ describe('Aave ARC fork test', () => {
     await configurator.connect(emergencyAdmin).setPoolPause(false);
   });
 
-  it('Give permissions to wethGateway', async () => {
-    // TODO
+  it('User1 Admin gives permissions to wethGateway', async () => {
     await permissionManager
       .connect(users[1])
       .addPermissions(
@@ -305,7 +306,7 @@ describe('Aave ARC fork test', () => {
       .addPermissions([PERMISSIONS.BORROWER], [await users[2].getAddress()]);
   });
 
-  it('User2 borrows 2 USDC', async () => {
+  it('User2 borrows 2 USDC variable', async () => {
     await pool
       .connect(users[2])
       .borrow(
@@ -325,6 +326,10 @@ describe('Aave ARC fork test', () => {
     const aToken = await ATokenFactory.connect(aaveData.aTokenAddress, users[0]);
     console.log('aToken balance of aave: ', await aave.balanceOf(aToken.address));
     console.log('aAave of user', await aToken.balanceOf(await users[2].getAddress()));
+
+    await permissionManager
+      .connect(users[1])
+      .addPermissions([PERMISSIONS.LIQUIDATOR], [await users[1].getAddress()]);
     await pool
       .connect(users[1])
       .seize(await users[2].getAddress(), [aave.address], await users[1].getAddress());
@@ -412,6 +417,30 @@ describe('Aave ARC fork test', () => {
       );
   });
 
+  it('User4 borrows 2 USDC stable', async () => {
+    await pool
+      .connect(users[4])
+      .borrow(
+        usdc.address,
+        await convertToCurrencyDecimals(usdc.address, '2'),
+        RateMode.Stable,
+        '0',
+        await users[4].getAddress()
+      );
+  });
+
+  it('User1 Admin add User2 as StableRateManager', async () => {
+    await permissionManager
+      .connect(users[1])
+      .addPermissions([PERMISSIONS.STABLE_RATE_MANAGER], [await users[2].getAddress()]);
+  });
+
+  it('User2 rebalanceStableRate of User4 borrowing', async () => {
+    await expect(
+      pool.connect(users[2]).rebalanceStableBorrowRate(usdc.address, await users[4].getAddress())
+    ).to.be.revertedWith(LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET);
+  });
+
   it('User5 tries to deposit USDC (revert expected)', async () => {
     await expect(
       pool
@@ -449,6 +478,12 @@ describe('Aave ARC fork test', () => {
         false
       )
     ).to.revertedWith(PLP_LIQUIDATOR_UNAUTHORIZED);
+  });
+
+  it('User5 tries to rebalanceStableBorrowRate of User1 (revert expected)', async () => {
+    await expect(
+      pool.connect(users[5]).rebalanceStableBorrowRate(aave.address, await users[1].getAddress())
+    ).to.revertedWith(PLP_CALLER_NOT_STABLE_RATE_MANAGER);
   });
 
   it('User5 tries to seize the WETH collateral of User2 (revert expected)', async () => {
