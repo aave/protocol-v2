@@ -28,6 +28,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   IChainlinkAggregator public immutable networkBaseTokenPriceInUsdProxyAggregator;
   IChainlinkAggregator public immutable marketReferenceCurrencyPriceInUsdProxyAggregator;
   uint256 public constant ETH_CURRENCY_UNIT = 1 ether;
+  address public constant MKRAddress = 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2;
 
 
   constructor(
@@ -112,6 +113,14 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         .scaledTotalSupply();
 
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
+      if (address(reserveData.underlyingAsset) == address(MKRAddress)) {
+        bytes32 symbol = IERC20DetailedBytes(reserveData.underlyingAsset).symbol();
+        reserveData.symbol = string(abi.encodePacked(symbol));
+      } else {
+        reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
+      }
+
+
       // (bool success, bytes memory result) = reserveData.underlyingAsset.staticcall(abi.encodeWithSignature("symbol()"));
       // reserveData.symbol = string(abi.encodePacked(result));
 
