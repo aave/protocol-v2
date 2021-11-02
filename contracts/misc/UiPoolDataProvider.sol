@@ -15,9 +15,7 @@ import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveC
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
-import {
-  DefaultReserveInterestRateStrategy
-} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {IERC20DetailedBytes} from './interfaces/IERC20DetailedBytes.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
@@ -30,9 +28,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   uint256 public constant ETH_CURRENCY_UNIT = 1 ether;
   address public constant MKRAddress = 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2;
 
-
   constructor(
-    IChainlinkAggregator _networkBaseTokenPriceInUsdProxyAggregator, 
+    IChainlinkAggregator _networkBaseTokenPriceInUsdProxyAggregator,
     IChainlinkAggregator _marketReferenceCurrencyPriceInUsdProxyAggregator
   ) public {
     networkBaseTokenPriceInUsdProxyAggregator = _networkBaseTokenPriceInUsdProxyAggregator;
@@ -71,10 +68,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     public
     view
     override
-    returns (
-      AggregatedReserveData[] memory,
-      BaseCurrencyInfo memory
-    )
+    returns (AggregatedReserveData[] memory, BaseCurrencyInfo memory)
   {
     IAaveOracle oracle = IAaveOracle(provider.getPriceOracle());
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
@@ -86,8 +80,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.underlyingAsset = reserves[i];
 
       // reserve current state
-      DataTypes.ReserveData memory baseData =
-        lendingPool.getReserveData(reserveData.underlyingAsset);
+      DataTypes.ReserveData memory baseData = lendingPool.getReserveData(
+        reserveData.underlyingAsset
+      );
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
       reserveData.liquidityRate = baseData.currentLiquidityRate;
@@ -98,7 +93,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
       reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
       reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
-      reserveData.priceInMarketReferenceCurrency = oracle.getAssetPrice(reserveData.underlyingAsset);
+      reserveData.priceInMarketReferenceCurrency = oracle.getAssetPrice(
+        reserveData.underlyingAsset
+      );
 
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
@@ -115,11 +112,10 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
       if (address(reserveData.underlyingAsset) == address(MKRAddress)) {
         bytes32 symbol = IERC20DetailedBytes(reserveData.underlyingAsset).symbol();
-        reserveData.symbol = string(abi.encodePacked(symbol));
+        reserveData.symbol = bytes32ToString(symbol);
       } else {
         reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
       }
-
 
       // (bool success, bytes memory result) = reserveData.underlyingAsset.staticcall(abi.encodeWithSignature("symbol()"));
       // reserveData.symbol = string(abi.encodePacked(result));
@@ -129,7 +125,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       // } catch (bytes memory /*lowLevelData*/) {
       //   bytes32 symbol = IERC20DetailedBytes(reserveData.underlyingAsset).symbol();
       //   reserveData.symbol = string(abi.encodePacked(symbol));
-      // } 
+      // }
       // reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
       reserveData.name = '';
 
@@ -158,15 +154,21 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     }
 
     BaseCurrencyInfo memory baseCurrencyInfo;
-    baseCurrencyInfo.networkBaseTokenPriceInUsd = networkBaseTokenPriceInUsdProxyAggregator.latestAnswer();
-    baseCurrencyInfo.networkBaseTokenPriceDecimals = networkBaseTokenPriceInUsdProxyAggregator.decimals();
+    baseCurrencyInfo.networkBaseTokenPriceInUsd = networkBaseTokenPriceInUsdProxyAggregator
+      .latestAnswer();
+    baseCurrencyInfo.networkBaseTokenPriceDecimals = networkBaseTokenPriceInUsdProxyAggregator
+      .decimals();
 
     try oracle.BASE_CURRENCY_UNIT() returns (uint256 baseCurrencyUnit) {
       baseCurrencyInfo.marketReferenceCurrencyUnit = baseCurrencyUnit;
       baseCurrencyInfo.marketReferenceCurrencyPriceInUsd = int256(baseCurrencyUnit);
-    } catch (bytes memory /*lowLevelData*/) {  
+    } catch (
+      bytes memory /*lowLevelData*/
+    ) {
       baseCurrencyInfo.marketReferenceCurrencyUnit = ETH_CURRENCY_UNIT;
-      baseCurrencyInfo.marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator.latestAnswer();
+      baseCurrencyInfo
+        .marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator
+        .latestAnswer();
     }
 
     return (reservesData, baseCurrencyInfo);
@@ -182,8 +184,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     address[] memory reserves = lendingPool.getReservesList();
     DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
-    UserReserveData[] memory userReservesData =
-      new UserReserveData[](user != address(0) ? reserves.length : 0);
+    UserReserveData[] memory userReservesData = new UserReserveData[](
+      user != address(0) ? reserves.length : 0
+    );
 
     for (uint256 i = 0; i < reserves.length; i++) {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(reserves[i]);
@@ -197,24 +200,32 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
 
       if (userConfig.isBorrowing(i)) {
         userReservesData[i].scaledVariableDebt = IVariableDebtToken(
-          baseData
-            .variableDebtTokenAddress
-        )
-          .scaledBalanceOf(user);
+          baseData.variableDebtTokenAddress
+        ).scaledBalanceOf(user);
         userReservesData[i].principalStableDebt = IStableDebtToken(baseData.stableDebtTokenAddress)
           .principalBalanceOf(user);
         if (userReservesData[i].principalStableDebt != 0) {
           userReservesData[i].stableBorrowRate = IStableDebtToken(baseData.stableDebtTokenAddress)
             .getUserStableRate(user);
           userReservesData[i].stableBorrowLastUpdateTimestamp = IStableDebtToken(
-            baseData
-              .stableDebtTokenAddress
-          )
-            .getUserLastUpdated(user);
+            baseData.stableDebtTokenAddress
+          ).getUserLastUpdated(user);
         }
       }
     }
 
     return (userReservesData);
+  }
+
+  function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
+    uint8 i = 0;
+    while (i < 32 && _bytes32[i] != 0) {
+      i++;
+    }
+    bytes memory bytesArray = new bytes(i);
+    for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+      bytesArray[i] = _bytes32[i];
+    }
+    return string(bytesArray);
   }
 }
