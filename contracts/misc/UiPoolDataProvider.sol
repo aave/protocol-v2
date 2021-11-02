@@ -112,12 +112,15 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         .scaledTotalSupply();
 
       // we're getting this info from the aToken, because some of assets can be not compliant with ETC20Detailed
-      try IERC20Detailed(reserveData.underlyingAsset).symbol() returns (string memory symbol) {
-        reserveData.symbol = symbol;
-      } catch (bytes memory /*lowLevelData*/) {
-        bytes32 symbol = IERC20DetailedBytes(reserveData.underlyingAsset).symbol();
-        reserveData.symbol = string(abi.encodePacked(symbol));
-      } 
+      // (bool success, bytes memory result) = reserveData.underlyingAsset.staticcall(abi.encodeWithSignature("symbol()"));
+      // reserveData.symbol = string(abi.encodePacked(result));
+
+      // try IERC20Detailed(reserveData.underlyingAsset).symbol() returns (string memory symbol) {
+      //   reserveData.symbol = symbol;
+      // } catch (bytes memory /*lowLevelData*/) {
+      //   bytes32 symbol = IERC20DetailedBytes(reserveData.underlyingAsset).symbol();
+      //   reserveData.symbol = string(abi.encodePacked(symbol));
+      // } 
       // reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
       reserveData.name = '';
 

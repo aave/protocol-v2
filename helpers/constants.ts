@@ -83,6 +83,7 @@ export const chainlinkAggregatorProxy = {
   mumbai: '0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada',
   avalanche: '0x0A77230d17318075983913bC2145DB16C7366156',
   fuji: '0x5498BB86BC934c8D34FDA08E81D444153d0D06aD',
+  tenderly: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
 };
 
 export const chainlinkEthUsdAggregatorProxy = {
@@ -92,4 +93,5 @@ export const chainlinkEthUsdAggregatorProxy = {
   mumbai: '0x0715A7794a1dc8e42615F059dD6e406A6594651A',
   avalanche: '0x976B3D034E162d8bD72D6b9C989d545b839003b0',
   fuji: '0x86d67c3D38D2bCeE722E601025C25a575021c6EA',
+  tenderly: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
 };
