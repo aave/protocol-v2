@@ -38,7 +38,7 @@ contract PermissionedWETHGateway is WETHGateway {
     ILendingPool pool = ILendingPool(lendingPool);
 
     require(
-      _isInRoleAndValidPermissionAdmin(msg.sender, DataTypes.Roles.DEPOSITOR, pool),
+      _isInRoleAndValidPermissionAdmin(onBehalfOf, DataTypes.Roles.DEPOSITOR, pool),
       Errors.PLP_USER_UNAUTHORIZED
     );
 
@@ -60,7 +60,7 @@ contract PermissionedWETHGateway is WETHGateway {
   ) public payable override {
     ILendingPool pool = ILendingPool(lendingPool);
 
-    require(_isInRole(msg.sender, DataTypes.Roles.BORROWER, pool), Errors.PLP_USER_UNAUTHORIZED);
+    require(_isInRole(onBehalfOf, DataTypes.Roles.BORROWER, pool), Errors.PLP_USER_UNAUTHORIZED);
     super.repayETH(lendingPool, amount, rateMode, onBehalfOf);
   }
 
