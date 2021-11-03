@@ -138,11 +138,11 @@ docker-compose exec contracts-env bash
 npm run aave:kovan:full:migration
 ```
 
-### Kovan Aave Pro Deployment
+### Kovan Aave ARC Deployment
 
-You can deploy aave-pro with default configuration on kovan.
+You can deploy aave-arc with default configuration on kovan.
 
-In `markets/aave-pro/commons.ts` make following changes:
+In `markets/aave-arc/commons.ts` make following changes:
 
 - Configure `ProviderRegistryOwner` and `ReserveFactorTreasuryAddress`
 
@@ -189,7 +189,7 @@ In `markets/aave-pro/commons.ts` make following changes:
   },
   ```
 
-**Note:** To configure aave pro market you can update `markets/aave-pro/`
+**Note:** To configure aave arc market you can update `markets/aave-arc/`
 
 #### Deploy Market
 
@@ -203,13 +203,13 @@ docker-compose up
 docker-compose exec contracts-env bash
 
 # A new Bash terminal is prompted, connected to the container
-npm run pro:kovan:full:migration
+npm run arc:kovan:full:migration
 ```
 
 **Without Docker**
 
 ```
-npm run pro:kovan:full:migration
+npm run arc:kovan:full:migration
 ```
 
 ### Mainnet fork deployment
