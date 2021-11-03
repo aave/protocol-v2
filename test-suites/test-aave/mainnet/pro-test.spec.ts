@@ -24,11 +24,11 @@ import {
   MockAggregatorFactory,
   PermissionedWETHGateway,
   PermissionedWETHGatewayFactory,
+  LendingPoolCollateralManagerFactory,
 } from '../../../types';
 import { ProtocolErrors, RateMode } from '../../../helpers/types';
 import { getFirstSigner } from '../../../helpers/contracts-getters';
 import { convertToCurrencyDecimals, getEthersSigners } from '../../../helpers/contracts-helpers';
-import { JsonRpcSigner } from '@ethersproject/providers';
 
 const PERMISSIONS = {
   DEPOSITOR: 0,
@@ -83,11 +83,11 @@ describe('Aave ARC fork test', () => {
   let ethers;
 
   let users: Signer[];
-  let ethHolder: JsonRpcSigner;
-  let usdcHolder: JsonRpcSigner;
-  let aaveHolder: JsonRpcSigner;
-  let wbtcHolder: JsonRpcSigner;
-  let wethHolder: JsonRpcSigner;
+  let ethHolder: Signer;
+  let usdcHolder: Signer;
+  let aaveHolder: Signer;
+  let wbtcHolder: Signer;
+  let wethHolder: Signer;
   let usdc: ERC20;
   let aave: ERC20;
   let wbtc: ERC20;
@@ -97,11 +97,11 @@ describe('Aave ARC fork test', () => {
   let provider: LendingPoolAddressesProvider;
   let configurator: LendingPoolConfigurator;
   let oracle: AaveOracle;
-  let oracleAdmin: JsonRpcSigner;
+  let oracleAdmin: Signer;
   let helpersContract: AaveProtocolDataProvider;
   let permissionManager: PermissionManager;
-  let permissionManagerAdmin: JsonRpcSigner;
-  let emergencyAdmin: JsonRpcSigner;
+  let permissionManagerAdmin: Signer;
+  let emergencyAdmin: Signer;
   let wethGateway: PermissionedWETHGateway;
 
   const {
@@ -114,12 +114,7 @@ describe('Aave ARC fork test', () => {
     PLP_INVALID_PERMISSION_ADMIN,
   } = ProtocolErrors;
 
-  const topUpWithERC20 = async (
-    asset: ERC20,
-    holder: JsonRpcSigner,
-    to: string,
-    amount: string
-  ) => {
+  const topUpWithERC20 = async (asset: ERC20, holder: Signer, to: string, amount: string) => {
     await asset
       .connect(holder)
       .transfer(to, await convertToCurrencyDecimals(asset.address, amount));
@@ -161,10 +156,24 @@ describe('Aave ARC fork test', () => {
       users[0]
     );
     permissionManager = await PermissionManagerFactory.connect(config.PermissionManager, users[0]);
-    wethGateway = await PermissionedWETHGatewayFactory.connect(
-      config.PermissionedWETHGateway,
-      users[0]
-    );
+  });
+
+  it('Deploy the PermissionedWethGateway', async () => {
+    wethGateway = await (
+      await new PermissionedWETHGatewayFactory(users[0]).deploy(WETH_ADDRESS)
+    ).deployed();
+    await wethGateway.authorizeLendingPool(pool.address);
+  });
+
+  it('Deploy the LendingPoolCollateralManager and register it at LendingPoolAddressesProvider', async () => {
+    const poolCollateralManager = await new LendingPoolCollateralManagerFactory(users[0]).deploy();
+
+    const providerAdminAddress = await provider.owner();
+    await impersonateAccountsHardhat([providerAdminAddress]);
+    const providerAdmin = ethers.provider.getSigner(providerAdminAddress);
+    await provider
+      .connect(providerAdmin)
+      .setLendingPoolCollateralManager(poolCollateralManager.address);
   });
 
   it('Pool Data', async () => {
@@ -177,7 +186,7 @@ describe('Aave ARC fork test', () => {
       console.log(token.symbol, '-', token.tokenAddress);
       reserveData = await helpersContract.getReserveData(token.tokenAddress);
       reserveTokens = await helpersContract.getReserveTokensAddresses(token.tokenAddress);
-      console.log(reserveData);
+      // console.log(reserveData);
       aToken = await ATokenFactory.connect(reserveTokens.aTokenAddress, users[0]);
       console.log('IncentivesController: ', await aToken.getIncentivesController());
     }
@@ -233,10 +242,10 @@ describe('Aave ARC fork test', () => {
         '0'
       );
 
-    console.log(await helpersContract.getReserveData(usdc.address));
-    console.log(
-      await helpersContract.getUserReserveData(usdc.address, await users[2].getAddress())
-    );
+    // console.log(await helpersContract.getReserveData(usdc.address));
+    // console.log(
+    //   await helpersContract.getUserReserveData(usdc.address, await users[2].getAddress())
+    // );
 
     await aave.connect(users[2]).approve(pool.address, MAX_UINT_AMOUNT);
     await topUpWithERC20(aave, aaveHolder, await users[2].getAddress(), '10');
@@ -319,9 +328,9 @@ describe('Aave ARC fork test', () => {
   });
 
   it('Admin User1 seizes the AAVE collateral of User2', async () => {
-    console.log(
-      await helpersContract.getUserReserveData(aave.address, await users[2].getAddress())
-    );
+    // console.log(
+    //   await helpersContract.getUserReserveData(aave.address, await users[2].getAddress())
+    // );
     const aaveData = await helpersContract.getReserveTokensAddresses(aave.address);
     const aToken = await ATokenFactory.connect(aaveData.aTokenAddress, users[0]);
     console.log('aToken balance of aave: ', await aave.balanceOf(aToken.address));
@@ -515,30 +524,6 @@ describe('Aave ARC fork test', () => {
     await permissionManager
       .connect(users[6])
       .addPermissions([PERMISSIONS.DEPOSITOR], [await users[7].getAddress()]);
-  });
-
-  it('Deploy new PermissionedWethGateway for User6 Admin and give it permissions', async () => {
-    // Deploy and approve
-    const ourWethGateway = (await (
-      await new PermissionedWETHGatewayFactory(await getFirstSigner()).deploy(WETH_ADDRESS)
-    ).deployed()) as PermissionedWETHGateway;
-    await ourWethGateway.authorizeLendingPool(pool.address);
-
-    // Permission
-    await permissionManager
-      .connect(users[6])
-      .addPermissions([PERMISSIONS.DEPOSITOR], [ourWethGateway.address]);
-
-    // Deposit
-    await ethHolder.sendTransaction({
-      to: await users[7].getAddress(),
-      value: ethers.utils.parseEther('2'),
-    });
-    await ourWethGateway
-      .connect(users[7])
-      .depositETH(pool.address, await users[7].getAddress(), 0, {
-        value: ethers.utils.parseEther('2'),
-      });
   });
 
   it('User6 tries to seize the WETH collateral of User2 (which is not under its control) (revert expected)', async () => {
