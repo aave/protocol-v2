@@ -4,7 +4,7 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('pro:mainnet', 'Deploy development enviroment')
+task('arc:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify }, DRE) => {
     const POOL_NAME = ConfigNames.Arc;
