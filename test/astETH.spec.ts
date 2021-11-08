@@ -160,6 +160,50 @@ makeSuite('StETH aToken', (testEnv: TestEnv) => {
       });
     });
 
+    describe('the single deposit after rebase', function () {
+      it('should update balances correctly', async () => {
+        const { pool, stETH } = testEnv;
+
+        await rebase(stETH, 1.0);
+
+        // the single deposit for lender A
+        await stETH.connect(lenderA.signer).approve(pool.address, await fxtPt(stETH, '13'));
+        await pool
+          .connect(lenderA.signer)
+          .deposit(stETH.address, await fxtPt(stETH, '13'), lenderA.address, '0');
+
+        await checkBal(astETH, lenderA.address, '13');
+      });
+    });
+
+    describe('the first deposit after rebase for lender', function () {
+      it('should update balances correctly', async () => {
+        const { pool, stETH } = testEnv;
+
+        await stETH.connect(lenderB.signer).approve(pool.address, await fxtPt(stETH, '97'));
+        await pool
+          .connect(lenderB.signer)
+          .deposit(stETH.address, await fxtPt(stETH, '97'), lenderB.address, '0');
+
+        await rebase(stETH, 1.0);
+
+        await stETH.connect(lenderA.signer).approve(pool.address, await fxtPt(stETH, '13'));
+        await pool
+          .connect(lenderA.signer)
+          .deposit(stETH.address, await fxtPt(stETH, '13'), lenderA.address, '0');
+
+        let balances = await astETH.getScaledUserBalanceAndSupply(lenderAAddress);
+
+        let expectedAmount = await fxtPt(astETH, '13');
+        expect(balances[0].toString()).to.be.equal(expectedAmount.toString());
+
+        expectedAmount = await fxtPt(astETH, '207');
+        expect(balances[1].toString()).to.be.equal(expectedAmount.toString());
+
+        await checkBal(astETH, lenderA.address, '13');
+      });
+    });
+
     describe('several sequintial deposits', function () {
       it('should mint aTokens correctly', async () => {
         const { pool, stETH } = testEnv;
