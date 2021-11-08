@@ -160,6 +160,50 @@ makeSuite('StETH aToken', (testEnv: TestEnv) => {
       });
     });
 
+    describe('several sequintial deposits', function () {
+      it('should mint aTokens correctly', async () => {
+        const { pool, stETH } = testEnv;
+
+        // the first deposit for A
+        await stETH.connect(lenderA.signer).approve(pool.address, await fxtPt(stETH, '7'));
+        await pool
+          .connect(lenderA.signer)
+          .deposit(stETH.address, await fxtPt(stETH, '7'), lenderA.address, '0');
+
+        // the single deposit for B
+        await stETH.connect(lenderB.signer).approve(pool.address, await fxtPt(stETH, '11'));
+        await pool
+          .connect(lenderB.signer)
+          .deposit(stETH.address, await fxtPt(stETH, '11'), lenderB.address, '0');
+
+        let balances = await astETH.getScaledUserBalanceAndSupply(lenderAAddress);
+
+        let expectedAmount = await fxtPt(astETH, '7');
+        expect(balances[0].toString()).to.be.equal(expectedAmount.toString());
+
+        expectedAmount = await fxtPt(astETH, '18');
+        expect(balances[1].toString()).to.be.equal(expectedAmount.toString());
+
+        await advanceTimeAndBlock(3600 * 24 * 14); // 2 weeks
+
+        // the second deposit for A
+        await stETH.connect(lenderA.signer).approve(pool.address, await fxtPt(stETH, '3'));
+        await pool
+          .connect(lenderA.signer)
+          .deposit(stETH.address, await fxtPt(stETH, '3'), lenderA.address, '0');
+
+        await checkBal(astETH, lenderA.address, '10');
+
+        balances = await astETH.getScaledUserBalanceAndSupply(lenderAAddress);
+
+        expectedAmount = await fxtPt(astETH, '10');
+        expect(balances[0].toString()).to.be.equal(expectedAmount.toString());
+
+        expectedAmount = await fxtPt(astETH, '21');
+        expect(balances[1].toString()).to.be.equal(expectedAmount.toString());
+      });
+    });
+
     describe('deposit->borrow->rebase->repay->deposit->rebase', function () {
       it('should mint aToken correctly', async () => {
         const { pool, stETH, dai } = testEnv;
