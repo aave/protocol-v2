@@ -282,6 +282,16 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
+   * @dev Returns the internal balance of the user and the scaled total supply.
+   * @param user The address of the user
+   * @return The internal balance of the user
+   * @return The internal balance and the scaled total supply
+   **/
+  function getInternalUserBalanceAndSupply(address user) external view returns (uint256, uint256) {
+    return (super.balanceOf(user), super.totalSupply());
+  }
+
+  /**
    * @dev calculates the total supply of the specific aToken
    * since the balance of every single user increases over time, the total supply
    * does that too.
@@ -298,11 +308,19 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev Returns the scaled total supply of the variable debt token. Represents sum(debt/index)
+   * @dev Returns the scaled total supply of the aToken.
    * @return the scaled total supply
    **/
   function scaledTotalSupply() public view virtual override returns (uint256) {
     return _scaledTotalSupply(_fetchExtData());
+  }
+
+  /**
+   * @dev Returns the internal total supply of the aToken.
+   * @return the scaled total supply
+   **/
+  function internalTotalSupply() public view returns (uint256) {
+    return super.totalSupply();
   }
 
   /**
