@@ -23,7 +23,7 @@ abstract contract BaseParaSwapBuyAdapter is BaseParaSwapAdapter {
     IParaSwapAugustusRegistry augustusRegistry
   ) public BaseParaSwapAdapter(addressesProvider) {
     // Do something on Augustus registry to check the right contract was passed
-    require(!augustusRegistry.isValidAugustus(address(0)));
+    require(!augustusRegistry.isValidAugustus(address(0)), "Not a valid Augustus address");
     AUGUSTUS_REGISTRY = augustusRegistry;
   }
 

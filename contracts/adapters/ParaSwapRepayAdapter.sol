@@ -72,10 +72,8 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     uint256 premium = premiums[0];
     address initiatorLocal = initiator;
     
-
     IERC20Detailed collateralAsset = IERC20Detailed(assets[0]);
     
-
     _swapAndRepay(
       params,
       premium,
@@ -112,21 +110,14 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     bytes calldata paraswapData,
     PermitSignature calldata permitSignature
   ) external nonReentrant {
-    DataTypes.ReserveData memory debtReserveData = _getReserveData(address(debtAsset));
 
-    address debtToken =
-      DataTypes.InterestRateMode(debtRateMode) == DataTypes.InterestRateMode.STABLE
-        ? debtReserveData.stableDebtTokenAddress
-        : debtReserveData.variableDebtTokenAddress;
-
-    uint256 currentDebt = IERC20(debtToken).balanceOf(msg.sender);
-
-    if (buyAllBalanceOffset != 0) {
-      require(currentDebt <= debtRepayAmount, 'INSUFFICIENT_AMOUNT_TO_REPAY');
-      debtRepayAmount = currentDebt;
-    } else {
-      require(debtRepayAmount <= currentDebt, 'INVALID_DEBT_REPAY_AMOUNT');
-    }
+    debtRepayAmount = getDebtRepayAmount(
+      debtAsset,
+      debtRateMode,
+      buyAllBalanceOffset,
+      debtRepayAmount,
+      msg.sender
+    );
 
     // Pull aTokens from user
     _pullATokenAndWithdraw(address(collateralAsset), msg.sender, collateralAmount, permitSignature);
@@ -223,7 +214,7 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     uint256 buyAllBalanceOffset,
     uint256 debtRepayAmount,
     address initiator
-  ) private returns (uint256) {
+  ) private view returns (uint256) {
     DataTypes.ReserveData memory debtReserveData = _getReserveData(address(debtAsset));
 
     address debtToken =
