@@ -14,7 +14,6 @@ import {
   ePolygonNetwork,
   eXDaiNetwork,
   eNetwork,
-  iParamsPerNetworkAll,
   iEthereumParamsPerNetwork,
   iPolygonParamsPerNetwork,
   iXDaiParamsPerNetwork,
@@ -25,7 +24,6 @@ import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
 import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
-import { usingPolygon, verifyAtPolygon } from './polygon-utils';
 import { getDefenderRelaySigner, usingDefender } from './defender-utils';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
@@ -142,14 +140,8 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const {
-    main,
-    ropsten,
-    kovan,
-    coverage,
-    buidlerevm,
-    tenderlyMain,
-  } = param as iEthereumParamsPerNetwork<T>;
+  const { main, ropsten, kovan, coverage, buidlerevm, tenderlyMain } =
+    param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
   if (process.env.FORK) {
@@ -332,13 +324,9 @@ export const verifyContract = async (
   instance: Contract,
   args: (string | string[])[]
 ) => {
-  if (usingPolygon()) {
-    await verifyAtPolygon(id, instance, args);
-  } else {
-    if (usingTenderly()) {
-      await verifyAtTenderly(id, instance);
-    }
-    await verifyEtherscanContract(instance.address, args);
+  if (usingTenderly()) {
+    await verifyAtTenderly(id, instance);
   }
+  await verifyEtherscanContract(instance.address, args);
   return instance;
 };
