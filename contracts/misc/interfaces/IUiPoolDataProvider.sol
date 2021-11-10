@@ -41,6 +41,22 @@ interface IUiPoolDataProvider {
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
+    // v3
+    uint128 accruedToTreasury;
+    uint128 unbacked;
+    uint128 isolationModeTotalDebt;
+    //
+    uint256 debtCeiling;
+    uint256 debtCeilingDecimals;
+    uint8 eModeCategoryId;
+    uint256 borrowCap;
+    uint256 supplyCap; 
+    // eMode
+    uint16 eModeLtv;
+    uint16 eModeLiquidationThreshold;
+    uint16 eModeLiquidationBonus;
+    address eModePriceSource;
+    string eModeLabel;
   }
 
   struct UserReserveData {
@@ -77,6 +93,6 @@ interface IUiPoolDataProvider {
     external
     view
     returns (
-      UserReserveData[] memory
+      UserReserveData[] memory, uint8
     );
 }

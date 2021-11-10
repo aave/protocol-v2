@@ -165,7 +165,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     external
     view
     override
-    returns (UserReserveData[] memory)
+    returns (UserReserveData[] memory, uint8)
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
@@ -201,7 +201,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       }
     }
 
-    return (userReservesData);
+    // Return 0 to be compatible with v3 userEmodeCategoryId return
+    return (userReservesData, 0);
   }
 
   function bytes32ToString(bytes32 _bytes32) public pure returns (string memory) {
