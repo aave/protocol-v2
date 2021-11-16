@@ -523,7 +523,11 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
         totalSupplyInternalBefore,
         scaledTotalSupplyBefore
       );
-    uint256 otherBalanceScaledBefore = scaledTotalSupplyBefore.sub(userBalanceScaledBefore);
+
+    uint256 otherBalanceScaledBefore = 0;
+    if (userBalanceScaledBefore <= scaledTotalSupplyBefore) {
+      otherBalanceScaledBefore = scaledTotalSupplyBefore.sub(userBalanceScaledBefore);
+    }
 
     uint256 scaledTotalSupplyAfter = 0;
     if (burnAmountScaled <= scaledTotalSupplyBefore) {
