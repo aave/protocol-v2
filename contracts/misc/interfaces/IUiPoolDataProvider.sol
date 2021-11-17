@@ -42,6 +42,7 @@ interface IUiPoolDataProvider {
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
     // v3
+    bool isPaused;
     uint128 accruedToTreasury;
     uint128 unbacked;
     uint128 isolationModeTotalDebt;
@@ -57,6 +58,7 @@ interface IUiPoolDataProvider {
     uint16 eModeLiquidationBonus;
     address eModePriceSource;
     string eModeLabel;
+    bool borrowableInIsolation;
   }
 
   struct UserReserveData {
