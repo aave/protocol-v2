@@ -1,35 +1,35 @@
-import { Contract, Signer, utils, ethers, BigNumberish } from 'ethers';
-import { signTypedData_v4 } from 'eth-sig-util';
-import { fromRpcSig, ECDSASignature } from 'ethereumjs-util';
+import {BigNumberish, Contract, ethers, Signer, utils} from 'ethers';
+import {signTypedData_v4} from 'eth-sig-util';
+import {ECDSASignature, fromRpcSig} from 'ethereumjs-util';
 import BigNumber from 'bignumber.js';
-import { getDb, DRE, waitForTx, notFalsyOrZeroAddress } from './misc-utils';
+import {DRE, getDb, notFalsyOrZeroAddress, waitForTx} from './misc-utils';
 import {
-  tEthereumAddress,
-  eContractid,
-  tStringTokenSmallUnits,
-  eEthereumNetwork,
   AavePools,
-  iParamsPerNetwork,
-  iParamsPerPool,
+  eAvalancheNetwork,
+  eContractid,
+  eEthereumNetwork,
+  eNetwork,
   ePolygonNetwork,
   eXDaiNetwork,
-  eNetwork,
+  iAvalancheParamsPerNetwork,
   iEthereumParamsPerNetwork,
+  iParamsPerNetwork,
+  iParamsPerPool,
   iPolygonParamsPerNetwork,
   iXDaiParamsPerNetwork,
-  iAvalancheParamsPerNetwork,
-  eAvalancheNetwork,
+  tEthereumAddress,
+  tStringTokenSmallUnits,
 } from './types';
-import { MintableERC20 } from '../types/MintableERC20';
-import { Artifact } from 'hardhat/types';
-import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
-import { verifyEtherscanContract } from './etherscan-verification';
-import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
-import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
-import { usingPolygon, verifyAtPolygon } from './polygon-utils';
-import { ConfigNames, loadPoolConfig } from './configuration';
-import { ZERO_ADDRESS } from './constants';
-import { getDefenderRelaySigner, usingDefender } from './defender-utils';
+import {MintableERC20} from '../types/MintableERC20';
+import {Artifact} from 'hardhat/types';
+import {Artifact as BuidlerArtifact} from '@nomiclabs/buidler/types';
+import {verifyEtherscanContract} from './etherscan-verification';
+import {getFirstSigner, getIErc20Detailed} from './contracts-getters';
+import {usingTenderly, verifyAtTenderly} from './tenderly-utils';
+import {usingPolygon, verifyAtPolygon} from './polygon-utils';
+import {ConfigNames, loadPoolConfig} from './configuration';
+import {ZERO_ADDRESS} from './constants';
+import {getDefenderRelaySigner, usingDefender} from './defender-utils';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
@@ -145,7 +145,7 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const { main, ropsten, kovan, coverage, buidlerevm, tenderly } =
+  const { main, ropsten, kovan, goerli, coverage, buidlerevm, tenderly } =
     param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
@@ -163,6 +163,8 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return buidlerevm;
     case eEthereumNetwork.kovan:
       return kovan;
+    case eEthereumNetwork.goerli:
+      return goerli;
     case eEthereumNetwork.ropsten:
       return ropsten;
     case eEthereumNetwork.main:

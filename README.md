@@ -138,6 +138,19 @@ docker-compose exec contracts-env bash
 npm run aave:kovan:full:migration
 ```
 
+### Goerli deployment
+
+```
+# In one terminal
+docker-compose up
+
+# Open another tab or terminal
+docker-compose exec contracts-env bash
+
+# A new Bash terminal is prompted, connected to the container
+npm run aave:goerli:full:migration
+```
+
 ### Mainnet fork deployment
 
 You can deploy Aave Protocol v2 in a forked Mainnet chain using Hardhat built-in fork feature:
