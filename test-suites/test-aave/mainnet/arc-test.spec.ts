@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import rawHRE from 'hardhat';
 import BigNumber from 'bignumber.js';
 import { Signer } from 'ethers';
-import { DRE } from '../../../helpers/misc-utils';
+import { DRE, evmRevert, evmSnapshot } from '../../../helpers/misc-utils';
 import { impersonateAccountsHardhat } from '../../../helpers/misc-utils';
 import { MAX_UINT_AMOUNT } from '../../../helpers/constants';
 import {
@@ -38,34 +38,34 @@ const PERMISSIONS = {
 };
 
 const config = {
-  LendingPoolAddressesProvider: '',
-  ReserveLogic: '',
-  GenericLogic: '',
-  ValidationLogic: '',
-  LendingPoolImpl: '',
-  LendingPool: '',
-  LendingPoolConfiguratorImpl: '',
-  LendingPoolConfigurator: '',
-  StableAndVariableTokensHelper: '',
-  ATokensAndRatesHelper: '',
-  AaveOracle: '',
-  LendingRateOracle: '',
-  AaveProtocolDataProvider: '',
-  StableDebtToken: '',
-  VariableDebtToken: '',
-  AToken: '',
-  aTokenImpl: '',
-  DefaultReserveInterestRateStrategy: '',
-  rateStrategyAAVE: '',
-  rateStrategyWETH: '',
-  WalletBalanceProvider: '',
-  PermissionManager: '',
-  PermissionedStableDebtToken: '',
-  PermissionedVariableDebtToken: '',
-  rateStrategyStable: '',
-  rateStrategyWBTC: '',
-  PermissionedWETHGateway: '',
-  UiPoolDataProvider: '',
+  LendingPoolAddressesProvider: '0x6FdfafB66d39cD72CFE7984D3Bbcc76632faAb00',
+  ReserveLogic: '0x7DAD18d71880C8d7b58544195818255BAaF3d990',
+  GenericLogic: '0xD342bf0cc6634a80B4cC45eC7553b316C15dDdB9',
+  ValidationLogic: '0x357895E412b724f267645873D2738fF25b7A2Cf6',
+  LendingPoolImpl: '0xfbF029508c061B440D0cF7Fd639e77Fb2E196241',
+  LendingPool: '0x37D7306019a38Af123e4b245Eb6C28AF552e0bB0',
+  LendingPoolConfiguratorImpl: '0x8e5E28f273E3a6612A9C5d6F16aa67DA156042F4',
+  LendingPoolConfigurator: '0x4e1c7865e7BE78A7748724Fa0409e88dc14E67aA',
+  StableAndVariableTokensHelper: '0x42E74d1065808b7cBC5B20CdEA702551FC613F0c',
+  ATokensAndRatesHelper: '0x52c62481e923475C0e975a565F7ceec9148Cea42',
+  AaveOracle: '0xB8a7bc0d13B1f5460513040a97F404b4fea7D2f3',
+  LendingRateOracle: '0xfA3c34d734fe0106C87917683ca45dffBe3b3B00',
+  AaveProtocolDataProvider: '0x71B53fC437cCD988b1b89B1D4605c3c3d0C810ea',
+  StableDebtToken: '0xf5cb54A1d47AC211F1608C7b8FB211b5580c8a3f',
+  VariableDebtToken: '0x3E26DAb254342892DFBa7097Dd78845D12A4586c',
+  AToken: '0x6faeE7AaC498326660aC2B7207B9f67666073111',
+  aTokenImpl: '0x6faeE7AaC498326660aC2B7207B9f67666073111',
+  DefaultReserveInterestRateStrategy: '0x5E4b5f5eb05E244632e0eA584525F11Dd03f5B38',
+  rateStrategyAAVE: '0x5E4b5f5eb05E244632e0eA584525F11Dd03f5B38',
+  rateStrategyWETH: '0xC2B0945C6D0A842eC2a1345f08c4ef2060452B6A',
+  WalletBalanceProvider: '0x457419b361fF5340315De18F626b12eE2eAeDDa1',
+  PermissionManager: '0xF4a1F5fEA79C3609514A417425971FadC10eCfBE',
+  PermissionedStableDebtToken: '0x71c60e94C10d90D0386BaC547378c136cb6aD2b4',
+  PermissionedVariableDebtToken: '0x82b488281aeF001dAcF106b085cc59EEf0995131',
+  rateStrategyStable: '0x81D7Bb11D682005B3Fca0Ef48381263BeC9b2d1C',
+  rateStrategyWBTC: '0x1205ACe6831E5518E00A16f1820cD73ce198bEF6',
+  PermissionedWETHGateway: '0xD51E46B02eCB71357cBdf661E2789EC787d94Af9',
+  UiPoolDataProvider: '0xED200aceFd4E63fe17B97B02d2616228d0df5398',
 };
 
 const ETH_HOLDER = '0x829BD824B016326A401d083B33D092293333A830';
@@ -105,6 +105,7 @@ describe('Aave ARC fork test', () => {
   let wethGateway: PermissionedWETHGateway;
 
   const {
+    VL_TRANSFER_NOT_ALLOWED,
     LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET,
     PLP_DEPOSITOR_UNAUTHORIZED,
     PLP_BORROWER_UNAUTHORIZED,
@@ -265,6 +266,37 @@ describe('Aave ARC fork test', () => {
     console.log(await aToken.balanceOf(await users[2].getAddress()));
   });
 
+  it('User2 tries to transfer aWETH to non-whitelisted user (revert expected)', async () => {
+    const wethData = await helpersContract.getReserveTokensAddresses(weth.address);
+    const aToken = await ATokenFactory.connect(wethData.aTokenAddress, users[0]);
+
+    await expect(
+      aToken.connect(users[2]).transfer(await users[3].getAddress(), 1)
+    ).to.be.revertedWith(VL_TRANSFER_NOT_ALLOWED);
+  });
+
+  it('User1 PermissionAdmin removes User2 as depositor and User2 tries to withdrawETH (revert expected)', async () => {
+    const snapId = await evmSnapshot();
+
+    await permissionManager
+      .connect(users[1])
+      .removePermissions([PERMISSIONS.DEPOSITOR], [await users[2].getAddress()]);
+
+    await expect(
+      wethGateway
+        .connect(users[2])
+        .withdrawETH(pool.address, MAX_UINT_AMOUNT, await users[2].getAddress())
+    ).to.be.reverted;
+
+    await expect(
+      wethGateway
+        .connect(users[2])
+        .withdrawETH(pool.address, MAX_UINT_AMOUNT, await users[3].getAddress())
+    ).to.be.reverted;
+
+    await evmRevert(snapId);
+  });
+
   it('User1 Admin add user3 as Depositor', async () => {
     await permissionManager
       .connect(users[1])
@@ -282,6 +314,12 @@ describe('Aave ARC fork test', () => {
         await users[3].getAddress(),
         '0'
       );
+  });
+
+  it('User3 tries to borrowETH with no BORROWER role (revert expected)', async () => {
+    await expect(
+      wethGateway.connect(users[3]).borrowETH(pool.address, '1', 0, 0)
+    ).to.be.revertedWith(PLP_BORROWER_UNAUTHORIZED);
   });
 
   it('User1 Admin add user2 as Borrower', async () => {
