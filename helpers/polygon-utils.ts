@@ -90,7 +90,7 @@ export const verifyAtPolygon = async (
       `[Polygon Verify] Verifying ${id} with address ${instance.address} at Matic network`
     );
     const response = await axios.post(
-      `https://api.polygonscan.com`,
+      `https://api.polygonscan.com/api`,
       {
         addressHash: instance.address,
         name: id,
