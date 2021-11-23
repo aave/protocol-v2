@@ -63,7 +63,7 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eEthereumNetwork.buidlerevm]: 65 * GWEI,
   [eEthereumNetwork.tenderly]: 1 * GWEI,
   [ePolygonNetwork.mumbai]: 50 * GWEI,
-  [ePolygonNetwork.matic]: 500 * GWEI,
+  [ePolygonNetwork.matic]: 50 * GWEI,
   [eXDaiNetwork.xdai]: 1 * GWEI,
   [eAvalancheNetwork.avalanche]: 225 * GWEI,
   [eAvalancheNetwork.fuji]: 85 * GWEI,
