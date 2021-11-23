@@ -12,6 +12,9 @@ const TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS = 'compile:solidity:get-source-path
 export const usingPolygon = () =>
   DRE && Object.keys(ePolygonNetwork).includes((DRE as HardhatRuntimeEnvironment).network.name);
 
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 /* Polygon Verifier */
 
 const SOLIDITY_PRAGMA = 'pragma solidity';
@@ -78,6 +81,7 @@ export const verifyAtPolygon = async (
   const filePath = await findPath(id);
   const encodedConstructorParams = encodeDeployParams(instance, args);
   const flattenSourceCode = await hardhatFlattener(filePath);
+  await delay(10000);
 
   // Remove pragmas and license identifier after first match, required by block explorers like explorer-mainnet.maticgivil.com or Etherscan
   const cleanedSourceCode = removeLines(
