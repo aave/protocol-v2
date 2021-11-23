@@ -1,5 +1,5 @@
 import { task } from 'hardhat/config';
-import { ePolygonNetwork } from '../../helpers/types';
+import { ePolygonNetwork, eEthereumNetwork } from '../../helpers/types';
 import { getTreasuryAddress } from '../../helpers/configuration';
 import * as marketConfigs from '../../markets/matic';
 import * as reserveConfigs from '../../markets/matic/reservesConfigs';
@@ -17,7 +17,7 @@ const LENDING_POOL_ADDRESS_PROVIDER = {
   matic: '0xd05e3E715d945B59290df0ae8eF85c1BdB684744',
 };
 
-const isSymbolValid = (symbol: string, network: ePolygonNetwork) =>
+const isSymbolValid = (symbol: string, network: eEthereumNetwork) =>
   Object.keys(reserveConfigs).includes('strategy' + symbol) &&
   marketConfigs.MaticConfig.ReserveAssets[network][symbol] &&
   marketConfigs.MaticConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol];
@@ -27,7 +27,7 @@ task('external:deploy-new-asset-matic', 'Deploy A token, Debt Tokens, Risk Param
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify, symbol }, localBRE) => {
     const network = localBRE.network.name;
-    if (!isSymbolValid(symbol, network as ePolygonNetwork)) {
+    if (!isSymbolValid(symbol, network as eEthereumNetwork)) {
       throw new Error(
         `
 WRONG RESERVE ASSET SETUP:
