@@ -42,7 +42,7 @@ library DataTypes {
   }
 
   struct UserConfigurationMap {
-    uint256 data;
+    uint256[2] data; // size is _maxReserves / 128 + ((_maxReserves % 128 > 0) ? 1 : 0), but need to be literal
   }
 
   enum InterestRateMode {NONE, STABLE, VARIABLE}
