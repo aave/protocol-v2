@@ -479,6 +479,7 @@ export interface iParamsPerPool<T> {
   [AavePools.matic]: T;
   [AavePools.amm]: T;
   [AavePools.avalanche]: T;
+  [AavePools.realT]: T;
 }
 
 export interface iBasicDistributionParams {

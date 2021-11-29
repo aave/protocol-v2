@@ -11,6 +11,7 @@ import AaveConfig from '../markets/aave';
 import MaticConfig from '../markets/matic';
 import AvalancheConfig from '../markets/avalanche';
 import AmmConfig from '../markets/amm';
+import RealTConfig from '../markets/realT';
 
 import { CommonsConfig } from '../markets/aave/commons';
 import { DRE, filterMapBy } from './misc-utils';
@@ -39,6 +40,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
         return AvalancheConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
+    case ConfigNames.RealT:
+      return RealTConfig;
     default:
       throw new Error(
         `Unsupported pool configuration: ${configName} is not one of the supported configs ${Object.values(
@@ -66,7 +69,10 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.avalanche]: {
         ...AvalancheConfig.ReservesConfig,
-      }
+      },
+      [AavePools.realT]: {
+        ...RealTConfig.ReservesConfig,
+      },
     },
     pool
   );
