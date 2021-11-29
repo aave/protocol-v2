@@ -293,7 +293,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'xSUSHI'
 >;
 
-export type iAaveRealTPoolAssets<T> = Pick<
+export type iRealTPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'DAI'
   | 'USDC'
@@ -578,8 +578,8 @@ export interface IAvalancheConfiguration extends ICommonConfiguration {
   ReservesConfig: iAvalanchePoolAssets<IReserveParams>;
 }
 
-export interface IAaveRealTConfiguration extends ICommonConfiguration {
-  ReservesConfig: iAaveRealTPoolAssets<IReserveParams>;
+export interface IRealTConfiguration extends ICommonConfiguration {
+  ReservesConfig: iRealTPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {
