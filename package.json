@@ -36,6 +36,7 @@
     "amm:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- amm:mainnet --skip-registry",
     "aave:docker:full:migration:add-registry": "npm run compile && npm run hardhat:docker -- aave:mainnet",
     "aave:kovan:full:migration:add-registry": "npm run compile && npm run hardhat:kovan -- aave:mainnet",
+    "realT:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- realT:mainnet --skip-registry",
     "realT:kovan:full:migration:add-registry": "npm run compile && npm run hardhat:kovan -- realT:mainnet --verify",
     "matic:mumbai:full:migration:add-registry": "npm run compile && npm run hardhat:mumbai sidechain:mainnet -- --pool Matic",
     "matic:matic:full:migration:add-registry": "npm run compile && npm run hardhat:matic sidechain:mainnet -- --pool Matic",
