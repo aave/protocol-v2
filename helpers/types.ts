@@ -46,6 +46,7 @@ export enum AavePools {
   matic = 'matic',
   amm = 'amm',
   avalanche = 'avalanche',
+  realT = 'realT',
 }
 
 export enum eContractid {
@@ -251,6 +252,16 @@ export interface iAssetBase<T> {
   STAKE: T;
   xSUSHI: T;
   WAVAX: T;
+  'REALTOKEN-S-13895-SARATOGA-ST-DETROIT-MI': T;
+  'REALTOKEN-S-4380-BEACONSFIELD-ST-DETROIT-MI': T;
+  'REALTOKEN-S-17813-BRADFORD-ST-DETROIT-M': T;
+  'REALTOKEN-S-15796-HARTWELL-ST-DETROIT-MI': T;
+  'REALTOKEN-S-9717-EVERTS-ST-DETROIT-MI': T;
+  'REALTOKEN-S-19201-WESTPHALIA-ST-DETROIT-MI': T;
+  'REALTOKEN-S-19163-MITCHELL-ST-DETROIT-MI': T;
+  'REALTOKEN-S-4061-GRAND-ST-DETROIT-M': T;
+  'REALTOKEN-S-4680-BUCKINGHAM-AVE-DETROIT-MI': T;
+  'REALTOKEN-S-19311-KEYSTONE-ST-DETROIT-MI': T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -280,6 +291,25 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+>;
+
+export type iAaveRealTPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  | 'DAI'
+  | 'USDC'
+  | 'USDT'
+  | 'WBTC'
+  | 'WETH'
+  | 'REALTOKEN-S-13895-SARATOGA-ST-DETROIT-MI'
+  | 'REALTOKEN-S-4380-BEACONSFIELD-ST-DETROIT-MI'
+  | 'REALTOKEN-S-17813-BRADFORD-ST-DETROIT-M'
+  | 'REALTOKEN-S-15796-HARTWELL-ST-DETROIT-MI'
+  | 'REALTOKEN-S-9717-EVERTS-ST-DETROIT-MI'
+  | 'REALTOKEN-S-19201-WESTPHALIA-ST-DETROIT-MI'
+  | 'REALTOKEN-S-19163-MITCHELL-ST-DETROIT-MI'
+  | 'REALTOKEN-S-4061-GRAND-ST-DETROIT-M'
+  | 'REALTOKEN-S-4680-BUCKINGHAM-AVE-DETROIT-MI'
+  | 'REALTOKEN-S-19311-KEYSTONE-ST-DETROIT-MI'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -546,6 +576,10 @@ export interface IXDAIConfiguration extends ICommonConfiguration {
 
 export interface IAvalancheConfiguration extends ICommonConfiguration {
   ReservesConfig: iAvalanchePoolAssets<IReserveParams>;
+}
+
+export interface IAaveRealTConfiguration extends ICommonConfiguration {
+  ReservesConfig: iAaveRealTPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {
