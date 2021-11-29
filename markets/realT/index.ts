@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { IAaveRealTConfiguration, eEthereumNetwork } from '../../helpers/types';
+import { IRealTConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -24,7 +24,7 @@ import {
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-export const RealTConfig: IAaveRealTConfiguration = {
+export const RealTConfig: IRealTConfiguration = {
   ...CommonsConfig,
   MarketId: 'RealT market',
   ProviderId: 5,
