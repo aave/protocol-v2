@@ -370,6 +370,8 @@ export enum TokenContractId {
   UniYFIWETH = 'UniYFIWETH',
   BptWBTCWETH = 'BptWBTCWETH',
   BptBALWETH = 'BptBALWETH',
+  GUniDAIUSDC = 'GUniDAIUSDC',
+  GUniUSDCUSDT = 'GUniUSDCUSDT',
   WMATIC = 'WMATIC',
   STAKE = 'STAKE',
   xSUSHI = 'xSUSHI',
