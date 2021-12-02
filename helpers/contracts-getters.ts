@@ -33,6 +33,7 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  ParaSwapRepayAdapterFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
@@ -444,3 +445,11 @@ export const getParaSwapLiquiditySwapAdapter = async (address?: tEthereumAddress
         .address,
     await getFirstSigner()
   );
+
+  export const getParaSwapRepayAdapter = async (address?: tEthereumAddress) =>
+  await ParaSwapRepayAdapterFactory.connect(
+    address ||
+      (await getDb().get(`${eContractid.ParaSwapRepayAdapter}.${DRE.network.name}`).value())
+        .address,
+    await getFirstSigner()
+  );  
