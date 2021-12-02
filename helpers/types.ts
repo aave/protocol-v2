@@ -251,6 +251,11 @@ export interface iAssetBase<T> {
   STAKE: T;
   xSUSHI: T;
   WAVAX: T;
+  CRV: T;
+  BAL: T;
+  SUSHI: T;
+  DPI: T;
+  GHST: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -309,7 +314,19 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC' | 'AAVE'
+  | 'DAI' 
+  | 'USDC' 
+  | 'USDT' 
+  | 'WBTC' 
+  | 'WETH' 
+  | 'WMATIC' 
+  | 'AAVE' 
+  | 'LINK' 
+  | 'CRV' 
+  | 'BAL' 
+  | 'SUSHI' 
+  | 'DPI' 
+  | 'GHST'
 >;
 
 export type iXDAIPoolAssets<T> = Pick<
@@ -370,6 +387,11 @@ export enum TokenContractId {
   STAKE = 'STAKE',
   xSUSHI = 'xSUSHI',
   WAVAX = 'WAVAX',
+  SUSHI = 'SUSHI',
+  DPI = 'DPI',
+  BAL = 'BAL',
+  CRV = 'CRV',
+  GHST = 'GHST',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {

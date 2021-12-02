@@ -9,6 +9,12 @@ import {
   strategyWETH,
   strategyMATIC,
   strategyAAVE,
+  strategyLINK,
+  strategySUSHI,
+  strategyBAL,
+  strategyCRV,
+  strategyDPI,
+  strategyGHST,
 } from './reservesConfigs';
 
 // ----------------
@@ -27,6 +33,12 @@ export const MaticConfig: IMaticConfiguration = {
     WETH: strategyWETH,
     WMATIC: strategyMATIC,
     AAVE: strategyAAVE,
+    LINK: strategyLINK,
+    CRV: strategyCRV,
+    BAL: strategyBAL,
+    SUSHI: strategySUSHI,
+    DPI: strategyDPI,
+    GHST: strategyGHST,
   },
   ReserveAssets: {
     [ePolygonNetwork.matic]: {
@@ -37,6 +49,12 @@ export const MaticConfig: IMaticConfiguration = {
       WETH: '0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619',
       WMATIC: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
       AAVE: '0xD6DF932A45C0f255f85145f286eA0b292B21C90B',
+      LINK: '0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39',
+      CRV: '0x172370d5cd63279efa6d502dab29171933a610af',
+      BAL: '0x9a71012b13ca4d3d0cdc72a177df3ef03b0e76a3',
+      SUSHI: '0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a',
+      DPI: '0x85955046df4668e1dd369d2de9f3aeb98dd2a369',
+      GHST: '0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7',
     },
     [ePolygonNetwork.mumbai]: {
       // Mock tokens with a simple "mint" external function, except wmatic
