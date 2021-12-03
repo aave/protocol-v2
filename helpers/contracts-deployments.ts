@@ -51,6 +51,7 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  UiIncentiveDataProviderV2,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -68,6 +69,15 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
 import { eNetwork } from './types';
+
+export const deployUiIncentiveDataProviderV2 = async (verify?: boolean) => {
+  const id = eContractid.UiIncentiveDataProviderV2;
+  const instance = await deployContract<UiIncentiveDataProviderV2>(id, []);
+  if (verify) {
+    await verifyContract(id, instance, []);
+  }
+  return instance;
+};
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
