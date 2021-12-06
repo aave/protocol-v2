@@ -99,7 +99,7 @@ export const CommonsConfig: ICommonConfiguration = {
     BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
-        ENS: {
+    ENS: {
       borrowRate: oneRay.multipliedBy(0.013).toFixed(),
     },
   },
