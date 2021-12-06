@@ -51,6 +51,7 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  UiPoolDataProviderV2Factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -68,6 +69,21 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
 import { eNetwork } from './types';
+
+export const deployUiPoolDataProviderV2 = async (
+  chainlinkAggregatorProxy: string,
+  chainlinkEthUsdAggregatorProxy: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UiPoolDataProviderV2Factory(await getFirstSigner()).deploy(
+      chainlinkAggregatorProxy,
+      chainlinkEthUsdAggregatorProxy
+    ),
+    eContractid.UiPoolDataProvider,
+    [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
+    verify
+  );
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
