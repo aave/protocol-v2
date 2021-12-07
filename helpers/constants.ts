@@ -73,6 +73,6 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   STAKE: oneEther.multipliedBy('0.003620948469').toFixed(),
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
   WAVAX: oneEther.multipliedBy('0.006051936629').toFixed(),
-  USTw: oneEther.multipliedBy('0.0002300251878').toFixed(),
+  UST: oneEther.multipliedBy('0.0002300251878').toFixed(),
   USD: '5848466240000000',
 };

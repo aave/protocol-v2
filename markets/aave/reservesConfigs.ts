@@ -265,7 +265,7 @@ export const strategyXSUSHI: IReserveParams = {
   reserveFactor: '3500',
 };
 
-export const strategyUSTw: IReserveParams = {
+export const strategyUST: IReserveParams = {
   strategy: rateStrategyStableTwo,
   baseLTVAsCollateral: '0',
   liquidationThreshold: '0',
