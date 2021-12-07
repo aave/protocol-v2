@@ -100,7 +100,7 @@ export const CommonsConfig: ICommonConfiguration = {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
     ENS: {
-      borrowRate: oneRay.multipliedBy(0.013).toFixed(),
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
   },
   // ----------------
