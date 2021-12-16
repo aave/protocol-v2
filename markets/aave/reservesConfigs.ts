@@ -269,7 +269,7 @@ export const strategyENS: IReserveParams = {
   strategy: rateStrategyVolatileFour,
   baseLTVAsCollateral: '5000',
   liquidationThreshold: '6000',
-  liquidationBonus: '8000',
+  liquidationBonus: '10800',
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
