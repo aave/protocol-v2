@@ -84,6 +84,9 @@ export const chainlinkAggregatorProxy = {
   avalanche: '0x0A77230d17318075983913bC2145DB16C7366156',
   fuji: '0x5498BB86BC934c8D34FDA08E81D444153d0D06aD',
   tenderly: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+  'arbitrum-rinkeby': '0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8',
+  arbitrum: '0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612',
+  rinkeby: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e',
 };
 
 export const chainlinkEthUsdAggregatorProxy = {
@@ -94,4 +97,7 @@ export const chainlinkEthUsdAggregatorProxy = {
   avalanche: '0x976B3D034E162d8bD72D6b9C989d545b839003b0',
   fuji: '0x86d67c3D38D2bCeE722E601025C25a575021c6EA',
   tenderly: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+  'arbitrum-rinkeby': '0x5f0423B1a6935dc5596e7A24d98532b67A0AeFd8',
+  arbitrum: '0x639Fe6ab55C921f74e7fac1ee960C0B6293ba612',
+  rinkeby: '0x8A753747A1Fa494EC906cE90E9f37563A8AF630e',
 };

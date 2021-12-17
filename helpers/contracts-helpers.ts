@@ -381,14 +381,10 @@ export const verifyContract = async (
   instance: Contract,
   args: (string | string[])[]
 ) => {
-  if (usingPolygon()) {
-    await verifyAtPolygon(id, instance, args);
-  } else {
-    if (usingTenderly()) {
-      await verifyAtTenderly(id, instance);
-    }
-    await verifyEtherscanContract(instance.address, args);
+  if (usingTenderly()) {
+    await verifyAtTenderly(id, instance);
   }
+  await verifyEtherscanContract(instance.address, args);
   return instance;
 };
 
