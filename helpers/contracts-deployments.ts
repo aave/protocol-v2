@@ -51,6 +51,10 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  UiPoolDataProviderV2Factory,
+  UiPoolDataProviderV2V3Factory,
+  UiIncentiveDataProviderV2V3,
+  UiIncentiveDataProviderV2Factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -68,6 +72,53 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
 import { eNetwork } from './types';
+
+export const deployUiIncentiveDataProviderV2 = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new UiIncentiveDataProviderV2Factory(await getFirstSigner()).deploy(),
+    eContractid.UiIncentiveDataProviderV2,
+    [],
+    verify
+  );
+
+export const deployUiIncentiveDataProviderV2V3 = async (verify?: boolean) => {
+  const id = eContractid.UiIncentiveDataProviderV2V3;
+  const instance = await deployContract<UiIncentiveDataProviderV2V3>(id, []);
+  if (verify) {
+    await verifyContract(id, instance, []);
+  }
+  return instance;
+};
+
+export const deployUiPoolDataProviderV2 = async (
+  chainlinkAggregatorProxy: string,
+  chainlinkEthUsdAggregatorProxy: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UiPoolDataProviderV2Factory(await getFirstSigner()).deploy(
+      chainlinkAggregatorProxy,
+      chainlinkEthUsdAggregatorProxy
+    ),
+    eContractid.UiPoolDataProvider,
+    [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
+    verify
+  );
+
+export const deployUiPoolDataProviderV2V3 = async (
+  chainlinkAggregatorProxy: string,
+  chainlinkEthUsdAggregatorProxy: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UiPoolDataProviderV2V3Factory(await getFirstSigner()).deploy(
+      chainlinkAggregatorProxy,
+      chainlinkEthUsdAggregatorProxy
+    ),
+    eContractid.UiPoolDataProvider,
+    [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
+    verify
+  );
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
