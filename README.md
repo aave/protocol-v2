@@ -119,6 +119,16 @@ docker-compose exec contracts-env bash
 npm run test
 ```
 
+## Test StETH Integration
+
+To run tests for StETH integration use the following commands:
+
+```
+npm install
+npm run test:steth
+npm run test:steth-coverage # to run tests with coverage report
+```
+
 ## Deployments
 
 For deploying Aave Protocol V2, you can use the available scripts located at `package.json`. For a complete list, run `npm run` to see all the tasks.
