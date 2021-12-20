@@ -362,8 +362,6 @@ export const initReservesByHelper = async (
   }
   let pool = await getLendingPool(poolAddress);
   let reserve = await pool.getReserveData(tokenAddresses['stETH']);
-  // Set AMPL debt tokens
-  await astETH.initializeDebtToken();
   // Set deployer back as admin
   await waitForTx(await addressProvider.setPoolAdmin(admin));
   return gasUsage;

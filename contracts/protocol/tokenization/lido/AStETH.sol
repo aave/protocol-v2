@@ -1,6 +1,5 @@
-// SPDX - License - Identifier: agpl - 3.0
+// SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
-pragma experimental ABIEncoderV2;
 
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -12,17 +11,9 @@ import {
   VersionedInitializable
 } from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from '../IncentivizedERC20.sol';
-import {IAaveIncentivesController} from '../../../interfaces/IAaveIncentivesController.sol';
-import {DataTypes} from '../../libraries/types/DataTypes.sol';
-import {ISTETH} from '../../../interfaces/ISTETH.sol';
-import {SignedSafeMath} from '../../../dependencies/openzeppelin/contracts/SignedSafeMath.sol';
-import {UInt256Lib} from '../../../dependencies/uFragments/UInt256Lib.sol';
 
-interface IBookKeptBorrowing {
-  /**
-   * @dev get (total supply of borrowing, current amount of borrowed shares)
-   **/
-  function getBorrowData() external view returns (uint256, int256);
+interface ILido {
+  function getPooledEthByShares(uint256 _sharesAmount) external view returns (uint256);
 }
 
 /**
@@ -33,8 +24,6 @@ interface IBookKeptBorrowing {
 contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
-  using UInt256Lib for uint256;
-  using SignedSafeMath for int256;
 
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =
@@ -52,18 +41,6 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   mapping(address => uint256) public _nonces;
 
   bytes32 public DOMAIN_SEPARATOR;
-
-  // =============================================
-  // StETH specific data
-  IBookKeptBorrowing internal _variableDebtStETH;
-  int256 internal _totalShares;
-
-  struct ExtData {
-    uint256 totalStETHSupply;
-    uint256 totalPrincipalBorrowed;
-    int256 totalSharesBorrowed;
-  }
-  // ============================================
 
   modifier onlyLendingPool() {
     require(_msgSender() == address(POOL), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
@@ -114,11 +91,6 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     _setDecimals(underlyingAssetDecimals);
   }
 
-  function initializeDebtToken() external {
-    DataTypes.ReserveData memory reserveData = POOL.getReserveData(UNDERLYING_ASSET_ADDRESS);
-    _variableDebtStETH = IBookKeptBorrowing(reserveData.variableDebtTokenAddress);
-  }
-
   /**
    * @dev Burns aTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
    * - Only callable by the LendingPool, as extra state updates there need to be managed
@@ -133,13 +105,9 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    uint256 amountScaled = amount.rayDiv(index);
+    uint256 amountScaled = amount.rayDiv(_stEthRebasingIndex()).rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
-
-    _burnScaled(user, amountScaled, _fetchExtData());
-    _totalShares = _totalShares.sub(
-      ISTETH(UNDERLYING_ASSET_ADDRESS).getSharesByPooledEth(amountScaled).toInt256Safe()
-    );
+    _burn(user, amountScaled);
 
     IERC20(UNDERLYING_ASSET_ADDRESS).safeTransfer(receiverOfUnderlying, amount);
 
@@ -162,13 +130,9 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   ) external override onlyLendingPool returns (bool) {
     uint256 previousBalance = super.balanceOf(user);
 
-    uint256 amountScaled = amount.rayDiv(index);
+    uint256 amountScaled = amount.rayDiv(_stEthRebasingIndex()).rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
-
-    _mintScaled(user, amountScaled, _fetchExtData());
-    _totalShares = _totalShares.add(
-      ISTETH(UNDERLYING_ASSET_ADDRESS).getSharesByPooledEth(amountScaled).toInt256Safe()
-    );
+    _mint(user, amountScaled);
 
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
@@ -187,20 +151,14 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
       return;
     }
 
-    address treasury = RESERVE_TREASURY_ADDRESS;
-
     // Compared to the normal mint, we don't check for rounding errors.
     // The amount to mint can easily be very small since it is a fraction of the interest ccrued.
     // In that case, the treasury will experience a (very small) loss, but it
     // wont cause potentially valid transactions to fail.
-    uint256 amountScaled = amount.rayDiv(index);
-    _mintScaled(treasury, amountScaled, _fetchExtData());
-    _totalShares = _totalShares.add(
-      ISTETH(UNDERLYING_ASSET_ADDRESS).getSharesByPooledEth(amountScaled).toInt256Safe()
-    );
+    _mint(RESERVE_TREASURY_ADDRESS, amount.rayDiv(_stEthRebasingIndex()).rayDiv(index));
 
-    emit Transfer(address(0), treasury, amount);
-    emit Mint(treasury, amount, index);
+    emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
+    emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
   }
 
   /**
@@ -233,18 +191,10 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     override(IncentivizedERC20, IERC20)
     returns (uint256)
   {
-    uint256 userBalanceScaled =
-      _scaledBalanceOf(
-        super.balanceOf(user),
-        super.totalSupply(),
-        _scaledTotalSupply(_fetchExtData())
+    return
+      _scaledBalanceOf(user, _stEthRebasingIndex()).rayMul(
+        POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS)
       );
-
-    if (userBalanceScaled == 0) {
-      return 0;
-    }
-
-    return userBalanceScaled.rayMul(POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS));
   }
 
   /**
@@ -253,13 +203,8 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
    * @param user The user whose balance is calculated
    * @return The scaled balance of the user
    **/
-  function scaledBalanceOf(address user) external view override returns (uint256) {
-    return
-      _scaledBalanceOf(
-        super.balanceOf(user),
-        super.totalSupply(),
-        _scaledTotalSupply(_fetchExtData())
-      );
+  function scaledBalanceOf(address user) public view override returns (uint256) {
+    return _scaledBalanceOf(user, _stEthRebasingIndex());
   }
 
   /**
@@ -274,21 +219,8 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     override
     returns (uint256, uint256)
   {
-    uint256 scaledTotalSupply = _scaledTotalSupply(_fetchExtData());
-    return (
-      _scaledBalanceOf(super.balanceOf(user), super.totalSupply(), scaledTotalSupply),
-      scaledTotalSupply
-    );
-  }
-
-  /**
-   * @dev Returns the internal balance of the user and the scaled total supply.
-   * @param user The address of the user
-   * @return The internal balance of the user
-   * @return The internal balance and the scaled total supply
-   **/
-  function getInternalUserBalanceAndSupply(address user) external view returns (uint256, uint256) {
-    return (super.balanceOf(user), super.totalSupply());
+    uint256 rebasingIndex = _stEthRebasingIndex();
+    return (_scaledBalanceOf(user, rebasingIndex), _scaledTotalSupply(rebasingIndex));
   }
 
   /**
@@ -298,7 +230,7 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
    * @return the current total supply
    **/
   function totalSupply() public view override(IncentivizedERC20, IERC20) returns (uint256) {
-    uint256 currentSupplyScaled = _scaledTotalSupply(_fetchExtData());
+    uint256 currentSupplyScaled = _scaledTotalSupply(_stEthRebasingIndex());
 
     if (currentSupplyScaled == 0) {
       return 0;
@@ -308,19 +240,11 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @dev Returns the scaled total supply of the aToken.
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(debt/index)
    * @return the scaled total supply
    **/
   function scaledTotalSupply() public view virtual override returns (uint256) {
-    return _scaledTotalSupply(_fetchExtData());
-  }
-
-  /**
-   * @dev Returns the internal total supply of the aToken.
-   * @return the scaled total supply
-   **/
-  function internalTotalSupply() public view returns (uint256) {
-    return super.totalSupply();
+    return _scaledTotalSupply(_stEthRebasingIndex());
   }
 
   /**
@@ -392,18 +316,12 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     bool validate
   ) internal {
     uint256 index = POOL.getReserveNormalizedIncome(UNDERLYING_ASSET_ADDRESS);
-    uint256 amountScaled = amount.rayDiv(index);
 
-    ExtData memory e = _fetchExtData();
-    uint256 totalSupplyInternal = super.totalSupply();
+    uint256 rebasingIndex = _stEthRebasingIndex();
+    uint256 fromBalanceBefore = _scaledBalanceOf(from, rebasingIndex).rayMul(index);
+    uint256 toBalanceBefore = _scaledBalanceOf(from, rebasingIndex).rayMul(index);
 
-    uint256 scaledTotalSupply = _scaledTotalSupply(e);
-    uint256 fromBalanceScaled =
-      _scaledBalanceOf(super.balanceOf(from), totalSupplyInternal, scaledTotalSupply);
-    uint256 toBalanceScaled =
-      _scaledBalanceOf(super.balanceOf(to), totalSupplyInternal, scaledTotalSupply);
-
-    _transferScaled(from, to, amountScaled, e);
+    super._transfer(from, to, amount.rayDiv(rebasingIndex).rayDiv(index));
 
     if (validate) {
       POOL.finalizeTransfer(
@@ -411,8 +329,8 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
         from,
         to,
         amount,
-        fromBalanceScaled.rayMul(index),
-        toBalanceScaled.rayMul(index)
+        fromBalanceBefore,
+        toBalanceBefore
       );
     }
 
@@ -433,186 +351,42 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     _transfer(from, to, amount, true);
   }
 
-  // =============================================
-  // StETH specific functions
-
   /**
-   * @dev mintAmountInternal is mint such that the following holds true
-   *
-   * (userBalanceInternalBefore+mintAmountInternal)/(totalSupplyInternalBefore+mintAmountInternal)
-   *    = (userBalanceScaledBefore+mintAmountScaled)/(scaledTotalSupplyBefore+mintAmountScaled)
-   *
-   * scaledTotalSupplyAfter = scaledTotalSupplyBefore+mintAmountScaled
-   * userBalanceScaledAfter = userBalanceScaledBefore+mintAmountScaled
-   * otherBalanceScaledBefore = scaledTotalSupplyBefore-userBalanceScaledBefore
-   *
-   * a = totalSupplyInternalBefore * userBalanceScaledAfter
-   * b = scaledTotalSupplyAfter * userBalanceInternalBefore
-   * mintAmountInternal = (a - b) / otherBalanceScaledBefore
+   * @return Current rebasin index of stETH in RAY
    **/
-  function _mintScaled(
-    address user,
-    uint256 mintAmountScaled,
-    ExtData memory e
-  ) internal {
-    uint256 totalSupplyInternalBefore = super.totalSupply();
-    uint256 userBalanceInternalBefore = super.balanceOf(user);
+  function _stEthRebasingIndex() internal view returns (uint256) {
+    // Below expression returns how much Ether corresponds
+    // to 10 ** 27 shares. 10 ** 27 was taken  to provide
+    // same precision as AAVE's liquidity index, which
+    // counted in RAY's (decimals with 27 digits).
+    return ILido(UNDERLYING_ASSET_ADDRESS).getPooledEthByShares(1e27);
+  }
 
-    // First mint
-    if (totalSupplyInternalBefore == 0) {
-      _mint(user, ISTETH(UNDERLYING_ASSET_ADDRESS).getSharesByPooledEth(mintAmountScaled));
-      return;
-    }
+  function _scaledBalanceOf(address user, uint256 rebasingIndex) internal view returns (uint256) {
+    return super.balanceOf(user).rayMul(rebasingIndex);
+  }
 
-    uint256 scaledTotalSupplyBefore = _scaledTotalSupply(e);
-
-    uint256 userBalanceScaledBefore =
-      _scaledBalanceOf(
-        userBalanceInternalBefore,
-        totalSupplyInternalBefore,
-        scaledTotalSupplyBefore
-      );
-    uint256 otherBalanceScaledBefore = scaledTotalSupplyBefore.sub(userBalanceScaledBefore);
-
-    uint256 scaledTotalSupplyAfter = scaledTotalSupplyBefore.add(mintAmountScaled);
-    uint256 userBalanceScaledAfter = userBalanceScaledBefore.add(mintAmountScaled);
-    uint256 mintAmountInternal = 0;
-
-    // Lone user
-    if (otherBalanceScaledBefore == 0) {
-      uint256 mintAmountInternal =
-        mintAmountScaled.mul(totalSupplyInternalBefore).div(scaledTotalSupplyBefore);
-      _mint(user, mintAmountInternal);
-      return;
-    }
-
-    mintAmountInternal = totalSupplyInternalBefore
-      .mul(userBalanceScaledAfter)
-      .sub(scaledTotalSupplyAfter.mul(userBalanceInternalBefore))
-      .div(otherBalanceScaledBefore);
-
-    _mint(user, mintAmountInternal);
+  function _scaledTotalSupply(uint256 rebasingIndex) internal view returns (uint256) {
+    return super.totalSupply().rayMul(rebasingIndex);
   }
 
   /**
-   * @dev burnAmountInternal is burnt such that the following holds true
-   *
-   * (userBalanceInternalBefore-burnAmountInternal)/(totalSupplyInternalBefore-burnAmountInternal)
-   *    = (userBalanceScaledBefore-burnAmountScaled)/(scaledTotalSupplyBefore-burnAmountScaled)
-   *
-   * scaledTotalSupplyAfter = scaledTotalSupplyBefore-burnAmountScaled
-   * userBalanceScaledAfter = userBalanceScaledBefore-burnAmountScaled
-   * otherBalanceScaledBefore = scaledTotalSupplyBefore-userBalanceScaledBefore
-   *
-   * a = scaledTotalSupplyAfter * userBalanceInternalBefore
-   * b = totalSupplyInternalBefore * userBalanceScaledAfter
-   * burnAmountInternal = (a - b) / otherBalanceScaledBefore
+   * @dev Returns the internal balance of the user. The internal balance is the balance of
+   * the underlying asset of the user (sum of deposits of the user), divided by the current
+   * liquidity index at the moment of the update and by the current stETH rebasing index.
+   * @param user The user whose balance is calculated
+   * @return The internal balance of the user
    **/
-  function _burnScaled(
-    address user,
-    uint256 burnAmountScaled,
-    ExtData memory e
-  ) internal {
-    uint256 totalSupplyInternalBefore = super.totalSupply();
-    uint256 userBalanceInternalBefore = super.balanceOf(user);
-
-    uint256 scaledTotalSupplyBefore = _scaledTotalSupply(e);
-    uint256 userBalanceScaledBefore =
-      _scaledBalanceOf(
-        userBalanceInternalBefore,
-        totalSupplyInternalBefore,
-        scaledTotalSupplyBefore
-      );
-
-    uint256 otherBalanceScaledBefore = 0;
-    if (userBalanceScaledBefore <= scaledTotalSupplyBefore) {
-      otherBalanceScaledBefore = scaledTotalSupplyBefore.sub(userBalanceScaledBefore);
-    }
-
-    uint256 scaledTotalSupplyAfter = 0;
-    if (burnAmountScaled <= scaledTotalSupplyBefore) {
-      scaledTotalSupplyAfter = scaledTotalSupplyBefore.sub(burnAmountScaled);
-    }
-
-    uint256 userBalanceScaledAfter = 0;
-    if (burnAmountScaled <= userBalanceScaledBefore) {
-      userBalanceScaledAfter = userBalanceScaledBefore.sub(burnAmountScaled);
-    }
-
-    uint256 burnAmountInternal = 0;
-
-    // Lone user
-    if (otherBalanceScaledBefore == 0) {
-      _burn(user, burnAmountScaled.mul(totalSupplyInternalBefore).div(scaledTotalSupplyBefore));
-      return;
-    }
-
-    burnAmountInternal = scaledTotalSupplyAfter
-      .mul(userBalanceInternalBefore)
-      .sub(totalSupplyInternalBefore.mul(userBalanceScaledAfter))
-      .div(otherBalanceScaledBefore);
-
-    _burn(user, burnAmountInternal);
+  function internalBalanceOf(address user) external view returns (uint256) {
+    return super.balanceOf(user);
   }
 
   /**
-   * @dev Queries external contracts and fetches data used for aTokenMath
-   *      - total supply of stETH
-   *      - principal borrowed and borrowed shares from the variable debt contract
-   **/
-  function _fetchExtData() internal view returns (ExtData memory) {
-    ExtData memory extData;
-
-    extData.totalStETHSupply = ISTETH(UNDERLYING_ASSET_ADDRESS).totalSupply();
-    (extData.totalPrincipalBorrowed, extData.totalSharesBorrowed) = _variableDebtStETH
-      .getBorrowData();
-
-    return extData;
-  }
-
-  /**
-   * @dev balance of user with according to the amount of tokens
-   **/
-  function _scaledBalanceOf(
-    uint256 _intBalanceOf,
-    uint256 _intTotalSupply,
-    uint256 _scaledTotalSupply
-  ) private pure returns (uint256) {
-    if (_intBalanceOf == 0 || _intTotalSupply == 0) {
-      return 0;
-    }
-    return _intBalanceOf.wadMul(_scaledTotalSupply).wadDiv(_intTotalSupply);
-  }
-
-  /**
-   * @dev heldShares = _totalShares - _borrowedShares
-   *      heldStETH = stETH.getPooledEthByShares(heldShares)
-   *      _scaledTotalSupply = heldStETH + _borrowedStETH
-   **/
-  function _scaledTotalSupply(ExtData memory e) private view returns (uint256) {
-    return
-      ISTETH(UNDERLYING_ASSET_ADDRESS).getPooledEthByShares(
-        uint256(_totalShares - e.totalSharesBorrowed)
-      ) + e.totalPrincipalBorrowed;
-  }
-
-  /**
-   * @dev transferAmountInternal = (transferAmountScaled * totalSupplyInternal) / scaledTotalSupply
-   **/
-  function _transferScaled(
-    address from,
-    address to,
-    uint256 transferAmountScaled,
-    ExtData memory e
-  ) private {
-    uint256 totalSupplyInternal = super.totalSupply();
-    uint256 scaledTotalSupply = _scaledTotalSupply(e);
-    uint256 transferAmountInternal =
-      transferAmountScaled.mul(totalSupplyInternal).div(scaledTotalSupply);
-    super._transfer(from, to, transferAmountInternal);
-  }
-
-  function VARIABLE_DEBT_TOKEN_ADDRESS() external view returns (address) {
-    return address(_variableDebtStETH);
+   * @dev Returns the internal total supply of the token. Represents
+   * sum(debt/_stEthRebasingIndex/liquidityIndex).
+   * @return the internal total supply
+   */
+  function internalTotalSupply() external view returns (uint256) {
+    return super.totalSupply();
   }
 }
