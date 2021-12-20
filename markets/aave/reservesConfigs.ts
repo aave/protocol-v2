@@ -373,5 +373,5 @@ export let strategyStETH: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AStETH,
-  reserveFactor: '3500',
+  reserveFactor: '1000',
 };

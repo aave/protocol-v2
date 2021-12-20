@@ -7,6 +7,7 @@ import { eEthereumNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 
 require('dotenv').config();
+require('solidity-coverage');
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
@@ -26,6 +27,7 @@ const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
+const USE_OPTIMIZER = process.env.USE_OPTIMIZER === 'false' ? false : true;
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
@@ -76,7 +78,22 @@ const buidlerConfig: HardhatUserConfig = {
   solidity: {
     version: '0.6.12',
     settings: {
-      optimizer: { enabled: true, runs: 200 },
+      optimizer: USE_OPTIMIZER
+        ? { enabled: true, runs: 200 }
+        : {
+            // This config is required to make it works with solidity coverage.
+            // With the enabled optimizer, it fails on the compilation step because
+            // the stack is too deep. See this comment of fix for details:
+            // https://github.com/ethereum/solidity/issues/10354#issuecomment-847407103
+            details: {
+              yul: true,
+              yulDetails: {
+                stackAllocation: true,
+              },
+            },
+            enabled: true,
+            runs: 200,
+          },
       evmVersion: 'istanbul',
     },
   },
