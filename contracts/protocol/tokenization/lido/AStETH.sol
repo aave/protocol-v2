@@ -319,7 +319,7 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
 
     uint256 rebasingIndex = _stEthRebasingIndex();
     uint256 fromBalanceBefore = _scaledBalanceOf(from, rebasingIndex).rayMul(index);
-    uint256 toBalanceBefore = _scaledBalanceOf(from, rebasingIndex).rayMul(index);
+    uint256 toBalanceBefore = _scaledBalanceOf(to, rebasingIndex).rayMul(index);
 
     super._transfer(from, to, amount.rayDiv(rebasingIndex).rayDiv(index));
 
