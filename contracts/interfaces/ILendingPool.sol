@@ -371,6 +371,25 @@ interface ILendingPool {
     returns (DataTypes.UserConfigurationMap memory);
 
   /**
+   * @dev Returns the health factor liquidation threshold for a particular account.
+   * @param user the account of the health factor liquidation threshold we are querying.
+   * @return The health factor liquidation threshold.
+   **/
+  function getHealthFactorLiquidationThreshold(address user) external view returns (uint256);
+
+  /**
+   * @dev Updatess the health factor liquidation threshold for a particular account.
+   * @param user the account of the health factor liquidation threshold we are querying.
+   * @param newHealthFactorLiquidationThreshold the new health factor liquidation threshold value
+   * we are updating.
+   **/
+  function setHealthFactorLiquidationThreshold(
+    address user,
+    uint256 newHealthFactorLiquidationThreshold
+  ) external;
+
+
+  /**
    * @dev Returns the normalized income normalized income of the reserve
    * @param asset The address of the underlying asset of the reserve
    * @return The reserve's normalized income

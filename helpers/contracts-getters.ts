@@ -11,6 +11,7 @@ import {
   LendingPoolCollateralManagerFactory,
   LendingPoolConfiguratorFactory,
   LendingPoolFactory,
+  HealthFactorLiquidationThresholdManagerFactory,
   LendingRateOracleFactory,
   MintableERC20Factory,
   MockATokenFactory,
@@ -68,6 +69,15 @@ export const getLendingPool = async (address?: tEthereumAddress) =>
       ).address,
     await getFirstSigner()
   );
+
+export const getHealthFactorLiquidationThresholdManager = async (address?: tEthereumAddress) =>
+  await HealthFactorLiquidationThresholdManagerFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.HealthFactorLiquidationThresholdManager}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );  
 
 export const getPriceOracle = async (address?: tEthereumAddress) =>
   await PriceOracleFactory.connect(

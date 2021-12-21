@@ -6,6 +6,8 @@ methods {
 	isUsingAsCollateral(uint256) returns bool envfree
 	isBorrowingAny() returns bool envfree
  	isEmpty() returns bool envfree
+	setHealthFactorLiquidationThreshold(uint256) envfree
+	getHealthFactorLiquidationThreshold() returns uint256 envfree 
 }
 
 invariant empty(uint256 reserveIndex) 

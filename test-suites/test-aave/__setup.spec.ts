@@ -12,6 +12,7 @@ import {
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
   deployLendingPool,
+  deployHealthFactorLiquidationThresholdManager,
   deployPriceOracle,
   deployLendingPoolCollateralManager,
   deployMockFlashLoanReceiver,
@@ -54,6 +55,7 @@ import { initReservesByHelper, configureReservesByHelper } from '../../helpers/i
 import AaveConfig from '../../markets/aave';
 import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import {
+  getHealthFactorLiquidationThresholdManager,
   getLendingPool,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
@@ -137,6 +139,27 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await insertContractAddressInDb(
     eContractid.LendingPoolConfigurator,
     lendingPoolConfiguratorProxy.address
+  );
+
+  // Ormi implementation of HealthFactorLiquidationThresholdManager
+  const healthFactorLiquidationThresholdManagerImpl =
+    await deployHealthFactorLiquidationThresholdManager();
+  await waitForTx(
+    await addressesProvider.setHealthFactorLiquidationThresholdManagerImpl(
+      healthFactorLiquidationThresholdManagerImpl.address
+    )
+  );
+  const healthFactorLiquidationThresholdManagerAddress =
+    await addressesProvider.getHealthFactorLiquidationThresholdManager();
+
+  const healthFactorLiquidationThresholdManagerProxy =
+    await getHealthFactorLiquidationThresholdManager(
+      healthFactorLiquidationThresholdManagerAddress
+    );
+
+  await insertContractAddressInDb(
+    eContractid.HealthFactorLiquidationThresholdManager,
+    healthFactorLiquidationThresholdManagerProxy.address
   );
 
   // Deploy deployment helpers

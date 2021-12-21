@@ -43,6 +43,13 @@ library DataTypes {
 
   struct UserConfigurationMap {
     uint256[2] data; // size is _maxReserves / 128 + ((_maxReserves % 128 > 0) ? 1 : 0), but need to be literal
+
+    // If a user's health factor falls below this threshold, user's collateral will be liquidated.
+    // This threshold is updated based on user's past repayment history. It roughly corresponds to
+    // required min collateralization ratio. 
+    // i.e. 1 ether = 100% collateralization.
+    //      0.5 ether = 50% collateralization.
+    uint256 healthFactorLiquidationThreshold;
   }
 
   enum InterestRateMode {NONE, STABLE, VARIABLE}

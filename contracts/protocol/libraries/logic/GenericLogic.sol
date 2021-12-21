@@ -42,7 +42,7 @@ library GenericLogic {
 
   /**
    * @dev Checks if a specific balance decrease is allowed
-   * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
+   * (i.e. doesn't bring the user borrow position health factor under userConfig.HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
    * @param asset The address of the underlying asset of the reserve
    * @param user The address of the user
    * @param amount The amount to decrease
@@ -112,7 +112,7 @@ library GenericLogic {
         vars.liquidationThresholdAfterDecrease
       );
 
-    return healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
+    return healthFactorAfterDecrease >= userConfig.getHealthFactorLiquidationThreshold();
   }
 
   struct CalculateUserAccountDataVars {
