@@ -61,6 +61,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _;
   }
 
+  modifier onlyHealthFactorLiquidationThresholdManager() {
+    _onlyHealthFactorLiquidationThresholdManager();
+    _;
+  }
+
   function _whenNotPaused() internal view {
     require(!_paused, Errors.LP_IS_PAUSED);
   }
@@ -69,6 +74,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     require(
       _addressesProvider.getLendingPoolConfigurator() == msg.sender,
       Errors.LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR
+    );
+  }
+
+  function _onlyHealthFactorLiquidationThresholdManager() internal view {
+    require(
+      _addressesProvider.getHealthFactorLiquidationThresholdManager() == msg.sender,
+      Errors.LP_CALLER_NOT_HEALTH_FACTOR_LIQUIDATION_THRESHOLD_MANAGER
     );
   }
 
@@ -108,6 +120,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode
   ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    // Initialize |onBehalfOf|'s healthFactorLiquidationThrehold if not set yet.
+    if (_usersConfig[onBehalfOf].getHealthFactorLiquidationThreshold() == 0) {
+      _usersConfig[onBehalfOf].setHealthFactorLiquidationThreshold(1 ether);
+    }
 
     ValidationLogic.validateDeposit(reserve, amount);
 
@@ -206,6 +222,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address onBehalfOf
   ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    // Initialize |onBehalfOf|'s healthFactorLiquidationThrehold if not set yet.
+    if (_usersConfig[onBehalfOf].getHealthFactorLiquidationThreshold() == 0) {
+      _usersConfig[onBehalfOf].setHealthFactorLiquidationThreshold(1 ether);
+    }
 
     _executeBorrow(
       ExecuteBorrowParams(
@@ -648,6 +668,34 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     returns (DataTypes.UserConfigurationMap memory)
   {
     return _usersConfig[user];
+  }
+
+  /**
+   * @dev Returns the health factor liquidation threshold for a particular account.
+   * @param user the account of the health factor liquidation threshold we are querying.
+   * @return The health factor liquidation threshold.
+   **/
+  function getHealthFactorLiquidationThreshold(address user)
+    external
+    view
+    override
+    returns (uint256)
+  {
+    return _usersConfig[user].getHealthFactorLiquidationThreshold();
+  }
+
+  /**
+   * @dev Updatess the health factor liquidation threshold for a particular account.
+   * @param user the account of the health factor liquidation threshold we are querying.
+   * @param newHealthFactorLiquidationThreshold the new health factor liquidation threshold value
+   * we are updating.
+   **/
+  function setHealthFactorLiquidationThreshold(
+    address user,
+    uint256 newHealthFactorLiquidationThreshold
+  ) external override onlyHealthFactorLiquidationThresholdManager {
+    _usersConfig[user].setHealthFactorLiquidationThreshold(newHealthFactorLiquidationThreshold);
+    emit HealthFactorLiquidationThresholdUpdated(user, newHealthFactorLiquidationThreshold);
   }
 
   /**

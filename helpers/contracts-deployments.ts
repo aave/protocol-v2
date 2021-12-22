@@ -23,6 +23,7 @@ import {
   DefaultReserveInterestRateStrategyFactory,
   DelegationAwareATokenFactory,
   InitializableAdminUpgradeabilityProxyFactory,
+  HealthFactorLiquidationThresholdManagerFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
@@ -200,6 +201,24 @@ export const deployLendingPool = async (verify?: boolean) => {
   const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
   return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPool, [], verify);
+};
+
+export const deployHealthFactorLiquidationThresholdManager = async (
+  verify?: boolean
+) => {
+  var addr = await getFirstSigner();
+  const healthFactorLiquidationThresholdManagerImpl =
+    await new HealthFactorLiquidationThresholdManagerFactory(await getFirstSigner()).deploy();
+  await insertContractAddressInDb(
+    eContractid.HealthFactorLiquidationThresholdManagerImpl,
+    healthFactorLiquidationThresholdManagerImpl.address
+  );
+  return await withSaveAndVerify(
+    healthFactorLiquidationThresholdManagerImpl,
+    eContractid.HealthFactorLiquidationThresholdManager,
+    [],
+    verify
+  );
 };
 
 export const deployPriceOracle = async (verify?: boolean) =>

@@ -166,7 +166,17 @@ interface ILendingPool {
     uint256 liquidityIndex,
     uint256 variableBorrowIndex
   );
-
+  
+  /**
+   * @dev Emitted when the health factor liquidation threshold of a user is updated.
+   * @param user the user's account address to be updated.
+   * @param healthFactorLiquidationThreshold the new liquidation threshold to be updated.
+   */
+  event HealthFactorLiquidationThresholdUpdated(
+    address indexed user,
+    uint256 healthFactorLiquidationThreshold
+  );
+  
   /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
@@ -369,6 +379,25 @@ interface ILendingPool {
     external
     view
     returns (DataTypes.UserConfigurationMap memory);
+
+  /**
+   * @dev Returns the health factor liquidation threshold for a particular account.
+   * @param user the account of the health factor liquidation threshold we are querying.
+   * @return The health factor liquidation threshold.
+   **/
+  function getHealthFactorLiquidationThreshold(address user) external view returns (uint256);
+
+  /**
+   * @dev Updatess the health factor liquidation threshold for a particular account.
+   * @param user the account of the health factor liquidation threshold we are querying.
+   * @param newHealthFactorLiquidationThreshold the new health factor liquidation threshold value
+   * we are updating.
+   **/
+  function setHealthFactorLiquidationThreshold(
+    address user,
+    uint256 newHealthFactorLiquidationThreshold
+  ) external;
+
 
   /**
    * @dev Returns the normalized income normalized income of the reserve

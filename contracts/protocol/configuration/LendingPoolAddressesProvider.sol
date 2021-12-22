@@ -27,6 +27,10 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
+  // byte32 only fits string of 32 characters, so shortening literal string to
+  // 'LIQUIDATION_THRESHOLD_MANAGER'
+  bytes32 private constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD_MANAGER =
+    'LIQUIDATION_THRESHOLD_MANAGER';
 
   constructor(string memory marketId) public {
     _setMarketId(marketId);
@@ -211,5 +215,22 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function _setMarketId(string memory marketId) internal {
     _marketId = marketId;
     emit MarketIdSet(marketId);
+  }
+
+  /**
+   * @dev Returns the address of the HealthFactorLiquidationThresholdManager.
+   * @return The address of the HealthFactorLiquidationThesholdManager.
+   **/
+  function getHealthFactorLiquidationThresholdManager() external view override returns (address) {
+    return getAddress(HEALTH_FACTOR_LIQUIDATION_THRESHOLD_MANAGER);
+  }
+
+  /**
+   * @dev Updates the address of the HealthFactorLiquidationThresholdManager.
+   * @param manager The new HealthFactorLiquidationThresholdManager.
+   */
+  function setHealthFactorLiquidationThresholdManagerImpl(address manager) external override onlyOwner {
+    _updateImpl(HEALTH_FACTOR_LIQUIDATION_THRESHOLD_MANAGER, manager);
+    emit HealthFactorLiquidationThresholdManagerUpdated(manager);
   }
 }

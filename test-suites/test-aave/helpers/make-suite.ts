@@ -2,6 +2,7 @@ import { evmRevert, evmSnapshot, DRE } from '../../../helpers/misc-utils';
 import { Signer } from 'ethers';
 import {
   getLendingPool,
+  getHealthFactorLiquidationThresholdManager,
   getLendingPoolAddressesProvider,
   getAaveProtocolDataProvider,
   getAToken,
@@ -22,6 +23,7 @@ import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvide
 import { MintableERC20 } from '../../../types/MintableERC20';
 import { AToken } from '../../../types/AToken';
 import { LendingPoolConfigurator } from '../../../types/LendingPoolConfigurator';
+import { HealthFactorLiquidationThresholdManager } from '../../../types/HealthFactorLiquidationThresholdManager';
 
 import chai from 'chai';
 // @ts-ignore
@@ -55,6 +57,7 @@ export interface TestEnv {
   deployer: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
+  liquidationThresholdManager: HealthFactorLiquidationThresholdManager;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolDataProvider;
@@ -115,6 +118,7 @@ export async function initializeMakeSuite() {
   }
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
+  testEnv.liquidationThresholdManager = await getHealthFactorLiquidationThresholdManager();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

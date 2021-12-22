@@ -72,6 +72,9 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
 let forkMode;
 
 const buidlerConfig: HardhatUserConfig = {
+  gasReporter: {
+    enabled: false
+  },
   solidity: {
     version: '0.6.12',
     settings: {
@@ -113,6 +116,7 @@ const buidlerConfig: HardhatUserConfig = {
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
       gasPrice: 8000000000,
+      loggingEnabled: true,
       allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
       chainId: BUIDLEREVM_CHAINID,
       throwOnTransactionFailures: true,

@@ -103,6 +103,8 @@ library Errors {
   string public constant LP_NOT_CONTRACT = '78';
   string public constant SDT_STABLE_DEBT_OVERFLOW = '79';
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
+  string public constant LP_CALLER_NOT_HEALTH_FACTOR_LIQUIDATION_THRESHOLD_MANAGER = '81';
+  string public constant VL_HEALTH_FACTOR_LIQUIDATION_THRESHOLD_IS_NOT_SET = '82';
 
   enum CollateralManagerErrors {
     NO_ERROR,

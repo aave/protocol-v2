@@ -40,6 +40,14 @@ contract UserConfigurationHarness {
     return UserConfiguration.isEmpty(usersConfig);
   }
 
+  function setHealthFactorLiquidationThreshold(uint256 healthFactorLiquidationThreshold) public {
+    UserConfiguration.setHealthFactorLiquidationThreshold(healthFactorLiquidationThreshold);
+  }
+
+  function getHealthFactorLiquidationThreshold() public view returns uint256 {
+    return UserConfiguration.getHealthFactorLiquidationThreshold();
+  }
+
   /*
 		Mimics the original constructor of the contract.
 	*/

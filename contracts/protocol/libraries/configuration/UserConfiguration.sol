@@ -125,10 +125,35 @@ library UserConfiguration {
    **/
   function isEmpty(DataTypes.UserConfigurationMap memory self) internal pure returns (bool) {
     for (uint8 i = 0; i < _indexCount; i++) {
-      if (self.data[i] != 0) {
+      if (self.data[i] != 0 || self.healthFactorLiquidationThreshold != 0) {
         return false;
       }
     }
     return true;
+  }
+
+  /**
+   * @dev Update health factor liquidation threshold.
+   * @param self The configuration object
+   * @param healthFactorLiquidationThreshold The threshold that results in liquidation.
+   **/
+  function setHealthFactorLiquidationThreshold(
+    DataTypes.UserConfigurationMap storage self,
+    uint256 healthFactorLiquidationThreshold
+  ) internal {
+    self.healthFactorLiquidationThreshold = healthFactorLiquidationThreshold;
+  }
+
+  /**
+   * @dev Return the min allowed health factor user has, after which liquidation may occur.
+   * @param self The configuration object
+   * @return The health factor liquidation threshold
+   **/
+  function getHealthFactorLiquidationThreshold(DataTypes.UserConfigurationMap memory self)
+    internal
+    view
+    returns (uint256)
+  {
+    return self.healthFactorLiquidationThreshold;
   }
 }

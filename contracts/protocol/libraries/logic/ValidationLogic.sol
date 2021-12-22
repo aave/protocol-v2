@@ -166,9 +166,12 @@ library ValidationLogic {
     );
 
     require(vars.userCollateralBalanceETH > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
+   // Requires that health factor liquidation threshold is initialized.
+
+    require(userConfig.getHealthFactorLiquidationThreshold() != 0, Errors.VL_HEALTH_FACTOR_LIQUIDATION_THRESHOLD_IS_NOT_SET);
 
     require(
-      vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
+      vars.healthFactor > userConfig.getHealthFactorLiquidationThreshold(),
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
@@ -406,7 +409,7 @@ library ValidationLogic {
       );
     }
 
-    if (userHealthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
+    if (userHealthFactor >= userConfig.getHealthFactorLiquidationThreshold()) {
       return (
         uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
         Errors.LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD
@@ -462,7 +465,7 @@ library ValidationLogic {
       );
 
     require(
-      healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
+      healthFactor >= userConfig.getHealthFactorLiquidationThreshold(),
       Errors.VL_TRANSFER_NOT_ALLOWED
     );
   }

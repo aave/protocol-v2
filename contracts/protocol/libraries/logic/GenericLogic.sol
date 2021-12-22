@@ -25,8 +25,6 @@ library GenericLogic {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
-
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
     uint256 liquidationThreshold;
@@ -42,7 +40,7 @@ library GenericLogic {
 
   /**
    * @dev Checks if a specific balance decrease is allowed
-   * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
+   * (i.e. doesn't bring the user borrow position health factor under userConfig.HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
    * @param asset The address of the underlying asset of the reserve
    * @param user The address of the user
    * @param amount The amount to decrease
@@ -112,7 +110,7 @@ library GenericLogic {
         vars.liquidationThresholdAfterDecrease
       );
 
-    return healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
+    return healthFactorAfterDecrease >= userConfig.getHealthFactorLiquidationThreshold();
   }
 
   struct CalculateUserAccountDataVars {
@@ -170,6 +168,7 @@ library GenericLogic {
     if (userConfig.isEmpty()) {
       return (0, 0, 0, 0, uint256(-1));
     }
+
     for (vars.i = 0; vars.i < reservesCount; vars.i++) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
         continue;
