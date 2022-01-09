@@ -24,6 +24,7 @@ import {
   strategyYFI,
   strategyXSUSHI,
   strategyENJ,
+  strategyUST,
 } from './reservesConfigs';
 
 // ----------------
@@ -56,6 +57,7 @@ export const AaveConfig: IAaveConfiguration = {
     YFI: strategyYFI,
     ZRX: strategyZRX,
     xSUSHI: strategyXSUSHI,
+    UST: strategyUST,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -78,6 +80,7 @@ export const AaveConfig: IAaveConfiguration = {
       UNI: '0x075A36BA8846C6B6F53644fDd3bf17E5151789DC',
       USDC: '0xe22da380ee6B445bb8273C81944ADEB6E8450422',
       USDT: '0x13512979ADE267AB5100878E2e0f485B568328a4',
+      UST: ZERO_ADDRESS,
       WBTC: '0xD1B98B6607330172f1D991521145A22BCe793277',
       WETH: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
       YFI: '0xb7c325266ec274fEb1354021D27FA3E3379D840d',
@@ -100,6 +103,7 @@ export const AaveConfig: IAaveConfiguration = {
       UNI: ZERO_ADDRESS,
       USDC: '0x851dEf71f0e6A903375C1e536Bd9ff1684BAD802',
       USDT: '0xB404c51BBC10dcBE948077F18a4B8E553D160084',
+      UST: ZERO_ADDRESS,
       WBTC: '0xa0E54Ab6AA5f0bf1D62EC3526436F3c05b3348A0',
       WETH: '0xc778417e063141139fce010982780140aa0cd5ab',
       YFI: ZERO_ADDRESS,
@@ -122,6 +126,7 @@ export const AaveConfig: IAaveConfiguration = {
       UNI: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      UST: '0xa47c8bf37f92aBed4A126BDA807A7b7498661acD',
       WBTC: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
@@ -145,6 +150,7 @@ export const AaveConfig: IAaveConfiguration = {
       UNI: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+      UST: '0xa47c8bf37f92aBed4A126BDA807A7b7498661acD',
       WBTC: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',

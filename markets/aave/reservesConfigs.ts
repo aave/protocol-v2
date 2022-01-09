@@ -84,6 +84,18 @@ export const strategyUSDT: IReserveParams = {
   reserveFactor: '1000',
 };
 
+export const strategyUST: IReserveParams = {
+  strategy: rateStrategyStableThree,
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000',
+};
+
 export const strategyAAVE: IReserveParams = {
   strategy: rateStrategyAAVE,
   baseLTVAsCollateral: '5000',
