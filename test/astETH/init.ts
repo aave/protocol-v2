@@ -13,6 +13,8 @@ import {
   WETH9Factory,
   WETH9,
   LendingPool,
+  FlashLoanReceiverMockFactory,
+  FlashLoanReceiverMock,
 } from '../../types';
 import {
   deployAStETH,
@@ -24,7 +26,8 @@ import {
 import { AaveContracts, Addresses } from '../../helpers/lido/aave-mainnet-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { strategyStETH } from '../../markets/aave/reservesConfigs';
-import { wei } from './helpers';
+import { expectedFlashLoanPremium, wei } from './helpers';
+import BigNumber from 'bignumber.js';
 
 export class AstEthSetup {
   public static readonly INITIAL_BALANCE = wei('1000');
@@ -37,7 +40,8 @@ export class AstEthSetup {
     public readonly stableDebtStETH: StableDebtStETH,
     public readonly variableDebtStETH: VariableDebtStETH,
     public readonly priceFeed: ChainlinkAggregatorMock,
-    public readonly lenders: { lenderA: Lender; lenderB: Lender; lenderC: Lender }
+    public readonly lenders: { lenderA: Lender; lenderB: Lender; lenderC: Lender },
+    public readonly flashLoanReceiverLoan: FlashLoanReceiverMock
   ) {}
 
   static async deploy(): Promise<AstEthSetup> {
@@ -59,6 +63,7 @@ export class AstEthSetup {
       interesetRateStrategy,
       chainlinkAggregatorMock,
       weth,
+      flashLoanReceiverMock,
     ] = await Promise.all([
       deployAStETH(lendingPool.address, stETH.address, Addresses.Treasury, deployer),
       deployVariableDebtStETH(lendingPool.address, stETH.address, deployer),
@@ -66,6 +71,7 @@ export class AstEthSetup {
       deployStEthInterestRateStrategy(deployer),
       new ChainlinkAggregatorMockFactory(deployer).deploy(),
       WETH9Factory.connect('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', deployer),
+      new FlashLoanReceiverMockFactory(deployer).deploy(),
     ]);
 
     // top up aave owner balance to send transactions
@@ -102,9 +108,9 @@ export class AstEthSetup {
 
     const [_, signerA, signerB, signerC] = await hre.ethers.getSigners();
     const lenders = {
-      lenderA: new Lender(weth, stETH, lendingPool, astETH, signerA),
-      lenderB: new Lender(weth, stETH, lendingPool, astETH, signerB),
-      lenderC: new Lender(weth, stETH, lendingPool, astETH, signerC),
+      lenderA: new Lender(weth, stETH, lendingPool, astETH, signerA, flashLoanReceiverMock),
+      lenderB: new Lender(weth, stETH, lendingPool, astETH, signerB, flashLoanReceiverMock),
+      lenderC: new Lender(weth, stETH, lendingPool, astETH, signerC, flashLoanReceiverMock),
     };
     await Promise.all([
       stETH.mint(signerA.address, this.INITIAL_BALANCE),
@@ -121,7 +127,8 @@ export class AstEthSetup {
       StableDebtStETHFactory.connect(reserveData.stableDebtTokenAddress, deployer),
       VariableDebtStETHFactory.connect(reserveData.variableDebtTokenAddress, deployer),
       chainlinkAggregatorMock,
-      lenders
+      lenders,
+      flashLoanReceiverMock
     );
   }
 
@@ -139,18 +146,21 @@ export class Lender {
   public readonly lendingPool: LendingPool;
   public readonly astETH: AStETH;
   public readonly signer: SignerWithAddress;
+  private readonly flashLoanReceiverMock: FlashLoanReceiverMock;
   constructor(
     weth: WETH9,
     stETH: StETHMocked,
     lendingPool: LendingPool,
     astETH: AStETH,
-    signer: SignerWithAddress
+    signer: SignerWithAddress,
+    mockFlashLoanReceiver: FlashLoanReceiverMock
   ) {
     this.signer = signer;
     this.weth = weth.connect(signer);
     this.stETH = stETH.connect(signer);
     this.lendingPool = lendingPool.connect(signer);
     this.astETH = astETH.connect(signer);
+    this.flashLoanReceiverMock = mockFlashLoanReceiver;
   }
 
   get address(): string {
@@ -181,5 +191,44 @@ export class Lender {
   }
   transferAstEth(recipient: string, amount: ethers.BigNumberish) {
     return this.astETH.transfer(recipient, amount);
+  }
+
+  async makeStEthFlashLoanMode0(flashLoanAmount: string) {
+    // add one extra wai there to cover shares math rounding error
+    const premiumToReturn = new BigNumber(expectedFlashLoanPremium(flashLoanAmount))
+      .plus(1)
+      .toString();
+    await this.stETH.transfer(this.flashLoanReceiverMock.address, premiumToReturn);
+    return this.lendingPool.flashLoan(
+      this.flashLoanReceiverMock.address,
+      [this.stETH.address],
+      [flashLoanAmount],
+      [0],
+      this.flashLoanReceiverMock.address,
+      '0x',
+      0
+    );
+  }
+
+  async makeStEthFlashLoanMode1(flashLoanAmount: string) {
+    return this.makeStEthFlashLoan(1, flashLoanAmount);
+  }
+
+  async makeStEthFlashLoanMode2(flashLoanAmount: string) {
+    return this.makeStEthFlashLoan(2, flashLoanAmount);
+  }
+
+  private async makeStEthFlashLoan(mode: 1 | 2, flashLoanAmount: string) {
+    // deposit collateral
+    await this.depositWeth(new BigNumber(flashLoanAmount).multipliedBy(2).toString());
+    return this.lendingPool.flashLoan(
+      this.flashLoanReceiverMock.address,
+      [this.stETH.address],
+      [flashLoanAmount],
+      [mode],
+      this.address,
+      '0x',
+      0
+    );
   }
 }

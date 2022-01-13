@@ -5,6 +5,7 @@ import { almostEqual } from '../helpers/almost-equal';
 import bignumberChai from 'chai-bignumber';
 import { solidity } from 'ethereum-waffle';
 import { AstEthSetup } from './init';
+import '../helpers/utils/math';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
