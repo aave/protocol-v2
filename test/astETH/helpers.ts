@@ -8,13 +8,14 @@ interface ReserveDataInfo {
   liquidityIndex: ethers.BigNumber;
 }
 
+const ONE_WAD = '1000000000000000000';
 export const ONE_RAY = '1000000000000000000000000000';
 
 export function wei(amount: number | string | ethers.BigNumber) {
   if (hre.ethers.BigNumber.isBigNumber(amount)) {
     return amount.toString();
   }
-  return hre.ethers.utils.parseEther(Number(amount).toFixed(4)).toString();
+  return new BigNumber(ONE_WAD).multipliedBy(amount).toFixed(0, 1);
 }
 
 export function ray(amount: number | string | ethers.BigNumber) {
@@ -27,7 +28,8 @@ export function ray(amount: number | string | ethers.BigNumber) {
 export function assertBalance(actual: string, expected: string, epsilon: string = '1') {
   const lowerBound = new BigNumber(expected).minus(epsilon).toString();
   const upperBound = new BigNumber(expected).plus(epsilon).toString();
-  expect(actual).to.be.bignumber.gte(lowerBound).lte(upperBound);
+  expect(actual).to.be.bignumber.lte(upperBound);
+  expect(actual).to.be.bignumber.gte(lowerBound);
 }
 
 export const advanceTimeAndBlock = async function (forwardTime: number) {
