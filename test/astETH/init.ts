@@ -138,6 +138,10 @@ export class AstEthSetup {
     const supplyDelta = currentSupply.mul(Number(perc * 10000).toFixed(0)).div(10000);
     await this.stETH.rebase(supplyDelta.toString());
   }
+
+  astEthTotalSupply() {
+    return this.astETH.totalSupply().then(wei);
+  }
 }
 
 export class Lender {
