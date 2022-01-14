@@ -36,6 +36,14 @@ describe('AStETH Transfers', function () {
     assertBalance(await lenderA.astEthBalance(), wei(0));
   });
 
+  it('Transfer more than deposited: must revert', async () => {
+    const { lenderA, lenderB } = setup.lenders;
+    await lenderA.depositStEth(wei(10));
+    await expect(lenderA.transferAstEth(lenderB.address, wei(11))).to.be.revertedWith(
+      'transfer amount exceeds balance'
+    );
+  });
+
   it('Transfer Events', async () => {
     const { lenderA, lenderB } = setup.lenders;
 
