@@ -30,6 +30,13 @@ describe('AStETH deposits', async () => {
 
     assertBalance(await lenderB.astEthBalance(), lenderBDepositAmount);
     assertBalance(await setup.astETH.totalSupply().then(wei), wei(15));
+
+    // lenderA deposits again
+    const lenderBSecondDepositAmount = wei(7);
+    await lenderB.depositStEth(lenderBSecondDepositAmount);
+
+    assertBalance(await lenderB.astEthBalance(), wei(12));
+    assertBalance(await setup.astETH.totalSupply().then(wei), wei(22));
   });
 
   it('Zero scaled amount is zero: should revert with correct message', async () => {
