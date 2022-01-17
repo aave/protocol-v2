@@ -7,7 +7,7 @@ pragma solidity 0.6.12;
  * and tries to be as close as possible to the original implementation.
  */
 contract StETHMocked {
-  using SafeMath for uint256;
+  using LidoSafeMath for uint256;
 
   uint256 internal _totalShares;
   uint256 internal _pooledEther;
@@ -210,9 +210,10 @@ contract StETHMocked {
 
 /**
  * @title SafeMath
- * @dev Math operations with safety checks that revert on error
+ * @dev Math operations with safety checks that revert on error. Prefix Lido used to not
+ * conflict with OpenZeppelin SafeMath contract.
  */
-library SafeMath {
+library LidoSafeMath {
   string private constant ERROR_ADD_OVERFLOW = 'MATH_ADD_OVERFLOW';
   string private constant ERROR_SUB_UNDERFLOW = 'MATH_SUB_UNDERFLOW';
   string private constant ERROR_MUL_OVERFLOW = 'MATH_MUL_OVERFLOW';
