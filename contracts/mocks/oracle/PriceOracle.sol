@@ -27,4 +27,6 @@ contract PriceOracle is IPriceOracle {
     ethPriceUsd = _price;
     emit EthPriceUpdated(_price, block.timestamp);
   }
+
+  function setAssetSources(address[] memory assets, address[] memory sources) external {}
 }
