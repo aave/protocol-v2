@@ -4,6 +4,12 @@ import { wei } from './helpers';
 import { setup } from './__setup.spec';
 
 describe('AStETH Borrowing', function () {
+  it('VariableDebtStETH total supply is zero', async () => {
+    expect(await setup.variableDebtStETH.totalSupply().then(wei), '0');
+  });
+  it('StableDebtStETH total supply is zero', async () => {
+    expect(await setup.stableDebtStETH.totalSupply().then(wei), '0');
+  });
   it('Variable borrowing disabled: must revert with correct message', async () => {
     const { lenderA, lenderB } = setup.lenders;
     await lenderA.depositStEth(wei(10));
