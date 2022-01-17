@@ -71,7 +71,7 @@ export class AstEthSetup {
       deployStEthInterestRateStrategy(deployer),
       new ChainlinkAggregatorMockFactory(deployer).deploy(),
       WETH9Factory.connect('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', deployer),
-      new FlashLoanReceiverMockFactory(deployer).deploy(),
+      new FlashLoanReceiverMockFactory(deployer).deploy(lendingPool.address),
     ]);
 
     // top up aave owner balance to send transactions
@@ -134,9 +134,13 @@ export class AstEthSetup {
 
   async rebaseStETH(perc) {
     const currentTotalSupply = await this.stETH.totalSupply();
-    const currentSupply = hre.ethers.BigNumber.from(currentTotalSupply.toString());
-    const supplyDelta = currentSupply.mul(Number(perc * 10000).toFixed(0)).div(10000);
-    await this.stETH.rebase(supplyDelta.toString());
+    const currentSupply = new BigNumber(currentTotalSupply.toString());
+    const supplyDelta = currentSupply.multipliedBy(Number(perc * 10000).toFixed(0)).div(10000);
+    if (supplyDelta.isNegative()) {
+      await this.stETH.negativeRebase(supplyDelta.negated().toFixed());
+    } else {
+      await this.stETH.positiveRebase(supplyDelta.toFixed());
+    }
   }
 
   astEthTotalSupply() {
