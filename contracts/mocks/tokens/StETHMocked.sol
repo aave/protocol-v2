@@ -1,126 +1,310 @@
 // SPDX-FileCopyrightText: 2020 Lido <info@lido.fi>
-// SPDX-License-Identifier: GPL-3.0
-
 pragma solidity 0.6.12;
-
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
-import {SignedSafeMath} from '../../dependencies/openzeppelin/contracts/SignedSafeMath.sol';
-import {UInt256Lib} from '../../dependencies/uFragments/UInt256Lib.sol';
 
 contract StETHMocked {
   using SafeMath for uint256;
-  using UInt256Lib for uint256;
-  using SignedSafeMath for int256;
 
-  string public symbol = 'stETH';
-  uint256 public decimals = 18;
-
-  uint256 private _totalSupply;
-  uint256 private _totalShares;
-  mapping(address => uint256) _shares;
-
-  function _getPooledEthByShares(uint256 _sharesAmount) internal view returns (uint256) {
-    return _sharesAmount.mul(_totalSupply).div(_totalShares);
-  }
-
-  function _getSharesByPooledEth(uint256 _pooledEthAmount) internal view returns (uint256) {
-    return _pooledEthAmount.mul(_totalShares).div(_totalSupply);
-  }
-
-  function totalSupply() external view returns (uint256) {
-    return _totalSupply;
-  }
+  mapping(address => uint256) private shares;
 
   /**
-   * @notice Increases shares of a given address by the specified amount.
-   *
-   * @param _to Receiver of new shares
-   * @param _sharesAmount Amount of shares to mint
-   * @return The total amount of all holders' shares after new shares are minted
+   * @dev Allowances are nominated in tokens, not token shares.
    */
-  function _mintShares(address _to, uint256 _sharesAmount) internal returns (uint256) {
-    _shares[_to] = _shares[_to].add(_sharesAmount);
-    _totalShares = _totalShares.add(_sharesAmount);
+  mapping(address => mapping(address => uint256)) private allowances;
 
-    return _totalShares;
+  uint256 internal _totalShares;
+  uint256 internal _bufferedEther;
+
+  function name() public pure returns (string memory) {
+    return 'Liquid staked Ether 2.0';
   }
 
-  function mint(address _to, uint256 amount) external returns (uint256) {
-    uint256 newTotalSupply = _totalSupply.add(amount);
-    if (_totalSupply != 0) {
-      amount = _getSharesByPooledEth(amount);
-    }
-    _totalSupply = newTotalSupply;
-
-    return _mintShares(_to, amount);
+  function symbol() public pure returns (string memory) {
+    return 'stETH';
   }
 
-  function rebase(int256 addingAmount) external returns (uint256) {
-    int256 currentTotalSupply = _totalSupply.toInt256Safe();
-
-    if (currentTotalSupply != 0) {
-      currentTotalSupply = currentTotalSupply.add(addingAmount);
-      require(currentTotalSupply > 0);
-      _totalSupply = uint256(currentTotalSupply);
-    }
-
-    return _totalSupply;
+  function decimals() public pure returns (uint8) {
+    return 18;
   }
 
-  function getTotalShares() external view returns (uint256) {
-    return _totalShares;
+  function totalSupply() public view returns (uint256) {
+    return _getTotalPooledEther();
   }
 
-  function balanceOf(address owner) external view returns (uint256) {
-    uint256 _sharesOf = _shares[owner];
-    if (_sharesOf == 0) {
-      return 0;
-    }
-    return _getPooledEthByShares(_sharesOf);
+  function getTotalPooledEther() public view returns (uint256) {
+    return _getTotalPooledEther();
   }
 
-  function getPooledEthByShares(uint256 _sharesAmount) external view returns (uint256) {
-    return _getPooledEthByShares(_sharesAmount);
+  function balanceOf(address _account) public view returns (uint256) {
+    return getPooledEthByShares(_sharesOf(_account));
   }
 
-  function getSharesByPooledEth(uint256 _pooledEthAmount) external view returns (uint256) {
-    return _getSharesByPooledEth(_pooledEthAmount);
-  }
-
-  function approve(address _to, uint256 amount) public returns (bool) {
+  function transfer(address _recipient, uint256 _amount) public returns (bool) {
+    _transfer(msg.sender, _recipient, _amount);
     return true;
   }
 
-  function allowance(address _owner, address _spender) public returns (uint256) {
-    return _shares[_owner];
+  function allowance(address _owner, address _spender) public view returns (uint256) {
+    return allowances[_owner][_spender];
   }
 
-  function _transfer(
-    address _from,
-    address _to,
-    uint256 _value
-  ) internal returns (bool) {
-    if (_totalSupply == 0) {
-      return false;
-    }
-    uint256 _valueShares = _getSharesByPooledEth(_value);
-    require(_shares[_from] >= _valueShares);
-
-    _shares[_from] = _shares[_from].sub(_valueShares);
-    _shares[_to] = _shares[_to].add(_valueShares);
-
+  function approve(address _spender, uint256 _amount) public returns (bool) {
+    _approve(msg.sender, _spender, _amount);
     return true;
-  }
-
-  function transfer(address _to, uint256 _value) public returns (bool) {
-    return _transfer(msg.sender, _to, _value);
   }
 
   function transferFrom(
-    address _from,
-    address _to,
-    uint256 _value
+    address _sender,
+    address _recipient,
+    uint256 _amount
   ) public returns (bool) {
-    return _transfer(_from, _to, _value);
+    uint256 currentAllowance = allowances[_sender][msg.sender];
+    require(currentAllowance >= _amount, 'TRANSFER_AMOUNT_EXCEEDS_ALLOWANCE');
+
+    _transfer(_sender, _recipient, _amount);
+    _approve(_sender, msg.sender, currentAllowance.sub(_amount));
+    return true;
+  }
+
+  function increaseAllowance(address _spender, uint256 _addedValue) public returns (bool) {
+    _approve(msg.sender, _spender, allowances[msg.sender][_spender].add(_addedValue));
+    return true;
+  }
+
+  function decreaseAllowance(address _spender, uint256 _subtractedValue) public returns (bool) {
+    uint256 currentAllowance = allowances[msg.sender][_spender];
+    require(currentAllowance >= _subtractedValue, 'DECREASED_ALLOWANCE_BELOW_ZERO');
+    _approve(msg.sender, _spender, currentAllowance.sub(_subtractedValue));
+    return true;
+  }
+
+  function getTotalShares() public view returns (uint256) {
+    return _getTotalShares();
+  }
+
+  function sharesOf(address _account) public view returns (uint256) {
+    return _sharesOf(_account);
+  }
+
+  function getSharesByPooledEth(uint256 _ethAmount) public view returns (uint256) {
+    uint256 totalPooledEther = _getTotalPooledEther();
+    if (totalPooledEther == 0) {
+      return 0;
+    } else {
+      return _ethAmount.mul(_getTotalShares()).div(totalPooledEther);
+    }
+  }
+
+  function getPooledEthByShares(uint256 _sharesAmount) public view returns (uint256) {
+    uint256 totalShares = _getTotalShares();
+    if (totalShares == 0) {
+      return 0;
+    } else {
+      return _sharesAmount.mul(_getTotalPooledEther()).div(totalShares);
+    }
+  }
+
+  function mint(address _recipient, uint256 amount) external returns (uint256) {
+    return _submit(_recipient, amount);
+  }
+
+  function positiveRebase(uint256 amount) external {
+    _bufferedEther = _bufferedEther.add(amount);
+  }
+
+  function negativeRebase(uint256 amount) external {
+    _bufferedEther = _bufferedEther.sub(amount);
+  }
+
+  /**
+   * @dev Gets the total amount of Ether controlled by the system
+   * @return total balance in wei
+   */
+  function _getTotalPooledEther() internal view returns (uint256) {
+    uint256 bufferedBalance = _getBufferedEther();
+    // uint256 beaconBalance = BEACON_BALANCE_POSITION.getStorageUint256();
+    // uint256 transientBalance = _getTransientBalance();
+    return bufferedBalance; //.add(beaconBalance).add(transientBalance);
+  }
+
+  function _getBufferedEther() internal view returns (uint256) {
+    // uint256 buffered = BUFFERED_ETHER_POSITION.getStorageUint256();
+    // assert(address(this).balance >= _bufferedEther);
+
+    return _bufferedEther;
+  }
+
+  function _transfer(
+    address _sender,
+    address _recipient,
+    uint256 _amount
+  ) internal {
+    uint256 _sharesToTransfer = getSharesByPooledEth(_amount);
+    _transferShares(_sender, _recipient, _sharesToTransfer);
+    emit Transfer(_sender, _recipient, _amount);
+  }
+
+  function _approve(
+    address _owner,
+    address _spender,
+    uint256 _amount
+  ) internal {
+    require(_owner != address(0), 'APPROVE_FROM_ZERO_ADDRESS');
+    require(_spender != address(0), 'APPROVE_TO_ZERO_ADDRESS');
+
+    allowances[_owner][_spender] = _amount;
+    emit Approval(_owner, _spender, _amount);
+  }
+
+  function _getTotalShares() internal view returns (uint256) {
+    return _totalShares;
+  }
+
+  function _sharesOf(address _account) internal view returns (uint256) {
+    return shares[_account];
+  }
+
+  function _transferShares(
+    address _sender,
+    address _recipient,
+    uint256 _sharesAmount
+  ) internal {
+    require(_sender != address(0), 'TRANSFER_FROM_THE_ZERO_ADDRESS');
+    require(_recipient != address(0), 'TRANSFER_TO_THE_ZERO_ADDRESS');
+
+    uint256 currentSenderShares = shares[_sender];
+    require(_sharesAmount <= currentSenderShares, 'TRANSFER_AMOUNT_EXCEEDS_BALANCE');
+
+    shares[_sender] = currentSenderShares.sub(_sharesAmount);
+    shares[_recipient] = shares[_recipient].add(_sharesAmount);
+  }
+
+  function _mintShares(address _recipient, uint256 _sharesAmount)
+    internal
+    returns (uint256 newTotalShares)
+  {
+    require(_recipient != address(0), 'MINT_TO_THE_ZERO_ADDRESS');
+
+    newTotalShares = _getTotalShares().add(_sharesAmount);
+    _totalShares = newTotalShares;
+
+    shares[_recipient] = shares[_recipient].add(_sharesAmount);
+
+    // Notice: we're not emitting a Transfer event from the zero address here since shares mint
+    // works by taking the amount of tokens corresponding to the minted shares from all other
+    // token holders, proportionally to their share. The total supply of the token doesn't change
+    // as the result. This is equivalent to performing a send from each other token holder's
+    // address to `address`, but we cannot reflect this as it would require sending an unbounded
+    // number of events.
+  }
+
+  function _burnShares(address _account, uint256 _sharesAmount)
+    internal
+    returns (uint256 newTotalShares)
+  {
+    require(_account != address(0), 'BURN_FROM_THE_ZERO_ADDRESS');
+
+    uint256 accountShares = shares[_account];
+    require(_sharesAmount <= accountShares, 'BURN_AMOUNT_EXCEEDS_BALANCE');
+
+    newTotalShares = _getTotalShares().sub(_sharesAmount);
+    _totalShares = newTotalShares;
+
+    shares[_account] = accountShares.sub(_sharesAmount);
+
+    // Notice: we're not emitting a Transfer event to the zero address here since shares burn
+    // works by redistributing the amount of tokens corresponding to the burned shares between
+    // all other token holders. The total supply of the token doesn't change as the result.
+    // This is equivalent to performing a send from `address` to each other token holder address,
+    // but we cannot reflect this as it would require sending an unbounded number of events.
+  }
+
+  function _submit(address sender, uint256 deposit) internal returns (uint256) {
+    // address sender = msg.sender;
+    // uint256 deposit = msg.value;
+    require(deposit != 0, 'ZERO_DEPOSIT');
+
+    uint256 sharesAmount = getSharesByPooledEth(deposit);
+    if (sharesAmount == 0) {
+      // totalControlledEther is 0: either the first-ever deposit or complete slashing
+      // assume that shares correspond to Ether 1-to-1
+      sharesAmount = deposit;
+    }
+
+    _mintShares(sender, sharesAmount);
+    _bufferedEther = _bufferedEther.add(sharesAmount);
+    // _submitted(sender, deposit, _referral);
+    // _emitTransferAfterMintingShares(sender, sharesAmount);
+    return sharesAmount;
+  }
+
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+/**
+ * @title SafeMath
+ * @dev Math operations with safety checks that revert on error
+ */
+library SafeMath {
+  string private constant ERROR_ADD_OVERFLOW = 'MATH_ADD_OVERFLOW';
+  string private constant ERROR_SUB_UNDERFLOW = 'MATH_SUB_UNDERFLOW';
+  string private constant ERROR_MUL_OVERFLOW = 'MATH_MUL_OVERFLOW';
+  string private constant ERROR_DIV_ZERO = 'MATH_DIV_ZERO';
+
+  /**
+   * @dev Multiplies two numbers, reverts on overflow.
+   */
+  function mul(uint256 _a, uint256 _b) internal pure returns (uint256) {
+    // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+    // benefit is lost if 'b' is also tested.
+    // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
+    if (_a == 0) {
+      return 0;
+    }
+
+    uint256 c = _a * _b;
+    require(c / _a == _b, ERROR_MUL_OVERFLOW);
+
+    return c;
+  }
+
+  /**
+   * @dev Integer division of two numbers truncating the quotient, reverts on division by zero.
+   */
+  function div(uint256 _a, uint256 _b) internal pure returns (uint256) {
+    require(_b > 0, ERROR_DIV_ZERO); // Solidity only automatically asserts when dividing by 0
+    uint256 c = _a / _b;
+    // assert(_a == _b * c + _a % _b); // There is no case in which this doesn't hold
+
+    return c;
+  }
+
+  /**
+   * @dev Subtracts two numbers, reverts on overflow (i.e. if subtrahend is greater than minuend).
+   */
+  function sub(uint256 _a, uint256 _b) internal pure returns (uint256) {
+    require(_b <= _a, ERROR_SUB_UNDERFLOW);
+    uint256 c = _a - _b;
+
+    return c;
+  }
+
+  /**
+   * @dev Adds two numbers, reverts on overflow.
+   */
+  function add(uint256 _a, uint256 _b) internal pure returns (uint256) {
+    uint256 c = _a + _b;
+    require(c >= _a, ERROR_ADD_OVERFLOW);
+
+    return c;
+  }
+
+  /**
+   * @dev Divides two numbers and returns the remainder (unsigned integer modulo),
+   * reverts when dividing by zero.
+   */
+  function mod(uint256 a, uint256 b) internal pure returns (uint256) {
+    require(b != 0, ERROR_DIV_ZERO);
+    return a % b;
   }
 }
