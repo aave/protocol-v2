@@ -1,18 +1,18 @@
 // SPDX-FileCopyrightText: 2020 Lido <info@lido.fi>
 pragma solidity 0.6.12;
 
+/**
+ * @notice Mock was based on the original StETH contract from the Lido organization
+ * https://github.com/lidofinance/lido-dao/blob/master/contracts/0.4.24/StETH.sol
+ * and tries to be as close as possible to the original implementation.
+ */
 contract StETHMocked {
   using SafeMath for uint256;
 
-  mapping(address => uint256) private shares;
-
-  /**
-   * @dev Allowances are nominated in tokens, not token shares.
-   */
-  mapping(address => mapping(address => uint256)) private allowances;
-
   uint256 internal _totalShares;
-  uint256 internal _bufferedEther;
+  uint256 internal _pooledEther;
+  mapping(address => uint256) private shares;
+  mapping(address => mapping(address => uint256)) private allowances;
 
   function name() public pure returns (string memory) {
     return 'Liquid staked Ether 2.0';
@@ -108,29 +108,15 @@ contract StETHMocked {
   }
 
   function positiveRebase(uint256 amount) external {
-    _bufferedEther = _bufferedEther.add(amount);
+    _pooledEther = _pooledEther.add(amount);
   }
 
   function negativeRebase(uint256 amount) external {
-    _bufferedEther = _bufferedEther.sub(amount);
+    _pooledEther = _pooledEther.sub(amount);
   }
 
-  /**
-   * @dev Gets the total amount of Ether controlled by the system
-   * @return total balance in wei
-   */
   function _getTotalPooledEther() internal view returns (uint256) {
-    uint256 bufferedBalance = _getBufferedEther();
-    // uint256 beaconBalance = BEACON_BALANCE_POSITION.getStorageUint256();
-    // uint256 transientBalance = _getTransientBalance();
-    return bufferedBalance; //.add(beaconBalance).add(transientBalance);
-  }
-
-  function _getBufferedEther() internal view returns (uint256) {
-    // uint256 buffered = BUFFERED_ETHER_POSITION.getStorageUint256();
-    // assert(address(this).balance >= _bufferedEther);
-
-    return _bufferedEther;
+    return _pooledEther;
   }
 
   function _transfer(
@@ -188,13 +174,6 @@ contract StETHMocked {
     _totalShares = newTotalShares;
 
     shares[_recipient] = shares[_recipient].add(_sharesAmount);
-
-    // Notice: we're not emitting a Transfer event from the zero address here since shares mint
-    // works by taking the amount of tokens corresponding to the minted shares from all other
-    // token holders, proportionally to their share. The total supply of the token doesn't change
-    // as the result. This is equivalent to performing a send from each other token holder's
-    // address to `address`, but we cannot reflect this as it would require sending an unbounded
-    // number of events.
   }
 
   function _burnShares(address _account, uint256 _sharesAmount)
@@ -210,30 +189,18 @@ contract StETHMocked {
     _totalShares = newTotalShares;
 
     shares[_account] = accountShares.sub(_sharesAmount);
-
-    // Notice: we're not emitting a Transfer event to the zero address here since shares burn
-    // works by redistributing the amount of tokens corresponding to the burned shares between
-    // all other token holders. The total supply of the token doesn't change as the result.
-    // This is equivalent to performing a send from `address` to each other token holder address,
-    // but we cannot reflect this as it would require sending an unbounded number of events.
   }
 
   function _submit(address sender, uint256 deposit) internal returns (uint256) {
-    // address sender = msg.sender;
-    // uint256 deposit = msg.value;
     require(deposit != 0, 'ZERO_DEPOSIT');
 
     uint256 sharesAmount = getSharesByPooledEth(deposit);
     if (sharesAmount == 0) {
-      // totalControlledEther is 0: either the first-ever deposit or complete slashing
-      // assume that shares correspond to Ether 1-to-1
       sharesAmount = deposit;
     }
 
     _mintShares(sender, sharesAmount);
-    _bufferedEther = _bufferedEther.add(sharesAmount);
-    // _submitted(sender, deposit, _referral);
-    // _emitTransferAfterMintingShares(sender, sharesAmount);
+    _pooledEther = _pooledEther.add(sharesAmount);
     return sharesAmount;
   }
 
@@ -255,9 +222,6 @@ library SafeMath {
    * @dev Multiplies two numbers, reverts on overflow.
    */
   function mul(uint256 _a, uint256 _b) internal pure returns (uint256) {
-    // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-    // benefit is lost if 'b' is also tested.
-    // See: https://github.com/OpenZeppelin/openzeppelin-solidity/pull/522
     if (_a == 0) {
       return 0;
     }
