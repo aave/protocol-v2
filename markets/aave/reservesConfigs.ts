@@ -16,7 +16,7 @@ export const strategyBUSD: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000',
+  reserveFactor: '1000'
 };
 
 export const strategyDAI: IReserveParams = {
@@ -33,7 +33,7 @@ export const strategyDAI: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000',
+  reserveFactor: '1000'
 };
 
 export const strategySUSD: IReserveParams = {
@@ -50,7 +50,7 @@ export const strategySUSD: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyTUSD: IReserveParams = {
@@ -67,16 +67,16 @@ export const strategyTUSD: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000',
+  reserveFactor: '1000'
 };
 
 export const strategyUSDC: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
   stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '8000',
   liquidationThreshold: '8500',
   liquidationBonus: '10500',
@@ -84,16 +84,16 @@ export const strategyUSDC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000',
+  reserveFactor: '1000'
 };
 
 export const strategyUSDT: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
   variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
-  variableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
   stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
-  stableRateSlope2: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0.60).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '8000',
   liquidationThreshold: '8500',
   liquidationBonus: '10500',
@@ -101,7 +101,7 @@ export const strategyUSDT: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000',
+  reserveFactor: '1000'
 };
 
 export const strategyAAVE: IReserveParams = {
@@ -118,7 +118,7 @@ export const strategyAAVE: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '0',
+  reserveFactor: '0'
 };
 
 export const strategyBAT: IReserveParams = {
@@ -135,7 +135,7 @@ export const strategyBAT: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyENJ: IReserveParams = {
@@ -152,7 +152,7 @@ export const strategyENJ: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyWETH: IReserveParams = {
@@ -169,7 +169,7 @@ export const strategyWETH: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '1000',
+  reserveFactor: '1000'
 };
 
 export const strategyKNC: IReserveParams = {
@@ -186,7 +186,7 @@ export const strategyKNC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyLINK: IReserveParams = {
@@ -203,7 +203,7 @@ export const strategyLINK: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyMANA: IReserveParams = {
@@ -220,7 +220,7 @@ export const strategyMANA: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '3500',
+  reserveFactor: '3500'
 };
 
 export const strategyMKR: IReserveParams = {
@@ -237,7 +237,7 @@ export const strategyMKR: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyREN: IReserveParams = {
@@ -254,7 +254,7 @@ export const strategyREN: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategySNX: IReserveParams = {
@@ -271,7 +271,7 @@ export const strategySNX: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '3500',
+  reserveFactor: '3500'
 };
 
 export const strategyUNI: IReserveParams = {
@@ -288,7 +288,7 @@ export const strategyUNI: IReserveParams = {
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.DelegationAwareAToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -305,7 +305,7 @@ export const strategyWBTC: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '8',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyYFI: IReserveParams = {
@@ -322,7 +322,7 @@ export const strategyYFI: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyZRX: IReserveParams = {
@@ -339,7 +339,7 @@ export const strategyZRX: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
-  reserveFactor: '2000',
+  reserveFactor: '2000'
 };
 
 export const strategyXSUSHI: IReserveParams = {
