@@ -32,7 +32,7 @@ const FORK_BLOCK = process.env.FORK_BLOCK == 'false' ? undefined : 11608298
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'dev', 'full', 'verifications', 'deployments', 'helpers', 'lido'].forEach(
+  ['misc', 'migrations', 'dev', 'full', 'verifications', 'deployments', 'helpers'].forEach(
     (folder) => {
       const tasksPath = path.join(__dirname, 'tasks', folder);
       fs.readdirSync(tasksPath)
