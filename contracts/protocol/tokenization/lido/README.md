@@ -13,19 +13,17 @@ function getSharesByPooledEth(uint256 _ethAmount) public view returns (uint256);
 
 ```
 
-The behavior of the current integration of stETH into the AAVE protocol keeps balances and the total supply of variable debt tokens the same after rebasing (borrower returns the same amount of tokens he loaned) when balances of astETH token exposed to rebasing. As variable debt tokens are not rebasing, holders of astETH take rebasing fees only from the amount of unborrowed stETH locked in the reserve.
-
 The astETH, similarly to regular aTokens, is a yield-generating token that is minted and burned upon deposits and withdraws in the LendingPool. The astETH value is pegged to the value of the corresponding deposited asset at a 1:1 ratio and can be safely stored, transferred, or traded. All interest collected by the astETH reserve (from rebasing and AAVE income) is distributed to aTokens holders directly by continuously increasing their wallet balance (in case of negative rebases of stETH it might decrease).
 
 The astETH implementation guarantees the following always ensured:
 
-- **At any time, a user can deposit X stETH to mint X astETH ^\*^**
+- **At any time, a user can deposit X stETH to mint X astETH \***
   Total astETH supply increases by X.
 
-- **At any time, a user can burn x astETH for x stETH ^\*^**
+- **At any time, a user can burn x astETH for x stETH \***
   The total astETH supply decreases by x.
 
-- **At any time, userA can transfer X astETH to userB ^\*^**
+- **At any time, userA can transfer X astETH to userB \***
   userA’s astETH balance reduces by X.
   userB’s astETH balance increases by X.
   The total astETH supply exactly remains the same.
@@ -33,7 +31,7 @@ The astETH implementation guarantees the following always ensured:
 - **When stETH rebases, astETH rebases as well.**
   Say there are 1000 stETH locked in the reserve. Consider the below situations: 1. Common case: happens positive rebase, and stETH total supply increases by 1%: - totalSupply of astETH token becomes equal to 1010 astETH. - balance of each astETH holder increases by 1% also. 2. Rare case: happens negative rebase, and stETH total supply decreases by 1%: - totalSupply of astETH token becomes equal to 990 astETH. - balance of each astETH holder decreases by 1% also.
 
-**^\*^Note**: Actual amount of asset will be less or equal to X because of integer operations rounding of underlying token rebase rate and AAVE interest rate. However, the actual rounding error will not exceed a couple of WEI at any time.
+**\***: Actual amount of asset will be less or equal to X because of integer operations rounding of underlying token rebase rate and AAVE interest rate. However, the actual rounding error will not exceed a couple of WEI at any time.
 
 ## AStETH Token
 
