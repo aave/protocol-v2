@@ -7,8 +7,8 @@ import {
   LendingPoolConfigurator,
   LendingPoolConfiguratorFactory,
   LendingPoolFactory,
-  PriceOracle,
-  PriceOracleFactory,
+  AaveOracle,
+  AaveOracleFactory,
 } from '../../types';
 
 export const Addresses = {
@@ -24,7 +24,7 @@ export class AaveContracts {
   constructor(
     public readonly lendingPool: LendingPool,
     public readonly lendingPoolConfigurator: LendingPoolConfigurator,
-    public readonly priceOracle: PriceOracle,
+    public readonly priceOracle: AaveOracle,
     public readonly protocolDataProvider: AaveProtocolDataProvider
   ) {}
 
@@ -37,7 +37,7 @@ export class AaveContracts {
     ] = await Promise.all([
       LendingPoolConfiguratorFactory.connect(Addresses.LendingPoolConfigurator, signer),
       LendingPoolAddressesProviderFactory.connect(Addresses.LendingPoolAddressesProvider, signer),
-      PriceOracleFactory.connect(Addresses.PriceOracle, signer),
+      AaveOracleFactory.connect(Addresses.PriceOracle, signer),
       AaveProtocolDataProviderFactory.connect(Addresses.ProtocolDataProvider, signer),
     ]);
     const lendingPoolAddress = await lendingPoolAddressesProvider.getLendingPool();
