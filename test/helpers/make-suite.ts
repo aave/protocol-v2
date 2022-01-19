@@ -14,7 +14,6 @@ import {
   getUniswapLiquiditySwapAdapter,
   getUniswapRepayAdapter,
   getFlashLiquidationAdapter,
-  getMockStETH,
 } from '../../helpers/contracts-getters';
 import { eEthereumNetwork, tEthereumAddress } from '../../helpers/types';
 import { LendingPool } from '../../types/LendingPool';
@@ -38,7 +37,7 @@ import { WETH9Mocked } from '../../types/WETH9Mocked';
 import { WETHGateway } from '../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../markets/aave';
-import { FlashLiquidationAdapter, StETHMocked } from '../../types';
+import { FlashLiquidationAdapter } from '../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
@@ -63,7 +62,6 @@ export interface TestEnv {
   aDai: AToken;
   usdc: MintableERC20;
   aave: MintableERC20;
-  stETH: StETHMocked;
   addressesProvider: LendingPoolAddressesProvider;
   uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
   uniswapRepayAdapter: UniswapRepayAdapter;
@@ -90,7 +88,6 @@ const testEnv: TestEnv = {
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
-  stETH: {} as StETHMocked,
   addressesProvider: {} as LendingPoolAddressesProvider,
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
   uniswapRepayAdapter: {} as UniswapRepayAdapter,
@@ -141,7 +138,6 @@ export async function initializeMakeSuite() {
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
-  const stETHAddress = reservesTokens.find((token) => token.symbol === 'stETH')?.tokenAddress;
 
   if (!aDaiAddress || !aWEthAddress) {
     process.exit(1);
@@ -157,7 +153,6 @@ export async function initializeMakeSuite() {
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.aave = await getMintableERC20(aaveAddress);
   testEnv.weth = await getWETHMocked(wethAddress);
-  testEnv.stETH = await getMockStETH(stETHAddress);
   testEnv.wethGateway = await getWETHGateway();
 
   testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();

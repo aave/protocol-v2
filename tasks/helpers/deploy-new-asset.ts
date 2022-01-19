@@ -8,8 +8,6 @@ import { getLendingPoolAddressesProvider } from './../../helpers/contracts-gette
 import {
   deployDefaultReserveInterestRateStrategy,
   deployStableDebtToken,
-  deployStETHStableDebtToken,
-  deployStETHVariableDebtToken,
   deployVariableDebtToken,
 } from './../../helpers/contracts-deployments';
 import { setDRE } from '../../helpers/misc-utils';
@@ -61,7 +59,7 @@ WRONG RESERVE ASSET SETUP:
       ],
       verify
     );
-    const stableDebt = await deployStETHStableDebtToken(
+    const stableDebt = await deployStableDebtToken(
       [
         poolAddress,
         reserveAssetAddress,
@@ -71,7 +69,7 @@ WRONG RESERVE ASSET SETUP:
       ],
       verify
     );
-    const variableDebt = await deployStETHVariableDebtToken(
+    const variableDebt = await deployVariableDebtToken(
       [
         poolAddress,
         reserveAssetAddress,
@@ -93,7 +91,6 @@ WRONG RESERVE ASSET SETUP:
       ],
       verify
     );
-    await aToken.initializeDebtTokens();
     console.log(`
     New interest bearing asset deployed on ${network}:
     Interest bearing a${symbol} address: ${aToken.address}

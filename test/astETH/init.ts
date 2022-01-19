@@ -25,7 +25,7 @@ import {
 } from '../../helpers/lido/deployment';
 import { AaveContracts, Addresses } from '../../helpers/lido/aave-mainnet-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
-import { strategyStETH } from '../../markets/aave/reservesConfigs';
+import { strategySTETH } from '../../markets/aave/reservesConfigs';
 import { expectedFlashLoanPremium, wei } from './helpers';
 import BigNumber from 'bignumber.js';
 
@@ -91,13 +91,13 @@ export class AstEthSetup {
       lendingPool.getReserveData(stETH.address),
       aaveContracts.lendingPoolConfigurator.setReserveFactor(
         stETH.address,
-        strategyStETH.reserveFactor
+        strategySTETH.reserveFactor
       ),
       aaveContracts.lendingPoolConfigurator.configureReserveAsCollateral(
         stETH.address,
-        strategyStETH.baseLTVAsCollateral,
-        strategyStETH.liquidationThreshold,
-        strategyStETH.liquidationBonus
+        strategySTETH.baseLTVAsCollateral,
+        strategySTETH.liquidationThreshold,
+        strategySTETH.liquidationBonus
       ),
       aaveContracts.priceOracle
         .connect(aaveOwner)

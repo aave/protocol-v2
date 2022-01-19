@@ -359,7 +359,7 @@ export const strategyXSUSHI: IReserveParams = {
   reserveFactor: '3500',
 };
 
-export let strategyStETH: IReserveParams = {
+export let strategySTETH: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.6).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: '0',
   variableRateSlope1: new BigNumber(0.08).multipliedBy(oneRay).toFixed(),

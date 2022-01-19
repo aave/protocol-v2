@@ -26,7 +26,6 @@ import {
   deployUniswapLiquiditySwapAdapter,
   deployUniswapRepayAdapter,
   deployFlashLiquidationAdapter,
-  deployMockStETH,
 } from '../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../helpers/types';
@@ -54,8 +53,6 @@ import {
   getPairsTokenAggregator,
 } from '../helpers/contracts-getters';
 import { WETH9Mocked } from '../types/WETH9Mocked';
-import { StETHMocked } from '../types/StETHMocked';
-import { strategyStETH } from '../markets/aave/reservesConfigs';
 
 const MOCK_USD_PRICE_IN_WEI = AaveConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = AaveConfig.Mocks.AllAssetsInitialPrices;
@@ -64,7 +61,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = AaveConfig.Mocks.AllAssetsInitialPrice
 const LENDING_RATE_ORACLE_RATES_COMMON = AaveConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
-  const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked | StETHMocked } = {};
+  const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked } = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
 
@@ -82,19 +79,11 @@ const deployAllMockTokens = async (deployer: Signer) => {
       decimals = 18;
     }
 
-    if (tokenSymbol == 'stETH') {
-      tokens[tokenSymbol] = await deployMockStETH([
-        tokenSymbol,
-        tokenSymbol,
-        configData ? configData.reserveDecimals : 18,
-      ]);
-    } else {
-      tokens[tokenSymbol] = await deployMintableERC20([
-        tokenSymbol,
-        tokenSymbol,
-        configData ? configData.reserveDecimals : 18,
-      ]);
-    }
+    tokens[tokenSymbol] = await deployMintableERC20([
+      tokenSymbol,
+      tokenSymbol,
+      configData ? configData.reserveDecimals : 18,
+    ]);
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
   }
 
@@ -178,7 +167,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       ENJ: mockTokens.ENJ.address,
       USD: USD_ADDRESS,
       xSUSHI: mockTokens.xSUSHI.address,
-      stETH: mockTokens.stETH.address,
     },
     fallbackOracle
   );
@@ -271,8 +259,6 @@ before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
   const MAINNET_FORK = process.env.MAINNET_FORK === 'true';
-
-  strategyStETH.borrowingEnabled = true;
 
   if (MAINNET_FORK) {
     await rawBRE.run('aave:mainnet');

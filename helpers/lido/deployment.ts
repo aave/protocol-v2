@@ -6,7 +6,7 @@ import {
   StETHMockedFactory,
   VariableDebtStETHFactory,
 } from '../../types';
-import { strategyStETH } from '../../markets/aave/reservesConfigs';
+import { strategySTETH } from '../../markets/aave/reservesConfigs';
 import { zeroAddress } from 'ethereumjs-util';
 import { Addresses } from './aave-mainnet-contracts';
 
@@ -70,12 +70,12 @@ export async function deployStEthInterestRateStrategy(
 ) {
   return new DefaultReserveInterestRateStrategyFactory(deployer).deploy(
     Addresses.LendingPoolAddressesProvider,
-    strategyStETH.optimalUtilizationRate,
-    strategyStETH.baseVariableBorrowRate,
-    strategyStETH.variableRateSlope1,
-    strategyStETH.variableRateSlope2,
-    strategyStETH.stableRateSlope1,
-    strategyStETH.stableRateSlope2,
+    strategySTETH.optimalUtilizationRate,
+    strategySTETH.baseVariableBorrowRate,
+    strategySTETH.variableRateSlope1,
+    strategySTETH.variableRateSlope2,
+    strategySTETH.stableRateSlope1,
+    strategySTETH.stableRateSlope2,
     overrides
   );
 }
