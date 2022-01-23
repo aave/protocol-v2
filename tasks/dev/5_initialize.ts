@@ -57,19 +57,18 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     const treasuryAddress = await getTreasuryAddress(poolConfig);
 
-    await initReservesByHelper(
-      ReservesConfig,
-      protoPoolReservesAddresses,
-      ATokenNamePrefix,
-      StableDebtTokenNamePrefix,
-      VariableDebtTokenNamePrefix,
-      SymbolPrefix,
-      admin,
-      treasuryAddress,
-      ZERO_ADDRESS,
-      pool,
-      verify
-    );
+    console.log('ReservesConfig', ReservesConfig);
+    console.log('protoPoolReservesAddresses', protoPoolReservesAddresses);
+    console.log('ATokenNamePrefix', ATokenNamePrefix);
+    console.log('StableDebtTokenNamePrefix', StableDebtTokenNamePrefix);
+    console.log('VariableDebtTokenNamePrefix', VariableDebtTokenNamePrefix);
+    console.log('SymbolPrefix', SymbolPrefix);
+    console.log('admin', admin);
+    console.log('treasuryAddress', treasuryAddress);
+    console.log('ZERO_ADDRESS', ZERO_ADDRESS);
+    console.log('pool', pool);
+    console.log('verify', verify);
+
     await configureReservesByHelper(ReservesConfig, protoPoolReservesAddresses, testHelpers, admin);
 
     const collateralManager = await deployLendingPoolCollateralManager(verify);

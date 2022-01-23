@@ -42,6 +42,7 @@ export const initReservesByHelper = async (
   poolName: ConfigNames,
   verify: boolean
 ) => {
+  console.log('marker-1');
   const addressProvider = await getLendingPoolAddressesProvider();
 
   // CHUNK CONFIGURATION
@@ -108,6 +109,7 @@ export const initReservesByHelper = async (
         stableRateSlope1,
         stableRateSlope2,
       ];
+      console.log('marker-2');
       strategyAddresses[strategy.name] = await deployRateStrategy(
         strategy.name,
         rateStrategies[strategy.name],
@@ -120,6 +122,7 @@ export const initReservesByHelper = async (
     }
     // Prepare input parameters
     reserveSymbols.push(symbol);
+    console.log('marker-3');
     initInputParams.push({
       aTokenImpl: await getContractAddressWithJsonFallback(aTokenImpl, poolName),
       stableDebtTokenImpl: await getContractAddressWithJsonFallback(
@@ -149,17 +152,19 @@ export const initReservesByHelper = async (
   // Deploy init reserves per chunks
   const chunkedSymbols = chunk(reserveSymbols, initChunks);
   const chunkedInitInputParams = chunk(initInputParams, initChunks);
-
+  console.log('marker-4');
   const configurator = await getLendingPoolConfiguratorProxy();
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
+    console.log('marker-5');
+    console.log(chunkedInitInputParams[chunkIndex]);
     const tx3 = await waitForTx(
       await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
     );
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
-    console.log('    * gasUsed', tx3.gasUsed.toString());
+    console.log('marker-    * gasUsed', tx3.gasUsed.toString());
   }
 };
 
@@ -195,7 +200,9 @@ export const configureReservesByHelper = async (
   helpers: AaveProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
+  console.log('marker-6');
   const addressProvider = await getLendingPoolAddressesProvider();
+  console.log('marker-7');
   const atokenAndRatesDeployer = await getATokensAndRatesHelper();
   const tokens: string[] = [];
   const symbols: string[] = [];
@@ -235,6 +242,7 @@ export const configureReservesByHelper = async (
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
+    console.log('marker-8');
     const { usageAsCollateralEnabled: alreadyEnabled } = await helpers.getReserveConfigurationData(
       tokenAddress
     );
@@ -260,6 +268,7 @@ export const configureReservesByHelper = async (
   }
   if (tokens.length) {
     // Set aTokenAndRatesDeployer as temporal admin
+    console.log('marker-9');
     await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
 
     // Deploy init per chunks
@@ -269,12 +278,14 @@ export const configureReservesByHelper = async (
 
     console.log(`- Configure reserves in ${chunkedInputParams.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedInputParams.length; chunkIndex++) {
+      console.log('marker-10');
       await waitForTx(
         await atokenAndRatesDeployer.configureReserves(chunkedInputParams[chunkIndex])
       );
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
     // Set deployer back as admin
+    console.log('marker-11');
     await waitForTx(await addressProvider.setPoolAdmin(admin));
   }
 };

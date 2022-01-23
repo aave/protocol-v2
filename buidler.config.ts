@@ -47,6 +47,11 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
   };
 };
 
+const getAuroraNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
+  let conf = getCommonNetworkConfig(networkName, networkId);
+  conf.url = 'http://localhost:8545'
+}
+
 const buidlerConfig: any = {
   solc: {
     version: '0.6.12',
@@ -69,7 +74,7 @@ const buidlerConfig: any = {
       url: 'http://localhost:8555',
       chainId: COVERAGE_CHAINID,
     },
-    auroraLocal: getCommonNetworkConfig(eEthereumNetwork.auroraLocal, 5777),
+    auroraLocal: getAuroraNetworkConfig(eEthereumNetwork.auroraLocal, 5777),
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
