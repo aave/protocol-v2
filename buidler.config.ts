@@ -69,6 +69,7 @@ const buidlerConfig: any = {
       url: 'http://localhost:8555',
       chainId: COVERAGE_CHAINID,
     },
+    auroraLocal: getCommonNetworkConfig(eEthereumNetwork.auroraLocal, 5777),
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),

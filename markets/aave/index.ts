@@ -58,6 +58,7 @@ export const AaveConfig: IAaveConfiguration = {
     xSUSHI: strategyXSUSHI,
   },
   ReserveAssets: {
+    [eEthereumNetwork.auroraLocal]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},

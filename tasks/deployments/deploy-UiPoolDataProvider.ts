@@ -21,6 +21,7 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
     const addressesByNetwork: {
       [key: string]: { incentivesController: string; aaveOracle: string };
     } = {
+      // TODO
       [eEthereumNetwork.kovan]: {
         incentivesController: '0x0000000000000000000000000000000000000000',
         aaveOracle: '0x8fb777d67e9945e2c01936e319057f9d41d559e6',

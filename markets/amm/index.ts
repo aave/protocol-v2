@@ -57,6 +57,7 @@ export const AmmConfig: IAmmConfiguration = {
     BptBALWETH: strategyBALWETH,
   },
   ReserveAssets: {
+    [eEthereumNetwork.auroraLocal]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},

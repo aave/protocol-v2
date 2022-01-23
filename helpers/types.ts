@@ -7,6 +7,7 @@ export interface SymbolMap<T> {
 export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eAvalancheNetwork;
 
 export enum eEthereumNetwork {
+  auroraLocal = 'auroraLocal',
   buidlerevm = 'buidlerevm',
   kovan = 'kovan',
   ropsten = 'ropsten',
@@ -31,6 +32,7 @@ export enum eAvalancheNetwork {
 }
 
 export enum EthereumNetworkNames {
+  auroraLocal = 'auroraLocal',
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
@@ -116,6 +118,7 @@ export enum eContractid {
  *  - LPCM = LendingPoolCollateralManager
  *  - P = Pausable
  */
+
 export enum ProtocolErrors {
   //common errors
   CALLER_NOT_POOL_ADMIN = '33', // 'The caller must be the pool admin'
@@ -425,6 +428,7 @@ export interface iParamsPerNetworkAll<T>
     iXDaiParamsPerNetwork<T> {}
 
 export interface iEthereumParamsPerNetwork<T> {
+  [eEthereumNetwork.auroraLocal]: T;
   [eEthereumNetwork.coverage]: T;
   [eEthereumNetwork.buidlerevm]: T;
   [eEthereumNetwork.kovan]: T;

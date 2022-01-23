@@ -77,6 +77,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 };
 
 export const chainlinkAggregatorProxy = {
+  auroraLocal: '',
   main: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
   kovan: '0x9326BFA02ADD2366b30bacB125260Af641031331',
   matic: '0xAB594600376Ec9fD91F8e885dADF0CE036862dE0',
@@ -90,6 +91,7 @@ export const chainlinkAggregatorProxy = {
 };
 
 export const chainlinkEthUsdAggregatorProxy = {
+  auroraLocal: '',
   main: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
   kovan: '0x9326BFA02ADD2366b30bacB125260Af641031331',
   matic: '0xF9680D99D6C9589e2a93a78A04A279e509205945',
