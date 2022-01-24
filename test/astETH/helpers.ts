@@ -25,13 +25,6 @@ export function ray(amount: number | string | ethers.BigNumber) {
   return new BigNumber(amount).multipliedBy(ONE_RAY).toFixed(0, 1);
 }
 
-export function assertBalance(actual: string, expected: string, epsilon: string = '1') {
-  const lowerBound = new BigNumber(expected).minus(epsilon).toString();
-  const upperBound = new BigNumber(expected).plus(epsilon).toString();
-  expect(actual).to.be.bignumber.lte(upperBound);
-  expect(actual).to.be.bignumber.gte(lowerBound);
-}
-
 export const advanceTimeAndBlock = async function (forwardTime: number) {
   const currentBlockNumber = await hre.ethers.provider.getBlockNumber();
   const currentBlock = await hre.ethers.provider.getBlock(currentBlockNumber);
@@ -52,7 +45,7 @@ export const advanceTimeAndBlock = async function (forwardTime: number) {
 };
 
 export const expectedBalanceAfterRebase = (balance: string, rebaseAmount: number) => {
-  return new BigNumber(balance).multipliedBy(1 + rebaseAmount).toFixed(0, 1);
+  return new BigNumber(balance).multipliedBy(1 + rebaseAmount).toFixed(0, 0);
 };
 
 export const expectedFlashLoanPremium = (amount: string) => {
@@ -62,38 +55,30 @@ export const expectedFlashLoanPremium = (amount: string) => {
 
 export const expectedBalanceAfterFlashLoan = (
   balanceBeforeFlashLoan: string,
-  reserveDataBeforeFlashLoan: ReserveDataInfo,
+  totalSupply: string,
   flashLoanAmount: string
 ) => {
   return new BigNumber(balanceBeforeFlashLoan)
     .plus(
       new BigNumber(balanceBeforeFlashLoan).rayMul(
-        expectedLiquidityIndexGrowAfterFlashLoan(reserveDataBeforeFlashLoan, flashLoanAmount)
+        expectedLiquidityIndexGrowAfterFlashLoan(totalSupply, flashLoanAmount)
       )
     )
     .toString();
 };
 
 export const expectedLiquidityIndexAfterFlashLoan = (
-  reserveDataBeforeFlashLoan: ReserveDataInfo,
+  liquidityIndex: string,
+  totalSupply: string,
   flashLoanAmount: string
 ) => {
-  const premium = expectedFlashLoanPremium(flashLoanAmount);
-  const amountToLiquidityRatio = new BigNumber(premium)
-    .wadToRay()
-    .rayDiv(new BigNumber(reserveDataBeforeFlashLoan.availableLiquidity.toString()).wadToRay());
-  const result = amountToLiquidityRatio
+  const result = expectedLiquidityIndexGrowAfterFlashLoan(totalSupply, flashLoanAmount)
     .plus(new BigNumber(ONE_RAY))
-    .rayMul(new BigNumber(reserveDataBeforeFlashLoan.liquidityIndex.toString()));
+    .rayMul(new BigNumber(liquidityIndex));
   return result.toFixed(0, 1);
 };
 
-const expectedLiquidityIndexGrowAfterFlashLoan = (
-  reserveDataBeforeFlashLoan: ReserveDataInfo,
-  flashLoanAmount: string
-) => {
+const expectedLiquidityIndexGrowAfterFlashLoan = (totalSupply: string, flashLoanAmount: string) => {
   const premium = expectedFlashLoanPremium(flashLoanAmount);
-  return new BigNumber(premium)
-    .wadToRay()
-    .rayDiv(new BigNumber(reserveDataBeforeFlashLoan.availableLiquidity.toString()).wadToRay());
+  return new BigNumber(premium).wadToRay().rayDiv(new BigNumber(totalSupply).wadToRay());
 };

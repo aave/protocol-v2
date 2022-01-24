@@ -135,16 +135,32 @@ export class AstEthSetup {
   async rebaseStETH(perc) {
     const currentTotalSupply = await this.stETH.totalSupply();
     const currentSupply = new BigNumber(currentTotalSupply.toString());
-    const supplyDelta = currentSupply.multipliedBy(Number(perc * 10000).toFixed(0)).div(10000);
+    const percentBasis = 1_000_000_000_000_000;
+    const supplyDelta = currentSupply
+      .multipliedBy(Number(perc * percentBasis).toFixed(0))
+      .div(percentBasis);
     if (supplyDelta.isNegative()) {
-      await this.stETH.negativeRebase(supplyDelta.negated().toFixed());
+      await this.stETH.negativeRebase(supplyDelta.negated().toFixed(0));
     } else {
-      await this.stETH.positiveRebase(supplyDelta.toFixed());
+      await this.stETH.positiveRebase(supplyDelta.toFixed(0));
     }
   }
 
   astEthTotalSupply() {
     return this.astETH.totalSupply().then(wei);
+  }
+
+  astEthInternalTotalSupply() {
+    return this.astETH.internalTotalSupply().then(wei);
+  }
+
+  async toInternalBalance(amount: string) {
+    const liquidityIndex = await this.aave.lendingPool.getReserveNormalizedIncome(
+      this.stETH.address
+    );
+    return new BigNumber(await this.stETH.getSharesByPooledEth(amount).then(wei))
+      .rayDiv(new BigNumber(liquidityIndex.toString()))
+      .toFixed(0, 1);
   }
 }
 
@@ -181,6 +197,10 @@ export class Lender {
   }
   withdrawStEth(amount: ethers.BigNumberish) {
     return this.lendingPool.withdraw(this.stETH.address, amount, this.signer.address);
+  }
+
+  async astEthInternalBalance() {
+    return this.astETH.internalBalanceOf(this.address).then(wei);
   }
 
   wethBalance() {
