@@ -8,7 +8,7 @@ import { setup } from './__setup.spec';
 describe('AStETH deposits', async () => {
   it('First deposit: should mint exact amount of AStETH', async () => {
     const { lenderA } = setup.lenders;
-    const depositAmount = wei(10);
+    const depositAmount = wei`10 ether`;
     await lenderA.depositStEth(depositAmount);
 
     await asserts.astEthBalance(lenderA, depositAmount);
@@ -19,20 +19,20 @@ describe('AStETH deposits', async () => {
     const { lenderA, lenderB } = setup.lenders;
 
     // lenderA deposits
-    await lenderA.depositStEth(wei(10));
-    await asserts.astEthBalance(lenderA, wei(10));
-    await asserts.astEthTotalSupply(setup, wei(10));
+    await lenderA.depositStEth(wei`10 ether`);
+    await asserts.astEthBalance(lenderA, wei`10 ether`);
+    await asserts.astEthTotalSupply(setup, wei`10 ether`);
 
     // lenderB deposits
-    await lenderB.depositStEth(wei(5));
-    await asserts.astEthBalance(lenderB, wei(5));
-    await asserts.astEthTotalSupply(setup, wei(15));
+    await lenderB.depositStEth(wei`5 ether`);
+    await asserts.astEthBalance(lenderB, wei`5 ether`);
+    await asserts.astEthTotalSupply(setup, wei`15 ether`);
 
     // lenderB deposits again
-    await lenderB.depositStEth(wei(7));
-    await asserts.astEthBalance(lenderA, wei(10));
-    await asserts.astEthBalance(lenderB, wei(12), '2');
-    await asserts.astEthTotalSupply(setup, wei(22), '2');
+    await lenderB.depositStEth(wei`7 ether`);
+    await asserts.astEthBalance(lenderA, wei`10 ether`);
+    await asserts.astEthBalance(lenderB, wei`12 ether`, '2');
+    await asserts.astEthTotalSupply(setup, wei`22 ether`, '2');
   });
 
   it('Zero scaled amount is zero: should revert with correct message', async () => {
@@ -53,12 +53,11 @@ describe('AStETH deposits', async () => {
   it('Deposit Events', async () => {
     const { lenderA } = setup.lenders;
 
-    await lenderA.depositStEth(wei(10));
-
-    await expect(lenderA.depositStEth(wei(10)))
+    const depositAmount = wei`10 ether`;
+    await expect(lenderA.depositStEth(depositAmount))
       .to.emit(setup.astETH, 'Transfer')
-      .withArgs(zeroAddress(), lenderA.address, wei(10))
+      .withArgs(zeroAddress(), lenderA.address, depositAmount)
       .emit(setup.astETH, 'Mint')
-      .withArgs(lenderA.address, wei(10), ONE_RAY);
+      .withArgs(lenderA.address, depositAmount, ONE_RAY);
   });
 });

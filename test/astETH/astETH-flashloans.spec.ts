@@ -7,8 +7,8 @@ import {
   expectedBalanceAfterRebase,
   expectedBalanceAfterFlashLoan,
   expectedLiquidityIndexAfterFlashLoan,
-  ray,
   wei,
+  ONE_RAY,
 } from './helpers';
 import { setup } from './__setup.spec';
 
@@ -18,13 +18,13 @@ describe('AStETH FlashLoans', function () {
     const { lenderA, lenderC } = lenders;
 
     // lenderA deposit steth
-    await lenderA.depositStEth(wei(300));
-    await asserts.astEthBalance(lenderA, wei(300));
-    await asserts.astEthTotalSupply(setup, wei(300));
+    await lenderA.depositStEth(wei`300 ether`);
+    await asserts.astEthBalance(lenderA, wei`300 ether`);
+    await asserts.astEthTotalSupply(setup, wei`300 ether`);
 
     let prevAstEthTotalSupply = await setup.astEthTotalSupply();
-    let prevLiquidityIndex = ray(1);
-    let currentLiquidityIndex = ray(1);
+    let prevLiquidityIndex = ONE_RAY;
+    let currentLiquidityIndex = ONE_RAY;
 
     const reserveDataBeforeFirstFlashLoan = await aave.protocolDataProvider.getReserveData(
       stETH.address
@@ -32,7 +32,7 @@ describe('AStETH FlashLoans', function () {
     asserts.eq(reserveDataBeforeFirstFlashLoan.liquidityIndex.toString(), currentLiquidityIndex);
 
     // lenderC makes flashloan with mode = 1 when liquidity index = 1
-    await lenderC.makeStEthFlashLoanMode0(wei(10));
+    await lenderC.makeStEthFlashLoanMode0(wei`10 ether`);
 
     // Validate that liquidityIndex increased correctly
     prevLiquidityIndex = currentLiquidityIndex;
@@ -41,19 +41,19 @@ describe('AStETH FlashLoans', function () {
       .then((rd) => rd.liquidityIndex.toString());
     asserts.eq(
       currentLiquidityIndex,
-      expectedLiquidityIndexAfterFlashLoan(prevLiquidityIndex, prevAstEthTotalSupply, wei(10))
+      expectedLiquidityIndexAfterFlashLoan(prevLiquidityIndex, prevAstEthTotalSupply, wei`10 ether`)
     );
     prevAstEthTotalSupply = await setup.astEthTotalSupply();
 
     // lenderB makes another flashloan with mode = 1 when liquidity index != 1
-    await lenderC.makeStEthFlashLoanMode0(wei(20));
+    await lenderC.makeStEthFlashLoanMode0(wei`20 ether`);
     prevLiquidityIndex = currentLiquidityIndex;
     currentLiquidityIndex = await aave.protocolDataProvider
       .getReserveData(stETH.address)
       .then((rd) => rd.liquidityIndex.toString());
     asserts.eq(
       currentLiquidityIndex,
-      expectedLiquidityIndexAfterFlashLoan(prevLiquidityIndex, prevAstEthTotalSupply, wei(20))
+      expectedLiquidityIndexAfterFlashLoan(prevLiquidityIndex, prevAstEthTotalSupply, wei`20 ether`)
     );
   });
 
@@ -61,13 +61,13 @@ describe('AStETH FlashLoans', function () {
     const { lenderA, lenderB, lenderC } = setup.lenders;
 
     // lenderA deposits stETH
-    const lenderADeposit = wei(25);
+    const lenderADeposit = wei`25 ether`;
     await lenderA.depositStEth(lenderADeposit);
     await asserts.astEthBalance(lenderA, lenderADeposit);
     let expectedLenderABalance = await lenderA.astEthBalance();
 
     // lenderB makes flash loan
-    const firstFlashLoanAmount = wei(13);
+    const firstFlashLoanAmount = wei`13 ether`;
     let prevTotalSupply = await setup.astEthTotalSupply();
     await lenderC.makeStEthFlashLoanMode0(firstFlashLoanAmount);
 
@@ -81,7 +81,7 @@ describe('AStETH FlashLoans', function () {
     // await asserts.astEthTotalSupply(setup, expectedLenderABalance);
 
     // lenderB deposits stETH
-    const lenderBDeposit = wei(15);
+    const lenderBDeposit = wei`15 ether`;
     await lenderB.depositStEth(lenderBDeposit);
     let expectedLenderBBalance = lenderBDeposit;
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
@@ -113,7 +113,7 @@ describe('AStETH FlashLoans', function () {
     // await asserts.astEthTotalSupply(setup, expectedAstEthTotalSupply, '2');
 
     // lenderC makes flashLoan
-    const secondFlashLoanAmount = wei(13);
+    const secondFlashLoanAmount = wei`13 ether`;
     prevTotalSupply = await setup.astEthTotalSupply();
     await lenderC.makeStEthFlashLoanMode0(secondFlashLoanAmount);
 
@@ -174,10 +174,10 @@ describe('AStETH FlashLoans', function () {
     const { lenderA, lenderC } = setup.lenders;
 
     // lenderA deposit steth
-    await lenderA.depositStEth(wei(300));
+    await lenderA.depositStEth(wei`300 ether`);
 
     // lenderC makes flashloan with mode = 1 when liquidity index = 1
-    await expect(lenderC.makeStEthFlashLoanMode1(wei(10))).to.revertedWith(
+    await expect(lenderC.makeStEthFlashLoanMode1(wei`10 ether`)).to.revertedWith(
       ProtocolErrors.VL_BORROWING_NOT_ENABLED
     );
   });
@@ -186,10 +186,10 @@ describe('AStETH FlashLoans', function () {
     const { lenderA, lenderC } = setup.lenders;
 
     // lenderA deposit steth
-    await lenderA.depositStEth(wei(300));
+    await lenderA.depositStEth(wei`300 ether`);
 
     // lenderC makes flashloan with mode = 1 when liquidity index = 1
-    await expect(lenderC.makeStEthFlashLoanMode2(wei(10))).to.revertedWith(
+    await expect(lenderC.makeStEthFlashLoanMode2(wei`10 ether`)).to.revertedWith(
       ProtocolErrors.VL_BORROWING_NOT_ENABLED
     );
   });
@@ -199,10 +199,12 @@ describe('AStETH FlashLoans', function () {
     const { lenderA, lenderC } = setup.lenders;
 
     // lenderA deposit steth
-    await lenderA.depositStEth(wei(300));
+    await lenderA.depositStEth(wei`300 ether`);
 
     // lenderC makes flashloan with mode = 1 when liquidity index = 1
-    await expect(lenderC.makeStEthFlashLoanMode1(wei(10))).to.revertedWith('CONTRACT_NOT_ACTIVE');
+    await expect(lenderC.makeStEthFlashLoanMode1(wei`10 ether`)).to.revertedWith(
+      'CONTRACT_NOT_ACTIVE'
+    );
   });
 
   it('Flash Loan with mode = 2 when variable rate borrowing enabled must revert with CONTRACT_NOT_ACTIVE', async () => {
@@ -210,9 +212,11 @@ describe('AStETH FlashLoans', function () {
     const { lenderA, lenderC } = setup.lenders;
 
     // lenderA deposit steth
-    await lenderA.depositStEth(wei(300));
+    await lenderA.depositStEth(wei`300 ether`);
 
     // lenderB makes flashloan with mode = 1 when liquidity index = 1
-    await expect(lenderC.makeStEthFlashLoanMode2(wei(10))).to.revertedWith('CONTRACT_NOT_ACTIVE');
+    await expect(lenderC.makeStEthFlashLoanMode2(wei`10 ether`)).to.revertedWith(
+      'CONTRACT_NOT_ACTIVE'
+    );
   });
 });

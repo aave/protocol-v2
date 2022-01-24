@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { expect } from 'chai';
-import { wei } from './helpers';
+import { toWei } from './helpers';
 import { AstEthSetup, Lender } from './init';
 
 export function lte(actual: string, expected: string, epsilon: string = '1') {
@@ -35,12 +35,12 @@ export async function astEthBalance(
   const [balance, internalBalance, liquidityIndex] = await Promise.all([
     lender.astEthBalance(),
     lender.astEthInternalBalance(),
-    lender.lendingPool.getReserveNormalizedIncome(lender.stETH.address).then(wei),
+    lender.lendingPool.getReserveNormalizedIncome(lender.stETH.address).then(toWei),
   ]);
   lte(balance, expectedBalance, epsilon);
   // to validate that amount of shares is correct
   // we convert internal balance to stETH shares and assert with astETH balance
-  const fromInternalBalance = await lender.stETH.getPooledEthByShares(internalBalance).then(wei);
+  const fromInternalBalance = await lender.stETH.getPooledEthByShares(internalBalance).then(toWei);
   eq(
     new BigNumber(fromInternalBalance).rayMul(new BigNumber(liquidityIndex)).toFixed(0),
     balance,
@@ -55,9 +55,9 @@ export async function astEthTotalSupply(
 ) {
   const [totalSupply, internalTotalSupply, stEthBalance, liquidityIndex] = await Promise.all([
     setup.astEthTotalSupply(),
-    setup.astETH.internalTotalSupply().then(wei),
-    setup.stETH.balanceOf(setup.astETH.address).then(wei),
-    setup.aave.lendingPool.getReserveNormalizedIncome(setup.stETH.address).then(wei),
+    setup.astETH.internalTotalSupply().then(toWei),
+    setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+    setup.aave.lendingPool.getReserveNormalizedIncome(setup.stETH.address).then(toWei),
   ]);
 
   lte(totalSupply, expectedValue, epsilon);
@@ -65,7 +65,7 @@ export async function astEthTotalSupply(
   // internal total supply converts to stETH and assert it with astETH total supply
   const fromInternalTotalSupply = await setup.stETH
     .getPooledEthByShares(internalTotalSupply)
-    .then(wei);
+    .then(toWei);
   eq(
     new BigNumber(fromInternalTotalSupply).rayMul(new BigNumber(liquidityIndex)).toFixed(0),
     totalSupply,

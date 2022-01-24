@@ -26,11 +26,11 @@ import {
 import { AaveContracts, Addresses } from '../../helpers/lido/aave-mainnet-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { strategySTETH } from '../../markets/aave/reservesConfigs';
-import { expectedFlashLoanPremium, wei } from './helpers';
+import { expectedFlashLoanPremium, toWei, wei } from './helpers';
 import BigNumber from 'bignumber.js';
 
 export class AstEthSetup {
-  public static readonly INITIAL_BALANCE = wei('1000');
+  public static readonly INITIAL_BALANCE = wei`1000 ether`;
   private constructor(
     public readonly deployer: SignerWithAddress,
     public readonly aave: AaveContracts,
@@ -147,18 +147,18 @@ export class AstEthSetup {
   }
 
   astEthTotalSupply() {
-    return this.astETH.totalSupply().then(wei);
+    return this.astETH.totalSupply().then(toWei);
   }
 
   astEthInternalTotalSupply() {
-    return this.astETH.internalTotalSupply().then(wei);
+    return this.astETH.internalTotalSupply().then(toWei);
   }
 
   async toInternalBalance(amount: string) {
     const liquidityIndex = await this.aave.lendingPool.getReserveNormalizedIncome(
       this.stETH.address
     );
-    return new BigNumber(await this.stETH.getSharesByPooledEth(amount).then(wei))
+    return new BigNumber(await this.stETH.getSharesByPooledEth(amount).then(toWei))
       .rayDiv(new BigNumber(liquidityIndex.toString()))
       .toFixed(0, 1);
   }
@@ -200,17 +200,17 @@ export class Lender {
   }
 
   async astEthInternalBalance() {
-    return this.astETH.internalBalanceOf(this.address).then(wei);
+    return this.astETH.internalBalanceOf(this.address).then(toWei);
   }
 
   wethBalance() {
-    return this.weth.balanceOf(this.address).then(wei);
+    return this.weth.balanceOf(this.address).then(toWei);
   }
   stEthBalance() {
-    return this.stETH.balanceOf(this.address).then(wei);
+    return this.stETH.balanceOf(this.address).then(toWei);
   }
   astEthBalance() {
-    return this.astETH.balanceOf(this.address).then(wei);
+    return this.astETH.balanceOf(this.address).then(toWei);
   }
   async depositWeth(amount: ethers.BigNumberish) {
     await this.weth.deposit({ value: amount });

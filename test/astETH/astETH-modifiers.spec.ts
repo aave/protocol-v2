@@ -37,7 +37,7 @@ describe('AStETH Modifiers', function () {
 
   it('Tries to invoke mintToTreasury not being the LendingPool', async () => {
     const { astETH } = setup;
-    await expect(astETH.mintToTreasury(wei(100), '1')).to.be.revertedWith(
+    await expect(astETH.mintToTreasury(wei`100 ether`, '1')).to.be.revertedWith(
       CT_CALLER_MUST_BE_LENDING_POOL
     );
   });
