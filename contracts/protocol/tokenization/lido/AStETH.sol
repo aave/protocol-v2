@@ -107,7 +107,7 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    uint256 amountScaled = _toStEthShares(amount).rayDiv(index);
+    uint256 amountScaled = _stEthToShares(amount).rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
@@ -132,7 +132,7 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   ) external override onlyLendingPool returns (bool) {
     uint256 previousBalance = super.balanceOf(user);
 
-    uint256 amountScaled = _toStEthShares(amount).rayDiv(index);
+    uint256 amountScaled = _stEthToShares(amount).rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
@@ -157,7 +157,7 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     // The amount to mint can easily be very small since it is a fraction of the interest ccrued.
     // In that case, the treasury will experience a (very small) loss, but it
     // wont cause potentially valid transactions to fail.
-    _mint(RESERVE_TREASURY_ADDRESS, _toStEthShares(amount).rayDiv(index));
+    _mint(RESERVE_TREASURY_ADDRESS, _stEthToShares(amount).rayDiv(index));
 
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
     emit Mint(RESERVE_TREASURY_ADDRESS, amount, index);
@@ -246,6 +246,26 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
+   * @dev Returns the internal balance of the user. The internal balance is the balance of
+   * the underlying asset of the user (sum of deposits of the user), divided by the current
+   * liquidity index at the moment of the update and by the current stETH rebasing index.
+   * @param user The user whose balance is calculated
+   * @return The internal balance of the user
+   **/
+  function internalBalanceOf(address user) external view returns (uint256) {
+    return super.balanceOf(user);
+  }
+
+  /**
+   * @dev Returns the internal total supply of the token. Represents
+   * sum(debt/_stEthRebasingIndex/liquidityIndex).
+   * @return the internal total supply
+   */
+  function internalTotalSupply() external view returns (uint256) {
+    return super.totalSupply();
+  }
+
+  /**
    * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
    * assets in borrow(), withdraw() and flashLoan()
    * @param target The recipient of the aTokens
@@ -318,7 +338,7 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     uint256 fromBalanceBefore = _scaledBalanceOf(from).rayMul(index);
     uint256 toBalanceBefore = _scaledBalanceOf(to).rayMul(index);
 
-    super._transfer(from, to, _toStEthShares(amount).rayDiv(index));
+    super._transfer(from, to, _stEthToShares(amount).rayDiv(index));
 
     if (validate) {
       POOL.finalizeTransfer(
@@ -348,39 +368,19 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     _transfer(from, to, amount, true);
   }
 
-  function _toStEthShares(uint256 stEthAmount) internal view returns (uint256) {
-    return ILido(UNDERLYING_ASSET_ADDRESS).getSharesByPooledEth(stEthAmount);
-  }
-
-  function _toStEthAmount(uint256 stEthShares) internal view returns (uint256) {
-    return ILido(UNDERLYING_ASSET_ADDRESS).getPooledEthByShares(stEthShares);
-  }
-
   function _scaledBalanceOf(address user) internal view returns (uint256) {
-    return _toStEthAmount(super.balanceOf(user));
+    return _sharesToStEth(super.balanceOf(user));
   }
 
   function _scaledTotalSupply() internal view returns (uint256) {
-    return _toStEthAmount(super.totalSupply());
+    return _sharesToStEth(super.totalSupply());
   }
 
-  /**
-   * @dev Returns the internal balance of the user. The internal balance is the balance of
-   * the underlying asset of the user (sum of deposits of the user), divided by the current
-   * liquidity index at the moment of the update and by the current stETH rebasing index.
-   * @param user The user whose balance is calculated
-   * @return The internal balance of the user
-   **/
-  function internalBalanceOf(address user) external view returns (uint256) {
-    return super.balanceOf(user);
+  function _sharesToStEth(uint256 sharesAmount) internal view returns (uint256) {
+    return ILido(UNDERLYING_ASSET_ADDRESS).getPooledEthByShares(sharesAmount);
   }
 
-  /**
-   * @dev Returns the internal total supply of the token. Represents
-   * sum(debt/_stEthRebasingIndex/liquidityIndex).
-   * @return the internal total supply
-   */
-  function internalTotalSupply() external view returns (uint256) {
-    return super.totalSupply();
+  function _stEthToShares(uint256 stEthAmount) internal view returns (uint256) {
+    return ILido(UNDERLYING_ASSET_ADDRESS).getSharesByPooledEth(stEthAmount);
   }
 }
