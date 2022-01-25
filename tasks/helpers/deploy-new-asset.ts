@@ -11,12 +11,13 @@ import {
   deployVariableDebtToken,
 } from './../../helpers/contracts-deployments';
 import { setDRE } from '../../helpers/misc-utils';
-import { ZERO_ADDRESS } from './../../helpers/constants';
 
 const LENDING_POOL_ADDRESS_PROVIDER = {
   main: '0xb53c1a33016b2dc2ff3653530bff1848a515c8c5',
   kovan: '0x652B2937Efd0B5beA1c8d54293FC1289672AFC6b',
 };
+
+const INCENTIVES_CONTROLLER_ADDRESS = '0x036cA61C1977c6EA52222Db81F725fDBd70eFBd7';
 
 const isSymbolValid = (symbol: string, network: EthereumNetwork) =>
   Object.keys(reserveConfigs).includes('strategy' + symbol) &&
@@ -55,7 +56,7 @@ WRONG RESERVE ASSET SETUP:
         treasuryAddress,
         `Aave interest bearing ${symbol}`,
         `a${symbol}`,
-        ZERO_ADDRESS,
+        INCENTIVES_CONTROLLER_ADDRESS,
       ],
       verify
     );
@@ -65,7 +66,7 @@ WRONG RESERVE ASSET SETUP:
         reserveAssetAddress,
         `Aave stable debt bearing ${symbol}`,
         `stableDebt${symbol}`,
-        ZERO_ADDRESS,
+        INCENTIVES_CONTROLLER_ADDRESS,
       ],
       verify
     );
@@ -75,7 +76,7 @@ WRONG RESERVE ASSET SETUP:
         reserveAssetAddress,
         `Aave variable debt bearing ${symbol}`,
         `variableDebt${symbol}`,
-        ZERO_ADDRESS,
+        INCENTIVES_CONTROLLER_ADDRESS,
       ],
       verify
     );
