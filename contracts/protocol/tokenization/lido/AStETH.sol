@@ -208,6 +208,17 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
+   * @dev Returns the internal balance of the user. The internal balance is the balance of
+   * the underlying asset of the user (sum of deposits of the user), divided by the current
+   * liquidity index at the moment of the update and by the current stETH rebasing index.
+   * @param user The user whose balance is calculated
+   * @return The internal balance of the user
+   **/
+  function internalBalanceOf(address user) external view returns (uint256) {
+    return super.balanceOf(user);
+  }
+
+  /**
    * @dev Returns the scaled balance of the user and the scaled total supply.
    * @param user The address of the user
    * @return The scaled balance of the user
@@ -245,17 +256,6 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
    **/
   function scaledTotalSupply() public view virtual override returns (uint256) {
     return _scaledTotalSupply(_stEthRebasingIndex());
-  }
-
-  /**
-   * @dev Returns the internal balance of the user. The internal balance is the balance of
-   * the underlying asset of the user (sum of deposits of the user), divided by the current
-   * liquidity index at the moment of the update and by the current stETH rebasing index.
-   * @param user The user whose balance is calculated
-   * @return The internal balance of the user
-   **/
-  function internalBalanceOf(address user) external view returns (uint256) {
-    return super.balanceOf(user);
   }
 
   /**
@@ -372,6 +372,14 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     _transfer(from, to, amount, true);
   }
 
+  function _scaledBalanceOf(address user, uint256 rebasingIndex) internal view returns (uint256) {
+    return super.balanceOf(user).mul(rebasingIndex).div(WadRayMath.RAY);
+  }
+
+  function _scaledTotalSupply(uint256 rebasingIndex) internal view returns (uint256) {
+    return super.totalSupply().mul(rebasingIndex).div(WadRayMath.RAY);
+  }
+
   /**
    * @return Current rebasin index of stETH in RAY
    **/
@@ -380,22 +388,18 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     // to 10 ** 27 shares. 10 ** 27 was taken  to provide
     // same precision as AAVE's liquidity index, which
     // counted in RAY's (decimals with 27 digits).
-    return ILido(UNDERLYING_ASSET_ADDRESS).getPooledEthByShares(1e27);
+    return ILido(UNDERLYING_ASSET_ADDRESS).getPooledEthByShares(WadRayMath.RAY);
   }
 
+  /**
+   * @dev Converts amount of astETH to internal shares, based
+   *  on stEthRebasingIndex and aaveLiquidityIndex.
+   */
   function _toInternalAmount(
     uint256 amount,
     uint256 stEthRebasingIndex,
     uint256 aaveLiquidityIndex
   ) internal view returns (uint256) {
     return amount.mul(WadRayMath.RAY).div(stEthRebasingIndex).rayDiv(aaveLiquidityIndex);
-  }
-
-  function _scaledBalanceOf(address user, uint256 rebasingIndex) internal view returns (uint256) {
-    return super.balanceOf(user).mul(rebasingIndex).div(WadRayMath.RAY);
-  }
-
-  function _scaledTotalSupply(uint256 rebasingIndex) internal view returns (uint256) {
-    return super.totalSupply().mul(rebasingIndex).div(WadRayMath.RAY);
   }
 }
