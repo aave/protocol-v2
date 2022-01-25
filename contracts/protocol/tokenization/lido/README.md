@@ -57,7 +57,7 @@ function _stEthRebasingIndex() returns (uint256) {
   // to 10 ** 27 shares. 10 ** 27 was taken  to provide
   // same precision as AAVE's liquidity index, which
   // counted in RAY's (decimals with 27 digits).
-  return stETH.getPooledEthByShares(10**27);
+  return stETH.getPooledEthByShares(WadRayMath.RAY);
 }
 
 ```
@@ -68,27 +68,35 @@ With stETH rebasing index, `AStETH` allows to make rebases profit accountable, a
 function mint(address user, uint256 amount, uint256 liquidityIndex) {
     ...
     uint256 stEthRebasingIndex = _stEthRebasingIndex();
-    _mint(user, amount.rayDiv(stEthRebasingIndex).rayDiv(liquidityIndex));
+    _mint(user, _toInternalAmount(amount, stEthRebasingIndex, liquidityIndex));
     ...
 }
 
 function burn(address user, uint256 amount, uint256 liquidityIndex) {
     ...
     uint256 stEthRebasingIndex = _stEthRebasingIndex();
-    _burn(user, amount.rayDiv(stEthRebasingIndex)).rayDiv(liquidityIndex);
+    _burn(user, _toInternalAmount(amount, stEthRebasingIndex, liquidityIndex));
     ...
 }
+
+function _toInternalAmount(
+    uint256 amount,
+    uint256 stEthRebasingIndex,
+    uint256 aaveLiquidityIndex
+  ) internal view returns (uint256) {
+    return amount.mul(WadRayMath.RAY).div(stEthRebasingIndex).rayDiv(aaveLiquidityIndex);
+  }
 ```
 
 Then, according to AAVE's definitions, `scaledTotalSupply()` and `scaledBalanceOf()` might be calculated as:
 
 ```solidity=
 function scaledTotalSupply() returns (uint256) {
-  return _totalSupply.rayMul(_stEthRebasingIndex());
+  return _totalSupply.mul(_stEthRebasingIndex()).div(WadRayMath.RAY);
 }
 
 function scaledBalanceOf(address user) returns (uint256) {
-  return _balances[user].rayMul(_stEthRebasingIndex());
+  return _balances[user].mul(_stEthRebasingIndex()).div(WadRayMath.RAY);
 }
 
 ```
