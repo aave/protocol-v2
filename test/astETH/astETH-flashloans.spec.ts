@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { expect } from 'chai';
 import { ProtocolErrors } from '../../helpers/types';
 import asserts from './asserts';
@@ -9,6 +8,7 @@ import {
   expectedLiquidityIndexAfterFlashLoan,
   wei,
   ONE_RAY,
+  toWei,
 } from './helpers';
 import { setup } from './__setup.spec';
 
@@ -66,7 +66,7 @@ describe('AStETH FlashLoans', function () {
     await asserts.astEthBalance(lenderA, lenderADeposit);
     let expectedLenderABalance = await lenderA.astEthBalance();
 
-    // lenderB makes flash loan
+    // lenderC makes flash loan
     const firstFlashLoanAmount = wei`13 ether`;
     let prevTotalSupply = await setup.astEthTotalSupply();
     await lenderC.makeStEthFlashLoanMode0(firstFlashLoanAmount);
@@ -78,17 +78,28 @@ describe('AStETH FlashLoans', function () {
       firstFlashLoanAmount
     );
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
-    // await asserts.astEthTotalSupply(setup, expectedLenderABalance);
+    // validate that mock receiver might have not more than 1 wei
+    // after flash loan due to stETH specificities
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.flashLoanReceiverLoan.address).then(toWei),
+      '1'
+    );
+    // validate that astETH total supply might be only 1 wei less than total supply
+    // of underlying asset
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply()
+    );
 
     // lenderB deposits stETH
     const lenderBDeposit = wei`15 ether`;
     await lenderB.depositStEth(lenderBDeposit);
     let expectedLenderBBalance = lenderBDeposit;
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    let expectedAstEthTotalSupply = new BigNumber(expectedLenderABalance)
-      .plus(expectedLenderBBalance)
-      .toString();
-    // await asserts.astEthTotalSupply(setup, expectedAstEthTotalSupply, '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply()
+    );
 
     // wait one week
     await advanceTimeAndBlock(7 * 24 * 3600);
@@ -96,7 +107,10 @@ describe('AStETH FlashLoans', function () {
     // validate balances stays same
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    // await asserts.astEthTotalSupply(setup, expectedAstEthTotalSupply, '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply()
+    );
 
     // positive 1% rebase happens
     await setup.rebaseStETH(+0.01);
@@ -104,13 +118,13 @@ describe('AStETH FlashLoans', function () {
     // validate balances updates correctly
     expectedLenderABalance = expectedBalanceAfterRebase(expectedLenderABalance, +0.01);
     expectedLenderBBalance = expectedBalanceAfterRebase(expectedLenderBBalance, +0.01);
-    expectedAstEthTotalSupply = new BigNumber(expectedLenderABalance)
-      .plus(expectedLenderBBalance)
-      .toString();
 
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    // await asserts.astEthTotalSupply(setup, expectedAstEthTotalSupply, '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply()
+    );
 
     // lenderC makes flashLoan
     const secondFlashLoanAmount = wei`13 ether`;
@@ -131,10 +145,10 @@ describe('AStETH FlashLoans', function () {
     );
 
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    expectedAstEthTotalSupply = new BigNumber(expectedLenderABalance)
-      .plus(expectedLenderBBalance)
-      .toString();
-    // await asserts.astEthTotalSupply(setup, expectedAstEthTotalSupply, '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply()
+    );
 
     // wait one week
     await advanceTimeAndBlock(30 * 24 * 3060);
@@ -142,7 +156,10 @@ describe('AStETH FlashLoans', function () {
     // validate balances
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    // await asserts.astEthTotalSupply(setup, expectedAstEthTotalSupply, '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply()
+    );
 
     // negative rebase -5 % happens
     await setup.rebaseStETH(-0.05);
@@ -150,24 +167,34 @@ describe('AStETH FlashLoans', function () {
     // validate balances
     expectedLenderABalance = expectedBalanceAfterRebase(expectedLenderABalance, -0.05);
     expectedLenderBBalance = expectedBalanceAfterRebase(expectedLenderBBalance, -0.05);
-    expectedAstEthTotalSupply = new BigNumber(expectedLenderABalance)
-      .plus(expectedLenderBBalance)
-      .toString();
+
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    // await asserts.astEthTotalSupply(setup, expectedAstEthTotalSupply, '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply(),
+      '2'
+    );
 
     // lenderA withdraws all his tokens
     await lenderA.withdrawStEth(await lenderA.astEthBalance());
     await asserts.astEthBalance(lenderA, '1');
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    // await asserts.astEthTotalSupply(setup, expectedLenderBBalance, '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply(),
+      '2'
+    );
 
     // lenderC withdraws all his tokens
     await lenderB.withdrawStEth(await lenderB.astEthBalance());
     await asserts.astEthBalance(lenderA, '1');
     await asserts.astEthBalance(lenderB, '1');
-    // await asserts.astEthTotalSupply(setup, wei(0), '2');
+    await asserts.lte(
+      await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
+      await setup.astEthTotalSupply(),
+      '2'
+    );
   });
 
   it('Flash Loan with mode = 1 when stable rate borrowing disabled must revert with VL_BORROWING_NOT_ENABLED', async () => {
