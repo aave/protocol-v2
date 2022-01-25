@@ -121,7 +121,7 @@ describe('AStETH FlashLoans', function () {
 
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    await asserts.lte(
+    asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply()
     );
@@ -145,7 +145,7 @@ describe('AStETH FlashLoans', function () {
     );
 
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    await asserts.lte(
+    asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply()
     );
@@ -156,7 +156,7 @@ describe('AStETH FlashLoans', function () {
     // validate balances
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    await asserts.lte(
+    asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply()
     );
@@ -170,7 +170,7 @@ describe('AStETH FlashLoans', function () {
 
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    await asserts.lte(
+    asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply(),
       '2'
@@ -180,7 +180,7 @@ describe('AStETH FlashLoans', function () {
     await lenderA.withdrawStEth(await lenderA.astEthBalance());
     await asserts.astEthBalance(lenderA, '1');
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    await asserts.lte(
+    asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply(),
       '2'
@@ -190,7 +190,8 @@ describe('AStETH FlashLoans', function () {
     await lenderB.withdrawStEth(await lenderB.astEthBalance());
     await asserts.astEthBalance(lenderA, '1');
     await asserts.astEthBalance(lenderB, '1');
-    await asserts.lte(
+
+    await asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply(),
       '2'

@@ -3,6 +3,13 @@ import { expect } from 'chai';
 import { toWei } from './helpers';
 import { AstEthSetup, Lender } from './init';
 
+export function almostEq(actual: string, expected: string, epsilon: string = '1') {
+  const lowerBound = new BigNumber(expected).minus(epsilon).toString();
+  const upperBound = new BigNumber(expected).plus(epsilon).toString();
+  expect(actual).to.be.bignumber.lte(upperBound);
+  expect(actual).to.be.bignumber.gte(lowerBound);
+}
+
 export function lte(actual: string, expected: string, epsilon: string = '1') {
   const lowerBound = new BigNumber(expected).minus(epsilon).toString();
   expect(actual).to.be.bignumber.lte(expected);
@@ -78,4 +85,4 @@ export async function astEthTotalSupply(
   );
 }
 
-export default { lt, lte, eq, gt, gte, astEthBalance, astEthTotalSupply };
+export default { lt, lte, eq, almostEq, gt, gte, astEthBalance, astEthTotalSupply };
