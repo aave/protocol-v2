@@ -25,6 +25,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
   USD: '5848466240000000',
+  UST: oneEther.multipliedBy('0.00369068412860').toFixed(),
 };
 // ----------------
 // PROTOCOL GLOBAL PARAMS
@@ -108,6 +109,9 @@ export const CommonsConfig: ICommonConfiguration = {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     BUSD: {
+      borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+    },
+    UST: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
   },
@@ -216,6 +220,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0xC5d1B1DEb2992738C0273408ac43e1e906086B6C',
       ZRX: '0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883',
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
+      UST: ZERO_ADDRESS,
     },
     [EthereumNetwork.ropsten]: {
       AAVE: ZERO_ADDRESS,
@@ -238,6 +243,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: ZERO_ADDRESS,
       ZRX: '0x1d0052e4ae5b4ae4563cbac50edc3627ca0460d7',
       USD: '0x8468b2bDCE073A157E560AA4D9CcF6dB1DB98507',
+      UST: ZERO_ADDRESS,
     },
     [EthereumNetwork.main]: {
       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
@@ -260,6 +266,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      UST: '0xa20623070413d42a5C01Db2c8111640DD7A5A03a',
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
@@ -282,6 +289,7 @@ export const CommonsConfig: ICommonConfiguration = {
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      UST: '0xa20623070413d42a5C01Db2c8111640DD7A5A03a',
     },
   },
   ReserveAssets: {
