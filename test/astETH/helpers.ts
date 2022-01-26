@@ -87,7 +87,7 @@ export const expectedBalanceAfterFlashLoan = (
   return new BigNumber(balanceBeforeFlashLoan)
     .plus(
       new BigNumber(balanceBeforeFlashLoan).rayMul(
-        expectedLiquidityIndexGrowAfterFlashLoan(totalSupply, flashLoanAmount)
+        expectedLiquidityIndexIncrementAfterFlashLoan(totalSupply, flashLoanAmount)
       )
     )
     .toString();
@@ -98,13 +98,16 @@ export const expectedLiquidityIndexAfterFlashLoan = (
   totalSupply: string,
   flashLoanAmount: string
 ) => {
-  const result = expectedLiquidityIndexGrowAfterFlashLoan(totalSupply, flashLoanAmount)
+  const result = expectedLiquidityIndexIncrementAfterFlashLoan(totalSupply, flashLoanAmount)
     .plus(new BigNumber(ONE_RAY))
     .rayMul(new BigNumber(liquidityIndex));
   return result.toFixed(0, 1);
 };
 
-const expectedLiquidityIndexGrowAfterFlashLoan = (totalSupply: string, flashLoanAmount: string) => {
+const expectedLiquidityIndexIncrementAfterFlashLoan = (
+  totalSupply: string,
+  flashLoanAmount: string
+) => {
   const premium = expectedFlashLoanPremium(flashLoanAmount);
   return new BigNumber(premium).wadToRay().rayDiv(new BigNumber(totalSupply).wadToRay());
 };

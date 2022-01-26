@@ -88,12 +88,15 @@ describe('AStETH Happy Path', function () {
     let lenderAStEthBalanceBefore = await lenderA.stEthBalance();
     await lenderA.withdrawStEth(wei`30 ether`);
 
+    // Validate that after withdrawal user will receive the same
+    // amount of stETH how much astETH was burned. Due to stETH rebasing
+    // lender still may have one wei of astETH on balance.
     asserts.eq(
       new BigNumber(lenderAAstEthBalanceBefore).minus(await lenderA.astEthBalance()).toString(),
       new BigNumber(await lenderA.stEthBalance()).minus(lenderAStEthBalanceBefore).toString()
     );
 
-    // it's possible that after withdraw user will have couple of wei on balance
+    // it's possible that after withdraw user will have one wei on balance
     // count it in assertion
     const expectedLenderABalanceAfterWithdraw = new BigNumber(wei`15.095 ether`).plus(1).toFixed(0);
     await asserts.astEthBalance(lenderA, expectedLenderABalanceAfterWithdraw);
