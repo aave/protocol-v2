@@ -152,9 +152,9 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
     }
 
     // Compared to the normal mint, we don't check for rounding errors.
-    // The amount to mint can easily be very small since it is a fraction of the interest ccrued.
+    // The amount to mint can easily be very small since it is a fraction of the interest accrued.
     // In that case, the treasury will experience a (very small) loss, but it
-    // wont cause potentially valid transactions to fail.
+    // won't cause potentially valid transactions to fail.
     _mint(RESERVE_TREASURY_ADDRESS, _toInternalAmount(amount, _stEthRebasingIndex(), index));
 
     emit Transfer(address(0), RESERVE_TREASURY_ADDRESS, amount);
@@ -381,13 +381,12 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
   }
 
   /**
-   * @return Current rebasin index of stETH in RAY
+   * @return Current rebasing index of stETH in RAY
    **/
   function _stEthRebasingIndex() internal view returns (uint256) {
-    // Below expression returns how much Ether corresponds
-    // to 10 ** 27 shares. 10 ** 27 was taken  to provide
-    // same precision as AAVE's liquidity index, which
-    // counted in RAY's (decimals with 27 digits).
+    // Returns amount of stETH corresponding to 10**27 stETH shares.
+    // The 10**27 is picked to provide the same precision as the AAVE
+    // liquidity index, which is in RAY (10**27).
     return ILido(UNDERLYING_ASSET_ADDRESS).getPooledEthByShares(WadRayMath.RAY);
   }
 
