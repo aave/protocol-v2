@@ -86,7 +86,7 @@ describe('AStETH FlashLoans', function () {
     );
     // validate that astETH total supply might be only 1 wei less than total supply
     // of underlying asset
-    await asserts.lte(
+    await asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply()
     );
@@ -96,7 +96,7 @@ describe('AStETH FlashLoans', function () {
     await lenderB.depositStEth(lenderBDeposit);
     let expectedLenderBBalance = lenderBDeposit;
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    await asserts.lte(
+    await asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply()
     );
@@ -107,7 +107,7 @@ describe('AStETH FlashLoans', function () {
     // validate balances stays same
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
     await asserts.astEthBalance(lenderB, expectedLenderBBalance, '2');
-    await asserts.lte(
+    await asserts.almostEq(
       await setup.stETH.balanceOf(setup.astETH.address).then(toWei),
       await setup.astEthTotalSupply()
     );
