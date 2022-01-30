@@ -2,10 +2,10 @@ import { expect } from 'chai';
 import { zeroAddress } from 'ethereumjs-util';
 import { ProtocolErrors } from '../../helpers/types';
 import asserts from './asserts';
-import { ONE_RAY, wei } from './helpers';
+import { ONE_RAY, toWei, wei } from './helpers';
 import { setup } from './__setup.spec';
 
-describe('AStETH deposits', async () => {
+describe('AStETH Deposits', async () => {
   it('First deposit: should mint exact amount of AStETH', async () => {
     const { lenderA } = setup.lenders;
     const depositAmount = wei`10 ether`;
@@ -35,19 +35,23 @@ describe('AStETH deposits', async () => {
     await asserts.astEthTotalSupply(setup, wei`22 ether`, '2');
   });
 
-  it('Zero scaled amount is zero: should revert with correct message', async () => {
+  it('Deposited amount becomes zero after scaling to stETH shares: should revert with correct message', async () => {
     const { lenderA } = setup.lenders;
-    // rebase 200%
-    await setup.rebaseStETH(2);
+    const currentStEthRebasingIndex = await setup.stETH
+      .getPooledEthByShares(wei`1 ether`)
+      .then(toWei);
+    // check that current stEth share price is greater than 1 wei
+    asserts.gt(currentStEthRebasingIndex, wei`1 ether`);
+    // when user deposits 1 wei into the pool and stEth share price greater than 1 wei must revert
     await expect(lenderA.depositStEth(1)).to.revertedWith(ProtocolErrors.CT_INVALID_MINT_AMOUNT);
   });
 
-  it('Small deposit 100 wei: should mint exact amount of AStETH', async () => {
+  it('Small deposit 2 wei: should mint correct amount of AStETH', async () => {
     const { lenderA } = setup.lenders;
 
-    await lenderA.depositStEth('100');
-    await asserts.astEthBalance(lenderA, '100');
-    await asserts.astEthTotalSupply(setup, '100');
+    await lenderA.depositStEth('2');
+    await asserts.astEthBalance(lenderA, '2');
+    await asserts.astEthTotalSupply(setup, '2');
   });
 
   it('Deposit Events', async () => {

@@ -3,6 +3,18 @@ import { expect } from 'chai';
 import { toWei } from './helpers';
 import { AstEthSetup, Lender } from './init';
 
+export function lt(actual: string, expected: string, message?: string) {
+  expect(actual).to.be.bignumber.lt(expected, message);
+}
+
+export function gt(actual: string, expected: string, message?: string) {
+  expect(actual).to.be.bignumber.gt(expected, message);
+}
+
+export function eq(actual: string, expected: string, message?: string) {
+  expect(actual).is.equal(expected, message);
+}
+
 export function almostEq(actual: string, expected: string, epsilon: string = '1') {
   const lowerBound = new BigNumber(expected).minus(epsilon).toString();
   const upperBound = new BigNumber(expected).plus(epsilon).toString();
@@ -16,22 +28,10 @@ export function lte(actual: string, expected: string, epsilon: string = '1') {
   expect(actual).to.be.bignumber.gte(lowerBound);
 }
 
-export function lt(actual: string, expected: string) {
-  expect(actual).to.be.bignumber.lt(expected);
-}
-
 export function gte(actual: string, expected: string, epsilon: string = '1') {
   const upperBound = new BigNumber(expected).plus(epsilon).toString();
   expect(actual).to.be.bignumber.gte(expected);
   expect(actual).to.be.bignumber.lte(upperBound);
-}
-
-export function gt(actual: string, expected: string) {
-  expect(actual).to.be.bignumber.gt(expected);
-}
-
-export function eq(actual: string, expected: string, message?: string) {
-  expect(actual).is.equal(expected, message);
 }
 
 export async function astEthBalance(

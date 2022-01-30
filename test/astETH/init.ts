@@ -28,6 +28,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-wit
 import { strategySTETH } from '../../markets/aave/reservesConfigs';
 import { expectedFlashLoanPremium, toWei, wei } from './helpers';
 import BigNumber from 'bignumber.js';
+import { RateMode } from '../../helpers/types';
 
 export class AstEthSetup {
   public static readonly INITIAL_BALANCE = wei`1000 ether`;
@@ -195,6 +196,7 @@ export class Lender {
     await this.stETH.approve(this.lendingPool.address, amount);
     return this.lendingPool.deposit(this.stETH.address, amount, this.signer.address, 0);
   }
+
   withdrawStEth(amount: ethers.BigNumberish) {
     return this.lendingPool.withdraw(this.stETH.address, amount, this.signer.address);
   }
@@ -206,17 +208,21 @@ export class Lender {
   wethBalance() {
     return this.weth.balanceOf(this.address).then(toWei);
   }
+
   stEthBalance() {
     return this.stETH.balanceOf(this.address).then(toWei);
   }
+
   astEthBalance() {
     return this.astETH.balanceOf(this.address).then(toWei);
   }
+
   async depositWeth(amount: ethers.BigNumberish) {
     await this.weth.deposit({ value: amount });
     await this.weth.approve(this.lendingPool.address, amount);
     return this.lendingPool.deposit(this.weth.address, amount, this.signer.address, 0);
   }
+
   transferAstEth(recipient: string, amount: ethers.BigNumberish) {
     return this.astETH.transfer(recipient, amount);
   }
@@ -244,6 +250,14 @@ export class Lender {
 
   async makeStEthFlashLoanMode2(flashLoanAmount: string) {
     return this.makeStEthFlashLoan(2, flashLoanAmount);
+  }
+
+  async borrowWethStable(amount: string) {
+    return this.lendingPool.borrow(this.weth.address, amount, RateMode.Stable, '0', this.address);
+  }
+
+  async borrowWethVariable(amount: string) {
+    return this.lendingPool.borrow(this.weth.address, amount, RateMode.Variable, '0', this.address);
   }
 
   private async makeStEthFlashLoan(mode: 1 | 2, flashLoanAmount: string) {

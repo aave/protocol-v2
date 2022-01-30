@@ -6,7 +6,7 @@ import { setup } from './__setup.spec';
 import asserts from './asserts';
 import BigNumber from 'bignumber.js';
 
-describe('AStETH Withdraws:', function () {
+describe('AStETH Withdrawals:', function () {
   it('Withdraw all max uint256: should withdraw correct amount', async () => {
     const { lenderA } = setup.lenders;
 
