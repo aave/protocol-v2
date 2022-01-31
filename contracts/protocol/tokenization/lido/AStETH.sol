@@ -340,13 +340,12 @@ contract AStETH is VersionedInitializable, IncentivizedERC20, IAToken {
 
     uint256 fromBalanceBefore =
       _scaledBalanceOf(from, stEthRebasingIndex).rayMul(aaveLiquidityIndex);
-    require(fromBalanceBefore >= amount, 'ERC20: transfer amount exceeds balance');
-
     uint256 toBalanceBefore = _scaledBalanceOf(to, stEthRebasingIndex).rayMul(aaveLiquidityIndex);
 
     super._transfer(from, to, _toInternalAmount(amount, stEthRebasingIndex, aaveLiquidityIndex));
 
     if (validate) {
+      require(fromBalanceBefore >= amount, 'ERC20: transfer amount exceeds balance');
       POOL.finalizeTransfer(
         UNDERLYING_ASSET_ADDRESS,
         from,

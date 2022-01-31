@@ -84,6 +84,13 @@ describe('AStETH Transfers', function () {
     await expect(
       lenderA.transferAstEth(lenderB.address, new BigNumber(lenderAAstEthAmount).plus(1).toFixed(0))
     ).to.be.revertedWith('transfer amount exceeds balance');
+
+    await expect(
+      lenderA.transferAstEth(
+        lenderB.address,
+        new BigNumber(lenderAAstEthAmount).plus('100').toFixed(0)
+      )
+    ).to.be.revertedWith('transfer amount exceeds balance');
   });
 
   it('Transfer Events', async () => {
