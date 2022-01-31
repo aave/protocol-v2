@@ -1,26 +1,27 @@
-// SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.5.0;
 
-import {ILendingRateOracle} from '../../interfaces/ILendingRateOracle.sol';
-import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
+import "../../interfaces/ILendingRateOracle.sol";
 
-contract LendingRateOracle is ILendingRateOracle, Ownable {
-  mapping(address => uint256) borrowRates;
-  mapping(address => uint256) liquidityRates;
 
-  function getMarketBorrowRate(address _asset) external view override returns (uint256) {
-    return borrowRates[_asset];
-  }
+contract LendingRateOracle is ILendingRateOracle {
 
-  function setMarketBorrowRate(address _asset, uint256 _rate) external override onlyOwner {
-    borrowRates[_asset] = _rate;
-  }
+    mapping(address => uint256) borrowRates;
+    mapping(address => uint256) liquidityRates;
 
-  function getMarketLiquidityRate(address _asset) external view returns (uint256) {
-    return liquidityRates[_asset];
-  }
 
-  function setMarketLiquidityRate(address _asset, uint256 _rate) external onlyOwner {
-    liquidityRates[_asset] = _rate;
-  }
+    function getMarketBorrowRate(address _asset) external view returns(uint256) {
+        return borrowRates[_asset];
+    }
+
+    function setMarketBorrowRate(address _asset, uint256 _rate) external {
+        borrowRates[_asset] = _rate;
+    }
+
+    function getMarketLiquidityRate(address _asset) external view returns(uint256) {
+        return liquidityRates[_asset];
+    }
+
+    function setMarketLiquidityRate(address _asset, uint256 _rate) external {
+        liquidityRates[_asset] = _rate;
+    }
 }
