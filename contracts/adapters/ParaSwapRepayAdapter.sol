@@ -136,6 +136,8 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
 
     //deposit collateral back in the pool, if left after the swap(buy)
     if (collateralBalanceLeft > 0) {
+      IERC20(collateralAsset).safeApprove(address(LENDING_POOL), 0);
+      IERC20(collateralAsset).safeApprove(address(LENDING_POOL), collateralBalanceLeft);
       LENDING_POOL.deposit(address(collateralAsset), collateralBalanceLeft, msg.sender, 0);
     }
 

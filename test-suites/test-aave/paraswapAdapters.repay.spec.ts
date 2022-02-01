@@ -1174,6 +1174,90 @@ makeSuite('Paraswap adapters', (testEnv: TestEnv) => {
         expect(userWethBalance).to.be.eq(userWethBalanceBefore);
       });
 
+      it('should swap (not whole amount), repay debt and pull the needed ATokens leaving no leftovers', async () => {
+        const {
+          users,
+          pool,
+          weth,
+          aWETH,
+          oracle,
+          dai,
+          paraswapRepayAdapter,
+          helpersContract,
+        } = testEnv;
+        const user = users[0].signer;
+        const userAddress = users[0].address;
+
+        const amountWETHtoSwap = await convertToCurrencyDecimals(weth.address, '10');
+
+        const daiPrice = await oracle.getAssetPrice(dai.address);
+        const expectedDaiAmount = await convertToCurrencyDecimals(
+          dai.address,
+          new BigNumber(amountWETHtoSwap.toString()).div(daiPrice.toString()).toFixed(0)
+        );
+
+        // Open user Debt
+        await pool.connect(user).borrow(dai.address, expectedDaiAmount, 1, 0, userAddress);
+
+        const daiStableDebtTokenAddress = (
+          await helpersContract.getReserveTokensAddresses(dai.address)
+        ).stableDebtTokenAddress;
+
+        const daiStableDebtContract = await getContract<StableDebtToken>(
+          eContractid.StableDebtToken,
+          daiStableDebtTokenAddress
+        );
+
+        const userDaiStableDebtAmountBefore = await daiStableDebtContract.balanceOf(userAddress);
+
+        const liquidityToSwap = amountWETHtoSwap;
+        const swappedAmount = await convertToCurrencyDecimals(weth.address, '9.9');
+
+        await mockAugustus.expectBuy(weth.address, dai.address, swappedAmount, expectedDaiAmount, expectedDaiAmount);
+        const mockAugustusCalldata = mockAugustus.interface.encodeFunctionData(
+          'buy',
+          [weth.address, dai.address, liquidityToSwap, expectedDaiAmount]
+        );
+
+        const params = buildParaswapBuyParams(mockAugustusCalldata, mockAugustus.address)
+        await aWETH.connect(user).approve(paraswapRepayAdapter.address, liquidityToSwap);
+        const userAEthBalanceBefore = await aWETH.balanceOf(userAddress);
+        const userWethBalanceBefore = await weth.balanceOf(userAddress);
+
+        await paraswapRepayAdapter.connect(user).swapAndRepay(
+            weth.address,
+            dai.address,
+            liquidityToSwap,
+            expectedDaiAmount,
+            1,
+            0,
+            params,
+          {
+            amount: 0,
+            deadline: 0,
+            v: 0,
+            r: '0x0000000000000000000000000000000000000000000000000000000000000000',
+            s: '0x0000000000000000000000000000000000000000000000000000000000000000',
+          }
+        );
+
+        const adapterWethBalance = await weth.balanceOf(paraswapRepayAdapter.address);
+        const adapterDaiBalance = await dai.balanceOf(paraswapRepayAdapter.address);
+        const userDaiStableDebtAmount = await daiStableDebtContract.balanceOf(userAddress);
+        const userAEthBalance = await aWETH.balanceOf(userAddress);
+        const adapterAEthBalance = await aWETH.balanceOf(paraswapRepayAdapter.address);
+        const userWethBalance = await weth.balanceOf(userAddress);
+
+        expect(adapterAEthBalance).to.be.eq(Zero);
+        expect(adapterWethBalance).to.be.eq(Zero);
+        expect(adapterDaiBalance).to.be.eq(Zero);
+        expect(userDaiStableDebtAmountBefore).to.be.gte(expectedDaiAmount);
+        expect(userDaiStableDebtAmount).to.be.lt(expectedDaiAmount);
+        expect(userAEthBalance).to.be.lt(userAEthBalanceBefore);
+        expect(userAEthBalance).to.be.eq(userAEthBalanceBefore.sub(swappedAmount));
+        expect(userWethBalance).to.be.eq(userWethBalanceBefore);
+      });
+
       it('should correctly swap tokens and repay the whole stable debt', async () => {
         const {
           users,
