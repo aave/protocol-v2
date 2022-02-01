@@ -1,17 +1,19 @@
 // @ts-ignore
-import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
+import { HardhatNetworkForkingUserConfig } from 'hardhat/types';
 import {
+  eAstarNetwork,
   eAvalancheNetwork,
   eEthereumNetwork,
   ePolygonNetwork,
   eXDaiNetwork,
-  iParamsPerNetwork,
+  iParamsPerNetwork
 } from './helpers/types';
 
 require('dotenv').config();
 
 const INFURA_KEY = process.env.INFURA_KEY || '';
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || '';
+const BWARE_LABS_KEY = process.env.BWARE_LABS_KEY || '';
 const TENDERLY_FORK_ID = process.env.TENDERLY_FORK_ID || '';
 const FORK = process.env.FORK || '';
 const FORK_BLOCK_NUMBER = process.env.FORK_BLOCK_NUMBER
@@ -55,6 +57,8 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eXDaiNetwork.xdai]: 'https://rpc.xdaichain.com/',
   [eAvalancheNetwork.avalanche]: 'https://api.avax.network/ext/bc/C/rpc',
   [eAvalancheNetwork.fuji]: 'https://api.avax-test.network/ext/bc/C/rpc',
+  // [eAstarNetwork.shibuya]: `https://shibuya-api.bwarelabs.com/${BWARE_LABS_KEY}`,
+  [eAstarNetwork.shibuya]: 'https://rpc.shibuya.astar.network:8545',
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
@@ -70,6 +74,7 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eXDaiNetwork.xdai]: 1 * GWEI,
   [eAvalancheNetwork.avalanche]: 225 * GWEI,
   [eAvalancheNetwork.fuji]: 85 * GWEI,
+  [eAstarNetwork.shibuya]: 1 * GWEI,
 };
 
 export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
@@ -85,4 +90,5 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [eXDaiNetwork.xdai]: undefined,
   [eAvalancheNetwork.avalanche]: undefined,
   [eAvalancheNetwork.fuji]: undefined,
+  [eAstarNetwork.shibuya]: undefined
 };

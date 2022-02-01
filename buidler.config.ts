@@ -1,11 +1,9 @@
-import path from 'path';
-import fs from 'fs';
-import {usePlugin, task} from '@nomiclabs/buidler/config';
+import { task, usePlugin } from '@nomiclabs/buidler/config';
+import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
+import { setDRE } from './helpers/misc-utils';
+import { eEthereumNetwork } from './helpers/types';
 // @ts-ignore
-import {accounts} from './test-wallets.js';
-import {eEthereumNetwork} from './helpers/types';
-import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
-import {setDRE} from './helpers/misc-utils';
+import { accounts } from './test-wallets.js';
 
 require('dotenv').config();
 
@@ -20,7 +18,10 @@ const DEFAULT_BLOCK_GAS_LIMIT = 12450000;
 const DEFAULT_GAS_PRICE = 10;
 const HARDFORK = 'istanbul';
 const INFURA_KEY = process.env.INFURA_KEY || '';
+const BWARE_LABS_KEY = process.env.BWARE_LABS_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
+const SUBSCAN_KEY = process.env.SUBSCAN_KEY || '';
+
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 
@@ -33,7 +34,7 @@ task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).set
 
 const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number) => {
   return {
-    url: `https://${networkName}.infura.io/v3/${INFURA_KEY}`,
+    url: `https://rpc.${networkName}.astar.network:8545`,
     hardfork: HARDFORK,
     blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
     gasMultiplier: DEFAULT_GAS_PRICE,
@@ -58,7 +59,7 @@ const buidlerConfig: any = {
     target: 'ethers-v4',
   },
   etherscan: {
-    apiKey: ETHERSCAN_KEY,
+    apiKey: SUBSCAN_KEY,
   },
   defaultNetwork: 'buidlerevm',
   mocha: {

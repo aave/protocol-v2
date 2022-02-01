@@ -1,25 +1,25 @@
+import { BigNumberish } from 'ethers';
+import { AaveProtocolDataProvider } from '../types/AaveProtocolDataProvider';
+import { ConfigNames } from './configuration';
+import { deployRateStrategy } from './contracts-deployments';
+import {
+  getAToken,
+  getATokensAndRatesHelper,
+  getLendingPoolAddressesProvider,
+  getLendingPoolConfiguratorProxy
+} from './contracts-getters';
+import {
+  getContractAddressWithJsonFallback,
+  rawInsertContractAddressInDb
+} from './contracts-helpers';
+import { chunk, getDb, waitForTx } from './misc-utils';
 import {
   eContractid,
   eNetwork,
   iMultiPoolsAssets,
   IReserveParams,
-  tEthereumAddress,
+  tEthereumAddress
 } from './types';
-import { AaveProtocolDataProvider } from '../types/AaveProtocolDataProvider';
-import { chunk, getDb, waitForTx } from './misc-utils';
-import {
-  getAToken,
-  getATokensAndRatesHelper,
-  getLendingPoolAddressesProvider,
-  getLendingPoolConfiguratorProxy,
-} from './contracts-getters';
-import {
-  getContractAddressWithJsonFallback,
-  rawInsertContractAddressInDb,
-} from './contracts-helpers';
-import { BigNumberish } from 'ethers';
-import { ConfigNames } from './configuration';
-import { deployRateStrategy } from './contracts-deployments';
 
 export const getATokenExtraParams = async (aTokenName: string, tokenAddress: tEthereumAddress) => {
   console.log(aTokenName);

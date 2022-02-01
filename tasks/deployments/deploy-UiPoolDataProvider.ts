@@ -1,13 +1,13 @@
 import { task } from 'hardhat/config';
+import { exit } from 'process';
+import { ZERO_ADDRESS } from '../../helpers/constants';
+import { deployUiPoolDataProvider } from '../../helpers/contracts-deployments';
 import {
+  eAstarNetwork,
   eAvalancheNetwork,
   eContractid,
-  eEthereumNetwork,
-  eNetwork,
-  ePolygonNetwork,
+  eEthereumNetwork, ePolygonNetwork
 } from '../../helpers/types';
-import { deployUiPoolDataProvider } from '../../helpers/contracts-deployments';
-import { exit } from 'process';
 
 task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider contract`)
   .addFlag('verify', 'Verify UiPoolDataProvider contract via Etherscan API.')
@@ -44,6 +44,10 @@ task(`deploy-${eContractid.UiPoolDataProvider}`, `Deploys the UiPoolDataProvider
       [eAvalancheNetwork.avalanche]: {
         incentivesController: '0x01D83Fe6A10D2f2B7AF17034343746188272cAc9',
         aaveOracle: '0xdC336Cd4769f4cC7E9d726DA53e6d3fC710cEB89',
+      },
+      [eAstarNetwork.shibuya]: {
+        incentivesController: ZERO_ADDRESS,
+        aaveOracle: ZERO_ADDRESS,
       },
     };
     const supportedNetworks = Object.keys(addressesByNetwork);

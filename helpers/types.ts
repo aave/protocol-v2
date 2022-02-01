@@ -4,7 +4,7 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eAvalancheNetwork;
+export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eAvalancheNetwork | eAstarNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -30,6 +30,12 @@ export enum eAvalancheNetwork {
   fuji = 'fuji',
 }
 
+export enum eAstarNetwork {
+  // astar = 'astar',
+  // shiden = 'shiden',
+  shibuya = 'shibuya',
+}
+
 export enum EthereumNetworkNames {
   kovan = 'kovan',
   ropsten = 'ropsten',
@@ -39,6 +45,7 @@ export enum EthereumNetworkNames {
   xdai = 'xdai',
   avalanche = 'avalanche',
   fuji = 'fuji',
+  shibuya = 'shibuya',
 }
 
 export enum AavePools {
@@ -46,6 +53,7 @@ export enum AavePools {
   matic = 'matic',
   amm = 'amm',
   avalanche = 'avalanche',
+  astar = 'astar',
 }
 
 export enum eContractid {
@@ -88,6 +96,7 @@ export enum eContractid {
   UiPoolDataProviderV2V3 = 'UiPoolDataProviderV2V3',
   WETHGateway = 'WETHGateway',
   WETH = 'WETH',
+  WSBY = 'WSBY',
   WETHMocked = 'WETHMocked',
   SelfdestructTransferMock = 'SelfdestructTransferMock',
   LendingPoolImpl = 'LendingPoolImpl',
@@ -255,6 +264,7 @@ export interface iAssetBase<T> {
   STAKE: T;
   xSUSHI: T;
   WAVAX: T;
+  WSBY: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -326,6 +336,11 @@ export type iAvalanchePoolAssets<T> = Pick<
   'WETH' | 'DAI' | 'USDT' | 'AAVE' | 'WBTC' | 'WAVAX' | 'USDC'
 >;
 
+export type iAstarPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'WETH' | 'USDT' | 'USDC' | 'WSBY'
+>;
+
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
@@ -374,6 +389,7 @@ export enum TokenContractId {
   STAKE = 'STAKE',
   xSUSHI = 'xSUSHI',
   WAVAX = 'WAVAX',
+  WSBY = 'WSBY',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -417,7 +433,8 @@ export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
   | iXDaiParamsPerNetwork<T>
-  | iAvalancheParamsPerNetwork<T>;
+  | iAvalancheParamsPerNetwork<T>
+  | iAstarParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T>
   extends iEthereumParamsPerNetwork<T>,
@@ -448,11 +465,18 @@ export interface iAvalancheParamsPerNetwork<T> {
   [eAvalancheNetwork.fuji]: T;
 }
 
+export interface iAstarParamsPerNetwork<T> {
+  // [eAstarNetwork.astar]: T;
+  // [eAstarNetwork.shiden]: T;
+  [eAstarNetwork.shibuya]: T;
+}
+
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
   [AavePools.matic]: T;
   [AavePools.amm]: T;
   [AavePools.avalanche]: T;
+  [AavePools.astar]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -550,6 +574,10 @@ export interface IXDAIConfiguration extends ICommonConfiguration {
 
 export interface IAvalancheConfiguration extends ICommonConfiguration {
   ReservesConfig: iAvalanchePoolAssets<IReserveParams>;
+}
+
+export interface IAstarConfiguration extends ICommonConfiguration {
+  ReservesConfig: iAstarPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {

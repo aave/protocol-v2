@@ -1,39 +1,37 @@
-import path from 'path';
+import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-waffle';
+import '@tenderly/hardhat-tenderly';
 import fs from 'fs';
+import 'hardhat-gas-reporter';
+import 'hardhat-typechain';
 import { HardhatUserConfig } from 'hardhat/types';
-// @ts-ignore
-import { accounts } from './test-wallets.js';
+import path from 'path';
+import 'solidity-coverage';
+import 'temp-hardhat-etherscan';
 import {
+  buildForkConfig, NETWORKS_DEFAULT_GAS, NETWORKS_RPC_URL
+} from './helper-hardhat-config';
+import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
+import {
+  eAstarNetwork,
   eAvalancheNetwork,
   eEthereumNetwork,
   eNetwork,
   ePolygonNetwork,
-  eXDaiNetwork,
+  eXDaiNetwork
 } from './helpers/types';
-import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
-import {
-  NETWORKS_RPC_URL,
-  NETWORKS_DEFAULT_GAS,
-  BLOCK_TO_FORK,
-  buildForkConfig,
-} from './helper-hardhat-config';
+// @ts-ignore
+import { accounts } from './test-wallets.js';
 
 require('dotenv').config();
 
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
-import 'temp-hardhat-etherscan';
-import 'hardhat-gas-reporter';
-import 'hardhat-typechain';
-import '@tenderly/hardhat-tenderly';
-import 'solidity-coverage';
-import { fork } from 'child_process';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
 const DEFAULT_BLOCK_GAS_LIMIT = 8000000;
 const DEFAULT_GAS_MUL = 5;
 const HARDFORK = 'istanbul';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
+const SUBSCAN_KEY = process.env.SUBSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const UNLIMITED_BYTECODE_SIZE = process.env.UNLIMITED_BYTECODE_SIZE === 'true';
@@ -84,7 +82,7 @@ const buidlerConfig: HardhatUserConfig = {
     target: 'ethers-v5',
   },
   etherscan: {
-    apiKey: ETHERSCAN_KEY,
+    apiKey: SUBSCAN_KEY,
   },
   mocha: {
     timeout: 0,
@@ -108,6 +106,7 @@ const buidlerConfig: HardhatUserConfig = {
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
     avalanche: getCommonNetworkConfig(eAvalancheNetwork.avalanche, 43114),
     fuji: getCommonNetworkConfig(eAvalancheNetwork.fuji, 43113),
+    shibuya: getCommonNetworkConfig(eAstarNetwork.shibuya, 81),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
