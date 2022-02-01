@@ -6,6 +6,7 @@ import bignumberChai from 'chai-bignumber';
 import { solidity } from 'ethereum-waffle';
 import { AstEthSetup } from './init';
 import '../helpers/utils/math';
+import { wei } from './helpers';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -15,6 +16,7 @@ let setup: AstEthSetup, evmSnapshotId;
 
 before(async () => {
   setup = await AstEthSetup.deploy();
+  await setup.priceFeed.setPrice(wei`0.99 ether`);
   evmSnapshotId = await hre.ethers.provider.send('evm_snapshot', []);
 });
 

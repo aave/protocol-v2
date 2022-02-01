@@ -66,10 +66,17 @@ describe('AStETH Liquidation', function () {
       new BigNumber(liquidatorWethBalance).minus(liquidationAmount).toString()
     );
 
-    // validate that liquidator received correct amount of astETH (liquidationAmount * liquidationBonus)
+    // validate that liquidator received correct amount of astETH
+    const currentStEthToEthPriceRatio = await setup.aave.priceOracle
+      .getAssetPrice(setup.stETH.address)
+      .then((price) => new BigNumber(price.toString()).dividedBy(wei`1 ether`));
+
     await asserts.astEthBalance(
       liquidator,
-      new BigNumber(liquidationAmount).percentMul(LIQUIDATION_BONUS).toString()
+      new BigNumber(liquidationAmount)
+        .percentMul(LIQUIDATION_BONUS)
+        .dividedBy(currentStEthToEthPriceRatio)
+        .toFixed(0, 1)
     );
 
     const [{ healthFactor }, { currentStableDebt }] = await Promise.all([
@@ -137,10 +144,17 @@ describe('AStETH Liquidation', function () {
       new BigNumber(liquidatorWethBalance).minus(liquidationAmount).toString()
     );
 
-    // validate that liquidator received correct amount of astETH (liquidationAmount * liquidationBonus)
+    // validate that liquidator received correct amount of astETH
+    const currentStEthToEthPriceRatio = await setup.aave.priceOracle
+      .getAssetPrice(setup.stETH.address)
+      .then((price) => new BigNumber(price.toString()).dividedBy(wei`1 ether`));
+
     await asserts.astEthBalance(
       liquidator,
-      new BigNumber(liquidationAmount).percentMul(LIQUIDATION_BONUS).toString()
+      new BigNumber(liquidationAmount)
+        .percentMul(LIQUIDATION_BONUS)
+        .dividedBy(currentStEthToEthPriceRatio)
+        .toFixed(0, 1)
     );
 
     const [{ healthFactor }, { currentVariableDebt }] = await Promise.all([
@@ -216,12 +230,16 @@ describe('AStETH Liquidation', function () {
     );
 
     // validate that liquidator received correct amount of astETH
+    const currentStEthToEthPriceRatio = await setup.aave.priceOracle
+      .getAssetPrice(setup.stETH.address)
+      .then((price) => new BigNumber(price.toString()).dividedBy(wei`1 ether`));
+
     await asserts.astEthBalance(
       liquidator,
       new BigNumber(expectedLiquidationAmount)
-        .dividedBy(0.8) // price drop
-        .percentMul(LIQUIDATION_BONUS) // liquidation bonus
-        .plus(HALF_EPSILON) // epsilon shift
+        .dividedBy(currentStEthToEthPriceRatio)
+        .percentMul(LIQUIDATION_BONUS)
+        .plus(HALF_EPSILON)
         .toFixed(0, 1),
       HALF_EPSILON
     );
@@ -283,14 +301,16 @@ describe('AStETH Liquidation', function () {
       new BigNumber(maxAllowedLiquidationAmount).plus(EPSILON).toFixed()
     );
 
-    // validate that was withdrawn correct amount of WETH from the liquidator.
+    const currentStEthToEthPriceRatio = await setup.aave.priceOracle
+      .getAssetPrice(setup.stETH.address)
+      .then((price) => new BigNumber(price.toString()).dividedBy(wei`1 ether`));
     // In the current test case, astETH balance of borrower equal (or less on 1 wei) to borrowAmount / 2
     // actual debt of user is borrowAmount ether in WETH. Max theoretical amount of weth liquidator might
     // compensate 50 % of borrow (borrowAmount / 2), but in practice, liquidation can't be greater than
-    // liquidator.astEthBalance() / LIQUIDATION_BONUS.
-    const expectedLiquidationAmount = new BigNumber(maxAllowedLiquidationAmount).percentDiv(
-      LIQUIDATION_BONUS
-    );
+    // liquidator.astEthBalance() * currentStEthToEthPriceRatio / LIQUIDATION_BONUS.
+    const expectedLiquidationAmount = new BigNumber(maxAllowedLiquidationAmount)
+      .multipliedBy(currentStEthToEthPriceRatio)
+      .percentDiv(LIQUIDATION_BONUS);
 
     // liquidator liquidates max allowed amount of debt (50%) of the borrower
     // and receives stETH in return
@@ -307,14 +327,15 @@ describe('AStETH Liquidation', function () {
     // because due to shares mechanics borrower might have on balance 1 wei less astETH
     asserts.gte(
       await liquidator.wethBalance(),
-      new BigNumber(liquidatorWethBalance).minus(expectedLiquidationAmount).toFixed()
+      new BigNumber(liquidatorWethBalance).minus(expectedLiquidationAmount).toFixed(0, 1)
     );
 
     // validate that liquidator received correct amount of astETH
     await asserts.astEthBalance(
       liquidator,
       new BigNumber(expectedLiquidationAmount)
-        .percentMul(LIQUIDATION_BONUS) // liquidation bonus
+        .dividedBy(currentStEthToEthPriceRatio)
+        .percentMul(LIQUIDATION_BONUS)
         .toFixed(0, 1),
       '2'
     );
@@ -338,8 +359,8 @@ describe('AStETH Liquidation', function () {
     const liquidator = lenders.lenderC;
 
     // borrower deposits stETH to use as collateral
-    await borrower.depositStEth(wei`20.1 ether`);
-    await asserts.astEthBalance(borrower, wei`20.1 ether`);
+    await borrower.depositStEth(wei`20.3 ether`);
+    await asserts.astEthBalance(borrower, wei`20.3 ether`);
 
     const borrowAmount = wei`14 ether`;
     await borrower.borrowWethVariable(borrowAmount);
@@ -348,8 +369,9 @@ describe('AStETH Liquidation', function () {
     let borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
     asserts.gt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
 
-    // before negative rebase price drop happens (3%). It's still not enough to close positions
-    await priceFeed.setPrice(wei`0.97 ether`);
+    // before negative rebase price drop happens (current price diff is 4%).
+    // It's still not enough to close positions
+    await priceFeed.setPrice(wei`0.96 ether`);
     borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
     asserts.gt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
 
@@ -393,13 +415,16 @@ describe('AStETH Liquidation', function () {
     );
 
     // validate that liquidator received correct amount of stETH
+    const currentStEthToEthPriceRatio = await setup.aave.priceOracle
+      .getAssetPrice(setup.stETH.address)
+      .then((price) => new BigNumber(price.toString()).dividedBy(wei`1 ether`));
     asserts.gte(
       new BigNumber(await liquidator.stEthBalance())
         .minus(liquidatorStEthBalanceBeforeLiquidation)
         .toFixed(0, 1),
       new BigNumber(expectedLiquidationAmount)
-        .dividedBy(0.97) // price drop factor
-        .percentMul(LIQUIDATION_BONUS) // liquidation bonus
+        .dividedBy(currentStEthToEthPriceRatio)
+        .percentMul(LIQUIDATION_BONUS)
         .toFixed(0, 1),
       EPSILON
     );
