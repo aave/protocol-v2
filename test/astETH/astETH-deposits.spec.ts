@@ -32,7 +32,7 @@ describe('AStETH Deposits', async () => {
     await lenderB.depositStEth(wei`7 ether`);
     await asserts.astEthBalance(lenderA, wei`10 ether`);
     await asserts.astEthBalance(lenderB, wei`12 ether`, '2');
-    await asserts.astEthTotalSupply(setup, wei`22 ether`, '2');
+    await asserts.astEthTotalSupply(setup, wei`22 ether`, '3');
   });
 
   it('Deposited amount becomes zero after scaling to stETH shares: should revert with correct message', async () => {

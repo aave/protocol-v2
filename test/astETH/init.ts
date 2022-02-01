@@ -42,7 +42,7 @@ export class AstEthSetup {
     public readonly variableDebtStETH: VariableDebtStETH,
     public readonly priceFeed: ChainlinkAggregatorMock,
     public readonly lenders: { lenderA: Lender; lenderB: Lender; lenderC: Lender },
-    public readonly flashLoanReceiverLoan: FlashLoanReceiverMock
+    public readonly flashLoanReceiverMock: FlashLoanReceiverMock
   ) {}
 
   static async deploy(): Promise<AstEthSetup> {
@@ -178,14 +178,14 @@ export class Lender {
     lendingPool: LendingPool,
     astETH: AStETH,
     signer: SignerWithAddress,
-    mockFlashLoanReceiver: FlashLoanReceiverMock
+    flashLoanReceiverMock: FlashLoanReceiverMock
   ) {
     this.signer = signer;
     this.weth = weth.connect(signer);
     this.stETH = stETH.connect(signer);
     this.lendingPool = lendingPool.connect(signer);
     this.astETH = astETH.connect(signer);
-    this.flashLoanReceiverMock = mockFlashLoanReceiver;
+    this.flashLoanReceiverMock = flashLoanReceiverMock;
   }
 
   get address(): string {

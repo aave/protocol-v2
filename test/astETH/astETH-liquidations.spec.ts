@@ -66,7 +66,7 @@ describe('AStETH Liquidation', function () {
       new BigNumber(liquidatorWethBalance).minus(liquidationAmount).toString()
     );
 
-    // validate that liquidator received correct amount of stETH (liquidationAmount * liquidationBonus)
+    // validate that liquidator received correct amount of astETH (liquidationAmount * liquidationBonus)
     await asserts.astEthBalance(
       liquidator,
       new BigNumber(liquidationAmount).percentMul(LIQUIDATION_BONUS).toString()
@@ -137,7 +137,7 @@ describe('AStETH Liquidation', function () {
       new BigNumber(liquidatorWethBalance).minus(liquidationAmount).toString()
     );
 
-    // validate that liquidator received correct amount of stETH (liquidationAmount * liquidationBonus)
+    // validate that liquidator received correct amount of astETH (liquidationAmount * liquidationBonus)
     await asserts.astEthBalance(
       liquidator,
       new BigNumber(liquidationAmount).percentMul(LIQUIDATION_BONUS).toString()
@@ -215,7 +215,7 @@ describe('AStETH Liquidation', function () {
       EPSILON
     );
 
-    // validate that liquidator received correct amount of stETH
+    // validate that liquidator received correct amount of astETH
     await asserts.astEthBalance(
       liquidator,
       new BigNumber(expectedLiquidationAmount)
@@ -243,25 +243,22 @@ describe('AStETH Liquidation', function () {
   });
 
   it('Realistic rebase scenario', async () => {
-    const { stETH, weth, lenders, aave, priceFeed } = setup;
-    const depositor = lenders.lenderA;
+    const { stETH, weth, lenders, priceFeed, aave } = setup;
     const borrower = lenders.lenderB;
     const liquidator = lenders.lenderC;
-    // lenderA deposits stETH
-    await depositor.depositStEth(wei`100 ether`);
-    await asserts.astEthBalance(depositor, wei`100 ether`);
 
-    // lenderB deposits stETH
+    // borrower deposits stETH to use as collateral
     await borrower.depositStEth(wei`20.1 ether`);
     await asserts.astEthBalance(borrower, wei`20.1 ether`);
 
-    // lenderA borrows weth with stETH as collateral
-    await borrower.borrowWethVariable(wei`14 ether`);
+    const borrowAmount = wei`14 ether`;
+    await borrower.borrowWethVariable(borrowAmount);
 
+    // validate that health factor is above 1
     let borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
     asserts.gt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
 
-    // before negative rebase price drop happens (3%) still not enough to close positions
+    // before negative rebase price drop happens (3%). It's still not enough to close positions
     await priceFeed.setPrice(wei`0.97 ether`);
     borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
     asserts.gt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
@@ -269,11 +266,26 @@ describe('AStETH Liquidation', function () {
     // negative rebase happens (-5%)
     await setup.rebaseStETH(-0.05);
     borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
+
+    // validate that after negative rebase health factor became below 1
     asserts.lt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
 
-    // now position might be closed it's profitable for liquidator
-    await liquidator.weth.deposit({ value: wei`8 ether` });
-    await liquidator.weth.approve(liquidator.lendingPool.address, wei`8 ether`);
+    // validate liquidator had no astETH before liquidation
+    await asserts.astEthBalance(liquidator, '0');
+
+    // liquidator deposits 8 weth to make liquidation
+    const liquidatorWethBalance = wei`8 ether`;
+    await liquidator.weth.deposit({ value: liquidatorWethBalance });
+
+    // set allowance for lending pool to withdraw WETH from liquidator
+    const expectedLiquidationAmount = new BigNumber(borrowAmount).div(2).toFixed(0);
+    await liquidator.weth.approve(
+      liquidator.lendingPool.address,
+      new BigNumber(expectedLiquidationAmount).plus(EPSILON).toFixed()
+    );
+
+    // liquidator liquidates max allowed amount of debt (50%) of the borrower
+    // and receives stETH in return
     const liquidatorStEthBalanceBeforeLiquidation = await liquidator.stEthBalance();
     await liquidator.lendingPool.liquidationCall(
       stETH.address,
@@ -283,19 +295,38 @@ describe('AStETH Liquidation', function () {
       false
     );
 
-    asserts.lte(await liquidator.wethBalance(), wei`1 ether`, EPSILON);
+    // validate that was withdrawn correct amount of WETH from liquidator
+    asserts.lte(
+      await liquidator.wethBalance(),
+      new BigNumber(liquidatorWethBalance).minus(expectedLiquidationAmount).toFixed(),
+      EPSILON
+    );
+
+    // validate that liquidator received correct amount of stETH
     asserts.gte(
       new BigNumber(await liquidator.stEthBalance())
         .minus(liquidatorStEthBalanceBeforeLiquidation)
         .toFixed(0, 1),
-      new BigNumber(wei`7 ether`)
+      new BigNumber(expectedLiquidationAmount)
         .dividedBy(0.97) // price drop factor
-        .multipliedBy(1.075) // liquidation bonus
+        .percentMul(LIQUIDATION_BONUS) // liquidation bonus
         .toFixed(0, 1),
       EPSILON
     );
 
-    borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
-    asserts.gt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
+    const [{ healthFactor }, { currentVariableDebt }] = await Promise.all([
+      borrower.lendingPool.getUserAccountData(borrower.address),
+      aave.protocolDataProvider.getUserReserveData(weth.address, borrower.address),
+    ]);
+
+    // validate that health factor of borrower recovered
+    asserts.gt(healthFactor.toString(), wei`1 ether`);
+
+    // validate that were burned correct amount of debt tokens
+    asserts.gte(
+      currentVariableDebt.toString(),
+      new BigNumber(borrowAmount).minus(expectedLiquidationAmount).toString(),
+      EPSILON
+    );
   });
 });

@@ -14,7 +14,7 @@ describe('AStETH Transfers', function () {
 
     // after deposit user might receive 10 ether - 1 wei of asETH.
     // So in transfer below we retrieve actual user balance to transfer all user's tokens
-    // which might be 10 ether of 10 ether - 1 wei
+    // which might be 10 ether or 10 ether - 1 wei
     await lenderA.transferAstEth(lenderB.address, await lenderA.astEthBalance());
     await asserts.astEthBalance(lenderA, '1');
     // Due to stEth shares mechanic it might be possible, that lenderA transfered
@@ -35,7 +35,7 @@ describe('AStETH Transfers', function () {
     await lenderA.transferAstEth(lenderB.address, wei`5 ether`);
     // after lenderA deposit and transfer max possible amount of
     // tokens he might has is 5 ether  + 1 wei (deposit all 10 ether and transfer 5 ether - 1 wei).
-    // The min possible amount of astETH is 5 ether - 2 wei (deposit 10 ether - 1 wei and transfer 5 ether - 1 wei)
+    // The min possible amount or astETH is 5 ether - 2 wei (deposit 10 ether - 1 wei and transfer 5 ether - 1 wei)
     await asserts.astEthBalance(lenderA, new BigNumber(wei`5 ether`).plus(1).toFixed(0), '2');
     await asserts.astEthBalance(lenderB, wei`5 ether`);
     await asserts.astEthTotalSupply(setup, wei`10 ether`);
@@ -81,16 +81,17 @@ describe('AStETH Transfers', function () {
     await asserts.astEthBalance(lenderA, wei`10 ether`);
 
     const lenderAAstEthAmount = await lenderA.astEthBalance();
+
     await expect(
       lenderA.transferAstEth(lenderB.address, new BigNumber(lenderAAstEthAmount).plus(1).toFixed(0))
-    ).to.be.revertedWith('transfer amount exceeds balance');
+    ).to.be.revertedWith('ERC20: transfer amount exceeds balance');
 
     await expect(
       lenderA.transferAstEth(
         lenderB.address,
         new BigNumber(lenderAAstEthAmount).plus('100').toFixed(0)
       )
-    ).to.be.revertedWith('transfer amount exceeds balance');
+    ).to.be.revertedWith('ERC20: transfer amount exceeds balance');
   });
 
   it('Transfer Events', async () => {

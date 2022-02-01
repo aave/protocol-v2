@@ -67,6 +67,12 @@ describe('AStETH FlashLoans', function () {
     await asserts.astEthBalance(lenderA, lenderADeposit);
     let expectedLenderABalance = await lenderA.astEthBalance();
 
+    // validate flashloan receiver has no stETH on balance
+    await asserts.eq(
+      await setup.stETH.balanceOf(setup.flashLoanReceiverMock.address).then(toWei),
+      '0'
+    );
+
     // lenderC makes flash loan
     const firstFlashLoanAmount = wei`13 ether`;
     let prevTotalSupply = await setup.astEthTotalSupply();
@@ -79,12 +85,14 @@ describe('AStETH FlashLoans', function () {
       firstFlashLoanAmount
     );
     await asserts.astEthBalance(lenderA, expectedLenderABalance);
+
     // validate that mock receiver might have not more than 1 wei
     // after flash loan due to stETH specificities
     await asserts.lte(
-      await setup.stETH.balanceOf(setup.flashLoanReceiverLoan.address).then(toWei),
+      await setup.stETH.balanceOf(setup.flashLoanReceiverMock.address).then(toWei),
       '1'
     );
+
     // validate that astETH total supply might be only 1 wei less than total supply
     // of underlying asset
     await asserts.almostEq(
