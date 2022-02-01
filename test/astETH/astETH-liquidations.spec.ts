@@ -242,6 +242,96 @@ describe('AStETH Liquidation', function () {
     );
   });
 
+  it('Liquidate all astETH collateral', async () => {
+    const { stETH, weth, lenders, priceFeed, aave } = setup;
+    const borrower = lenders.lenderB;
+    const liquidator = lenders.lenderC;
+
+    // borrower deposits stETH to use as collateral
+    await borrower.depositStEth(wei`20 ether`);
+    await asserts.astEthBalance(borrower, wei`20 ether`);
+
+    const borrowAmount = wei`10 ether`;
+    await borrower.borrowWethVariable(borrowAmount);
+
+    // validate that health factor is above 1
+    let borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
+    asserts.gt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
+
+    // negative rebase happens (75%)
+    await setup.rebaseStETH(-0.75);
+    borrowerGlobalData = await borrower.lendingPool.getUserAccountData(borrower.address);
+
+    // validate that after negative rebase health factor became below 1
+    asserts.lt(borrowerGlobalData.healthFactor.toString(), wei`1 ether`);
+
+    // validate that borrower astETH balance becomes almost equal (might be 1 wei less)
+    // to max allowed liquidation amount
+    const maxAllowedLiquidationAmount = new BigNumber(borrowAmount).div(2).toFixed(0);
+    await asserts.astEthBalance(borrower, maxAllowedLiquidationAmount);
+
+    // validate liquidator had no astETH before liquidation
+    await asserts.astEthBalance(liquidator, '0');
+
+    // liquidator deposits 8 weth to make liquidation
+    const liquidatorWethBalance = wei`8 ether`;
+    await liquidator.weth.deposit({ value: liquidatorWethBalance });
+
+    // set allowance for lending pool to withdraw WETH from liquidator
+    await liquidator.weth.approve(
+      liquidator.lendingPool.address,
+      new BigNumber(maxAllowedLiquidationAmount).plus(EPSILON).toFixed()
+    );
+
+    // validate that was withdrawn correct amount of WETH from the liquidator.
+    // In the current test case, astETH balance of borrower equal (or less on 1 wei) to borrowAmount / 2
+    // actual debt of user is borrowAmount ether in WETH. Max theoretical amount of weth liquidator might
+    // compensate 50 % of borrow (borrowAmount / 2), but in practice, liquidation can't be greater than
+    // liquidator.astEthBalance() / LIQUIDATION_BONUS.
+    const expectedLiquidationAmount = new BigNumber(maxAllowedLiquidationAmount).percentDiv(
+      LIQUIDATION_BONUS
+    );
+
+    // liquidator liquidates max allowed amount of debt (50%) of the borrower
+    // and receives stETH in return
+    await liquidator.lendingPool.liquidationCall(
+      stETH.address,
+      weth.address,
+      borrower.address,
+      MAX_UINT_AMOUNT,
+      true
+    );
+
+    // validate that was withdrawn correct amount of WETH from the liquidator.
+    // Amount of WETH withdrawn from liquidator might be 1 wei less than borrowAmount / 2
+    // because due to shares mechanics borrower might have on balance 1 wei less astETH
+    asserts.gte(
+      await liquidator.wethBalance(),
+      new BigNumber(liquidatorWethBalance).minus(expectedLiquidationAmount).toFixed()
+    );
+
+    // validate that liquidator received correct amount of astETH
+    await asserts.astEthBalance(
+      liquidator,
+      new BigNumber(expectedLiquidationAmount)
+        .percentMul(LIQUIDATION_BONUS) // liquidation bonus
+        .toFixed(0, 1),
+      '2'
+    );
+
+    const { currentVariableDebt } = await aave.protocolDataProvider.getUserReserveData(
+      weth.address,
+      borrower.address
+    );
+
+    // validate that were burned correct amount of debt tokens
+    asserts.gte(
+      currentVariableDebt.toString(),
+      new BigNumber(borrowAmount).minus(expectedLiquidationAmount).toString(),
+      EPSILON
+    );
+  });
+
   it('Realistic rebase scenario', async () => {
     const { stETH, weth, lenders, priceFeed, aave } = setup;
     const borrower = lenders.lenderB;
