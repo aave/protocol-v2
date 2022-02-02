@@ -31,7 +31,7 @@ describe('AStETH Permit', () => {
 
     const expiration = 0;
     const nonce = (await astETH._nonces(owner.address)).toNumber();
-    const permitAmount = wei(2);
+    const permitAmount = wei`2 ether`;
     const msgParams = buildPermitParams(
       chainId,
       astETH.address,
@@ -74,7 +74,7 @@ describe('AStETH Permit', () => {
 
     const deadline = MAX_UINT_AMOUNT;
     const nonce = (await astETH._nonces(owner.address)).toNumber();
-    const permitAmount = wei(2);
+    const permitAmount = wei`2 ether`;
     const msgParams = buildPermitParams(
       chainId,
       astETH.address,

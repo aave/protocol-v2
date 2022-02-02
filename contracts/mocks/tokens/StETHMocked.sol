@@ -9,8 +9,9 @@ pragma solidity 0.6.12;
 contract StETHMocked {
   using LidoSafeMath for uint256;
 
-  uint256 internal _totalShares;
-  uint256 internal _pooledEther;
+  // use there values like real stETH has
+  uint256 internal _totalShares = 1608965089698263670456320;
+  uint256 internal _pooledEther = 1701398689820002221426255;
   mapping(address => uint256) private shares;
   mapping(address => mapping(address => uint256)) private allowances;
 
@@ -200,7 +201,7 @@ contract StETHMocked {
     }
 
     _mintShares(sender, sharesAmount);
-    _pooledEther = _pooledEther.add(sharesAmount);
+    _pooledEther = _pooledEther.add(deposit);
     return sharesAmount;
   }
 

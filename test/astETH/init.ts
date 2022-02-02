@@ -26,11 +26,12 @@ import {
 import { AaveContracts, Addresses } from '../../helpers/lido/aave-mainnet-contracts';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/dist/src/signer-with-address';
 import { strategySTETH } from '../../markets/aave/reservesConfigs';
-import { expectedFlashLoanPremium, wei } from './helpers';
+import { expectedFlashLoanPremium, toWei, wei } from './helpers';
 import BigNumber from 'bignumber.js';
+import { RateMode } from '../../helpers/types';
 
 export class AstEthSetup {
-  public static readonly INITIAL_BALANCE = wei('1000');
+  public static readonly INITIAL_BALANCE = wei`1000 ether`;
   private constructor(
     public readonly deployer: SignerWithAddress,
     public readonly aave: AaveContracts,
@@ -41,7 +42,7 @@ export class AstEthSetup {
     public readonly variableDebtStETH: VariableDebtStETH,
     public readonly priceFeed: ChainlinkAggregatorMock,
     public readonly lenders: { lenderA: Lender; lenderB: Lender; lenderC: Lender },
-    public readonly flashLoanReceiverLoan: FlashLoanReceiverMock
+    public readonly flashLoanReceiverMock: FlashLoanReceiverMock
   ) {}
 
   static async deploy(): Promise<AstEthSetup> {
@@ -135,16 +136,32 @@ export class AstEthSetup {
   async rebaseStETH(perc) {
     const currentTotalSupply = await this.stETH.totalSupply();
     const currentSupply = new BigNumber(currentTotalSupply.toString());
-    const supplyDelta = currentSupply.multipliedBy(Number(perc * 10000).toFixed(0)).div(10000);
+    const percentBasis = 1_000_000_000_000_000;
+    const supplyDelta = currentSupply
+      .multipliedBy(Number(perc * percentBasis).toFixed(0))
+      .div(percentBasis);
     if (supplyDelta.isNegative()) {
-      await this.stETH.negativeRebase(supplyDelta.negated().toFixed());
+      await this.stETH.negativeRebase(supplyDelta.negated().toFixed(0));
     } else {
-      await this.stETH.positiveRebase(supplyDelta.toFixed());
+      await this.stETH.positiveRebase(supplyDelta.toFixed(0));
     }
   }
 
   astEthTotalSupply() {
-    return this.astETH.totalSupply().then(wei);
+    return this.astETH.totalSupply().then(toWei);
+  }
+
+  astEthInternalTotalSupply() {
+    return this.astETH.internalTotalSupply().then(toWei);
+  }
+
+  async toInternalBalance(amount: string) {
+    const liquidityIndex = await this.aave.lendingPool.getReserveNormalizedIncome(
+      this.stETH.address
+    );
+    return new BigNumber(await this.stETH.getSharesByPooledEth(amount).then(toWei))
+      .rayDiv(new BigNumber(liquidityIndex.toString()))
+      .toFixed(0, 1);
   }
 }
 
@@ -161,14 +178,14 @@ export class Lender {
     lendingPool: LendingPool,
     astETH: AStETH,
     signer: SignerWithAddress,
-    mockFlashLoanReceiver: FlashLoanReceiverMock
+    flashLoanReceiverMock: FlashLoanReceiverMock
   ) {
     this.signer = signer;
     this.weth = weth.connect(signer);
     this.stETH = stETH.connect(signer);
     this.lendingPool = lendingPool.connect(signer);
     this.astETH = astETH.connect(signer);
-    this.flashLoanReceiverMock = mockFlashLoanReceiver;
+    this.flashLoanReceiverMock = flashLoanReceiverMock;
   }
 
   get address(): string {
@@ -179,24 +196,33 @@ export class Lender {
     await this.stETH.approve(this.lendingPool.address, amount);
     return this.lendingPool.deposit(this.stETH.address, amount, this.signer.address, 0);
   }
+
   withdrawStEth(amount: ethers.BigNumberish) {
     return this.lendingPool.withdraw(this.stETH.address, amount, this.signer.address);
   }
 
+  async astEthInternalBalance() {
+    return this.astETH.internalBalanceOf(this.address).then(toWei);
+  }
+
   wethBalance() {
-    return this.weth.balanceOf(this.address).then(wei);
+    return this.weth.balanceOf(this.address).then(toWei);
   }
+
   stEthBalance() {
-    return this.stETH.balanceOf(this.address).then(wei);
+    return this.stETH.balanceOf(this.address).then(toWei);
   }
+
   astEthBalance() {
-    return this.astETH.balanceOf(this.address).then(wei);
+    return this.astETH.balanceOf(this.address).then(toWei);
   }
+
   async depositWeth(amount: ethers.BigNumberish) {
     await this.weth.deposit({ value: amount });
     await this.weth.approve(this.lendingPool.address, amount);
     return this.lendingPool.deposit(this.weth.address, amount, this.signer.address, 0);
   }
+
   transferAstEth(recipient: string, amount: ethers.BigNumberish) {
     return this.astETH.transfer(recipient, amount);
   }
@@ -224,6 +250,14 @@ export class Lender {
 
   async makeStEthFlashLoanMode2(flashLoanAmount: string) {
     return this.makeStEthFlashLoan(2, flashLoanAmount);
+  }
+
+  async borrowWethStable(amount: string) {
+    return this.lendingPool.borrow(this.weth.address, amount, RateMode.Stable, '0', this.address);
+  }
+
+  async borrowWethVariable(amount: string) {
+    return this.lendingPool.borrow(this.weth.address, amount, RateMode.Variable, '0', this.address);
   }
 
   private async makeStEthFlashLoan(mode: 1 | 2, flashLoanAmount: string) {

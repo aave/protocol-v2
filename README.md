@@ -125,6 +125,7 @@ To run tests for StETH integration use the following commands:
 
 ```
 npm install
+npm run compile
 npm run test:steth
 npm run test:steth-coverage # to run tests with coverage report
 ```
