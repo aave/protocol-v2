@@ -43,6 +43,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       uint256,
       uint256,
       uint256,
+      uint256,
       uint256
     )
   {
@@ -50,7 +51,8 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       interestRateStrategy.variableRateSlope1(),
       interestRateStrategy.variableRateSlope2(),
       interestRateStrategy.stableRateSlope1(),
-      interestRateStrategy.stableRateSlope2()
+      interestRateStrategy.stableRateSlope2(),
+      interestRateStrategy.OPTIMAL_UTILIZATION_RATE()
     );
   }
 
@@ -96,6 +98,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       reserveData.priceInMarketReferenceCurrency = oracle.getAssetPrice(
         reserveData.underlyingAsset
       );
+      reserveData.priceOracle = oracle.getSourceOfAsset(reserveData.underlyingAsset);
 
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
@@ -134,7 +137,8 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
         reserveData.variableRateSlope1,
         reserveData.variableRateSlope2,
         reserveData.stableRateSlope1,
-        reserveData.stableRateSlope2
+        reserveData.stableRateSlope2,
+        reserveData.optimalUsageRatio
       ) = getInterestRateStrategySlopes(
         DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
       );

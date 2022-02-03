@@ -37,10 +37,12 @@ interface IUiPoolDataProviderV3 {
     uint256 stableDebtLastUpdateTimestamp;
     uint256 totalScaledVariableDebt;
     uint256 priceInMarketReferenceCurrency;
+    address priceOracle;
     uint256 variableRateSlope1;
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
+    uint256 optimalUsageRatio;
     // v3
     bool isPaused;
     uint128 accruedToTreasury;
