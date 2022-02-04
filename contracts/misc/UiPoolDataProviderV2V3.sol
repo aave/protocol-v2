@@ -17,6 +17,7 @@ import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
 import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {IERC20DetailedBytes} from './interfaces/IERC20DetailedBytes.sol';
+import {ILendingRateOracle} from '../interfaces/ILendingRateOracle.sol';
 
 contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
   using WadRayMath for uint256;
@@ -36,24 +37,23 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
     marketReferenceCurrencyPriceInUsdProxyAggregator = _marketReferenceCurrencyPriceInUsdProxyAggregator;
   }
 
-  function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
+  function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy, ILendingPoolAddressesProvider provider, address reserve)
     internal
     view
-    returns (
-      uint256,
-      uint256,
-      uint256,
-      uint256,
-      uint256
-    )
+    returns(InterestRates memory)
   {
-    return (
-      interestRateStrategy.variableRateSlope1(),
-      interestRateStrategy.variableRateSlope2(),
-      interestRateStrategy.stableRateSlope1(),
-      interestRateStrategy.stableRateSlope2(),
-      interestRateStrategy.OPTIMAL_UTILIZATION_RATE()
-    );
+    InterestRates memory interestRates;
+    interestRates.variableRateSlope1 = interestRateStrategy.variableRateSlope1();
+    interestRates.variableRateSlope2 = interestRateStrategy.variableRateSlope2();
+    interestRates.stableRateSlope1 = interestRateStrategy.stableRateSlope1();
+    interestRates.stableRateSlope2 = interestRateStrategy.stableRateSlope2();
+    interestRates.baseVariableBorrowRate = interestRateStrategy.baseVariableBorrowRate();
+    interestRates.optimalUsageRatio = interestRateStrategy.OPTIMAL_UTILIZATION_RATE();
+
+    interestRates.baseStableBorrowRate = ILendingRateOracle(provider.getLendingRateOracle())
+          .getMarketBorrowRate(reserve);
+
+    return interestRates;
   }
 
   function getReservesList(ILendingPoolAddressesProvider provider)
@@ -133,15 +133,18 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
         reserveData.stableBorrowRateEnabled
       ) = baseData.configuration.getFlagsMemory();
       reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
-      (
-        reserveData.variableRateSlope1,
-        reserveData.variableRateSlope2,
-        reserveData.stableRateSlope1,
-        reserveData.stableRateSlope2,
-        reserveData.optimalUsageRatio
-      ) = getInterestRateStrategySlopes(
-        DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
+      
+      InterestRates memory interestRates = getInterestRateStrategySlopes(
+        DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress), provider, reserveData.underlyingAsset
       );
+
+      reserveData.variableRateSlope1 = interestRates.variableRateSlope1;
+      reserveData.variableRateSlope2 = interestRates.variableRateSlope2;
+      reserveData.stableRateSlope1 = interestRates.stableRateSlope1;
+      reserveData.stableRateSlope2 = interestRates.stableRateSlope2;
+      reserveData.baseStableBorrowRate = interestRates.baseStableBorrowRate;
+      reserveData.baseVariableBorrowRate = interestRates.baseVariableBorrowRate;
+      reserveData.optimalUsageRatio = interestRates.optimalUsageRatio;
     }
 
     BaseCurrencyInfo memory baseCurrencyInfo;

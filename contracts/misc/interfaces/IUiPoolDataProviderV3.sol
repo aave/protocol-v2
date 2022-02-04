@@ -5,6 +5,16 @@ pragma experimental ABIEncoderV2;
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 
 interface IUiPoolDataProviderV3 {
+    struct InterestRates {
+    uint256 variableRateSlope1;
+    uint256 variableRateSlope2;
+    uint256 stableRateSlope1;
+    uint256 stableRateSlope2;
+    uint256 baseStableBorrowRate;
+    uint256 baseVariableBorrowRate;
+    uint256 optimalUsageRatio;
+  }
+
   struct AggregatedReserveData {
     address underlyingAsset;
     string name;
@@ -42,6 +52,8 @@ interface IUiPoolDataProviderV3 {
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
+    uint256 baseStableBorrowRate;
+    uint256 baseVariableBorrowRate;
     uint256 optimalUsageRatio;
     // v3
     bool isPaused;
