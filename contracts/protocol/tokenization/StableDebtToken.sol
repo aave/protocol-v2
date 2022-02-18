@@ -103,7 +103,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     address onBehalfOf,
     uint256 amount,
     uint256 rate
-  ) external override onlyLendingPool returns (bool) {
+  ) external virtual override onlyLendingPool returns (bool) {
     MintLocalVars memory vars;
 
     if (user != onBehalfOf) {

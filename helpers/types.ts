@@ -55,6 +55,7 @@ export enum eContractid {
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
+  AStETH = 'AStETH',
   FeeProvider = 'FeeProvider',
   TokenDistributor = 'TokenDistributor',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
@@ -205,6 +206,7 @@ export interface iAssetBase<T> {
   REN: T;
   ENJ: T;
   xSUSHI: T;
+  STETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -234,6 +236,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+  | 'STETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -264,7 +267,8 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  xSUSHI = 'xSUSHI'
+  xSUSHI = 'xSUSHI',
+  STETH = 'STETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
