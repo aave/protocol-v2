@@ -55,7 +55,7 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
     external
     onlyOwner
   {
-    _setAssetsSources(assets, sources);
+    _setAssetsSources(assets, sources);ETH, 0x7253C2D9f5BE25b7b3676880FD49c41B13070039
   }
 
   /// @notice Sets the fallbackOracle
@@ -71,8 +71,8 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
   function _setAssetsSources(address[] memory assets, address[] memory sources) internal {
     require(assets.length == sources.length, 'INCONSISTENT_PARAMS_LENGTH');
     for (uint256 i = 0; i < assets.length; i++) {
-      assetsSources[assets[i]] = IChainlinkAggregator(sources[i]);
-      emit AssetSourceUpdated(assets[i], sources[i]);
+      assetsSources[assets[i]] = IChainlinkAggregator(sources[i]);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
+      emit AssetSourceUpdated(assets[i], sources[i]);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
     }
   }
 
@@ -86,7 +86,7 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
   /// @notice Gets an asset price by address
   /// @param asset The asset address
   function getAssetPrice(address asset) public view override returns (uint256) {
-    IChainlinkAggregator source = assetsSources[asset];
+    IChainlinkAggregator source = assetsSources[asset];0x7253C2D9f5BE25b7b3676880FD49c41B13070039
 
     if (asset == BASE_CURRENCY) {
       return BASE_CURRENCY_UNIT;
@@ -95,9 +95,9 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
     } else {
       int256 price = IChainlinkAggregator(source).latestAnswer();
       if (price > 0) {
-        return uint256(price);
+        return uint256(price);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
       } else {
-        return _fallbackOracle.getAssetPrice(asset);
+        return _fallbackOracle.getAssetPrice(asset);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
       }
     }
   }
