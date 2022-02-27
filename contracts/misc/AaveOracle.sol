@@ -72,8 +72,7 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
     require(assets.length == sources.length, 'INCONSISTENT_PARAMS_LENGTH');
     for (uint256 i = 0; i < assets.length; i++) {
       assetsSources[assets[i]] = IChainlinkAggregator(sources[i]);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
-      emit AssetSourceUpdated(assets[i], sources[i]);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
-    }
+      emit AssetSourceUpdated(assets[i], sources[i])
   }
 
   /// @notice Internal function to set the fallbackOracle
