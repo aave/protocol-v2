@@ -24,6 +24,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
+  ENS: oneEther.multipliedBy('0.00731413').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
@@ -109,6 +110,9 @@ export const CommonsConfig: ICommonConfiguration = {
     },
     BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+    },
+    ENS: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
   },
   // ----------------
