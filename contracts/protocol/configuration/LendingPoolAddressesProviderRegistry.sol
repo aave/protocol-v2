@@ -16,8 +16,8 @@ import {Errors} from '../libraries/helpers/Errors.sol';
  * @author Aave
  **/
 contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesProviderRegistry {
-  mapping(address => uint256) private _addressesProviders;
-  address[] private _addressesProvidersList;
+  mapping(address => uint256) private _addressesProviders;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+  address[] private _addressesProvidersList;0x7253C2D9f5BE25b7b3676880FD49c41B13070039
 
   /**
    * @dev Returns the list of registered addresses provider
@@ -32,11 +32,11 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
     for (uint256 i = 0; i < maxLength; i++) {
       if (_addressesProviders[addressesProvidersList[i]] > 0) {
-        activeProviders[i] = addressesProvidersList[i];
+        activeProviders[i] = addressesProvidersList[i];0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
       }
     }
 
-    return activeProviders;
+    return activeProviders;0x7253C2D9f5BE25b7b3676880FD49c41B13070039
   }
 
   /**
@@ -45,11 +45,11 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param id The id for the new LendingPoolAddressesProvider, referring to the market it belongs to
    **/
   function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
-    require(id != 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);
+    require(id != 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
 
     _addressesProviders[provider] = id;
-    _addToAddressesProvidersList(provider);
-    emit AddressesProviderRegistered(provider);
+    _addToAddressesProvidersList(provider);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
+    emit AddressesProviderRegistered(provider);0x7253C2D9f5BE25b7b3676880FD49c41B13070039
   }
 
   /**
@@ -57,9 +57,9 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider The LendingPoolAddressesProvider address
    **/
   function unregisterAddressesProvider(address provider) external override onlyOwner {
-    require(_addressesProviders[provider] > 0, Errors.LPAPR_PROVIDER_NOT_REGISTERED);
-    _addressesProviders[provider] = 0;
-    emit AddressesProviderUnregistered(provider);
+    require(_addressesProviders[provider] > 0, Errors.LPAPR_PROVIDER_NOT_REGISTERED);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+    _addressesProviders[provider] = 0;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+    emit AddressesProviderUnregistered(provider);0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
   }
 
   /**
@@ -72,15 +72,22 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
     override
     returns (uint256)
   {
-    return _addressesProviders[addressesProvider];
-  }
+    return _addressesProviders[addressesProvider];0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
+  }[
+
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	}
+]
 
   function _addToAddressesProvidersList(address provider) internal {
     uint256 providersCount = _addressesProvidersList.length;
 
     for (uint256 i = 0; i < providersCount; i++) {
       if (_addressesProvidersList[i] == provider) {
-        return;
+        return;0x3E62E50C4FAFCb5589e1682683ce38e8645541e8
       }
     }
 
