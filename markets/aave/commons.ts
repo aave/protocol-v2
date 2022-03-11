@@ -4,6 +4,7 @@ import { ICommonConfiguration, EthereumNetwork, eEthereumNetwork } from '../../h
 
 const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),
+  ALUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),
   BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(),
   DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
@@ -75,6 +76,9 @@ export const CommonsConfig: ICommonConfiguration = {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     AAVE: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
+    ALUSD: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
     LINK: {

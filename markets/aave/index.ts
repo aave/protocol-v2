@@ -3,6 +3,7 @@ import { IAaveConfiguration, EthereumNetwork, eEthereumNetwork } from '../../hel
 
 import { CommonsConfig } from './commons';
 import {
+  strategyALUSD,
   strategyBUSD,
   strategyDAI,
   strategySUSD,
@@ -34,6 +35,7 @@ export const AaveConfig: IAaveConfiguration = {
   MarketId: 'Aave genesis market',
   ProviderId: 1,
   ReservesConfig: {
+    ALUSD: strategyALUSD,
     AAVE: strategyAAVE,
     BAT: strategyBAT,
     BUSD: strategyBUSD,
@@ -106,6 +108,7 @@ export const AaveConfig: IAaveConfiguration = {
     },
     [EthereumNetwork.main]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
+      ALUSD: '0xBC6DA0FE9aD5f3b0d58160288917AA56653660E9',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -129,6 +132,7 @@ export const AaveConfig: IAaveConfiguration = {
     },
     [EthereumNetwork.tenderlyMain]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
+      ALUSD: '0xBC6DA0FE9aD5f3b0d58160288917AA56653660E9',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
       BUSD: '0x4Fabb145d64652a948d72533023f6E7A623C7C53',
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
