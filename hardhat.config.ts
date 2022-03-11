@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { HardhatUserConfig } from 'hardhat/types';
+import { HardhatUserConfig, HardhatNetworkAccountsUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
 import {
@@ -37,6 +37,7 @@ const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const UNLIMITED_BYTECODE_SIZE = process.env.UNLIMITED_BYTECODE_SIZE === 'true';
+const PK = process.env.PK || '';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
@@ -54,6 +55,13 @@ if (!SKIP_LOAD) {
 
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
+const accounts: HardhatNetworkAccountsUserConfig = [
+  {
+    privateKey: PK,
+    balance: "0",
+  },
+];
+
 const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   url: NETWORKS_RPC_URL[networkName],
   hardfork: HARDFORK,
@@ -61,12 +69,20 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   gasMultiplier: DEFAULT_GAS_MUL,
   gasPrice: NETWORKS_DEFAULT_GAS[networkName],
   chainId: networkId,
-  accounts: {
-    mnemonic: MNEMONIC,
-    path: MNEMONIC_PATH,
-    initialIndex: 0,
-    count: 20,
-  },
+  accounts: [PK],
+  // accounts: accounts,
+  // accounts: [
+  //   {
+  //     privateKey: PK,
+  //     balance: "0",
+  //   },
+  // ],
+  // accounts: {
+  //   mnemonic: MNEMONIC,
+  //   path: MNEMONIC_PATH,
+  //   initialIndex: 0,
+  //   count: 20,
+  // },
 });
 
 let forkMode;
@@ -99,15 +115,15 @@ const buidlerConfig: HardhatUserConfig = {
       url: 'http://localhost:8555',
       chainId: COVERAGE_CHAINID,
     },
-    kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
-    ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
+    // kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
+    // ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
-    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 3030),
-    matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
-    mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
-    xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
-    avalanche: getCommonNetworkConfig(eAvalancheNetwork.avalanche, 43114),
-    fuji: getCommonNetworkConfig(eAvalancheNetwork.fuji, 43113),
+    // tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 3030),
+    // matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
+    // mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
+    // xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
+    // avalanche: getCommonNetworkConfig(eAvalancheNetwork.avalanche, 43114),
+    // fuji: getCommonNetworkConfig(eAvalancheNetwork.fuji, 43113),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
@@ -117,8 +133,11 @@ const buidlerConfig: HardhatUserConfig = {
       chainId: BUIDLEREVM_CHAINID,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
-      accounts: accounts.map(({ secretKey, balance }: { secretKey: string; balance: string }) => ({
-        privateKey: secretKey,
+      // accounts: accounts.map(({ secretKey, balance }: { secretKey: string; balance: string }) => ({
+      //   privateKey: secretKey,
+      //   balance,
+      accounts: accounts.map(({ privateKey, balance }: { privateKey: string; balance: string }) => ({
+        privateKey: privateKey,
         balance,
       })),
       forking: buildForkConfig(),
