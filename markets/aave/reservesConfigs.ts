@@ -2,6 +2,23 @@ import BigNumber from 'bignumber.js';
 import { oneRay } from '../../helpers/constants';
 import { eContractid, IReserveParams } from '../../helpers/types';
 
+export const strategyALUSD: IReserveParams = {
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),  
+  baseLTVAsCollateral: '0',
+  liquidationThreshold: '0',
+  liquidationBonus: '0',
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: true,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '2000',
+};
+
 export const strategyBUSD: IReserveParams = {
   optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
