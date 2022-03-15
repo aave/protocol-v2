@@ -61,10 +61,10 @@ TENDERLY_USERNAME=""
 You can run the full test suite with the following commands:
 
 ```
-# In one terminal
+# In one terminal (note that you might need to use 'sudo' in case of permission errors) 
 docker-compose up
 
-# Open another tab or terminal
+# Open another tab or terminal (note that you might need to use 'sudo' in case of permission errors)
 docker-compose exec contracts-env bash
 
 # A new Bash terminal is prompted, connected to the container. To run all tests.
