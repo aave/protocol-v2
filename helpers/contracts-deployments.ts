@@ -132,7 +132,6 @@ export const deployReserveLogicLibrary = async (verify?: boolean) =>
 
 export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolean) => {
   const genericLogicArtifact = await readArtifact(eContractid.GenericLogic);
-
   const linkedGenericLogicByteCode = linkBytecode(genericLogicArtifact, {
     [eContractid.ReserveLogic]: reserveLogic.address,
   });

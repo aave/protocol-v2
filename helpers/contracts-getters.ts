@@ -4,7 +4,6 @@ import {
   ATokensAndRatesHelperFactory,
   AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
-  GenericLogicFactory,
   InitializableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
@@ -255,15 +254,6 @@ export const getReserveLogic = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.ReserveLogic}.${DRE.network.name}`).value()
-      ).address,
-    await getFirstSigner()
-  );
-
-export const getGenericLogic = async (address?: tEthereumAddress) =>
-  await GenericLogicFactory.connect(
-    address ||
-      (
-        await getDb().get(`${eContractid.GenericLogic}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );
