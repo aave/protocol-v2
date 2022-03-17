@@ -32,6 +32,7 @@ directory names contain 'aave'. Further work needed to rename 'aave' to 'ormi'**
 ## Setup
 
 The repository uses Docker Compose to manage sensitive keys and load the configuration. Prior any action like test or deploy, you must run `docker-compose up` to start the `contracts-env` container, and then connect to the container console via `docker-compose exec contracts-env bash`.
+
 **Note: you might need to use 'sudo' in case of permission errors (under Linux/MacOs) when running the docker commands**
 
 Follow the next steps to setup the repository:
