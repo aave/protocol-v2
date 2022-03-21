@@ -90,6 +90,9 @@ export const CommonsConfig: ICommonConfiguration = {
     REN: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
+    UMA: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
     UNI: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
@@ -234,6 +237,7 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0xF9A76ae7a1075Fe7d646b06fF05Bd48b9FA5582e',
       SUSD: '0xb343e7a1aF578FA35632435243D814e7497622f7',
       TUSD: '0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660',
+      UMA: '0x489Bf230d4Ab5c2083556E394a28276C22c3B580',
       UNI: '0x17756515f112429471F86f98D5052aCB6C47f6ee',
       USDC: '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838',
       USDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
@@ -278,6 +282,7 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
+      UMA: '0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828',
       UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e',
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
       USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
@@ -301,6 +306,7 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
+      UMA: '0x04Fa0d235C4abf4BcF4787aF4CF447DE572eF828',
       UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e',
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
       USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
