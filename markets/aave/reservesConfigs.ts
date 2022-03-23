@@ -267,9 +267,9 @@ export const strategyXSUSHI: IReserveParams = {
 
 export const strategyUMA: IReserveParams = {
   strategy: rateStrategyVolatileThree,
-  baseLTVAsCollateral: '1550',
+  baseLTVAsCollateral: '5500',
   liquidationThreshold: '6500',
-  liquidationBonus: '15000',
+  liquidationBonus: '11500',
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',

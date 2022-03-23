@@ -90,9 +90,6 @@ export const CommonsConfig: ICommonConfiguration = {
     REN: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    UMA: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
     UNI: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
