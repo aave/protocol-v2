@@ -1,25 +1,25 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Build pass](https://github.com/AAVE/protocol-v2/actions/workflows/node.js.yml/badge.svg)](https://github.com/aave/protocol-v2/actions/workflows/node.js.yml)
-```                                                                                                                                             
+```
      OOOOOOOOO     RRRRRRRRRRRRRRRRR   MMMMMMMM               MMMMMMMMIIIIIIIIII
    OO:::::::::OO   R::::::::::::::::R  M:::::::M             M:::::::MI::::::::I
  OO:::::::::::::OO R::::::RRRRRR:::::R M::::::::M           M::::::::MI::::::::I
 O:::::::OOO:::::::ORR:::::R     R:::::RM:::::::::M         M:::::::::MII::::::II
-O::::::O   O::::::O  R::::R     R:::::RM::::::::::M       M::::::::::M  I::::I  
-O:::::O     O:::::O  R::::R     R:::::RM:::::::::::M     M:::::::::::M  I::::I  
-O:::::O     O:::::O  R::::RRRRRR:::::R M:::::::M::::M   M::::M:::::::M  I::::I  
-O:::::O     O:::::O  R:::::::::::::RR  M::::::M M::::M M::::M M::::::M  I::::I  
-O:::::O     O:::::O  R::::RRRRRR:::::R M::::::M  M::::M::::M  M::::::M  I::::I  
-O:::::O     O:::::O  R::::R     R:::::RM::::::M   M:::::::M   M::::::M  I::::I  
-O:::::O     O:::::O  R::::R     R:::::RM::::::M    M:::::M    M::::::M  I::::I  
-O::::::O   O::::::O  R::::R     R:::::RM::::::M     MMMMM     M::::::M  I::::I  
+O::::::O   O::::::O  R::::R     R:::::RM::::::::::M       M::::::::::M  I::::I
+O:::::O     O:::::O  R::::R     R:::::RM:::::::::::M     M:::::::::::M  I::::I
+O:::::O     O:::::O  R::::RRRRRR:::::R M:::::::M::::M   M::::M:::::::M  I::::I
+O:::::O     O:::::O  R:::::::::::::RR  M::::::M M::::M M::::M M::::::M  I::::I
+O:::::O     O:::::O  R::::RRRRRR:::::R M::::::M  M::::M::::M  M::::::M  I::::I
+O:::::O     O:::::O  R::::R     R:::::RM::::::M   M:::::::M   M::::::M  I::::I
+O:::::O     O:::::O  R::::R     R:::::RM::::::M    M:::::M    M::::::M  I::::I
+O::::::O   O::::::O  R::::R     R:::::RM::::::M     MMMMM     M::::::M  I::::I
 O:::::::OOO:::::::ORR:::::R     R:::::RM::::::M               M::::::MII::::::II
  OO:::::::::::::OO R::::::R     R:::::RM::::::M               M::::::MI::::::::I
    OO:::::::::OO   R::::::R     R:::::RM::::::M               M::::::MI::::::::I
      OOOOOOOOO     RRRRRRRR     RRRRRRRMMMMMMMM               MMMMMMMMIIIIIIIIII
-                                                                                                                                
+
 ```
-# Ormi Lending Protocol 
+# Ormi Lending Protocol
 Ormi is made possible because it is built on top of DeFi giant Aave. Ormi's lending protocol began as a fork of Aave's protocol-v2. Special thanks to the Aave team to its commitment to technical excellence, open source, and decentralization to make Ormi a reality.
 
 ## What is Ormi?
@@ -63,7 +63,7 @@ TENDERLY_USERNAME=""
 You can run the full test suite with the following commands:
 
 ```
-# In one terminal 
+# In one terminal
 docker-compose up
 
 # Open another tab or terminal
@@ -90,9 +90,24 @@ docker-compose up
 # Open another tab or terminal
 docker-compose exec contracts-env bash
 
-# A new Bash terminal is prompted, connected to the container
+# A new Bash terminal is prompted, connected to the container.
+# You can run these commands for deployment with different arguments.
+
+# Deployment with registry deployment and contract verification:
+npm run aave:kovan:full:migration:add-registry:verify
+
+# Deployment with registry deployment and no contract verification:
+npm run aave:kovan:full:migration:add-registry
+
+# Deployment with no registry deployment and no contract verification:
 npm run aave:kovan:full:migration
+
+# Deployment (dev) with no registry deployment:
+npm run aave:kovan:dev:migration
 ```
+Note that for the above *full* deployment, both the first and second accounts will need to be funded. For detail, see:
+`markets/aave/commons.ts`, where `EmergencyAdminIndex, PoolAdminIndex` represent the account indices for contract
+calls needed for deployment scripts.
 
 ### Mainnet fork deployment
 

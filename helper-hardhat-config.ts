@@ -58,7 +58,9 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
-  [eEthereumNetwork.kovan]: 1 * GWEI,
+  // Setting network's gass price to be higher than 1GWEI to increase
+  // transaction processing time.
+  [eEthereumNetwork.kovan]: 2 * GWEI,
   [eEthereumNetwork.ropsten]: 65 * GWEI,
   [eEthereumNetwork.main]: 65 * GWEI,
   [eEthereumNetwork.coverage]: 65 * GWEI,

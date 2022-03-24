@@ -130,7 +130,6 @@ export const deployReserveLogicLibrary = async (verify?: boolean) =>
     verify
   );
 
-// TODO(vicfei): consider removing as no longer needed.
 export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolean) => {
   const genericLogicArtifact = await readArtifact(eContractid.GenericLogic);
   const linkedGenericLogicByteCode = linkBytecode(genericLogicArtifact, {
@@ -156,7 +155,6 @@ export const deployValidationLogic = async (
   const validationLogicArtifact = await readArtifact(eContractid.ValidationLogic);
 
   const linkedValidationLogicByteCode = linkBytecode(validationLogicArtifact, {
-    [eContractid.ReserveLogic]: reserveLogic.address,
     [eContractid.GenericLogic]: genericLogic.address,
   });
 
