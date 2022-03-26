@@ -81,6 +81,8 @@ TS_NODE_TRANSPILE_ONLY=1 npx hardhat test --no-compile ./test-suites/test-aave/l
 
 For deploying Ormi lending pool, you can use the available scripts located at `package.json`. For a complete list, run `npm run` to see all the tasks.
 
+Note that the deployment scripts save the addresses of the deployed contracts into a local json db `deployed-contracts.json`. At the end of a deployment script a list of deployed contracts with their addresses is displayed (see `misc_utils.ts` and function `printContracts`). This list contains all contracts ever deployed in a specific network (not neccessarily resulting from the last run).
+
 ### Kovan deployment
 
 ```
