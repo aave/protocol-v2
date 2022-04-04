@@ -267,7 +267,7 @@ export enum TokenContractId {
   UMA = 'UMA',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  xSUSHI = 'xSUSHI',
+  xSUSHI = 'xSUSHI'
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
