@@ -368,7 +368,7 @@ export const strategyUMA: IReserveParams = {
   baseLTVAsCollateral: '5500',
   liquidationThreshold: '6500',
   liquidationBonus: '11500',
-  borrowingEnabled: true,
+  borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
