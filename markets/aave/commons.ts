@@ -24,6 +24,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   YFI: oneEther.multipliedBy('22.407436').toFixed(),
   ZRX: oneEther.multipliedBy('0.001151').toFixed(),
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
+  CVX: oneEther.multipliedBy('0.00868769046').toFixed(),
   USD: '5848466240000000',
 };
 // ----------------
