@@ -151,7 +151,7 @@ export const strategyCVX: IReserveParams = {
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
-  aTokenImpl: eContractid.AToken,
+  aTokenImpl: eContractid.DelegationAwareAToken,
   reserveFactor: '2000'
 };
 
