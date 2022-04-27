@@ -147,7 +147,7 @@ export const strategyCVX: IReserveParams = {
   stableRateSlope2: new BigNumber(3).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '4500',
   liquidationThreshold: '6000',
-  liquidationBonus: '10000',
+  liquidationBonus: '8500',
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
