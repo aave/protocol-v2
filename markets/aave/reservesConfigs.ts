@@ -149,7 +149,7 @@ export const strategyCVX: IReserveParams = {
   liquidationThreshold: '6000',
   liquidationBonus: '10000',
   borrowingEnabled: true,
-  stableBorrowRateEnabled: true,
+  stableBorrowRateEnabled: false,
   reserveDecimals: '18',
   aTokenImpl: eContractid.DelegationAwareAToken,
   reserveFactor: '2000'
