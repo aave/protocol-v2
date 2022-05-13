@@ -205,6 +205,7 @@ export interface iAssetBase<T> {
   REN: T;
   ENJ: T;
   xSUSHI: T;
+  CVX: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -234,6 +235,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+  | 'CVX'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -264,7 +266,8 @@ export enum TokenContractId {
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
-  xSUSHI = 'xSUSHI'
+  xSUSHI = 'xSUSHI',
+  CVX = 'CVX'
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
