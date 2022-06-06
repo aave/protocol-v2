@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {WadRayMath} from './WadRayMath.sol';
 
 library MathUtils {
-  using SafeMath for uint256;
   using WadRayMath for uint256;
 
   /// @dev Ignoring leap years
@@ -24,9 +22,9 @@ library MathUtils {
     returns (uint256)
   {
     //solium-disable-next-line
-    uint256 timeDifference = block.timestamp.sub(uint256(lastUpdateTimestamp));
+    uint256 timeDifference = block.timestamp - uint256(lastUpdateTimestamp);
 
-    return (rate.mul(timeDifference) / SECONDS_PER_YEAR).add(WadRayMath.ray());
+    return ((rate * timeDifference) / SECONDS_PER_YEAR) + WadRayMath.ray();
   }
 
   /**
@@ -48,7 +46,7 @@ library MathUtils {
     uint256 currentTimestamp
   ) internal pure returns (uint256) {
     //solium-disable-next-line
-    uint256 exp = currentTimestamp.sub(uint256(lastUpdateTimestamp));
+    uint256 exp = currentTimestamp - uint256(lastUpdateTimestamp);
 
     if (exp == 0) {
       return WadRayMath.ray();
@@ -63,10 +61,10 @@ library MathUtils {
     uint256 basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
     uint256 basePowerThree = basePowerTwo.rayMul(ratePerSecond);
 
-    uint256 secondTerm = exp.mul(expMinusOne).mul(basePowerTwo) / 2;
-    uint256 thirdTerm = exp.mul(expMinusOne).mul(expMinusTwo).mul(basePowerThree) / 6;
+    uint256 secondTerm = (exp * expMinusOne * basePowerTwo) / 2;
+    uint256 thirdTerm = (exp * expMinusOne * expMinusTwo * basePowerThree) / 6;
 
-    return WadRayMath.ray().add(ratePerSecond.mul(exp)).add(secondTerm).add(thirdTerm);
+    return WadRayMath.ray() + (ratePerSecond * exp) + secondTerm + thirdTerm;
   }
 
   /**

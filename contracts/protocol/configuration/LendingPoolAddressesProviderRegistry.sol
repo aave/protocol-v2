@@ -1,19 +1,17 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
-import {
-  ILendingPoolAddressesProviderRegistry
-} from '../../interfaces/ILendingPoolAddressesProviderRegistry.sol';
+import {ILendingPoolAddressesProviderRegistry} from '../../interfaces/ILendingPoolAddressesProviderRegistry.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolAddressesProviderRegistry contract
- * @dev Main registry of LendingPoolAddressesProvider of multiple Aave protocol's markets
- * - Used for indexing purposes of Aave protocol's markets
+ * @dev Main registry of LendingPoolAddressesProvider of multiple Sturdy protocol's markets
+ * - Used for indexing purposes of Sturdy protocol's markets
  * - The id assigned to a LendingPoolAddressesProvider refers to the market it is connected with,
- *   for example with `0` for the Aave main market and `1` for the next created
- * @author Aave
+ *   for example with `0` for the Sturdy main market and `1` for the next created
+ * @author Sturdy, inspiration from Aave
  **/
 contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesProviderRegistry {
   mapping(address => uint256) private _addressesProviders;
@@ -30,7 +28,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
     address[] memory activeProviders = new address[](maxLength);
 
-    for (uint256 i = 0; i < maxLength; i++) {
+    for (uint256 i; i < maxLength; ++i) {
       if (_addressesProviders[addressesProvidersList[i]] > 0) {
         activeProviders[i] = addressesProvidersList[i];
       }
@@ -44,8 +42,13 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider The address of the new LendingPoolAddressesProvider
    * @param id The id for the new LendingPoolAddressesProvider, referring to the market it belongs to
    **/
-  function registerAddressesProvider(address provider, uint256 id) external override onlyOwner {
-    require(id != 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);
+  function registerAddressesProvider(address provider, uint256 id)
+    external
+    payable
+    override
+    onlyOwner
+  {
+    require(id > 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);
 
     _addressesProviders[provider] = id;
     _addToAddressesProvidersList(provider);
@@ -56,7 +59,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @dev Removes a LendingPoolAddressesProvider from the list of registered addresses provider
    * @param provider The LendingPoolAddressesProvider address
    **/
-  function unregisterAddressesProvider(address provider) external override onlyOwner {
+  function unregisterAddressesProvider(address provider) external payable override onlyOwner {
     require(_addressesProviders[provider] > 0, Errors.LPAPR_PROVIDER_NOT_REGISTERED);
     _addressesProviders[provider] = 0;
     emit AddressesProviderUnregistered(provider);
@@ -78,7 +81,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
   function _addToAddressesProvidersList(address provider) internal {
     uint256 providersCount = _addressesProvidersList.length;
 
-    for (uint256 i = 0; i < providersCount; i++) {
+    for (uint256 i; i < providersCount; ++i) {
       if (_addressesProvidersList[i] == provider) {
         return;
       }

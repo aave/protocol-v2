@@ -1,24 +1,24 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {MathUtils} from '../libraries/math/MathUtils.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesController.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title StableDebtToken
  * @notice Implements a stable debt token to track the borrowing positions of users
  * at stable rate mode
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  **/
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   using WadRayMath for uint256;
 
-  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  uint256 private constant DEBT_TOKEN_REVISION = 0x1;
 
   uint256 internal _avgStableRate;
   mapping(address => uint40) internal _timestamps;
@@ -27,7 +27,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   ILendingPool internal _pool;
   address internal _underlyingAsset;
-  IAaveIncentivesController internal _incentivesController;
+  ISturdyIncentivesController internal _incentivesController;
 
   /**
    * @dev Initializes the debt token.
@@ -41,12 +41,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   function initialize(
     ILendingPool pool,
     address underlyingAsset,
-    IAaveIncentivesController incentivesController,
+    ISturdyIncentivesController incentivesController,
     uint8 debtTokenDecimals,
     string memory debtTokenName,
     string memory debtTokenSymbol,
     bytes calldata params
-  ) public override initializer {
+  ) external override initializer {
     _setName(debtTokenName);
     _setSymbol(debtTokenSymbol);
     _setDecimals(debtTokenDecimals);
@@ -109,8 +109,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     if (accountBalance == 0) {
       return 0;
     }
-    uint256 cumulatedInterest =
-      MathUtils.calculateCompoundedInterest(stableRate, _timestamps[account]);
+    uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(
+      stableRate,
+      _timestamps[account]
+    );
     return accountBalance.rayMul(cumulatedInterest);
   }
 
@@ -138,7 +140,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     address onBehalfOf,
     uint256 amount,
     uint256 rate
-  ) external override onlyLendingPool returns (bool) {
+  ) external payable override onlyLendingPool returns (bool) {
     MintLocalVars memory vars;
 
     if (user != onBehalfOf) {
@@ -149,14 +151,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
     vars.previousSupply = totalSupply();
     vars.currentAvgStableRate = _avgStableRate;
-    vars.nextSupply = _totalSupply = vars.previousSupply.add(amount);
+    vars.nextSupply = _totalSupply = vars.previousSupply + amount;
 
     vars.amountInRay = amount.wadToRay();
 
-    vars.newStableRate = _usersStableRate[onBehalfOf]
-      .rayMul(currentBalance.wadToRay())
-      .add(vars.amountInRay.rayMul(rate))
-      .rayDiv(currentBalance.add(amount).wadToRay());
+    vars.newStableRate = (_usersStableRate[onBehalfOf].rayMul(currentBalance.wadToRay()) +
+      vars.amountInRay.rayMul(rate)).rayDiv((currentBalance + amount).wadToRay());
 
     require(vars.newStableRate <= type(uint128).max, Errors.SDT_STABLE_DEBT_OVERFLOW);
     _usersStableRate[onBehalfOf] = vars.newStableRate;
@@ -165,13 +165,11 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = _timestamps[onBehalfOf] = uint40(block.timestamp);
 
     // Calculates the updated average stable rate
-    vars.currentAvgStableRate = _avgStableRate = vars
-      .currentAvgStableRate
-      .rayMul(vars.previousSupply.wadToRay())
-      .add(rate.rayMul(vars.amountInRay))
-      .rayDiv(vars.nextSupply.wadToRay());
+    vars.currentAvgStableRate = _avgStableRate = (vars.currentAvgStableRate.rayMul(
+      vars.previousSupply.wadToRay()
+    ) + rate.rayMul(vars.amountInRay)).rayDiv(vars.nextSupply.wadToRay());
 
-    _mint(onBehalfOf, amount.add(balanceIncrease), vars.previousSupply);
+    _mint(onBehalfOf, amount + balanceIncrease, vars.previousSupply);
 
     emit Transfer(address(0), onBehalfOf, amount);
 
@@ -194,12 +192,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param user The address of the user getting his debt burned
    * @param amount The amount of debt tokens getting burned
    **/
-  function burn(address user, uint256 amount) external override onlyLendingPool {
+  function burn(address user, uint256 amount) external payable override onlyLendingPool {
     (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(user);
 
     uint256 previousSupply = totalSupply();
-    uint256 newAvgStableRate = 0;
-    uint256 nextSupply = 0;
+    uint256 newAvgStableRate;
+    uint256 nextSupply;
     uint256 userStableRate = _usersStableRate[user];
 
     // Since the total supply and each single user debt accrue separately,
@@ -210,7 +208,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       _avgStableRate = 0;
       _totalSupply = 0;
     } else {
-      nextSupply = _totalSupply = previousSupply.sub(amount);
+      nextSupply = _totalSupply = previousSupply - amount;
       uint256 firstTerm = _avgStableRate.rayMul(previousSupply.wadToRay());
       uint256 secondTerm = userStableRate.rayMul(amount.wadToRay());
 
@@ -220,7 +218,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       if (secondTerm >= firstTerm) {
         newAvgStableRate = _avgStableRate = _totalSupply = 0;
       } else {
-        newAvgStableRate = _avgStableRate = firstTerm.sub(secondTerm).rayDiv(nextSupply.wadToRay());
+        newAvgStableRate = _avgStableRate = (firstTerm - secondTerm).rayDiv(nextSupply.wadToRay());
       }
     }
 
@@ -235,7 +233,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     _totalSupplyTimestamp = uint40(block.timestamp);
 
     if (balanceIncrease > amount) {
-      uint256 amountToMint = balanceIncrease.sub(amount);
+      uint256 amountToMint = balanceIncrease - amount;
       _mint(user, amountToMint, previousSupply);
       emit Mint(
         user,
@@ -248,7 +246,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
         nextSupply
       );
     } else {
-      uint256 amountToBurn = amount.sub(balanceIncrease);
+      uint256 amountToBurn = amount - balanceIncrease;
       _burn(user, amountToBurn, previousSupply);
       emit Burn(user, amountToBurn, currentBalance, balanceIncrease, newAvgStableRate, nextSupply);
     }
@@ -277,13 +275,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     }
 
     // Calculation of the accrued interest since the last accumulation
-    uint256 balanceIncrease = balanceOf(user).sub(previousPrincipalBalance);
+    uint256 balanceIncrease = balanceOf(user) - previousPrincipalBalance;
 
-    return (
-      previousPrincipalBalance,
-      previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease
-    );
+    return (previousPrincipalBalance, previousPrincipalBalance + balanceIncrease, balanceIncrease);
   }
 
   /**
@@ -352,14 +346,14 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   /**
    * @dev Returns the address of the incentives controller contract
    **/
-  function getIncentivesController() external view override returns (IAaveIncentivesController) {
+  function getIncentivesController() external view override returns (ISturdyIncentivesController) {
     return _getIncentivesController();
   }
 
   /**
    * @dev For internal usage in the logic of the parent contracts
    **/
-  function _getIncentivesController() internal view override returns (IAaveIncentivesController) {
+  function _getIncentivesController() internal view override returns (ISturdyIncentivesController) {
     return _incentivesController;
   }
 
@@ -389,8 +383,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       return 0;
     }
 
-    uint256 cumulatedInterest =
-      MathUtils.calculateCompoundedInterest(avgRate, _totalSupplyTimestamp);
+    uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(
+      avgRate,
+      _totalSupplyTimestamp
+    );
 
     return principalSupply.rayMul(cumulatedInterest);
   }
@@ -407,7 +403,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 oldTotalSupply
   ) internal {
     uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.add(amount);
+    _balances[account] = oldAccountBalance + amount;
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);
@@ -426,7 +422,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     uint256 oldTotalSupply
   ) internal {
     uint256 oldAccountBalance = _balances[account];
-    _balances[account] = oldAccountBalance.sub(amount, Errors.SDT_BURN_EXCEEDS_BALANCE);
+    _balances[account] = oldAccountBalance - amount;
 
     if (address(_incentivesController) != address(0)) {
       _incentivesController.handleAction(account, oldTotalSupply, oldAccountBalance);

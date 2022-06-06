@@ -1,0 +1,354 @@
+{
+  "LendingPoolAddressesProvider": {
+    "goerli": {
+      "address": "0xf7895a2be7082980E60C427E3E5F32067c9ED333",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xf7895a2be7082980E60C427E3E5F32067c9ED333",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "LendingPoolAddressesProviderRegistry": {
+    "goerli": {
+      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "ReserveLogic": {
+    "goerli": {
+      "address": "0xB07F2D6299B2F9a645C867AeC2BD6385a6E4D76e",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xB07F2D6299B2F9a645C867AeC2BD6385a6E4D76e",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "GenericLogic": {
+    "goerli": {
+      "address": "0xFd5500bE0Ea3A3a24A34cFfa143AACeEdAFb8959",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xFd5500bE0Ea3A3a24A34cFfa143AACeEdAFb8959",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "ValidationLogic": {
+    "goerli": {
+      "address": "0x3df280E0588bD52a9A65BF3795F4CFd218c6051e",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x3df280E0588bD52a9A65BF3795F4CFd218c6051e",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "LendingPoolImpl": {
+    "goerli": {
+      "address": "0xbF30702E5b293CC9CaB4EC25e6d2da1E7f4F8611"
+    },
+    "localhost": {
+      "address": "0xbF30702E5b293CC9CaB4EC25e6d2da1E7f4F8611"
+    }
+  },
+  "LendingPool": {
+    "goerli": {
+      "address": "0x53f4569958A9487598e2aa9db6c1E9BCaF81ea4c"
+    },
+    "localhost": {
+      "address": "0x53f4569958A9487598e2aa9db6c1E9BCaF81ea4c"
+    }
+  },
+  "LendingPoolConfiguratorImpl": {
+    "goerli": {
+      "address": "0x52Ab0779090a1C0bB6d6EBb17f6e632d370AfFCd"
+    },
+    "localhost": {
+      "address": "0x52Ab0779090a1C0bB6d6EBb17f6e632d370AfFCd"
+    }
+  },
+  "LendingPoolConfigurator": {
+    "goerli": {
+      "address": "0xFA81C6cfF67D9958A20b2c1D1C93a5936B217cDd"
+    },
+    "localhost": {
+      "address": "0xFA81C6cfF67D9958A20b2c1D1C93a5936B217cDd"
+    }
+  },
+  "StableAndVariableTokensHelper": {
+    "goerli": {
+      "address": "0xF23dD2aa2e26a0521d44773DbCbEE125d0Ac8BE0",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xF23dD2aa2e26a0521d44773DbCbEE125d0Ac8BE0",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "ATokensAndRatesHelper": {
+    "goerli": {
+      "address": "0x189fC75c01c6587C7505Fc0E55f3F8A6a27BB520",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x189fC75c01c6587C7505Fc0E55f3F8A6a27BB520",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "PriceOracle": {
+    "goerli": {
+      "address": "0x1460B491Db8E28A986f5ccb1c3Ee09E0A5757ed6",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x1460B491Db8E28A986f5ccb1c3Ee09E0A5757ed6",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "MockAggregator": {
+    "goerli": {
+      "address": "0xe7FA5eeEfEef078A44663504b6342210346601fF",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xe7FA5eeEfEef078A44663504b6342210346601fF",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "SturdyOracle": {
+    "goerli": {
+      "address": "0x46D33E339bDAB4a5C2301Bc136aAD5177f6b819a",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x46D33E339bDAB4a5C2301Bc136aAD5177f6b819a",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "LendingRateOracle": {
+    "goerli": {
+      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "SturdyProtocolDataProvider": {
+    "goerli": {
+      "address": "0x8f99b93A3b5EFD437dD1F298acC0Cddb7d89C979",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x8f99b93A3b5EFD437dD1F298acC0Cddb7d89C979",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "StakedTokenIncentivesControllerImpl": {
+    "goerli": {
+      "address": "0xB1e7dEC831d9432095a331dAA25839d806128d29",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xB1e7dEC831d9432095a331dAA25839d806128d29",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "StakedTokenIncentivesController": {
+    "goerli": {
+      "address": "0xf1eeA72fF022bE0DC8DFB97b1f398380A5CAFC3E"
+    },
+    "localhost": {
+      "address": "0xf1eeA72fF022bE0DC8DFB97b1f398380A5CAFC3E"
+    }
+  },
+  "SturdyTokenImpl": {
+    "goerli": {
+      "address": "0x600Fd47A378068F36aa579cCeE9De2E8a0daf394",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x600Fd47A378068F36aa579cCeE9De2E8a0daf394",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "SturdyToken": {
+    "goerli": {
+      "address": "0xa8f6fCCc603254fdeF8c222BC02F7BcD5d5ee1c4"
+    },
+    "localhost": {
+      "address": "0xa8f6fCCc603254fdeF8c222BC02F7BcD5d5ee1c4"
+    }
+  },
+  "StableDebtToken": {
+    "goerli": {
+      "address": "0x86C2a4878da5e4F848fFa2B2B47E1cfbfE6d45dC",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x86C2a4878da5e4F848fFa2B2B47E1cfbfE6d45dC",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "VariableDebtToken": {
+    "goerli": {
+      "address": "0x5C41F6fC0c32B823E8889D87EFf940fF202180c2",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x5C41F6fC0c32B823E8889D87EFf940fF202180c2",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "AToken": {
+    "goerli": {
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "aTokenImpl": {
+    "goerli": {
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7"
+    },
+    "localhost": {
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7"
+    }
+  },
+  "DefaultReserveInterestRateStrategy": {
+    "goerli": {
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "rateStrategyStableTwo": {
+    "goerli": {
+      "address": "0x475A1E28D2D4275fba0f1B59B2706C86c950D9C5"
+    },
+    "localhost": {
+      "address": "0x475A1E28D2D4275fba0f1B59B2706C86c950D9C5"
+    }
+  },
+  "rateStrategyStableThree": {
+    "goerli": {
+      "address": "0x916189e5de8e647022251e228705AA33c1B1D548"
+    },
+    "localhost": {
+      "address": "0x916189e5de8e647022251e228705AA33c1B1D548"
+    }
+  },
+  "rateStrategyWETH": {
+    "goerli": {
+      "address": "0x3C3879aE989A24Aa7da440b261893ea6a7629847"
+    },
+    "localhost": {
+      "address": "0x3C3879aE989A24Aa7da440b261893ea6a7629847"
+    }
+  },
+  "rateStrategySTETH": {
+    "goerli": {
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f"
+    },
+    "localhost": {
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f"
+    }
+  },
+  "LendingPoolCollateralManagerImpl": {
+    "goerli": {
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777"
+    },
+    "localhost": {
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777"
+    }
+  },
+  "LendingPoolCollateralManager": {
+    "goerli": {
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "WalletBalanceProvider": {
+    "goerli": {
+      "address": "0x085c4AcAA09A0561385A2d937e766059683Bd594",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x085c4AcAA09A0561385A2d937e766059683Bd594",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "UiPoolDataProvider": {
+    "goerli": {
+      "address": "0x4976E4C7F61124747F7f7496d157B538C8DbeD63",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x4976E4C7F61124747F7f7496d157B538C8DbeD63",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "UiIncentiveDataProvider": {
+    "goerli": {
+      "address": "0x1917a39241cc1bEEa1e503DDC5B94fDBbfBE2731",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x1917a39241cc1bEEa1e503DDC5B94fDBbfBE2731",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "LidoVaultImpl": {
+    "goerli": {
+      "address": "0x406a940bAC270C2dEE26D884A13E733B9F91Ceaf",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x406a940bAC270C2dEE26D884A13E733B9F91Ceaf",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "LidoVault": {
+    "goerli": {
+      "address": "0x43b0aB1DacBFB33bd558444344F0Ed6515153b52"
+    },
+    "localhost": {
+      "address": "0x43b0aB1DacBFB33bd558444344F0Ed6515153b52"
+    }
+  },
+  "CollateralAdapterImpl": {
+    "goerli": {
+      "address": "0x018f3460b435B7C695703c3318a8A6685F86aBcA",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x018f3460b435B7C695703c3318a8A6685F86aBcA",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "CollateralAdapter": {
+    "goerli": {
+      "address": "0x7D7010dA0dA6A611e39004efA8FA5Ee8EA848638"
+    },
+    "localhost": {
+      "address": "0x7D7010dA0dA6A611e39004efA8FA5Ee8EA848638"
+    }
+  }
+}

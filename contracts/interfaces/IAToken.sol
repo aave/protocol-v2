@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 import {IInitializableAToken} from './IInitializableAToken.sol';
-import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from './ISturdyIncentivesController.sol';
 
 interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
   /**
@@ -26,7 +26,7 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
     address user,
     uint256 amount,
     uint256 index
-  ) external returns (bool);
+  ) external payable returns (bool);
 
   /**
    * @dev Emitted after aTokens are burned
@@ -58,14 +58,14 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
     address receiverOfUnderlying,
     uint256 amount,
     uint256 index
-  ) external;
+  ) external payable;
 
   /**
    * @dev Mints aTokens to the reserve treasury
    * @param amount The amount of tokens getting minted
    * @param index The new liquidity index of the reserve
    */
-  function mintToTreasury(uint256 amount, uint256 index) external;
+  function mintToTreasury(uint256 amount, uint256 index) external payable;
 
   /**
    * @dev Transfers aTokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
@@ -77,7 +77,7 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
     address from,
     address to,
     uint256 value
-  ) external;
+  ) external payable;
 
   /**
    * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
@@ -86,7 +86,7 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
    * @param amount The amount getting transferred
    * @return The amount transferred
    **/
-  function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
+  function transferUnderlyingTo(address user, uint256 amount) external payable returns (uint256);
 
   /**
    * @dev Invoked to execute actions on the aToken side after a repayment.
@@ -98,7 +98,7 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
   /**
    * @dev Returns the address of the incentives controller contract
    **/
-  function getIncentivesController() external view returns (IAaveIncentivesController);
+  function getIncentivesController() external view returns (ISturdyIncentivesController);
 
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)

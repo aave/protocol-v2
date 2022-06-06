@@ -23,6 +23,7 @@ const INFURA_KEY = process.env.INFURA_KEY || '';
 const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
+const FORK = process.env.FORK || 'main';
 
 task(`set-DRE`, `Inits the DRE, to have access to all the plugins' objects`).setAction(
   async (_, _DRE) => {
@@ -77,7 +78,7 @@ const buidlerConfig: any = {
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
       gasPrice: 8000000000,
-      chainId: BUIDLEREVM_CHAINID,
+      chainId: BUIDLEREVM_CHAINID[FORK],
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       accounts: accounts.map(({secretKey, balance}: {secretKey: string; balance: string}) => ({
@@ -90,7 +91,7 @@ const buidlerConfig: any = {
       blockGasLimit: 9500000,
       gas: 9500000,
       gasPrice: 8000000000,
-      chainId: BUIDLEREVM_CHAINID,
+      chainId: BUIDLEREVM_CHAINID[FORK],
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       url: 'http://localhost:8545',

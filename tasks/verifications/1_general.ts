@@ -1,31 +1,37 @@
-import { error } from 'console';
-import { zeroAddress } from 'ethereumjs-util';
 import { task } from 'hardhat/config';
+import { loadPoolConfig, ConfigNames, getQuoteCurrency } from '../../helpers/configuration';
 import {
-  loadPoolConfig,
-  ConfigNames,
-  getWethAddress,
-  getTreasuryAddress,
-} from '../../helpers/configuration';
-import { ZERO_ADDRESS } from '../../helpers/constants';
-import {
-  getAaveProtocolDataProvider,
-  getAddressById,
-  getLendingPool,
+  getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
   getLendingPoolAddressesProviderRegistry,
-  getLendingPoolCollateralManager,
   getLendingPoolCollateralManagerImpl,
   getLendingPoolConfiguratorImpl,
-  getLendingPoolConfiguratorProxy,
   getLendingPoolImpl,
   getProxy,
+  getLidoVaultImpl,
+  getSturdyIncentivesControllerImpl,
+  getSturdyTokenImpl,
+  getFirstSigner,
   getWalletProvider,
-  getWETHGateway,
+  getUiPoolDataProvider,
+  getUiIncentiveDataProvider,
+  getPriceOracle,
+  getSturdyOracle,
+  getYearnVaultImpl,
+  getPairsTokenAggregator,
+  getYearnWETHVaultImpl,
+  getYearnWBTCVaultImpl,
 } from '../../helpers/contracts-getters';
 import { verifyContract, getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { notFalsyOrZeroAddress } from '../../helpers/misc-utils';
-import { eContractid, eNetwork, ICommonConfiguration } from '../../helpers/types';
+import { DRE, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
+import {
+  eContractid,
+  eEthereumNetwork,
+  eFantomNetwork,
+  eNetwork,
+  ICommonConfiguration,
+  SymbolMap,
+} from '../../helpers/types';
 
 task('verify:general', 'Verify contracts at Etherscan')
   .addFlag('all', 'Verify all contracts at Etherscan')
@@ -35,17 +41,18 @@ task('verify:general', 'Verify contracts at Etherscan')
     const network = localDRE.network.name as eNetwork;
     const poolConfig = loadPoolConfig(pool);
     const {
-      ReserveAssets,
-      ReservesConfig,
       ProviderRegistry,
       MarketId,
       LendingPoolCollateralManager,
       LendingPoolConfigurator,
       LendingPool,
-      WethGateway,
+      ReserveAssets,
+      FallbackOracle,
+      ChainlinkAggregator,
+      ProtocolGlobalParams: { UsdAddress },
     } = poolConfig as ICommonConfiguration;
-    const treasuryAddress = await getTreasuryAddress(poolConfig);
-
+    const signer = await getFirstSigner();
+    const EMISSION_EXECUTOR = await signer.getAddress();
     const registryAddress = getParamPerNetwork(ProviderRegistry, network);
     const addressesProvider = await getLendingPoolAddressesProvider();
     const addressesProviderRegistry = notFalsyOrZeroAddress(registryAddress)
@@ -53,17 +60,27 @@ task('verify:general', 'Verify contracts at Etherscan')
       : await getLendingPoolAddressesProviderRegistry();
     const lendingPoolAddress = await addressesProvider.getLendingPool();
     const lendingPoolConfiguratorAddress = await addressesProvider.getLendingPoolConfigurator(); //getLendingPoolConfiguratorProxy();
-    const lendingPoolCollateralManagerAddress = await addressesProvider.getLendingPoolCollateralManager();
+    const lendingPoolCollateralManagerAddress =
+      await addressesProvider.getLendingPoolCollateralManager();
+    const incentiveControllerAddress = await addressesProvider.getIncentiveController();
+    const incentiveTokenAddress = await addressesProvider.getIncentiveToken();
+    const oracleAddress = await addressesProvider.getPriceOracle();
+    // const oracle = await getPriceOracle();
+    const oracle = await getSturdyOracle();
 
     const lendingPoolProxy = await getProxy(lendingPoolAddress);
     const lendingPoolConfiguratorProxy = await getProxy(lendingPoolConfiguratorAddress);
-    const lendingPoolCollateralManagerProxy = await getProxy(lendingPoolCollateralManagerAddress);
+    const incentiveControllerProxy = await getProxy(incentiveControllerAddress);
+    const incentiveTokenProxy = await getProxy(incentiveTokenAddress);
 
     if (all) {
-      const lendingPoolImplAddress = getParamPerNetwork(LendingPool, network);
-      const lendingPoolImpl = notFalsyOrZeroAddress(lendingPoolImplAddress)
-        ? await getLendingPoolImpl(lendingPoolImplAddress)
-        : await getLendingPoolImpl();
+      const lendingPoolImpl = await getLendingPoolImpl();
+
+      const incentiveControllerImpl = await getSturdyIncentivesControllerImpl();
+      const incentiveTokenImpl = await getSturdyTokenImpl();
+      const walletBalanceProvider = await getWalletProvider();
+      const uiPoolDataProvider = await getUiPoolDataProvider();
+      const uiIncentiveDataProvider = await getUiIncentiveDataProvider();
 
       const lendingPoolConfiguratorImplAddress = getParamPerNetwork(
         LendingPoolConfigurator,
@@ -83,17 +100,40 @@ task('verify:general', 'Verify contracts at Etherscan')
         ? await getLendingPoolCollateralManagerImpl(lendingPoolCollateralManagerImplAddress)
         : await getLendingPoolCollateralManagerImpl();
 
-      const dataProvider = await getAaveProtocolDataProvider();
-      const walletProvider = await getWalletProvider();
-
-      const wethGatewayAddress = getParamPerNetwork(WethGateway, network);
-      const wethGateway = notFalsyOrZeroAddress(wethGatewayAddress)
-        ? await getWETHGateway(wethGatewayAddress)
-        : await getWETHGateway();
+      const dataProvider = await getSturdyProtocolDataProvider();
 
       // Address Provider
       console.log('\n- Verifying address provider...\n');
       await verifyContract(eContractid.LendingPoolAddressesProvider, addressesProvider, [MarketId]);
+
+      if (network != eEthereumNetwork.main && network != eFantomNetwork.ftm) {
+        // Price Oracle
+        console.log('\n- Verifying price oracle...\n');
+        await verifyContract(eContractid.PriceOracle, oracle, []);
+      } else {
+        // Sturdy Oracle
+        const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
+        const chainlinkAggregators = await getParamPerNetwork(ChainlinkAggregator, network);
+        const fallbackOracleAddress = await getParamPerNetwork(FallbackOracle, network);
+        const tokensToWatch: SymbolMap<string> = {
+          ...reserveAssets,
+          USD: UsdAddress,
+        };
+        const [tokens, aggregators] = getPairsTokenAggregator(
+          tokensToWatch,
+          chainlinkAggregators,
+          poolConfig.OracleQuoteCurrency
+        );
+
+        console.log('\n- Verifying sturdy oracle...\n');
+        await verifyContract(eContractid.SturdyOracle, oracle, [
+          tokens,
+          aggregators,
+          fallbackOracleAddress,
+          await getQuoteCurrency(poolConfig),
+          poolConfig.OracleQuoteUnit,
+        ]);
+      }
 
       // Address Provider Registry
       console.log('\n- Verifying address provider registry...\n');
@@ -119,43 +159,145 @@ task('verify:general', 'Verify contracts at Etherscan')
         []
       );
 
+      // IncentiveController implementation
+      console.log('\n- Verifying IncentiveController Implementation...\n');
+      await verifyContract(eContractid.StakedTokenIncentivesController, incentiveControllerImpl, [
+        EMISSION_EXECUTOR,
+      ]);
+
+      // IncentiveToken implementation
+      console.log('\n- Verifying IncentiveToken Implementation...\n');
+      await verifyContract(eContractid.SturdyToken, incentiveTokenImpl, []);
+
       // Test helpers
-      console.log('\n- Verifying  Aave  Provider Helpers...\n');
-      await verifyContract(eContractid.AaveProtocolDataProvider, dataProvider, [
+      console.log('\n- Verifying  Sturdy  Provider Helpers...\n');
+      await verifyContract(eContractid.SturdyProtocolDataProvider, dataProvider, [
         addressesProvider.address,
       ]);
 
-      // Wallet balance provider
-      console.log('\n- Verifying  Wallet Balance Provider...\n');
-      await verifyContract(eContractid.WalletBalanceProvider, walletProvider, []);
+      // WalletBalanceProvider implementation
+      console.log('\n- Verifying WalletBalanceProvider Implementation...\n');
+      await verifyContract(eContractid.WalletBalanceProvider, walletBalanceProvider, []);
 
-      // WETHGateway
-      console.log('\n- Verifying  WETHGateway...\n');
-      await verifyContract(eContractid.WETHGateway, wethGateway, [
-        await getWethAddress(poolConfig),
+      // UiPoolDataProvider implementation
+      console.log('\n- Verifying  UiPoolDataProvider Implementation...\n');
+      await verifyContract(eContractid.UiPoolDataProvider, uiPoolDataProvider, [
+        incentiveControllerAddress,
+        oracleAddress,
       ]);
+
+      // UiIncentiveDataProvider implementation
+      console.log('\n- Verifying UiIncentiveDataProvider Implementation...\n');
+      await verifyContract(eContractid.UiIncentiveDataProvider, uiIncentiveDataProvider, []);
     }
     // Lending Pool proxy
     console.log('\n- Verifying  Lending Pool Proxy...\n');
-    await verifyContract(eContractid.InitializableAdminUpgradeabilityProxy, lendingPoolProxy, [
-      addressesProvider.address,
-    ]);
+    await verifyContract(
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      lendingPoolProxy,
+      [addressesProvider.address]
+    );
 
     // LendingPool Conf proxy
     console.log('\n- Verifying  Lending Pool Configurator Proxy...\n');
     await verifyContract(
-      eContractid.InitializableAdminUpgradeabilityProxy,
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
       lendingPoolConfiguratorProxy,
       [addressesProvider.address]
     );
 
-    // Proxy collateral manager
-    console.log('\n- Verifying  Lending Pool Collateral Manager Proxy...\n');
+    // IncentiveController proxy
+    console.log('\n- Verifying  IncentiveController Proxy...\n');
     await verifyContract(
-      eContractid.InitializableAdminUpgradeabilityProxy,
-      lendingPoolCollateralManagerProxy,
-      []
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      incentiveControllerProxy,
+      [addressesProvider.address]
     );
+
+    // IncentiveToken proxy
+    console.log('\n- Verifying  IncentiveToken Proxy...\n');
+    await verifyContract(
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      incentiveTokenProxy,
+      [addressesProvider.address]
+    );
+
+    // Verifying vaults
+    if (pool == ConfigNames.Sturdy) {
+      const lidoVaultAddress = await addressesProvider.getAddress(
+        DRE.ethers.utils.formatBytes32String('LIDO_VAULT')
+      );
+      const lidoVaultProxy = await getProxy(lidoVaultAddress);
+      if (all) {
+        const lidoVaultImpl = await getLidoVaultImpl();
+
+        // LidoVault implementation
+        console.log('\n- Verifying LidoVault Implementation...\n');
+        await verifyContract(eContractid.LidoVault, lidoVaultImpl, []);
+      }
+
+      // LidoVault proxy
+      console.log('\n- Verifying  LidoVault Proxy...\n');
+      await verifyContract(
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+        lidoVaultProxy,
+        [addressesProvider.address]
+      );
+    } else if (pool == ConfigNames.Fantom) {
+      const yearnVaultAddress = await addressesProvider.getAddress(
+        DRE.ethers.utils.formatBytes32String('YEARN_VAULT')
+      );
+      const yearnWETHVaultAddress = await addressesProvider.getAddress(
+        DRE.ethers.utils.formatBytes32String('YEARN_WETH_VAULT')
+      );
+      const yearnWBTCVaultAddress = await addressesProvider.getAddress(
+        DRE.ethers.utils.formatBytes32String('YEARN_WBTC_VAULT')
+      );
+      const yearnVaultProxy = await getProxy(yearnVaultAddress);
+      const yearnWETHVaultProxy = await getProxy(yearnWETHVaultAddress);
+      const yearnWBTCVaultProxy = await getProxy(yearnWBTCVaultAddress);
+
+      if (all) {
+        const yearnVaultImpl = await getYearnVaultImpl();
+        // YearnVault implementation
+        console.log('\n- Verifying YearnVault Implementation...\n');
+        await verifyContract(eContractid.YearnVault, yearnVaultImpl, []);
+
+        const yearnWETHVaultImpl = await getYearnWETHVaultImpl();
+        // YearnWETHVault implementation
+        console.log('\n- Verifying YearnWETHVault Implementation...\n');
+        await verifyContract(eContractid.YearnWETHVault, yearnWETHVaultImpl, []);
+
+        const yearnWBTCVaultImpl = await getYearnWBTCVaultImpl();
+        // YearnWBTCVault implementation
+        console.log('\n- Verifying YearnWBTCVault Implementation...\n');
+        await verifyContract(eContractid.YearnWBTCVault, yearnWBTCVaultImpl, []);
+      }
+
+      // YearnVault proxy
+      console.log('\n- Verifying  YearnVault Proxy...\n');
+      await verifyContract(
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+        yearnVaultProxy,
+        [addressesProvider.address]
+      );
+
+      // YearnWETHVault proxy
+      console.log('\n- Verifying  YearnWETHVault Proxy...\n');
+      await verifyContract(
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+        yearnWETHVaultProxy,
+        [addressesProvider.address]
+      );
+
+      // YearnWBTCVault proxy
+      console.log('\n- Verifying  YearnWBTCVault Proxy...\n');
+      await verifyContract(
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+        yearnWBTCVaultProxy,
+        [addressesProvider.address]
+      );
+    }
 
     console.log('Finished verifications.');
   });

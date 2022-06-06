@@ -34,7 +34,7 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
         console.log('\tDeploying new lending pool implementation & libraries...');
         const lendingPoolImpl = await deployLendingPool(verify);
         lendingPoolImplAddress = lendingPoolImpl.address;
-        await lendingPoolImpl.initialize(addressesProvider.address);
+        await waitForTx(await lendingPoolImpl.initialize(addressesProvider.address));
       }
       console.log('\tSetting lending pool implementation with address:', lendingPoolImplAddress);
       // Set lending pool impl to Address provider
@@ -51,6 +51,7 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
         console.log('\tDeploying new configurator implementation...');
         const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator(verify);
         lendingPoolConfiguratorImplAddress = lendingPoolConfiguratorImpl.address;
+        await waitForTx(await lendingPoolConfiguratorImpl.initialize(addressesProvider.address));
       }
       console.log(
         '\tSetting lending pool configurator implementation with address:',
@@ -70,14 +71,8 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
         lendingPoolConfiguratorProxy.address
       );
       // Deploy deployment helpers
-      await deployStableAndVariableTokensHelper(
-        [lendingPoolProxy.address, addressesProvider.address],
-        verify
-      );
-      await deployATokensAndRatesHelper(
-        [lendingPoolProxy.address, addressesProvider.address, lendingPoolConfiguratorProxy.address],
-        verify
-      );
+      await deployStableAndVariableTokensHelper([], verify);
+      await deployATokensAndRatesHelper([lendingPoolConfiguratorProxy.address], verify);
     } catch (error) {
       if (DRE.network.name.includes('tenderly')) {
         const transactionLink = `https://dashboard.tenderly.co/${DRE.config.tenderly.username}/${

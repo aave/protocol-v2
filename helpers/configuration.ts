@@ -1,5 +1,5 @@
 import {
-  AavePools,
+  SturdyPools,
   iMultiPoolsAssets,
   IReserveParams,
   PoolConfiguration,
@@ -7,30 +7,28 @@ import {
   eNetwork,
 } from './types';
 import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
-import AaveConfig from '../markets/aave';
-import MaticConfig from '../markets/matic';
-import AmmConfig from '../markets/amm';
-import { CommonsConfig } from '../markets/aave/commons';
+import SturdyConfig from '../markets/sturdy';
+import FantomConfig from '../markets/ftm';
+import { CommonsConfig } from '../markets/sturdy/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
 import { getParamPerNetwork } from './contracts-helpers';
 import { deployWETHMocked } from './contracts-deployments';
+import { getYearnVault } from './contracts-getters';
+import { ZERO_ADDRESS } from './constants';
 
 export enum ConfigNames {
   Commons = 'Commons',
-  Aave = 'Aave',
-  Matic = 'Matic',
-  Amm = 'Amm',
+  Sturdy = 'Sturdy',
+  Fantom = 'Fantom',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
   switch (configName) {
-    case ConfigNames.Aave:
-      return AaveConfig;
-    case ConfigNames.Matic:
-      return MaticConfig;
-    case ConfigNames.Amm:
-      return AmmConfig;
+    case ConfigNames.Sturdy:
+      return SturdyConfig;
+    case ConfigNames.Fantom:
+      return FantomConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -42,17 +40,14 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
 // PROTOCOL PARAMS PER POOL
 // ----------------
 
-export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IReserveParams> =>
+export const getReservesConfigByPool = (pool: SturdyPools): iMultiPoolsAssets<IReserveParams> =>
   getParamPerPool<iMultiPoolsAssets<IReserveParams>>(
     {
-      [AavePools.proto]: {
-        ...AaveConfig.ReservesConfig,
+      [SturdyPools.proto]: {
+        ...SturdyConfig.ReservesConfig,
       },
-      [AavePools.amm]: {
-        ...AmmConfig.ReservesConfig,
-      },
-      [AavePools.matic]: {
-        ...MaticConfig.ReservesConfig,
+      [SturdyPools.fantom]: {
+        ...FantomConfig.ReservesConfig,
       },
     },
     pool
@@ -96,21 +91,8 @@ export const getATokenDomainSeparatorPerNetwork = (
   config: ICommonConfiguration
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
 
-export const getWethAddress = async (config: ICommonConfiguration) => {
-  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
-  const wethAddress = getParamPerNetwork(config.WETH, <eNetwork>currentNetwork);
-  if (wethAddress) {
-    return wethAddress;
-  }
-  if (currentNetwork.includes('main')) {
-    throw new Error('WETH not set at mainnet configuration.');
-  }
-  const weth = await deployWETHMocked();
-  return weth.address;
-};
-
 export const getWrappedNativeTokenAddress = async (config: ICommonConfiguration) => {
-  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WrappedNativeToken, <eNetwork>currentNetwork);
   if (wethAddress) {
     return wethAddress;
@@ -133,4 +115,16 @@ export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {
   return filterMapBy(LendingRateOracleRatesCommon, (key) =>
     Object.keys(ReserveAssets[network]).includes(key)
   );
+};
+
+export const getQuoteCurrency = async (config: ICommonConfiguration) => {
+  switch (config.OracleQuoteCurrency) {
+    case 'ETH':
+    case 'WETH':
+      return getWrappedNativeTokenAddress(config);
+    case 'USD':
+      return config.ProtocolGlobalParams.UsdAddress;
+    default:
+      throw `Quote ${config.OracleQuoteCurrency} currency not set. Add a new case to getQuoteCurrency switch`;
+  }
 };

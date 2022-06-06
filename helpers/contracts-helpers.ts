@@ -8,16 +8,13 @@ import {
   eContractid,
   tStringTokenSmallUnits,
   eEthereumNetwork,
-  AavePools,
+  SturdyPools,
   iParamsPerNetwork,
   iParamsPerPool,
-  ePolygonNetwork,
-  eXDaiNetwork,
   eNetwork,
-  iParamsPerNetworkAll,
   iEthereumParamsPerNetwork,
-  iPolygonParamsPerNetwork,
-  iXDaiParamsPerNetwork,
+  iFantomParamsPerNetwork,
+  eFantomNetwork,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
@@ -25,7 +22,6 @@ import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
 import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
-import { usingPolygon, verifyAtPolygon } from './polygon-utils';
 import { getDefenderRelaySigner, usingDefender } from './defender-utils';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
@@ -142,16 +138,9 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const {
-    main,
-    ropsten,
-    kovan,
-    coverage,
-    buidlerevm,
-    tenderlyMain,
-  } = param as iEthereumParamsPerNetwork<T>;
-  const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
-  const { xdai } = param as iXDaiParamsPerNetwork<T>;
+  const { main, ropsten, kovan, coverage, buidlerevm, tenderly, goerli } =
+    param as iEthereumParamsPerNetwork<T>;
+  const { ftm, ftm_test, tenderlyFTM } = param as iFantomParamsPerNetwork<T>;
   if (process.env.FORK) {
     return param[process.env.FORK as eNetwork] as T;
   }
@@ -163,31 +152,35 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return buidlerevm;
     case eEthereumNetwork.hardhat:
       return buidlerevm;
+    case eEthereumNetwork.geth:
+      return buidlerevm;
+    case eEthereumNetwork.localhost:
+      return buidlerevm;
     case eEthereumNetwork.kovan:
       return kovan;
     case eEthereumNetwork.ropsten:
       return ropsten;
     case eEthereumNetwork.main:
       return main;
-    case eEthereumNetwork.tenderlyMain:
-      return tenderlyMain;
-    case ePolygonNetwork.matic:
-      return matic;
-    case ePolygonNetwork.mumbai:
-      return mumbai;
-    case eXDaiNetwork.xdai:
-      return xdai;
+    case eEthereumNetwork.tenderly:
+      return tenderly;
+    case eEthereumNetwork.goerli:
+      return goerli;
+    case eFantomNetwork.ftm:
+      return ftm;
+    case eFantomNetwork.tenderlyFTM:
+      return tenderlyFTM;
+    case eFantomNetwork.ftm_test:
+      return ftm_test;
   }
 };
 
-export const getParamPerPool = <T>({ proto, amm, matic }: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>({ proto, fantom }: iParamsPerPool<T>, pool: SturdyPools) => {
   switch (pool) {
-    case AavePools.proto:
+    case SturdyPools.proto:
       return proto;
-    case AavePools.amm:
-      return amm;
-    case AavePools.matic:
-      return matic;
+    case SturdyPools.fantom:
+      return fantom;
     default:
       return proto;
   }
@@ -364,13 +357,9 @@ export const verifyContract = async (
   instance: Contract,
   args: (string | string[])[]
 ) => {
-  if (usingPolygon()) {
-    await verifyAtPolygon(id, instance, args);
-  } else {
-    if (usingTenderly()) {
-      await verifyAtTenderly(id, instance);
-    }
-    await verifyEtherscanContract(instance.address, args);
+  if (usingTenderly()) {
+    await verifyAtTenderly(id, instance);
   }
+  await verifyEtherscanContract(instance.address, args);
   return instance;
 };

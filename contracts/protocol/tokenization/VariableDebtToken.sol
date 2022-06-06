@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesController.sol';
 
 /**
  * @title VariableDebtToken
  * @notice Implements a variable debt token to track the borrowing positions of users
  * at variable rate mode
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  **/
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using WadRayMath for uint256;
 
-  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  uint256 private constant DEBT_TOKEN_REVISION = 0x1;
 
   ILendingPool internal _pool;
   address internal _underlyingAsset;
-  IAaveIncentivesController internal _incentivesController;
+  ISturdyIncentivesController internal _incentivesController;
 
   /**
    * @dev Initializes the debt token.
@@ -35,12 +35,12 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   function initialize(
     ILendingPool pool,
     address underlyingAsset,
-    IAaveIncentivesController incentivesController,
+    ISturdyIncentivesController incentivesController,
     uint8 debtTokenDecimals,
     string memory debtTokenName,
     string memory debtTokenSymbol,
     bytes calldata params
-  ) public override initializer {
+  ) external override initializer {
     _setName(debtTokenName);
     _setSymbol(debtTokenSymbol);
     _setDecimals(debtTokenDecimals);
@@ -97,14 +97,14 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     address onBehalfOf,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool returns (bool) {
+  ) external payable override onlyLendingPool returns (bool) {
     if (user != onBehalfOf) {
       _decreaseBorrowAllowance(onBehalfOf, user, amount);
     }
 
     uint256 previousBalance = super.balanceOf(onBehalfOf);
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_MINT_AMOUNT);
 
     _mint(onBehalfOf, amountScaled);
 
@@ -125,9 +125,9 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
+  ) external payable override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_BURN_AMOUNT);
 
     _burn(user, amountScaled);
 
@@ -184,7 +184,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   /**
    * @dev Returns the address of the incentives controller contract
    **/
-  function getIncentivesController() external view override returns (IAaveIncentivesController) {
+  function getIncentivesController() external view override returns (ISturdyIncentivesController) {
     return _getIncentivesController();
   }
 
@@ -195,7 +195,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     return _pool;
   }
 
-  function _getIncentivesController() internal view override returns (IAaveIncentivesController) {
+  function _getIncentivesController() internal view override returns (ISturdyIncentivesController) {
     return _incentivesController;
   }
 

@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 /**
  * @title ILendingPoolCollateralManager
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  * @notice Defines the actions involving management of collateral in the protocol.
  **/
 interface ILendingPoolCollateralManager {

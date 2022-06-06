@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -7,14 +7,14 @@ import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
-import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesController.sol';
 
 /**
- * @title Aave ERC20 AToken
- * @dev Implementation of the interest bearing token for the Aave protocol
- * @author Aave
+ * @title Sturdy ERC20 AToken
+ * @dev Implementation of the interest bearing token for the Sturdy protocol
+ * @author Sturdy, inspiration from Aave
  */
 contract AToken is
   VersionedInitializable,
@@ -24,13 +24,13 @@ contract AToken is
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
-  bytes public constant EIP712_REVISION = bytes('1');
+  bytes private constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =
     keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
-  bytes32 public constant PERMIT_TYPEHASH =
+  bytes32 private constant PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
 
-  uint256 public constant ATOKEN_REVISION = 0x1;
+  uint256 private constant ATOKEN_REVISION = 0x1;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -40,9 +40,9 @@ contract AToken is
   ILendingPool internal _pool;
   address internal _treasury;
   address internal _underlyingAsset;
-  IAaveIncentivesController internal _incentivesController;
+  ISturdyIncentivesController internal _incentivesController;
 
-  modifier onlyLendingPool {
+  modifier onlyLendingPool() {
     require(_msgSender() == address(_pool), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
@@ -54,7 +54,7 @@ contract AToken is
   /**
    * @dev Initializes the aToken
    * @param pool The address of the lending pool where this aToken will be used
-   * @param treasury The address of the Aave treasury, receiving the fees on this aToken
+   * @param treasury The address of the Sturdy treasury, receiving the fees on this aToken
    * @param underlyingAsset The address of the underlying asset of this aToken (E.g. WETH for aWETH)
    * @param incentivesController The smart contract managing potential incentives distribution
    * @param aTokenDecimals The decimals of the aToken, same as the underlying asset's
@@ -65,7 +65,7 @@ contract AToken is
     ILendingPool pool,
     address treasury,
     address underlyingAsset,
-    IAaveIncentivesController incentivesController,
+    ISturdyIncentivesController incentivesController,
     uint8 aTokenDecimals,
     string calldata aTokenName,
     string calldata aTokenSymbol,
@@ -122,9 +122,9 @@ contract AToken is
     address receiverOfUnderlying,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
+  ) external payable override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
     IERC20(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
@@ -145,11 +145,11 @@ contract AToken is
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool returns (bool) {
+  ) external payable override onlyLendingPool returns (bool) {
     uint256 previousBalance = super.balanceOf(user);
 
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
     emit Transfer(address(0), user, amount);
@@ -164,7 +164,7 @@ contract AToken is
    * @param amount The amount of tokens getting minted
    * @param index The new liquidity index of the reserve
    */
-  function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
+  function mintToTreasury(uint256 amount, uint256 index) external payable override onlyLendingPool {
     if (amount == 0) {
       return;
     }
@@ -192,7 +192,7 @@ contract AToken is
     address from,
     address to,
     uint256 value
-  ) external override onlyLendingPool {
+  ) external payable override onlyLendingPool {
     // Being a normal transfer, the Transfer() and BalanceTransfer() are emitted
     // so no need to emit a specific event here
     _transfer(from, to, value, false);
@@ -264,7 +264,7 @@ contract AToken is
   }
 
   /**
-   * @dev Returns the address of the Aave treasury, receiving the fees on this aToken
+   * @dev Returns the address of the Sturdy treasury, receiving the fees on this aToken
    **/
   function RESERVE_TREASURY_ADDRESS() public view returns (address) {
     return _treasury;
@@ -273,7 +273,7 @@ contract AToken is
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
    **/
-  function UNDERLYING_ASSET_ADDRESS() public override view returns (address) {
+  function UNDERLYING_ASSET_ADDRESS() public view override returns (address) {
     return _underlyingAsset;
   }
 
@@ -287,14 +287,14 @@ contract AToken is
   /**
    * @dev For internal usage in the logic of the parent contract IncentivizedERC20
    **/
-  function _getIncentivesController() internal view override returns (IAaveIncentivesController) {
+  function _getIncentivesController() internal view override returns (ISturdyIncentivesController) {
     return _incentivesController;
   }
 
   /**
    * @dev Returns the address of the incentives controller contract
    **/
-  function getIncentivesController() external view override returns (IAaveIncentivesController) {
+  function getIncentivesController() external view override returns (ISturdyIncentivesController) {
     return _getIncentivesController();
   }
 
@@ -307,6 +307,7 @@ contract AToken is
    **/
   function transferUnderlyingTo(address target, uint256 amount)
     external
+    payable
     override
     onlyLendingPool
     returns (uint256)
@@ -346,16 +347,15 @@ contract AToken is
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
     uint256 currentValidNonce = _nonces[owner];
-    bytes32 digest =
-      keccak256(
-        abi.encodePacked(
-          '\x19\x01',
-          DOMAIN_SEPARATOR,
-          keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
-        )
-      );
+    bytes32 digest = keccak256(
+      abi.encodePacked(
+        '\x19\x01',
+        DOMAIN_SEPARATOR,
+        keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
+      )
+    );
     require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
-    _nonces[owner] = currentValidNonce.add(1);
+    _nonces[owner] = currentValidNonce + 1;
     _approve(owner, spender, value);
   }
 

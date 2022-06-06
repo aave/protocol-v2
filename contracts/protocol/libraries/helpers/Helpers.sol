@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title Helpers library
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  */
 library Helpers {
   /**

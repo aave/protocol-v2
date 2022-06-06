@@ -1,4 +1,4 @@
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {StableDebtToken} from '../../contracts/protocol/tokenization/StableDebtToken.sol';
 import {IncentivizedERC20} from '../../contracts/protocol/tokenization/IncentivizedERC20.sol';
@@ -10,7 +10,7 @@ contract StableDebtTokenHarness is StableDebtToken {
     string memory name,
     string memory symbol,
     address incentivesController
-  ) public StableDebtToken(pool, underlyingAsset, name, symbol, incentivesController) {}
+  ) StableDebtToken(pool, underlyingAsset, name, symbol, incentivesController) {}
 
   /**
    Simplification: The user accumulates no interest (the balance increase is always 0).

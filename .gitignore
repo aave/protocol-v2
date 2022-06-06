@@ -8,7 +8,7 @@ build/
 .vscode
 .idea
 /types
-
+.DS_store
 deployed-contracts.json
 
 coverage

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 library DataTypes {
   // refer to the whitepaper, section 1.1 basic concepts for a formal description of these properties.
@@ -23,6 +23,8 @@ library DataTypes {
     address variableDebtTokenAddress;
     //address of the interest rate strategy
     address interestRateStrategyAddress;
+    //address of the yield contract
+    address yieldAddress;
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
   }
@@ -45,5 +47,9 @@ library DataTypes {
     uint256 data;
   }
 
-  enum InterestRateMode {NONE, STABLE, VARIABLE}
+  enum InterestRateMode {
+    NONE,
+    STABLE,
+    VARIABLE
+  }
 }

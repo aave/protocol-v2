@@ -1,0 +1,99 @@
+{
+  "title": "LendingPool: Usage as collateral",
+  "description": "Test cases for the setUserUseReserveAsCollateral() function.",
+  "stories": [
+    {
+      "description": "User 0 Deposits 1000 DAI, disables DAI as collateral",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "DAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "DAI",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "DAI",
+            "amount": "1000",
+            "user": "0"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "setUseAsCollateral",
+          "args": {
+            "reserve": "DAI",
+            "user": "0",
+            "useAsCollateral": "false"
+          },
+          "expected": "success"
+        }
+      ]
+    },
+    {
+      "description": "User 1 Deposits 2000 WFTM, disables WFTM as collateral, borrows 400 DAI (revert expected)",
+      "actions": [
+        {
+          "name": "mint",
+          "args": {
+            "reserve": "yvWFTM",
+            "amount": "2000",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "approve",
+          "args": {
+            "reserve": "yvWFTM",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "deposit",
+          "args": {
+            "reserve": "yvWFTM",
+            "amount": "2000",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "82"
+        },
+        {
+          "name": "setUseAsCollateral",
+          "args": {
+            "reserve": "yvWFTM",
+            "user": "1",
+            "useAsCollateral": "false"
+          },
+          "expected": "revert",
+          "revertMessage": "19"
+        },
+        {
+          "name": "borrow",
+          "args": {
+            "reserve": "DAI",
+            "amount": "400",
+            "borrowRateMode": "variable",
+            "user": "1"
+          },
+          "expected": "revert",
+          "revertMessage": "The collateral balance is 0"
+        }
+      ]
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {ILendingPool} from './ILendingPool.sol';
-import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from './ISturdyIncentivesController.sol';
 
 /**
  * @title IInitializableDebtToken
  * @notice Interface for the initialize function common between debt tokens
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  **/
 interface IInitializableDebtToken {
   /**
@@ -42,7 +42,7 @@ interface IInitializableDebtToken {
   function initialize(
     ILendingPool pool,
     address underlyingAsset,
-    IAaveIncentivesController incentivesController,
+    ISturdyIncentivesController incentivesController,
     uint8 debtTokenDecimals,
     string memory debtTokenName,
     string memory debtTokenSymbol,

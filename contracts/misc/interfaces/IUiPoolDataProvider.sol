@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesController.sol';
 
 interface IUiPoolDataProvider {
   struct AggregatedReserveData {
@@ -42,6 +42,7 @@ interface IUiPoolDataProvider {
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
+    uint256 capacity;
     // incentives
     uint256 aEmissionPerSecond;
     uint256 vEmissionPerSecond;
@@ -73,7 +74,31 @@ interface IUiPoolDataProvider {
     uint256 emissionEndTimestamp;
   }
 
+  function getReservesList(ILendingPoolAddressesProvider provider)
+    external
+    view
+    returns (address[] memory);
 
+  function incentivesController() external view returns (ISturdyIncentivesController);
+
+  function getSimpleReservesData(ILendingPoolAddressesProvider provider)
+    external
+    view
+    returns (
+      AggregatedReserveData[] memory,
+      uint256, // usd price eth
+      uint256 // emission end timestamp
+    );
+
+  function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
+    external
+    view
+    returns (
+      UserReserveData[] memory,
+      uint256 // user unclaimed rewards
+    );
+
+  // generic method with full data
   function getReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view

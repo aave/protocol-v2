@@ -9,7 +9,7 @@ variables:
 lint:
   stage: checks
   tags:
-    - aave-build-runner
+    - sturdy-build-runner
   before_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
   script:
@@ -21,7 +21,7 @@ lint:
 test:
   stage: checks
   tags:
-    - aave-build-runner
+    - sturdy-build-runner
   before_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
   script:
@@ -34,12 +34,12 @@ test:
     - merge_requests
 deploy-mainnet-fork:
   tags:
-    - aave-build-runner
+    - sturdy-build-runner
   stage: checks
   before_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml build
   script:
-    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run aave:fork:main
+    - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run sturdy:fork:main
   after_script:
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml run contracts-env npm run ci:clean
     - docker-compose -p ${CI_JOB_ID} -f docker-compose.test.yml down

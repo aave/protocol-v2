@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
 import {ICreditDelegationToken} from '../../../interfaces/ICreditDelegationToken.sol';
-import {
-  VersionedInitializable
-} from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
 /**
  * @title DebtTokenBase
  * @notice Base contract for different types of debt tokens, like StableDebtToken or VariableDebtToken
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  */
 
 abstract contract DebtTokenBase is
@@ -25,7 +23,7 @@ abstract contract DebtTokenBase is
   /**
    * @dev Only lending pool can call functions marked by this modifier
    **/
-  modifier onlyLendingPool {
+  modifier onlyLendingPool() {
     require(_msgSender() == address(_getLendingPool()), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
@@ -61,7 +59,7 @@ abstract contract DebtTokenBase is
    * @dev Being non transferrable, the debt token does not implement any of the
    * standard ERC20 functions for transfer and allowance.
    **/
-  function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+  function transfer(address recipient, uint256 amount) external virtual override returns (bool) {
     recipient;
     amount;
     revert('TRANSFER_NOT_SUPPORTED');
@@ -79,7 +77,7 @@ abstract contract DebtTokenBase is
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  function approve(address spender, uint256 amount) public virtual override returns (bool) {
+  function approve(address spender, uint256 amount) external virtual override returns (bool) {
     spender;
     amount;
     revert('APPROVAL_NOT_SUPPORTED');
@@ -89,7 +87,7 @@ abstract contract DebtTokenBase is
     address sender,
     address recipient,
     uint256 amount
-  ) public virtual override returns (bool) {
+  ) external virtual override returns (bool) {
     sender;
     recipient;
     amount;
@@ -123,8 +121,7 @@ abstract contract DebtTokenBase is
     address delegatee,
     uint256 amount
   ) internal {
-    uint256 newAllowance =
-      _borrowAllowances[delegator][delegatee].sub(amount, Errors.BORROW_ALLOWANCE_NOT_ENOUGH);
+    uint256 newAllowance = _borrowAllowances[delegator][delegatee] - amount;
 
     _borrowAllowances[delegator][delegatee] = newAllowance;
 

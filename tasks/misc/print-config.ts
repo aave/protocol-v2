@@ -1,16 +1,15 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
-  getAaveProtocolDataProvider,
+  getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
   getLendingPoolAddressesProviderRegistry,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { DRE } from '../../helpers/misc-utils';
-import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from '../../helpers/types';
+import { eNetwork } from '../../helpers/types';
 
 task('print-config', 'Inits the DRE, to have access to all the plugins')
-  .addParam('dataProvider', 'Address of AaveProtocolDataProvider')
+  .addParam('dataProvider', 'Address of SturdyProtocolDataProvider')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ pool, dataProvider }, localBRE) => {
     await localBRE.run('set-DRE');
@@ -44,7 +43,7 @@ task('print-config', 'Inits the DRE, to have access to all the plugins')
     console.log('Price Oracle', await addressesProvider.getPriceOracle());
     console.log('Lending Rate Oracle', await addressesProvider.getLendingRateOracle());
     console.log('Lending Pool Data Provider', dataProvider);
-    const protocolDataProvider = await getAaveProtocolDataProvider(dataProvider);
+    const protocolDataProvider = await getSturdyProtocolDataProvider(dataProvider);
 
     const fields = [
       'decimals',

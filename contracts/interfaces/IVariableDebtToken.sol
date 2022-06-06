@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 import {IInitializableDebtToken} from './IInitializableDebtToken.sol';
-import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from './ISturdyIncentivesController.sol';
 
 /**
  * @title IVariableDebtToken
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  * @notice Defines the basic interface for a variable debt token.
  **/
 interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {
@@ -34,7 +34,7 @@ interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {
     address onBehalfOf,
     uint256 amount,
     uint256 index
-  ) external returns (bool);
+  ) external payable returns (bool);
 
   /**
    * @dev Emitted when variable debt is burnt
@@ -53,10 +53,10 @@ interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {
     address user,
     uint256 amount,
     uint256 index
-  ) external;
+  ) external payable;
 
   /**
    * @dev Returns the address of the incentives controller contract
    **/
-  function getIncentivesController() external view returns (IAaveIncentivesController);
+  function getIncentivesController() external view returns (ISturdyIncentivesController);
 }

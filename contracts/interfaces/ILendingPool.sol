@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
@@ -67,14 +67,6 @@ interface ILendingPool {
   );
 
   /**
-   * @dev Emitted on swapBorrowRateMode()
-   * @param reserve The address of the underlying asset of the reserve
-   * @param user The address of the user swapping his rate mode
-   * @param rateMode The rate mode that the user wants to swap to
-   **/
-  event Swap(address indexed reserve, address indexed user, uint256 rateMode);
-
-  /**
    * @dev Emitted on setUserUseReserveAsCollateral()
    * @param reserve The address of the underlying asset of the reserve
    * @param user The address of the user enabling the usage as collateral
@@ -87,13 +79,6 @@ interface ILendingPool {
    * @param user The address of the user enabling the usage as collateral
    **/
   event ReserveUsedAsCollateralDisabled(address indexed reserve, address indexed user);
-
-  /**
-   * @dev Emitted on rebalanceStableBorrowRate()
-   * @param reserve The address of the underlying asset of the reserve
-   * @param user The address of the user for which the rebalance has been executed
-   **/
-  event RebalanceStableBorrowRate(address indexed reserve, address indexed user);
 
   /**
    * @dev Emitted on flashLoan()
@@ -185,6 +170,24 @@ interface ILendingPool {
     uint16 referralCode
   ) external;
 
+  function depositYield(address asset, uint256 amount) external;
+
+  function getYield(address asset, uint256 amount) external;
+
+  function getTotalBalanceOfAssetPair(address asset) external view returns (uint256, uint256);
+
+  function getBorrowingAssetAndVolumes()
+    external
+    view
+    returns (
+      uint256,
+      uint256[] memory,
+      address[] memory,
+      uint256
+    );
+
+  function registerVault(address _vaultAddress) external payable;
+
   /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
@@ -199,6 +202,13 @@ interface ILendingPool {
   function withdraw(
     address asset,
     uint256 amount,
+    address to
+  ) external returns (uint256);
+
+  function withdrawFrom(
+    address asset,
+    uint256 amount,
+    address from,
     address to
   ) external returns (uint256);
 
@@ -245,24 +255,6 @@ interface ILendingPool {
   ) external returns (uint256);
 
   /**
-   * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
-   * @param asset The address of the underlying asset borrowed
-   * @param rateMode The rate mode that the user wants to swap to
-   **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external;
-
-  /**
-   * @dev Rebalances the stable interest rate of a user to the current stable rate defined on the reserve.
-   * - Users can be rebalanced if the following conditions are satisfied:
-   *     1. Usage ratio is above 95%
-   *     2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
-   *        borrowed at a stable rate and depositors are not earning enough
-   * @param asset The address of the underlying asset borrowed
-   * @param user The address of the user to be rebalanced
-   **/
-  function rebalanceStableBorrowRate(address asset, address user) external;
-
-  /**
    * @dev Allows depositors to enable/disable a specific deposited asset as collateral
    * @param asset The address of the underlying asset deposited
    * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
@@ -289,33 +281,6 @@ interface ILendingPool {
   ) external;
 
   /**
-   * @dev Allows smartcontracts to access the liquidity of the pool within one transaction,
-   * as long as the amount taken plus a fee is returned.
-   * IMPORTANT There are security concerns for developers of flashloan receiver contracts that must be kept into consideration.
-   * For further details please visit https://developers.aave.com
-   * @param receiverAddress The address of the contract receiving the funds, implementing the IFlashLoanReceiver interface
-   * @param assets The addresses of the assets being flash-borrowed
-   * @param amounts The amounts amounts being flash-borrowed
-   * @param modes Types of the debt to open if the flash loan is not returned:
-   *   0 -> Don't open any debt, just revert if funds can't be transferred from the receiver
-   *   1 -> Open debt at stable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
-   *   2 -> Open debt at variable rate for the value of the amount flash-borrowed to the `onBehalfOf` address
-   * @param onBehalfOf The address  that will receive the debt in the case of using on `modes` 1 or 2
-   * @param params Variadic packed params to pass to the receiver as extra information
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   **/
-  function flashLoan(
-    address receiverAddress,
-    address[] calldata assets,
-    uint256[] calldata amounts,
-    uint256[] calldata modes,
-    address onBehalfOf,
-    bytes calldata params,
-    uint16 referralCode
-  ) external;
-
-  /**
    * @dev Returns the user account data across all the reserves
    * @param user The address of the user
    * @return totalCollateralETH the total collateral in ETH of the user
@@ -339,16 +304,18 @@ interface ILendingPool {
 
   function initReserve(
     address reserve,
+    address yieldAddress,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external;
+  ) external payable;
 
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
-    external;
+    external
+    payable;
 
-  function setConfiguration(address reserve, uint256 configuration) external;
+  function setConfiguration(address reserve, uint256 configuration) external payable;
 
   /**
    * @dev Returns the configuration of the reserve
@@ -404,7 +371,7 @@ interface ILendingPool {
 
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 
-  function setPause(bool val) external;
+  function setPause(bool val) external payable;
 
   function paused() external view returns (bool);
 }

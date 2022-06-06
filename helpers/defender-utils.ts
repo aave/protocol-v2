@@ -8,20 +8,21 @@ import { usingTenderly } from './tenderly-utils';
 export const usingDefender = () => process.env.DEFENDER === 'true';
 
 export const getDefenderRelaySigner = async () => {
-  const { DEFENDER_API_KEY, DEFENDER_SECRET_KEY } = process.env;
-  let defenderSigner: Signer;
+  // const { DEFENDER_API_KEY, DEFENDER_SECRET_KEY } = process.env;
+  let defenderSigner: any;
 
-  if (!DEFENDER_API_KEY || !DEFENDER_SECRET_KEY) {
-    throw new Error('Defender secrets required');
-  }
+  // if (!DEFENDER_API_KEY || !DEFENDER_SECRET_KEY) {
+  //   throw new Error('Defender secrets required');
+  // }
 
-  const credentials = { apiKey: DEFENDER_API_KEY, apiSecret: DEFENDER_SECRET_KEY };
+  // const credentials = { apiKey: DEFENDER_API_KEY, apiSecret: DEFENDER_SECRET_KEY };
 
-  defenderSigner = new DefenderRelaySigner(credentials, new DefenderRelayProvider(credentials), {
-    speed: 'fast',
-  });
+  // defenderSigner = new DefenderRelaySigner(credentials, new DefenderRelayProvider(credentials), {
+  //   speed: 'fast',
+  // });
 
-  const defenderAddress = await defenderSigner.getAddress();
+  // const defenderAddress = await defenderSigner.getAddress();
+  const defenderAddress = '0xDA9dfA130Df4dE4673b89022EE50ff26f6EA73Cf';
   console.log('  - Using Defender Relay: ', defenderAddress);
 
   // Replace signer if FORK=main is active

@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {IInitializableDebtToken} from './IInitializableDebtToken.sol';
-import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from './ISturdyIncentivesController.sol';
 
 /**
  * @title IStableDebtToken
  * @notice Defines the interface for the stable debt token
  * @dev It does not inherit from IERC20 to save in code size
- * @author Aave
+ * @author Sturdy, inspiration from Aave
  **/
 
 interface IStableDebtToken is IInitializableDebtToken {
@@ -67,7 +67,7 @@ interface IStableDebtToken is IInitializableDebtToken {
     address onBehalfOf,
     uint256 amount,
     uint256 rate
-  ) external returns (bool);
+  ) external payable returns (bool);
 
   /**
    * @dev Burns debt of `user`
@@ -76,7 +76,7 @@ interface IStableDebtToken is IInitializableDebtToken {
    * @param user The address of the user getting his debt burned
    * @param amount The amount of debt tokens getting burned
    **/
-  function burn(address user, uint256 amount) external;
+  function burn(address user, uint256 amount) external payable;
 
   /**
    * @dev Returns the average rate of all the stable rate loans.
@@ -129,5 +129,5 @@ interface IStableDebtToken is IInitializableDebtToken {
   /**
    * @dev Returns the address of the incentives controller contract
    **/
-  function getIncentivesController() external view returns (IAaveIncentivesController);
+  function getIncentivesController() external view returns (ISturdyIncentivesController);
 }

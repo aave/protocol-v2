@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 interface ILendingPoolConfigurator {
@@ -11,6 +11,7 @@ interface ILendingPoolConfigurator {
     address interestRateStrategyAddress;
     address underlyingAsset;
     address treasury;
+    address yieldAddress;
     address incentivesController;
     string underlyingAssetName;
     string aTokenName;
@@ -69,6 +70,19 @@ interface ILendingPoolConfigurator {
    * @param asset The address of the underlying asset of the reserve
    **/
   event BorrowingDisabledOnReserve(address indexed asset);
+
+  /**
+   * @dev Emitted when collateral is enabled on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param collateralEnabled True
+   **/
+  event CollateralEnabledOnReserve(address indexed asset, bool collateralEnabled);
+
+  /**
+   * @dev Emitted when collateral is disabled on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event CollateralDisabledOnReserve(address indexed asset);
 
   /**
    * @dev Emitted when the collateralization risk parameters for the specified asset are updated.
@@ -176,4 +190,8 @@ interface ILendingPoolConfigurator {
     address indexed proxy,
     address indexed implementation
   );
+
+  function registerVault(address _vaultAddress) external payable;
+
+  function batchInitReserve(InitReserveInput[] calldata input) external payable;
 }
