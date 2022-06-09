@@ -91,6 +91,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _addressesProvider = provider;
   }
 
+  function updateState(address asset) public {
+    DataTypes.ReserveData memory reserve = _reserves[asset];
+    address aToken = reserve.aTokenAddress;
+    reserve.updateState();
+    reserve.updateInterestRates(asset, aToken, 0, 0);
+  }
+
+  function getReserve(address asset) public returns (DataTypes.ReserveData) {
+    return _reserves[asset];
+  }
+
   /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC

@@ -18,6 +18,7 @@
     "console:fork": "MAINNET_FORK=true hardhat console",
     "test": "TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test/*.spec.ts",
     "test-ampl": "hardhat test test/__setup.spec.ts test/ampl-atoken.spec.ts",
+    "test-ampl-issue": "hardhat test test/__setup.spec.ts test/ampl-atoken-math-issue.spec.ts",
     "test-scenarios": "npx hardhat test test/__setup.spec.ts test/scenario.spec.ts",
     "test-repay-with-collateral": "hardhat test test/__setup.spec.ts test/repay-with-collateral.spec.ts",
     "test-liquidate-with-collateral": "hardhat test test/__setup.spec.ts test/flash-liquidation-with-collateral.spec.ts",
