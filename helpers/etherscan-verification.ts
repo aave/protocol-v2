@@ -14,7 +14,11 @@ const okErrors = [`Contract source code already verified`];
 
 const unableVerifyError = 'Fail - Unable to verify';
 
+<<<<<<< Updated upstream
 export const SUPPORTED_ETHERSCAN_NETWORKS = ['main', 'ropsten', 'kovan', 'matic', 'mumbai'];
+=======
+export const SUPPORTED_ETHERSCAN_NETWORKS = ['main', 'goerli'];
+>>>>>>> Stashed changes
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -56,7 +60,7 @@ export const verifyEtherscanContract = async (
       relatedSources: true,
     };
     await runTaskWithRetry('verify', params, times, msDelay, cleanup);
-  } catch (error) {}
+  } catch (error) { }
 };
 
 export const runTaskWithRetry = async (

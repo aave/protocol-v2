@@ -1,11 +1,11 @@
 import path from 'path';
 import fs from 'fs';
-import {usePlugin, task} from '@nomiclabs/buidler/config';
+import { usePlugin, task } from '@nomiclabs/buidler/config';
 // @ts-ignore
-import {accounts} from './test-wallets.js';
-import {eEthereumNetwork} from './helpers/types';
-import {BUIDLEREVM_CHAINID, COVERAGE_CHAINID} from './helpers/buidler-constants';
-import {setDRE} from './helpers/misc-utils';
+import { accounts } from './test-wallets.js';
+import { eEthereumNetwork } from './helpers/types';
+import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
+import { setDRE } from './helpers/misc-utils';
 
 require('dotenv').config();
 
@@ -50,7 +50,7 @@ const getCommonNetworkConfig = (networkName: eEthereumNetwork, networkId: number
 const buidlerConfig: any = {
   solc: {
     version: '0.6.12',
-    optimizer: {enabled: true, runs: 200},
+    optimizer: { enabled: true, runs: 200 },
     evmVersion: 'istanbul',
   },
   typechain: {
@@ -69,8 +69,12 @@ const buidlerConfig: any = {
       url: 'http://localhost:8555',
       chainId: COVERAGE_CHAINID,
     },
+<<<<<<< Updated upstream
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
+=======
+    goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
+>>>>>>> Stashed changes
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     buidlerevm: {
       hardfork: 'istanbul',
@@ -80,7 +84,7 @@ const buidlerConfig: any = {
       chainId: BUIDLEREVM_CHAINID,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
-      accounts: accounts.map(({secretKey, balance}: {secretKey: string; balance: string}) => ({
+      accounts: accounts.map(({ secretKey, balance }: { secretKey: string; balance: string }) => ({
         privateKey: secretKey,
         balance,
       })),
