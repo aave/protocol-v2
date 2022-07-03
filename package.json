@@ -20,6 +20,7 @@
     "hardhat:avalanche": "hardhat --network avalanche",
     "compile": "SKIP_LOAD=true hardhat compile",
     "console:fork": "FORK=main hardhat console",
+    "console:fork:kovan": "FORK=kovan hardhat console",
     "test": "npm run compile && TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-aave/*.spec.ts",
     "test-amm": "npm run compile && TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-amm/*.spec.ts",
     "test-amm-scenarios": "npm run compile && TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-amm/__setup.spec.ts test-suites/test-amm/scenario.spec.ts",

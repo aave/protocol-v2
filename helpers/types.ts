@@ -47,6 +47,7 @@ export enum AavePools {
   amm = 'amm',
   arc = 'arc',
   avalanche = 'avalanche',
+  realT = 'realT',
 }
 
 export enum eContractid {
@@ -257,6 +258,16 @@ export interface iAssetBase<T> {
   STAKE: T;
   xSUSHI: T;
   WAVAX: T;
+  'REALTOKEN-S-13895-SARATOGA-ST-DETROIT-MI': T;
+  'REALTOKEN-S-4380-BEACONSFIELD-ST-DETROIT-MI': T;
+  'REALTOKEN-S-17813-BRADFORD-ST-DETROIT-M': T;
+  'REALTOKEN-S-15796-HARTWELL-ST-DETROIT-MI': T;
+  'REALTOKEN-S-9717-EVERTS-ST-DETROIT-MI': T;
+  'REALTOKEN-S-19201-WESTPHALIA-ST-DETROIT-MI': T;
+  'REALTOKEN-S-19163-MITCHELL-ST-DETROIT-MI': T;
+  'REALTOKEN-S-4061-GRAND-ST-DETROIT-M': T;
+  'REALTOKEN-S-4680-BUCKINGHAM-AVE-DETROIT-MI': T;
+  'REALTOKEN-S-19311-KEYSTONE-ST-DETROIT-MI': T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -288,9 +299,25 @@ export type iAavePoolAssets<T> = Pick<
   | 'xSUSHI'
 >;
 
-export type iAaveArcPoolAssets<T> = Pick<
+export type iAaveArcPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'USDC' | 'WBTC' | 'WETH' | 'AAVE'>;
+
+export type iAaveRealTPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'USDC' | 'WBTC' | 'WETH' | 'AAVE'
+  | 'DAI'
+  | 'USDC'
+  | 'USDT'
+  | 'WBTC'
+  | 'WETH'
+  | 'REALTOKEN-S-13895-SARATOGA-ST-DETROIT-MI'
+  | 'REALTOKEN-S-4380-BEACONSFIELD-ST-DETROIT-MI'
+  | 'REALTOKEN-S-17813-BRADFORD-ST-DETROIT-M'
+  | 'REALTOKEN-S-15796-HARTWELL-ST-DETROIT-MI'
+  | 'REALTOKEN-S-9717-EVERTS-ST-DETROIT-MI'
+  | 'REALTOKEN-S-19201-WESTPHALIA-ST-DETROIT-MI'
+  | 'REALTOKEN-S-19163-MITCHELL-ST-DETROIT-MI'
+  | 'REALTOKEN-S-4061-GRAND-ST-DETROIT-M'
+  | 'REALTOKEN-S-4680-BUCKINGHAM-AVE-DETROIT-MI'
+  | 'REALTOKEN-S-19311-KEYSTONE-ST-DETROIT-MI'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -463,6 +490,7 @@ export interface iParamsPerPool<T> {
   [AavePools.amm]: T;
   [AavePools.arc]: T;
   [AavePools.avalanche]: T;
+  [AavePools.realT]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -550,6 +578,11 @@ export interface IAaveConfiguration extends ICommonConfiguration {
 export interface IAaveArcConfiguration extends ICommonConfiguration {
   ReservesConfig: iAaveArcPoolAssets<IReserveParams>;
 }
+
+export interface IAaveRealTConfiguration extends ICommonConfiguration {
+  ReservesConfig: iAaveRealTPoolAssets<IReserveParams>;
+}
+
 export interface IAmmConfiguration extends ICommonConfiguration {
   ReservesConfig: iLpPoolAssets<IReserveParams>;
 }
