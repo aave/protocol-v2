@@ -94,6 +94,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
    * @param asset The address of the underlying asset to deposit
+   * @param pool The address of the lending pool
    * @param amount The amount to be deposited
    * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
    *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
@@ -103,11 +104,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function deposit(
     address asset,
+    address pool,
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
   ) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     ValidationLogic.validateDeposit(reserve, amount);
 
@@ -132,6 +134,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
    * @param asset The address of the underlying asset to withdraw
+   * @param pool The address of the lending pool
    * @param amount The underlying amount to be withdrawn
    *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
    * @param to Address that will receive the underlying, same as msg.sender if the user
@@ -141,10 +144,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function withdraw(
     address asset,
+    address pool
     uint256 amount,
     address to
   ) external override whenNotPaused returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     address aToken = reserve.aTokenAddress;
 
@@ -190,6 +194,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - E.g. User borrows 100 USDC passing as `onBehalfOf` his own address, receiving the 100 USDC in his wallet
    *   and 100 stable/variable debt tokens, depending on the `interestRateMode`
    * @param asset The address of the underlying asset to borrow
+   * @param pool The address of the lending pool
    * @param amount The amount to be borrowed
    * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
@@ -200,12 +205,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function borrow(
     address asset,
+    address pool,
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf
   ) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     _executeBorrow(
       ExecuteBorrowParams(
@@ -225,6 +231,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
    * - E.g. User repays 100 USDC, burning 100 variable/stable debt tokens of the `onBehalfOf` address
    * @param asset The address of the borrowed underlying asset previously borrowed
+   * @param pool The address of the lending pool
    * @param amount The amount to repay
    * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
    * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
@@ -235,11 +242,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function repay(
     address asset,
+    address pool,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
 
@@ -293,9 +301,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
    * @param asset The address of the underlying asset borrowed
    * @param rateMode The rate mode that the user wants to swap to
+   * @param pool The address of the lending pool
    **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+  function swapBorrowRateMode(address asset, address pool, uint256 rateMode) external override whenNotPaused {
+    DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
 
@@ -566,15 +575,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Returns the state and configuration of the reserve
    * @param asset The address of the underlying asset of the reserve
+   * @param pool The address of the lending pool
    * @return The state of the reserve
    **/
-  function getReserveData(address asset)
+  function getReserveData(address asset, address pool)
     external
     view
     override
     returns (DataTypes.ReserveData memory)
   {
-    return _reserves[asset];
+    return _reserves[asset][pool];
   }
 
   /**
@@ -843,6 +853,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   struct ExecuteBorrowParams {
     address asset;
+    address pool;
     address user;
     address onBehalfOf;
     uint256 amount;
@@ -853,7 +864,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
-    DataTypes.ReserveData storage reserve = _reserves[vars.asset];
+    DataTypes.ReserveData storage reserve = _reserves[vars.asset][vars.pool];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
     address oracle = _addressesProvider.getPriceOracle();

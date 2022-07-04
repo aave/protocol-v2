@@ -9,7 +9,7 @@ pragma solidity 0.6.12;
  * @author Aave
  **/
 interface ILendingPoolAddressesProvider {
-  event MarketIdSet(string newMarketId);
+  event MarketIdSet(string newMarketId, bytes32 newLendingPOOL);
   event LendingPoolUpdated(address indexed newAddress);
   event ConfigurationAdminUpdated(address indexed newAddress);
   event EmergencyAdminUpdated(address indexed newAddress);
