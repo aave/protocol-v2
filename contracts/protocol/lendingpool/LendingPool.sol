@@ -124,7 +124,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
-      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
+      emit ReserveUsedAsCollateralEnabled(asset, pool,onBehalfOf);
     }
 
     emit Deposit(asset,pool, msg.sender, onBehalfOf, amount, referralCode);
@@ -177,7 +177,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (amountToWithdraw == userBalance) {
       _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+      emit ReserveUsedAsCollateralDisabled(asset, pool, msg.sender);
     }
 
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
@@ -937,6 +937,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     emit Borrow(
       vars.asset,
+      vars.pool,
       vars.user,
       vars.onBehalfOf,
       vars.amount,
