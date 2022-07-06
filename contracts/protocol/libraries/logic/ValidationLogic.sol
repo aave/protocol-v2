@@ -105,6 +105,7 @@ library ValidationLogic {
   /**
    * @dev Validates a borrow action
    * @param asset The address of the asset to borrow
+   * @param pool The pool from which the borrow is to occur
    * @param reserve The reserve state from which the user is borrowing
    * @param userAddress The address of the user
    * @param amount The amount to be borrowed
@@ -119,13 +120,14 @@ library ValidationLogic {
 
   function validateBorrow(
     address asset,
+    address pool,
     DataTypes.ReserveData storage reserve,
     address userAddress,
     uint256 amount,
     uint256 amountInETH,
     uint256 interestRateMode,
     uint256 maxStableLoanPercent,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
@@ -343,9 +345,10 @@ library ValidationLogic {
    */
   function validateSetUseReserveAsCollateral(
     DataTypes.ReserveData storage reserve,
+    address poolAddress,
     address reserveAddress,
     bool useAsCollateral,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,

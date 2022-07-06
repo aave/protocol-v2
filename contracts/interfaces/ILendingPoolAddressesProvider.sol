@@ -9,7 +9,7 @@ pragma solidity 0.6.12;
  * @author Aave
  **/
 interface ILendingPoolAddressesProvider {
-  event MarketIdSet(string newMarketId, bytes32 newLendingPOOL);
+  
   event LendingPoolUpdated(address indexed newAddress);
   event ConfigurationAdminUpdated(address indexed newAddress);
   event EmergencyAdminUpdated(address indexed newAddress);
@@ -20,9 +20,7 @@ interface ILendingPoolAddressesProvider {
   event ProxyCreated(bytes32 id, address indexed newAddress);
   event AddressSet(bytes32 id, address indexed newAddress, bool hasProxy);
 
-  function getMarketId() external view returns (string memory);
 
-  function setMarketId(string calldata marketId) external;
 
   function setAddress(bytes32 id, address newAddress) external;
 

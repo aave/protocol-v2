@@ -17,7 +17,8 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
  * @author Aave
  **/
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
-  string private _marketId;
+
+
   mapping(bytes32 => address) private _addresses;
 
   bytes32 private constant LENDING_POOL //= 'LENDING_POOL';
@@ -28,32 +29,11 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
 
-  constructor(string memory marketId, bytes32 memory LENDING_POOL) public {
+  constructor( bytes32  _LENDING_POOL) public {
      
-    _setMarketId(marketId, LENDING_POOL);
+   LENDING_POOL = _LENDINGPOOL;
   }
 
-  /**
-   * @dev Returns the id of the Aave market to which this contracts points to
-   * @return The market id
-   **/
-  function getMarketId() external view override returns (string memory) {
-    return _marketId;
-  }
-  /**
-   * @dev Returns the pool Admin of the contract 
-   * @return The Admin address
-   */
-
-
-  /**
-   * @dev Allows to set the market which this LendingPoolAddressesProvider represents
-   * @param marketId The market id
-   * @param LENDING_POOL  The Lending Pool 
-   */
-  function setMarketId(string memory marketId, bytes32  LENDING_POOL) external override onlyOwner {
-    _setMarketId(marketId, LENDING_POOL);
-  }
 
   /**
    * @dev General function to update the implementation of a proxy registered with
@@ -218,9 +198,5 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     }
   }
 
-  function _setMarketId(string memory marketId, bytes32 _LENDING_POOL) internal {
-    _marketId = marketId;
-    LENDING_POOL = _LENDING_POOL;
-    emit MarketIdSet(marketId, _LENDING_POOL);
-  }
+  f
 }

@@ -127,7 +127,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
     }
 
-    emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
+    emit Deposit(asset,pool, msg.sender, onBehalfOf, amount, referralCode);
   }
 
   /**
@@ -182,7 +182,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
+    emit Withdraw(asset,pool, msg.sender, to, amountToWithdraw);
 
     return amountToWithdraw;
   }
@@ -216,6 +216,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _executeBorrow(
       ExecuteBorrowParams(
         asset,
+        pool,
         msg.sender,
         onBehalfOf,
         amount,
@@ -292,7 +293,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IAToken(aToken).handleRepayment(msg.sender, paybackAmount);
 
-    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+    emit Repay(asset,pool, onBehalfOf, msg.sender, paybackAmount);
 
     return paybackAmount;
   }
@@ -344,7 +345,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
 
-    emit Swap(asset, msg.sender, rateMode);
+    emit Swap(asset,pool, msg.sender, rateMode);
   }
 
   /**
@@ -391,18 +392,20 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Allows depositors to enable/disable a specific deposited asset as collateral
    * @param asset The address of the underlying asset deposited
+   * @param pool The address of the underlying pool
    * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
    **/
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
+  function setUserUseReserveAsCollateral(address asset,address pool, bool useAsCollateral)
     external
     override
     whenNotPaused
   {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
       asset,
+      pool,
       useAsCollateral,
       _reserves,
       _usersConfig[msg.sender],
@@ -414,9 +417,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
     if (useAsCollateral) {
-      emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
+      emit ReserveUsedAsCollateralEnabled(asset,pool, msg.sender);
     } else {
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+      emit ReserveUsedAsCollateralDisabled(asset, pool, msg.sender);
     }
   }
 
@@ -634,16 +637,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns the configuration of the reserve
+   * @param pool the address of the pool 
    * @param asset The address of the underlying asset of the reserve
    * @return The configuration of the reserve
    **/
-  function getConfiguration(address asset)
+  function getConfiguration(address pool, address asset)
     external
     view
     override
     returns (DataTypes.ReserveConfigurationMap memory)
   {
-    return _reserves[asset].configuration;
+    return _reserves[asset][pool].configuration;
   }
 
   /**
@@ -787,6 +791,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * interest rate strategy
    * - Only callable by the LendingPoolConfigurator contract
    * @param asset The address of the underlying asset of the reserve
+   * @param pool The address of the pool
    * @param aTokenAddress The address of the aToken that will be assigned to the reserve
    * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
    * @param aTokenAddress The address of the VariableDebtToken that will be assigned to the reserve
@@ -794,13 +799,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function initReserve(
     address asset,
+    address pool
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
   ) external override onlyLendingPoolConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
-    _reserves[asset].init(
+    _reserves[asset][pool].init(
       aTokenAddress,
       stableDebtAddress,
       variableDebtAddress,
@@ -827,14 +833,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Sets the configuration bitmap of the reserve as a whole
    * - Only callable by the LendingPoolConfigurator contract
    * @param asset The address of the underlying asset of the reserve
+   * @param pool The address of the pool of the reserve
    * @param configuration The new configuration bitmap
    **/
-  function setConfiguration(address asset, uint256 configuration)
+  function setConfiguration(address asset, address pool, uint256 configuration)
     external
     override
     onlyLendingPoolConfigurator
   {
-    _reserves[asset].configuration.data = configuration;
+    _reserves[asset][pool].configuration.data = configuration;
   }
 
   /**
@@ -876,6 +883,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ValidationLogic.validateBorrow(
       vars.asset,
+      vars.pool,
       reserve,
       vars.onBehalfOf,
       vars.amount,
@@ -940,15 +948,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
-  function _addReserveToList(address asset) internal {
+  function _addReserveToList(address asset, address pool) internal {
     uint256 reservesCount = _reservesCount;
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
-    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
+    bool reserveAlreadyAdded = _reserves[asset][pool].id != 0 || _reservesList[0] == asset;
 
     if (!reserveAlreadyAdded) {
-      _reserves[asset].id = uint8(reservesCount);
+      _reserves[asset][pool].id = uint8(reservesCount);
       _reservesList[reservesCount] = asset;
 
       _reservesCount = reservesCount + 1;
