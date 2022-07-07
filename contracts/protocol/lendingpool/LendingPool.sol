@@ -162,6 +162,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ValidationLogic.validateWithdraw(
       asset,
+      pool,
       amountToWithdraw,
       userBalance,
       _reserves,
@@ -339,13 +340,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         msg.sender,
         msg.sender,
         variableDebt,
-        reserve.currentStableBorrowRate
-      );
-    }
-
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
-
-    emit Swap(asset,pool, msg.sender, rateMode);
+        reserve.currentStableBorrowRateD
   }
 
   /**
@@ -703,11 +698,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Returns the list of the initialized reserves
    **/
-  function getReservesList() external view override returns (address[] memory) {
+  function getReservesList(address asset) external view override returns (address[] memory) {
     address[] memory _activeReserves = new address[](_reservesCount);
 
     for (uint256 i = 0; i < _reservesCount; i++) {
-      _activeReserves[i] = _reservesList[i];
+      _activeReserves[i][asset] = _reservesList[i][asset];
     }
     return _activeReserves;
   }
@@ -954,11 +949,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
-    bool reserveAlreadyAdded = _reserves[asset][pool].id != 0 || _reservesList[0] == asset;
+    bool reserveAlreadyAdded = _reserves[asset][pool].id != 0 || _reservesList[0][asset] == pool;
 
     if (!reserveAlreadyAdded) {
       _reserves[asset][pool].id = uint8(reservesCount);
-      _reservesList[reservesCount] = asset;
+      _reservesList[reservesCount][asset] = pool;
 
       _reservesCount = reservesCount + 1;
     }

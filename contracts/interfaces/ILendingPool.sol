@@ -420,7 +420,7 @@ interface ILendingPool {
     uint256 balanceToBefore
   ) external;
 
-  function getReservesList() external view returns (address[] memory);
+  function getReservesList(address asset) external view returns (address[] memory);
 
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 

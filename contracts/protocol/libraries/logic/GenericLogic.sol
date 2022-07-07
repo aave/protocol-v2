@@ -44,6 +44,7 @@ library GenericLogic {
    * @dev Checks if a specific balance decrease is allowed
    * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
    * @param asset The address of the underlying asset of the reserve
+   * @param pool The address of the pool of the reserve  
    * @param user The address of the user
    * @param amount The amount to decrease
    * @param reservesData The data of all the reserves
@@ -53,22 +54,23 @@ library GenericLogic {
    * @return true if the decrease of the balance is allowed
    **/
   function balanceDecreaseAllowed(
+    address pool,
     address asset,
     address user,
     uint256 amount,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap calldata userConfig,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => mapping(address => address)) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view returns (bool) {
-    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
+    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset][pool].id)) {
       return true;
     }
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset]
+    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset][pool]
       .configuration
       .getParams();
 
@@ -141,6 +143,7 @@ library GenericLogic {
    * this includes the total liquidity/collateral/borrow balances in ETH,
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
    * @param user The address of the user
+   * @param asset The address of the underlying asset
    * @param reservesData Data of all the reserves
    * @param userConfig The configuration of the user
    * @param reserves The list of the available reserves
@@ -149,9 +152,9 @@ library GenericLogic {
    **/
   function calculateUserAccountData(
     address user,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap memory userConfig,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => mapping(address => address)) storage reserves,
     uint256 reservesCount,
     address oracle
   )
@@ -175,8 +178,8 @@ library GenericLogic {
         continue;
       }
 
-      vars.currentReserveAddress = reserves[vars.i];
-      DataTypes.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
+      vars.currentReserveAddress = reserves[vars.i][asset];
+      DataTypes.ReserveData storage currentReserve = reservesData[asset][vars.currentReserveAddress];
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
         .configuration

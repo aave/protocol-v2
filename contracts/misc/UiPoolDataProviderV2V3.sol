@@ -72,7 +72,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
   {
     IAaveOracle oracle = IAaveOracle(provider.getPriceOracle());
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
-    address[] memory reserves = lendingPool.getReservesList();
+    address[] memory reserves = lendingPool.getReservesList(address asset);
     AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
 
     for (uint256 i = 0; i < reserves.length; i++) {

@@ -49,6 +49,7 @@ library ValidationLogic {
   /**
    * @dev Validates a withdraw action
    * @param reserveAddress The address of the reserve
+   * @param poolAddress The address of the pool
    * @param amount The amount to be withdrawn
    * @param userBalance The balance of the user
    * @param reservesData The reserves state
@@ -58,19 +59,20 @@ library ValidationLogic {
    * @param oracle The price oracle
    */
   function validateWithdraw(
+    address poolAddress,
     address reserveAddress,
     uint256 amount,
     uint256 userBalance,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => mapping(address => address)) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
-    (bool isActive, , , ) = reservesData[reserveAddress].configuration.getFlags();
+    (bool isActive, , , ) = reservesData[reserveAddress][poolAddress].configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
     require(
@@ -105,6 +107,7 @@ library ValidationLogic {
   /**
    * @dev Validates a borrow action
    * @param asset The address of the asset to borrow
+
    * @param pool The pool from which the borrow is to occur
    * @param reserve The reserve state from which the user is borrowing
    * @param userAddress The address of the user
@@ -129,7 +132,7 @@ library ValidationLogic {
     uint256 maxStableLoanPercent,
     mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => mapping(address => address)) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view {
@@ -448,9 +451,9 @@ library ValidationLogic {
    */
   function validateTransfer(
     address from,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => mapping(address =>address)) storage reserves,
     uint256 reservesCount,
     address oracle
   ) internal view {
