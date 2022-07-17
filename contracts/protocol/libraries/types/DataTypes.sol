@@ -38,6 +38,8 @@ library DataTypes {
     //bit 59: stable rate borrowing enabled
     //bit 60-63: reserved
     //bit 64-79: reserve factor
+    //bit 80-115 borrow cap in whole tokens, borrowCap == 0 => no cap
+    //bit 116-151 supply cap in whole tokens, supplyCap == 0 => no cap
     uint256 data;
   }
 

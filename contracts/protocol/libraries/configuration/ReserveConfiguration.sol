@@ -20,6 +20,11 @@ library ReserveConfiguration {
   uint256 constant STABLE_BORROWING_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
 
+  uint256 internal constant BORROW_CAP_MASK =   0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 internal constant SUPPLY_CAP_MASK =   0xFFFFFFFFFFFFFFFFFFFFFFFFFF000000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 internal constant BORROW_CAP_START_BIT_POSITION = 80;
+  uint256 internal constant SUPPLY_CAP_START_BIT_POSITION = 116;
+
   /// @dev For the LTV, the start bit is 0 (up to 15), hence no bitshifting is needed
   uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
   uint256 constant LIQUIDATION_BONUS_START_BIT_POSITION = 32;
@@ -35,6 +40,9 @@ library ReserveConfiguration {
   uint256 constant MAX_VALID_LIQUIDATION_BONUS = 65535;
   uint256 constant MAX_VALID_DECIMALS = 255;
   uint256 constant MAX_VALID_RESERVE_FACTOR = 65535;
+
+  uint256 internal constant MAX_VALID_BORROW_CAP = 68719476735;
+  uint256 internal constant MAX_VALID_SUPPLY_CAP = 68719476735;
 
   /**
    * @dev Sets the Loan to Value of the reserve
@@ -362,5 +370,59 @@ library ReserveConfiguration {
       (self.data & ~BORROWING_MASK) != 0,
       (self.data & ~STABLE_BORROWING_MASK) != 0
     );
+  }
+
+  /**
+   * @notice Gets the borrow cap of the reserve
+   * @param self The reserve configuration
+   * @return The borrow cap
+   **/
+  function getBorrowCap(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
+    returns (uint256)
+  {
+    return (self.data & ~BORROW_CAP_MASK) >> BORROW_CAP_START_BIT_POSITION;
+  }
+
+  /**
+   * @notice Gets the supply cap of the reserve
+   * @param self The reserve configuration
+   * @return The supply cap
+   **/
+  function getSupplyCap(DataTypes.ReserveConfigurationMap memory self)
+    internal
+    pure
+    returns (uint256)
+  {
+    return (self.data & ~SUPPLY_CAP_MASK) >> SUPPLY_CAP_START_BIT_POSITION;
+  }
+
+  /**
+   * @notice Sets the borrow cap of the reserve
+   * @param self The reserve configuration
+   * @param borrowCap The borrow cap
+   **/
+  function setBorrowCap(DataTypes.ReserveConfigurationMap memory self, uint256 borrowCap)
+    internal
+    pure
+  {
+    require(borrowCap <= MAX_VALID_BORROW_CAP, Errors.INVALID_BORROW_CAP);
+
+    self.data = (self.data & BORROW_CAP_MASK) | (borrowCap << BORROW_CAP_START_BIT_POSITION);
+  }
+
+  /**
+   * @notice Sets the supply cap of the reserve
+   * @param self The reserve configuration
+   * @param supplyCap The supply cap
+   **/
+  function setSupplyCap(DataTypes.ReserveConfigurationMap memory self, uint256 supplyCap)
+    internal
+    pure
+  {
+    require(supplyCap <= MAX_VALID_SUPPLY_CAP, Errors.INVALID_SUPPLY_CAP);
+
+    self.data = (self.data & SUPPLY_CAP_MASK) | (supplyCap << SUPPLY_CAP_START_BIT_POSITION);
   }
 }

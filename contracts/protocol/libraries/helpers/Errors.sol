@@ -103,6 +103,8 @@ library Errors {
   string public constant LP_NOT_CONTRACT = '78';
   string public constant SDT_STABLE_DEBT_OVERFLOW = '79';
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
+  string public constant INVALID_BORROW_CAP = '81'; // 'Invalid borrow cap for the reserve'
+  string public constant INVALID_SUPPLY_CAP = '82'; // 'Invalid supply cap for the reserve'
 
   enum CollateralManagerErrors {
     NO_ERROR,

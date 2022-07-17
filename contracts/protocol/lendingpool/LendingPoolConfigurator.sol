@@ -151,7 +151,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableAToken.initialize.selector,
         cachedPool,
         input.treasury,
@@ -163,11 +164,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
         input.params
       );
 
-    _upgradeTokenImplementation(
-      reserveData.aTokenAddress,
-      input.implementation,
-      encodedCall
-    );
+    _upgradeTokenImplementation(reserveData.aTokenAddress, input.implementation, encodedCall);
 
     emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
   }
@@ -179,10 +176,11 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
-     
+
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -209,17 +207,15 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev Updates the variable debt token implementation for the asset
    **/
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
-    external
-    onlyPoolAdmin
-  {
+  function updateVariableDebtToken(UpdateDebtTokenInput calldata input) external onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -449,6 +445,29 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    **/
   function setPoolPause(bool val) external onlyEmergencyAdmin {
     pool.setPause(val);
+  }
+
+  /// @inheritdoc ILendingPoolConfigurator
+  function setBorrowCap(address asset, uint256 newBorrowCap) external override onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    uint256 oldBorrowCap = currentConfig.getBorrowCap();
+    currentConfig.setBorrowCap(newBorrowCap);
+    pool.setConfiguration(asset, currentConfig.data);
+    emit BorrowCapChanged(asset, oldBorrowCap, newBorrowCap);
+  }
+
+  function getBorrowCap(address asset) public view returns (uint256) {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    uint256 oldBorrowCap = currentConfig.getBorrowCap();
+    return oldBorrowCap;
+  }
+
+  function setSupplyCap(address asset, uint256 newSupplyCap) external override onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    uint256 oldSupplyCap = currentConfig.getSupplyCap();
+    currentConfig.setSupplyCap(newSupplyCap);
+    pool.setConfiguration(asset, currentConfig.data);
+    emit SupplyCapChanged(asset, oldSupplyCap, newSupplyCap);
   }
 
   function _initTokenWithProxy(address implementation, bytes memory initParams)

@@ -176,4 +176,34 @@ interface ILendingPoolConfigurator {
     address indexed proxy,
     address indexed implementation
   );
+
+  /**
+   * @dev Emitted when the borrow cap of a reserve is updated.
+   * @param asset The address of the underlying asset of the reserve
+   * @param oldBorrowCap The old borrow cap
+   * @param newBorrowCap The new borrow cap
+   **/
+  event BorrowCapChanged(address indexed asset, uint256 oldBorrowCap, uint256 newBorrowCap);
+
+  /**
+   * @dev Emitted when the supply cap of a reserve is updated.
+   * @param asset The address of the underlying asset of the reserve
+   * @param oldSupplyCap The old supply cap
+   * @param newSupplyCap The new supply cap
+   **/
+  event SupplyCapChanged(address indexed asset, uint256 oldSupplyCap, uint256 newSupplyCap);
+
+  /**
+   * @notice Updates the borrow cap of a reserve.
+   * @param asset The address of the underlying asset of the reserve
+   * @param newBorrowCap The new borrow cap of the reserve
+   **/
+  function setBorrowCap(address asset, uint256 newBorrowCap) external;
+
+  /**
+   * @notice Updates the supply cap of a reserve.
+   * @param asset The address of the underlying asset of the reserve
+   * @param newSupplyCap The new supply cap of the reserve
+   **/
+  function setSupplyCap(address asset, uint256 newSupplyCap) external;
 }
