@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts//SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts//IERC20.sol';
-import {IAToken} from '../../interfaces/IAToken.sol';
+import {IDToken} from '../../interfaces/IAToken.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
@@ -51,7 +51,7 @@ contract LendingPoolCollateralManager is
     uint256 debtAmountNeeded;
     uint256 healthFactor;
     uint256 liquidatorPreviousATokenBalance;
-    IAToken collateralAtoken;
+    IDToken collateralAtoken;
     bool isCollateralEnabled;
     DataTypes.InterestRateMode borrowRateMode;
     uint256 errorCode;
@@ -115,7 +115,7 @@ contract LendingPoolCollateralManager is
       return (vars.errorCode, vars.errorMsg);
     }
 
-    vars.collateralAtoken = IAToken(collateralReserve.aTokenAddress);
+    vars.collateralAtoken = IDToken(collateralReserve.dTokenAddress);
 
     vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
@@ -185,7 +185,7 @@ contract LendingPoolCollateralManager is
 
     debtReserve.updateInterestRates(
       debtAsset,
-      debtReserve.aTokenAddress,
+      debtReserve.dTokenAddress,
       vars.actualDebtToLiquidate,
       0
     );
@@ -227,7 +227,7 @@ contract LendingPoolCollateralManager is
     // Transfers the debt asset being repaid to the aToken, where the liquidity is kept
     IERC20(debtAsset).safeTransferFrom(
       msg.sender,
-      debtReserve.aTokenAddress,
+      debtReserve.dTokenAddress,
       vars.actualDebtToLiquidate
     );
 

@@ -122,7 +122,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       // Pull aTokens from user
       _pullAToken(
         collateralAsset,
-        collateralReserveData.aTokenAddress,
+        collateralReserveData.dTokenAddress,
         msg.sender,
         amounts[0],
         permitSignature
@@ -134,7 +134,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       // Pull aTokens from user
       _pullAToken(
         collateralAsset,
-        collateralReserveData.aTokenAddress,
+        collateralReserveData.dTokenAddress,
         msg.sender,
         amountToRepay,
         permitSignature
@@ -193,7 +193,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       // Pull aTokens from user
       _pullAToken(
         collateralAsset,
-        collateralReserveData.aTokenAddress,
+        collateralReserveData.dTokenAddress,
         initiator,
         amounts[0],
         permitSignature
@@ -211,7 +211,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       // Pull aTokens from user
       _pullAToken(
         collateralAsset,
-        collateralReserveData.aTokenAddress,
+        collateralReserveData.dTokenAddress,
         initiator,
         repaidAmount.add(premium),
         permitSignature

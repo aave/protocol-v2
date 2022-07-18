@@ -146,7 +146,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     SwapAndDepositLocalVars memory vars;
 
     for (vars.i = 0; vars.i < assetToSwapFromList.length; vars.i++) {
-      vars.aToken = _getReserveData(assetToSwapFromList[vars.i]).aTokenAddress;
+      vars.aToken = _getReserveData(assetToSwapFromList[vars.i]).dTokenAddress;
 
       vars.aTokenInitiatorBalance = IERC20(vars.aToken).balanceOf(msg.sender);
       vars.amountToSwap = amountToSwapList[vars.i] > vars.aTokenInitiatorBalance
@@ -210,7 +210,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
   ) internal {
     SwapLiquidityLocalVars memory vars;
 
-    vars.aToken = _getReserveData(assetFrom).aTokenAddress;
+    vars.aToken = _getReserveData(assetFrom).dTokenAddress;
 
     vars.aTokenInitiatorBalance = IERC20(vars.aToken).balanceOf(initiator);
     vars.amountToSwap = swapAllBalance && vars.aTokenInitiatorBalance.sub(premium) <= amount

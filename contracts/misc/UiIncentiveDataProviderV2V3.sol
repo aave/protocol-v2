@@ -6,7 +6,7 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController.sol';
 import {IUiIncentiveDataProviderV3} from './interfaces/IUiIncentiveDataProviderV3.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {IAToken} from '../interfaces/IAToken.sol';
+import {IDToken} from '../interfaces/IAToken.sol';
 import {IVariableDebtToken} from '../interfaces/IVariableDebtToken.sol';
 import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
@@ -46,8 +46,8 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
-    AggregatedReserveIncentiveData[]
-      memory reservesIncentiveData = new AggregatedReserveIncentiveData[](reserves.length);
+    AggregatedReserveIncentiveData[] memory reservesIncentiveData =
+      new AggregatedReserveIncentiveData[](reserves.length);
 
     for (uint256 i = 0; i < reserves.length; i++) {
       AggregatedReserveIncentiveData memory reserveIncentiveData = reservesIncentiveData[i];
@@ -55,34 +55,33 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
 
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(reserves[i]);
 
-      try IAToken(baseData.aTokenAddress).getIncentivesController() returns (
+      try IDToken(baseData.dTokenAddress).getIncentivesController() returns (
         IAaveIncentivesController aTokenIncentiveController
       ) {
         RewardInfo[] memory aRewardsInformation = new RewardInfo[](1);
         if (address(aTokenIncentiveController) != address(0)) {
           address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
 
-          try aTokenIncentiveController.getAssetData(baseData.aTokenAddress) returns (
+          try aTokenIncentiveController.getAssetData(baseData.dTokenAddress) returns (
             uint256 aTokenIncentivesIndex,
             uint256 aEmissionPerSecond,
             uint256 aIncentivesLastUpdateTimestamp
           ) {
-
-              aRewardsInformation[0] = RewardInfo(
-                getSymbol(aRewardToken),
-                aRewardToken,
-                address(0),
-                aEmissionPerSecond,
-                aIncentivesLastUpdateTimestamp,
-                aTokenIncentivesIndex,
-                aTokenIncentiveController.DISTRIBUTION_END(),
-                0,
-                IERC20Detailed(aRewardToken).decimals(),
-                aTokenIncentiveController.PRECISION(),
-                0
-              );
+            aRewardsInformation[0] = RewardInfo(
+              getSymbol(aRewardToken),
+              aRewardToken,
+              address(0),
+              aEmissionPerSecond,
+              aIncentivesLastUpdateTimestamp,
+              aTokenIncentivesIndex,
+              aTokenIncentiveController.DISTRIBUTION_END(),
+              0,
+              IERC20Detailed(aRewardToken).decimals(),
+              aTokenIncentiveController.PRECISION(),
+              0
+            );
             reserveIncentiveData.aIncentiveData = IncentiveData(
-              baseData.aTokenAddress,
+              baseData.dTokenAddress,
               address(aTokenIncentiveController),
               aRewardsInformation
             );
@@ -93,7 +92,7 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
               uint256 aEmissionPerSecond,
               uint256 aIncentivesLastUpdateTimestamp,
               uint256 aTokenIncentivesIndex
-            ) = aTokenIncentiveController.assets(baseData.aTokenAddress);
+            ) = aTokenIncentiveController.assets(baseData.dTokenAddress);
             aRewardsInformation[0] = RewardInfo(
               getSymbol(aRewardToken),
               aRewardToken,
@@ -109,7 +108,7 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
             );
 
             reserveIncentiveData.aIncentiveData = IncentiveData(
-              baseData.aTokenAddress,
+              baseData.dTokenAddress,
               address(aTokenIncentiveController),
               aRewardsInformation
             );
@@ -274,9 +273,8 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
 
-    UserReserveIncentiveData[] memory userReservesIncentivesData = new UserReserveIncentiveData[](
-      user != address(0) ? reserves.length : 0
-    );
+    UserReserveIncentiveData[] memory userReservesIncentivesData =
+      new UserReserveIncentiveData[](user != address(0) ? reserves.length : 0);
 
     for (uint256 i = 0; i < reserves.length; i++) {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(reserves[i]);
@@ -284,7 +282,7 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
       // user reserve data
       userReservesIncentivesData[i].underlyingAsset = reserves[i];
 
-      try IAToken(baseData.aTokenAddress).getIncentivesController() returns (
+      try IDToken(baseData.dTokenAddress).getIncentivesController() returns (
         IAaveIncentivesController aTokenIncentiveController
       ) {
         if (address(aTokenIncentiveController) != address(0)) {
@@ -297,14 +295,14 @@ contract UiIncentiveDataProviderV2V3 is IUiIncentiveDataProviderV3 {
             address(0),
             aRewardToken,
             aTokenIncentiveController.getUserUnclaimedRewards(user),
-            aTokenIncentiveController.getUserAssetData(user, baseData.aTokenAddress),
+            aTokenIncentiveController.getUserAssetData(user, baseData.dTokenAddress),
             0,
             0,
             IERC20Detailed(aRewardToken).decimals()
           );
 
           userReservesIncentivesData[i].aTokenIncentivesUserData = UserIncentiveData(
-            baseData.aTokenAddress,
+            baseData.dTokenAddress,
             address(aTokenIncentiveController),
             aUserRewardsInformation
           );

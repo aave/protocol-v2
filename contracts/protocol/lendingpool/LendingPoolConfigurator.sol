@@ -15,7 +15,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {IInitializableDebtToken} from '../../interfaces/IInitializableDebtToken.sol';
-import {IInitializableAToken} from '../../interfaces/IInitializableAToken.sol';
+import {IInitializableDToken} from '../../interfaces/IInitializableAToken.sol';
 import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 import {ILendingPoolConfigurator} from '../../interfaces/ILendingPoolConfigurator.sol';
 
@@ -72,7 +72,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       _initTokenWithProxy(
         input.aTokenImpl,
         abi.encodeWithSelector(
-          IInitializableAToken.initialize.selector,
+          IInitializableDToken.initialize.selector,
           pool,
           input.treasury,
           input.underlyingAsset,
@@ -151,8 +151,9 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
-        IInitializableAToken.initialize.selector,
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
+        IInitializableDToken.initialize.selector,
         cachedPool,
         input.treasury,
         input.asset,
@@ -163,13 +164,9 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
         input.params
       );
 
-    _upgradeTokenImplementation(
-      reserveData.aTokenAddress,
-      input.implementation,
-      encodedCall
-    );
+    _upgradeTokenImplementation(reserveData.dTokenAddress, input.implementation, encodedCall);
 
-    emit ATokenUpgraded(input.asset, reserveData.aTokenAddress, input.implementation);
+    emit ATokenUpgraded(input.asset, reserveData.dTokenAddress, input.implementation);
   }
 
   /**
@@ -179,10 +176,11 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
-     
+
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -209,17 +207,15 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev Updates the variable debt token implementation for the asset
    **/
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
-    external
-    onlyPoolAdmin
-  {
+  function updateVariableDebtToken(UpdateDebtTokenInput calldata input) external onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
 
-    bytes memory encodedCall = abi.encodeWithSelector(
+    bytes memory encodedCall =
+      abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
         cachedPool,
         input.asset,
@@ -477,7 +473,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   function _checkNoLiquidity(address asset) internal view {
     DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
 
-    uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.aTokenAddress);
+    uint256 availableLiquidity = IERC20Detailed(asset).balanceOf(reserveData.dTokenAddress);
 
     require(
       availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,

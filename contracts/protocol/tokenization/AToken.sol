@@ -4,7 +4,7 @@ pragma solidity 0.6.12;
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IAToken} from '../../interfaces/IAToken.sol';
+import {IDToken} from '../../interfaces/IAToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
@@ -19,7 +19,7 @@ import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesControl
 contract AToken is
   VersionedInitializable,
   IncentivizedERC20('ATOKEN_IMPL', 'ATOKEN_IMPL', 0),
-  IAToken
+  IDToken
 {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
@@ -273,7 +273,7 @@ contract AToken is
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
    **/
-  function UNDERLYING_ASSET_ADDRESS() public override view returns (address) {
+  function UNDERLYING_ASSET_ADDRESS() public view override returns (address) {
     return _underlyingAsset;
   }
 

@@ -198,11 +198,11 @@ library ValidationLogic {
       require(
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
-          amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
+          amount > IERC20(reserve.dTokenAddress).balanceOf(userAddress),
         Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
       );
 
-      vars.availableLiquidity = IERC20(asset).balanceOf(reserve.aTokenAddress);
+      vars.availableLiquidity = IERC20(asset).balanceOf(reserve.dTokenAddress);
 
       //calculate the max available loan size in stable rate mode as a percentage of the
       //available liquidity
@@ -284,7 +284,7 @@ library ValidationLogic {
       require(
         !userConfig.isUsingAsCollateral(reserve.id) ||
           reserve.configuration.getLtv() == 0 ||
-          stableDebt.add(variableDebt) > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
+          stableDebt.add(variableDebt) > IERC20(reserve.dTokenAddress).balanceOf(msg.sender),
         Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
       );
     } else {
@@ -351,7 +351,7 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
-    uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
+    uint256 underlyingBalance = IERC20(reserve.dTokenAddress).balanceOf(msg.sender);
 
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 

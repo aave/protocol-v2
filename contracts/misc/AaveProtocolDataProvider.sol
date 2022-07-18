@@ -57,8 +57,8 @@ contract AaveProtocolDataProvider {
     for (uint256 i = 0; i < reserves.length; i++) {
       DataTypes.ReserveData memory reserveData = pool.getReserveData(reserves[i]);
       aTokens[i] = TokenData({
-        symbol: IERC20Detailed(reserveData.aTokenAddress).symbol(),
-        tokenAddress: reserveData.aTokenAddress
+        symbol: IERC20Detailed(reserveData.dTokenAddress).symbol(),
+        tokenAddress: reserveData.dTokenAddress
       });
     }
     return aTokens;
@@ -112,7 +112,7 @@ contract AaveProtocolDataProvider {
       ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
 
     return (
-      IERC20Detailed(asset).balanceOf(reserve.aTokenAddress),
+      IERC20Detailed(asset).balanceOf(reserve.dTokenAddress),
       IERC20Detailed(reserve.stableDebtTokenAddress).totalSupply(),
       IERC20Detailed(reserve.variableDebtTokenAddress).totalSupply(),
       reserve.currentLiquidityRate,
@@ -146,7 +146,7 @@ contract AaveProtocolDataProvider {
     DataTypes.UserConfigurationMap memory userConfig =
       ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getUserConfiguration(user);
 
-    currentATokenBalance = IERC20Detailed(reserve.aTokenAddress).balanceOf(user);
+    currentATokenBalance = IERC20Detailed(reserve.dTokenAddress).balanceOf(user);
     currentVariableDebt = IERC20Detailed(reserve.variableDebtTokenAddress).balanceOf(user);
     currentStableDebt = IERC20Detailed(reserve.stableDebtTokenAddress).balanceOf(user);
     principalStableDebt = IStableDebtToken(reserve.stableDebtTokenAddress).principalBalanceOf(user);
@@ -172,7 +172,7 @@ contract AaveProtocolDataProvider {
       ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
 
     return (
-      reserve.aTokenAddress,
+      reserve.dTokenAddress,
       reserve.stableDebtTokenAddress,
       reserve.variableDebtTokenAddress
     );

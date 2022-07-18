@@ -8,7 +8,7 @@ import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController
 import {IUiPoolDataProvider} from './interfaces/IUiPoolDataProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {IAToken} from '../interfaces/IAToken.sol';
+import {IDToken} from '../interfaces/IAToken.sol';
 import {IVariableDebtToken} from '../interfaces/IVariableDebtToken.sol';
 import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
 import {WadRayMath} from '../protocol/libraries/math/WadRayMath.sol';
@@ -88,7 +88,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.variableBorrowRate = baseData.currentVariableBorrowRate;
       reserveData.stableBorrowRate = baseData.currentStableBorrowRate;
       reserveData.lastUpdateTimestamp = baseData.lastUpdateTimestamp;
-      reserveData.aTokenAddress = baseData.aTokenAddress;
+      reserveData.aTokenAddress = baseData.dTokenAddress;
       reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
       reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
       reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
@@ -142,13 +142,13 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           reserveData.aEmissionPerSecond,
           reserveData.aIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.aTokenAddress);
-     
+
         (
           reserveData.sTokenIncentivesIndex,
           reserveData.sEmissionPerSecond,
           reserveData.sIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
-     
+
         (
           reserveData.vTokenIncentivesIndex,
           reserveData.vEmissionPerSecond,
@@ -184,7 +184,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       if (address(0) != address(incentivesController)) {
         userReservesData[i].aTokenincentivesUserIndex = incentivesController.getUserAssetData(
           user,
-          baseData.aTokenAddress
+          baseData.dTokenAddress
         );
         userReservesData[i].vTokenincentivesUserIndex = incentivesController.getUserAssetData(
           user,
@@ -197,7 +197,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       }
       // user reserve data
       userReservesData[i].underlyingAsset = reserves[i];
-      userReservesData[i].scaledATokenBalance = IAToken(baseData.aTokenAddress).scaledBalanceOf(
+      userReservesData[i].scaledATokenBalance = IDToken(baseData.dTokenAddress).scaledBalanceOf(
         user
       );
       userReservesData[i].usageAsCollateralEnabledOnUser = userConfig.isUsingAsCollateral(i);
@@ -262,7 +262,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.variableBorrowRate = baseData.currentVariableBorrowRate;
       reserveData.stableBorrowRate = baseData.currentStableBorrowRate;
       reserveData.lastUpdateTimestamp = baseData.lastUpdateTimestamp;
-      reserveData.aTokenAddress = baseData.aTokenAddress;
+      reserveData.aTokenAddress = baseData.dTokenAddress;
       reserveData.stableDebtTokenAddress = baseData.stableDebtTokenAddress;
       reserveData.variableDebtTokenAddress = baseData.variableDebtTokenAddress;
       reserveData.interestRateStrategyAddress = baseData.interestRateStrategyAddress;
@@ -315,14 +315,14 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           reserveData.aTokenIncentivesIndex,
           reserveData.aEmissionPerSecond,
           reserveData.aIncentivesLastUpdateTimestamp
-        ) = incentivesController.getAssetData(reserveData.aTokenAddress); 
-     
+        ) = incentivesController.getAssetData(reserveData.aTokenAddress);
+
         (
           reserveData.sTokenIncentivesIndex,
           reserveData.sEmissionPerSecond,
           reserveData.sIncentivesLastUpdateTimestamp
         ) = incentivesController.getAssetData(reserveData.stableDebtTokenAddress);
-     
+
         (
           reserveData.vTokenIncentivesIndex,
           reserveData.vEmissionPerSecond,
@@ -348,7 +348,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         }
         // user reserve data
         userReservesData[i].underlyingAsset = reserveData.underlyingAsset;
-        userReservesData[i].scaledATokenBalance = IAToken(reserveData.aTokenAddress)
+        userReservesData[i].scaledATokenBalance = IDToken(reserveData.aTokenAddress)
           .scaledBalanceOf(user);
         userReservesData[i].usageAsCollateralEnabledOnUser = userConfig.isUsingAsCollateral(i);
 

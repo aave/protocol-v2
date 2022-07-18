@@ -7,7 +7,7 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {IAToken} from '../../interfaces/IAToken.sol';
+import {IDToken} from '../../interfaces/IAToken.sol';
 import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
@@ -111,14 +111,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ValidationLogic.validateDeposit(reserve, amount);
 
-    address aToken = reserve.aTokenAddress;
+    address dToken = reserve.dTokenAddress;
 
     reserve.updateState();
-    reserve.updateInterestRates(asset, aToken, amount, 0);
+    reserve.updateInterestRates(asset, dToken, amount, 0);
 
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+    IERC20(asset).safeTransferFrom(msg.sender, dToken, amount);
 
-    bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+    bool isFirstDeposit = IDToken(dToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
@@ -146,9 +146,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
-    address aToken = reserve.aTokenAddress;
+    address aToken = reserve.dTokenAddress;
 
-    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
+    uint256 userBalance = IDToken(aToken).balanceOf(msg.sender);
 
     uint256 amountToWithdraw = amount;
 
@@ -176,7 +176,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
     }
 
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+    IDToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
     emit Withdraw(asset, msg.sender, to, amountToWithdraw);
 
@@ -214,7 +214,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         onBehalfOf,
         amount,
         interestRateMode,
-        reserve.aTokenAddress,
+        reserve.dTokenAddress,
         referralCode,
         true
       )
@@ -273,7 +273,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       );
     }
 
-    address aToken = reserve.aTokenAddress;
+    address aToken = reserve.dTokenAddress;
     reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
@@ -282,7 +282,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, paybackAmount);
 
-    IAToken(aToken).handleRepayment(msg.sender, paybackAmount);
+    IDToken(aToken).handleRepayment(msg.sender, paybackAmount);
 
     emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
 
@@ -333,7 +333,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       );
     }
 
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
+    reserve.updateInterestRates(asset, reserve.dTokenAddress, 0, 0);
 
     emit Swap(asset, msg.sender, rateMode);
   }
@@ -352,7 +352,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
     IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
-    address aTokenAddress = reserve.aTokenAddress;
+    address aTokenAddress = reserve.dTokenAddress;
 
     uint256 stableDebt = IERC20(stableDebtToken).balanceOf(user);
 
@@ -499,11 +499,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     vars.receiver = IFlashLoanReceiver(receiverAddress);
 
     for (vars.i = 0; vars.i < assets.length; vars.i++) {
-      aTokenAddresses[vars.i] = _reserves[assets[vars.i]].aTokenAddress;
+      aTokenAddresses[vars.i] = _reserves[assets[vars.i]].dTokenAddress;
 
       premiums[vars.i] = amounts[vars.i].mul(_flashLoanPremiumTotal).div(10000);
 
-      IAToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
+      IDToken(aTokenAddresses[vars.i]).transferUnderlyingTo(receiverAddress, amounts[vars.i]);
     }
 
     require(
@@ -713,7 +713,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -744,7 +744,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 balanceFromBefore,
     uint256 balanceToBefore
   ) external override whenNotPaused {
-    require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
+    require(msg.sender == _reserves[asset].dTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
     ValidationLogic.validateTransfer(
       from,
@@ -913,7 +913,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
 
     if (vars.releaseUnderlying) {
-      IAToken(vars.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
+      IDToken(vars.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
     }
 
     emit Borrow(

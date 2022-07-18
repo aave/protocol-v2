@@ -3,10 +3,10 @@ pragma solidity 0.6.12;
 
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
-import {IInitializableAToken} from './IInitializableAToken.sol';
+import {IInitializableDToken} from './IInitializableAToken.sol';
 import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
 
-interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
+interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
   /**
    * @dev Emitted after the mint action
    * @param from The address performing the mint

@@ -9,7 +9,7 @@ import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
  * @notice Interface for the initialize function on AToken
  * @author Aave
  **/
-interface IInitializableAToken {
+interface IInitializableDToken {
   /**
    * @dev Emitted when an aToken is initialized
    * @param underlyingAsset The address of the underlying asset
