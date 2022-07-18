@@ -15,7 +15,9 @@ import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveC
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
-import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {
+  DefaultReserveInterestRateStrategy
+} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {IERC20DetailedBytes} from './interfaces/IERC20DetailedBytes.sol';
 
 contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
@@ -80,9 +82,8 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       reserveData.underlyingAsset = reserves[i];
 
       // reserve current state
-      DataTypes.ReserveData memory baseData = lendingPool.getReserveData(
-        reserveData.underlyingAsset
-      );
+      DataTypes.ReserveData memory baseData =
+        lendingPool.getReserveData(reserveData.underlyingAsset);
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
       reserveData.liquidityRate = baseData.currentLiquidityRate;
@@ -111,9 +112,12 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
 
       if (address(reserveData.underlyingAsset) == address(MKRAddress)) {
         bytes32 symbol = IERC20DetailedBytes(reserveData.underlyingAsset).symbol();
+        bytes32 name = IERC20DetailedBytes(reserveData.underlyingAsset).name();
         reserveData.symbol = bytes32ToString(symbol);
+        reserveData.name = bytes32ToString(name);
       } else {
         reserveData.symbol = IERC20Detailed(reserveData.underlyingAsset).symbol();
+        reserveData.name = IERC20Detailed(reserveData.underlyingAsset).name();
       }
 
       (
@@ -150,8 +154,8 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       if (ETH_CURRENCY_UNIT == baseCurrencyUnit) {
         baseCurrencyInfo.marketReferenceCurrencyUnit = ETH_CURRENCY_UNIT;
         baseCurrencyInfo
-        .marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator
-        .latestAnswer();
+          .marketReferenceCurrencyPriceInUsd = marketReferenceCurrencyPriceInUsdProxyAggregator
+          .latestAnswer();
       } else {
         baseCurrencyInfo.marketReferenceCurrencyUnit = baseCurrencyUnit;
         baseCurrencyInfo.marketReferenceCurrencyPriceInUsd = int256(baseCurrencyUnit);
@@ -178,9 +182,8 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
     address[] memory reserves = lendingPool.getReservesList();
     DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
-    UserReserveData[] memory userReservesData = new UserReserveData[](
-      user != address(0) ? reserves.length : 0
-    );
+    UserReserveData[] memory userReservesData =
+      new UserReserveData[](user != address(0) ? reserves.length : 0);
 
     for (uint256 i = 0; i < reserves.length; i++) {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(reserves[i]);
@@ -194,16 +197,20 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
 
       if (userConfig.isBorrowing(i)) {
         userReservesData[i].scaledVariableDebt = IVariableDebtToken(
-          baseData.variableDebtTokenAddress
-        ).scaledBalanceOf(user);
+          baseData
+            .variableDebtTokenAddress
+        )
+          .scaledBalanceOf(user);
         userReservesData[i].principalStableDebt = IStableDebtToken(baseData.stableDebtTokenAddress)
           .principalBalanceOf(user);
         if (userReservesData[i].principalStableDebt != 0) {
           userReservesData[i].stableBorrowRate = IStableDebtToken(baseData.stableDebtTokenAddress)
             .getUserStableRate(user);
           userReservesData[i].stableBorrowLastUpdateTimestamp = IStableDebtToken(
-            baseData.stableDebtTokenAddress
-          ).getUserLastUpdated(user);
+            baseData
+              .stableDebtTokenAddress
+          )
+            .getUserLastUpdated(user);
         }
       }
     }
