@@ -9,35 +9,35 @@ interface ILendingPool {
   /**
    * @dev Emitted on deposit()
    * @param reserve The address of the underlying asset of the reserve
-   * @param pool The address of the underlying pool of the reserve  
+   * @param pool The address of the underlying pool of the reserve
    * @param user The address initiating the deposit
    * @param onBehalfOf The beneficiary of the deposit, receiving the aTokens
    * @param amount The amount deposited
    * @param referral The referral code used
    **/
   event Deposit(
-    address  reserve,
-    address index pool,
+    address indexed  reserve,
+    address indexed pool,
     address user,
     address indexed onBehalfOf,
     uint256 amount,
-    uint16 indexed referral
+    uint16  referral
   );
 
   /**
    * @dev Emitted on withdraw()
    * @param reserve The address of the underlyng asset being withdrawn
-   * @param pool The address of the underlying pool of the reserve 
+   * @param pool The address of the underlying pool of the reserve
    * @param user The address initiating the withdrawal, owner of aTokens
    * @param to Address that will receive the underlying
    * @param amount The amount to be withdrawn
    **/
-  event Withdraw(address  reserve, address indexed pool, address indexed user, address indexed to, uint256 amount);
+  event Withdraw(address  indexed reserve, address  pool, address indexed user, address indexed to, uint256 amount);
 
   /**
    * @dev Emitted on borrow() and flashLoan() when debt needs to be opened
    * @param reserve The address of the underlying asset being borrowed
-   * @param pool The address of the underlying pool of the reserve 
+   * @param pool The address of the underlying pool of the reserve
    * @param user The address of the user initiating the borrow(), receiving the funds on borrow() or just
    * initiator of the transaction on flashLoan()
    * @param onBehalfOf The address that will be getting the debt
@@ -47,27 +47,27 @@ interface ILendingPool {
    * @param referral The referral code used
    **/
   event Borrow(
-    address  reserve,
+    address indexed reserve,
     address indexed pool,
     address user,
     address indexed onBehalfOf,
     uint256 amount,
     uint256 borrowRateMode,
     uint256 borrowRate,
-    uint16 indexed referral
+    uint16  referral
   );
 
   /**
    * @dev Emitted on repay()
    * @param reserve The address of the underlying asset of the reserve
-   * @param pool The address of the underlying pool of the reserve 
+   * @param pool The address of the underlying pool of the reserve
    * @param user The beneficiary of the repayment, getting his debt reduced
    * @param repayer The address of the user initiating the repay(), providing the funds
    * @param amount The amount repaid
    **/
   event Repay(
-    address reserve,
-    address indexed pool,
+    address indexed reserve,
+    address  pool,
     address indexed user,
     address  indexed repayer,
     uint256 amount
@@ -84,7 +84,7 @@ interface ILendingPool {
   /**
    * @dev Emitted on setUserUseReserveAsCollateral()
    * @param reserve The address of the underlying asset of the reserve
-  * @param pool The address of the underlying pool of the reserve  
+  * @param pool The address of the underlying pool of the reserve
    * @param user The address of the user enabling the usage as collateral
    **/
   event ReserveUsedAsCollateralEnabled(address indexed reserve, address indexed pool, address indexed user);
@@ -92,7 +92,7 @@ interface ILendingPool {
   /**
    * @dev Emitted on setUserUseReserveAsCollateral()
    * @param reserve The address of the underlying asset of the reserve
-   * @param pool The address of the underlying pool of the reserve 
+   * @param pool The address of the underlying pool of the reserve
    * @param user The address of the user enabling the usage as collateral
    **/
   event ReserveUsedAsCollateralDisabled(address indexed reserve, address indexed pool, address indexed user);
@@ -245,7 +245,7 @@ interface ILendingPool {
    * - E.g. User repays 100 USDC, burning 100 variable/stable debt tokens of the `onBehalfOf` address
    * @param asset The address of the borrowed underlying asset previously borrowed
    * @param amount The amount to repay
-   * @param pool The pool to be repaid 
+   * @param pool The pool to be repaid
    * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
    * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
    * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
@@ -420,7 +420,7 @@ interface ILendingPool {
     uint256 balanceToBefore
   ) external;
 
-  function getReservesList(address asset) external view returns (address[] memory);
+  function getReservesList(address pool) external view returns (address[] memory);
 
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 

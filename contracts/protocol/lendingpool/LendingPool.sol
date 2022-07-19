@@ -632,7 +632,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns the configuration of the reserve
-   * @param pool the address of the pool 
+   * @param pool the address of the pool
    * @param asset The address of the underlying asset of the reserve
    * @return The configuration of the reserve
    **/
@@ -698,11 +698,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Returns the list of the initialized reserves
    **/
-  function getReservesList(address asset) external view override returns (address[] memory) {
-    address[] memory _activeReserves = new address[](_reservesCount);
+  function getReservesList(address pool) external view override returns (address[] memory) {
+
+    address[] memory _activeReserves = new address[][](_reservesCount);
 
     for (uint256 i = 0; i < _reservesCount; i++) {
-      _activeReserves[i][asset] = _reservesList[i][asset];
+      _activeReserves[i][pool] = _reservesList[i][pool];
     }
     return _activeReserves;
   }
@@ -722,7 +723,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;

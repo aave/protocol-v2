@@ -61,7 +61,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
     returns (address[] memory)
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
-    return lendingPool.getReservesList();
+    return lendingPool.getReservesList(address pool);
   }
 
   function getReservesData(ILendingPoolAddressesProvider provider)
@@ -72,7 +72,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
   {
     IAaveOracle oracle = IAaveOracle(provider.getPriceOracle());
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
-    address[] memory reserves = lendingPool.getReservesList(address asset);
+    address[] memory reserves = lendingPool.getReservesList(address pool);
     AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
 
     for (uint256 i = 0; i < reserves.length; i++) {
@@ -175,7 +175,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
     returns (UserReserveData[] memory, uint8)
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
-    address[] memory reserves = lendingPool.getReservesList();
+    address[] memory reserves = lendingPool.getReservesList(address pool);
     DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
     UserReserveData[] memory userReservesData = new UserReserveData[](
