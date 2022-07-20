@@ -152,6 +152,7 @@ library GenericLogic {
    **/
   function calculateUserAccountData(
     address user,
+    address asset,
     mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap memory userConfig,
     mapping(uint256 => mapping(address => address)) storage reserves,
