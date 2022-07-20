@@ -143,7 +143,7 @@ library GenericLogic {
    * this includes the total liquidity/collateral/borrow balances in ETH,
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
    * @param user The address of the user
-   * @param asset The address of the underlying asset
+   * @param asset The address of the underlying pool
    * @param reservesData Data of all the reserves
    * @param userConfig The configuration of the user
    * @param reserves The list of the available reserves
@@ -152,7 +152,7 @@ library GenericLogic {
    **/
   function calculateUserAccountData(
     address user,
-    address asset,
+    address pool,
     mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap memory userConfig,
     mapping(uint256 => mapping(address => address)) storage reserves,
@@ -179,8 +179,8 @@ library GenericLogic {
         continue;
       }
 
-      vars.currentReserveAddress = reserves[vars.i][asset];
-      DataTypes.ReserveData storage currentReserve = reservesData[asset][vars.currentReserveAddress];
+      vars.currentReserveAddress = reserves[vars.i][pool];
+      DataTypes.ReserveData storage currentReserve = reservesData[pool][vars.currentReserveAddress];
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
         .configuration
