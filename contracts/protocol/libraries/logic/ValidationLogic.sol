@@ -353,7 +353,7 @@ library ValidationLogic {
     bool useAsCollateral,
     mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => mapping(address => address)) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view {
