@@ -14,7 +14,10 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
+import {MathUtils} from '../math/MathUtils.sol';
 import {DataTypes} from '../types/DataTypes.sol';
+import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 
 /**
  * @title ReserveLogic library
@@ -96,6 +99,10 @@ library ValidationLogic {
     uint256 userBorrowBalanceETH;
     uint256 availableLiquidity;
     uint256 healthFactor;
+    uint256 borrowCap;
+    uint256 totalSupplyVariableDebt;
+    uint256 totalDebt;
+    uint256 assetUnit;
     bool isActive;
     bool isFrozen;
     bool borrowingEnabled;
@@ -181,6 +188,31 @@ library ValidationLogic {
       vars.amountOfCollateralNeededETH <= vars.userCollateralBalanceETH,
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
+
+    uint256 scaledVariableDebt =
+      IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
+
+    // uint256 cumulatedVariableBorrowInterest =
+    //   MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
+    // newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
+
+    vars.borrowCap = ReserveConfiguration.getBorrowCap(reserve.configuration);
+
+    DataTypes.ReserveCache memory reserveCache;
+    (
+      reserveCache.currPrincipalStableDebt,
+      reserveCache.currTotalStableDebt,
+      reserveCache.currAvgStableBorrowRate,
+      reserveCache.stableDebtLastUpdateTimestamp
+    ) = IStableDebtToken(reserveCache.stableDebtTokenAddress).getSupplyData();
+
+    if (vars.borrowCap != 0) {
+      vars.totalSupplyVariableDebt = scaledVariableDebt.rayMul(reserve.variableBorrowIndex);
+
+      vars.totalDebt = reserveCache.currTotalStableDebt + vars.totalSupplyVariableDebt + amount;
+
+      require(vars.totalDebt <= vars.borrowCap * vars.assetUnit, Errors.BORROW_CAP_EXCEEDED);
+    }
 
     /**
      * Following conditions need to be met if the user is borrowing at a stable rate:

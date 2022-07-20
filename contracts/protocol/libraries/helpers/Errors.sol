@@ -105,6 +105,8 @@ library Errors {
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
   string public constant INVALID_BORROW_CAP = '81'; // 'Invalid borrow cap for the reserve'
   string public constant INVALID_SUPPLY_CAP = '82'; // 'Invalid supply cap for the reserve'
+  string public constant BORROW_CAP_EXCEEDED = '50'; // 'Borrow cap is exceeded'
+  string public constant SUPPLY_CAP_EXCEEDED = '51'; // 'Supply cap is exceeded'
 
   enum CollateralManagerErrors {
     NO_ERROR,
