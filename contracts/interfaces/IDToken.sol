@@ -16,7 +16,7 @@ interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
   event Mint(address indexed from, uint256 value, uint256 index);
 
   /**
-   * @dev Mints `amount` aTokens to `user`
+   * @dev Mints `amount` dTokens to `user`
    * @param user The address receiving the minted tokens
    * @param amount The amount of tokens getting minted
    * @param index The new liquidity index of the reserve

@@ -7,7 +7,7 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 import {IUiPoolDataProviderV3} from './interfaces/IUiPoolDataProviderV3.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IAaveOracle} from './interfaces/IAaveOracle.sol';
-import {IDToken} from '../interfaces/IAToken.sol';
+import {IDToken} from '../interfaces/IDToken.sol';
 import {IVariableDebtToken} from '../interfaces/IVariableDebtToken.sol';
 import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
 import {WadRayMath} from '../protocol/libraries/math/WadRayMath.sol';
