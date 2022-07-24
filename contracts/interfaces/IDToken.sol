@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
-import {IInitializableDToken} from './IInitializableAToken.sol';
+import {IInitializableDToken} from './IInitializableDToken.sol';
 import {IAaveIncentivesController} from './IAaveIncentivesController.sol';
 
 interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
@@ -29,8 +29,8 @@ interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
   ) external returns (bool);
 
   /**
-   * @dev Emitted after aTokens are burned
-   * @param from The owner of the aTokens, getting them burned
+   * @dev Emitted after dTokens are burned
+   * @param from The owner of the dTokens, getting them burned
    * @param target The address that will receive the underlying
    * @param value The amount being burned
    * @param index The new liquidity index of the reserve
@@ -47,8 +47,8 @@ interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
   event BalanceTransfer(address indexed from, address indexed to, uint256 value, uint256 index);
 
   /**
-   * @dev Burns aTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
-   * @param user The owner of the aTokens, getting them burned
+   * @dev Burns dTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
+   * @param user The owner of the dTokens, getting them burned
    * @param receiverOfUnderlying The address that will receive the underlying
    * @param amount The amount being burned
    * @param index The new liquidity index of the reserve
@@ -61,15 +61,15 @@ interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
   ) external;
 
   /**
-   * @dev Mints aTokens to the reserve treasury
+   * @dev Mints dTokens to the reserve treasury
    * @param amount The amount of tokens getting minted
    * @param index The new liquidity index of the reserve
    */
   function mintToTreasury(uint256 amount, uint256 index) external;
 
   /**
-   * @dev Transfers aTokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
-   * @param from The address getting liquidated, current owner of the aTokens
+   * @dev Transfers dTokens in the event of a borrow being liquidated, in case the liquidators reclaims the dToken
+   * @param from The address getting liquidated, current owner of the dTokens
    * @param to The recipient
    * @param value The amount of tokens getting transferred
    **/
@@ -89,7 +89,7 @@ interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
   function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
 
   /**
-   * @dev Invoked to execute actions on the aToken side after a repayment.
+   * @dev Invoked to execute actions on the dToken side after a repayment.
    * @param user The user executing the repayment
    * @param amount The amount getting repaid
    **/
@@ -101,7 +101,7 @@ interface IDToken is IERC20, IScaledBalanceToken, IInitializableDToken {
   function getIncentivesController() external view returns (IAaveIncentivesController);
 
   /**
-   * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
+   * @dev Returns the address of the underlying asset of this dToken (E.g. WETH for dWETH)
    **/
   function UNDERLYING_ASSET_ADDRESS() external view returns (address);
 }

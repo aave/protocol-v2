@@ -18,7 +18,7 @@ import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveLogic library
- * @author Aave
+ * @author Stakefair
  * @notice Implements functions to validate the different actions of the protocol
  */
 library ValidationLogic {
