@@ -17,23 +17,19 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
  * @author Aave
  **/
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
-
-
   mapping(bytes32 => address) private _addresses;
 
-  bytes32 private constant LENDING_POOL //= 'LENDING_POOL';
-  bytes32 private constant LENDING_POOL_CONFIGURATOR //= 'LENDING_POOL_CONFIGURATOR';
-  bytes32 private constant POOL_ADMIN //= 'POOL_ADMIN';
-  bytes32 private constant EMERGENCY_ADMIN //= 'EMERGENCY_ADMIN';
+  bytes32 private constant LENDING_POOL; //= 'LENDING_POOL';
+  bytes32 private constant LENDING_POOL_CONFIGURATOR; //= 'LENDING_POOL_CONFIGURATOR';
+  bytes32 private constant POOL_ADMIN; //= 'POOL_ADMIN';
+  bytes32 private constant EMERGENCY_ADMIN; //= 'EMERGENCY_ADMIN';
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
 
-  constructor( bytes32  _LENDING_POOL) public {
-     
-   LENDING_POOL = _LENDINGPOOL;
+  constructor(bytes32 _LENDING_POOL) public {
+    LENDING_POOL = _LENDING_POOL;
   }
-
 
   /**
    * @dev General function to update the implementation of a proxy registered with
@@ -64,7 +60,6 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     _addresses[id] = newAddress;
     emit AddressSet(id, newAddress, false);
   }
-
 
   /**
    * @dev Returns an address by id
@@ -139,10 +134,10 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     return getAddress(POOL_ADMIN);
   }
 
-  function setPoolAdmin(bytes32 _poolAdmin, address admin) external override onlyOwner {
-     POOL_ADMIN = _poolAdmin;
-    _addresses[POOL_ADMIN] = admin;
-    emit ConfigurationAdminUpdated(admin);
+  function setPoolAdmin(bytes32 _poolAdmin, address adminAddress) external override onlyOwner {
+    POOL_ADMIN = _poolAdmin;
+    _addresses[POOL_ADMIN] = adminAddress;
+    emit ConfigurationAdminUpdated(adminAddress);
   }
 
   function getEmergencyAdmin() external view override returns (address) {
@@ -197,6 +192,4 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
       proxy.upgradeToAndCall(newAddress, params);
     }
   }
-
-  f
 }

@@ -55,6 +55,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    *   bytes32[] s List of s param for the permit signature
    */
   function executeOperation(
+    address pool,
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
@@ -80,6 +81,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
 
     for (uint256 i = 0; i < assets.length; i++) {
       _swapLiquidity(
+        pool,
         assets[i],
         decodedParams.assetToSwapToList[i],
         amounts[i],
@@ -115,11 +117,13 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    * does not affect the user position.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and
    * perform the swap.
+   * @param pool Address of the underlying pool
    * @param assetToSwapFromList List of addresses of the underlying asset to be swap from
    * @param assetToSwapToList List of addresses of the underlying asset to be swap to and deposited
    * @param amountToSwapList List of amounts to be swapped. If the amount exceeds the balance, the total balance is used for the swap
    * @param minAmountsToReceive List of min amounts to be received from the swap
    * @param permitParams List of struct containing the permit signatures
+
    *   uint256 permitAmount Amount for the permit signature
    *   uint256 deadline Deadline for the permit signature
    *   uint8 v param for the permit signature
@@ -128,6 +132,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
    * @param useEthPath true if the swap needs to occur using ETH in the routing, false otherwise
    */
   function swapAndDeposit(
+    address pool,
     address[] calldata assetToSwapFromList,
     address[] calldata assetToSwapToList,
     uint256[] calldata amountToSwapList,
@@ -154,6 +159,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
         : amountToSwapList[vars.i];
 
       _pullAToken(
+        pool,
         assetToSwapFromList[vars.i],
         vars.aToken,
         msg.sender,
@@ -172,12 +178,13 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
       // Deposit new reserve
       IERC20(assetToSwapToList[vars.i]).safeApprove(address(LENDING_POOL), 0);
       IERC20(assetToSwapToList[vars.i]).safeApprove(address(LENDING_POOL), vars.receivedAmount);
-      LENDING_POOL.deposit(assetToSwapToList[vars.i], vars.receivedAmount, msg.sender, 0);
+      LENDING_POOL.deposit(pool, assetToSwapToList[vars.i], vars.receivedAmount, msg.sender, 0);
     }
   }
 
   /**
    * @dev Swaps an `amountToSwap` of an asset to another and deposits the funds on behalf of the initiator.
+   * @param pool Address of the underlying pool
    * @param assetFrom Address of the underlying asset to be swap from
    * @param assetTo Address of the underlying asset to be swap to and deposited
    * @param amount Amount from flash loan
@@ -198,6 +205,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
   }
 
   function _swapLiquidity(
+    address pool,
     address assetFrom,
     address assetTo,
     uint256 amount,
@@ -228,12 +236,12 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     // Deposit new reserve
     IERC20(assetTo).safeApprove(address(LENDING_POOL), 0);
     IERC20(assetTo).safeApprove(address(LENDING_POOL), vars.receivedAmount);
-    LENDING_POOL.deposit(assetTo, vars.receivedAmount, initiator, 0);
+    LENDING_POOL.deposit(pool, assetTo, vars.receivedAmount, initiator, 0);
 
     vars.flashLoanDebt = amount.add(premium);
     vars.amountToPull = vars.amountToSwap.add(premium);
 
-    _pullAToken(assetFrom, vars.aToken, initiator, vars.amountToPull, permitSignature);
+    _pullAToken(pool, assetFrom, vars.aToken, initiator, vars.amountToPull, permitSignature);
 
     // Repay flash loan
     IERC20(assetFrom).safeApprove(address(LENDING_POOL), 0);

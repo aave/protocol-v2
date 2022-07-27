@@ -26,6 +26,8 @@ import {UserConfiguration} from '../libraries/configuration/UserConfiguration.so
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
+//import "../../../../demand-pool/demand-v1/contracts/protocol/libraries/configuration/UserConfiguration.sol";
+
 /**
  * @title LendingPool contract
  * @dev Main point of interaction with an Aave protocol's market
@@ -123,11 +125,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     if (isFirstDeposit) {
-      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
-      emit ReserveUsedAsCollateralEnabled(asset, pool,onBehalfOf);
+      _usersConfig[onBehalfOf].UserConfiguration.setUsingAsCollateral(reserve.id, true);
+      emit ReserveUsedAsCollateralEnabled(asset, pool, onBehalfOf);
     }
 
-    emit Deposit(asset,pool, msg.sender, onBehalfOf, amount, referralCode);
+    emit Deposit(asset, pool, msg.sender, onBehalfOf, amount, referralCode);
   }
 
   /**
@@ -144,7 +146,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function withdraw(
     address asset,
-    address pool
+    address pool,
     uint256 amount,
     address to
   ) external override whenNotPaused returns (uint256) {
@@ -183,7 +185,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset,pool, msg.sender, to, amountToWithdraw);
+    emit Withdraw(asset, pool, msg.sender, to, amountToWithdraw);
 
     return amountToWithdraw;
   }
@@ -294,7 +296,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IAToken(aToken).handleRepayment(msg.sender, paybackAmount);
 
-    emit Repay(asset,pool, onBehalfOf, msg.sender, paybackAmount);
+    emit Repay(asset, pool, onBehalfOf, msg.sender, paybackAmount);
 
     return paybackAmount;
   }
@@ -305,7 +307,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param rateMode The rate mode that the user wants to swap to
    * @param pool The address of the lending pool
    **/
-  function swapBorrowRateMode(address asset, address pool, uint256 rateMode) external override whenNotPaused {
+  function swapBorrowRateMode(
+    address asset,
+    address pool,
+    uint256 rateMode
+  ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
@@ -340,7 +346,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         msg.sender,
         msg.sender,
         variableDebt,
-        reserve.currentStableBorrowRateD
+        reserve.currentStableBorrowRate
+      );
+    }
   }
 
   /**
@@ -390,11 +398,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param pool The address of the underlying pool
    * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
    **/
-  function setUserUseReserveAsCollateral(address asset,address pool, bool useAsCollateral)
-    external
-    override
-    whenNotPaused
-  {
+  function setUserUseReserveAsCollateral(
+    address asset,
+    address pool,
+    bool useAsCollateral
+  ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset][pool];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
@@ -412,7 +420,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
 
     if (useAsCollateral) {
-      emit ReserveUsedAsCollateralEnabled(asset,pool, msg.sender);
+      emit ReserveUsedAsCollateralEnabled(asset, pool, msg.sender);
     } else {
       emit ReserveUsedAsCollateralDisabled(asset, pool, msg.sender);
     }
@@ -699,7 +707,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Returns the list of the initialized reserves
    **/
   function getReservesList(address pool) external view override returns (address[] memory) {
-
     address[] memory _activeReserves = new address[][](_reservesCount);
 
     for (uint256 i = 0; i < _reservesCount; i++) {
@@ -795,7 +802,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function initReserve(
     address asset,
-    address pool
+    address pool,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
@@ -832,11 +839,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param pool The address of the pool of the reserve
    * @param configuration The new configuration bitmap
    **/
-  function setConfiguration(address asset, address pool, uint256 configuration)
-    external
-    override
-    onlyLendingPoolConfigurator
-  {
+  function setConfiguration(
+    address asset,
+    address pool,
+    uint256 configuration
+  ) external override onlyLendingPoolConfigurator {
     _reserves[asset][pool].configuration.data = configuration;
   }
 

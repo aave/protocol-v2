@@ -44,7 +44,7 @@ library GenericLogic {
    * @dev Checks if a specific balance decrease is allowed
    * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
    * @param asset The address of the underlying asset of the reserve
-   * @param pool The address of the pool of the reserve  
+   * @param pool The address of the pool of the reserve
    * @param user The address of the user
    * @param amount The amount to decrease
    * @param reservesData The data of all the reserves
@@ -64,7 +64,9 @@ library GenericLogic {
     uint256 reservesCount,
     address oracle
   ) external view returns (bool) {
-    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset][pool].id)) {
+    if (
+      !userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset][pool].id)
+    ) {
       return true;
     }
 
@@ -84,7 +86,15 @@ library GenericLogic {
       ,
       vars.avgLiquidationThreshold,
 
-    ) = calculateUserAccountData(user, reservesData, userConfig, reserves, reservesCount, oracle);
+    ) = calculateUserAccountData(
+      user,
+      pool,
+      reservesData,
+      userConfig,
+      reserves,
+      reservesCount,
+      oracle
+    );
 
     if (vars.totalDebtInETH == 0) {
       return true;
@@ -143,7 +153,7 @@ library GenericLogic {
    * this includes the total liquidity/collateral/borrow balances in ETH,
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
    * @param user The address of the user
-   * @param asset The address of the underlying pool
+   * @param pool The address of the underlying pool
    * @param reservesData Data of all the reserves
    * @param userConfig The configuration of the user
    * @param reserves The list of the available reserves

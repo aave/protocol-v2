@@ -274,6 +274,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
    */
   function _pullAToken(
     address reserve,
+    address pool,
     address reserveAToken,
     address user,
     uint256 amount,
@@ -295,7 +296,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     IERC20(reserveAToken).safeTransferFrom(user, address(this), amount);
 
     // withdraw reserve
-    LENDING_POOL.withdraw(reserve, amount, address(this));
+    LENDING_POOL.withdraw(reserve, pool, amount, address(this));
   }
 
   /**

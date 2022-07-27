@@ -40,7 +40,7 @@ library UserConfiguration {
     DataTypes.UserConfigurationMap storage self,
     uint256 reserveIndex,
     bool usingAsCollateral
-  ) internal {
+  ) external {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
     self.data =
       (self.data & ~(1 << (reserveIndex * 2 + 1))) |

@@ -49,7 +49,7 @@ library ValidationLogic {
   /**
    * @dev Validates a withdraw action
    * @param reserveAddress The address of the reserve
-   * @param poolAddress The address of the pool
+   * @param pool The address of the pool
    * @param amount The amount to be withdrawn
    * @param userBalance The balance of the user
    * @param reservesData The reserves state
@@ -59,7 +59,7 @@ library ValidationLogic {
    * @param oracle The price oracle
    */
   function validateWithdraw(
-    address poolAddress,
+    address pool,
     address reserveAddress,
     uint256 amount,
     uint256 userBalance,
@@ -72,11 +72,12 @@ library ValidationLogic {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
-    (bool isActive, , , ) = reservesData[reserveAddress][poolAddress].configuration.getFlags();
+    (bool isActive, , , ) = reservesData[reserveAddress][pool].configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
     require(
       GenericLogic.balanceDecreaseAllowed(
+        pool,
         reserveAddress,
         msg.sender,
         amount,
@@ -162,6 +163,7 @@ library ValidationLogic {
       vars.currentLiquidationThreshold,
       vars.healthFactor
     ) = GenericLogic.calculateUserAccountData(
+      pool,
       userAddress,
       reservesData,
       userConfig,
@@ -340,6 +342,7 @@ library ValidationLogic {
   /**
    * @dev Validates the action of setting an asset as collateral
    * @param reserve The state of the reserve that the user is enabling or disabling as collateral
+   * @param pool The address of the underlying pool
    * @param reserveAddress The address of the reserve
    * @param reservesData The data of all the reserves
    * @param userConfig The state of the user for the specific reserve
@@ -348,7 +351,7 @@ library ValidationLogic {
    */
   function validateSetUseReserveAsCollateral(
     DataTypes.ReserveData storage reserve,
-    address poolAddress,
+    address pool,
     address reserveAddress,
     bool useAsCollateral,
     mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
@@ -364,6 +367,7 @@ library ValidationLogic {
     require(
       useAsCollateral ||
         GenericLogic.balanceDecreaseAllowed(
+          pool,
           reserveAddress,
           msg.sender,
           underlyingBalance,
@@ -450,15 +454,17 @@ library ValidationLogic {
    * @param oracle The price oracle
    */
   function validateTransfer(
+    address pool,
     address from,
     mapping(address => mapping(address => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
-    mapping(uint256 => mapping(address =>address)) storage reserves,
+    mapping(uint256 => mapping(address => address)) storage reserves,
     uint256 reservesCount,
     address oracle
   ) internal view {
     (, , , , uint256 healthFactor) =
       GenericLogic.calculateUserAccountData(
+        pool,
         from,
         reservesData,
         userConfig,

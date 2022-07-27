@@ -49,6 +49,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
    *   bytes32 s S param for the permit signature
    */
   function executeOperation(
+    address pool,
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
@@ -60,6 +61,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     RepayParams memory decodedParams = _decodeParams(params);
 
     _swapAndRepay(
+      pool,
       decodedParams.collateralAsset,
       assets[0],
       amounts[0],
@@ -79,6 +81,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
    * without using flash loans. This method can be used when the temporary transfer of the collateral asset to this
    * contract does not affect the user position.
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset
+   * @param pool Address of the underlying pool
    * @param collateralAsset Address of asset to be swapped
    * @param debtAsset Address of debt asset
    * @param collateralAmount Amount of the collateral to be swapped
@@ -89,6 +92,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
 
    */
   function swapAndRepay(
+    address pool,
     address collateralAsset,
     address debtAsset,
     uint256 collateralAmount,
@@ -121,6 +125,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
 
       // Pull aTokens from user
       _pullAToken(
+        pool,
         collateralAsset,
         collateralReserveData.aTokenAddress,
         msg.sender,
@@ -133,6 +138,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     } else {
       // Pull aTokens from user
       _pullAToken(
+        pool,
         collateralAsset,
         collateralReserveData.aTokenAddress,
         msg.sender,
@@ -144,12 +150,13 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     // Repay debt. Approves 0 first to comply with tokens that implement the anti frontrunning approval fix
     IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
     IERC20(debtAsset).safeApprove(address(LENDING_POOL), amountToRepay);
-    LENDING_POOL.repay(debtAsset, amountToRepay, debtRateMode, msg.sender);
+    LENDING_POOL.repay(pool, debtAsset, amountToRepay, debtRateMode, msg.sender);
   }
 
   /**
    * @dev Perform the repay of the debt, pulls the initiator collateral and swaps to repay the flash loan
    *
+   * @param pool Address of the underlying pool
    * @param collateralAsset Address of token to be swapped
    * @param debtAsset Address of debt token to be received from the swap
    * @param amount Amount of the debt to be repaid
@@ -160,6 +167,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
    * @param permitSignature struct containing the permit signature
    */
   function _swapAndRepay(
+    address pool,
     address collateralAsset,
     address debtAsset,
     uint256 amount,
@@ -176,7 +184,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
     IERC20(debtAsset).safeApprove(address(LENDING_POOL), amount);
     uint256 repaidAmount = IERC20(debtAsset).balanceOf(address(this));
-    LENDING_POOL.repay(debtAsset, amount, rateMode, initiator);
+    LENDING_POOL.repay(pool, debtAsset, amount, rateMode, initiator);
     repaidAmount = repaidAmount.sub(IERC20(debtAsset).balanceOf(address(this)));
 
     if (collateralAsset != debtAsset) {
@@ -192,6 +200,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
 
       // Pull aTokens from user
       _pullAToken(
+        pool,
         collateralAsset,
         collateralReserveData.aTokenAddress,
         initiator,
@@ -210,6 +219,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     } else {
       // Pull aTokens from user
       _pullAToken(
+        pool,
         collateralAsset,
         collateralReserveData.aTokenAddress,
         initiator,

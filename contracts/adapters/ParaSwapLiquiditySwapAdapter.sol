@@ -40,6 +40,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
    *   PermitSignature permitParams Struct containing the permit signatures, set to all zeroes if not used
    */
   function executeOperation(
+    address pool,
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
@@ -63,17 +64,15 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
       bytes memory swapCalldata,
       IParaSwapAugustus augustus,
       PermitSignature memory permitParams
-    ) = abi.decode(params, (
-      IERC20Detailed,
-      uint256,
-      uint256,
-      bytes,
-      IParaSwapAugustus,
-      PermitSignature
-    ));
+    ) =
+      abi.decode(
+        params,
+        (IERC20Detailed, uint256, uint256, bytes, IParaSwapAugustus, PermitSignature)
+      );
 
     _swapLiquidity(
       swapAllBalanceOffset,
+      pool,
       swapCalldata,
       augustus,
       permitParams,
@@ -94,6 +93,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
    * The user should give this contract allowance to pull the ATokens in order to withdraw the underlying asset and perform the swap.
    * @param assetToSwapFrom Address of the underlying asset to be swapped from
    * @param assetToSwapTo Address of the underlying asset to be swapped to and deposited
+   * @param pool address of the underlying pool
    * @param amountToSwap Amount to be swapped, or maximum amount when swapping all balance
    * @param minAmountToReceive Minimum amount to be received from the swap
    * @param swapAllBalanceOffset Set to offset of fromAmount in Augustus calldata if wanting to swap all balance, otherwise 0
@@ -104,6 +104,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
   function swapAndDeposit(
     IERC20Detailed assetToSwapFrom,
     IERC20Detailed assetToSwapTo,
+    address pool,
     uint256 amountToSwap,
     uint256 minAmountToReceive,
     uint256 swapAllBalanceOffset,
@@ -121,6 +122,7 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
     }
 
     _pullATokenAndWithdraw(
+      pool,
       address(assetToSwapFrom),
       aToken,
       msg.sender,
@@ -128,19 +130,20 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
       permitParams
     );
 
-    uint256 amountReceived = _sellOnParaSwap(
-      swapAllBalanceOffset,
-      swapCalldata,
-      augustus,
-      assetToSwapFrom,
-      assetToSwapTo,
-      amountToSwap,
-      minAmountToReceive
-    );
+    uint256 amountReceived =
+      _sellOnParaSwap(
+        swapAllBalanceOffset,
+        swapCalldata,
+        augustus,
+        assetToSwapFrom,
+        assetToSwapTo,
+        amountToSwap,
+        minAmountToReceive
+      );
 
     assetToSwapTo.safeApprove(address(LENDING_POOL), 0);
     assetToSwapTo.safeApprove(address(LENDING_POOL), amountReceived);
-    LENDING_POOL.deposit(address(assetToSwapTo), amountReceived, msg.sender, 0);
+    LENDING_POOL.deposit(pool, address(assetToSwapTo), amountReceived, msg.sender, 0);
   }
 
   /**
@@ -156,8 +159,9 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
    * @param assetToSwapTo Address of the underlying asset to be swapped to and deposited
    * @param minAmountToReceive Min amount to be received from the swap
    */
-  function _swapLiquidity (
+  function _swapLiquidity(
     uint256 swapAllBalanceOffset,
+    address pool,
     bytes memory swapCalldata,
     IParaSwapAugustus augustus,
     PermitSignature memory permitParams,
@@ -181,21 +185,23 @@ contract ParaSwapLiquiditySwapAdapter is BaseParaSwapSellAdapter, ReentrancyGuar
       require(balance >= amountToSwap.add(premium), 'INSUFFICIENT_ATOKEN_BALANCE');
     }
 
-    uint256 amountReceived = _sellOnParaSwap(
-      swapAllBalanceOffset,
-      swapCalldata,
-      augustus,
-      assetToSwapFrom,
-      assetToSwapTo,
-      amountToSwap,
-      minAmountToReceive
-    );
+    uint256 amountReceived =
+      _sellOnParaSwap(
+        swapAllBalanceOffset,
+        swapCalldata,
+        augustus,
+        assetToSwapFrom,
+        assetToSwapTo,
+        amountToSwap,
+        minAmountToReceive
+      );
 
     assetToSwapTo.safeApprove(address(LENDING_POOL), 0);
     assetToSwapTo.safeApprove(address(LENDING_POOL), amountReceived);
-    LENDING_POOL.deposit(address(assetToSwapTo), amountReceived, initiator, 0);
+    LENDING_POOL.deposit(address(assetToSwapTo), pool, amountReceived, initiator, 0);
 
     _pullATokenAndWithdraw(
+      pool,
       address(assetToSwapFrom),
       aToken,
       initiator,
