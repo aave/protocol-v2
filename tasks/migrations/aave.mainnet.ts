@@ -40,10 +40,16 @@ task('aave:mainnet', 'Deploy development enviroment')
     console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
+    
+    console.log('7. Deploy UI helpers');
+    await DRE.run('deploy-UiPoolDataProviderV2V3', { verify });
+    await DRE.run('deploy-UiIncentiveDataProviderV2V3', { verify });
+
     const poolConfig = await getLendingPoolConfiguratorProxy();
-
+    
+    console.log("Finished deployment, unpausing protocol");
     await poolConfig.setPoolPause(false);
-
+    
     if (verify) {
       printContracts();
       console.log('7. Veryfing contracts');

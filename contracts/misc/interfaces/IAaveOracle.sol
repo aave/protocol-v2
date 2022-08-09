@@ -14,4 +14,11 @@ interface IAaveOracle {
     @dev returns the asset price in ETH
      */
   function getAssetPrice(address asset) external view returns (uint256);
+
+  /**
+   * @notice Returns the address of the source for an asset address
+   * @param asset The address of the asset
+   * @return The address of the source
+   */
+  function getSourceOfAsset(address asset) external view returns (address);
 }
