@@ -68,7 +68,7 @@ export const setInitialMarketRatesInRatesOracleByHelper = async (
 
 export const setInitialAssetPricesInOracle = async (
   prices: { [key: string]: string },
-  assetsAddresses: iAssetBase<tEthereumAddress>,
+  assetsAddresses: { [key: string]: string },
   priceOracleInstance: PriceOracle
 ) => {
   for (const [assetSymbol, price] of Object.entries(prices) as [string, string][]) {
