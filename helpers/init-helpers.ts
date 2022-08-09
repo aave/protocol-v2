@@ -10,6 +10,7 @@ import { chunk, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
   getATokensAndRatesHelper,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
 } from './contracts-getters';
@@ -20,6 +21,7 @@ import {
 import { BigNumberish } from 'ethers';
 import { ConfigNames } from './configuration';
 import { deployRateStrategy } from './contracts-deployments';
+import { ZERO_ADDRESS } from './constants';
 
 export const getATokenExtraParams = async (aTokenName: string, tokenAddress: tEthereumAddress) => {
   console.log(aTokenName);
@@ -86,6 +88,12 @@ export const initReservesByHelper = async (
   for (let [symbol, params] of reserves) {
     if (!tokenAddresses[symbol]) {
       console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
+      continue;
+    }
+    const pool = await getLendingPool(await addressProvider.getLendingPool());
+    const poolReserve = await pool.getReserveData(tokenAddresses[symbol]);
+    if (poolReserve.aTokenAddress !== ZERO_ADDRESS) {
+      console.log(`- Skipping init of ${symbol} due is already initialized`);
       continue;
     }
     const { strategy, aTokenImpl, reserveDecimals } = params;

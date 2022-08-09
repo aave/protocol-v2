@@ -1,9 +1,5 @@
 import { task } from 'hardhat/config';
-import {
-  deployPriceOracle,
-  deployAaveOracle,
-  deployLendingRateOracle,
-} from '../../helpers/contracts-deployments';
+import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import {
   setInitialAssetPricesInOracle,
   deployAllMockAggregators,
@@ -17,6 +13,7 @@ import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
   getPairsTokenAggregator,
+  getPriceOracle,
 } from '../../helpers/contracts-getters';
 
 task('dev:deploy-oracles', 'Deploy oracles for dev environment')
@@ -45,22 +42,21 @@ task('dev:deploy-oracles', 'Deploy oracles for dev environment')
     const addressesProvider = await getLendingPoolAddressesProvider();
     const admin = await addressesProvider.getPoolAdmin();
 
-    const fallbackOracle = await deployPriceOracle(verify);
+    const fallbackOracle = await getPriceOracle('0x0F9d5ED72f6691E47abe2f79B890C3C33e924092');
     await waitForTx(await fallbackOracle.setEthUsdPrice(MockUsdPriceInWei));
     await setInitialAssetPricesInOracle(AllAssetsInitialPrices, mockTokensAddress, fallbackOracle);
 
     const mockAggregators = await deployAllMockAggregators(AllAssetsInitialPrices, verify);
 
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
-    const allAggregatorsAddresses = getAllAggregatorsAddresses(mockAggregators);
 
     const [tokens, aggregators] = getPairsTokenAggregator(
       allTokenAddresses,
-      allAggregatorsAddresses,
+      mockAggregators,
       OracleQuoteCurrency
     );
 
-    await deployAaveOracle(
+    const aaveOracle = await deployAaveOracle(
       [
         tokens,
         aggregators,
@@ -85,4 +81,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev environment')
       lendingRateOracle,
       admin
     );
+    // Register the proxy price provider on the addressesProvider
+    await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));
+    await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
   });

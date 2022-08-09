@@ -1,5 +1,4 @@
 import BigNumber from 'bignumber.js';
-import { eEthereumNetwork } from './types';
 
 // ----------------
 // MATH

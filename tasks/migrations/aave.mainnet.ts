@@ -3,6 +3,7 @@ import { checkVerification } from '../../helpers/etherscan-verification';
 import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
+import { getLendingPoolConfiguratorProxy } from '../../helpers/contracts-getters';
 
 task('aave:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -17,6 +18,9 @@ task('aave:mainnet', 'Deploy development enviroment')
     }
 
     console.log('Migration started\n');
+
+    console.log('0. Deploy address provider registry');
+    await DRE.run('full:deploy-address-provider-registry', { pool: POOL_NAME });
 
     console.log('1. Deploy address provider');
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
@@ -35,6 +39,10 @@ task('aave:mainnet', 'Deploy development enviroment')
 
     console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
+
+    const poolConfig = await getLendingPoolConfiguratorProxy();
+
+    await poolConfig.setPoolPause(false);
 
     if (verify) {
       printContracts();
