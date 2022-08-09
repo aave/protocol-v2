@@ -17,5 +17,4 @@ task(
     const uiIncentiveDataProviderV2V3 = await deployUiIncentiveDataProviderV2V3(verify);
 
     console.log('UiIncentiveDataProviderV2V3 deployed at:', uiIncentiveDataProviderV2V3.address);
-    console.log(`\tFinished UiIncentiveDataProviderV2V3 deployment`);
   });

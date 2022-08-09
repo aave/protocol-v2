@@ -100,20 +100,12 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       await deployWalletBalancerProvider(verify);
 
-      const uiPoolDataProvider = await deployUiPoolDataProviderV2(
-        chainlinkAggregatorProxy[localBRE.network.name],
-        chainlinkEthUsdAggregatorProxy[localBRE.network.name],
-        verify
-      );
-      console.log('UiPoolDataProvider deployed at:', uiPoolDataProvider.address);
-
       const lendingPoolAddress = await addressesProvider.getLendingPool();
 
       let gateWay = getParamPerNetwork(WethGateway, network);
       if (!notFalsyOrZeroAddress(gateWay)) {
         gateWay = (await getWETHGateway()).address;
       }
-      console.log('GATEWAY', gateWay);
       await authorizeWETHGateway(gateWay, lendingPoolAddress);
     } catch (err) {
       console.error(err);
