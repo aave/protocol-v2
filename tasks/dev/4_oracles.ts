@@ -30,15 +30,18 @@ task('dev:deploy-oracles', 'Deploy oracles for dev environment')
       OracleQuoteUnit,
     } = poolConfig as ICommonConfiguration;
 
-    const defaultTokenList = {
+    const defaultTokenList: { [key: string]: string } = {
       ...Object.fromEntries(Object.keys(TokenContractId).map((symbol) => [symbol, ''])),
       USD: UsdAddress,
-    } as iAssetBase<string>;
+    };
     const mockTokens = await getAllMockedTokens();
-    const mockTokensAddress = Object.keys(mockTokens).reduce<iAssetBase<string>>((prev, curr) => {
-      prev[curr as keyof iAssetBase<string>] = mockTokens[curr].address;
-      return prev;
-    }, defaultTokenList);
+    const mockTokensAddress = Object.keys(mockTokens).reduce<{ [key: string]: string }>(
+      (prev, curr) => {
+        prev[curr] = mockTokens[curr].address;
+        return prev;
+      },
+      defaultTokenList
+    );
     const addressesProvider = await getLendingPoolAddressesProvider();
     const admin = await addressesProvider.getPoolAdmin();
 

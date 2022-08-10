@@ -24,7 +24,6 @@ import { deployRateStrategy } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
 
 export const getATokenExtraParams = async (aTokenName: string, tokenAddress: tEthereumAddress) => {
-  console.log(aTokenName);
   switch (aTokenName) {
     default:
       return '0x10';
