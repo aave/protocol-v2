@@ -57,6 +57,7 @@ export const AmmConfig: IAmmConfiguration = {
     BptBALWETH: strategyBALWETH,
   },
   ReserveAssets: {
+    [eEthereumNetwork.goerli]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},

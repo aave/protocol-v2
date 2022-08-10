@@ -23,6 +23,7 @@ import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
+  getLendingPoolConfiguratorProxy,
   getWETHGateway,
 } from '../../helpers/contracts-getters';
 import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
@@ -52,6 +53,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     );
 
     const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
+    await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
 
     const admin = await addressesProvider.getPoolAdmin();
 
@@ -88,8 +90,6 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     await deployWalletBalancerProvider(verify);
 
-    await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
-
     const lendingPoolAddress = await addressesProvider.getLendingPool();
 
     let gateway = getParamPerNetwork(WethGateway, network);
@@ -97,4 +97,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       gateway = (await getWETHGateway()).address;
     }
     await authorizeWETHGateway(gateway, lendingPoolAddress);
+
+    const poolConfigurator = await getLendingPoolConfiguratorProxy();
+    await waitForTx(await poolConfigurator.setPoolPause(false));
   });

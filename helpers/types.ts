@@ -13,7 +13,9 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
+
   tenderly = 'tenderly',
+  goerli = 'goerli',
 }
 
 export enum ePolygonNetwork {
@@ -432,6 +434,7 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
   [eEthereumNetwork.tenderly]: T;
+  [eEthereumNetwork.goerli]: T;
 }
 
 export interface iPolygonParamsPerNetwork<T> {
@@ -480,7 +483,7 @@ export interface IProtocolGlobalConfig {
 }
 
 export interface IMocksConfig {
-  AllAssetsInitialPrices: iAssetBase<string>;
+  AllAssetsInitialPrices: { [key: string]: string };
 }
 
 export interface ILendingRateOracleRatesCommon {
