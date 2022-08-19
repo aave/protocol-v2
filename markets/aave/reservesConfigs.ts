@@ -360,7 +360,12 @@ export const strategyXSUSHI: IReserveParams = {
 };
 
 export const strategyLUSD: IReserveParams = {
-  strategy: rateStrategyStableTwo,
+  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: new BigNumber(0).multipliedBy(oneRay).toFixed(),
+  variableRateSlope1: new BigNumber(0.04).multipliedBy(oneRay).toFixed(),
+  variableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),
+  stableRateSlope1: new BigNumber(0.02).multipliedBy(oneRay).toFixed(),
+  stableRateSlope2: new BigNumber(0.75).multipliedBy(oneRay).toFixed(),
   baseLTVAsCollateral: '0',
   liquidationThreshold: '0',
   liquidationBonus: '0',
