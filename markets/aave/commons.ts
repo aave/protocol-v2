@@ -10,6 +10,7 @@ const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   ENJ: oneEther.multipliedBy('0.00029560').toFixed(),
   KNC: oneEther.multipliedBy('0.001072').toFixed(),
   LINK: oneEther.multipliedBy('0.009955').toFixed(),
+  LUSD: oneEther.multipliedBy('0.00369068412860').toFixed(),
   MANA: oneEther.multipliedBy('0.000158').toFixed(),
   MKR: oneEther.multipliedBy('2.508581').toFixed(),
   REN: oneEther.multipliedBy('0.00065133').toFixed(),
