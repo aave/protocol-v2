@@ -271,7 +271,7 @@ export const deployLendingRateOracle = async (verify?: boolean) =>
 
 export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify?: boolean) =>
   withSaveAndVerify(
-    await new MockAggregatorFactory(await getFirstSigner()).deploy(price),
+    await new MockAggregatorFactory(await getFirstSigner()).deploy(price, 18),
     eContractid.MockAggregator,
     [price],
     verify

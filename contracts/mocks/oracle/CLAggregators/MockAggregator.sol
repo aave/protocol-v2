@@ -3,11 +3,14 @@ pragma solidity 0.6.12;
 
 contract MockAggregator {
   int256 private _latestAnswer;
+  uint8 private _decimals;
 
   event AnswerUpdated(int256 indexed current, uint256 indexed roundId, uint256 timestamp);
 
-  constructor(int256 _initialAnswer) public {
+  constructor(int256 _initialAnswer, uint8 _aggregatorDecimals) public {
     _latestAnswer = _initialAnswer;
+    _decimals = _aggregatorDecimals;
+
     emit AnswerUpdated(_initialAnswer, 0, now);
   }
 
@@ -19,8 +22,11 @@ contract MockAggregator {
     return 1;
   }
 
-  // function getSubTokens() external view returns (address[] memory) {
-  // TODO: implement mock for when multiple subtokens. Maybe we need to create diff mock contract
-  // to call it from the migration for this case??
-  // }
+  /**
+   * @notice represents the number of decimals the aggregator responses represent.
+   * @dev Allows to support UiPoolDataProviderV2V3 that expects Chainlink Aggregators interface.
+   */
+  function decimals() external view returns (uint8) {
+    return _decimals;
+  }
 }
