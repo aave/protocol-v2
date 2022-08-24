@@ -79,6 +79,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [eAvalancheNetwork.avalanche]: undefined,
     [eAvalancheNetwork.fuji]: undefined,
   },
+  ProofOfReserveAdmin: {
+    [eAvalancheNetwork.avalanche]: undefined,
+    [eAvalancheNetwork.fuji]: undefined,
+  },
+  ProofOfReserveAdminIndex: 2,
   ProviderRegistry: {
     [eAvalancheNetwork.avalanche]: '',
     [eAvalancheNetwork.fuji]: '0x06eC0BDC3997EE32Cb5B66a1B9C11d92e2C27Aab',

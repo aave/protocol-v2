@@ -13,6 +13,7 @@ interface ILendingPoolAddressesProvider {
   event LendingPoolUpdated(address indexed newAddress);
   event ConfigurationAdminUpdated(address indexed newAddress);
   event EmergencyAdminUpdated(address indexed newAddress);
+  event ProofOfReserveAdminUpdated(address indexed newAddress);
   event LendingPoolConfiguratorUpdated(address indexed newAddress);
   event LendingPoolCollateralManagerUpdated(address indexed newAddress);
   event PriceOracleUpdated(address indexed newAddress);
@@ -49,6 +50,10 @@ interface ILendingPoolAddressesProvider {
   function getEmergencyAdmin() external view returns (address);
 
   function setEmergencyAdmin(address admin) external;
+
+  function getProofOfReserveAdmin() external view returns (address);
+
+  function setProofOfReserveAdmin(address admin) external;
 
   function getPriceOracle() external view returns (address);
 

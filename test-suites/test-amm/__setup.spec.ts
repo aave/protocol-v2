@@ -114,6 +114,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const addressList = await getEthersSignersAddresses();
 
   await waitForTx(await addressesProvider.setEmergencyAdmin(addressList[2]));
+  
+  //setting users[2] as proof of reserve admin, which is in position 3 in the DRE addresses list
+  await waitForTx(await addressesProvider.setProofOfReserveAdmin(addressList[3]));
 
   const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry();
   await waitForTx(

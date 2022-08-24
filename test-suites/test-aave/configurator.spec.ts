@@ -9,6 +9,7 @@ const { expect } = require('chai');
 makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   const {
     CALLER_NOT_POOL_ADMIN,
+    LPC_CALLER_NOT_POOL_OR_PROOF_OF_RESERVE_ADMIN,
     LPC_RESERVE_LIQUIDITY_NOT_0,
     RC_INVALID_LTV,
     RC_INVALID_LIQ_THRESHOLD,
@@ -154,6 +155,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
   });
 
+  it('Deactivates the ETH reserve for borrowing as ProofOfReserveAdmin', async () => {
+    const { configurator, helpersContract, aave, users } = testEnv;
+    await configurator.connect(users[2].signer).disableBorrowingOnReserve(aave.address);
+    const { borrowingEnabled } = await helpersContract.getReserveConfigurationData(aave.address);
+
+    expect(borrowingEnabled).to.be.equal(false);
+  });
+
   it('Activates the ETH reserve for borrowing', async () => {
     const { configurator, weth, helpersContract } = testEnv;
     await configurator.enableBorrowingOnReserve(weth.address, true);
@@ -187,9 +196,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Check the onlyAaveAdmin on disableBorrowingOnReserve ', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(
-      configurator.connect(users[2].signer).disableBorrowingOnReserve(weth.address),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+      configurator.connect(users[3].signer).disableBorrowingOnReserve(weth.address),
+      LPC_CALLER_NOT_POOL_OR_PROOF_OF_RESERVE_ADMIN
+    ).to.be.revertedWith(LPC_CALLER_NOT_POOL_OR_PROOF_OF_RESERVE_ADMIN);
   });
 
   it('Check the onlyAaveAdmin on enableBorrowingOnReserve ', async () => {
@@ -290,6 +299,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategyWETH.reserveFactor);
   });
 
+  it('Disable stable borrow rate on the ETH reserve as ProofOfReserveAdmin', async () => {
+    const { configurator, helpersContract, weth, users } = testEnv;
+    await configurator.connect(users[2].signer).disableReserveStableRate(weth.address);
+    const { borrowingEnabled } = await helpersContract.getReserveConfigurationData(weth.address);
+
+    expect(borrowingEnabled).to.be.equal(true);
+  });
+
   it('Enables stable borrow rate on the ETH reserve', async () => {
     const { configurator, helpersContract, weth } = testEnv;
     await configurator.enableReserveStableRate(weth.address);
@@ -319,9 +336,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Check the onlyAaveAdmin on disableReserveStableRate', async () => {
     const { configurator, users, weth } = testEnv;
     await expect(
-      configurator.connect(users[2].signer).disableReserveStableRate(weth.address),
-      CALLER_NOT_POOL_ADMIN
-    ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
+      configurator.connect(users[3].signer).disableReserveStableRate(weth.address),
+      LPC_CALLER_NOT_POOL_OR_PROOF_OF_RESERVE_ADMIN
+    ).to.be.revertedWith(LPC_CALLER_NOT_POOL_OR_PROOF_OF_RESERVE_ADMIN);
   });
 
   it('Check the onlyAaveAdmin on enableReserveStableRate', async () => {

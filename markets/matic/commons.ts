@@ -78,6 +78,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.mumbai]: undefined,
     [ePolygonNetwork.matic]: undefined,
   },
+  ProofOfReserveAdmin: {
+    [ePolygonNetwork.mumbai]: undefined,
+    [ePolygonNetwork.matic]: undefined,
+  },
+  ProofOfReserveAdminIndex: 2,
   LendingPool: {
     [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '',

@@ -6,6 +6,7 @@ import {
   loadPoolConfig,
   getGenesisPoolAdmin,
   getEmergencyAdmin,
+  getProofOfReserveAdmin,
 } from '../../helpers/configuration';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { eNetwork } from '../../helpers/types';
@@ -41,7 +42,11 @@ task(
     // 3. Set pool admins
     await waitForTx(await addressesProvider.setPoolAdmin(await getGenesisPoolAdmin(poolConfig)));
     await waitForTx(await addressesProvider.setEmergencyAdmin(await getEmergencyAdmin(poolConfig)));
+    await waitForTx(
+      await addressesProvider.setProofOfReserveAdmin(await getProofOfReserveAdmin(poolConfig))
+    );
 
     console.log('Pool Admin', await addressesProvider.getPoolAdmin());
     console.log('Emergency Admin', await addressesProvider.getEmergencyAdmin());
+    console.log('Proof of reserve Admin', await addressesProvider.getProofOfReserveAdmin());
   });

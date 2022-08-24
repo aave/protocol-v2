@@ -24,6 +24,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant LENDING_POOL_CONFIGURATOR = 'LENDING_POOL_CONFIGURATOR';
   bytes32 private constant POOL_ADMIN = 'POOL_ADMIN';
   bytes32 private constant EMERGENCY_ADMIN = 'EMERGENCY_ADMIN';
+  bytes32 private constant PROOF_OF_RESERVE_ADMIN = 'PROOF_OF_RESERVE_ADMIN';
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
@@ -162,6 +163,15 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function setEmergencyAdmin(address emergencyAdmin) external override onlyOwner {
     _addresses[EMERGENCY_ADMIN] = emergencyAdmin;
     emit EmergencyAdminUpdated(emergencyAdmin);
+  }
+
+  function getProofOfReserveAdmin() external view override returns (address) {
+    return getAddress(PROOF_OF_RESERVE_ADMIN);
+  }
+
+  function setProofOfReserveAdmin(address proofOfReserveAdmin) external override onlyOwner {
+    _addresses[PROOF_OF_RESERVE_ADMIN] = proofOfReserveAdmin;
+    emit ProofOfReserveAdminUpdated(proofOfReserveAdmin);
   }
 
   function getPriceOracle() external view override returns (address) {

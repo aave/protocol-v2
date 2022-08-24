@@ -23,7 +23,7 @@ export enum ConfigNames {
   Aave = 'Aave',
   Matic = 'Matic',
   Amm = 'Amm',
-  Avalanche = 'Avalanche'
+  Avalanche = 'Avalanche',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -34,8 +34,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return MaticConfig;
     case ConfigNames.Amm:
       return AmmConfig;
-      case ConfigNames.Avalanche:
-        return AvalancheConfig;
+    case ConfigNames.Avalanche:
+      return AvalancheConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -65,7 +65,7 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.avalanche]: {
         ...AvalancheConfig.ReservesConfig,
-      }
+      },
     },
     pool
   );
@@ -91,6 +91,19 @@ export const getEmergencyAdmin = async (config: IBaseConfiguration): Promise<tEt
   }
   const addressList = await getEthersSignersAddresses();
   const addressIndex = config.EmergencyAdminIndex;
+  return addressList[addressIndex];
+};
+
+export const getProofOfReserveAdmin = async (
+  config: IBaseConfiguration
+): Promise<tEthereumAddress> => {
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
+  const targetAddress = getParamPerNetwork(config.ProofOfReserveAdmin, <eNetwork>currentNetwork);
+  if (targetAddress) {
+    return targetAddress;
+  }
+  const addressList = await getEthersSignersAddresses();
+  const addressIndex = config.ProofOfReserveAdminIndex;
   return addressList[addressIndex];
 };
 
