@@ -33,24 +33,44 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         FallbackOracle,
         ChainlinkAggregator,
       } = poolConfig as ICommonConfiguration;
+      console.log('1');
       const lendingRateOracles = getLendingRateOracles(poolConfig);
+      console.log('2');
+
       const addressesProvider = await getLendingPoolAddressesProvider();
+      console.log('3');
+
       const admin = await getGenesisPoolAdmin(poolConfig);
+      console.log('4');
+
       const aaveOracleAddress = getParamPerNetwork(poolConfig.AaveOracle, network);
+      console.log('5');
+
       const lendingRateOracleAddress = getParamPerNetwork(poolConfig.LendingRateOracle, network);
+      console.log('6');
+
       const fallbackOracleAddress = await getParamPerNetwork(FallbackOracle, network);
+      console.log('7');
+
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
+      console.log('8');
+
       const chainlinkAggregators = await getParamPerNetwork(ChainlinkAggregator, network);
+      console.log('9');
 
       const tokensToWatch: SymbolMap<string> = {
         ...reserveAssets,
         USD: UsdAddress,
       };
+      console.log('10');
+
       const [tokens, aggregators] = getPairsTokenAggregator(
         tokensToWatch,
         chainlinkAggregators,
         poolConfig.OracleQuoteCurrency
       );
+
+      console.log('11');
 
       let aaveOracle: AaveOracle;
       let lendingRateOracle: LendingRateOracle;

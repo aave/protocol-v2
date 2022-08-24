@@ -212,17 +212,21 @@ export const getPairsTokenAggregator = (
     getQuoteCurrencies(oracleQuoteCurrency)
   );
 
-  const pairs = Object.entries(assetsWithoutQuoteCurrency).map(([tokenSymbol, tokenAddress]) => {
-    //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
-    const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
-      (value) => value === tokenSymbol
-    );
-    const [, aggregatorAddress] = (
-      Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
-    )[aggregatorAddressIndex];
-    return [tokenAddress, aggregatorAddress];
-    //}
-  }) as [string, string][];
+  const pairs = Object.entries(assetsWithoutQuoteCurrency).reduce<[string, string][]>(
+    (acc, [tokenSymbol, tokenAddress]) => {
+      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
+        (value) => value === tokenSymbol
+      );
+      if (aggregatorAddressIndex >= 0) {
+        const [, aggregatorAddress] = (
+          Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
+        )[aggregatorAddressIndex];
+        return [...acc, [tokenAddress, aggregatorAddress]];
+      }
+      return acc;
+    },
+    []
+  );
 
   const mappedPairs = pairs.map(([asset]) => asset);
   const mappedAggregators = pairs.map(([, source]) => source);

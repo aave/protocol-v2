@@ -4,7 +4,7 @@ import {
   deployLendingPoolCollateralManager,
   deployWalletBalancerProvider,
   authorizeWETHGateway,
-  deployUiPoolDataProvider,
+  deployUiPoolDataProviderV2,
 } from '../../helpers/contracts-deployments';
 import {
   loadPoolConfig,
@@ -21,7 +21,7 @@ import {
   getAaveProtocolDataProvider,
   getLendingPoolAddressesProvider,
 } from '../../helpers/contracts-getters';
-import { ZERO_ADDRESS } from '../../helpers/constants';
+import { chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy } from '../../helpers/constants';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -105,12 +105,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       await deployWalletBalancerProvider(verify);
 
-      const uiPoolDataProvider = await deployUiPoolDataProvider(
-        [incentivesController, oracle],
-        verify
-      );
-      console.log('UiPoolDataProvider deployed at:', uiPoolDataProvider.address);
-
       const lendingPoolAddress = await addressesProvider.getLendingPool();
 
       let gateWay = getParamPerNetwork(WethGateway, network);
@@ -121,7 +115,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
           gateWay = (await getWETHGateway()).address;
         }
       }
-      console.log('GATEWAY', gateWay);
       await authorizeWETHGateway(gateWay, lendingPoolAddress);
     } catch (err) {
       console.error(err);

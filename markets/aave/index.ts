@@ -58,6 +58,7 @@ export const AaveConfig: IAaveConfiguration = {
     xSUSHI: strategyXSUSHI,
   },
   ReserveAssets: {
+    [eEthereumNetwork.goerli]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},

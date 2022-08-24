@@ -131,6 +131,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(
     await addressesProvider.setLendingPoolConfiguratorImpl(lendingPoolConfiguratorImpl.address)
   );
+
   const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
     await addressesProvider.getLendingPoolConfigurator()
   );
@@ -213,7 +214,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const allAggregatorsAddresses = Object.entries(mockAggregators).reduce(
     (accum: { [tokenSymbol: string]: tEthereumAddress }, [tokenSymbol, aggregator]) => ({
       ...accum,
-      [tokenSymbol]: aggregator.address,
+      [tokenSymbol]: aggregator,
     }),
     {}
   );

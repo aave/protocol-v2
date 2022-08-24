@@ -145,7 +145,7 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const { main, ropsten, kovan, coverage, buidlerevm, tenderly } =
+  const { main, ropsten, kovan, coverage, buidlerevm, tenderly, goerli } =
     param as iEthereumParamsPerNetwork<T>;
   const { matic, mumbai } = param as iPolygonParamsPerNetwork<T>;
   const { xdai } = param as iXDaiParamsPerNetwork<T>;
@@ -179,6 +179,8 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return avalanche;
     case eAvalancheNetwork.fuji:
       return fuji;
+    case eEthereumNetwork.goerli:
+      return goerli;
   }
 };
 
@@ -192,7 +194,10 @@ export const getOptionalParamAddressPerNetwork = (
   return getParamPerNetwork(param, network);
 };
 
-export const getParamPerPool = <T>({ proto, amm, matic, arc, avalanche }: iParamsPerPool<T>, pool: AavePools) => {
+export const getParamPerPool = <T>(
+  { proto, amm, matic, arc, avalanche }: iParamsPerPool<T>,
+  pool: AavePools
+) => {
   switch (pool) {
     case AavePools.proto:
       return proto;
@@ -380,14 +385,10 @@ export const verifyContract = async (
   instance: Contract,
   args: (string | string[])[]
 ) => {
-  if (usingPolygon()) {
-    await verifyAtPolygon(id, instance, args);
-  } else {
-    if (usingTenderly()) {
-      await verifyAtTenderly(id, instance);
-    }
-    await verifyEtherscanContract(instance.address, args);
+  if (usingTenderly()) {
+    await verifyAtTenderly(id, instance);
   }
+  await verifyEtherscanContract(instance.address, args);
   return instance;
 };
 

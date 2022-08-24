@@ -54,7 +54,11 @@ import {
   PermissionedVariableDebtTokenFactory,
   PermissionedStableDebtTokenFactory,
   PermissionedLendingPoolFactory,
-  PermissionedWETHGatewayFactory
+  PermissionedWETHGatewayFactory,
+  UiPoolDataProviderV2Factory,
+  UiPoolDataProviderV2V3Factory,
+  UiIncentiveDataProviderV2V3,
+  UiIncentiveDataProviderV2Factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -72,6 +76,53 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
 import { eNetwork } from './types';
+
+export const deployUiIncentiveDataProviderV2 = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new UiIncentiveDataProviderV2Factory(await getFirstSigner()).deploy(),
+    eContractid.UiIncentiveDataProviderV2,
+    [],
+    verify
+  );
+
+export const deployUiIncentiveDataProviderV2V3 = async (verify?: boolean) => {
+  const id = eContractid.UiIncentiveDataProviderV2V3;
+  const instance = await deployContract<UiIncentiveDataProviderV2V3>(id, []);
+  if (verify) {
+    await verifyContract(id, instance, []);
+  }
+  return instance;
+};
+
+export const deployUiPoolDataProviderV2 = async (
+  chainlinkAggregatorProxy: string,
+  chainlinkEthUsdAggregatorProxy: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UiPoolDataProviderV2Factory(await getFirstSigner()).deploy(
+      chainlinkAggregatorProxy,
+      chainlinkEthUsdAggregatorProxy
+    ),
+    eContractid.UiPoolDataProvider,
+    [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
+    verify
+  );
+
+export const deployUiPoolDataProviderV2V3 = async (
+  chainlinkAggregatorProxy: string,
+  chainlinkEthUsdAggregatorProxy: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UiPoolDataProviderV2V3Factory(await getFirstSigner()).deploy(
+      chainlinkAggregatorProxy,
+      chainlinkEthUsdAggregatorProxy
+    ),
+    eContractid.UiPoolDataProvider,
+    [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
+    verify
+  );
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
@@ -203,9 +254,12 @@ export const deployLendingPool = async (verify?: boolean, lendingPoolImpl?: eCon
   const libraries = await deployAaveLibraries(verify);
 
   let instance;
-  switch(lendingPoolImpl) {
+  switch (lendingPoolImpl) {
     case eContractid.PermissionedLendingPool:
-      instance = await new PermissionedLendingPoolFactory(libraries, await getFirstSigner()).deploy();
+      instance = await new PermissionedLendingPoolFactory(
+        libraries,
+        await getFirstSigner()
+      ).deploy();
       break;
     case eContractid.LendingPool:
     default:
@@ -371,41 +425,38 @@ export const deployVariableDebtToken = async (
 };
 
 export const deployStableDebtTokenByType = async (type: string) => {
-
   //if no instance type is provided, deploying the generic one by default
-  if(!type) {
+  if (!type) {
     return deployGenericStableDebtToken();
   }
 
-  switch(type) {
+  switch (type) {
     case eContractid.StableDebtToken:
       return deployGenericStableDebtToken();
     case eContractid.PermissionedStableDebtToken:
       return deployPermissionedStableDebtToken();
     default:
-      console.log("Cant find the debt token type ", type);
-      throw "Invalid debt token type";
+      console.log('Cant find the debt token type ', type);
+      throw 'Invalid debt token type';
   }
-}
+};
 
 export const deployVariableDebtTokenByType = async (type: string, verify?: boolean) => {
-
   //if no instance type is provided, deploying the generic one by default
-  if(!type) {
+  if (!type) {
     return deployGenericVariableDebtToken(verify);
   }
 
-  switch(type) {
+  switch (type) {
     case eContractid.VariableDebtToken:
       return deployGenericVariableDebtToken(verify);
     case eContractid.PermissionedVariableDebtToken:
       return deployPermissionedVariableDebtToken();
     default:
-      console.log("[variable]Cant find token type ", type);
-      throw "Invalid debt token type";
+      console.log('[variable]Cant find token type ', type);
+      throw 'Invalid debt token type';
   }
-}
-
+};
 
 export const deployPermissionedStableDebtToken = async () =>
   withSaveAndVerify(
@@ -596,7 +647,6 @@ export const deployPermissionedWETHGateway = async (args: [tEthereumAddress], ve
     args,
     verify
   );
-
 
 export const authorizeWETHGateway = async (
   wethGateWay: tEthereumAddress,

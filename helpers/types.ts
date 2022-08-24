@@ -13,6 +13,7 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
+
   tenderly = 'tenderly',
   goerli = 'goerli',
 }
@@ -87,6 +88,8 @@ export enum eContractid {
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
   UiPoolDataProvider = 'UiPoolDataProvider',
+  UiPoolDataProviderV2 = 'UiPoolDataProviderV2',
+  UiPoolDataProviderV2V3 = 'UiPoolDataProviderV2V3',
   WETHGateway = 'WETHGateway',
   WETH = 'WETH',
   WETHMocked = 'WETHMocked',
@@ -106,6 +109,8 @@ export enum eContractid {
   MockParaSwapAugustus = 'MockParaSwapAugustus',
   MockParaSwapAugustusRegistry = 'MockParaSwapAugustusRegistry',
   ParaSwapLiquiditySwapAdapter = 'ParaSwapLiquiditySwapAdapter',
+  UiIncentiveDataProviderV2V3 = 'UiIncentiveDataProviderV2V3',
+  UiIncentiveDataProviderV2 = 'UiIncentiveDataProviderV2',
 }
 
 /*
@@ -290,7 +295,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'xSUSHI'
 >;
 
-export type iAaveArcPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'USDC' | 'WBTC' | 'WETH' | 'AAVE'>;
+export type iAaveArcPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'LINK' | 'WBTC' | 'WETH'>;
 
 export type iLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
@@ -490,7 +495,7 @@ export interface IProtocolGlobalConfig {
 }
 
 export interface IMocksConfig {
-  AllAssetsInitialPrices: iAssetBase<string>;
+  AllAssetsInitialPrices: { [key: string]: string };
 }
 
 export interface ILendingRateOracleRatesCommon {

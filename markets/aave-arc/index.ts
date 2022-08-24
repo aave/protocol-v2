@@ -7,6 +7,7 @@ import {
   strategyUSDC,
   strategyWBTC,
   strategyWETH,
+  strategyLINK,
 } from './reservesConfigs';
 
 // ----------------
@@ -19,15 +20,24 @@ export const AaveArcConfig: IAaveArcConfiguration = {
   ProviderId: 1,
   LendingPoolImpl: eContractid.PermissionedLendingPool,
   ReservesConfig: {
-   USDC: strategyUSDC,
     WBTC: strategyWBTC,
     WETH: strategyWETH,
-    AAVE: strategyAAVE
+    LINK: strategyLINK,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
+    [eEthereumNetwork.goerli]: {
+      // ADD ERC-20 assets from goerli
+      // eth, btc, link
+      //     WETH: 0xC642A760bE9F04b453b899f7F454b2AFe21C1C61
+      // WBTC: 0x7e752bC77eBE2225B327e6ebF09fAD7801873931
+      // LINK: 0xD0fbc05a6B234b2a6a9D65389C2ffd93Fef0527e
+      WBTC: '0x7e752bC77eBE2225B327e6ebF09fAD7801873931',
+      WETH: '0xC642A760bE9F04b453b899f7F454b2AFe21C1C61',
+      LINK: '0xD0fbc05a6B234b2a6a9D65389C2ffd93Fef0527e',
+    },
     [eEthereumNetwork.kovan]: {
       USDC: '0xe22da380ee6B445bb8273C81944ADEB6E8450422',
       WBTC: '0xD1B98B6607330172f1D991521145A22BCe793277',
@@ -52,7 +62,7 @@ export const AaveArcConfig: IAaveArcConfiguration = {
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
     },
-  }
+  },
 };
 
 export default AaveArcConfig;
