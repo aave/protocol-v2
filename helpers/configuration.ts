@@ -1,3 +1,4 @@
+import { getMintableERC20, getMockedTokens } from './contracts-getters';
 import {
   AavePools,
   iMultiPoolsAssets,
@@ -14,7 +15,7 @@ import AmmConfig from '../markets/amm';
 
 import { CommonsConfig } from '../markets/aave/commons';
 import { DRE, filterMapBy } from './misc-utils';
-import { tEthereumAddress } from './types';
+import { tEthereumAddress, IAaveConfiguration } from './types';
 import { getParamPerNetwork } from './contracts-helpers';
 import { deployWETHMocked } from './contracts-deployments';
 
@@ -23,7 +24,7 @@ export enum ConfigNames {
   Aave = 'Aave',
   Matic = 'Matic',
   Amm = 'Amm',
-  Avalanche = 'Avalanche'
+  Avalanche = 'Avalanche',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -34,8 +35,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return MaticConfig;
     case ConfigNames.Amm:
       return AmmConfig;
-      case ConfigNames.Avalanche:
-        return AvalancheConfig;
+    case ConfigNames.Avalanche:
+      return AvalancheConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -65,7 +66,7 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.avalanche]: {
         ...AvalancheConfig.ReservesConfig,
-      }
+      },
     },
     pool
   );
@@ -117,7 +118,7 @@ export const getWethAddress = async (config: IBaseConfiguration) => {
   return weth.address;
 };
 
-export const getWrappedNativeTokenAddress = async (config: IBaseConfiguration) => {
+export const getWrappedNativeTokenAddress = async (config: IAaveConfiguration) => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WrappedNativeToken, <eNetwork>currentNetwork);
   if (wethAddress) {
@@ -125,6 +126,10 @@ export const getWrappedNativeTokenAddress = async (config: IBaseConfiguration) =
   }
   if (currentNetwork.includes('main')) {
     throw new Error('WETH not set at mainnet configuration.');
+  }
+  const mockTokens = await getMockedTokens(config);
+  if (mockTokens['WETH']) {
+    return mockTokens['WETH'].address;
   }
   const weth = await deployWETHMocked();
   return weth.address;
