@@ -515,6 +515,7 @@ export const deployAllMockTokens = async (verify?: boolean) => {
 
     if (tokenSymbol == 'WETH') {
       tokens[tokenSymbol] = await deployWETHMocked(verify);
+      console.log('- deployed weth mock');
     } else {
       tokens[tokenSymbol] = await deployMintableERC20(
         [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
@@ -528,21 +529,26 @@ export const deployAllMockTokens = async (verify?: boolean) => {
 };
 
 export const deployMockTokens = async (config: PoolConfiguration, verify?: boolean) => {
-  const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
+  const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked } = {};
   const defaultDecimals = 18;
 
   const configData = config.ReservesConfig;
 
   for (const tokenSymbol of Object.keys(configData)) {
-    tokens[tokenSymbol] = await deployMintableERC20(
-      [
-        tokenSymbol,
-        tokenSymbol,
-        configData[tokenSymbol as keyof iMultiPoolsAssets<IReserveParams>].reserveDecimals ||
-          defaultDecimals.toString(),
-      ],
-      verify
-    );
+    if (tokenSymbol == 'WETH') {
+      tokens[tokenSymbol] = await deployWETHMocked(verify);
+      console.log('- deployed WETH9 mock');
+    } else {
+      tokens[tokenSymbol] = await deployMintableERC20(
+        [
+          tokenSymbol,
+          tokenSymbol,
+          configData[tokenSymbol as keyof iMultiPoolsAssets<IReserveParams>].reserveDecimals ||
+            defaultDecimals.toString(),
+        ],
+        verify
+      );
+    }
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
   }
   return tokens;

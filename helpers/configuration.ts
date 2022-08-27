@@ -105,7 +105,7 @@ export const getATokenDomainSeparatorPerNetwork = (
   config: IBaseConfiguration
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
 
-export const getWethAddress = async (config: IBaseConfiguration) => {
+export const getWethAddress = async (config: PoolConfiguration) => {
   const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WETH, <eNetwork>currentNetwork);
   if (wethAddress) {
@@ -114,11 +114,15 @@ export const getWethAddress = async (config: IBaseConfiguration) => {
   if (currentNetwork.includes('main')) {
     throw new Error('WETH not set at mainnet configuration.');
   }
+  const mockTokens = await getMockedTokens(config);
+  if (mockTokens['WETH']) {
+    return mockTokens['WETH'].address;
+  }
   const weth = await deployWETHMocked();
   return weth.address;
 };
 
-export const getWrappedNativeTokenAddress = async (config: IAaveConfiguration) => {
+export const getWrappedNativeTokenAddress = async (config: PoolConfiguration) => {
   const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WrappedNativeToken, <eNetwork>currentNetwork);
   if (wethAddress) {
@@ -148,7 +152,7 @@ export const getLendingRateOracles = (poolConfig: IBaseConfiguration) => {
   );
 };
 
-export const getQuoteCurrency = async (config: IBaseConfiguration) => {
+export const getQuoteCurrency = async (config: PoolConfiguration) => {
   switch (config.OracleQuoteCurrency) {
     case 'ETH':
     case 'WETH':

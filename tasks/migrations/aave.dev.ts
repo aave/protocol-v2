@@ -18,7 +18,7 @@ task('aave:dev', 'Deploy development enviroment')
     console.log('Migration started\n');
 
     console.log('1. Deploy mock tokens');
-    await localBRE.run('dev:deploy-mock-tokens', { verify });
+    await localBRE.run('dev:deploy-mock-tokens', { verify, pool: POOL_NAME });
 
     console.log('2. Deploy address provider');
     await localBRE.run('dev:deploy-address-provider', { verify });

@@ -46,7 +46,7 @@ export const initReservesByHelper = async (
   const addressProvider = await getLendingPoolAddressesProvider();
 
   // CHUNK CONFIGURATION
-  const initChunks = 1;
+  const initChunks = 7;
 
   // Initialize variables for future reserves initialization
   let reserveSymbols: string[] = [];

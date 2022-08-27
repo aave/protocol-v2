@@ -23,6 +23,8 @@ task(
 
     const addressesProviderRegistry = await deployLendingPoolAddressesProviderRegistry(verify);
     await waitForTx(
-      await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 1)
+      await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 1, {
+        gasLimit: 3000000,
+      })
     );
   });

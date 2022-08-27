@@ -24,6 +24,7 @@ import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
+  getMockedTokens,
   getWETHGateway,
 } from '../../helpers/contracts-getters';
 import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
@@ -43,14 +44,10 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       WethGateway,
       ReservesConfig,
     } = poolConfig;
-    const mockTokens = await getAllMockedTokens();
+    const mockTokens = await getMockedTokens(poolConfig);
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
-
-    const protoPoolReservesAddresses = <{ [symbol: string]: tEthereumAddress }>(
-      filterMapBy(allTokenAddresses, (key: string) => !key.includes('UNI_'))
-    );
 
     const testHelpers = await deployAaveProtocolDataProvider(addressesProvider.address, verify);
     await insertContractAddressInDb(eContractid.AaveProtocolDataProvider, testHelpers.address);
@@ -61,7 +58,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
 
     await initReservesByHelper(
       ReservesConfig,
-      protoPoolReservesAddresses,
+      allTokenAddresses,
       ATokenNamePrefix,
       StableDebtTokenNamePrefix,
       VariableDebtTokenNamePrefix,
@@ -72,7 +69,7 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
       pool,
       verify
     );
-    await configureReservesByHelper(ReservesConfig, protoPoolReservesAddresses, testHelpers, admin);
+    await configureReservesByHelper(ReservesConfig, allTokenAddresses, testHelpers, admin);
 
     const collateralManager = await deployLendingPoolCollateralManager(verify);
     await waitForTx(
