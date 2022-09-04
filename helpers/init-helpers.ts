@@ -1,3 +1,5 @@
+import { Promise } from 'bluebird';
+
 import {
   eContractid,
   eNetwork,
@@ -63,7 +65,11 @@ export const initReservesByHelper = async (
   poolName: ConfigNames,
   verify: boolean
 ) => {
+  console.log('initReservesByHelper ---- 0 ');
+
   let gasUsage = BigNumber.from('0');
+
+  console.log('initReservesByHelper ---- 1 ');
 
   const addressProvider = await getLendingPoolAddressesProvider();
 
@@ -118,37 +124,78 @@ export const initReservesByHelper = async (
     (item) => item[1].variableDebtTokenImpl
   );
 
+  console.log('RESERVE PARAMS', reservesParams);
+
   // removing duplicates
   stableDebtTokenTypes = [...new Set(stableDebtTokenTypes)];
   variableDebtTokenTypes = [...new Set(variableDebtTokenTypes)];
 
-  await Promise.all(
-    stableDebtTokenTypes.map(async (typeName) => {
-      const name = typeName ?? eContractid.StableDebtToken;
-      const implAddress = await (await deployStableDebtTokenByType(name)).address;
-      stableDebtTokensAddresses.set(name, implAddress);
-    })
-  );
+  console.log('initReservesByHelper ---- 2 ');
 
-  await Promise.all(
-    variableDebtTokenTypes.map(async (typeName) => {
-      const name = typeName ?? eContractid.VariableDebtToken;
-      const implAddress = await (await deployVariableDebtTokenByType(name)).address;
-      variableDebtTokensAddresses.set(name, implAddress);
-    })
-  );
+  // await Promise.all(
+  //   stableDebtTokenTypes.map(async (typeName) => {
+  //     const name = typeName ?? eContractid.StableDebtToken;
+  //     console.log('name ----', name);
+  //     const implAddress = await (await deployStableDebtTokenByType(name)).address;
+  //     console.log('implAddress ----', implAddress);
+
+  //     stableDebtTokensAddresses.set(name, implAddress);
+  //     console.log('isAddressSet ----');
+  //   })
+  // );
+
+  await Promise.each(stableDebtTokenTypes, async (typeName) => {
+    const name = typeName ?? eContractid.StableDebtToken;
+    console.log('name ----', name);
+    const implAddress = await (await deployStableDebtTokenByType(name)).address;
+    console.log('implAddress ----', implAddress);
+
+    stableDebtTokensAddresses.set(name, implAddress);
+    console.log('isAddressSet ----');
+  });
+
+  console.log('initReservesByHelper ---- 2.5 ');
+
+  // await Promise.all(
+  //   variableDebtTokenTypes.map(async (typeName) => {
+  //     const name = typeName ?? eContractid.VariableDebtToken;
+  //     const implAddress = await (await deployVariableDebtTokenByType(name)).address;
+  //     variableDebtTokensAddresses.set(name, implAddress);
+  //   })
+  // );
+
+  await Promise.each(variableDebtTokenTypes, async (typeName) => {
+    const name = typeName ?? eContractid.VariableDebtToken;
+    console.log('name ----', name);
+    const implAddress = await (await deployVariableDebtTokenByType(name)).address;
+    console.log('implAddress ----', implAddress);
+
+    variableDebtTokensAddresses.set(name, implAddress);
+    console.log('isAddressSet ----');
+  });
+
+  console.log('initReservesByHelper ---- 3 ');
 
   const aTokenImplementation = await deployGenericATokenImpl(verify);
+  console.log('initReservesByHelper ---- 4 ');
+
   aTokenImplementationAddress = aTokenImplementation.address;
+  console.log('initReservesByHelper ---- 5 ');
+
   rawInsertContractAddressInDb(`aTokenImpl`, aTokenImplementationAddress);
+  console.log('initReservesByHelper ---- 6 ');
 
   const reserves = Object.entries(reservesParams);
+
+  console.log('initReservesByHelper ---- 7 ');
 
   for (let [symbol, params] of reserves) {
     if (!tokenAddresses[symbol]) {
       console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
       continue;
     }
+    console.log('initReservesByHelper ---- 8 ');
+
     const pool = await getLendingPool(await addressProvider.getLendingPool());
     const poolReserve = await pool.getReserveData(tokenAddresses[symbol]);
     if (poolReserve.aTokenAddress !== ZERO_ADDRESS) {
@@ -166,6 +213,8 @@ export const initReservesByHelper = async (
     } = strategy;
     if (!strategyAddresses[strategy.name]) {
       // Strategy does not exist, create a new one
+      console.log('initReservesByHelper ---- 9 ');
+
       rateStrategies[strategy.name] = [
         addressProvider.address,
         optimalUtilizationRate,
@@ -183,6 +232,8 @@ export const initReservesByHelper = async (
 
       // This causes the last strategy to be printed twice, once under "DefaultReserveInterestRateStrategy"
       // and once under the actual `strategyASSET` key.
+      console.log('initReservesByHelper ---- 10 ');
+
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     }
     // Prepare input parameters
@@ -211,6 +262,7 @@ export const initReservesByHelper = async (
     } else {
       aTokenToUse = delegationAwareATokenImplementationAddress;
     }
+    console.log('initReservesByHelper ---- 11 ');
 
     initInputParams.push({
       aTokenImpl: await getContractAddressWithJsonFallback(
@@ -233,11 +285,13 @@ export const initReservesByHelper = async (
       stableDebtTokenSymbol: `stableDebt${symbolPrefix}${symbol}`,
       params: '0x10',
     });
+    console.log('initReservesByHelper ---- 12 ');
   }
 
   // Deploy init reserves per chunks
   const chunkedSymbols = chunk(reserveSymbols, initChunks);
   const chunkedInitInputParams = chunk(initInputParams, initChunks);
+  console.log('initReservesByHelper ---- 13');
 
   const configurator = await getLendingPoolConfiguratorProxy();
 

@@ -73,5 +73,7 @@ export const strategyLINK: IReserveParams = {
   stableBorrowRateEnabled: true,
   reserveDecimals: '18',
   aTokenImpl: eContractid.AToken,
+  stableDebtTokenImpl: eContractid.PermissionedStableDebtToken,
+  variableDebtTokenImpl: eContractid.PermissionedVariableDebtToken,
   reserveFactor: '2000',
 };

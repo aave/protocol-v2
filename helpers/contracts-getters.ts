@@ -44,6 +44,11 @@ import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } fro
 export const getFirstSigner = async () => (await getEthersSigners())[0];
 
 export const getLendingPoolAddressesProvider = async (address?: tEthereumAddress) => {
+  console.log('Lending pool address <<<<<------', address);
+  console.log(
+    'DEBUG',
+    await getDb().get(`${eContractid.LendingPoolAddressesProvider}.${DRE.network.name}`).value()
+  );
   return await LendingPoolAddressesProviderFactory.connect(
     address ||
       (
