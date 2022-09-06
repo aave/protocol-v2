@@ -15,6 +15,7 @@ import {
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
 import { getEthersSigners } from '../../helpers/contracts-helpers';
+import { deployWETHMocked } from '../../helpers/contracts-deployments';
 
 task(`full-add-admin`, `Whitelists an admin into the arc market`)
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
@@ -26,11 +27,8 @@ task(`full-add-admin`, `Whitelists an admin into the arc market`)
       throw new Error('INVALID_CHAIN_ID');
     }
 
-    // const NEW_PERMISSION_ADMIN = 'YOUR_ADDRESS';
-    // const PERMISSION_MANAGER_ADDRESS = 'PERMISSION_MAN_ADDRESS';
-
-    const NEW_PERMISSION_ADMIN = '0xfb2788b2A3a0242429fd9EE2b151e149e3b244eC';
-    const PERMISSION_MANAGER_ADDRESS = '0x6ff4DE6185E08164D9c84aFcf11Eab9AC68ceCF9';
+    const NEW_PERMISSION_ADMIN = 'YOUR_ADDRESS';
+    const PERMISSION_MANAGER_ADDRESS = 'PERMISSION_MAN_ADDRESS';
 
     const deployer = await getFirstSigner();
     const deployerAddress = await deployer.getAddress();
@@ -61,18 +59,33 @@ task(`unpause-pool`, `Unpause-pool`).setAction(async ({}, localBRE) => {
   const emergencyAdmin = users[1];
 
   console.log('You need to use the Emergency Admin Address to unpause');
-  const POOL_ADDRESSES_PROVIDER = '0x065B418fF4EdBA0c913029156f6f257884e92D82';
+  const POOL_ADDRESSES_PROVIDER = '0x76661FC0AC3fD4AB29107414F9BEbb2B92D6Ca6e';
   const provider = await getLendingPoolAddressesProvider(POOL_ADDRESSES_PROVIDER);
-  console.log('Emergency Admin address:', await provider.connect(nonAdmin).getEmergencyAdmin());
+  console.log(
+    'Emergency Admin address:',
+    await provider.connect(emergencyAdmin).getEmergencyAdmin()
+  );
   console.log('Signer: ', await deployer.getAddress());
-  const pool = await getLendingPool(await provider.connect(nonAdmin).getLendingPool());
+  const pool = await getLendingPool(await provider.connect(emergencyAdmin).getLendingPool());
   console.log(`\tPool paused? `, await pool.paused());
 
   const configurator = await getLendingPoolConfiguratorProxy(
-    await provider.connect(nonAdmin).getLendingPoolConfigurator()
+    await provider.connect(emergencyAdmin).getLendingPoolConfigurator()
   );
 
-  await configurator.connect(deployer).setPoolPause(false);
+  console.log('foo');
+
+  await configurator.connect(emergencyAdmin).setPoolPause(false);
 
   console.log(`\tPool pause? `, await pool.paused());
 });
+
+task(`deploy-weth-mocks`, `Deploys the Weth9 mocks for arc goerli`).setAction(
+  async ({}, localBRE) => {
+    await localBRE.run('set-DRE');
+    const deployer = await getFirstSigner();
+
+    const wethMock = await deployWETHMocked(true);
+    console.log('deployed wethmock', wethMock);
+  }
+);

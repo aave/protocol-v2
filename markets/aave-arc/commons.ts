@@ -310,7 +310,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.goerli]: '0xC642A760bE9F04b453b899f7F454b2AFe21C1C61',
+    [eEthereumNetwork.goerli]: '0xd3c3C1F39f4aD6b24EFd48B91b5d130eBc260c9d', //  https://github.com/aave/protocol-v2/blob/3542b882022cf5d3884e29b5274bc9efb692b60b/contracts/mocks/tokens/WETH9Mocked.sol
   },
   ReserveFactorTreasuryAddress: {
     [eEthereumNetwork.coverage]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
@@ -330,7 +330,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.goerli]: '0xC642A760bE9F04b453b899f7F454b2AFe21C1C61',
+    [eEthereumNetwork.goerli]: '0xd3c3C1F39f4aD6b24EFd48B91b5d130eBc260c9d', //  https://github.com/aave/protocol-v2/blob/3542b882022cf5d3884e29b5274bc9efb692b60b/contracts/mocks/tokens/WETH9Mocked.sol
   },
   IncentivesController: {
     [eEthereumNetwork.coverage]: ZERO_ADDRESS,
