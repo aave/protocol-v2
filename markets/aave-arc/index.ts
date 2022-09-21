@@ -29,11 +29,6 @@ export const AaveArcConfig: IAaveArcConfiguration = {
     [eEthereumNetwork.hardhat]: {},
     [eEthereumNetwork.coverage]: {},
     [eEthereumNetwork.goerli]: {
-      // ADD ERC-20 assets from goerli
-      // eth, btc, link
-      //     WETH: 0xC642A760bE9F04b453b899f7F454b2AFe21C1C61 incorrect here
-      // WBTC: 0x7e752bC77eBE2225B327e6ebF09fAD7801873931
-      // LINK: 0xD0fbc05a6B234b2a6a9D65389C2ffd93Fef0527e
       WBTC: '0x7e752bC77eBE2225B327e6ebF09fAD7801873931',
       WETH: '0xd3c3C1F39f4aD6b24EFd48B91b5d130eBc260c9d', // https://github.com/aave/protocol-v2/blob/3542b882022cf5d3884e29b5274bc9efb692b60b/contracts/mocks/tokens/WETH9Mocked.sol
       LINK: '0xD0fbc05a6B234b2a6a9D65389C2ffd93Fef0527e',
