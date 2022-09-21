@@ -1,8 +1,9 @@
 import { task } from 'hardhat/config';
 import { checkVerification } from '../../helpers/etherscan-verification';
-import { ConfigNames } from '../../helpers/configuration';
+import { ConfigNames, getEmergencyAdmin, loadPoolConfig } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
+import { getLendingPoolConfiguratorProxy } from '../../helpers/contracts-getters';
 
 task('aave:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -17,6 +18,9 @@ task('aave:mainnet', 'Deploy development enviroment')
     }
 
     console.log('Migration started\n');
+
+    console.log('0. Deploy address provider registry');
+    await DRE.run('full:deploy-address-provider-registry', { pool: POOL_NAME });
 
     console.log('1. Deploy address provider');
     await DRE.run('full:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
@@ -36,12 +40,22 @@ task('aave:mainnet', 'Deploy development enviroment')
     console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
+    console.log('7. Deploy UI helpers');
+    await DRE.run('deploy-UiPoolDataProviderV2V3', { verify });
+    await DRE.run('deploy-UiIncentiveDataProviderV2V3', { verify });
+
+    const poolConfig = loadPoolConfig(POOL_NAME);
+    const emergencyAdmin = await DRE.ethers.getSigner(await getEmergencyAdmin(poolConfig));
+    const poolConfigurator = await getLendingPoolConfiguratorProxy();
+    await poolConfigurator.connect(emergencyAdmin).setPoolPause(false);
+    console.log('Finished deployment, unpaused protocol');
+
     if (verify) {
       printContracts();
-      console.log('7. Veryfing contracts');
+      console.log('8. Veryfing contracts');
       await DRE.run('verify:general', { all: true, pool: POOL_NAME });
 
-      console.log('8. Veryfing aTokens and debtTokens');
+      console.log('9. Veryfing aTokens and debtTokens');
       await DRE.run('verify:tokens', { pool: POOL_NAME });
     }
 

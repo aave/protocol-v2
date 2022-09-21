@@ -1,3 +1,5 @@
+import { Promise } from 'bluebird';
+
 import {
   eContractid,
   eNetwork,
@@ -10,6 +12,7 @@ import { chunk, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
   getATokensAndRatesHelper,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
 } from './contracts-getters';
@@ -28,14 +31,10 @@ import { BigNumber, BigNumberish } from 'ethers';
 import { ConfigNames } from './configuration';
 import { deployRateStrategy } from './contracts-deployments';
 
-
 import { ZERO_ADDRESS } from './constants';
-import { isZeroAddress } from 'ethereumjs-util';
-import { DefaultReserveInterestRateStrategy, DelegationAwareAToken } from '../types';
-import { config } from 'process';
-
-import {getContractAddressWithJsonFallback,
-rawInsertContractAddressInDb,
+import {
+  getContractAddressWithJsonFallback,
+  rawInsertContractAddressInDb,
 } from './contracts-helpers';
 
 export const chooseATokenDeployment = (id: eContractid) => {
@@ -45,7 +44,13 @@ export const chooseATokenDeployment = (id: eContractid) => {
     case eContractid.DelegationAwareAToken:
       return deployDelegationAwareAToken;
   }
-}
+};
+export const getATokenExtraParams = async (aTokenName: string, tokenAddress: tEthereumAddress) => {
+  switch (aTokenName) {
+    default:
+      return '0x10';
+  }
+};
 
 export const initReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
@@ -60,7 +65,11 @@ export const initReservesByHelper = async (
   poolName: ConfigNames,
   verify: boolean
 ) => {
+  console.log('initReservesByHelper ---- 0 ');
+
   let gasUsage = BigNumber.from('0');
+
+  console.log('initReservesByHelper ---- 1 ');
 
   const addressProvider = await getLendingPoolAddressesProvider();
 
@@ -108,28 +117,35 @@ export const initReservesByHelper = async (
   let stableDebtTokensAddresses = new Map<string, tEthereumAddress>();
   let variableDebtTokensAddresses = new Map<string, tEthereumAddress>();
 
-  let stableDebtTokenTypes = Object.entries(reservesParams).map(item => item[1].stableDebtTokenImpl);
-  let variableDebtTokenTypes = Object.entries(reservesParams).map(item => item[1].variableDebtTokenImpl);
-
+  let stableDebtTokenTypes = Object.entries(reservesParams).map(
+    (item) => item[1].stableDebtTokenImpl
+  );
+  let variableDebtTokenTypes = Object.entries(reservesParams).map(
+    (item) => item[1].variableDebtTokenImpl
+  );
 
   // removing duplicates
   stableDebtTokenTypes = [...new Set(stableDebtTokenTypes)];
   variableDebtTokenTypes = [...new Set(variableDebtTokenTypes)];
 
-  await Promise.all(stableDebtTokenTypes.map(async(typeName) => {
+  await Promise.each(stableDebtTokenTypes, async (typeName) => {
     const name = typeName ?? eContractid.StableDebtToken;
     const implAddress = await (await deployStableDebtTokenByType(name)).address;
-    stableDebtTokensAddresses.set(name, implAddress);
-  }));
 
-  await Promise.all(variableDebtTokenTypes.map(async(typeName) => {
+    stableDebtTokensAddresses.set(name, implAddress);
+  });
+
+  await Promise.each(variableDebtTokenTypes, async (typeName) => {
     const name = typeName ?? eContractid.VariableDebtToken;
     const implAddress = await (await deployVariableDebtTokenByType(name)).address;
+
     variableDebtTokensAddresses.set(name, implAddress);
-  }));
+  });
 
   const aTokenImplementation = await deployGenericATokenImpl(verify);
+
   aTokenImplementationAddress = aTokenImplementation.address;
+
   rawInsertContractAddressInDb(`aTokenImpl`, aTokenImplementationAddress);
 
   const reserves = Object.entries(reservesParams);
@@ -139,7 +155,14 @@ export const initReservesByHelper = async (
       console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
       continue;
     }
-    const { strategy } = params;
+
+    const pool = await getLendingPool(await addressProvider.getLendingPool());
+    const poolReserve = await pool.getReserveData(tokenAddresses[symbol]);
+    if (poolReserve.aTokenAddress !== ZERO_ADDRESS) {
+      console.log(`- Skipping init of ${symbol} due is already initialized`);
+      continue;
+    }
+    const { strategy, aTokenImpl, reserveDecimals } = params;
     const {
       optimalUtilizationRate,
       baseVariableBorrowRate,
@@ -150,6 +173,7 @@ export const initReservesByHelper = async (
     } = strategy;
     if (!strategyAddresses[strategy.name]) {
       // Strategy does not exist, create a new one
+
       rateStrategies[strategy.name] = [
         addressProvider.address,
         optimalUtilizationRate,
@@ -167,6 +191,7 @@ export const initReservesByHelper = async (
 
       // This causes the last strategy to be printed twice, once under "DefaultReserveInterestRateStrategy"
       // and once under the actual `strategyASSET` key.
+
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     }
     // Prepare input parameters
@@ -174,18 +199,19 @@ export const initReservesByHelper = async (
   }
 
   for (let i = 0; i < reserveSymbols.length; i++) {
-  
     const symbol = reserveSymbols[i];
     const strategy = reservesParams[symbol].strategy;
 
-    const stableDebtImpl = reservesParams[symbol].stableDebtTokenImpl ?? eContractid.StableDebtToken;
-    const variableDebtTokenImpl = reservesParams[symbol].variableDebtTokenImpl ?? eContractid.VariableDebtToken;
+    const stableDebtImpl =
+      reservesParams[symbol].stableDebtTokenImpl ?? eContractid.StableDebtToken;
+    const variableDebtTokenImpl =
+      reservesParams[symbol].variableDebtTokenImpl ?? eContractid.VariableDebtToken;
 
-    const stableDebtAddress =  stableDebtTokensAddresses.get(stableDebtImpl);
+    const stableDebtAddress = stableDebtTokensAddresses.get(stableDebtImpl);
     const variableDebtAddress = variableDebtTokensAddresses.get(variableDebtTokenImpl);
 
-    if(!stableDebtAddress || !variableDebtAddress) {
-      throw "Could not find a proper debt token instance for the asset "+symbol;
+    if (!stableDebtAddress || !variableDebtAddress) {
+      throw 'Could not find a proper debt token instance for the asset ' + symbol;
     }
 
     let aTokenToUse: string;
@@ -196,11 +222,14 @@ export const initReservesByHelper = async (
     }
 
     initInputParams.push({
-      aTokenImpl:  await getContractAddressWithJsonFallback(reservesParams[symbol].aTokenImpl, poolName),
-      stableDebtTokenImpl:stableDebtAddress,
+      aTokenImpl: await getContractAddressWithJsonFallback(
+        reservesParams[symbol].aTokenImpl,
+        poolName
+      ),
+      stableDebtTokenImpl: stableDebtAddress,
       variableDebtTokenImpl: variableDebtAddress,
       underlyingAssetDecimals: reservesParams[symbol].reserveDecimals,
-      interestRateStrategyAddress:  strategyAddresses[strategy.name],
+      interestRateStrategyAddress: strategyAddresses[strategy.name],
       underlyingAsset: tokenAddresses[symbol],
       treasury: treasuryAddress,
       incentivesController: incentivesController,

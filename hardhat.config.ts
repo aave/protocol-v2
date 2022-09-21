@@ -108,6 +108,7 @@ const buidlerConfig: HardhatUserConfig = {
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
     avalanche: getCommonNetworkConfig(eAvalancheNetwork.avalanche, 43114),
     fuji: getCommonNetworkConfig(eAvalancheNetwork.fuji, 43113),
+    goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
