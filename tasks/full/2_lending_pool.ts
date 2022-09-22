@@ -67,17 +67,26 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev environment')
         await addressesProvider.setLendingPoolConfiguratorImpl(lendingPoolConfiguratorImplAddress)
       );
 
+      console.log('do we get here 1');
+
       const lendingPoolConfiguratorProxy = await getLendingPoolConfiguratorProxy(
         await addressesProvider.getLendingPoolConfigurator()
       );
+
+      console.log('do we get here 2');
 
       await insertContractAddressInDb(
         eContractid.LendingPoolConfigurator,
         lendingPoolConfiguratorProxy.address
       );
+      console.log('do we get here 3');
+
       const admin = await DRE.ethers.getSigner(await getEmergencyAdmin(poolConfig));
+
       // Pause market during deployment
       await waitForTx(await lendingPoolConfiguratorProxy.connect(admin).setPoolPause(true));
+
+      console.log('do we get here 5');
 
       // Deploy deployment helpers
       await deployStableAndVariableTokensHelper(

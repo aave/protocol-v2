@@ -27,8 +27,8 @@ task(`full-add-admin`, `Whitelists an admin into the arc market`)
       throw new Error('INVALID_CHAIN_ID');
     }
 
-    const NEW_PERMISSION_ADMIN = 'YOUR_ADDRESS';
-    const PERMISSION_MANAGER_ADDRESS = 'PERMISSION_MAN_ADDRESS';
+    const NEW_PERMISSION_ADMIN = '0x3f1Cf2c4Ed96554b76763C8b38D66B66cc48E841';
+    const PERMISSION_MANAGER_ADDRESS = '0x8F30ec9Fb348513494cCC1710528E744Efa71003';
 
     const deployer = await getFirstSigner();
     const deployerAddress = await deployer.getAddress();
@@ -59,23 +59,20 @@ task(`unpause-pool`, `Unpause-pool`).setAction(async ({}, localBRE) => {
   const emergencyAdmin = users[1];
 
   console.log('You need to use the Emergency Admin Address to unpause');
-  const POOL_ADDRESSES_PROVIDER = '0x76661FC0AC3fD4AB29107414F9BEbb2B92D6Ca6e';
+  const POOL_ADDRESSES_PROVIDER = '0x56033E114c61183590d39BA847400F02022Ebe47';
   const provider = await getLendingPoolAddressesProvider(POOL_ADDRESSES_PROVIDER);
-  console.log(
-    'Emergency Admin address:',
-    await provider.connect(emergencyAdmin).getEmergencyAdmin()
-  );
+  console.log('Emergency Admin address:', await provider.connect(nonAdmin).getEmergencyAdmin());
   console.log('Signer: ', await deployer.getAddress());
-  const pool = await getLendingPool(await provider.connect(emergencyAdmin).getLendingPool());
+  const pool = await getLendingPool(await provider.connect(nonAdmin).getLendingPool());
   console.log(`\tPool paused? `, await pool.paused());
 
   const configurator = await getLendingPoolConfiguratorProxy(
-    await provider.connect(emergencyAdmin).getLendingPoolConfigurator()
+    await provider.connect(nonAdmin).getLendingPoolConfigurator()
   );
 
   console.log('foo');
 
-  await configurator.connect(emergencyAdmin).setPoolPause(false);
+  await configurator.connect(deployer).setPoolPause(false);
 
   console.log(`\tPool pause? `, await pool.paused());
 });

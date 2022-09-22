@@ -25,7 +25,8 @@ export enum ConfigNames {
   Matic = 'Matic',
   Amm = 'Amm',
   Arc = 'Arc',
-  Avalanche = 'Avalanche'
+  Avalanche = 'Avalanche',
+  ArcMumbai = 'ArcMumbai',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -36,12 +37,14 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return MaticConfig;
     case ConfigNames.Amm:
       return AmmConfig;
-      case ConfigNames.Avalanche:
-        return AvalancheConfig;
+    case ConfigNames.Avalanche:
+      return AvalancheConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     case ConfigNames.Arc:
       return AaveArcConfig;
+    case ConfigNames.ArcMumbai:
+      return MaticConfig;
     default:
       throw new Error(
         `Unsupported pool configuration: ${configName} is not one of the supported configs ${Object.values(
@@ -71,7 +74,7 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.avalanche]: {
         ...AvalancheConfig.ReservesConfig,
-      }
+      },
     },
     pool
   );

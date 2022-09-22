@@ -22,7 +22,8 @@ require('dotenv').config();
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
-import 'temp-hardhat-etherscan';
+import '@nomiclabs/hardhat-etherscan';
+
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
@@ -62,20 +63,22 @@ if (!SKIP_LOAD) {
 
 require(`${path.join(__dirname, 'tasks/misc')}/set-bre.ts`);
 
-const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
-  url: NETWORKS_RPC_URL[networkName],
-  hardfork: HARDFORK,
-  blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-  gasMultiplier: DEFAULT_GAS_MUL,
-  gasPrice: NETWORKS_DEFAULT_GAS[networkName],
-  chainId: networkId,
-  accounts: {
-    mnemonic: MNEMONIC,
-    path: MNEMONIC_PATH,
-    initialIndex: 0,
-    count: 20,
-  },
-});
+const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => {
+  return {
+    url: NETWORKS_RPC_URL[networkName],
+    hardfork: HARDFORK,
+    blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+    gasMultiplier: DEFAULT_GAS_MUL,
+    gasPrice: NETWORKS_DEFAULT_GAS[networkName],
+    chainId: networkId,
+    accounts: {
+      mnemonic: MNEMONIC,
+      path: MNEMONIC_PATH,
+      initialIndex: 0,
+      count: 20,
+    },
+  };
+};
 
 let forkMode;
 

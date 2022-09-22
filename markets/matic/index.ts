@@ -17,7 +17,7 @@ import {
 
 export const MaticConfig: IMaticConfiguration = {
   ...CommonsConfig,
-  MarketId: 'Matic Market',
+  MarketId: 'Matic Market Arc',
   ProviderId: 3,
   ReservesConfig: {
     DAI: strategyDAI,

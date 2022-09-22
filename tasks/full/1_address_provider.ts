@@ -19,6 +19,7 @@ task(
   .addFlag('skipRegistry')
   .setAction(async ({ verify, pool, skipRegistry }, DRE) => {
     await DRE.run('set-DRE');
+
     const poolConfig = loadPoolConfig(pool);
     const { MarketId } = poolConfig;
 
