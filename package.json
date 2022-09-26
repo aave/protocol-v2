@@ -72,6 +72,7 @@
     "arc:main:full:migration": "npm run compile && npm run hardhat:main -- arc:mainnet --verify",
     "arc:goerli:full:migration": "npm run compile && npm run hardhat:goerli -- arc:mainnet --verify",
     "arc:mumbai:full:migration": "npm run compile && npm run hardhat:mumbai -- arc:mumbai --verify",
+    "arc:mumbai:dev:migration": "npm run compile && npm run hardhat:mumbai -- arc-dev:mumbai --verify",
     "prettier:check": "npx prettier -c 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
     "prettier:write": "prettier --write 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
     "ci:test": "npm run compile && npm run test",

@@ -5,7 +5,7 @@ import {
   rateStrategyStableTwo,
   rateStrategyStableThree,
   rateStrategyWETH,
-  rateStrategyAAVE,
+  // rateStrategyAAVE,
   rateStrategyVolatileOne,
   rateStrategyVolatileTwo,
 } from './rateStrategies';
@@ -82,14 +82,14 @@ export const strategyMATIC: IReserveParams = {
   reserveFactor: '2000',
 };
 
-export const strategyAAVE: IReserveParams = {
-  strategy: rateStrategyAAVE,
-  baseLTVAsCollateral: '5000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
-  borrowingEnabled: false,
-  stableBorrowRateEnabled: false,
-  reserveDecimals: '18',
-  aTokenImpl: eContractid.AToken,
-  reserveFactor: '0',
-};
+// export const strategyAAVE: IReserveParams = {
+//   strategy: rateStrategyAAVE,
+//   baseLTVAsCollateral: '5000',
+//   liquidationThreshold: '6500',
+//   liquidationBonus: '11000',
+//   borrowingEnabled: false,
+//   stableBorrowRateEnabled: false,
+//   reserveDecimals: '18',
+//   aTokenImpl: eContractid.AToken,
+//   reserveFactor: '0',
+// };

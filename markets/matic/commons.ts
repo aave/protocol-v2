@@ -95,7 +95,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [ePolygonNetwork.matic]: '0xD7D86236d6c463521920fCC50A9CB56f8C8Bf008',
   },
   LendingRateOracle: {
-    [ePolygonNetwork.mumbai]: '0xC661e1445F9a8E5FD3C3dbCa0A0A2e8CBc79725D',
+    [ePolygonNetwork.mumbai]: '',
     [ePolygonNetwork.matic]: '0x17F73aEaD876CC4059089ff815EDA37052960dFB',
   },
   LendingPoolCollateralManager: {
@@ -129,12 +129,13 @@ export const CommonsConfig: ICommonConfiguration = {
       USD: '0xF9680D99D6C9589e2a93a78A04A279e509205945',
     },
     [ePolygonNetwork.mumbai]: {
-      DAI: ZERO_ADDRESS,
-      USDC: ZERO_ADDRESS,
-      USDT: ZERO_ADDRESS,
-      WBTC: ZERO_ADDRESS,
-      WMATIC: ZERO_ADDRESS,
-      USD: ZERO_ADDRESS,
+      // Todo deploy aav
+      DAI: '0x0FCAa9c899EC5A91eBc3D5Dd869De833b06fB046',
+      USDC: '0x572dDec9087154dC5dfBB1546Bb62713147e0Ab0',
+      USDT: '0x92C09849638959196E976289418e5973CC96d645',
+      WBTC: '0x007A22900a3B98143368Bd5906f8E17e9867581b', // btc/usd
+      WMATIC: '0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada',
+      USD: '0x572dDec9087154dC5dfBB1546Bb62713147e0Ab0', // usdc/usd
     },
   },
   ReserveAssets: {

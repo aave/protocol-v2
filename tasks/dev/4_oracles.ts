@@ -34,7 +34,9 @@ task('dev:deploy-oracles', 'Deploy oracles for dev environment')
       ...Object.fromEntries(Object.keys(TokenContractId).map((symbol) => [symbol, ''])),
       USD: UsdAddress,
     };
+
     const mockTokens = await getAllMockedTokens();
+
     const mockTokensAddress = Object.keys(mockTokens).reduce<{ [key: string]: string }>(
       (prev, curr) => {
         prev[curr] = mockTokens[curr].address;
