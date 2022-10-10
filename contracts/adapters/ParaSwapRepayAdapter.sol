@@ -71,16 +71,10 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     uint256 collateralAmount = amounts[0];
     uint256 premium = premiums[0];
     address initiatorLocal = initiator;
-    
+
     IERC20Detailed collateralAsset = IERC20Detailed(assets[0]);
-    
-    _swapAndRepay(
-      params,
-      premium,
-      initiatorLocal,
-      collateralAsset,
-      collateralAmount
-    );
+
+    _swapAndRepay(params, premium, initiatorLocal, collateralAsset, collateralAmount);
 
     return true;
   }
@@ -110,7 +104,6 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     bytes calldata paraswapData,
     PermitSignature calldata permitSignature
   ) external nonReentrant {
-
     debtRepayAmount = getDebtRepayAmount(
       debtAsset,
       debtRateMode,
@@ -162,7 +155,6 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     IERC20Detailed collateralAsset,
     uint256 collateralAmount
   ) private {
-
     (
       IERC20Detailed debtAsset,
       uint256 debtRepayAmount,
@@ -180,15 +172,19 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
       initiator
     );
 
-    uint256 amountSold =
-      _buyOnParaSwap(
-        buyAllBalanceOffset,
-        paraswapData,
-        collateralAsset,
-        debtAsset,
-        collateralAmount,
-        debtRepayAmount
-      );
+    uint256 amountSold = debtRepayAmount;
+
+    if (collateralAsset != debtAsset) {
+      uint256 amountSold =
+        _buyOnParaSwap(
+          buyAllBalanceOffset,
+          paraswapData,
+          collateralAsset,
+          debtAsset,
+          collateralAmount,
+          debtRepayAmount
+        );
+    }
 
     // Repay debt. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
     IERC20(debtAsset).safeApprove(address(LENDING_POOL), 0);
