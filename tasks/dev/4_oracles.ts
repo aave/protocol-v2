@@ -1,9 +1,5 @@
 import { task } from 'hardhat/config';
-import {
-  deployPriceOracle,
-  deployAaveOracle,
-  deployLendingRateOracle,
-} from '../../helpers/contracts-deployments';
+import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import {
   setInitialAssetPricesInOracle,
   deployAllMockAggregators,
@@ -12,14 +8,15 @@ import {
 import { ICommonConfiguration, iAssetBase, TokenContractId } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
 import { getAllAggregatorsAddresses, getAllTokenAddresses } from '../../helpers/mock-helpers';
-import { ConfigNames, loadPoolConfig, getWethAddress } from '../../helpers/configuration';
+import { ConfigNames, loadPoolConfig, getQuoteCurrency } from '../../helpers/configuration';
 import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
   getPairsTokenAggregator,
+  getPriceOracle,
 } from '../../helpers/contracts-getters';
 
-task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
+task('dev:deploy-oracles', 'Deploy oracles for dev environment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, pool }, localBRE) => {
@@ -29,36 +26,47 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       Mocks: { AllAssetsInitialPrices },
       ProtocolGlobalParams: { UsdAddress, MockUsdPriceInWei },
       LendingRateOracleRatesCommon,
+      OracleQuoteCurrency,
+      OracleQuoteUnit,
     } = poolConfig as ICommonConfiguration;
 
-    const defaultTokenList = {
+    const defaultTokenList: { [key: string]: string } = {
       ...Object.fromEntries(Object.keys(TokenContractId).map((symbol) => [symbol, ''])),
       USD: UsdAddress,
-    } as iAssetBase<string>;
+    };
     const mockTokens = await getAllMockedTokens();
-    const mockTokensAddress = Object.keys(mockTokens).reduce<iAssetBase<string>>((prev, curr) => {
-      prev[curr as keyof iAssetBase<string>] = mockTokens[curr].address;
-      return prev;
-    }, defaultTokenList);
+    const mockTokensAddress = Object.keys(mockTokens).reduce<{ [key: string]: string }>(
+      (prev, curr) => {
+        prev[curr] = mockTokens[curr].address;
+        return prev;
+      },
+      defaultTokenList
+    );
     const addressesProvider = await getLendingPoolAddressesProvider();
     const admin = await addressesProvider.getPoolAdmin();
 
-    const fallbackOracle = await deployPriceOracle(verify);
+    const fallbackOracle = await getPriceOracle('0x0F9d5ED72f6691E47abe2f79B890C3C33e924092');
     await waitForTx(await fallbackOracle.setEthUsdPrice(MockUsdPriceInWei));
     await setInitialAssetPricesInOracle(AllAssetsInitialPrices, mockTokensAddress, fallbackOracle);
 
     const mockAggregators = await deployAllMockAggregators(AllAssetsInitialPrices, verify);
 
     const allTokenAddresses = getAllTokenAddresses(mockTokens);
-    const allAggregatorsAddresses = getAllAggregatorsAddresses(mockAggregators);
 
     const [tokens, aggregators] = getPairsTokenAggregator(
       allTokenAddresses,
-      allAggregatorsAddresses
+      mockAggregators,
+      OracleQuoteCurrency
     );
 
-    await deployAaveOracle(
-      [tokens, aggregators, fallbackOracle.address, await getWethAddress(poolConfig)],
+    const aaveOracle = await deployAaveOracle(
+      [
+        tokens,
+        aggregators,
+        fallbackOracle.address,
+        await getQuoteCurrency(poolConfig),
+        OracleQuoteUnit,
+      ],
       verify
     );
     await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
@@ -76,4 +84,7 @@ task('dev:deploy-oracles', 'Deploy oracles for dev enviroment')
       lendingRateOracle,
       admin
     );
+    // Register the proxy price provider on the addressesProvider
+    await waitForTx(await addressesProvider.setPriceOracle(aaveOracle.address));
+    await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
   });

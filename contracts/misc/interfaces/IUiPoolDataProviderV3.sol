@@ -3,9 +3,18 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
 
-interface IUiPoolDataProvider {
+interface IUiPoolDataProviderV3 {
+  struct InterestRates {
+    uint256 variableRateSlope1;
+    uint256 variableRateSlope2;
+    uint256 stableRateSlope1;
+    uint256 stableRateSlope2;
+    uint256 baseStableBorrowRate;
+    uint256 baseVariableBorrowRate;
+    uint256 optimalUsageRatio;
+  }
+
   struct AggregatedReserveData {
     address underlyingAsset;
     string name;
@@ -37,21 +46,33 @@ interface IUiPoolDataProvider {
     uint256 averageStableRate;
     uint256 stableDebtLastUpdateTimestamp;
     uint256 totalScaledVariableDebt;
-    uint256 priceInEth;
+    uint256 priceInMarketReferenceCurrency;
+    address priceOracle;
     uint256 variableRateSlope1;
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
     uint256 stableRateSlope2;
-    // incentives
-    uint256 aEmissionPerSecond;
-    uint256 vEmissionPerSecond;
-    uint256 sEmissionPerSecond;
-    uint256 aIncentivesLastUpdateTimestamp;
-    uint256 vIncentivesLastUpdateTimestamp;
-    uint256 sIncentivesLastUpdateTimestamp;
-    uint256 aTokenIncentivesIndex;
-    uint256 vTokenIncentivesIndex;
-    uint256 sTokenIncentivesIndex;
+    uint256 baseStableBorrowRate;
+    uint256 baseVariableBorrowRate;
+    uint256 optimalUsageRatio;
+    // v3
+    bool isPaused;
+    uint128 accruedToTreasury;
+    uint128 unbacked;
+    uint128 isolationModeTotalDebt;
+    //
+    uint256 debtCeiling;
+    uint256 debtCeilingDecimals;
+    uint8 eModeCategoryId;
+    uint256 borrowCap;
+    uint256 supplyCap;
+    // eMode
+    uint16 eModeLtv;
+    uint16 eModeLiquidationThreshold;
+    uint16 eModeLiquidationBonus;
+    address eModePriceSource;
+    string eModeLabel;
+    bool borrowableInIsolation;
   }
 
   struct UserReserveData {
@@ -62,15 +83,13 @@ interface IUiPoolDataProvider {
     uint256 scaledVariableDebt;
     uint256 principalStableDebt;
     uint256 stableBorrowLastUpdateTimestamp;
-    // incentives
-    uint256 aTokenincentivesUserIndex;
-    uint256 vTokenincentivesUserIndex;
-    uint256 sTokenincentivesUserIndex;
   }
 
-  struct IncentivesControllerData {
-    uint256 userUnclaimedRewards;
-    uint256 emissionEndTimestamp;
+  struct BaseCurrencyInfo {
+    uint256 marketReferenceCurrencyUnit;
+    int256 marketReferenceCurrencyPriceInUsd;
+    int256 networkBaseTokenPriceInUsd;
+    uint8 networkBaseTokenPriceDecimals;
   }
 
   function getReservesList(ILendingPoolAddressesProvider provider)
@@ -78,33 +97,13 @@ interface IUiPoolDataProvider {
     view
     returns (address[] memory);
 
-  function incentivesController() external view returns (IAaveIncentivesController);
-
-  function getSimpleReservesData(ILendingPoolAddressesProvider provider)
+  function getReservesData(ILendingPoolAddressesProvider provider)
     external
     view
-    returns (
-      AggregatedReserveData[] memory,
-      uint256, // usd price eth
-      uint256 // emission end timestamp
-    );
+    returns (AggregatedReserveData[] memory, BaseCurrencyInfo memory);
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
-    returns (
-      UserReserveData[] memory,
-      uint256 // user unclaimed rewards
-    );
-
-  // generic method with full data
-  function getReservesData(ILendingPoolAddressesProvider provider, address user)
-    external
-    view
-    returns (
-      AggregatedReserveData[] memory,
-      UserReserveData[] memory,
-      uint256,
-      IncentivesControllerData memory
-    );
+    returns (UserReserveData[] memory, uint8);
 }

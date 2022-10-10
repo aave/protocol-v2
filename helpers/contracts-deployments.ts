@@ -1,5 +1,5 @@
 import { Contract } from 'ethers';
-import { DRE } from './misc-utils';
+import { DRE, notFalsyOrZeroAddress } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -13,9 +13,8 @@ import {
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
-import { getReservesConfigByPool } from './configuration';
+import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import { getFirstSigner } from './contracts-getters';
-import { ZERO_ADDRESS } from './constants';
 import {
   AaveProtocolDataProviderFactory,
   ATokenFactory,
@@ -52,6 +51,10 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  UiPoolDataProviderV2Factory,
+  UiPoolDataProviderV2V3Factory,
+  UiIncentiveDataProviderV2V3,
+  UiIncentiveDataProviderV2Factory,
   ParaSwapRepayAdapterFactory,
 } from '../types';
 import {
@@ -61,6 +64,7 @@ import {
   insertContractAddressInDb,
   deployContract,
   verifyContract,
+  getOptionalParamAddressPerNetwork,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
@@ -68,6 +72,54 @@ import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins'
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
+import { eNetwork } from './types';
+
+export const deployUiIncentiveDataProviderV2 = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new UiIncentiveDataProviderV2Factory(await getFirstSigner()).deploy(),
+    eContractid.UiIncentiveDataProviderV2,
+    [],
+    verify
+  );
+
+export const deployUiIncentiveDataProviderV2V3 = async (verify?: boolean) => {
+  const id = eContractid.UiIncentiveDataProviderV2V3;
+  const instance = await deployContract<UiIncentiveDataProviderV2V3>(id, []);
+  if (verify) {
+    await verifyContract(id, instance, []);
+  }
+  return instance;
+};
+
+export const deployUiPoolDataProviderV2 = async (
+  chainlinkAggregatorProxy: string,
+  chainlinkEthUsdAggregatorProxy: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UiPoolDataProviderV2Factory(await getFirstSigner()).deploy(
+      chainlinkAggregatorProxy,
+      chainlinkEthUsdAggregatorProxy
+    ),
+    eContractid.UiPoolDataProvider,
+    [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
+    verify
+  );
+
+export const deployUiPoolDataProviderV2V3 = async (
+  chainlinkAggregatorProxy: string,
+  chainlinkEthUsdAggregatorProxy: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new UiPoolDataProviderV2V3Factory(await getFirstSigner()).deploy(
+      chainlinkAggregatorProxy,
+      chainlinkEthUsdAggregatorProxy
+    ),
+    eContractid.UiPoolDataProvider,
+    [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
+    verify
+  );
 
 export const deployUiPoolDataProvider = async (
   [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
@@ -227,7 +279,7 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
   );
 
 export const deployAaveOracle = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress, string],
   verify?: boolean
 ) =>
   withSaveAndVerify(
@@ -355,20 +407,20 @@ export const deployVariableDebtToken = async (
   return instance;
 };
 
-export const deployGenericStableDebtToken = async () =>
+export const deployGenericStableDebtToken = async (verify?: boolean) =>
   withSaveAndVerify(
     await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.StableDebtToken,
     [],
-    false
+    verify
   );
 
-export const deployGenericVariableDebtToken = async () =>
+export const deployGenericVariableDebtToken = async (verify?: boolean) =>
   withSaveAndVerify(
     await new VariableDebtTokenFactory(await getFirstSigner()).deploy(),
     eContractid.VariableDebtToken,
     [],
-    false
+    verify
   );
 
 export const deployGenericAToken = async (
@@ -642,6 +694,75 @@ export const deployFlashLiquidationAdapter = async (
     verify
   );
 
+export const chooseATokenDeployment = (id: eContractid) => {
+  switch (id) {
+    case eContractid.AToken:
+      return deployGenericATokenImpl;
+    case eContractid.DelegationAwareAToken:
+      return deployDelegationAwareATokenImpl;
+    default:
+      throw Error(`Missing aToken implementation deployment script for: ${id}`);
+  }
+};
+
+export const deployATokenImplementations = async (
+  pool: ConfigNames,
+  reservesConfig: { [key: string]: IReserveParams },
+  verify = false
+) => {
+  const poolConfig = loadPoolConfig(pool);
+  const network = <eNetwork>DRE.network.name;
+
+  // Obtain the different AToken implementations of all reserves inside the Market config
+  const aTokenImplementations = [
+    ...Object.entries(reservesConfig).reduce<Set<eContractid>>((acc, [, entry]) => {
+      acc.add(entry.aTokenImpl);
+      return acc;
+    }, new Set<eContractid>()),
+  ];
+
+  for (let x = 0; x < aTokenImplementations.length; x++) {
+    const aTokenAddress = getOptionalParamAddressPerNetwork(
+      poolConfig[aTokenImplementations[x].toString()],
+      network
+    );
+    if (!notFalsyOrZeroAddress(aTokenAddress)) {
+      const deployImplementationMethod = chooseATokenDeployment(aTokenImplementations[x]);
+      console.log(`Deploying implementation`, aTokenImplementations[x]);
+      await deployImplementationMethod(verify);
+    }
+  }
+
+  // Debt tokens, for now all Market configs follows same implementations
+  const genericStableDebtTokenAddress = getOptionalParamAddressPerNetwork(
+    poolConfig.StableDebtTokenImplementation,
+    network
+  );
+  const geneticVariableDebtTokenAddress = getOptionalParamAddressPerNetwork(
+    poolConfig.VariableDebtTokenImplementation,
+    network
+  );
+
+  if (!notFalsyOrZeroAddress(genericStableDebtTokenAddress)) {
+    await deployGenericStableDebtToken(verify);
+  }
+  if (!notFalsyOrZeroAddress(geneticVariableDebtTokenAddress)) {
+    await deployGenericVariableDebtToken(verify);
+  }
+};
+
+export const deployRateStrategy = async (
+  strategyName: string,
+  args: [tEthereumAddress, string, string, string, string, string, string],
+  verify: boolean
+): Promise<tEthereumAddress> => {
+  switch (strategyName) {
+    default:
+      return await (
+        await deployDefaultReserveInterestRateStrategy(args, verify)
+      ).address;
+  }
+};
 export const deployMockParaSwapAugustus = async (verify?: boolean) =>
   withSaveAndVerify(
     await new MockParaSwapAugustusFactory(await getFirstSigner()).deploy(),
@@ -672,13 +793,13 @@ export const deployParaSwapLiquiditySwapAdapter = async (
     verify
   );
 
-  export const deployParaSwapRepayAdapter = async (
-    args: [tEthereumAddress, tEthereumAddress],
-    verify?: boolean
-  ) =>
-    withSaveAndVerify(
-      await new ParaSwapRepayAdapterFactory(await getFirstSigner()).deploy(...args),
-      eContractid.ParaSwapRepayAdapter,
-      args,
-      verify
-    );
+export const deployParaSwapRepayAdapter = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new ParaSwapRepayAdapterFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ParaSwapRepayAdapter,
+    args,
+    verify
+  );
