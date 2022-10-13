@@ -108,38 +108,39 @@ library ReserveLogic {
    * @param reserve the reserve object
    **/
   function updateState(DataTypes.ReserveData storage reserve) internal {
+    // If time didn't pass since last stored timestamp, skip state update
     //solium-disable-next-line
-    if (reserve.lastUpdateTimestamp != uint40(block.timestamp)) {
-      uint256 scaledVariableDebt =
-        IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
-      uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
-      uint256 previousLiquidityIndex = reserve.liquidityIndex;
-      uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
-      uint256 avgStableRate =
-        IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate();
+    if (reserve.lastUpdateTimestamp == uint40(block.timestamp)) {
+      return;
+    }
 
-      (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
-        _updateIndexes(
-          reserve,
-          scaledVariableDebt,
-          previousLiquidityIndex,
-          previousVariableBorrowIndex,
-          lastUpdatedTimestamp,
-          avgStableRate
-        );
+    uint256 scaledVariableDebt =
+      IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
+    uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
+    uint256 previousLiquidityIndex = reserve.liquidityIndex;
+    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
+    uint256 avgStableRate = IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate();
 
-      _mintToTreasury(
+    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
+      _updateIndexes(
         reserve,
         scaledVariableDebt,
+        previousLiquidityIndex,
         previousVariableBorrowIndex,
-        newLiquidityIndex,
-        newVariableBorrowIndex,
-        lastUpdatedTimestamp
+        lastUpdatedTimestamp,
+        avgStableRate
       );
+    _mintToTreasury(
+      reserve,
+      scaledVariableDebt,
+      previousVariableBorrowIndex,
+      newLiquidityIndex,
+      newVariableBorrowIndex,
+      lastUpdatedTimestamp
+    );
 
-      //solium-disable-next-line
-      reserve.lastUpdateTimestamp = uint40(block.timestamp);
-    }
+    //solium-disable-next-line
+    reserve.lastUpdateTimestamp = uint40(block.timestamp);
   }
 
   /**
