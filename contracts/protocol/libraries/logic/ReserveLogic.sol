@@ -108,29 +108,38 @@ library ReserveLogic {
    * @param reserve the reserve object
    **/
   function updateState(DataTypes.ReserveData storage reserve) internal {
-    uint256 scaledVariableDebt =
-      IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
-    uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
-    uint256 previousLiquidityIndex = reserve.liquidityIndex;
-    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
+    //solium-disable-next-line
+    if (reserve.lastUpdateTimestamp != uint40(block.timestamp)) {
+      uint256 scaledVariableDebt =
+        IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
+      uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
+      uint256 previousLiquidityIndex = reserve.liquidityIndex;
+      uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
+      uint256 avgStableRate =
+        IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate();
 
-    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
-      _updateIndexes(
+      (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
+        _updateIndexes(
+          reserve,
+          scaledVariableDebt,
+          previousLiquidityIndex,
+          previousVariableBorrowIndex,
+          lastUpdatedTimestamp,
+          avgStableRate
+        );
+
+      _mintToTreasury(
         reserve,
         scaledVariableDebt,
-        previousLiquidityIndex,
         previousVariableBorrowIndex,
+        newLiquidityIndex,
+        newVariableBorrowIndex,
         lastUpdatedTimestamp
       );
 
-    _mintToTreasury(
-      reserve,
-      scaledVariableDebt,
-      previousVariableBorrowIndex,
-      newLiquidityIndex,
-      newVariableBorrowIndex,
-      lastUpdatedTimestamp
-    );
+      //solium-disable-next-line
+      reserve.lastUpdateTimestamp = uint40(block.timestamp);
+    }
   }
 
   /**
@@ -336,15 +345,17 @@ library ReserveLogic {
     uint256 scaledVariableDebt,
     uint256 liquidityIndex,
     uint256 variableBorrowIndex,
-    uint40 timestamp
+    uint40 timestamp,
+    uint256 avgStableRate
   ) internal returns (uint256, uint256) {
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+    uint256 currentVariableBorrowRate = reserve.currentVariableBorrowRate;
 
     uint256 newLiquidityIndex = liquidityIndex;
     uint256 newVariableBorrowIndex = variableBorrowIndex;
 
-    //only cumulating if there is any income being produced
-    if (currentLiquidityRate > 0) {
+    // Indexes should be updated only if there is any debt component getting accrued
+    if ((scaledVariableDebt != 0 && currentVariableBorrowRate != 0) || avgStableRate != 0) {
       uint256 cumulatedLiquidityInterest =
         MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
@@ -366,8 +377,6 @@ library ReserveLogic {
       }
     }
 
-    //solium-disable-next-line
-    reserve.lastUpdateTimestamp = uint40(block.timestamp);
     return (newLiquidityIndex, newVariableBorrowIndex);
   }
 }
