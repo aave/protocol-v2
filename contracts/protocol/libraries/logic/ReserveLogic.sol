@@ -348,7 +348,6 @@ library ReserveLogic {
   ) internal returns (uint256, uint256) {
     uint256 newLiquidityIndex = liquidityIndex;
     uint256 newVariableBorrowIndex = variableBorrowIndex;
-    uint256 currentVariableBorrowRate = reserve.currentVariableBorrowRate;
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     // Only cumulating on the supply side if there is any income being produced
@@ -365,7 +364,7 @@ library ReserveLogic {
     // Variable borrow side only gets updated if there is any accrual of variable debt
     if (scaledVariableDebt != 0) {
       uint256 cumulatedVariableBorrowInterest =
-        MathUtils.calculateCompoundedInterest(currentVariableBorrowRate, timestamp);
+        MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
       newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
       require(
         newVariableBorrowIndex <= type(uint128).max,
