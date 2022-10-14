@@ -119,7 +119,6 @@ library ReserveLogic {
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
     uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
-    uint256 avgStableRate = IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate();
 
     (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
       _updateIndexes(
@@ -127,8 +126,7 @@ library ReserveLogic {
         scaledVariableDebt,
         previousLiquidityIndex,
         previousVariableBorrowIndex,
-        lastUpdatedTimestamp,
-        avgStableRate
+        lastUpdatedTimestamp
       );
     _mintToTreasury(
       reserve,
@@ -346,36 +344,34 @@ library ReserveLogic {
     uint256 scaledVariableDebt,
     uint256 liquidityIndex,
     uint256 variableBorrowIndex,
-    uint40 timestamp,
-    uint256 avgStableRate
+    uint40 timestamp
   ) internal returns (uint256, uint256) {
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
-    uint256 currentVariableBorrowRate = reserve.currentVariableBorrowRate;
-
     uint256 newLiquidityIndex = liquidityIndex;
     uint256 newVariableBorrowIndex = variableBorrowIndex;
+    uint256 currentVariableBorrowRate = reserve.currentVariableBorrowRate;
+    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
-    // Indexes should be updated only if there is any debt component getting accrued
-    if ((scaledVariableDebt != 0 && currentVariableBorrowRate != 0) || avgStableRate != 0) {
+    // Only cumulating on the supply side if there is any income being produced
+    // The case of Reserve Factor 100% is not a problem (currentLiquidityRate == 0),
+    // as liquidity index should not be updated
+    if (currentLiquidityRate != 0) {
       uint256 cumulatedLiquidityInterest =
         MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
       require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
-
       reserve.liquidityIndex = uint128(newLiquidityIndex);
+    }
 
-      //as the liquidity rate might come only from stable rate loans, we need to ensure
-      //that there is actual variable debt before accumulating
-      if (scaledVariableDebt != 0) {
-        uint256 cumulatedVariableBorrowInterest =
-          MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
-        newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
-        require(
-          newVariableBorrowIndex <= type(uint128).max,
-          Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
-        );
-        reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
-      }
+    // Variable borrow side only gets updated if there is any accrual of variable debt
+    if (scaledVariableDebt != 0) {
+      uint256 cumulatedVariableBorrowInterest =
+        MathUtils.calculateCompoundedInterest(currentVariableBorrowRate, timestamp);
+      newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
+      require(
+        newVariableBorrowIndex <= type(uint128).max,
+        Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
+      );
+      reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
     }
 
     return (newLiquidityIndex, newVariableBorrowIndex);
