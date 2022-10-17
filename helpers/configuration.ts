@@ -1,3 +1,4 @@
+import { PolygonZkEvmConfig } from './../markets/polygon-zkevm/index';
 import { getMintableERC20, getMockedTokens } from './contracts-getters';
 import {
   AavePools,
@@ -25,6 +26,7 @@ export enum ConfigNames {
   Matic = 'Matic',
   Amm = 'Amm',
   Avalanche = 'Avalanche',
+  PolygonZkEvm = 'PolygonZkEvm',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -39,6 +41,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return AvalancheConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
+    case ConfigNames.PolygonZkEvm:
+      return PolygonZkEvmConfig;
     default:
       throw new Error(
         `Unsupported pool configuration: ${configName} is not one of the supported configs ${Object.values(
@@ -66,6 +70,9 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.avalanche]: {
         ...AvalancheConfig.ReservesConfig,
+      },
+      [AavePools.polygonZkEvm]: {
+        ...PolygonZkEvmConfig.ReservesConfig,
       },
     },
     pool

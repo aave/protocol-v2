@@ -8,6 +8,7 @@ import {
   eEthereumNetwork,
   eNetwork,
   ePolygonNetwork,
+  ePolygonZkEvmNetwork,
   eXDaiNetwork,
 } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
@@ -109,6 +110,7 @@ const buidlerConfig: HardhatUserConfig = {
     avalanche: getCommonNetworkConfig(eAvalancheNetwork.avalanche, 43114),
     fuji: getCommonNetworkConfig(eAvalancheNetwork.fuji, 43113),
     goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
+    polZkEvmTestnet: getCommonNetworkConfig(ePolygonZkEvmNetwork.polZkEvmTestnet, 1402),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

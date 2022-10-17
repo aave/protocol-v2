@@ -1,3 +1,4 @@
+import { TokenMinterFactory } from './../types/TokenMinterFactory';
 import { WETH9Mocked } from './../types/WETH9Mocked.d';
 import { Contract } from 'ethers';
 import { DRE, notFalsyOrZeroAddress } from './misc-utils';
@@ -78,6 +79,14 @@ export const deployUiIncentiveDataProviderV2 = async (verify?: boolean) =>
   withSaveAndVerify(
     await new UiIncentiveDataProviderV2Factory(await getFirstSigner()).deploy(),
     eContractid.UiIncentiveDataProviderV2,
+    [],
+    verify
+  );
+
+export const deployTokenMinter = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new TokenMinterFactory(await getFirstSigner()).deploy(),
+    eContractid.TokenMinter,
     [],
     verify
   );

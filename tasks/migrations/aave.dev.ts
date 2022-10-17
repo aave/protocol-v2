@@ -1,15 +1,24 @@
+import {
+  chainlinkAggregatorProxy,
+  chainlinkEthUsdAggregatorProxy,
+  MOCK_CHAINLINK_AGGREGATORS_USD_PRICES,
+} from './../../helpers/constants';
 import { task } from 'hardhat/config';
 import { checkVerification } from '../../helpers/etherscan-verification';
 import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
+import {
+  deployMockAggregator,
+  deployUiPoolDataProviderV2V3,
+} from '../../helpers/contracts-deployments';
 
 task('aave:dev', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ verify }, localBRE) => {
-    const POOL_NAME = ConfigNames.Aave;
-
+  .addOptionalParam('pool', `Market pool configuration, one of ${Object.keys(ConfigNames)}`)
+  .setAction(async ({ verify, pool }, localBRE) => {
+    const POOL_NAME = pool || ConfigNames.Aave;
     await localBRE.run('set-DRE');
-
+    const network = process.env.FORK ? process.env.FORK : localBRE.network.name;
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {
       checkVerification();
@@ -35,6 +44,15 @@ task('aave:dev', 'Deploy development enviroment')
     console.log('6. Initialize lending pool');
     await localBRE.run('dev:initialize-lending-pool', { verify, pool: POOL_NAME });
 
+    console.log('7. Deploy UI helpers');
+    const ethUsdMockOracle = await deployMockAggregator(
+      MOCK_CHAINLINK_AGGREGATORS_USD_PRICES.WETH,
+      verify
+    );
+    await deployUiPoolDataProviderV2V3(ethUsdMockOracle.address, ethUsdMockOracle.address, verify);
+    await localBRE.run('deploy-UiIncentiveDataProviderV2V3', { verify });
+
+    await localBRE.run('deploy-faucet', { verify });
     console.log('\nFinished migration');
     printContracts();
   });

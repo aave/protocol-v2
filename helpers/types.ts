@@ -4,7 +4,12 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eAvalancheNetwork;
+export type eNetwork =
+  | eEthereumNetwork
+  | ePolygonNetwork
+  | eXDaiNetwork
+  | eAvalancheNetwork
+  | ePolygonZkEvmNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -32,6 +37,10 @@ export enum eAvalancheNetwork {
   fuji = 'fuji',
 }
 
+export enum ePolygonZkEvmNetwork {
+  polZkEvmTestnet = 'polZkEvmTestnet',
+}
+
 export enum EthereumNetworkNames {
   kovan = 'kovan',
   ropsten = 'ropsten',
@@ -48,6 +57,7 @@ export enum AavePools {
   matic = 'matic',
   amm = 'amm',
   avalanche = 'avalanche',
+  polygonZkEvm = 'polygonZkEvm',
 }
 
 export enum eContractid {
@@ -104,6 +114,7 @@ export enum eContractid {
   ParaSwapLiquiditySwapAdapter = 'ParaSwapLiquiditySwapAdapter',
   UiIncentiveDataProviderV2V3 = 'UiIncentiveDataProviderV2V3',
   UiIncentiveDataProviderV2 = 'UiIncentiveDataProviderV2',
+  TokenMinter = 'TokenMinter',
 }
 
 /*
@@ -257,6 +268,7 @@ export interface iAssetBase<T> {
   STAKE: T;
   xSUSHI: T;
   WAVAX: T;
+  MAI: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -327,6 +339,8 @@ export type iAvalanchePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   'WETH' | 'DAI' | 'USDT' | 'AAVE' | 'WBTC' | 'WAVAX' | 'USDC'
 >;
+
+export type iPolygonZkEvmAssets<T> = Pick<iAssetsWithoutUSD<T>, 'WETH' | 'DAI' | 'MAI'>;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
@@ -419,7 +433,8 @@ export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
   | iXDaiParamsPerNetwork<T>
-  | iAvalancheParamsPerNetwork<T>;
+  | iAvalancheParamsPerNetwork<T>
+  | iPolygonZkEvmParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T>
   extends iEthereumParamsPerNetwork<T>,
@@ -451,11 +466,16 @@ export interface iAvalancheParamsPerNetwork<T> {
   [eAvalancheNetwork.fuji]: T;
 }
 
+export interface iPolygonZkEvmParamsPerNetwork<T> {
+  [ePolygonZkEvmNetwork.polZkEvmTestnet]: T;
+}
+
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
   [AavePools.matic]: T;
   [AavePools.amm]: T;
   [AavePools.avalanche]: T;
+  [AavePools.polygonZkEvm]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -553,6 +573,10 @@ export interface IXDAIConfiguration extends ICommonConfiguration {
 
 export interface IAvalancheConfiguration extends ICommonConfiguration {
   ReservesConfig: iAvalanchePoolAssets<IReserveParams>;
+}
+
+export interface IPolygonZkEvmConfiguration extends ICommonConfiguration {
+  ReservesConfig: iPolygonZkEvmAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {
