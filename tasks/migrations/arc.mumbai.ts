@@ -4,13 +4,13 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('arc:matic', 'Deploy development enviroment')
+task('arc:mumbai', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ verify }, DRE) => {
-    const POOL_NAME = ConfigNames.Matic;
+    const POOL_NAME = ConfigNames.ArcMumbai;
     await DRE.run('set-DRE');
 
-    console.log('running arc matic');
+    console.log('running arc mumbai ');
 
     // Prevent loss of gas verifying all the needed ENVs for Etherscan verification
     if (verify) {

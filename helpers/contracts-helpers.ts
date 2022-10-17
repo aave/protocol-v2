@@ -153,7 +153,6 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
   if (process.env.FORK) {
     return param[process.env.FORK as eNetwork] as T;
   }
-
   switch (network) {
     case eEthereumNetwork.coverage:
       return coverage;

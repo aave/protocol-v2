@@ -23,6 +23,7 @@ export const SUPPORTED_ETHERSCAN_NETWORKS = [
   'goerli',
   'avalanche',
   'fuji',
+  'hardhat',
 ];
 
 function delay(ms: number) {
