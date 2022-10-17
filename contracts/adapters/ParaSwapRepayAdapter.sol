@@ -175,15 +175,14 @@ contract ParaSwapRepayAdapter is BaseParaSwapBuyAdapter, ReentrancyGuard {
     uint256 amountSold = debtRepayAmount;
 
     if (collateralAsset != debtAsset) {
-      uint256 amountSold =
-        _buyOnParaSwap(
-          buyAllBalanceOffset,
-          paraswapData,
-          collateralAsset,
-          debtAsset,
-          collateralAmount,
-          debtRepayAmount
-        );
+      amountSold = _buyOnParaSwap(
+        buyAllBalanceOffset,
+        paraswapData,
+        collateralAsset,
+        debtAsset,
+        collateralAmount,
+        debtRepayAmount
+      );
     }
 
     // Repay debt. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
