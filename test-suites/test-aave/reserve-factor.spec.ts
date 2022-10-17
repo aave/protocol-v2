@@ -3,13 +3,63 @@ import BigNumber from 'bignumber.js';
 import { DRE, increaseTime } from '../../helpers/misc-utils';
 import { APPROVAL_AMOUNT_LENDING_POOL, oneEther } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
-import { makeSuite } from './helpers/make-suite';
+import { makeSuite, TestEnv } from './helpers/make-suite';
 import { RateMode } from '../../helpers/types';
 import { ConfigNames, getTreasuryAddress, loadPoolConfig } from '../../helpers/configuration';
 
 const chai = require('chai');
 
 const { expect } = chai;
+
+// Setup function to have 1 user with DAI deposits, and another user with WETH collateral
+// and DAI borrowings at an indicated borrowing mode
+const setupPositions = async (testEnv: TestEnv, borrowingMode: RateMode) => {
+  const { dai, weth, users, pool, oracle } = testEnv;
+  const depositor = users[0];
+  const borrower = users[1];
+
+  // mints DAI to depositor
+  await dai.connect(depositor.signer).mint(await convertToCurrencyDecimals(dai.address, '2000'));
+
+  // approve protocol to access depositor wallet
+  await dai.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+  // user 1 deposits 1000 DAI
+  const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
+
+  await pool
+    .connect(depositor.signer)
+    .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
+  // user 2 deposits 1 ETH
+  const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
+
+  // mints WETH to borrower
+  await weth.connect(borrower.signer).mint(await convertToCurrencyDecimals(weth.address, '1000'));
+
+  // approve protocol to access the borrower wallet
+  await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+  await pool
+    .connect(borrower.signer)
+    .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
+
+  //user 2 borrows
+
+  const userGlobalData = await pool.getUserAccountData(borrower.address);
+  const daiPrice = await oracle.getAssetPrice(dai.address);
+
+  const amountDAIToBorrow = await convertToCurrencyDecimals(
+    dai.address,
+    new BigNumber(userGlobalData.availableBorrowsETH.toString())
+      .div(daiPrice.toString())
+      .multipliedBy(0.95)
+      .toFixed(0)
+  );
+
+  await pool
+    .connect(borrower.signer)
+    .borrow(dai.address, amountDAIToBorrow, borrowingMode, '0', borrower.address);
+};
 
 makeSuite('LendingPool Reserve Factor 100%. Only variable borrowings', (testEnv) => {
   before('Before LendingPool Reserve Factor accrual: set config', () => {
@@ -20,61 +70,14 @@ makeSuite('LendingPool Reserve Factor 100%. Only variable borrowings', (testEnv)
     BigNumber.config({ DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP });
   });
 
-  it('Deposits WETH, borrows DAI', async () => {
-    const { dai, weth, users, pool, oracle } = testEnv;
-    const depositor = users[0];
-    const borrower = users[1];
+  it('Validates that variable borrow index accrue, liquidity index not, and the Collector receives aTokens after interest accrues', async () => {
+    const { configurator, dai, users, pool, aDai } = testEnv;
 
-    // mints DAI to depositor
-    await dai.connect(depositor.signer).mint(await convertToCurrencyDecimals(dai.address, '2000'));
+    await setupPositions(testEnv, RateMode.Variable);
 
-    // approve protocol to access depositor wallet
-    await dai.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    // user 1 deposits 1000 DAI
-    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
-
-    await pool
-      .connect(depositor.signer)
-      .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
-    // user 2 deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
-
-    // mints WETH to borrower
-    await weth.connect(borrower.signer).mint(await convertToCurrencyDecimals(weth.address, '1000'));
-
-    // approve protocol to access the borrower wallet
-    await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    await pool
-      .connect(borrower.signer)
-      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
-
-    //user 2 borrows
-
-    const userGlobalData = await pool.getUserAccountData(borrower.address);
-    const daiPrice = await oracle.getAssetPrice(dai.address);
-
-    const amountDAIToBorrow = await convertToCurrencyDecimals(
-      dai.address,
-      new BigNumber(userGlobalData.availableBorrowsETH.toString())
-        .div(daiPrice.toString())
-        .multipliedBy(0.95)
-        .toFixed(0)
-    );
-
-    await pool
-      .connect(borrower.signer)
-      .borrow(dai.address, amountDAIToBorrow, RateMode.Variable, '0', borrower.address);
-  });
-
-  it('Change RF of DAI to 100%', async () => {
-    const { configurator, dai } = testEnv;
+    // Set the RF to 100%
     await configurator.setReserveFactor(dai.address, '10000');
-  });
 
-  it('Validate that variable borrow index accrue, liquidity index not, and the Collector receives aTokens after interest accrues', async () => {
-    const { dai, users, pool, aDai } = testEnv;
     const depositor = users[0];
 
     const collectorAddress = await getTreasuryAddress(loadPoolConfig(ConfigNames.Aave));
@@ -132,61 +135,14 @@ makeSuite('LendingPool Reserve Factor 100%. Only stable borrowings', (testEnv) =
     BigNumber.config({ DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP });
   });
 
-  it('Deposits WETH, borrows DAI', async () => {
-    const { dai, weth, users, pool, oracle } = testEnv;
-    const depositor = users[0];
-    const borrower = users[1];
+  it('Validates that neither variable borrow index nor liquidity index increase, but the Collector receives aTokens after interest accrues', async () => {
+    const { configurator, dai, users, pool, aDai } = testEnv;
 
-    // mints DAI to depositor
-    await dai.connect(depositor.signer).mint(await convertToCurrencyDecimals(dai.address, '2000'));
+    await setupPositions(testEnv, RateMode.Stable);
 
-    // approve protocol to access depositor wallet
-    await dai.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    // user 1 deposits 1000 DAI
-    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
-
-    await pool
-      .connect(depositor.signer)
-      .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
-    // user 2 deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(weth.address, '1');
-
-    // mints WETH to borrower
-    await weth.connect(borrower.signer).mint(await convertToCurrencyDecimals(weth.address, '1000'));
-
-    // approve protocol to access the borrower wallet
-    await weth.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    await pool
-      .connect(borrower.signer)
-      .deposit(weth.address, amountETHtoDeposit, borrower.address, '0');
-
-    //user 2 borrows
-
-    const userGlobalData = await pool.getUserAccountData(borrower.address);
-    const daiPrice = await oracle.getAssetPrice(dai.address);
-
-    const amountDAIToBorrow = await convertToCurrencyDecimals(
-      dai.address,
-      new BigNumber(userGlobalData.availableBorrowsETH.toString())
-        .div(daiPrice.toString())
-        .multipliedBy(0.95)
-        .toFixed(0)
-    );
-
-    await pool
-      .connect(borrower.signer)
-      .borrow(dai.address, amountDAIToBorrow, RateMode.Stable, '0', borrower.address);
-  });
-
-  it('Change RF of DAI to 100%', async () => {
-    const { configurator, dai } = testEnv;
+    // Set the RF to 100%
     await configurator.setReserveFactor(dai.address, '10000');
-  });
 
-  it('Validate that neither variable borrow index nor liquidity index increase, but the Collector receives aTokens after interest accrues', async () => {
-    const { dai, users, pool, aDai } = testEnv;
     const depositor = users[0];
 
     const collectorAddress = await getTreasuryAddress(loadPoolConfig(ConfigNames.Aave));
