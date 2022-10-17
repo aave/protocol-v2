@@ -128,6 +128,7 @@ library ReserveLogic {
         previousVariableBorrowIndex,
         lastUpdatedTimestamp
       );
+
     _mintToTreasury(
       reserve,
       scaledVariableDebt,
@@ -136,9 +137,6 @@ library ReserveLogic {
       newVariableBorrowIndex,
       lastUpdatedTimestamp
     );
-
-    //solium-disable-next-line
-    reserve.lastUpdateTimestamp = uint40(block.timestamp);
   }
 
   /**
@@ -346,14 +344,15 @@ library ReserveLogic {
     uint256 variableBorrowIndex,
     uint40 timestamp
   ) internal returns (uint256, uint256) {
+    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+
     uint256 newLiquidityIndex = liquidityIndex;
     uint256 newVariableBorrowIndex = variableBorrowIndex;
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     // Only cumulating on the supply side if there is any income being produced
     // The case of Reserve Factor 100% is not a problem (currentLiquidityRate == 0),
     // as liquidity index should not be updated
-    if (currentLiquidityRate != 0) {
+    if (currentLiquidityRate > 0) {
       uint256 cumulatedLiquidityInterest =
         MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
@@ -362,7 +361,7 @@ library ReserveLogic {
     }
 
     // Variable borrow side only gets updated if there is any accrual of variable debt
-    if (scaledVariableDebt != 0) {
+    if (scaledVariableDebt > 0) {
       uint256 cumulatedVariableBorrowInterest =
         MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
       newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
@@ -373,6 +372,8 @@ library ReserveLogic {
       reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
     }
 
+    //solium-disable-next-line
+    reserve.lastUpdateTimestamp = uint40(block.timestamp);
     return (newLiquidityIndex, newVariableBorrowIndex);
   }
 }
