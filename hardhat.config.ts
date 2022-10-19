@@ -82,6 +82,12 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => {
 
 let forkMode;
 
+console.log('FORK --', buildForkConfig());
+
+// setup fork env on local terminal. Host and port you are listening to
+// create new network in hardhat config file / chainid
+// configure hardhat to run tests against local forked node
+
 const buidlerConfig: HardhatUserConfig = {
   solidity: {
     version: '0.6.12',
@@ -136,6 +142,7 @@ const buidlerConfig: HardhatUserConfig = {
       forking: buildForkConfig(),
       // forking: {
       //   url: `https://polygon-mumbai.g.alchemy.com/v2/${ALCHEMY_KEY}`,
+      //   // url: `https://polygon-mainnet.g.alchemy.com/v2/jKfOYRDlxpaJxV5O9NB5ENPzvBcZkgT_`,
       //   blockNumber: 28220920,
       // },
     },
@@ -148,6 +155,10 @@ const buidlerConfig: HardhatUserConfig = {
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       url: 'http://localhost:8545',
+    },
+    localhost: {
+      url: 'http://localhost:8545',
+      chainId: 31337, //default hardhat chainId
     },
     ganache: {
       url: 'http://ganache:8545',
