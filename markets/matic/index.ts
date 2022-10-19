@@ -1,4 +1,4 @@
-import { IMaticConfiguration, ePolygonNetwork } from '../../helpers/types';
+import { IMaticConfiguration, ePolygonNetwork, eContractid } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -19,6 +19,7 @@ export const MaticConfig: IMaticConfiguration = {
   ...CommonsConfig,
   MarketId: 'Matic Market Arc',
   ProviderId: 3,
+  LendingPoolImpl: eContractid.PermissionedLendingPool,
   ReservesConfig: {
     DAI: strategyDAI,
     USDC: strategyUSDC,
