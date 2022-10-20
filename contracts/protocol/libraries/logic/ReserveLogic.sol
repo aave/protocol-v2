@@ -108,6 +108,12 @@ library ReserveLogic {
    * @param reserve the reserve object
    **/
   function updateState(DataTypes.ReserveData storage reserve) internal {
+    // If time didn't pass since last stored timestamp, skip state update
+    //solium-disable-next-line
+    if (reserve.lastUpdateTimestamp == uint40(block.timestamp)) {
+      return;
+    }
+
     uint256 scaledVariableDebt =
       IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
@@ -343,7 +349,9 @@ library ReserveLogic {
     uint256 newLiquidityIndex = liquidityIndex;
     uint256 newVariableBorrowIndex = variableBorrowIndex;
 
-    //only cumulating if there is any income being produced
+    // Only cumulating on the supply side if there is any income being produced
+    // The case of Reserve Factor 100% is not a problem (currentLiquidityRate == 0),
+    // as liquidity index should not be updated
     if (currentLiquidityRate > 0) {
       uint256 cumulatedLiquidityInterest =
         MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
@@ -351,19 +359,18 @@ library ReserveLogic {
       require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
       reserve.liquidityIndex = uint128(newLiquidityIndex);
+    }
 
-      //as the liquidity rate might come only from stable rate loans, we need to ensure
-      //that there is actual variable debt before accumulating
-      if (scaledVariableDebt != 0) {
-        uint256 cumulatedVariableBorrowInterest =
-          MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
-        newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
-        require(
-          newVariableBorrowIndex <= type(uint128).max,
-          Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
-        );
-        reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
-      }
+    // Variable borrow side only gets updated if there is any accrual of variable debt
+    if (scaledVariableDebt > 0) {
+      uint256 cumulatedVariableBorrowInterest =
+        MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
+      newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
+      require(
+        newVariableBorrowIndex <= type(uint128).max,
+        Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
+      );
+      reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
     }
 
     //solium-disable-next-line
