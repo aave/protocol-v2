@@ -15,8 +15,8 @@ import { ICommonConfiguration, eEthereumNetwork } from '../../helpers/types';
 export const CommonsConfig: ICommonConfiguration = {
   MarketId: 'AaveArc',
   ATokenNamePrefix: 'Aave Arc market',
-  StableDebtTokenNamePrefix: 'Aave Arc stable debt ',
-  VariableDebtTokenNamePrefix: 'Aave Arc variable debt ',
+  StableDebtTokenNamePrefix: 'Aave Arc stable debt',
+  VariableDebtTokenNamePrefix: 'Aave Arc variable debt',
   SymbolPrefix: '',
   ProviderId: 0, // Overridden in index.ts
   OracleQuoteCurrency: 'ETH',

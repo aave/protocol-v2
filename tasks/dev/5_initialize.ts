@@ -8,12 +8,7 @@ import {
 } from '../../helpers/contracts-deployments';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { eNetwork } from '../../helpers/types';
-import {
-  ConfigNames,
-  getReservesConfigByPool,
-  getTreasuryAddress,
-  loadPoolConfig,
-} from '../../helpers/configuration';
+import { ConfigNames, getTreasuryAddress, loadPoolConfig } from '../../helpers/configuration';
 
 import { tEthereumAddress, AavePools, eContractid } from '../../helpers/types';
 import { waitForTx, filterMapBy, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
@@ -24,6 +19,7 @@ import {
   getAllMockedTokens,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
+  getPermissionedWETHGateway,
   getWETHGateway,
 } from '../../helpers/contracts-getters';
 import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
@@ -93,8 +89,13 @@ task('dev:initialize-lending-pool', 'Initialize lending pool configuration.')
     const lendingPoolAddress = await addressesProvider.getLendingPool();
 
     let gateway = getParamPerNetwork(WethGateway, network);
+
     if (!notFalsyOrZeroAddress(gateway)) {
-      gateway = (await getWETHGateway()).address;
+      if (pool.includes(ConfigNames.Arc)) {
+        gateway = (await getPermissionedWETHGateway()).address;
+      } else {
+        gateway = (await getWETHGateway()).address;
+      }
     }
     await authorizeWETHGateway(gateway, lendingPoolAddress);
 

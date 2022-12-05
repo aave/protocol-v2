@@ -7,7 +7,7 @@ task(`deploy-${eContractid.UiPoolDataProviderV2V3}`, `Deploys the UiPoolDataProv
   .addFlag('verify', 'Verify UiPoolDataProviderV2V3 contract via Etherscan API.')
   .setAction(async ({ verify }, localBRE) => {
     await localBRE.run('set-DRE');
-    const network = process.env.FORK ? process.env.FORK : localBRE.network.name;
+    const network = process.env.FORK || localBRE.network.name;
 
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');

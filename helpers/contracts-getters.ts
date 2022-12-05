@@ -177,14 +177,16 @@ export const getMockedTokens = async (config: PoolConfiguration) => {
 
 export const getAllMockedTokens = async () => {
   const db = getDb();
-  const tokens: MockTokenMap = await Object.keys(TokenContractId).reduce<Promise<MockTokenMap>>(
+  const tokens = await Object.keys(TokenContractId).reduce<Promise<MockTokenMap>>(
     async (acc, tokenSymbol) => {
-      const accumulator = await acc;
-      const address = db.get(`${tokenSymbol.toUpperCase()}.${DRE.network.name}`).value().address;
-      accumulator[tokenSymbol] = await getMintableERC20(address);
-      return Promise.resolve(acc);
+      const accResolved = await acc;
+      const token = db.get(`${tokenSymbol.toUpperCase()}.${DRE.network.name}`).value();
+      if (token) {
+        accResolved[tokenSymbol] = await getMintableERC20(token.address);
+      }
+      return accResolved;
     },
-    Promise.resolve({})
+    {} as Promise<MockTokenMap>
   );
   return tokens;
 };

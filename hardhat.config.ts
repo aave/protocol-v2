@@ -80,10 +80,6 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => {
   };
 };
 
-let forkMode;
-
-console.log('FORK --', buildForkConfig());
-
 // setup fork env on local terminal. Host and port you are listening to
 // create new network in hardhat config file / chainid
 // configure hardhat to run tests against local forked node

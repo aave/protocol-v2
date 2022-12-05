@@ -65,16 +65,9 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
 
       if (notFalsyOrZeroAddress(aaveOracleAddress)) {
         aaveOracle = await await getAaveOracle(aaveOracleAddress);
-        console.log('Aave oracle params 1', aaveOracle);
 
         await waitForTx(await aaveOracle.setAssetSources(tokens, aggregators));
       } else {
-        // console.log('Aave oracle tokens', tokens);
-        // console.log('Aave oracle aggregators', aggregators);
-        // console.log('Aave oracle fallbackOracle', fallbackOracleAddress);
-        // console.log('Aave oracle quoteCurrency', await getQuoteCurrency(poolConfig));
-        // console.log('Aave oracle OracleQuoteUnit', poolConfig.OracleQuoteUnit);
-
         aaveOracle = await deployAaveOracle(
           [
             tokens,

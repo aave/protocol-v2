@@ -1,3 +1,4 @@
+import { ZERO_ADDRESS } from './../../helpers/constants';
 import { task } from 'hardhat/config';
 import {
   deployATokenImplementations,
@@ -33,6 +34,7 @@ task('dev:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
     await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
     const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator(verify);
+    await waitForTx(await lendingPoolConfiguratorImpl.initialize(addressesProvider.address));
 
     // Set lending pool conf impl to Address Provider
     await waitForTx(

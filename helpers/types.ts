@@ -49,6 +49,7 @@ export enum AavePools {
   matic = 'matic',
   amm = 'amm',
   arc = 'arc',
+  arcBrazil = 'arcBrazil',
   avalanche = 'avalanche',
 }
 
@@ -276,6 +277,7 @@ export interface iAssetBase<T> {
   STAKE: T;
   xSUSHI: T;
   WAVAX: T;
+  BRL: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -308,6 +310,12 @@ export type iAavePoolAssets<T> = Pick<
 >;
 
 export type iAaveArcPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'LINK' | 'WBTC' | 'WETH'>;
+export type iAaveArcBrazilPoolAssets<T> = {
+  BRL: T;
+  WETH: T;
+  WBTC: T;
+  USDC: T;
+};
 
 export type iLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
@@ -397,6 +405,7 @@ export enum TokenContractId {
   STAKE = 'STAKE',
   xSUSHI = 'xSUSHI',
   WAVAX = 'WAVAX',
+  BRL = 'BRL',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -405,6 +414,7 @@ export interface IReserveParams extends IReserveBorrowParams, IReserveCollateral
   variableDebtTokenImpl?: eContractid;
   reserveFactor: string;
   strategy: IInterestRateStrategyParams;
+  name?: string;
 }
 
 export interface IInterestRateStrategyParams {
@@ -479,6 +489,7 @@ export interface iParamsPerPool<T> {
   [AavePools.matic]: T;
   [AavePools.amm]: T;
   [AavePools.arc]: T;
+  [AavePools.arcBrazil]: T;
   [AavePools.avalanche]: T;
 }
 
@@ -566,6 +577,9 @@ export interface IAaveConfiguration extends ICommonConfiguration {
 
 export interface IAaveArcConfiguration extends ICommonConfiguration {
   ReservesConfig: iAaveArcPoolAssets<IReserveParams>;
+}
+export interface IAaveArcBrazilConfiguration extends ICommonConfiguration {
+  ReservesConfig: iAaveArcBrazilPoolAssets<IReserveParams>;
 }
 export interface IAmmConfiguration extends ICommonConfiguration {
   ReservesConfig: iLpPoolAssets<IReserveParams>;

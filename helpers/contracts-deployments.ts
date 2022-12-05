@@ -1,11 +1,10 @@
+import { ZERO_ADDRESS } from './constants';
 import { Contract } from 'ethers';
-import { DRE, notFalsyOrZeroAddress } from './misc-utils';
+import { DRE, notFalsyOrZeroAddress, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
   tStringTokenSmallUnits,
-  AavePools,
-  TokenContractId,
   iMultiPoolsAssets,
   IReserveParams,
   PoolConfiguration,
@@ -51,14 +50,14 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
-  PermissionedVariableDebtTokenFactory,
-  PermissionedStableDebtTokenFactory,
-  PermissionedLendingPoolFactory,
-  PermissionedWETHGatewayFactory,
   UiPoolDataProviderV2Factory,
   UiPoolDataProviderV2V3Factory,
   UiIncentiveDataProviderV2V3,
   UiIncentiveDataProviderV2Factory,
+  PermissionedStableDebtTokenFactory,
+  PermissionedWETHGatewayFactory,
+  PermissionedVariableDebtTokenFactory,
+  PermissionedLendingPoolFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -119,7 +118,7 @@ export const deployUiPoolDataProviderV2V3 = async (
       chainlinkAggregatorProxy,
       chainlinkEthUsdAggregatorProxy
     ),
-    eContractid.UiPoolDataProvider,
+    eContractid.UiPoolDataProviderV2V3,
     [chainlinkAggregatorProxy, chainlinkEthUsdAggregatorProxy],
     verify
   );
@@ -260,10 +259,12 @@ export const deployLendingPool = async (verify?: boolean, lendingPoolImpl?: eCon
         libraries,
         await getFirstSigner()
       ).deploy();
+      await waitForTx(await instance.initialize(ZERO_ADDRESS));
       break;
     case eContractid.LendingPool:
     default:
       instance = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
+      await waitForTx(await instance.initialize(ZERO_ADDRESS));
   }
   await instance.deployTransaction.wait();
 
@@ -570,18 +571,16 @@ export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
     verify
   );
 
-export const deployAllMockTokens = async (verify?: boolean) => {
+export const deployAllMockTokens = async (pool: ConfigNames, verify?: boolean) => {
   const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
+  const { ReservesConfig } = await loadPoolConfig(pool);
+  const decimals = '18';
 
-  const protoConfigData = getReservesConfigByPool(AavePools.proto);
-
-  for (const tokenSymbol of Object.keys(TokenContractId)) {
-    let decimals = '18';
-
-    let configData = (<any>protoConfigData)[tokenSymbol];
+  for (const tokenSymbol in ReservesConfig) {
+    const configData = ReservesConfig[tokenSymbol];
 
     tokens[tokenSymbol] = await deployMintableERC20(
-      [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
+      [tokenSymbol, configData.name || tokenSymbol, configData.reserveDecimals || decimals],
       verify
     );
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);

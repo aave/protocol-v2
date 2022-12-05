@@ -65,16 +65,10 @@ export const initReservesByHelper = async (
   poolName: ConfigNames,
   verify: boolean
 ) => {
-  console.log('initReservesByHelper ---- 0 ');
-
-  let gasUsage = BigNumber.from('0');
-
-  console.log('initReservesByHelper ---- 1 ');
-
   const addressProvider = await getLendingPoolAddressesProvider();
 
   // CHUNK CONFIGURATION
-  const initChunks = 1;
+  const initChunks = 2;
 
   // Initialize variables for future reserves initialization
   let reserveSymbols: string[] = [];
@@ -109,7 +103,6 @@ export const initReservesByHelper = async (
   ];
   let rateStrategies: Record<string, typeof strategyRates> = {};
   let strategyAddresses: Record<string, tEthereumAddress> = {};
-  let strategyAddressPerAsset: Record<string, string> = {};
   let aTokenType: Record<string, string> = {};
   let delegationAwareATokenImplementationAddress = '';
   let aTokenImplementationAddress = '';
@@ -214,13 +207,6 @@ export const initReservesByHelper = async (
       throw 'Could not find a proper debt token instance for the asset ' + symbol;
     }
 
-    let aTokenToUse: string;
-    if (aTokenType[symbol] === 'generic') {
-      aTokenToUse = aTokenImplementationAddress;
-    } else {
-      aTokenToUse = delegationAwareATokenImplementationAddress;
-    }
-
     initInputParams.push({
       aTokenImpl: await getContractAddressWithJsonFallback(
         reservesParams[symbol].aTokenImpl,
@@ -252,8 +238,13 @@ export const initReservesByHelper = async (
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
+    const gasEstimation = await configurator.estimateGas.batchInitReserve(
+      chunkedInitInputParams[chunkIndex]
+    );
     const tx3 = await waitForTx(
-      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
+      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex], {
+        gasLimit: gasEstimation.add('200000'),
+      })
     );
 
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);

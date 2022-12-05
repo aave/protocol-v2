@@ -1,3 +1,5 @@
+import { getFirstSigner } from './contracts-getters';
+import { AaveArcBrazil } from './../markets/aave-arc-brazil/index';
 import {
   AavePools,
   iMultiPoolsAssets,
@@ -18,6 +20,7 @@ import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
 import { getParamPerNetwork } from './contracts-helpers';
 import { deployWETHMocked } from './contracts-deployments';
+import { hrtime } from 'process';
 
 export enum ConfigNames {
   Commons = 'Commons',
@@ -27,6 +30,8 @@ export enum ConfigNames {
   Arc = 'Arc',
   Avalanche = 'Avalanche',
   ArcMumbai = 'ArcMumbai',
+  ArcBrazilMumbai = 'ArcBrazilMumbai',
+  ArcBrazil = 'ArcBrazil',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -45,6 +50,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return AaveArcConfig;
     case ConfigNames.ArcMumbai:
       return MaticConfig;
+    case ConfigNames.ArcBrazil:
+      return AaveArcBrazil;
     default:
       throw new Error(
         `Unsupported pool configuration: ${configName} is not one of the supported configs ${Object.values(
@@ -57,8 +64,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
 // PROTOCOL PARAMS PER POOL
 // ----------------
 
-export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IReserveParams> =>
-  getParamPerPool<iMultiPoolsAssets<IReserveParams>>(
+export const getReservesConfigByPool = (pool: AavePools): { [key: string]: IReserveParams } =>
+  getParamPerPool<{ [key: string]: IReserveParams }>(
     {
       [AavePools.proto]: {
         ...AaveConfig.ReservesConfig,
@@ -71,6 +78,9 @@ export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IRes
       },
       [AavePools.arc]: {
         ...AaveArcConfig.ReservesConfig,
+      },
+      [AavePools.arcBrazil]: {
+        ...AaveArcBrazil.ReservesConfig,
       },
       [AavePools.avalanche]: {
         ...AvalancheConfig.ReservesConfig,
@@ -105,7 +115,10 @@ export const getEmergencyAdmin = async (config: IBaseConfiguration): Promise<tEt
 
 export const getTreasuryAddress = async (config: IBaseConfiguration): Promise<tEthereumAddress> => {
   const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
-  return getParamPerNetwork(config.ReserveFactorTreasuryAddress, <eNetwork>currentNetwork);
+  return (
+    getParamPerNetwork(config.ReserveFactorTreasuryAddress, <eNetwork>currentNetwork) ||
+    (await (await getFirstSigner()).getAddress())
+  );
 };
 
 export const getATokenDomainSeparatorPerNetwork = (

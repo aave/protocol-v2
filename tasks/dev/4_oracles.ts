@@ -1,3 +1,4 @@
+import { LendingPool } from './../../types/LendingPool.d';
 import { task } from 'hardhat/config';
 import { deployAaveOracle, deployLendingRateOracle } from '../../helpers/contracts-deployments';
 import {

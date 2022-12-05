@@ -77,7 +77,7 @@
     "arc:matic:jpm:migration:fork": "npm run compile && npm run hardhat:fork -- arc:matic",
     "arc:mumbai:jpm:migration:fork": "npm run compile && npm run hardhat:fork -- arc:mumbai",
     "arc:mumbai:jpm:migration": "npm run compile && npm run hardhat:mumbai -- arc:mumbai",
-    "arc:mumbai:dev:migration": "npm run compile && npm run hardhat:mumbai -- arc-dev:mumbai --verify",
+    "arc:mumbai:dev:migration": "npm run compile && npm run hardhat:mumbai -- arc-dev:mumbai --verify --pool ArcMumbai",
     "prettier:check": "npx prettier -c 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
     "prettier:write": "prettier --write 'tasks/**/*.ts' 'contracts/**/*.sol' 'helpers/**/*.ts'  'test-suites/test-aave/**/*.ts'",
     "ci:test": "npm run compile && npm run test",

@@ -64,17 +64,12 @@ task(`unpause-pool`, `Unpause-pool`).setAction(async ({}, localBRE) => {
   console.log('Emergency Admin address:', await provider.connect(nonAdmin).getEmergencyAdmin());
   console.log('Signer: ', await deployer.getAddress());
   const pool = await getLendingPool(await provider.connect(nonAdmin).getLendingPool());
-  console.log(`\tPool paused? `, await pool.paused());
 
   const configurator = await getLendingPoolConfiguratorProxy(
     await provider.connect(nonAdmin).getLendingPoolConfigurator()
   );
 
-  console.log('foo');
-
   await configurator.connect(deployer).setPoolPause(false);
-
-  console.log(`\tPool pause? `, await pool.paused());
 });
 
 task(`deploy-weth-mocks`, `Deploys the Weth9 mocks for arc goerli`).setAction(
