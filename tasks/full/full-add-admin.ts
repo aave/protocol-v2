@@ -15,7 +15,10 @@ import {
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
 import { getEthersSigners } from '../../helpers/contracts-helpers';
-import { deployWETHMocked } from '../../helpers/contracts-deployments';
+import { getAaveProtocolDataProvider } from '../../helpers/contracts-getters';
+import { getAaveOracle } from '../../helpers/contracts-getters';
+
+import { deployWETHMocked, deployMockAggregator } from '../../helpers/contracts-deployments';
 
 task(`full-add-admin`, `Whitelists an admin into the arc market`)
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
@@ -27,8 +30,8 @@ task(`full-add-admin`, `Whitelists an admin into the arc market`)
       throw new Error('INVALID_CHAIN_ID');
     }
 
-    const NEW_PERMISSION_ADMIN = '0x3f1Cf2c4Ed96554b76763C8b38D66B66cc48E841';
-    const PERMISSION_MANAGER_ADDRESS = '0x8F30ec9Fb348513494cCC1710528E744Efa71003';
+    const NEW_PERMISSION_ADMIN = '';
+    const PERMISSION_MANAGER_ADDRESS = '';
 
     const deployer = await getFirstSigner();
     const deployerAddress = await deployer.getAddress();
@@ -59,7 +62,7 @@ task(`unpause-pool`, `Unpause-pool`).setAction(async ({}, localBRE) => {
   const emergencyAdmin = users[1];
 
   console.log('You need to use the Emergency Admin Address to unpause');
-  const POOL_ADDRESSES_PROVIDER = '0x56033E114c61183590d39BA847400F02022Ebe47';
+  const POOL_ADDRESSES_PROVIDER = 'YOUR_POOL_ADDRESS_PROVIDER';
   const provider = await getLendingPoolAddressesProvider(POOL_ADDRESSES_PROVIDER);
   console.log('Emergency Admin address:', await provider.connect(nonAdmin).getEmergencyAdmin());
   console.log('Signer: ', await deployer.getAddress());
@@ -84,5 +87,44 @@ task(`deploy-weth-mocks`, `Deploys the Weth9 mocks for arc goerli`).setAction(
 
     const wethMock = await deployWETHMocked(true);
     console.log('deployed wethmock', wethMock);
+  }
+);
+
+task(`deploy-oracle-mocks`, `Deploys the mock oracles needed for custom tokens`).setAction(
+  async ({}, localBRE) => {
+    await localBRE.run('set-DRE');
+    const deployer = await getFirstSigner();
+
+    const mockOracleAggregator = await deployMockAggregator('00690760');
+
+    console.log('Deployed mockOracleAggregator', mockOracleAggregator.address);
+  }
+);
+
+task(`transfer-pool-ownership`, `Transfers ownership of the market`).setAction(
+  async ({}, localBRE) => {
+    await localBRE.run('set-DRE');
+    const deployer = await getFirstSigner();
+    const POOL_ADDRESSES_PROVIDER = '';
+    const TRANSFER_ADDRESS = '';
+    const provider = await getLendingPoolAddressesProvider(POOL_ADDRESSES_PROVIDER);
+
+    const txReceipt = await provider.setPoolAdmin(TRANSFER_ADDRESS);
+
+    console.log('Transfered ownership of the market', txReceipt);
+  }
+);
+
+task(`transfer-oracle-ownership`, `Transfers ownership of the market`).setAction(
+  async ({}, localBRE) => {
+    await localBRE.run('set-DRE');
+    const deployer = await getFirstSigner();
+    const AAVE_ORACLE = '';
+    const TRANSFER_ADDRESS = '';
+    const aaveOracle = await getAaveOracle(AAVE_ORACLE);
+
+    const txReceipt = await aaveOracle.transferOwnership(TRANSFER_ADDRESS);
+
+    console.log('Transfered ownership of Aave oracle', txReceipt);
   }
 );
