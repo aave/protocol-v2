@@ -58,6 +58,7 @@ import {
   PermissionedWETHGatewayFactory,
   PermissionedVariableDebtTokenFactory,
   PermissionedLendingPoolFactory,
+  FaucetFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -864,5 +865,13 @@ export const deployParaSwapLiquiditySwapAdapter = async (
     await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.ParaSwapLiquiditySwapAdapter,
     args,
+    verify
+  );
+
+export const deployTokenFaucet = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new FaucetFactory(await getFirstSigner()).deploy(),
+    eContractid.Faucet,
+    [],
     verify
   );
