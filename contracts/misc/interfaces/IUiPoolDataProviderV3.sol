@@ -57,6 +57,7 @@ interface IUiPoolDataProviderV3 {
     uint256 optimalUsageRatio;
     // v3
     bool isPaused;
+    bool isSiloedBorrowing;
     uint128 accruedToTreasury;
     uint128 unbacked;
     uint128 isolationModeTotalDebt;
