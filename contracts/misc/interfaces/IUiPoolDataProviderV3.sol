@@ -60,12 +60,13 @@ interface IUiPoolDataProviderV3 {
     uint128 accruedToTreasury;
     uint128 unbacked;
     uint128 isolationModeTotalDebt;
+    bool flashLoanEnabled;
     //
     uint256 debtCeiling;
     uint256 debtCeilingDecimals;
     uint8 eModeCategoryId;
     uint256 borrowCap;
-    uint256 supplyCap; 
+    uint256 supplyCap;
     // eMode
     uint16 eModeLtv;
     uint16 eModeLiquidationThreshold;
