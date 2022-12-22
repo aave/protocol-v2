@@ -137,7 +137,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
         reserveData.stableBorrowRateEnabled
       ) = baseData.configuration.getFlagsMemory();
       reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
-      
+
       InterestRates memory interestRates = getInterestRateStrategySlopes(
         DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress), provider, reserveData.underlyingAsset
       );
@@ -149,6 +149,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       reserveData.baseStableBorrowRate = interestRates.baseStableBorrowRate;
       reserveData.baseVariableBorrowRate = interestRates.baseVariableBorrowRate;
       reserveData.optimalUsageRatio = interestRates.optimalUsageRatio;
+      reserveData.flashLoanEnabled = true;
     }
 
     BaseCurrencyInfo memory baseCurrencyInfo;
