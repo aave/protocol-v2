@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 
 interface IUiPoolDataProviderV3 {
-    struct InterestRates {
+  struct InterestRates {
     uint256 variableRateSlope1;
     uint256 variableRateSlope2;
     uint256 stableRateSlope1;
@@ -57,6 +57,7 @@ interface IUiPoolDataProviderV3 {
     uint256 optimalUsageRatio;
     // v3
     bool isPaused;
+    bool isSiloedBorrowing;
     uint128 accruedToTreasury;
     uint128 unbacked;
     uint128 isolationModeTotalDebt;
@@ -101,15 +102,10 @@ interface IUiPoolDataProviderV3 {
   function getReservesData(ILendingPoolAddressesProvider provider)
     external
     view
-    returns (
-      AggregatedReserveData[] memory,
-      BaseCurrencyInfo memory
-    );
+    returns (AggregatedReserveData[] memory, BaseCurrencyInfo memory);
 
   function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
     external
     view
-    returns (
-      UserReserveData[] memory, uint8
-    );
+    returns (UserReserveData[] memory, uint8);
 }
