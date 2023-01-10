@@ -176,9 +176,6 @@
     "axios-curlirize": "^1.3.7",
     "tmp-promise": "^3.0.2"
   },
-  "resolutions": {
-    "ethereumjs-abi": "https://registry.npmjs.org/ethereumjs-abi/-/ethereumjs-abi-0.6.8.tgz"
-  },
   "keywords": [
     "aave",
     "protocol",
