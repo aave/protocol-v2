@@ -10,7 +10,6 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
-import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
@@ -858,18 +857,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address oracle = _addressesProvider.getPriceOracle();
 
-    uint256 amountInETH =
-      IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
-        10**reserve.configuration.getDecimals()
-      );
-
     ValidationLogic.validateBorrow(
       vars.asset,
       reserve,
       vars.onBehalfOf,
       vars.amount,
-      amountInETH,
       vars.interestRateMode,
+      vars.releaseUnderlying,
       _maxStableRateBorrowSizePercent,
       _reserves,
       userConfig,

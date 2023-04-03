@@ -15,6 +15,7 @@ import {Errors} from '../helpers/Errors.sol';
 import {Helpers} from '../helpers/Helpers.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
 import {DataTypes} from '../types/DataTypes.sol';
+import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title ReserveLogic library
@@ -96,6 +97,8 @@ library ValidationLogic {
     uint256 userBorrowBalanceETH;
     uint256 availableLiquidity;
     uint256 healthFactor;
+    uint256 assetUnitPrice;
+    uint256 amountInETH;
     bool isActive;
     bool isFrozen;
     bool borrowingEnabled;
@@ -108,8 +111,8 @@ library ValidationLogic {
    * @param reserve The reserve state from which the user is borrowing
    * @param userAddress The address of the user
    * @param amount The amount to be borrowed
-   * @param amountInETH The amount to be borrowed, in ETH
    * @param interestRateMode The interest rate mode at which the user is borrowing
+   * @param releaseUnderlying Boolean to identify Flash Loans
    * @param maxStableLoanPercent The max amount of the liquidity that can be borrowed at stable rate, in percentage
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
@@ -122,8 +125,8 @@ library ValidationLogic {
     DataTypes.ReserveData storage reserve,
     address userAddress,
     uint256 amount,
-    uint256 amountInETH,
     uint256 interestRateMode,
+    bool releaseUnderlying,
     uint256 maxStableLoanPercent,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -172,8 +175,11 @@ library ValidationLogic {
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
+    vars.assetUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(asset);
+    vars.amountInETH = vars.assetUnitPrice.mul(amount).div(10**reserve.configuration.getDecimals());
+
     //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(amountInETH).percentDiv(
+    vars.amountOfCollateralNeededETH = vars.userBorrowBalanceETH.add(vars.amountInETH).percentDiv(
       vars.currentLtv
     ); //LTV is calculated in percentage
 
@@ -182,33 +188,39 @@ library ValidationLogic {
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
 
-    /**
-     * Following conditions need to be met if the user is borrowing at a stable rate:
-     * 1. Reserve must be enabled for stable rate borrowing
-     * 2. Users cannot borrow from the reserve if their collateral is (mostly) the same currency
-     *    they are borrowing, to prevent abuses.
-     * 3. Users will be able to borrow only a portion of the total available liquidity
-     **/
-
-    if (interestRateMode == uint256(DataTypes.InterestRateMode.STABLE)) {
-      //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
-
-      require(vars.stableRateBorrowingEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
-
-      require(
-        !userConfig.isUsingAsCollateral(reserve.id) ||
-          reserve.configuration.getLtv() == 0 ||
-          amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
-        Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
-      );
-
+    if (releaseUnderlying) {
       vars.availableLiquidity = IERC20(asset).balanceOf(reserve.aTokenAddress);
 
-      //calculate the max available loan size in stable rate mode as a percentage of the
-      //available liquidity
-      uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(maxStableLoanPercent);
+      /**
+       * Following conditions need to be met if the user is borrowing at a stable rate:
+       * 1. Reserve must be enabled for stable rate borrowing
+       * 2. Users cannot borrow from the reserve if their collateral is (mostly) the same currency
+       *    they are borrowing, to prevent abuses.
+       * 3. Users will be able to borrow only a portion of the total available liquidity
+       **/
+      if (interestRateMode == uint256(DataTypes.InterestRateMode.STABLE)) {
+        //check if the borrow mode is stable and if stable rate borrowing is enabled on this reserve
 
-      require(amount <= maxLoanSizeStable, Errors.VL_AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE);
+        require(vars.stableRateBorrowingEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
+
+        require(
+          !userConfig.isUsingAsCollateral(reserve.id) ||
+            reserve.configuration.getLtv() == 0 ||
+            amount > IERC20(reserve.aTokenAddress).balanceOf(userAddress),
+          Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
+        );
+
+        //calculate the max available loan size in stable rate mode as a percentage of the
+        //available liquidity
+        uint256 maxLoanSizeStable = vars.availableLiquidity.percentMul(maxStableLoanPercent);
+
+        require(amount <= maxLoanSizeStable, Errors.VL_AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE);
+      } else {
+        require(
+          amount <= vars.availableLiquidity,
+          Errors.VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH
+        );
+      }
     }
   }
 
