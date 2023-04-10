@@ -39,11 +39,11 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
     marketReferenceCurrencyPriceInUsdProxyAggregator = _marketReferenceCurrencyPriceInUsdProxyAggregator;
   }
 
-  function getInterestRateStrategySlopes(
-    DefaultReserveInterestRateStrategy interestRateStrategy,
-    ILendingPoolAddressesProvider provider,
-    address reserve
-  ) internal view returns (InterestRates memory) {
+  function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy, ILendingPoolAddressesProvider provider, address reserve)
+    internal
+    view
+    returns(InterestRates memory)
+  {
     InterestRates memory interestRates;
     interestRates.variableRateSlope1 = interestRateStrategy.variableRateSlope1();
     interestRates.variableRateSlope2 = interestRateStrategy.variableRateSlope2();
@@ -53,7 +53,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
     interestRates.optimalUsageRatio = interestRateStrategy.OPTIMAL_UTILIZATION_RATE();
 
     interestRates.baseStableBorrowRate = ILendingRateOracle(provider.getLendingRateOracle())
-      .getMarketBorrowRate(reserve);
+          .getMarketBorrowRate(reserve);
 
     return interestRates;
   }
@@ -138,12 +138,9 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       ) = baseData.configuration.getFlagsMemory();
       reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
 
-      InterestRates memory interestRates =
-        getInterestRateStrategySlopes(
-          DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress),
-          provider,
-          reserveData.underlyingAsset
-        );
+      InterestRates memory interestRates = getInterestRateStrategySlopes(
+        DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress), provider, reserveData.underlyingAsset
+      );
 
       reserveData.variableRateSlope1 = interestRates.variableRateSlope1;
       reserveData.variableRateSlope2 = interestRates.variableRateSlope2;
@@ -152,6 +149,7 @@ contract UiPoolDataProviderV2V3 is IUiPoolDataProviderV3 {
       reserveData.baseStableBorrowRate = interestRates.baseStableBorrowRate;
       reserveData.baseVariableBorrowRate = interestRates.baseVariableBorrowRate;
       reserveData.optimalUsageRatio = interestRates.optimalUsageRatio;
+      reserveData.flashLoanEnabled = true;
     }
 
     BaseCurrencyInfo memory baseCurrencyInfo;

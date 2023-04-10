@@ -22,7 +22,8 @@ require('dotenv').config();
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
-import 'temp-hardhat-etherscan';
+import '@nomiclabs/hardhat-etherscan';
+
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
@@ -84,8 +85,16 @@ const buidlerConfig: HardhatUserConfig = {
     target: 'ethers-v5',
   },
   etherscan: {
-    apiKey: ETHERSCAN_KEY,
+    apiKey: {
+      polygonMumbai: process.env.ETHERSCAN_POLYGON_KEY || '',
+      goerli: process.env.ETHERSCAN_KEY || '',
+      fuji: process.env.ETHERSCAN_SNOWTRACE_KEY || '',
+      mainnet: process.env.ETHERSCAN_KEY || '',
+      polygon: process.env.ETHERSCAN_POLYGON_KEY || '',
+      avalanche: process.env.ETHERSCAN_SNOWTRACE_KEY || '',
+    },
   },
+
   mocha: {
     timeout: 0,
   },
