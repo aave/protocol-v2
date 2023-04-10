@@ -37,11 +37,23 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
 
   IPriceOracleGetter public immutable ORACLE;
 
-  event Swapped(address indexed fromAsset, address indexed toAsset, uint256 fromAmount, uint256 receivedAmount);
+  event Swapped(
+    address indexed fromAsset,
+    address indexed toAsset,
+    uint256 fromAmount,
+    uint256 receivedAmount
+  );
+  event Bought(
+    address indexed fromAsset,
+    address indexed toAsset,
+    uint256 amountSold,
+    uint256 receivedAmount
+  );
 
-  constructor(
-    ILendingPoolAddressesProvider addressesProvider
-  ) public FlashLoanReceiverBase(addressesProvider) {
+  constructor(ILendingPoolAddressesProvider addressesProvider)
+    public
+    FlashLoanReceiverBase(addressesProvider)
+  {
     ORACLE = IPriceOracleGetter(addressesProvider.getPriceOracle());
   }
 
@@ -71,6 +83,17 @@ abstract contract BaseParaSwapAdapter is FlashLoanReceiverBase, Ownable {
    */
   function _getReserveData(address asset) internal view returns (DataTypes.ReserveData memory) {
     return LENDING_POOL.getReserveData(asset);
+  }
+
+  function _pullATokenAndWithdraw(
+    address reserve,
+    address user,
+    uint256 amount,
+    PermitSignature memory permitSignature
+  ) internal {
+    IERC20WithPermit reserveAToken =
+      IERC20WithPermit(_getReserveData(address(reserve)).aTokenAddress);
+    _pullATokenAndWithdraw(reserve, reserveAToken, user, amount, permitSignature);
   }
 
   /**

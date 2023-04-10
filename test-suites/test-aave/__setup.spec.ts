@@ -29,6 +29,7 @@ import {
   deployMockParaSwapAugustus,
   deployMockParaSwapAugustusRegistry,
   deployParaSwapLiquiditySwapAdapter,
+  deployParaSwapRepayAdapter,
   authorizeWETHGateway,
   deployATokenImplementations,
   deployAaveOracle,
@@ -302,6 +303,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
 
   await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
+
+  await deployParaSwapRepayAdapter([addressesProvider.address, augustusRegistry.address]);
 
   await deployWalletBalancerProvider();
 

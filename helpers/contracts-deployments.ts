@@ -55,6 +55,7 @@ import {
   UiPoolDataProviderV2V3Factory,
   UiIncentiveDataProviderV2V3,
   UiIncentiveDataProviderV2Factory,
+  ParaSwapRepayAdapterFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -788,6 +789,17 @@ export const deployParaSwapLiquiditySwapAdapter = async (
   withSaveAndVerify(
     await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.ParaSwapLiquiditySwapAdapter,
+    args,
+    verify
+  );
+
+export const deployParaSwapRepayAdapter = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new ParaSwapRepayAdapterFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ParaSwapRepayAdapter,
     args,
     verify
   );
