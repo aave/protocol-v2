@@ -256,6 +256,7 @@ export interface iAssetBase<T> {
   WMATIC: T;
   STAKE: T;
   xSUSHI: T;
+  NMR: T;
   WAVAX: T;
 }
 
@@ -286,6 +287,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+  | 'NMR'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -349,6 +351,7 @@ export enum TokenContractId {
   LINK = 'LINK',
   KNC = 'KNC',
   MANA = 'MANA',
+  NMR = 'NMR',
   REN = 'REN',
   SNX = 'SNX',
   BUSD = 'BUSD',
