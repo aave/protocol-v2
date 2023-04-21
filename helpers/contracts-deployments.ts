@@ -1,3 +1,4 @@
+import { WETH9Mocked } from './../types/WETH9Mocked.d';
 import { Contract } from 'ethers';
 import { DRE, notFalsyOrZeroAddress } from './misc-utils';
 import {
@@ -503,7 +504,7 @@ export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
   );
 
 export const deployAllMockTokens = async (verify?: boolean) => {
-  const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
+  const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked } = {};
 
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
 
@@ -512,10 +513,15 @@ export const deployAllMockTokens = async (verify?: boolean) => {
 
     let configData = (<any>protoConfigData)[tokenSymbol];
 
-    tokens[tokenSymbol] = await deployMintableERC20(
-      [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
-      verify
-    );
+    if (tokenSymbol == 'WETH') {
+      tokens[tokenSymbol] = await deployWETHMocked(verify);
+    } else {
+      tokens[tokenSymbol] = await deployMintableERC20(
+        [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
+        verify
+      );
+    }
+
     await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
   }
   return tokens;
