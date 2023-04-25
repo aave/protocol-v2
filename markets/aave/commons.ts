@@ -99,6 +99,9 @@ export const CommonsConfig: ICommonConfiguration = {
     BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
+    ENS: {
+      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    },
   },
   // ----------------
   // COMMON PROTOCOL ADDRESSES ACROSS POOLS

@@ -24,6 +24,7 @@ import {
   strategyYFI,
   strategyXSUSHI,
   strategyENJ,
+  strategyENS,
 } from './reservesConfigs';
 
 // ----------------
@@ -56,6 +57,7 @@ export const AaveConfig: IAaveConfiguration = {
     YFI: strategyYFI,
     ZRX: strategyZRX,
     xSUSHI: strategyXSUSHI,
+    ENS: strategyENS,
   },
   ReserveAssets: {
     [eEthereumNetwork.goerli]: {},
@@ -105,6 +107,7 @@ export const AaveConfig: IAaveConfiguration = {
       WETH: '0xc778417e063141139fce010982780140aa0cd5ab',
       YFI: ZERO_ADDRESS,
       ZRX: '0x02d7055704EfF050323A2E5ee4ba05DB2A588959',
+      ENS: '0x2dc6C646173fFEB34031465578B21D9406A8E42a',
     },
     [eEthereumNetwork.main]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
@@ -128,6 +131,7 @@ export const AaveConfig: IAaveConfiguration = {
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
       xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272',
+      ENS: '0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72'
     },
     [eEthereumNetwork.tenderly]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
@@ -151,6 +155,7 @@ export const AaveConfig: IAaveConfiguration = {
       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
       xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272',
+      ENS: '0xC18360217D8F7Ab5e7c516566761Ea12Ce7F9D72',
     },
   },
 };
