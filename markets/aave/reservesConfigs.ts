@@ -266,7 +266,7 @@ export const strategyXSUSHI: IReserveParams = {
 };
 
 export const strategyKAT: IReserveParams = {
-  strategy: rateStrategyVolatileFour,
+  strategy: rateStrategyStableThree,
   baseLTVAsCollateral: '7500',
   liquidationThreshold: '8000',
   liquidationBonus: '11000',
