@@ -4,7 +4,7 @@ import {
   MOCK_CHAINLINK_AGGREGATORS_PRICES,
   oneEther,
 } from '../../helpers/constants';
-import { ICommonConfiguration, eOpBNB ,eEthereumNetwork} from '../../helpers/types';
+import { ICommonConfiguration, eOpBNBNetwork ,eEthereumNetwork} from '../../helpers/types';
 
 // ----------------
 // PROTOCOL GLOBAL PARAMS
@@ -61,48 +61,48 @@ export const CommonsConfig: ICommonConfiguration = {
 
   // If PoolAdmin/emergencyAdmin is set, will take priority over PoolAdminIndex/emergencyAdminIndex
   PoolAdmin: {
-    [eOpBNB.op_bnb]: undefined,
+    [eOpBNBNetwork.op_bnb]: undefined,
   },
   PoolAdminIndex: 0,
   EmergencyAdmin: {
-    [eOpBNB.op_bnb]: undefined,
+    [eOpBNBNetwork.op_bnb]: undefined,
   },
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
     // [eEthereumNetwork.main]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
   },
   ProviderRegistryOwner: {
     //[eEthereumNetwork.main]: '0xB9062896ec3A615a4e4444DF183F0531a77218AE',
-   [eOpBNB.op_bnb]: ''
+   [eOpBNBNetwork.op_bnb]: ''
   },
   LendingRateOracle: {
     //[eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
   },
   LendingPoolCollateralManager: {
     //[eEthereumNetwork.main]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
   },
   LendingPoolConfigurator: {
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
   },
   LendingPool: {
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
   },
   WethGateway: {
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
   },
   TokenDistributor: {
     //[eEthereumNetwork.main]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
   },
   AaveOracle: {
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
     //[eEthereumNetwork.main]: '', //'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
   },
   FallbackOracle: {
-    [eOpBNB.op_bnb]: '',
+    [eOpBNBNetwork.op_bnb]: '',
     //[eEthereumNetwork.main]: ZERO_ADDRESS,
   },
   ChainlinkAggregator: {
@@ -129,30 +129,30 @@ export const CommonsConfig: ICommonConfiguration = {
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
       xSUSHI: '0x9b26214bEC078E68a394AaEbfbffF406Ce14893F',
     },*/
-    [eOpBNB.op_bnb]: {}
+    [eOpBNBNetwork.op_bnb]: {}
   },
   ReserveAssets: {
-    [eOpBNB.op_bnb]: {}
+    [eOpBNBNetwork.op_bnb]: {}
   },
   ReservesConfig: {},
   ATokenDomainSeparator: {
-    [eOpBNB.op_bnb]: '',
+    [eOpBNBNetwork.op_bnb]: '',
     //[eEthereumNetwork.main]: '',
   },
   WETH: {
-    [eOpBNB.op_bnb]: '',
+    [eOpBNBNetwork.op_bnb]: '',
     //[eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   },
   WrappedNativeToken: {
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
     //[eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   },
   ReserveFactorTreasuryAddress: {
-    [eOpBNB.op_bnb]: ''
+    [eOpBNBNetwork.op_bnb]: ''
     //[eEthereumNetwork.main]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
   },
   IncentivesController: {
-    [eOpBNB.op_bnb]: '',
+    [eOpBNBNetwork.op_bnb]: '',
     //[eEthereumNetwork.main]: ZERO_ADDRESS,
   },
 };

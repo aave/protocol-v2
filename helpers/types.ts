@@ -5,7 +5,7 @@ export interface SymbolMap<T> {
 }
 
 export type eNetwork =
-  | eOpBNB
+  | eOpBNBNetwork
   | eEthereumNetwork
   | ePolygonNetwork
   | eXDaiNetwork
@@ -23,7 +23,7 @@ export enum eEthereumNetwork {
   goerli = 'goerli',
 }
 
-export enum eOpBNB {
+export enum eOpBNBNetwork {
   op_bnb = 'op_bnb',
 }
 

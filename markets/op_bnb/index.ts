@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { IOpBNBConfiguration, eEthereumNetwork, eOpBNB } from '../../helpers/types';
+import { IOpBNBConfiguration, eEthereumNetwork, eOpBNBNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -22,7 +22,7 @@ export const OpBNBConfig: IOpBNBConfiguration = {
     BKS: strategyBKS,
   },
   ReserveAssets: {
-    [eOpBNB.op_bnb] : {},
+    [eOpBNBNetwork.op_bnb] : {},
     /*[eEthereumNetwork.main]: {
       AAVE: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
       BAT: '0x0d8775f648430679a709e98d2b0cb6250d2887ef',
