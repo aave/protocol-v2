@@ -4,7 +4,12 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork | eAvalancheNetwork;
+export type eNetwork =
+  | eOpBNB
+  | eEthereumNetwork
+  | ePolygonNetwork
+  | eXDaiNetwork
+  | eAvalancheNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -16,6 +21,10 @@ export enum eEthereumNetwork {
 
   tenderly = 'tenderly',
   goerli = 'goerli',
+}
+
+export enum eOpBNB {
+  op_bnb = 'op_bnb',
 }
 
 export enum ePolygonNetwork {
@@ -216,6 +225,9 @@ export interface iAssetCommon<T> {
   [key: string]: T;
 }
 export interface iAssetBase<T> {
+  BKS: T;
+  WBNB: T;
+  ZO_ZO: T;
   WETH: T;
   DAI: T;
   TUSD: T;
@@ -290,6 +302,9 @@ export type iAavePoolAssets<T> = Pick<
 
 export type iLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
+  | 'ZO_ZO'
+  | 'BKS'
+  | 'WBNB'
   | 'DAI'
   | 'USDC'
   | 'USDT'
@@ -328,6 +343,8 @@ export type iAvalanchePoolAssets<T> = Pick<
   'WETH' | 'DAI' | 'USDT' | 'AAVE' | 'WBTC' | 'WAVAX' | 'USDC'
 >;
 
+export type iOpBNBPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'WBNB' | 'BKS' | 'ZO_ZO'>;
+
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
@@ -335,6 +352,9 @@ export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
 export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
 export enum TokenContractId {
+  WBNB = 'WBNB',
+  ZO_ZO = 'ZO_ZO',
+  BKS = 'BKS',
   DAI = 'DAI',
   AAVE = 'AAVE',
   TUSD = 'TUSD',
@@ -419,6 +439,7 @@ export type iParamsPerNetwork<T> =
   | iEthereumParamsPerNetwork<T>
   | iPolygonParamsPerNetwork<T>
   | iXDaiParamsPerNetwork<T>
+  | iOpBNBParamsPerNetwork<T>
   | iAvalancheParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T>
@@ -449,6 +470,10 @@ export interface iXDaiParamsPerNetwork<T> {
 export interface iAvalancheParamsPerNetwork<T> {
   [eAvalancheNetwork.avalanche]: T;
   [eAvalancheNetwork.fuji]: T;
+}
+
+export interface iOpBNBParamsPerNetwork<T> {
+  [eOpBNB.op_bnb]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -553,6 +578,10 @@ export interface IXDAIConfiguration extends ICommonConfiguration {
 
 export interface IAvalancheConfiguration extends ICommonConfiguration {
   ReservesConfig: iAvalanchePoolAssets<IReserveParams>;
+}
+
+export interface IOpBNBConfiguration extends ICommonConfiguration {
+  ReservesConfig: iOpBNBPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {

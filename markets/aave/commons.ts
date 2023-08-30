@@ -108,7 +108,6 @@ export const CommonsConfig: ICommonConfiguration = {
   PoolAdmin: {
     [eEthereumNetwork.coverage]: undefined,
     [eEthereumNetwork.buidlerevm]: undefined,
-    [eEthereumNetwork.coverage]: undefined,
     [eEthereumNetwork.hardhat]: undefined,
     [eEthereumNetwork.kovan]: undefined,
     [eEthereumNetwork.ropsten]: undefined,
