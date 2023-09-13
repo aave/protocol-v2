@@ -27,12 +27,12 @@ contract ATokensAndRatesHelper is Ownable {
 
   struct ConfigureReserveInput {
     address asset;
+    bool stableBorrowingEnabled;
+    bool borrowingEnabled;
     uint256 baseLTV;
     uint256 liquidationThreshold;
     uint256 liquidationBonus;
     uint256 reserveFactor;
-    bool stableBorrowingEnabled;
-    bool borrowingEnabled;
   }
 
   constructor(
@@ -46,7 +46,7 @@ contract ATokensAndRatesHelper is Ownable {
   }
 
   function initDeployment(InitDeploymentInput[] calldata inputParams) external onlyOwner {
-    for (uint256 i = 0; i < inputParams.length; i++) {
+    for (uint256 i; i < inputParams.length; ++i) {
       emit deployedContracts(
         address(new AToken()),
         address(
@@ -66,7 +66,7 @@ contract ATokensAndRatesHelper is Ownable {
 
   function configureReserves(ConfigureReserveInput[] calldata inputParams) external onlyOwner {
     LendingPoolConfigurator configurator = LendingPoolConfigurator(poolConfigurator);
-    for (uint256 i = 0; i < inputParams.length; i++) {
+    for (uint256 i; i < inputParams.length; ++i) {
       configurator.configureReserveAsCollateral(
         inputParams[i].asset,
         inputParams[i].baseLTV,
