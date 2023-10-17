@@ -96,6 +96,9 @@ export const CommonsConfig: ICommonConfiguration = {
     ENJ: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
+    EURS: {
+      borrowRate: oneRay.multipliedBy(0.035).toFixed(),
+    },
     BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
@@ -238,6 +241,7 @@ export const CommonsConfig: ICommonConfiguration = {
       BUSD: '0xbF7A18ea5DE0501f7559144e702b29c55b055CcB',
       DAI: '0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541',
       ENJ: '0xfaDbe2ee798889F02d1d39eDaD98Eff4c7fe95D4',
+      EURS: ZERO_ADDRESS,
       KNC: '0xb8E8130d244CFd13a75D6B9Aee029B1C33c808A7',
       LINK: '0x3Af8C569ab77af5230596Acf0E8c2F9351d24C38',
       MANA: '0x1b93D8E109cfeDcBb3Cc74eD761DE286d5771511',
@@ -260,6 +264,7 @@ export const CommonsConfig: ICommonConfiguration = {
       BUSD: '0x0A32D96Ff131cd5c3E0E5AAB645BF009Eda61564',
       DAI: '0x64b8e49baded7bfb2fd5a9235b2440c0ee02971b',
       ENJ: ZERO_ADDRESS,
+      EURS: ZERO_ADDRESS,
       KNC: '0x19d97ceb36624a31d827032d8216dd2eb15e9845',
       LINK: '0xb8c99b98913bE2ca4899CdcaF33a3e519C20EeEc',
       MANA: '0xDab909dedB72573c626481fC98CEE1152b81DEC2',
@@ -282,6 +287,7 @@ export const CommonsConfig: ICommonConfiguration = {
       BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd',
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
       ENJ: '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B',
+      EURS: ZERO_ADDRESS,
       KNC: '0x656c0544eF4C98A6a98491833A89204Abb045d6b',
       LINK: '0xDC530D9457755926550b59e8ECcdaE7624181557',
       MANA: '0x82A44D92D6c329826dc557c5E1Be6ebeC5D5FeB9',
@@ -305,6 +311,7 @@ export const CommonsConfig: ICommonConfiguration = {
       BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd',
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
       ENJ: '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B',
+      EURS: ZERO_ADDRESS,
       KNC: '0x656c0544eF4C98A6a98491833A89204Abb045d6b',
       LINK: '0xDC530D9457755926550b59e8ECcdaE7624181557',
       MANA: '0x82A44D92D6c329826dc557c5E1Be6ebeC5D5FeB9',
