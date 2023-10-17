@@ -334,7 +334,38 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   function principalBalanceOf(address user) external view virtual override returns (uint256) {
     return super.balanceOf(user);
   }
+  
+  /**
+   * @dev Returns the principal debt balance of the user from
+   * @return The debt balance of the user since the last burn/mint action
+   **/
+  function scaledBalanceOf(address user) public view virtual override returns (uint256) {
+    return super.balanceOf(user);
+  }
 
+  /**
+   * @dev Returns the scaled total supply of the variable debt token. Represents sum(debt/index)
+   * @return the scaled total supply
+   **/
+  function scaledTotalSupply() public view virtual override returns (uint256) {
+    return super.totalSupply();
+  }
+
+  /**
+   * @dev Returns the principal balance of the user and principal total supply.
+   * @param user The address of the user
+   * @return The principal balance of the user
+   * @return The principal total supply
+   **/
+  function getScaledUserBalanceAndSupply(address user)
+    external
+    view
+    override
+    returns (uint256, uint256)
+  {
+    return (super.balanceOf(user), super.totalSupply());
+  }
+  
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
    **/
