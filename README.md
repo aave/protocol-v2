@@ -80,23 +80,23 @@ The repository uses Docker Compose to manage sensitive keys and load the configu
 Follow the next steps to setup the repository:
 
 - Install `docker` and `docker-compose`
-- Create an enviroment file named `.env` and fill the next enviroment variables
+- Create an enviroment file named `.env` and fill the next enviroment variables (without quotes)
 
 ```
 # Mnemonic, only first address will be used
-MNEMONIC=""
+MNEMONIC=
 
 # Add Alchemy or Infura provider keys, alchemy takes preference at the config level
-ALCHEMY_KEY=""
-INFURA_KEY=""
+ALCHEMY_KEY=
+INFURA_KEY=
 
 
 # Optional Etherscan key, for automatize the verification of the contracts at Etherscan
-ETHERSCAN_KEY=""
+ETHERSCAN_KEY=
 
 # Optional, if you plan to use Tenderly scripts
-TENDERLY_PROJECT=""
-TENDERLY_USERNAME=""
+TENDERLY_PROJECT=
+TENDERLY_USERNAME=
 
 ```
 
