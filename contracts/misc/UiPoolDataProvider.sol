@@ -393,7 +393,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reservesData,
       userReservesData,
       oracle.getAssetPrice(MOCK_USD_ADDRESS),
-      incentivesControllerData
+      address(incentivesController) != address(0) ? incentivesController.getUserUnclaimedRewards(user):0
     );
   }
 }
