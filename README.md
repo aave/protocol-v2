@@ -15,7 +15,7 @@
 
 # Aave Protocol v2
 
-This repository contains the smart contracts source code and markets configuration for Aave Protocol V2. The repository uses Docker Compose and Hardhat as development enviroment for compilation, testing and deployment tasks.
+This repository contains the smart contracts source code and markets configuration for Aave Protocol V2. The repository uses Docker Compose and Hardhat as development environment for compilation, testing and deployment tasks.
 
 ## What is Aave?
 
@@ -23,7 +23,7 @@ Aave is a decentralized non-custodial liquidity markets protocol where users can
 
 ## Documentation
 
-The documentation of Aave V2 is in the following [Aave V2 documentation](https://docs.aave.com/developers/v/2.0/) link. At the documentation you can learn more about the protocol, see the contract interfaces, integration guides and audits.
+The documentation of Aave V2 is in the following [Aave V2 documentation](https://docs.aave.com/developers/v/2.0/) link. In the documentation you can learn more about the protocol, see the contract interfaces, integration guides and audits.
 
 For getting the latest contracts addresses, please check the [Deployed contracts](https://docs.aave.com/developers/v/2.0/deployed-contracts/deployed-contracts) page at the documentation to stay up to date.
 
@@ -80,7 +80,7 @@ The repository uses Docker Compose to manage sensitive keys and load the configu
 Follow the next steps to setup the repository:
 
 - Install `docker` and `docker-compose`
-- Create an enviroment file named `.env` and fill the next enviroment variables
+- Create an environment file named `.env` and fill the next environment variables
 
 ```
 # Mnemonic, only first address will be used
@@ -91,7 +91,7 @@ ALCHEMY_KEY=""
 INFURA_KEY=""
 
 
-# Optional Etherscan key, for automatize the verification of the contracts at Etherscan
+# Optional Etherscan key, for automate the verification of the contracts at Etherscan
 ETHERSCAN_KEY=""
 
 # Optional, if you plan to use Tenderly scripts
@@ -104,7 +104,7 @@ TENDERLY_USERNAME=""
 
 The configurations related with the Aave Markets are located at `markets` directory. You can follow the `IAaveConfiguration` interface to create new Markets configuration or extend the current Aave configuration.
 
-Each market should have his own Market configuration file, and their own set of deployment tasks, using the Aave market config and tasks as a reference.
+Each market should have its own Market configuration file, and their own set of deployment tasks, using the Aave market config and tasks as a reference.
 
 ## Test
 
